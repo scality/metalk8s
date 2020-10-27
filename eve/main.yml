@@ -5,6 +5,8 @@ branches:
   # yamllint disable rule:line-length
   user/*, feature/*, improvement/*, bugfix/*, w/*, q/*, hotfix/*, dependabot/*, documentation/*, release/*:
     stage: pre-merge
+  release-solution/*:
+    stage: release-solution
 
 models:
   # --- Re-usable steps (no parameters) ---
@@ -563,6 +565,20 @@ stages:
             - create-upload-testrail-objects
           alwaysRun: True
 
+  release-solution:
+    worker:
+      type: local
+    steps:
+      - TriggerStages:
+          name: Trigger build of Example Solution archive
+          stage_names:
+            - build-example-solution
+          haltOnFailure: true
+      # for now we only build, but we would need to automatically tag
+      # and promote this build.
+      - ShellCommand: *add_final_status_artifact_success
+      - Upload: *upload_final_status_artifact
+
   post-merge-solutions:
     worker:
       type: local
@@ -788,26 +804,12 @@ stages:
           haltOnFailure: True
           timeout: 3600
       - ShellCommand:
-          name: Increment Example Solution patch version
-          command: >
-            bash -c '
-            . examples/metalk8s-solution-example/VERSION &&
-            sed -i "s/^VERSION_PATCH=.*$/VERSION_PATCH=$(( ++VERSION_PATCH ))/"
-            examples/metalk8s-solution-example/VERSION
-            '
-          haltOnFailure: True
-      - SetPropertyFromCommand:
-          <<: *set_example_solution_version
-          name: Set Example Solution version next property
-          property: example_solution_version_next
-      - ShellCommand: *build_example_solution_iso
-      - ShellCommand:
           <<: *copy_artifacts
           env:
             <<: *_env_copy_artifacts
             ARTIFACTS: >-
               examples/metalk8s-solution-example/_build/example-solution-%(prop:example_solution_version)s.iso
-              examples/metalk8s-solution-example/_build/example-solution-%(prop:example_solution_version_next)s.iso
+              examples/metalk8s-solution-example/_build/SHA256SUM
       - Upload: *upload_artifacts
       - ShellCommand:
           <<: *add_final_status_artifact_success
