@@ -1092,14 +1092,49 @@ stages:
             npm run test:nowatch --no-update-notifier
           haltOnFailure: true
       - ShellCommand:
+          name: Run all UI integration tests
+          workdir: build/ui
+          env:
+            CI: "true"
+          command: |
+            # Start application in background and store PID
+            start_time=$(date +%s)
+            npm run start --no-update-notifier 2>&1 > application.log &
+            application_pid=$!
+            # Wait for application to start
+            until curl -Isfo /dev/null http://localhost:3000/; do printf '.'; sleep 2; done
+            end_time=$(date +%s)
+            echo -e "\nApplication is ready (took $((end_time - start_time))s)!"
+            # Run Cypress integration tests
+            npm run test:integration --no-update-notifier
+            cypress_result=$?
+            # Kill application (and its descendants)
+            list_descendants () {
+              local children=$(ps -o pid= --ppid "$1")
+              for pid in $children; do
+                list_descendants "$pid"
+              done
+              echo "$children"
+            }
+            kill $(list_descendants $application_pid)
+            # Exit with Cypress result
+            exit $cypress_result
+      - ShellCommand:
           name: Prepare upload folder
-          command: >
-            mkdir upload && mv junit upload
+          command: |
+            mkdir -p upload/ui/cypress
+            mv junit upload/ui
+            mv application.log upload/ui/cypress/application.log
+            mv cypress/screenshots upload/ui/cypress/screenshots
+            mv cypress/videos upload/ui/cypress/videos
           workdir: build/ui
           alwaysRun: true
       - Upload:
-          name: Upload cypress and junit folder
+          name: Upload Cypress and JUnit artifacts
           source: ui/upload
+          urls:
+            - ui/junit/*.xml
+            - ui/cypress/videos/*
           alwaysRun: true
       - ShellCommand:
           <<: *add_final_status_artifact_success
