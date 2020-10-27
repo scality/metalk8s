@@ -4,6 +4,7 @@ import {
   getVolumes,
   computeVolumeCondition,
   bytesToSize,
+  compareHealth,
 } from './utils.js';
 import {
   STATUS_UNKNOWN,
@@ -175,7 +176,7 @@ export const getVolumeListData = createSelector(
       );
     }
 
-    return nodeVolumes?.map((volume) => {
+    nodeVolumes = nodeVolumes?.map((volume) => {
       const volumePV = pVList?.find(
         (pV) => pV.metadata.name === volume.metadata.name,
       );
@@ -269,5 +270,9 @@ export const getVolumeListData = createSelector(
         errorReason: volume?.status?.conditions[0]?.reason,
       };
     });
+
+    // Initial data sorting
+    // Following sorts should be handled by react-table directly in the component
+    return nodeVolumes.sort((a, b) => compareHealth(b.health, a.health));
   },
 );

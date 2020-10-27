@@ -20,15 +20,11 @@ import CircleStatus from './CircleStatus';
 import { Button, ProgressBar, Tooltip } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 import {
-  STATUS_WARNING,
-  STATUS_CRITICAL,
-  STATUS_NONE,
-  STATUS_HEALTH,
   VOLUME_CONDITION_LINK,
   VOLUME_CONDITION_UNLINK,
   VOLUME_CONDITION_EXCLAMATION,
 } from '../constants';
-import { allSizeUnitsToBytes } from '../services/utils';
+import { allSizeUnitsToBytes, compareHealth } from '../services/utils';
 
 const VolumeListContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
@@ -206,15 +202,8 @@ function Table({
 
   const sortTypes = React.useMemo(() => {
     return {
-      health: (row1, row2) => {
-        const weights = {};
-        weights[STATUS_CRITICAL] = 3;
-        weights[STATUS_WARNING] = 2;
-        weights[STATUS_NONE] = 1;
-        weights[STATUS_HEALTH] = 0;
-
-        return weights[row1?.values?.health] - weights[row2?.values?.health];
-      },
+      health: (row1, row2) =>
+        compareHealth(row1?.values?.health, row2?.values?.health),
       size: (row1, row2) => {
         const size1 = row1?.values?.storageCapacity;
         const size2 = row2?.values?.storageCapacity;
