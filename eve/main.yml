@@ -207,6 +207,7 @@ models:
           cp -r "$artifact" "${DEST_DIR}"
         done'
       haltOnFailure: true
+      alwaysRun: true
   - ShellCommand: &copy_report_artifacts
       name: Put the sosreport logs to upload in a separate directory
       env:
