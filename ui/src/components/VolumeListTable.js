@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useLocation } from 'react-router-dom';
@@ -244,6 +244,7 @@ function Table({
     // visibleColumns,
     preGlobalFilteredRows,
     setGlobalFilter,
+    toggleSortBy,
   } = useTable(
     {
       columns,
@@ -258,6 +259,33 @@ function Table({
     useGlobalFilter,
     useSortBy,
   );
+
+  // Triggers a sort when a param query is set
+  const querySort = query.get('sort');
+  const queryDesc = query.get('desc');
+  useEffect(() => {
+    if (querySort) toggleSortBy(querySort, queryDesc || false, false);
+  }, [querySort, queryDesc, toggleSortBy]);
+
+  // Synchronizes the params query with the Table sort state
+  const sorted = headerGroups[0].headers.find((item) => item.isSorted === true)
+    ?.id;
+  const desc = headerGroups[0].headers.find((item) => item.isSorted === true)
+    ?.isSortedDesc;
+  useEffect(() => {
+    // Creating a local query instance to avoid having it in the useEffect dependencies and creating infinite loops on search change
+    const query = new URLSearchParams(window.location.search);
+    const querySort = query.get('sort');
+    const queryDesc = query.get('desc');
+
+    if (sorted !== querySort || desc !== queryDesc) {
+      if (sorted) {
+        sorted ? query.set('sort', sorted) : query.delete('sort');
+        desc ? query.set('desc', desc) : query.delete('desc');
+      }
+      history.push(`?${query.toString()}`);
+    }
+  }, [sorted, desc, history]);
 
   return (
     <>
