@@ -1220,7 +1220,7 @@ stages:
           command: >
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/upgrade.sh
-            --destination-version "%(prop:metalk8s_version)s" --verbose
+            --verbose
           haltOnFailure: true
       - ShellCommand: *provision_prometheus_volumes
       - ShellCommand: *wait_pods_running
@@ -1564,7 +1564,7 @@ stages:
           command: >
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/upgrade.sh
-            --destination-version %(prop:metalk8s_version)s --verbose
+            --verbose
           haltOnFailure: true
       - ShellCommand: *provision_prometheus_volumes
       - ShellCommand: *wait_pods_running
