@@ -251,6 +251,7 @@ function Table({
       defaultColumn,
       initialState: { globalFilter: querySearch },
       disableMultiSort: true,
+      autoResetSortBy: false,
       sortTypes,
     },
     useFilters,
