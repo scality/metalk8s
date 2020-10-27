@@ -1070,6 +1070,10 @@ stages:
           dockerfile: eve/workers/pod-unit-tests/ui/Dockerfile
       vars:
         name: "metalk8s-unit-tests-ui-worker"
+        cpu_requests: "1"
+        cpu_limits: 1500m
+        mem_requests: 2Gi
+        mem_limits: 3Gi
     steps:
       - Git: *git_pull
       - ShellCommand:
