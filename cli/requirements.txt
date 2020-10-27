@@ -1,0 +1,2 @@
+kubernetes >= 9.0.0
+salt-pepper >= 0.7.5
