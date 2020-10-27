@@ -3,8 +3,9 @@
 set -eu
 
 build() {
-    npm ci
-    npm run build
+    # Redirect everything to stderr, to get as much info as possible in case
+    # of an error.
+    npm run build 1>&2
 }
 
 clean() {
