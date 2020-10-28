@@ -15,5 +15,6 @@
     "mochaFile": "junit/cypress-junit.xml",
     "toConsole": true
   },
-  "chromeWebSecurity": false
+  "chromeWebSecurity": false,
+  "baseUrl": "http://localhost:3000"
 }
