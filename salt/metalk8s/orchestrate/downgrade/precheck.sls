@@ -1,3 +1,5 @@
+{%- from "metalk8s/map.jinja" import metalk8s with context %}
+
 {%- set dest_version = pillar.metalk8s.cluster_version %}
 
 {#- When downgrading saltenv should be the newest version #}
@@ -13,6 +15,22 @@ Invalid saltenv "{{ saltenv }}" consider using "metalk8s-{{ expected }}":
 
 Correct saltenv "{{ saltenv }}" for downgrade to "{{ dest_version }}":
   test.succeed_without_changes
+
+{%- endif %}
+
+{%- set dest_minor_version, _ = (dest_version|string).rsplit('.', 1) %}
+{%- set current_minor_version, _ = (expected|string).rsplit('.', 1) %}
+
+{%- if not metalk8s.downgrade.enabled and dest_minor_version != current_minor_version %}
+
+{% set release_note = 'https://github.com/scality/metalk8s/releases/tag/'
+                       ~ current_minor_version ~ '.0' %}
+
+Cannot downgrade from {{ current_minor_version }} to {{ dest_minor_version }}:
+  test.fail_without_changes:
+    - comment: |-
+        Downgrade is not supported, because of etcd version change
+        (see {{ release_note }} for details).
 
 {%- endif %}
 
