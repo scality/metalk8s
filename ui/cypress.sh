@@ -23,12 +23,12 @@ if [[ $IN_CI ]]; then
     sudo yum install -y "${packages[@]}"
 fi
 
-npm install --no-save --quiet --no-package-lock cypress@3.5.0 \
-    cypress-cucumber-preprocessor@1.12.0 cypress-wait-until@1.6.0
+npm install --no-save --quiet --no-package-lock cypress@5.5.0 \
+    cypress-cucumber-preprocessor@4.0.0 cypress-wait-until@1.7.1
 
 test -n "${IN_CI}" && \
-    sudo chown root:root /home/"$USER"/.cache/Cypress/3.5.0/Cypress/chrome-sandbox && \
-    sudo chmod 4755 /home/"$USER"/.cache/Cypress/3.5.0/Cypress/chrome-sandbox && \
+    sudo chown root:root /home/"$USER"/.cache/Cypress/5.5.0/Cypress/chrome-sandbox && \
+    sudo chmod 4755 /home/"$USER"/.cache/Cypress/5.5.0/Cypress/chrome-sandbox && \
     unset http_proxy HTTP_PROXY \
           https_proxy HTTPS_PROXY \
           no_proxy NO_PROXY
