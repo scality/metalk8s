@@ -126,6 +126,7 @@ const TooltipContent = styled.div`
 
 const SortCaretWrapper = styled.span`
   padding-left: ${padding.smaller};
+  position: absolute;
 `;
 
 function GlobalFilter({
