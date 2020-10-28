@@ -266,11 +266,13 @@ function Table({
     const query = new URLSearchParams(window.location.search);
     const querySort = query.get('sort');
     const queryDesc = query.get('desc');
-
     if (sorted !== querySort || desc !== queryDesc) {
       if (sorted) {
         sorted ? query.set('sort', sorted) : query.delete('sort');
         desc ? query.set('desc', desc) : query.delete('desc');
+      } else {
+        query.delete('sort');
+        query.delete('desc');
       }
       history.push(`?${query.toString()}`);
     }
