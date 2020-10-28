@@ -456,7 +456,7 @@ it('should return the volume list filtered by a specific node', () => {
       storageClass: 'metalk8s',
       usageRawData: '4GiB',
       health: 'health',
-      latency: '900 µs',
+      latency: 900,
     },
   ];
   expect(result).toEqual(volumelistFilteredByNode);
