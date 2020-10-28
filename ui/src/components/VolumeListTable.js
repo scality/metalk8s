@@ -129,6 +129,20 @@ const SortCaretWrapper = styled.span`
   position: absolute;
 `;
 
+const SortIncentive = styled.span`
+  padding-left: ${padding.smaller};
+  position: absolute;
+  display: none;
+`;
+
+const TableHeader = styled.th`
+  &:hover {
+    ${SortIncentive} {
+      display: block;
+    }
+  }
+`;
+
 function GlobalFilter({
   preGlobalFilteredRows,
   globalFilter,
@@ -333,17 +347,22 @@ function Table({
                     }),
                   );
                   return (
-                    <th {...headerStyleProps}>
+                    <TableHeader {...headerStyleProps}>
                       {column.render('Header')}
                       <SortCaretWrapper>
-                        {column.isSorted &&
-                          (column.isSortedDesc ? (
+                        {column.isSorted ? (
+                          column.isSortedDesc ? (
                             <i className="fas fa-sort-down" />
                           ) : (
                             <i className="fas fa-sort-up" />
-                          ))}
+                          )
+                        ) : (
+                          <SortIncentive>
+                            <i className="fas fa-sort" />
+                          </SortIncentive>
+                        )}
                       </SortCaretWrapper>
-                    </th>
+                    </TableHeader>
                   );
                 })}
               </HeadRow>
