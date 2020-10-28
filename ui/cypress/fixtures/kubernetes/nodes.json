@@ -1,0 +1,2776 @@
+{
+  "apiVersion": "v1",
+  "items": [
+    {
+      "metadata": {
+        "annotations": {
+          "kubeadm.alpha.kubernetes.io/cri-socket": "unix:///run/containerd/containerd.sock",
+          "node.alpha.kubernetes.io/ttl": "0",
+          "projectcalico.org/IPv4Address": "192.168.2.13/24",
+          "projectcalico.org/IPv4IPIPTunnelAddr": "10.233.132.64",
+          "volumes.kubernetes.io/controller-managed-attach-detach": "true"
+        },
+        "creationTimestamp": "2020-08-06T14:59:33.000Z",
+        "labels": {
+          "beta.kubernetes.io/arch": "amd64",
+          "beta.kubernetes.io/os": "linux",
+          "kubernetes.io/arch": "amd64",
+          "kubernetes.io/hostname": "bootstrap",
+          "kubernetes.io/os": "linux",
+          "metalk8s.scality.com/version": "2.6.0-dev",
+          "node-role.kubernetes.io/bootstrap": "",
+          "node-role.kubernetes.io/etcd": "",
+          "node-role.kubernetes.io/infra": "",
+          "node-role.kubernetes.io/master": ""
+        },
+        "name": "bootstrap",
+        "resourceVersion": "20157399",
+        "selfLink": "/api/v1/nodes/bootstrap",
+        "uid": "39a04d88-54dc-4137-be53-ace3358b35c2"
+      },
+      "spec": {
+        "podCIDR": "10.233.0.0/24",
+        "taints": [
+          {
+            "effect": "NoSchedule",
+            "key": "node-role.kubernetes.io/bootstrap"
+          },
+          {
+            "effect": "NoSchedule",
+            "key": "node-role.kubernetes.io/infra"
+          }
+        ]
+      },
+      "status": {
+        "addresses": [
+          {
+            "address": "192.168.1.18",
+            "type": "InternalIP"
+          },
+          {
+            "address": "bootstrap",
+            "type": "Hostname"
+          }
+        ],
+        "allocatable": {
+          "cpu": "4",
+          "ephemeral-storage": "38644306266",
+          "hugepages-1Gi": "0",
+          "hugepages-2Mi": "0",
+          "memory": "7906432Ki",
+          "pods": "110"
+        },
+        "capacity": {
+          "cpu": "4",
+          "ephemeral-storage": "41931756Ki",
+          "hugepages-1Gi": "0",
+          "hugepages-2Mi": "0",
+          "memory": "8008832Ki",
+          "pods": "110"
+        },
+        "conditions": [
+          {
+            "lastHeartbeatTime": "2020-10-26T07:25:09.000Z",
+            "lastTransitionTime": "2020-10-26T07:25:09.000Z",
+            "message": "Calico is running on this node",
+            "reason": "CalicoIsUp",
+            "status": "False",
+            "type": "NetworkUnavailable"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:22.000Z",
+            "lastTransitionTime": "2020-10-26T07:25:05.000Z",
+            "message": "kubelet has sufficient memory available",
+            "reason": "KubeletHasSufficientMemory",
+            "status": "False",
+            "type": "MemoryPressure"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:22.000Z",
+            "lastTransitionTime": "2020-10-26T07:25:05.000Z",
+            "message": "kubelet has no disk pressure",
+            "reason": "KubeletHasNoDiskPressure",
+            "status": "False",
+            "type": "DiskPressure"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:22.000Z",
+            "lastTransitionTime": "2020-10-26T07:25:05.000Z",
+            "message": "kubelet has sufficient PID available",
+            "reason": "KubeletHasSufficientPID",
+            "status": "False",
+            "type": "PIDPressure"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:22.000Z",
+            "lastTransitionTime": "2020-10-26T07:25:15.000Z",
+            "message": "kubelet is posting ready status",
+            "reason": "KubeletReady",
+            "status": "True",
+            "type": "Ready"
+          }
+        ],
+        "daemonEndpoints": {
+          "kubeletEndpoint": {
+            "Port": 10250
+          }
+        },
+        "images": [
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/keycloak-solution-0.1.0-dev/keycloak@sha256:d7cb114cdb5dcc4b2c9b56ac7b827249596491db02bb82177edb42413056aa13",
+              "metalk8s-registry-from-config.invalid/keycloak-solution-0.1.0-dev/keycloak:11.0.1"
+            ],
+            "sizeBytes": 361822833
+          },
+          {
+            "names": [
+              "docker.io/zenko/backbeat@sha256:56f2dc295ffe7d04e1ee1aacd2da5a2229d6ea7850d7608cabe163ca69939562",
+              "docker.io/zenko/backbeat:8.2.4"
+            ],
+            "sizeBytes": 298329600
+          },
+          {
+            "names": [
+              "docker.io/confluentinc/cp-kafka@sha256:c87b1c07fb53b1a82d24b436e53485917876a963dc67311800109fa12fe9a63d",
+              "docker.io/confluentinc/cp-kafka:5.0.1"
+            ],
+            "sizeBytes": 279781588
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/salt-master@sha256:d90f32ad1dd64ed7d451f792ba951ba042c3149f0acb8c0ce5817a20528a3475",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/salt-master:3000.3-1"
+            ],
+            "sizeBytes": 156113103
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/hyperdrive-0.2.0/hdcontroller@sha256:f6ce8b037e2f369c3371d9f75b05120b3a5b5ebd11c66ebab261c8473a01a622",
+              "metalk8s-registry-from-config.invalid/hyperdrive-0.2.0/hdcontroller:0.2.0"
+            ],
+            "sizeBytes": 137736757
+          },
+          {
+            "names": [
+              "docker.io/zenko/kafka-manager@sha256:c880055c1c05cb0822b071839fbc9b738cf6f37a11ad1057fd0bd740688c083b",
+              "docker.io/zenko/kafka-manager:1.3.3.18"
+            ],
+            "sizeBytes": 137258636
+          },
+          {
+            "names": [
+              "docker.io/sonobuoy/systemd-logs@sha256:fadad24a66ddd544987c38811108a73d1a306dd3b5e3f090b207786f2825ffde",
+              "docker.io/sonobuoy/systemd-logs:v0.3"
+            ],
+            "sizeBytes": 121664960
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx-ingress-controller@sha256:b312c91d0de688a21075078982b5e3a48b13b46eda4df743317d3059fc3ca0d9",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx-ingress-controller:0.30.0"
+            ],
+            "sizeBytes": 114165218
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx@sha256:5b49c8e2c890fbb0a35f6050ed3c5109c5bb47b9e774264f4f3aa85bb69e2033",
+              "docker.io/library/nginx:1.15.8",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx:1.15.8"
+            ],
+            "sizeBytes": 112920587
+          },
+          {
+            "names": [
+              "docker.io/zenko/cloudserver@sha256:a1055bac51598f3cda9994b99d6b34f25ddebec9d656181a562ee7f5bffdf8ba",
+              "docker.io/zenko/cloudserver:8.2.6"
+            ],
+            "sizeBytes": 108385109
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/hyperdrive-0.2.0/hdoperator@sha256:ccb56c6924c76cc611e888d0e80fc1319d75a4700cbd29cb0dbd4811aaa8353e",
+              "metalk8s-registry-from-config.invalid/hyperdrive-0.2.0/hdoperator:0.2.0"
+            ],
+            "sizeBytes": 103046032
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/etcd@sha256:4198ba6f82f642dfd18ecf840ee37afb9df4b596f06eef20e44d0aec4ea27216",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/etcd:3.4.3-0"
+            ],
+            "sizeBytes": 100946002
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/grafana@sha256:5d0cd5c6e23bb137b2d4e3d7192c0887fb5a8e232c198b32e57bd22803c950d6",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/grafana:6.7.4"
+            ],
+            "sizeBytes": 93345745
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node@sha256:71a68eed017c386e2b332e93d758e96c8bf1442ed921fe3ea65096b6f0d8f7b9",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node:v3.12.0"
+            ],
+            "sizeBytes": 89674949
+          },
+          {
+            "names": [
+              "docker.io/library/zookeeper@sha256:b7a76ec06f68fd9c801b72dfd283701bc7d8a8b0609277a0d570e8e6768e4ad9",
+              "docker.io/library/zookeeper:3.5.5"
+            ],
+            "sizeBytes": 86805305
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/storage-operator@sha256:d80a23698956fdcb84fe877b48a558ebf88b66aa9bd8a173c2ea20b817f9c266"
+            ],
+            "sizeBytes": 75416700
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/storage-operator@sha256:6eb6320a879a633aeaa2debc61db9bc2608de31fab3ae8d65d9fdbf9a9048afc",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/storage-operator:latest"
+            ],
+            "sizeBytes": 75416327
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/k8s-sidecar@sha256:af151f677a63cdfcdfc18a4e3043520ec506d5e116692e5190f6f765dca42a52",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/k8s-sidecar:0.1.20"
+            ],
+            "sizeBytes": 69665021
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/metalk8s-ui@sha256:e87a448c92f3eca3cb03c4af089a022b69e53058a071594800818240b71a1922",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/metalk8s-ui:2.6.0-dev"
+            ],
+            "sizeBytes": 66126647
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/metalk8s-ui@sha256:115b291855d24d5b4a06e352a777e83ba09de676b06890798e6c348b116c8e06"
+            ],
+            "sizeBytes": 66007274
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/metalk8s-ui@sha256:e68e730745cccee976476bfc62368b6196c9e8ef80011eaa81961b9a05158cbd"
+            ],
+            "sizeBytes": 65975082
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/metalk8s-ui@sha256:28a016dc630a633d9cc366820303009c0567dc6164ba6c48dd086663a26ebc7d"
+            ],
+            "sizeBytes": 65604100
+          },
+          {
+            "names": [
+              "docker.io/zenko/cosmos-operator@sha256:d7d4d7ffbe17ddd78384e02505eabfbc9662c636a577cf691a34c2c913eb5bbf",
+              "docker.io/zenko/cosmos-operator:0.5.5"
+            ],
+            "sizeBytes": 60442896
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node@sha256:8f7ae199f9f00e03527c515008aa1dbc21f8a27eaefe4b00ca789f732b0f0aef",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node:v3.16.1"
+            ],
+            "sizeBytes": 57771403
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-apiserver@sha256:3eb34ba74ad26607f7f20a794771a05d3480e5360fcf3366b7bb8cfcba1de929",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-apiserver:v1.17.9"
+            ],
+            "sizeBytes": 50666697
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-proxy@sha256:e646bb582dee12f4c2990489e7ab56b82aa5d4237ef2e623127d6f6d5453efd7",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-proxy:v1.17.9"
+            ],
+            "sizeBytes": 49113042
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-controller-manager@sha256:c04a06a5f3f44b46295f87d4286dd0f358665389eed246e5c6427d20157a0e90",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-controller-manager:v1.17.9"
+            ],
+            "sizeBytes": 48829212
+          },
+          {
+            "names": [
+              "docker.io/library/httpd@sha256:addd70e4ee83f3bc9a4c1c7c41e37927ba47faf639312fc936df3afad7926f5a",
+              "docker.io/library/httpd:2.4.39-alpine"
+            ],
+            "sizeBytes": 41901429
+          },
+          {
+            "names": [
+              "docker.io/library/httpd@sha256:eb8ccf084cf3e80eece1add239effefd171eb39adbc154d33c14260d905d4060",
+              "docker.io/library/httpd:2.4.38-alpine"
+            ],
+            "sizeBytes": 40765017
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-scheduler@sha256:2d32802392330b9584774569e467f49e748fc4bdc203d7a16d36f53bc0807759",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-scheduler:v1.17.9"
+            ],
+            "sizeBytes": 33813825
+          },
+          {
+            "names": [
+              "docker.io/sonobuoy/sonobuoy@sha256:2f2c5ec087f99405f125dcca8377c129fd68d6a16a9b25a37a116e63517a8439",
+              "docker.io/sonobuoy/sonobuoy:v0.19.0"
+            ],
+            "sizeBytes": 32879439
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/fluent-bit-plugin-loki@sha256:2d0e9b06a2bf894fa91300fa38a185ac44a7bedcb8a2c63b8f6077e5cf80fc4d",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/fluent-bit-plugin-loki:1.5.0-amd64"
+            ],
+            "sizeBytes": 29772538
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-kube-controllers@sha256:8dde5ff21d6422f8e8b990bea3d3e8a9ee6ba466d776fb6af776180b20b84b2c",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-kube-controllers:v3.12.0"
+            ],
+            "sizeBytes": 23123261
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-kube-controllers@sha256:04bba565d9e133ce7c8184d3b08fab09df061b7fb5936b08c5d12cc9e56a3799",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-kube-controllers:v3.16.1"
+            ],
+            "sizeBytes": 22380689
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/k8s-prometheus-adapter-amd64@sha256:b63dc612e3cb73f79d2401a4516f794f9f0a83002600ca72e675e41baecff437",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/k8s-prometheus-adapter-amd64:v0.6.0"
+            ],
+            "sizeBytes": 20860445
+          },
+          {
+            "names": [
+              "docker.io/zenko/cosmos-scheduler@sha256:d3f3ab174f10e1841d37cff0297bd493c11d1b81ca0bf276db63ead924db61cb",
+              "docker.io/zenko/cosmos-scheduler:0.5.3"
+            ],
+            "sizeBytes": 19094503
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/agnhost@sha256:daf5332100521b1256d0e3c56d697a238eaec3af48897ed9167cbadd426773b5",
+              "gcr.io/kubernetes-e2e-test-images/agnhost:2.8"
+            ],
+            "sizeBytes": 17444032
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/dex@sha256:b0bbc14a503a97587b365113a2f171a04ee7a6fd6f84c52e9384400533c9276c",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/dex:v2.23.0"
+            ],
+            "sizeBytes": 14746031
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/coredns@sha256:608ac7ccba5ce41c6941fca13bc67059c1eef927fd968b554b790e21cc92543c",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/coredns:1.6.5"
+            ],
+            "sizeBytes": 13238295
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/prometheus-operator@sha256:62b8cf466e9b238a9fcf0bcba74562c8833e7451042321e323a46de3f1dbe1bc",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/prometheus-operator:v0.38.1"
+            ],
+            "sizeBytes": 11334310
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/node-exporter@sha256:b630fb29d99b3483c73a2a7db5fc01a967392a3d7ad754c8eccf9f4a67e7ee31",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/node-exporter:v0.18.1"
+            ],
+            "sizeBytes": 11121304
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-state-metrics@sha256:9d29333ad1cc8e14b26e40daea3739cec21b765f6077c6764546779deec3f54b",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-state-metrics:v1.9.5"
+            ],
+            "sizeBytes": 10302321
+          },
+          {
+            "names": [
+              "docker.io/library/nginx@sha256:485b610fefec7ff6c463ced9623314a04ed67e3945b9c08d7e53a47f6d108dc7",
+              "docker.io/library/nginx:1.14-alpine"
+            ],
+            "sizeBytes": 6978806
+          },
+          {
+            "names": [
+              "docker.io/danielqsj/kafka-exporter@sha256:b493282e42cd2b11256b4f33fc9cecf9776f9963f58bf4d82fc267ca7e2b65dd",
+              "docker.io/danielqsj/kafka-exporter:v1.2.0"
+            ],
+            "sizeBytes": 5190959
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx-ingress-defaultbackend-amd64@sha256:4dc5e07c8ca4e23bddb3153737d7b8c556e5fb2f29c4558b7cd6e6df99c512c7",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx-ingress-defaultbackend-amd64:1.5"
+            ],
+            "sizeBytes": 1995666
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/keycloak-solution-0.1.0-dev/busybox@sha256:fd4a8673d0344c3a7f427fe4440d4b8dfd4fa59cfabbd9098f9eb0cb4ba905d0",
+              "metalk8s-registry-from-config.invalid/keycloak-solution-0.1.0-dev/busybox:1.31.1"
+            ],
+            "sizeBytes": 762476
+          },
+          {
+            "names": [
+              "k8s.gcr.io/pause:3.1"
+            ],
+            "sizeBytes": 746400
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/mounttest@sha256:c0bd6f0755f42af09a68c9a47fb993136588a76b3200ec305796b60d629d85d2",
+              "gcr.io/kubernetes-e2e-test-images/mounttest:1.0"
+            ],
+            "sizeBytes": 599341
+          }
+        ],
+        "nodeInfo": {
+          "architecture": "amd64",
+          "bootID": "98703bc8-1445-464a-8a37-169f7cdcc990",
+          "containerRuntimeVersion": "containerd://1.2.13",
+          "kernelVersion": "3.10.0-957.27.2.el7.x86_64",
+          "kubeProxyVersion": "v1.17.9",
+          "kubeletVersion": "v1.17.9",
+          "machineID": "65113b1a0d2f6087d515e6a8cd0ee7ef",
+          "operatingSystem": "linux",
+          "osImage": "CentOS Linux 7 (Core)",
+          "systemUUID": "A4BC9513-ED3F-457F-8FED-EC5DBBBDC338"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Node\",\"metadata\":{\"annotations\":{\"metalk8s.scality.com/ssh-host\":\"192.168.1.36\",\"metalk8s.scality.com/ssh-key-path\":\"/etc/metalk8s/pki/salt-bootstrap\",\"metalk8s.scality.com/ssh-port\":\"22\",\"metalk8s.scality.com/ssh-sudo\":\"true\",\"metalk8s.scality.com/ssh-user\":\"centos\"},\"labels\":{\"metalk8s.scality.com/version\":\"2.6.0-dev\",\"node-role.kubernetes.io/etcd\":\"\",\"node-role.kubernetes.io/infra\":\"\",\"node-role.kubernetes.io/master\":\"\"},\"name\":\"master-0\"},\"spec\":{\"taints\":[{\"effect\":\"NoSchedule\",\"key\":\"node-role.kubernetes.io/infra\",\"value\":\"\"}]}}\n",
+          "metalk8s.scality.com/ssh-host": "192.168.1.36",
+          "metalk8s.scality.com/ssh-key-path": "/etc/metalk8s/pki/salt-bootstrap",
+          "metalk8s.scality.com/ssh-port": "22",
+          "metalk8s.scality.com/ssh-sudo": "true",
+          "metalk8s.scality.com/ssh-user": "centos",
+          "node.alpha.kubernetes.io/ttl": "0",
+          "projectcalico.org/IPv4Address": "192.168.2.17/24",
+          "projectcalico.org/IPv4IPIPTunnelAddr": "10.233.36.64",
+          "volumes.kubernetes.io/controller-managed-attach-detach": "true"
+        },
+        "creationTimestamp": "2020-08-06T15:00:40.000Z",
+        "labels": {
+          "beta.kubernetes.io/arch": "amd64",
+          "beta.kubernetes.io/os": "linux",
+          "kubernetes.io/arch": "amd64",
+          "kubernetes.io/hostname": "master-0",
+          "kubernetes.io/os": "linux",
+          "metalk8s.scality.com/version": "2.6.0-dev",
+          "node-role.kubernetes.io/etcd": "",
+          "node-role.kubernetes.io/infra": "",
+          "node-role.kubernetes.io/master": ""
+        },
+        "name": "master-0",
+        "resourceVersion": "20157460",
+        "selfLink": "/api/v1/nodes/master-0",
+        "uid": "2a9cbcf2-41c2-423e-bfb9-d5d4fa647ff0"
+      },
+      "spec": {
+        "podCIDR": "10.233.1.0/24"
+      },
+      "status": {
+        "addresses": [
+          {
+            "address": "192.168.1.36",
+            "type": "InternalIP"
+          },
+          {
+            "address": "master-0",
+            "type": "Hostname"
+          }
+        ],
+        "allocatable": {
+          "cpu": "4",
+          "ephemeral-storage": "38644306266",
+          "hugepages-1Gi": "0",
+          "hugepages-2Mi": "0",
+          "memory": "7906424Ki",
+          "pods": "110"
+        },
+        "capacity": {
+          "cpu": "4",
+          "ephemeral-storage": "41931756Ki",
+          "hugepages-1Gi": "0",
+          "hugepages-2Mi": "0",
+          "memory": "8008824Ki",
+          "pods": "110"
+        },
+        "conditions": [
+          {
+            "lastHeartbeatTime": "2020-10-26T07:24:22.000Z",
+            "lastTransitionTime": "2020-10-26T07:24:22.000Z",
+            "message": "Calico is running on this node",
+            "reason": "CalicoIsUp",
+            "status": "False",
+            "type": "NetworkUnavailable"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:38.000Z",
+            "lastTransitionTime": "2020-10-26T07:24:00.000Z",
+            "message": "kubelet is posting ready status",
+            "reason": "KubeletReady",
+            "status": "True",
+            "type": "Ready"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:38.000Z",
+            "lastTransitionTime": "2020-08-06T15:06:33.000Z",
+            "message": "kubelet has sufficient memory available",
+            "reason": "KubeletHasSufficientMemory",
+            "status": "False",
+            "type": "MemoryPressure"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:38.000Z",
+            "lastTransitionTime": "2020-08-06T15:06:33.000Z",
+            "message": "kubelet has no disk pressure",
+            "reason": "KubeletHasNoDiskPressure",
+            "status": "False",
+            "type": "DiskPressure"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:38.000Z",
+            "lastTransitionTime": "2020-08-06T15:06:33.000Z",
+            "message": "kubelet has sufficient PID available",
+            "reason": "KubeletHasSufficientPID",
+            "status": "False",
+            "type": "PIDPressure"
+          }
+        ],
+        "daemonEndpoints": {
+          "kubeletEndpoint": {
+            "Port": 10250
+          }
+        },
+        "images": [
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/keycloak-solution-0.1.0-dev/keycloak@sha256:d7cb114cdb5dcc4b2c9b56ac7b827249596491db02bb82177edb42413056aa13",
+              "metalk8s-registry-from-config.invalid/keycloak-solution-0.1.0-dev/keycloak:11.0.1"
+            ],
+            "sizeBytes": 361822833
+          },
+          {
+            "names": [
+              "docker.io/zenko/backbeat@sha256:56f2dc295ffe7d04e1ee1aacd2da5a2229d6ea7850d7608cabe163ca69939562",
+              "docker.io/zenko/backbeat:8.2.4"
+            ],
+            "sizeBytes": 298329600
+          },
+          {
+            "names": [
+              "docker.io/library/metalk8s-ui:2.5.2-dev"
+            ],
+            "sizeBytes": 151008379
+          },
+          {
+            "names": [
+              "docker.io/library/metalk8s-ui:2.6.0-dev"
+            ],
+            "sizeBytes": 150523506
+          },
+          {
+            "names": [
+              "docker.io/zenko/kafka-manager@sha256:c880055c1c05cb0822b071839fbc9b738cf6f37a11ad1057fd0bd740688c083b",
+              "docker.io/zenko/kafka-manager:1.3.3.18"
+            ],
+            "sizeBytes": 137258636
+          },
+          {
+            "names": [
+              "docker.io/sonobuoy/systemd-logs@sha256:fadad24a66ddd544987c38811108a73d1a306dd3b5e3f090b207786f2825ffde",
+              "docker.io/sonobuoy/systemd-logs:v0.3"
+            ],
+            "sizeBytes": 121664960
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx-ingress-controller@sha256:b312c91d0de688a21075078982b5e3a48b13b46eda4df743317d3059fc3ca0d9",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx-ingress-controller:0.30.0"
+            ],
+            "sizeBytes": 114165218
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/etcd@sha256:4198ba6f82f642dfd18ecf840ee37afb9df4b596f06eef20e44d0aec4ea27216",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/etcd:3.4.3-0"
+            ],
+            "sizeBytes": 100946002
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/grafana@sha256:88cca0601c16fc849596566a571f37c141f9e19ab6a8ced007779a284dc49a8a",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/grafana:6.7.4"
+            ],
+            "sizeBytes": 93345751
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node@sha256:71a68eed017c386e2b332e93d758e96c8bf1442ed921fe3ea65096b6f0d8f7b9",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node:v3.12.0"
+            ],
+            "sizeBytes": 89674949
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/keycloak-solution-0.1.0-dev/postgresql@sha256:b0eae02b16fed8fd6a2f7b13e68152657cd1a06f7b90192cf5244bfe78cb745f",
+              "metalk8s-registry-from-config.invalid/keycloak-solution-0.1.0-dev/postgresql:11.9.0-debian-10-r1"
+            ],
+            "sizeBytes": 86633791
+          },
+          {
+            "names": [
+              "docker.io/grafana/grafana@sha256:364bec4a39ecbec744ea4270aae35f6554eb6f2047b3ee08f7b5f1134857c32c",
+              "docker.io/grafana/grafana:5.1.3"
+            ],
+            "sizeBytes": 86479762
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/k8s-sidecar@sha256:af151f677a63cdfcdfc18a4e3043520ec506d5e116692e5190f6f765dca42a52",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/k8s-sidecar:0.1.20"
+            ],
+            "sizeBytes": 69665021
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/metalk8s-ui@sha256:78ecad390d680afca040305cdbed4b460d65732ec6f4797c19ec22907e424aa8",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/metalk8s-ui:2.6.0-dev"
+            ],
+            "sizeBytes": 65949494
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/metalk8s-ui@sha256:6b90ddb30e36acc4868052d5e0bfa63319efb2585e1e861002e2fbe554fc9a0d"
+            ],
+            "sizeBytes": 65886775
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/metalk8s-ui@sha256:28a016dc630a633d9cc366820303009c0567dc6164ba6c48dd086663a26ebc7d"
+            ],
+            "sizeBytes": 65604100
+          },
+          {
+            "names": [
+              "docker.io/zenko/grafana-sidecar@sha256:de26e826f581a163f1a8e220cb66a441dd62a1286356bb85ed0d58cfa646a172",
+              "docker.io/zenko/grafana-sidecar:0.1"
+            ],
+            "sizeBytes": 58399554
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node@sha256:8f7ae199f9f00e03527c515008aa1dbc21f8a27eaefe4b00ca789f732b0f0aef",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node:v3.16.1"
+            ],
+            "sizeBytes": 57771403
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/loki@sha256:8ce9db0590ee3190a09f7d3d54533b3a33081d39d5b098079c0fe2d0703038fc",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/loki:1.5.0"
+            ],
+            "sizeBytes": 56321657
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/prometheus@sha256:efd99a6be65885c07c559679a0df4ec709604bcdd8cd83f0d00a1a683b28fb6a",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/prometheus:v2.16.0"
+            ],
+            "sizeBytes": 54439175
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-apiserver@sha256:3eb34ba74ad26607f7f20a794771a05d3480e5360fcf3366b7bb8cfcba1de929",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-apiserver:v1.17.9"
+            ],
+            "sizeBytes": 50666697
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-proxy@sha256:e646bb582dee12f4c2990489e7ab56b82aa5d4237ef2e623127d6f6d5453efd7",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-proxy:v1.17.9"
+            ],
+            "sizeBytes": 49113042
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-controller-manager@sha256:c04a06a5f3f44b46295f87d4286dd0f358665389eed246e5c6427d20157a0e90",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-controller-manager:v1.17.9"
+            ],
+            "sizeBytes": 48829212
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx@sha256:5b49c8e2c890fbb0a35f6050ed3c5109c5bb47b9e774264f4f3aa85bb69e2033",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx:1.15.8"
+            ],
+            "sizeBytes": 44737325
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/keycloak-solution-0.1.0-dev/postgresql-exporter@sha256:c450454d7b61b6a759ac60cf6c61d179e486bb7a7e9243e8d646fa938275e18e",
+              "metalk8s-registry-from-config.invalid/keycloak-solution-0.1.0-dev/postgresql-exporter:0.8.0-debian-10-r166"
+            ],
+            "sizeBytes": 41107952
+          },
+          {
+            "names": [
+              "docker.io/library/httpd@sha256:eb8ccf084cf3e80eece1add239effefd171eb39adbc154d33c14260d905d4060",
+              "docker.io/library/httpd:2.4.38-alpine"
+            ],
+            "sizeBytes": 40765017
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-scheduler@sha256:2d32802392330b9584774569e467f49e748fc4bdc203d7a16d36f53bc0807759",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-scheduler:v1.17.9"
+            ],
+            "sizeBytes": 33813825
+          },
+          {
+            "names": [
+              "docker.io/sonobuoy/sonobuoy@sha256:2f2c5ec087f99405f125dcca8377c129fd68d6a16a9b25a37a116e63517a8439",
+              "docker.io/sonobuoy/sonobuoy:v0.19.0"
+            ],
+            "sizeBytes": 32879439
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/fluent-bit-plugin-loki@sha256:2d0e9b06a2bf894fa91300fa38a185ac44a7bedcb8a2c63b8f6077e5cf80fc4d",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/fluent-bit-plugin-loki:1.5.0-amd64"
+            ],
+            "sizeBytes": 29772538
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-helm/tiller@sha256:e88aaf190da692e7a31d825e3e88a3264a1c03b430f995b8f58d2cb55cb434a8",
+              "gcr.io/kubernetes-helm/tiller:v2.16.6"
+            ],
+            "sizeBytes": 29140665
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/alertmanager@sha256:b9323917a2eda265bec69e59a457f001c529facbbc8166df277f4850cdac61a0",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/alertmanager:v0.20.0"
+            ],
+            "sizeBytes": 25308378
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-kube-controllers@sha256:04bba565d9e133ce7c8184d3b08fab09df061b7fb5936b08c5d12cc9e56a3799",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-kube-controllers:v3.16.1"
+            ],
+            "sizeBytes": 22380689
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/k8s-prometheus-adapter-amd64@sha256:b63dc612e3cb73f79d2401a4516f794f9f0a83002600ca72e675e41baecff437",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/k8s-prometheus-adapter-amd64:v0.6.0"
+            ],
+            "sizeBytes": 20860445
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/agnhost@sha256:daf5332100521b1256d0e3c56d697a238eaec3af48897ed9167cbadd426773b5",
+              "gcr.io/kubernetes-e2e-test-images/agnhost:2.8"
+            ],
+            "sizeBytes": 17444032
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/dex@sha256:b0bbc14a503a97587b365113a2f171a04ee7a6fd6f84c52e9384400533c9276c",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/dex:v2.23.0"
+            ],
+            "sizeBytes": 14746031
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/coredns@sha256:608ac7ccba5ce41c6941fca13bc67059c1eef927fd968b554b790e21cc92543c",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/coredns:1.6.5"
+            ],
+            "sizeBytes": 13238295
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/prometheus-operator@sha256:62b8cf466e9b238a9fcf0bcba74562c8833e7451042321e323a46de3f1dbe1bc",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/prometheus-operator:v0.38.1"
+            ],
+            "sizeBytes": 11334310
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/node-exporter@sha256:b630fb29d99b3483c73a2a7db5fc01a967392a3d7ad754c8eccf9f4a67e7ee31",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/node-exporter:v0.18.1"
+            ],
+            "sizeBytes": 11121304
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-state-metrics@sha256:9d29333ad1cc8e14b26e40daea3739cec21b765f6077c6764546779deec3f54b",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-state-metrics:v1.9.5"
+            ],
+            "sizeBytes": 10302321
+          },
+          {
+            "names": [
+              "docker.io/library/nginx@sha256:485b610fefec7ff6c463ced9623314a04ed67e3945b9c08d7e53a47f6d108dc7",
+              "docker.io/library/nginx:1.14-alpine"
+            ],
+            "sizeBytes": 6978806
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/prometheus-config-reloader@sha256:d1cce64093d4a850d28726ec3e48403124808f76567b5bd7b26e4416300996a7",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/prometheus-config-reloader:v0.38.1"
+            ],
+            "sizeBytes": 4247416
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx-ingress-defaultbackend-amd64@sha256:4dc5e07c8ca4e23bddb3153737d7b8c556e5fb2f29c4558b7cd6e6df99c512c7",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx-ingress-defaultbackend-amd64:1.5"
+            ],
+            "sizeBytes": 1995666
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/configmap-reload@sha256:11797c66f296918b1c0acef4e1abb952db20dc56fd3e29d1d7716a602e26b7d1",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/configmap-reload:v0.0.1"
+            ],
+            "sizeBytes": 1530895
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/keycloak-solution-0.1.0-dev/busybox@sha256:fd4a8673d0344c3a7f427fe4440d4b8dfd4fa59cfabbd9098f9eb0cb4ba905d0",
+              "metalk8s-registry-from-config.invalid/keycloak-solution-0.1.0-dev/busybox:1.31.1"
+            ],
+            "sizeBytes": 762476
+          },
+          {
+            "names": [
+              "k8s.gcr.io/pause:3.1"
+            ],
+            "sizeBytes": 746400
+          }
+        ],
+        "nodeInfo": {
+          "architecture": "amd64",
+          "bootID": "2b20cac2-8e89-4be1-b95b-b2d34dcd2a3c",
+          "containerRuntimeVersion": "containerd://1.2.13",
+          "kernelVersion": "3.10.0-957.27.2.el7.x86_64",
+          "kubeProxyVersion": "v1.17.9",
+          "kubeletVersion": "v1.17.9",
+          "machineID": "65113b1a0d2f6087d515e6a8cd0ee7ef",
+          "operatingSystem": "linux",
+          "osImage": "CentOS Linux 7 (Core)",
+          "systemUUID": "3248B217-FF79-4AAB-9A93-3860C2A3E148"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Node\",\"metadata\":{\"annotations\":{\"metalk8s.scality.com/ssh-host\":\"192.168.1.33\",\"metalk8s.scality.com/ssh-key-path\":\"/etc/metalk8s/pki/salt-bootstrap\",\"metalk8s.scality.com/ssh-port\":\"22\",\"metalk8s.scality.com/ssh-sudo\":\"true\",\"metalk8s.scality.com/ssh-user\":\"centos\"},\"labels\":{\"metalk8s.scality.com/version\":\"2.6.0-dev\",\"node-role.kubernetes.io/etcd\":\"\",\"node-role.kubernetes.io/infra\":\"\",\"node-role.kubernetes.io/master\":\"\"},\"name\":\"master-1\"},\"spec\":{\"taints\":[{\"effect\":\"NoSchedule\",\"key\":\"node-role.kubernetes.io/infra\",\"value\":\"\"}]}}\n",
+          "metalk8s.scality.com/ssh-host": "192.168.1.33",
+          "metalk8s.scality.com/ssh-key-path": "/etc/metalk8s/pki/salt-bootstrap",
+          "metalk8s.scality.com/ssh-port": "22",
+          "metalk8s.scality.com/ssh-sudo": "true",
+          "metalk8s.scality.com/ssh-user": "centos",
+          "node.alpha.kubernetes.io/ttl": "0",
+          "projectcalico.org/IPv4Address": "192.168.2.10/24",
+          "projectcalico.org/IPv4IPIPTunnelAddr": "10.233.39.0",
+          "volumes.kubernetes.io/controller-managed-attach-detach": "true"
+        },
+        "creationTimestamp": "2020-08-06T15:00:40.000Z",
+        "labels": {
+          "beta.kubernetes.io/arch": "amd64",
+          "beta.kubernetes.io/os": "linux",
+          "kubernetes.io/arch": "amd64",
+          "kubernetes.io/hostname": "master-1",
+          "kubernetes.io/os": "linux",
+          "metalk8s.scality.com/version": "2.6.0-dev",
+          "node-role.kubernetes.io/etcd": "",
+          "node-role.kubernetes.io/infra": "",
+          "node-role.kubernetes.io/master": ""
+        },
+        "name": "master-1",
+        "resourceVersion": "20157512",
+        "selfLink": "/api/v1/nodes/master-1",
+        "uid": "eb3cc8fc-9d20-4b71-9b22-643f9c26a935"
+      },
+      "spec": {
+        "podCIDR": "10.233.2.0/24"
+      },
+      "status": {
+        "addresses": [
+          {
+            "address": "192.168.1.33",
+            "type": "InternalIP"
+          },
+          {
+            "address": "master-1",
+            "type": "Hostname"
+          }
+        ],
+        "allocatable": {
+          "cpu": "4",
+          "ephemeral-storage": "38644306266",
+          "hugepages-1Gi": "0",
+          "hugepages-2Mi": "0",
+          "memory": "7906424Ki",
+          "pods": "110"
+        },
+        "capacity": {
+          "cpu": "4",
+          "ephemeral-storage": "41931756Ki",
+          "hugepages-1Gi": "0",
+          "hugepages-2Mi": "0",
+          "memory": "8008824Ki",
+          "pods": "110"
+        },
+        "conditions": [
+          {
+            "lastHeartbeatTime": "2020-10-26T07:24:07.000Z",
+            "lastTransitionTime": "2020-10-26T07:24:07.000Z",
+            "message": "Calico is running on this node",
+            "reason": "CalicoIsUp",
+            "status": "False",
+            "type": "NetworkUnavailable"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:51.000Z",
+            "lastTransitionTime": "2020-10-01T09:58:26.000Z",
+            "message": "kubelet is posting ready status",
+            "reason": "KubeletReady",
+            "status": "True",
+            "type": "Ready"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:51.000Z",
+            "lastTransitionTime": "2020-10-01T09:58:04.000Z",
+            "message": "kubelet has sufficient memory available",
+            "reason": "KubeletHasSufficientMemory",
+            "status": "False",
+            "type": "MemoryPressure"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:51.000Z",
+            "lastTransitionTime": "2020-10-01T09:58:04.000Z",
+            "message": "kubelet has no disk pressure",
+            "reason": "KubeletHasNoDiskPressure",
+            "status": "False",
+            "type": "DiskPressure"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:51.000Z",
+            "lastTransitionTime": "2020-10-01T09:58:04.000Z",
+            "message": "kubelet has sufficient PID available",
+            "reason": "KubeletHasSufficientPID",
+            "status": "False",
+            "type": "PIDPressure"
+          }
+        ],
+        "daemonEndpoints": {
+          "kubeletEndpoint": {
+            "Port": 10250
+          }
+        },
+        "images": [
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/keycloak-solution-0.1.0-dev/keycloak@sha256:d7cb114cdb5dcc4b2c9b56ac7b827249596491db02bb82177edb42413056aa13",
+              "metalk8s-registry-from-config.invalid/keycloak-solution-0.1.0-dev/keycloak:11.0.1"
+            ],
+            "sizeBytes": 361822833
+          },
+          {
+            "names": [
+              "docker.io/zenko/backbeat@sha256:56f2dc295ffe7d04e1ee1aacd2da5a2229d6ea7850d7608cabe163ca69939562",
+              "docker.io/zenko/backbeat:8.2.4"
+            ],
+            "sizeBytes": 298329600
+          },
+          {
+            "names": [
+              "docker.io/library/metalk8s-ui:2.5.2-dev"
+            ],
+            "sizeBytes": 151008379
+          },
+          {
+            "names": [
+              "docker.io/library/metalk8s-ui:2.6.0-dev"
+            ],
+            "sizeBytes": 150523506
+          },
+          {
+            "names": [
+              "docker.io/sonobuoy/systemd-logs@sha256:fadad24a66ddd544987c38811108a73d1a306dd3b5e3f090b207786f2825ffde",
+              "docker.io/sonobuoy/systemd-logs:v0.3"
+            ],
+            "sizeBytes": 121664960
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx-ingress-controller@sha256:b312c91d0de688a21075078982b5e3a48b13b46eda4df743317d3059fc3ca0d9",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx-ingress-controller:0.30.0"
+            ],
+            "sizeBytes": 114165218
+          },
+          {
+            "names": [
+              "docker.io/zenko/cloudserver@sha256:a1055bac51598f3cda9994b99d6b34f25ddebec9d656181a562ee7f5bffdf8ba",
+              "docker.io/zenko/cloudserver:8.2.6"
+            ],
+            "sizeBytes": 108385109
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/etcd@sha256:4198ba6f82f642dfd18ecf840ee37afb9df4b596f06eef20e44d0aec4ea27216",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/etcd:3.4.3-0"
+            ],
+            "sizeBytes": 100946002
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/grafana@sha256:5d0cd5c6e23bb137b2d4e3d7192c0887fb5a8e232c198b32e57bd22803c950d6",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/grafana:6.7.4"
+            ],
+            "sizeBytes": 93345745
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node@sha256:71a68eed017c386e2b332e93d758e96c8bf1442ed921fe3ea65096b6f0d8f7b9",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node:v3.12.0"
+            ],
+            "sizeBytes": 89674949
+          },
+          {
+            "names": [
+              "docker.io/library/zookeeper@sha256:b7a76ec06f68fd9c801b72dfd283701bc7d8a8b0609277a0d570e8e6768e4ad9",
+              "docker.io/library/zookeeper:3.5.5"
+            ],
+            "sizeBytes": 86805305
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/keycloak-solution-0.1.0-dev/postgresql@sha256:b0eae02b16fed8fd6a2f7b13e68152657cd1a06f7b90192cf5244bfe78cb745f",
+              "metalk8s-registry-from-config.invalid/keycloak-solution-0.1.0-dev/postgresql:11.9.0-debian-10-r1"
+            ],
+            "sizeBytes": 86633791
+          },
+          {
+            "names": [
+              "docker.io/grafana/grafana@sha256:364bec4a39ecbec744ea4270aae35f6554eb6f2047b3ee08f7b5f1134857c32c",
+              "docker.io/grafana/grafana:5.1.3"
+            ],
+            "sizeBytes": 86479762
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/k8s-sidecar@sha256:af151f677a63cdfcdfc18a4e3043520ec506d5e116692e5190f6f765dca42a52",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/k8s-sidecar:0.1.20"
+            ],
+            "sizeBytes": 69665021
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/metalk8s-ui@sha256:115b291855d24d5b4a06e352a777e83ba09de676b06890798e6c348b116c8e06",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/metalk8s-ui:2.6.0-dev"
+            ],
+            "sizeBytes": 66007274
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/metalk8s-ui@sha256:ec1f62cae15a8948ba1e0f9812adbed4599a03f3e11d545b5524d69e1bd655fd"
+            ],
+            "sizeBytes": 65997377
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/metalk8s-ui@sha256:e68e730745cccee976476bfc62368b6196c9e8ef80011eaa81961b9a05158cbd"
+            ],
+            "sizeBytes": 65975082
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/metalk8s-ui@sha256:6b90ddb30e36acc4868052d5e0bfa63319efb2585e1e861002e2fbe554fc9a0d"
+            ],
+            "sizeBytes": 65886775
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/metalk8s-ui@sha256:28a016dc630a633d9cc366820303009c0567dc6164ba6c48dd086663a26ebc7d"
+            ],
+            "sizeBytes": 65604100
+          },
+          {
+            "names": [
+              "docker.io/zenko/grafana-sidecar@sha256:de26e826f581a163f1a8e220cb66a441dd62a1286356bb85ed0d58cfa646a172",
+              "docker.io/zenko/grafana-sidecar:0.1"
+            ],
+            "sizeBytes": 58399554
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node@sha256:8f7ae199f9f00e03527c515008aa1dbc21f8a27eaefe4b00ca789f732b0f0aef",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node:v3.16.1"
+            ],
+            "sizeBytes": 57771403
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/prometheus@sha256:efd99a6be65885c07c559679a0df4ec709604bcdd8cd83f0d00a1a683b28fb6a",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/prometheus:v2.16.0"
+            ],
+            "sizeBytes": 54439175
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-apiserver@sha256:3eb34ba74ad26607f7f20a794771a05d3480e5360fcf3366b7bb8cfcba1de929",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-apiserver:v1.17.9"
+            ],
+            "sizeBytes": 50666697
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-proxy@sha256:e646bb582dee12f4c2990489e7ab56b82aa5d4237ef2e623127d6f6d5453efd7",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-proxy:v1.17.9"
+            ],
+            "sizeBytes": 49113042
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-controller-manager@sha256:c04a06a5f3f44b46295f87d4286dd0f358665389eed246e5c6427d20157a0e90",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-controller-manager:v1.17.9"
+            ],
+            "sizeBytes": 48829212
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx@sha256:5b49c8e2c890fbb0a35f6050ed3c5109c5bb47b9e774264f4f3aa85bb69e2033",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx:1.15.8"
+            ],
+            "sizeBytes": 44737325
+          },
+          {
+            "names": [
+              "docker.io/library/httpd@sha256:eb8ccf084cf3e80eece1add239effefd171eb39adbc154d33c14260d905d4060",
+              "docker.io/library/httpd:2.4.38-alpine"
+            ],
+            "sizeBytes": 40765017
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-scheduler@sha256:2d32802392330b9584774569e467f49e748fc4bdc203d7a16d36f53bc0807759",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-scheduler:v1.17.9"
+            ],
+            "sizeBytes": 33813825
+          },
+          {
+            "names": [
+              "docker.io/sonobuoy/sonobuoy@sha256:2f2c5ec087f99405f125dcca8377c129fd68d6a16a9b25a37a116e63517a8439",
+              "docker.io/sonobuoy/sonobuoy:v0.19.0"
+            ],
+            "sizeBytes": 32879439
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/fluent-bit-plugin-loki@sha256:2d0e9b06a2bf894fa91300fa38a185ac44a7bedcb8a2c63b8f6077e5cf80fc4d",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/fluent-bit-plugin-loki:1.5.0-amd64"
+            ],
+            "sizeBytes": 29772538
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-helm/tiller@sha256:e88aaf190da692e7a31d825e3e88a3264a1c03b430f995b8f58d2cb55cb434a8",
+              "gcr.io/kubernetes-helm/tiller:v2.16.6"
+            ],
+            "sizeBytes": 29140665
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/alertmanager@sha256:b9323917a2eda265bec69e59a457f001c529facbbc8166df277f4850cdac61a0",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/alertmanager:v0.20.0"
+            ],
+            "sizeBytes": 25308378
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-kube-controllers@sha256:8dde5ff21d6422f8e8b990bea3d3e8a9ee6ba466d776fb6af776180b20b84b2c",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-kube-controllers:v3.12.0"
+            ],
+            "sizeBytes": 23123261
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/k8s-prometheus-adapter-amd64@sha256:b63dc612e3cb73f79d2401a4516f794f9f0a83002600ca72e675e41baecff437",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/k8s-prometheus-adapter-amd64:v0.6.0"
+            ],
+            "sizeBytes": 20860445
+          },
+          {
+            "names": [
+              "docker.io/zenko/cosmos-scheduler@sha256:d3f3ab174f10e1841d37cff0297bd493c11d1b81ca0bf276db63ead924db61cb",
+              "docker.io/zenko/cosmos-scheduler:0.5.3"
+            ],
+            "sizeBytes": 19094503
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/agnhost@sha256:daf5332100521b1256d0e3c56d697a238eaec3af48897ed9167cbadd426773b5",
+              "gcr.io/kubernetes-e2e-test-images/agnhost:2.8"
+            ],
+            "sizeBytes": 17444032
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/dex@sha256:b0bbc14a503a97587b365113a2f171a04ee7a6fd6f84c52e9384400533c9276c",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/dex:v2.23.0"
+            ],
+            "sizeBytes": 14746031
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/coredns@sha256:608ac7ccba5ce41c6941fca13bc67059c1eef927fd968b554b790e21cc92543c",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/coredns:1.6.5"
+            ],
+            "sizeBytes": 13238295
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/prometheus-operator@sha256:62b8cf466e9b238a9fcf0bcba74562c8833e7451042321e323a46de3f1dbe1bc",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/prometheus-operator:v0.38.1"
+            ],
+            "sizeBytes": 11334310
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/node-exporter@sha256:b630fb29d99b3483c73a2a7db5fc01a967392a3d7ad754c8eccf9f4a67e7ee31",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/node-exporter:v0.18.1"
+            ],
+            "sizeBytes": 11121304
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-state-metrics@sha256:9d29333ad1cc8e14b26e40daea3739cec21b765f6077c6764546779deec3f54b",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-state-metrics:v1.9.5"
+            ],
+            "sizeBytes": 10302321
+          },
+          {
+            "names": [
+              "docker.io/library/nginx@sha256:485b610fefec7ff6c463ced9623314a04ed67e3945b9c08d7e53a47f6d108dc7",
+              "docker.io/library/nginx:1.14-alpine"
+            ],
+            "sizeBytes": 6978806
+          },
+          {
+            "names": [
+              "docker.io/danielqsj/kafka-exporter@sha256:b493282e42cd2b11256b4f33fc9cecf9776f9963f58bf4d82fc267ca7e2b65dd",
+              "docker.io/danielqsj/kafka-exporter:v1.2.0"
+            ],
+            "sizeBytes": 5190959
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/prometheus-config-reloader@sha256:d1cce64093d4a850d28726ec3e48403124808f76567b5bd7b26e4416300996a7",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/prometheus-config-reloader:v0.38.1"
+            ],
+            "sizeBytes": 4247416
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx-ingress-defaultbackend-amd64@sha256:4dc5e07c8ca4e23bddb3153737d7b8c556e5fb2f29c4558b7cd6e6df99c512c7",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx-ingress-defaultbackend-amd64:1.5"
+            ],
+            "sizeBytes": 1995666
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/configmap-reload@sha256:11797c66f296918b1c0acef4e1abb952db20dc56fd3e29d1d7716a602e26b7d1",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/configmap-reload:v0.0.1"
+            ],
+            "sizeBytes": 1530895
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/keycloak-solution-0.1.0-dev/busybox@sha256:fd4a8673d0344c3a7f427fe4440d4b8dfd4fa59cfabbd9098f9eb0cb4ba905d0",
+              "metalk8s-registry-from-config.invalid/keycloak-solution-0.1.0-dev/busybox:1.31.1"
+            ],
+            "sizeBytes": 762476
+          },
+          {
+            "names": [
+              "k8s.gcr.io/pause:3.1"
+            ],
+            "sizeBytes": 746400
+          }
+        ],
+        "nodeInfo": {
+          "architecture": "amd64",
+          "bootID": "672a141d-7158-4cc8-9a88-075e8e49f16e",
+          "containerRuntimeVersion": "containerd://1.2.13",
+          "kernelVersion": "3.10.0-957.27.2.el7.x86_64",
+          "kubeProxyVersion": "v1.17.9",
+          "kubeletVersion": "v1.17.9",
+          "machineID": "65113b1a0d2f6087d515e6a8cd0ee7ef",
+          "operatingSystem": "linux",
+          "osImage": "CentOS Linux 7 (Core)",
+          "systemUUID": "A71E2BFD-F0D6-488F-B4FF-A765116CD1A6"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Node\",\"metadata\":{\"annotations\":{\"metalk8s.scality.com/ssh-host\":\"192.168.1.29\",\"metalk8s.scality.com/ssh-key-path\":\"/etc/metalk8s/pki/salt-bootstrap\",\"metalk8s.scality.com/ssh-port\":\"22\",\"metalk8s.scality.com/ssh-sudo\":\"true\",\"metalk8s.scality.com/ssh-user\":\"centos\"},\"labels\":{\"metalk8s.scality.com/version\":\"2.6.0-dev\",\"node-role.kubernetes.io/node\":\"\"},\"name\":\"worker-0\"}}\n",
+          "metalk8s.scality.com/ssh-host": "192.168.1.29",
+          "metalk8s.scality.com/ssh-key-path": "/etc/metalk8s/pki/salt-bootstrap",
+          "metalk8s.scality.com/ssh-port": "22",
+          "metalk8s.scality.com/ssh-sudo": "true",
+          "metalk8s.scality.com/ssh-user": "centos",
+          "node.alpha.kubernetes.io/ttl": "0",
+          "projectcalico.org/IPv4Address": "192.168.2.12/24",
+          "projectcalico.org/IPv4IPIPTunnelAddr": "10.233.43.0",
+          "volumes.kubernetes.io/controller-managed-attach-detach": "true"
+        },
+        "creationTimestamp": "2020-08-06T15:00:41.000Z",
+        "labels": {
+          "beta.kubernetes.io/arch": "amd64",
+          "beta.kubernetes.io/os": "linux",
+          "kubernetes.io/arch": "amd64",
+          "kubernetes.io/hostname": "worker-0",
+          "kubernetes.io/os": "linux",
+          "metalk8s.scality.com/version": "2.6.0-dev",
+          "node-role.kubernetes.io/node": ""
+        },
+        "name": "worker-0",
+        "resourceVersion": "20157501",
+        "selfLink": "/api/v1/nodes/worker-0",
+        "uid": "e8c1a50a-2514-4f26-b7b6-82c48ff13c2f"
+      },
+      "spec": {
+        "podCIDR": "10.233.3.0/24"
+      },
+      "status": {
+        "addresses": [
+          {
+            "address": "192.168.1.29",
+            "type": "InternalIP"
+          },
+          {
+            "address": "worker-0",
+            "type": "Hostname"
+          }
+        ],
+        "allocatable": {
+          "cpu": "4",
+          "ephemeral-storage": "38644306266",
+          "hugepages-1Gi": "0",
+          "hugepages-2Mi": "0",
+          "memory": "7906440Ki",
+          "pods": "110"
+        },
+        "capacity": {
+          "cpu": "4",
+          "ephemeral-storage": "41931756Ki",
+          "hugepages-1Gi": "0",
+          "hugepages-2Mi": "0",
+          "memory": "8008840Ki",
+          "pods": "110"
+        },
+        "conditions": [
+          {
+            "lastHeartbeatTime": "2020-10-26T07:24:00.000Z",
+            "lastTransitionTime": "2020-10-26T07:24:00.000Z",
+            "message": "Calico is running on this node",
+            "reason": "CalicoIsUp",
+            "status": "False",
+            "type": "NetworkUnavailable"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:49.000Z",
+            "lastTransitionTime": "2020-09-30T06:30:47.000Z",
+            "message": "kubelet is posting ready status",
+            "reason": "KubeletReady",
+            "status": "True",
+            "type": "Ready"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:49.000Z",
+            "lastTransitionTime": "2020-09-26T13:10:02.000Z",
+            "message": "kubelet has sufficient memory available",
+            "reason": "KubeletHasSufficientMemory",
+            "status": "False",
+            "type": "MemoryPressure"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:49.000Z",
+            "lastTransitionTime": "2020-09-26T13:10:02.000Z",
+            "message": "kubelet has no disk pressure",
+            "reason": "KubeletHasNoDiskPressure",
+            "status": "False",
+            "type": "DiskPressure"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:49.000Z",
+            "lastTransitionTime": "2020-09-26T13:10:02.000Z",
+            "message": "kubelet has sufficient PID available",
+            "reason": "KubeletHasSufficientPID",
+            "status": "False",
+            "type": "PIDPressure"
+          }
+        ],
+        "daemonEndpoints": {
+          "kubeletEndpoint": {
+            "Port": 10250
+          }
+        },
+        "images": [
+          {
+            "names": [
+              "docker.io/zenko/backbeat@sha256:56f2dc295ffe7d04e1ee1aacd2da5a2229d6ea7850d7608cabe163ca69939562",
+              "docker.io/zenko/backbeat:8.2.4"
+            ],
+            "sizeBytes": 298329600
+          },
+          {
+            "names": [
+              "docker.io/confluentinc/cp-kafka@sha256:c87b1c07fb53b1a82d24b436e53485917876a963dc67311800109fa12fe9a63d",
+              "docker.io/confluentinc/cp-kafka:5.0.1"
+            ],
+            "sizeBytes": 279781588
+          },
+          {
+            "names": [
+              "docker.io/zenko/s3utils@sha256:796fe66872656f3a2713d00a62d91c277261987d6f6c9a54774f6c3999c2511b",
+              "docker.io/zenko/s3utils:1.2"
+            ],
+            "sizeBytes": 279361436
+          },
+          {
+            "names": [
+              "docker.io/confluentinc/cp-kafka@sha256:e4064b902da1be8c6696cc9f76dd7adeb36fbc86d945d86c927bcb06fc0ddaca",
+              "docker.io/confluentinc/cp-kafka:4.0.1-1"
+            ],
+            "sizeBytes": 265476272
+          },
+          {
+            "names": [
+              "docker.io/stefanprodan/mgob@sha256:32d2f3f0d51df8175c9d7fe8861d3ede9b2d6328ac15a17cffad77386cea6e16",
+              "docker.io/stefanprodan/mgob:edge"
+            ],
+            "sizeBytes": 246410849
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/hyperdrive-0.2.0/hdcontroller@sha256:f6ce8b037e2f369c3371d9f75b05120b3a5b5ebd11c66ebab261c8473a01a622",
+              "metalk8s-registry-from-config.invalid/hyperdrive-0.2.0/hdcontroller:0.2.0"
+            ],
+            "sizeBytes": 137736757
+          },
+          {
+            "names": [
+              "docker.io/zenko/kafka-manager@sha256:c880055c1c05cb0822b071839fbc9b738cf6f37a11ad1057fd0bd740688c083b",
+              "docker.io/zenko/kafka-manager:1.3.3.18"
+            ],
+            "sizeBytes": 137258636
+          },
+          {
+            "names": [
+              "docker.io/library/mongo@sha256:75a36c28b6ab0ff5129fcbf79ee62a58f094722a68251067ab113d6da4fb869b",
+              "docker.io/library/mongo:3.6.8"
+            ],
+            "sizeBytes": 128049980
+          },
+          {
+            "names": [
+              "docker.io/sonobuoy/systemd-logs@sha256:fadad24a66ddd544987c38811108a73d1a306dd3b5e3f090b207786f2825ffde",
+              "docker.io/sonobuoy/systemd-logs:v0.3"
+            ],
+            "sizeBytes": 121664960
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx-ingress-controller@sha256:b312c91d0de688a21075078982b5e3a48b13b46eda4df743317d3059fc3ca0d9",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx-ingress-controller:0.30.0"
+            ],
+            "sizeBytes": 114165218
+          },
+          {
+            "names": [
+              "docker.io/zenko/cloudserver@sha256:a1055bac51598f3cda9994b99d6b34f25ddebec9d656181a562ee7f5bffdf8ba",
+              "docker.io/zenko/cloudserver:8.2.6"
+            ],
+            "sizeBytes": 108385109
+          },
+          {
+            "names": [
+              "gcr.io/google_samples/k8szk@sha256:eee48b4ab091324993baec42ee542f26836acfd24821eb3891e5a7c281b80dad",
+              "gcr.io/google_samples/k8szk:v3"
+            ],
+            "sizeBytes": 108347916
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/hyperdrive-0.2.0/hdoperator@sha256:ccb56c6924c76cc611e888d0e80fc1319d75a4700cbd29cb0dbd4811aaa8353e",
+              "metalk8s-registry-from-config.invalid/hyperdrive-0.2.0/hdoperator:0.2.0"
+            ],
+            "sizeBytes": 103046032
+          },
+          {
+            "names": [
+              "k8s.gcr.io/etcd@sha256:4afb99b4690b418ffc2ceb67e1a17376457e441c1f09ab55447f0aaf992fa646",
+              "k8s.gcr.io/etcd:3.4.3"
+            ],
+            "sizeBytes": 100947667
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/hyperdrive-0.2.0/hyperiod@sha256:ae96020b7f76971c4053b41d4d03c64e03b2f2372dd0ba1392c9c1149527aacc",
+              "metalk8s-registry-from-config.invalid/hyperdrive-0.2.0/hyperiod:0.2.0"
+            ],
+            "sizeBytes": 90060790
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node@sha256:71a68eed017c386e2b332e93d758e96c8bf1442ed921fe3ea65096b6f0d8f7b9",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node:v3.12.0"
+            ],
+            "sizeBytes": 89674949
+          },
+          {
+            "names": [
+              "docker.io/library/zookeeper@sha256:b7a76ec06f68fd9c801b72dfd283701bc7d8a8b0609277a0d570e8e6768e4ad9",
+              "docker.io/library/zookeeper:3.5.5"
+            ],
+            "sizeBytes": 86805305
+          },
+          {
+            "names": [
+              "docker.io/grafana/grafana@sha256:364bec4a39ecbec744ea4270aae35f6554eb6f2047b3ee08f7b5f1134857c32c",
+              "docker.io/grafana/grafana:5.1.3"
+            ],
+            "sizeBytes": 86479762
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/jessie-dnsutils@sha256:ad583e33cb284f7ef046673809b146ec4053cda19b54a85d2b180a86169715eb",
+              "gcr.io/kubernetes-e2e-test-images/jessie-dnsutils:1.0"
+            ],
+            "sizeBytes": 85425365
+          },
+          {
+            "names": [
+              "docker.io/solsson/kafka-prometheus-jmx-exporter@sha256:a23062396cd5af1acdf76512632c20ea6be76885dfc20cd9ff40fb23846557e8"
+            ],
+            "sizeBytes": 84170145
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/storage-operator@sha256:d80a23698956fdcb84fe877b48a558ebf88b66aa9bd8a173c2ea20b817f9c266"
+            ],
+            "sizeBytes": 75416700
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/storage-operator@sha256:9e6f8496535371880ad675d1b5f7a95a2ebb242c7373ea1dd4500efbae18545a"
+            ],
+            "sizeBytes": 75349292
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/storage-operator@sha256:34d0219d611fb3758aa6ffcba4b6b4909dfd6563f7d6d83e992f68edef20ec7a"
+            ],
+            "sizeBytes": 75349291
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/storage-operator@sha256:40f1a381eb8e282ad0112db4c3bd060fa378cc9157ecbf2c96d8784bd352284c",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/storage-operator:latest"
+            ],
+            "sizeBytes": 75349289
+          },
+          {
+            "names": [
+              "docker.io/zenko/cosmos-operator@sha256:d7d4d7ffbe17ddd78384e02505eabfbc9662c636a577cf691a34c2c913eb5bbf",
+              "docker.io/zenko/cosmos-operator:0.5.5"
+            ],
+            "sizeBytes": 60442896
+          },
+          {
+            "names": [
+              "docker.io/zenko/grafana-sidecar@sha256:de26e826f581a163f1a8e220cb66a441dd62a1286356bb85ed0d58cfa646a172",
+              "docker.io/zenko/grafana-sidecar:0.1"
+            ],
+            "sizeBytes": 58399554
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node@sha256:8f7ae199f9f00e03527c515008aa1dbc21f8a27eaefe4b00ca789f732b0f0aef",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node:v3.16.1"
+            ],
+            "sizeBytes": 57771403
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-proxy@sha256:e646bb582dee12f4c2990489e7ab56b82aa5d4237ef2e623127d6f6d5453efd7",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-proxy:v1.17.9"
+            ],
+            "sizeBytes": 49113042
+          },
+          {
+            "names": [
+              "docker.io/sscaling/jmx-prometheus-exporter@sha256:11d9ee1b1e4aec92f01e4f46f6280e8f9115facb4922c4eee7ae709db05fe501",
+              "docker.io/sscaling/jmx-prometheus-exporter:0.3.0"
+            ],
+            "sizeBytes": 48942279
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx@sha256:5b49c8e2c890fbb0a35f6050ed3c5109c5bb47b9e774264f4f3aa85bb69e2033",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx:1.15.8"
+            ],
+            "sizeBytes": 44737325
+          },
+          {
+            "names": [
+              "docker.io/library/httpd@sha256:addd70e4ee83f3bc9a4c1c7c41e37927ba47faf639312fc936df3afad7926f5a",
+              "docker.io/library/httpd:2.4.39-alpine"
+            ],
+            "sizeBytes": 41901429
+          },
+          {
+            "names": [
+              "docker.io/library/httpd@sha256:eb8ccf084cf3e80eece1add239effefd171eb39adbc154d33c14260d905d4060",
+              "docker.io/library/httpd:2.4.38-alpine"
+            ],
+            "sizeBytes": 40765017
+          },
+          {
+            "names": [
+              "docker.io/sonobuoy/sonobuoy@sha256:2f2c5ec087f99405f125dcca8377c129fd68d6a16a9b25a37a116e63517a8439",
+              "docker.io/sonobuoy/sonobuoy:v0.19.0"
+            ],
+            "sizeBytes": 32879439
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/fluent-bit-plugin-loki@sha256:2d0e9b06a2bf894fa91300fa38a185ac44a7bedcb8a2c63b8f6077e5cf80fc4d",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/fluent-bit-plugin-loki:1.5.0-amd64"
+            ],
+            "sizeBytes": 29772538
+          },
+          {
+            "names": [
+              "docker.io/prom/prometheus@sha256:7d99455a045a6c89c0dbee6e1fe659eb83bd3a19e171606bc0fd10eb0e34a7dc",
+              "docker.io/prom/prometheus:v2.3.2"
+            ],
+            "sizeBytes": 28917744
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-kube-controllers@sha256:8dde5ff21d6422f8e8b990bea3d3e8a9ee6ba466d776fb6af776180b20b84b2c",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-kube-controllers:v3.12.0"
+            ],
+            "sizeBytes": 23123261
+          },
+          {
+            "names": [
+              "docker.io/zenko/cosmos-scheduler@sha256:d3f3ab174f10e1841d37cff0297bd493c11d1b81ca0bf276db63ead924db61cb",
+              "docker.io/zenko/cosmos-scheduler:0.5.3"
+            ],
+            "sizeBytes": 19094503
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/agnhost@sha256:daf5332100521b1256d0e3c56d697a238eaec3af48897ed9167cbadd426773b5",
+              "gcr.io/kubernetes-e2e-test-images/agnhost:2.8"
+            ],
+            "sizeBytes": 17444032
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/sample-apiserver@sha256:1bafcc6fb1aa990b487850adba9cadc020e42d7905aa8a30481182a477ba24b0",
+              "gcr.io/kubernetes-e2e-test-images/sample-apiserver:1.10"
+            ],
+            "sizeBytes": 16222606
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/node-exporter@sha256:b630fb29d99b3483c73a2a7db5fc01a967392a3d7ad754c8eccf9f4a67e7ee31",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/node-exporter:v0.18.1"
+            ],
+            "sizeBytes": 11121304
+          },
+          {
+            "names": [
+              "docker.io/library/redis@sha256:50899ea1ceed33fa03232f3ac57578a424faa1742c1ac9c7a7bdb95cdf19b858",
+              "docker.io/library/redis:5.0.5-alpine"
+            ],
+            "sizeBytes": 9915362
+          },
+          {
+            "names": [
+              "docker.io/jimmidyson/configmap-reload@sha256:befec9f23d2a9da86a298d448cc9140f56a457362a7d9eecddba192db1ab489e",
+              "docker.io/jimmidyson/configmap-reload:v0.2.2"
+            ],
+            "sizeBytes": 9880745
+          },
+          {
+            "names": [
+              "docker.io/unguiculus/mongodb-install@sha256:a3a0154bf476b5a46864a09934457eeea98c4e7f240c8e71044fce91dc4dbb8b",
+              "docker.io/unguiculus/mongodb-install:0.7"
+            ],
+            "sizeBytes": 8051976
+          },
+          {
+            "names": [
+              "docker.io/library/nginx@sha256:485b610fefec7ff6c463ced9623314a04ed67e3945b9c08d7e53a47f6d108dc7",
+              "docker.io/library/nginx:1.14-alpine"
+            ],
+            "sizeBytes": 6978806
+          },
+          {
+            "names": [
+              "docker.io/ssalaues/mongodb-exporter@sha256:fdb21adfb5bd9c2443da205803669c178cbf7accf2cb2442ed5dd4d0ca4c73ad",
+              "docker.io/ssalaues/mongodb-exporter:0.6.1"
+            ],
+            "sizeBytes": 5916146
+          },
+          {
+            "names": [
+              "docker.io/danielqsj/kafka-exporter@sha256:b493282e42cd2b11256b4f33fc9cecf9776f9963f58bf4d82fc267ca7e2b65dd",
+              "docker.io/danielqsj/kafka-exporter:v1.2.0"
+            ],
+            "sizeBytes": 5190959
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/dnsutils@sha256:2abeee84efb79c14d731966e034af33bf324d3b26ca28497555511ff094b3ddd",
+              "gcr.io/kubernetes-e2e-test-images/dnsutils:1.1"
+            ],
+            "sizeBytes": 4331310
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/nonewprivs@sha256:10066e9039219449fe3c81f38fe01928f87914150768ab81b62a468e51fa7411",
+              "gcr.io/kubernetes-e2e-test-images/nonewprivs:1.0"
+            ],
+            "sizeBytes": 3054649
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/nautilus@sha256:33a732d4c42a266912a5091598a0f07653c9134db4b8d571690d8afd509e0bfc",
+              "gcr.io/kubernetes-e2e-test-images/nautilus:1.0"
+            ],
+            "sizeBytes": 1804628
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/kitten@sha256:bcbc4875c982ab39aa7c4f6acf4a287f604e996d9f34a3fbda8c3d1a7457d1f6",
+              "gcr.io/kubernetes-e2e-test-images/kitten:1.0"
+            ],
+            "sizeBytes": 1799936
+          }
+        ],
+        "nodeInfo": {
+          "architecture": "amd64",
+          "bootID": "49022730-0b75-4585-8713-12660598a906",
+          "containerRuntimeVersion": "containerd://1.2.13",
+          "kernelVersion": "3.10.0-957.27.2.el7.x86_64",
+          "kubeProxyVersion": "v1.17.9",
+          "kubeletVersion": "v1.17.9",
+          "machineID": "65113b1a0d2f6087d515e6a8cd0ee7ef",
+          "operatingSystem": "linux",
+          "osImage": "CentOS Linux 7 (Core)",
+          "systemUUID": "35FD5683-E494-48EC-8CBB-95323894061C"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Node\",\"metadata\":{\"annotations\":{\"metalk8s.scality.com/ssh-host\":\"192.168.1.6\",\"metalk8s.scality.com/ssh-key-path\":\"/etc/metalk8s/pki/salt-bootstrap\",\"metalk8s.scality.com/ssh-port\":\"22\",\"metalk8s.scality.com/ssh-sudo\":\"true\",\"metalk8s.scality.com/ssh-user\":\"centos\"},\"labels\":{\"metalk8s.scality.com/version\":\"2.6.0-dev\",\"node-role.kubernetes.io/node\":\"\"},\"name\":\"worker-1\"}}\n",
+          "metalk8s.scality.com/ssh-host": "192.168.1.6",
+          "metalk8s.scality.com/ssh-key-path": "/etc/metalk8s/pki/salt-bootstrap",
+          "metalk8s.scality.com/ssh-port": "22",
+          "metalk8s.scality.com/ssh-sudo": "true",
+          "metalk8s.scality.com/ssh-user": "centos",
+          "node.alpha.kubernetes.io/ttl": "0",
+          "projectcalico.org/IPv4Address": "192.168.2.9/24",
+          "projectcalico.org/IPv4IPIPTunnelAddr": "10.233.226.64",
+          "volumes.kubernetes.io/controller-managed-attach-detach": "true"
+        },
+        "creationTimestamp": "2020-08-06T15:00:41.000Z",
+        "labels": {
+          "beta.kubernetes.io/arch": "amd64",
+          "beta.kubernetes.io/os": "linux",
+          "kubernetes.io/arch": "amd64",
+          "kubernetes.io/hostname": "worker-1",
+          "kubernetes.io/os": "linux",
+          "metalk8s.scality.com/version": "2.6.0-dev",
+          "node-role.kubernetes.io/node": ""
+        },
+        "name": "worker-1",
+        "resourceVersion": "20157511",
+        "selfLink": "/api/v1/nodes/worker-1",
+        "uid": "1d7d8d0a-1c4e-4ba6-b654-4be13741f1fc"
+      },
+      "spec": {
+        "podCIDR": "10.233.4.0/24"
+      },
+      "status": {
+        "addresses": [
+          {
+            "address": "192.168.1.6",
+            "type": "InternalIP"
+          },
+          {
+            "address": "worker-1",
+            "type": "Hostname"
+          }
+        ],
+        "allocatable": {
+          "cpu": "4",
+          "ephemeral-storage": "38644306266",
+          "hugepages-1Gi": "0",
+          "hugepages-2Mi": "0",
+          "memory": "7906440Ki",
+          "pods": "110"
+        },
+        "capacity": {
+          "cpu": "4",
+          "ephemeral-storage": "41931756Ki",
+          "hugepages-1Gi": "0",
+          "hugepages-2Mi": "0",
+          "memory": "8008840Ki",
+          "pods": "110"
+        },
+        "conditions": [
+          {
+            "lastHeartbeatTime": "2020-10-26T07:23:51.000Z",
+            "lastTransitionTime": "2020-10-26T07:23:51.000Z",
+            "message": "Calico is running on this node",
+            "reason": "CalicoIsUp",
+            "status": "False",
+            "type": "NetworkUnavailable"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:50.000Z",
+            "lastTransitionTime": "2020-10-21T21:59:56.000Z",
+            "message": "kubelet is posting ready status",
+            "reason": "KubeletReady",
+            "status": "True",
+            "type": "Ready"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:50.000Z",
+            "lastTransitionTime": "2020-10-21T21:59:56.000Z",
+            "message": "kubelet has sufficient memory available",
+            "reason": "KubeletHasSufficientMemory",
+            "status": "False",
+            "type": "MemoryPressure"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:50.000Z",
+            "lastTransitionTime": "2020-10-21T21:59:56.000Z",
+            "message": "kubelet has no disk pressure",
+            "reason": "KubeletHasNoDiskPressure",
+            "status": "False",
+            "type": "DiskPressure"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:50.000Z",
+            "lastTransitionTime": "2020-10-21T21:59:56.000Z",
+            "message": "kubelet has sufficient PID available",
+            "reason": "KubeletHasSufficientPID",
+            "status": "False",
+            "type": "PIDPressure"
+          }
+        ],
+        "daemonEndpoints": {
+          "kubeletEndpoint": {
+            "Port": 10250
+          }
+        },
+        "images": [
+          {
+            "names": [
+              "docker.io/zenko/backbeat@sha256:56f2dc295ffe7d04e1ee1aacd2da5a2229d6ea7850d7608cabe163ca69939562",
+              "docker.io/zenko/backbeat:8.2.4"
+            ],
+            "sizeBytes": 298329600
+          },
+          {
+            "names": [
+              "docker.io/confluentinc/cp-kafka@sha256:c87b1c07fb53b1a82d24b436e53485917876a963dc67311800109fa12fe9a63d",
+              "docker.io/confluentinc/cp-kafka:5.0.1"
+            ],
+            "sizeBytes": 279781588
+          },
+          {
+            "names": [
+              "docker.io/zenko/s3utils@sha256:796fe66872656f3a2713d00a62d91c277261987d6f6c9a54774f6c3999c2511b",
+              "docker.io/zenko/s3utils:1.2"
+            ],
+            "sizeBytes": 279361436
+          },
+          {
+            "names": [
+              "docker.io/confluentinc/cp-kafka@sha256:e4064b902da1be8c6696cc9f76dd7adeb36fbc86d945d86c927bcb06fc0ddaca",
+              "docker.io/confluentinc/cp-kafka:4.0.1-1"
+            ],
+            "sizeBytes": 265476272
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/hyperdrive-0.2.0/hdcontroller@sha256:f6ce8b037e2f369c3371d9f75b05120b3a5b5ebd11c66ebab261c8473a01a622",
+              "metalk8s-registry-from-config.invalid/hyperdrive-0.2.0/hdcontroller:0.2.0"
+            ],
+            "sizeBytes": 137736757
+          },
+          {
+            "names": [
+              "docker.io/zenko/kafka-manager@sha256:c880055c1c05cb0822b071839fbc9b738cf6f37a11ad1057fd0bd740688c083b",
+              "docker.io/zenko/kafka-manager:1.3.3.18"
+            ],
+            "sizeBytes": 137258636
+          },
+          {
+            "names": [
+              "docker.io/library/mongo@sha256:75a36c28b6ab0ff5129fcbf79ee62a58f094722a68251067ab113d6da4fb869b",
+              "docker.io/library/mongo:3.6.8"
+            ],
+            "sizeBytes": 128049980
+          },
+          {
+            "names": [
+              "docker.io/sonobuoy/systemd-logs@sha256:fadad24a66ddd544987c38811108a73d1a306dd3b5e3f090b207786f2825ffde",
+              "docker.io/sonobuoy/systemd-logs:v0.3"
+            ],
+            "sizeBytes": 121664960
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx-ingress-controller@sha256:b312c91d0de688a21075078982b5e3a48b13b46eda4df743317d3059fc3ca0d9",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx-ingress-controller:0.30.0"
+            ],
+            "sizeBytes": 114165218
+          },
+          {
+            "names": [
+              "docker.io/zenko/cloudserver@sha256:a1055bac51598f3cda9994b99d6b34f25ddebec9d656181a562ee7f5bffdf8ba",
+              "docker.io/zenko/cloudserver:8.2.6"
+            ],
+            "sizeBytes": 108385109
+          },
+          {
+            "names": [
+              "gcr.io/google_samples/k8szk@sha256:eee48b4ab091324993baec42ee542f26836acfd24821eb3891e5a7c281b80dad",
+              "gcr.io/google_samples/k8szk:v3"
+            ],
+            "sizeBytes": 108347916
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/hyperdrive-0.2.0/hdoperator@sha256:ccb56c6924c76cc611e888d0e80fc1319d75a4700cbd29cb0dbd4811aaa8353e",
+              "metalk8s-registry-from-config.invalid/hyperdrive-0.2.0/hdoperator:0.2.0"
+            ],
+            "sizeBytes": 103046032
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node@sha256:71a68eed017c386e2b332e93d758e96c8bf1442ed921fe3ea65096b6f0d8f7b9",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node:v3.12.0"
+            ],
+            "sizeBytes": 89674949
+          },
+          {
+            "names": [
+              "docker.io/library/zookeeper@sha256:b7a76ec06f68fd9c801b72dfd283701bc7d8a8b0609277a0d570e8e6768e4ad9",
+              "docker.io/library/zookeeper:3.5.5"
+            ],
+            "sizeBytes": 86805305
+          },
+          {
+            "names": [
+              "docker.io/grafana/grafana@sha256:364bec4a39ecbec744ea4270aae35f6554eb6f2047b3ee08f7b5f1134857c32c",
+              "docker.io/grafana/grafana:5.1.3"
+            ],
+            "sizeBytes": 86479762
+          },
+          {
+            "names": [
+              "docker.io/solsson/kafka-prometheus-jmx-exporter@sha256:a23062396cd5af1acdf76512632c20ea6be76885dfc20cd9ff40fb23846557e8"
+            ],
+            "sizeBytes": 84170145
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/storage-operator@sha256:91adc277f0f8d6d06719eac007e7078f9a94c22272baf99af7a5a9befd2882a6"
+            ],
+            "sizeBytes": 75416331
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/storage-operator@sha256:cedfb9d763f3a68e357c9c7a3a452add1aa76388096e57855b45c4d1219b5aa6"
+            ],
+            "sizeBytes": 75349294
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/storage-operator@sha256:9e6f8496535371880ad675d1b5f7a95a2ebb242c7373ea1dd4500efbae18545a"
+            ],
+            "sizeBytes": 75349292
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/storage-operator@sha256:650f48aefa845040f870881f47459167ff0123a91868350adc448cb5d86e6369",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/storage-operator:latest"
+            ],
+            "sizeBytes": 75349291
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/storage-operator@sha256:34d0219d611fb3758aa6ffcba4b6b4909dfd6563f7d6d83e992f68edef20ec7a"
+            ],
+            "sizeBytes": 75349291
+          },
+          {
+            "names": [
+              "docker.io/zenko/cosmos-operator@sha256:d7d4d7ffbe17ddd78384e02505eabfbc9662c636a577cf691a34c2c913eb5bbf",
+              "docker.io/zenko/cosmos-operator:0.5.5"
+            ],
+            "sizeBytes": 60442896
+          },
+          {
+            "names": [
+              "docker.io/zenko/grafana-sidecar@sha256:de26e826f581a163f1a8e220cb66a441dd62a1286356bb85ed0d58cfa646a172",
+              "docker.io/zenko/grafana-sidecar:0.1"
+            ],
+            "sizeBytes": 58399554
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node@sha256:8f7ae199f9f00e03527c515008aa1dbc21f8a27eaefe4b00ca789f732b0f0aef",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node:v3.16.1"
+            ],
+            "sizeBytes": 57771403
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-proxy@sha256:e646bb582dee12f4c2990489e7ab56b82aa5d4237ef2e623127d6f6d5453efd7",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-proxy:v1.17.9"
+            ],
+            "sizeBytes": 49113042
+          },
+          {
+            "names": [
+              "docker.io/sscaling/jmx-prometheus-exporter@sha256:11d9ee1b1e4aec92f01e4f46f6280e8f9115facb4922c4eee7ae709db05fe501",
+              "docker.io/sscaling/jmx-prometheus-exporter:0.3.0"
+            ],
+            "sizeBytes": 48942279
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx@sha256:5b49c8e2c890fbb0a35f6050ed3c5109c5bb47b9e774264f4f3aa85bb69e2033",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx:1.15.8"
+            ],
+            "sizeBytes": 44737325
+          },
+          {
+            "names": [
+              "docker.io/library/httpd@sha256:eb8ccf084cf3e80eece1add239effefd171eb39adbc154d33c14260d905d4060",
+              "docker.io/library/httpd:2.4.38-alpine"
+            ],
+            "sizeBytes": 40765017
+          },
+          {
+            "names": [
+              "docker.io/sonobuoy/sonobuoy@sha256:2f2c5ec087f99405f125dcca8377c129fd68d6a16a9b25a37a116e63517a8439",
+              "docker.io/sonobuoy/sonobuoy:v0.19.0"
+            ],
+            "sizeBytes": 32879439
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/fluent-bit-plugin-loki@sha256:2d0e9b06a2bf894fa91300fa38a185ac44a7bedcb8a2c63b8f6077e5cf80fc4d",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/fluent-bit-plugin-loki:1.5.0-amd64"
+            ],
+            "sizeBytes": 29772538
+          },
+          {
+            "names": [
+              "docker.io/prom/prometheus@sha256:7d99455a045a6c89c0dbee6e1fe659eb83bd3a19e171606bc0fd10eb0e34a7dc",
+              "docker.io/prom/prometheus:v2.3.2"
+            ],
+            "sizeBytes": 28917744
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-kube-controllers@sha256:8dde5ff21d6422f8e8b990bea3d3e8a9ee6ba466d776fb6af776180b20b84b2c",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-kube-controllers:v3.12.0"
+            ],
+            "sizeBytes": 23123261
+          },
+          {
+            "names": [
+              "docker.io/zenko/cosmos-scheduler@sha256:d3f3ab174f10e1841d37cff0297bd493c11d1b81ca0bf276db63ead924db61cb",
+              "docker.io/zenko/cosmos-scheduler:0.5.3"
+            ],
+            "sizeBytes": 19094503
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/agnhost@sha256:daf5332100521b1256d0e3c56d697a238eaec3af48897ed9167cbadd426773b5",
+              "gcr.io/kubernetes-e2e-test-images/agnhost:2.8"
+            ],
+            "sizeBytes": 17444032
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/node-exporter@sha256:b630fb29d99b3483c73a2a7db5fc01a967392a3d7ad754c8eccf9f4a67e7ee31",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/node-exporter:v0.18.1"
+            ],
+            "sizeBytes": 11121304
+          },
+          {
+            "names": [
+              "docker.io/library/redis@sha256:50899ea1ceed33fa03232f3ac57578a424faa1742c1ac9c7a7bdb95cdf19b858",
+              "docker.io/library/redis:5.0.5-alpine"
+            ],
+            "sizeBytes": 9915362
+          },
+          {
+            "names": [
+              "docker.io/jimmidyson/configmap-reload@sha256:befec9f23d2a9da86a298d448cc9140f56a457362a7d9eecddba192db1ab489e",
+              "docker.io/jimmidyson/configmap-reload:v0.2.2"
+            ],
+            "sizeBytes": 9880745
+          },
+          {
+            "names": [
+              "docker.io/unguiculus/mongodb-install@sha256:a3a0154bf476b5a46864a09934457eeea98c4e7f240c8e71044fce91dc4dbb8b",
+              "docker.io/unguiculus/mongodb-install:0.7"
+            ],
+            "sizeBytes": 8051976
+          },
+          {
+            "names": [
+              "docker.io/ssalaues/mongodb-exporter@sha256:fdb21adfb5bd9c2443da205803669c178cbf7accf2cb2442ed5dd4d0ca4c73ad",
+              "docker.io/ssalaues/mongodb-exporter:0.6.1"
+            ],
+            "sizeBytes": 5916146
+          },
+          {
+            "names": [
+              "docker.io/danielqsj/kafka-exporter@sha256:b493282e42cd2b11256b4f33fc9cecf9776f9963f58bf4d82fc267ca7e2b65dd",
+              "docker.io/danielqsj/kafka-exporter:v1.2.0"
+            ],
+            "sizeBytes": 5190959
+          },
+          {
+            "names": [
+              "docker.io/library/busybox@sha256:4f47c01fa91355af2865ac10fef5bf6ec9c7f42ad2321377c21e844427972977",
+              "docker.io/library/busybox:latest"
+            ],
+            "sizeBytes": 767890
+          },
+          {
+            "names": [
+              "k8s.gcr.io/pause:3.1"
+            ],
+            "sizeBytes": 746400
+          },
+          {
+            "names": [
+              "docker.io/library/busybox@sha256:8ccbac733d19c0dd4d70b4f0c1e12245b5fa3ad24758a11035ee505c629c0796",
+              "docker.io/library/busybox:1.29.3"
+            ],
+            "sizeBytes": 732685
+          }
+        ],
+        "nodeInfo": {
+          "architecture": "amd64",
+          "bootID": "918af8c4-7173-4936-bf10-f4f20dd410d8",
+          "containerRuntimeVersion": "containerd://1.2.13",
+          "kernelVersion": "3.10.0-957.27.2.el7.x86_64",
+          "kubeProxyVersion": "v1.17.9",
+          "kubeletVersion": "v1.17.9",
+          "machineID": "65113b1a0d2f6087d515e6a8cd0ee7ef",
+          "operatingSystem": "linux",
+          "osImage": "CentOS Linux 7 (Core)",
+          "systemUUID": "611EC045-BA8C-4376-AD98-2589042B6E1B"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Node\",\"metadata\":{\"annotations\":{\"metalk8s.scality.com/ssh-host\":\"192.168.1.9\",\"metalk8s.scality.com/ssh-key-path\":\"/etc/metalk8s/pki/salt-bootstrap\",\"metalk8s.scality.com/ssh-port\":\"22\",\"metalk8s.scality.com/ssh-sudo\":\"true\",\"metalk8s.scality.com/ssh-user\":\"centos\"},\"labels\":{\"metalk8s.scality.com/version\":\"2.6.0-dev\",\"node-role.kubernetes.io/node\":\"\"},\"name\":\"worker-2\"}}\n",
+          "metalk8s.scality.com/ssh-host": "192.168.1.9",
+          "metalk8s.scality.com/ssh-key-path": "/etc/metalk8s/pki/salt-bootstrap",
+          "metalk8s.scality.com/ssh-port": "22",
+          "metalk8s.scality.com/ssh-sudo": "true",
+          "metalk8s.scality.com/ssh-user": "centos",
+          "node.alpha.kubernetes.io/ttl": "0",
+          "projectcalico.org/IPv4Address": "192.168.2.11/24",
+          "projectcalico.org/IPv4IPIPTunnelAddr": "10.233.133.192",
+          "volumes.kubernetes.io/controller-managed-attach-detach": "true"
+        },
+        "creationTimestamp": "2020-08-06T15:00:42.000Z",
+        "labels": {
+          "beta.kubernetes.io/arch": "amd64",
+          "beta.kubernetes.io/os": "linux",
+          "kubernetes.io/arch": "amd64",
+          "kubernetes.io/hostname": "worker-2",
+          "kubernetes.io/os": "linux",
+          "metalk8s.scality.com/version": "2.6.0-dev",
+          "node-role.kubernetes.io/node": ""
+        },
+        "name": "worker-2",
+        "resourceVersion": "20157364",
+        "selfLink": "/api/v1/nodes/worker-2",
+        "uid": "80a066cb-9377-4394-a84f-ae0e70cf103f"
+      },
+      "spec": {
+        "podCIDR": "10.233.5.0/24"
+      },
+      "status": {
+        "addresses": [
+          {
+            "address": "192.168.1.9",
+            "type": "InternalIP"
+          },
+          {
+            "address": "worker-2",
+            "type": "Hostname"
+          }
+        ],
+        "allocatable": {
+          "cpu": "4",
+          "ephemeral-storage": "38644306266",
+          "hugepages-1Gi": "0",
+          "hugepages-2Mi": "0",
+          "memory": "7906440Ki",
+          "pods": "110"
+        },
+        "capacity": {
+          "cpu": "4",
+          "ephemeral-storage": "41931756Ki",
+          "hugepages-1Gi": "0",
+          "hugepages-2Mi": "0",
+          "memory": "8008840Ki",
+          "pods": "110"
+        },
+        "conditions": [
+          {
+            "lastHeartbeatTime": "2020-10-26T07:24:30.000Z",
+            "lastTransitionTime": "2020-10-26T07:24:30.000Z",
+            "message": "Calico is running on this node",
+            "reason": "CalicoIsUp",
+            "status": "False",
+            "type": "NetworkUnavailable"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:14.000Z",
+            "lastTransitionTime": "2020-10-26T07:24:07.000Z",
+            "message": "kubelet is posting ready status",
+            "reason": "KubeletReady",
+            "status": "True",
+            "type": "Ready"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:14.000Z",
+            "lastTransitionTime": "2020-10-13T16:00:33.000Z",
+            "message": "kubelet has sufficient memory available",
+            "reason": "KubeletHasSufficientMemory",
+            "status": "False",
+            "type": "MemoryPressure"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:14.000Z",
+            "lastTransitionTime": "2020-10-13T16:00:34.000Z",
+            "message": "kubelet has no disk pressure",
+            "reason": "KubeletHasNoDiskPressure",
+            "status": "False",
+            "type": "DiskPressure"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-26T09:27:14.000Z",
+            "lastTransitionTime": "2020-10-13T16:00:46.000Z",
+            "message": "kubelet has sufficient PID available",
+            "reason": "KubeletHasSufficientPID",
+            "status": "False",
+            "type": "PIDPressure"
+          }
+        ],
+        "daemonEndpoints": {
+          "kubeletEndpoint": {
+            "Port": 10250
+          }
+        },
+        "images": [
+          {
+            "names": [
+              "docker.io/zenko/backbeat@sha256:56f2dc295ffe7d04e1ee1aacd2da5a2229d6ea7850d7608cabe163ca69939562",
+              "docker.io/zenko/backbeat:8.2.4"
+            ],
+            "sizeBytes": 298329600
+          },
+          {
+            "names": [
+              "docker.io/zenko/s3utils@sha256:796fe66872656f3a2713d00a62d91c277261987d6f6c9a54774f6c3999c2511b",
+              "docker.io/zenko/s3utils:1.2"
+            ],
+            "sizeBytes": 279361436
+          },
+          {
+            "names": [
+              "docker.io/confluentinc/cp-kafka@sha256:e4064b902da1be8c6696cc9f76dd7adeb36fbc86d945d86c927bcb06fc0ddaca",
+              "docker.io/confluentinc/cp-kafka:4.0.1-1"
+            ],
+            "sizeBytes": 265476272
+          },
+          {
+            "names": [
+              "k8s.gcr.io/conformance@sha256:26b7c5f2096c1a66562518c4f5ccfce4b78c05e4b4758f417c1dbf8fc13add18",
+              "k8s.gcr.io/conformance:v1.17.9"
+            ],
+            "sizeBytes": 191471098
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/hyperdrive-0.2.0/hdcontroller@sha256:f6ce8b037e2f369c3371d9f75b05120b3a5b5ebd11c66ebab261c8473a01a622",
+              "metalk8s-registry-from-config.invalid/hyperdrive-0.2.0/hdcontroller:0.2.0"
+            ],
+            "sizeBytes": 137736757
+          },
+          {
+            "names": [
+              "docker.io/zenko/kafka-manager@sha256:c880055c1c05cb0822b071839fbc9b738cf6f37a11ad1057fd0bd740688c083b",
+              "docker.io/zenko/kafka-manager:1.3.3.18"
+            ],
+            "sizeBytes": 137258636
+          },
+          {
+            "names": [
+              "docker.io/library/mongo@sha256:75a36c28b6ab0ff5129fcbf79ee62a58f094722a68251067ab113d6da4fb869b",
+              "docker.io/library/mongo:3.6.8"
+            ],
+            "sizeBytes": 128049980
+          },
+          {
+            "names": [
+              "docker.io/sonobuoy/systemd-logs@sha256:fadad24a66ddd544987c38811108a73d1a306dd3b5e3f090b207786f2825ffde",
+              "docker.io/sonobuoy/systemd-logs:v0.3"
+            ],
+            "sizeBytes": 121664960
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx-ingress-controller@sha256:b312c91d0de688a21075078982b5e3a48b13b46eda4df743317d3059fc3ca0d9",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx-ingress-controller:0.30.0"
+            ],
+            "sizeBytes": 114165218
+          },
+          {
+            "names": [
+              "docker.io/zenko/cloudserver@sha256:a1055bac51598f3cda9994b99d6b34f25ddebec9d656181a562ee7f5bffdf8ba",
+              "docker.io/zenko/cloudserver:8.2.6"
+            ],
+            "sizeBytes": 108385109
+          },
+          {
+            "names": [
+              "gcr.io/google_samples/k8szk@sha256:eee48b4ab091324993baec42ee542f26836acfd24821eb3891e5a7c281b80dad",
+              "gcr.io/google_samples/k8szk:v3"
+            ],
+            "sizeBytes": 108347916
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node@sha256:71a68eed017c386e2b332e93d758e96c8bf1442ed921fe3ea65096b6f0d8f7b9",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node:v3.12.0"
+            ],
+            "sizeBytes": 89674949
+          },
+          {
+            "names": [
+              "docker.io/library/zookeeper@sha256:b7a76ec06f68fd9c801b72dfd283701bc7d8a8b0609277a0d570e8e6768e4ad9",
+              "docker.io/library/zookeeper:3.5.5"
+            ],
+            "sizeBytes": 86805305
+          },
+          {
+            "names": [
+              "docker.io/grafana/grafana@sha256:364bec4a39ecbec744ea4270aae35f6554eb6f2047b3ee08f7b5f1134857c32c",
+              "docker.io/grafana/grafana:5.1.3"
+            ],
+            "sizeBytes": 86479762
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/jessie-dnsutils@sha256:ad583e33cb284f7ef046673809b146ec4053cda19b54a85d2b180a86169715eb",
+              "gcr.io/kubernetes-e2e-test-images/jessie-dnsutils:1.0"
+            ],
+            "sizeBytes": 85425365
+          },
+          {
+            "names": [
+              "docker.io/solsson/kafka-prometheus-jmx-exporter@sha256:a23062396cd5af1acdf76512632c20ea6be76885dfc20cd9ff40fb23846557e8"
+            ],
+            "sizeBytes": 84170145
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/storage-operator@sha256:91adc277f0f8d6d06719eac007e7078f9a94c22272baf99af7a5a9befd2882a6",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/storage-operator:latest"
+            ],
+            "sizeBytes": 75416331
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/storage-operator@sha256:6eb6320a879a633aeaa2debc61db9bc2608de31fab3ae8d65d9fdbf9a9048afc"
+            ],
+            "sizeBytes": 75416327
+          },
+          {
+            "names": [
+              "docker.io/zenko/cosmos-operator@sha256:d7d4d7ffbe17ddd78384e02505eabfbc9662c636a577cf691a34c2c913eb5bbf",
+              "docker.io/zenko/cosmos-operator:0.5.5"
+            ],
+            "sizeBytes": 60442896
+          },
+          {
+            "names": [
+              "docker.io/zenko/grafana-sidecar@sha256:de26e826f581a163f1a8e220cb66a441dd62a1286356bb85ed0d58cfa646a172",
+              "docker.io/zenko/grafana-sidecar:0.1"
+            ],
+            "sizeBytes": 58399554
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node@sha256:8f7ae199f9f00e03527c515008aa1dbc21f8a27eaefe4b00ca789f732b0f0aef",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-node:v3.16.1"
+            ],
+            "sizeBytes": 57771403
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-proxy@sha256:e646bb582dee12f4c2990489e7ab56b82aa5d4237ef2e623127d6f6d5453efd7",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/kube-proxy:v1.17.9"
+            ],
+            "sizeBytes": 49113042
+          },
+          {
+            "names": [
+              "docker.io/sscaling/jmx-prometheus-exporter@sha256:11d9ee1b1e4aec92f01e4f46f6280e8f9115facb4922c4eee7ae709db05fe501",
+              "docker.io/sscaling/jmx-prometheus-exporter:0.3.0"
+            ],
+            "sizeBytes": 48942279
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx@sha256:5b49c8e2c890fbb0a35f6050ed3c5109c5bb47b9e774264f4f3aa85bb69e2033",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/nginx:1.15.8"
+            ],
+            "sizeBytes": 44737325
+          },
+          {
+            "names": [
+              "docker.io/library/httpd@sha256:addd70e4ee83f3bc9a4c1c7c41e37927ba47faf639312fc936df3afad7926f5a",
+              "docker.io/library/httpd:2.4.39-alpine"
+            ],
+            "sizeBytes": 41901429
+          },
+          {
+            "names": [
+              "docker.io/library/httpd@sha256:eb8ccf084cf3e80eece1add239effefd171eb39adbc154d33c14260d905d4060",
+              "docker.io/library/httpd:2.4.38-alpine"
+            ],
+            "sizeBytes": 40765017
+          },
+          {
+            "names": [
+              "docker.io/sonobuoy/sonobuoy@sha256:2f2c5ec087f99405f125dcca8377c129fd68d6a16a9b25a37a116e63517a8439",
+              "docker.io/sonobuoy/sonobuoy:v0.19.0"
+            ],
+            "sizeBytes": 32879439
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/fluent-bit-plugin-loki@sha256:2d0e9b06a2bf894fa91300fa38a185ac44a7bedcb8a2c63b8f6077e5cf80fc4d",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/fluent-bit-plugin-loki:1.5.0-amd64"
+            ],
+            "sizeBytes": 29772538
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-kube-controllers@sha256:8dde5ff21d6422f8e8b990bea3d3e8a9ee6ba466d776fb6af776180b20b84b2c",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/calico-kube-controllers:v3.12.0"
+            ],
+            "sizeBytes": 23123261
+          },
+          {
+            "names": [
+              "docker.io/zenko/cosmos-scheduler@sha256:d3f3ab174f10e1841d37cff0297bd493c11d1b81ca0bf276db63ead924db61cb",
+              "docker.io/zenko/cosmos-scheduler:0.5.3"
+            ],
+            "sizeBytes": 19094503
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/agnhost@sha256:daf5332100521b1256d0e3c56d697a238eaec3af48897ed9167cbadd426773b5",
+              "gcr.io/kubernetes-e2e-test-images/agnhost:2.8"
+            ],
+            "sizeBytes": 17444032
+          },
+          {
+            "names": [
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/node-exporter@sha256:b630fb29d99b3483c73a2a7db5fc01a967392a3d7ad754c8eccf9f4a67e7ee31",
+              "metalk8s-registry-from-config.invalid/metalk8s-2.6.0-dev/node-exporter:v0.18.1"
+            ],
+            "sizeBytes": 11121304
+          },
+          {
+            "names": [
+              "docker.io/library/redis@sha256:50899ea1ceed33fa03232f3ac57578a424faa1742c1ac9c7a7bdb95cdf19b858",
+              "docker.io/library/redis:5.0.5-alpine"
+            ],
+            "sizeBytes": 9915362
+          },
+          {
+            "names": [
+              "docker.io/unguiculus/mongodb-install@sha256:a3a0154bf476b5a46864a09934457eeea98c4e7f240c8e71044fce91dc4dbb8b",
+              "docker.io/unguiculus/mongodb-install:0.7"
+            ],
+            "sizeBytes": 8051976
+          },
+          {
+            "names": [
+              "docker.io/library/nginx@sha256:485b610fefec7ff6c463ced9623314a04ed67e3945b9c08d7e53a47f6d108dc7",
+              "docker.io/library/nginx:1.14-alpine"
+            ],
+            "sizeBytes": 6978806
+          },
+          {
+            "names": [
+              "docker.io/ssalaues/mongodb-exporter@sha256:fdb21adfb5bd9c2443da205803669c178cbf7accf2cb2442ed5dd4d0ca4c73ad",
+              "docker.io/ssalaues/mongodb-exporter:0.6.1"
+            ],
+            "sizeBytes": 5916146
+          },
+          {
+            "names": [
+              "docker.io/danielqsj/kafka-exporter@sha256:b493282e42cd2b11256b4f33fc9cecf9776f9963f58bf4d82fc267ca7e2b65dd",
+              "docker.io/danielqsj/kafka-exporter:v1.2.0"
+            ],
+            "sizeBytes": 5190959
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/dnsutils@sha256:2abeee84efb79c14d731966e034af33bf324d3b26ca28497555511ff094b3ddd",
+              "gcr.io/kubernetes-e2e-test-images/dnsutils:1.1"
+            ],
+            "sizeBytes": 4331310
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/nautilus@sha256:33a732d4c42a266912a5091598a0f07653c9134db4b8d571690d8afd509e0bfc",
+              "gcr.io/kubernetes-e2e-test-images/nautilus:1.0"
+            ],
+            "sizeBytes": 1804628
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/kitten@sha256:bcbc4875c982ab39aa7c4f6acf4a287f604e996d9f34a3fbda8c3d1a7457d1f6",
+              "gcr.io/kubernetes-e2e-test-images/kitten:1.0"
+            ],
+            "sizeBytes": 1799936
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/test-webserver@sha256:7f93d6e32798ff28bc6289254d0c2867fe2c849c8e46edc50f8624734309812e",
+              "gcr.io/kubernetes-e2e-test-images/test-webserver:1.0"
+            ],
+            "sizeBytes": 1791163
+          },
+          {
+            "names": [
+              "k8s.gcr.io/pause:3.1"
+            ],
+            "sizeBytes": 746400
+          },
+          {
+            "names": [
+              "docker.io/library/busybox@sha256:8ccbac733d19c0dd4d70b4f0c1e12245b5fa3ad24758a11035ee505c629c0796",
+              "docker.io/library/busybox:1.29",
+              "docker.io/library/busybox:1.29.3"
+            ],
+            "sizeBytes": 732685
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/mounttest@sha256:c0bd6f0755f42af09a68c9a47fb993136588a76b3200ec305796b60d629d85d2",
+              "gcr.io/kubernetes-e2e-test-images/mounttest:1.0"
+            ],
+            "sizeBytes": 599341
+          },
+          {
+            "names": [
+              "gcr.io/kubernetes-e2e-test-images/mounttest-user@sha256:17319ca525ee003681fccf7e8c6b1b910ff4f49b653d939ac7f9b6e7c463933d",
+              "gcr.io/kubernetes-e2e-test-images/mounttest-user:1.0"
+            ],
+            "sizeBytes": 539309
+          }
+        ],
+        "nodeInfo": {
+          "architecture": "amd64",
+          "bootID": "cd535830-50ff-414f-850d-8b4a4c07f304",
+          "containerRuntimeVersion": "containerd://1.2.13",
+          "kernelVersion": "3.10.0-957.27.2.el7.x86_64",
+          "kubeProxyVersion": "v1.17.9",
+          "kubeletVersion": "v1.17.9",
+          "machineID": "65113b1a0d2f6087d515e6a8cd0ee7ef",
+          "operatingSystem": "linux",
+          "osImage": "CentOS Linux 7 (Core)",
+          "systemUUID": "84895260-8BAC-4334-8BF1-A143D8A77437"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "metalk8s.scality.com/ssh-host": "11.11.11.11",
+          "metalk8s.scality.com/ssh-key-path": "/etc/metalk8s/pki/salt-bootstrap",
+          "metalk8s.scality.com/ssh-port": "22",
+          "metalk8s.scality.com/ssh-sudo": "false",
+          "metalk8s.scality.com/ssh-user": "cenntos",
+          "node.alpha.kubernetes.io/ttl": "0"
+        },
+        "creationTimestamp": "2020-10-20T08:24:29.000Z",
+        "labels": {
+          "metalk8s.scality.com/version": "2.6.0-dev",
+          "node-role.kubernetes.io/etcd": "",
+          "node-role.kubernetes.io/infra": "",
+          "node-role.kubernetes.io/master": ""
+        },
+        "name": "yanjin-test",
+        "resourceVersion": "20123936",
+        "selfLink": "/api/v1/nodes/yanjin-test",
+        "uid": "c27b42b0-cd4c-459b-b31e-dc99d05be722"
+      },
+      "spec": {
+        "podCIDR": "10.233.6.0/24",
+        "taints": [
+          {
+            "effect": "NoSchedule",
+            "key": "node.kubernetes.io/unreachable",
+            "timeAdded": "2020-10-20T08:25:31.000Z"
+          },
+          {
+            "effect": "NoSchedule",
+            "key": "node.kubernetes.io/unschedulable",
+            "timeAdded": "2020-10-20T08:25:58.000Z"
+          },
+          {
+            "effect": "NoExecute",
+            "key": "node.kubernetes.io/unreachable",
+            "timeAdded": "2020-10-26T07:24:18.000Z"
+          }
+        ],
+        "unschedulable": true
+      },
+      "status": {
+        "conditions": [
+          {
+            "lastHeartbeatTime": "2020-10-20T08:24:29.000Z",
+            "lastTransitionTime": "2020-10-20T08:25:31.000Z",
+            "message": "Kubelet never posted node status.",
+            "reason": "NodeStatusNeverUpdated",
+            "status": "Unknown",
+            "type": "Ready"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-20T08:24:29.000Z",
+            "lastTransitionTime": "2020-10-20T08:25:31.000Z",
+            "message": "Kubelet never posted node status.",
+            "reason": "NodeStatusNeverUpdated",
+            "status": "Unknown",
+            "type": "MemoryPressure"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-20T08:24:29.000Z",
+            "lastTransitionTime": "2020-10-20T08:25:31.000Z",
+            "message": "Kubelet never posted node status.",
+            "reason": "NodeStatusNeverUpdated",
+            "status": "Unknown",
+            "type": "DiskPressure"
+          },
+          {
+            "lastHeartbeatTime": "2020-10-20T08:24:29.000Z",
+            "lastTransitionTime": "2020-10-20T08:25:31.000Z",
+            "message": "Kubelet never posted node status.",
+            "reason": "NodeStatusNeverUpdated",
+            "status": "Unknown",
+            "type": "PIDPressure"
+          }
+        ],
+        "daemonEndpoints": {
+          "kubeletEndpoint": {
+            "Port": 0
+          }
+        },
+        "nodeInfo": {
+          "architecture": "",
+          "bootID": "",
+          "containerRuntimeVersion": "",
+          "kernelVersion": "",
+          "kubeProxyVersion": "",
+          "kubeletVersion": "",
+          "machineID": "",
+          "operatingSystem": "",
+          "osImage": "",
+          "systemUUID": ""
+        }
+      }
+    }
+  ],
+  "kind": "NodeList",
+  "metadata": {
+    "resourceVersion": "20157593",
+    "selfLink": "/api/v1/nodes"
+  }
+}
