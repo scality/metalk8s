@@ -93,7 +93,12 @@ const ActiveAlertsFilter = (props) => {
 
   return (
     <ActiveAlertsFilterWrapper>
-      <Dropdown items={items} text={dropDownLabel} size="small" />
+      <Dropdown
+        items={items}
+        text={dropDownLabel}
+        size="small"
+        data-cy="alert_filter_node"
+      />
     </ActiveAlertsFilterWrapper>
   );
 };
