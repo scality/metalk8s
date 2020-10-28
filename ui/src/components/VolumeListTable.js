@@ -218,7 +218,7 @@ function Table({
   const sortTypes = React.useMemo(() => {
     return {
       health: (row1, row2) =>
-        compareHealth(row1?.values?.health, row2?.values?.health),
+        compareHealth(row2?.values?.health, row1?.values?.health),
       size: (row1, row2) => {
         const size1 = row1?.values?.storageCapacity;
         const size2 = row2?.values?.storageCapacity;
@@ -269,6 +269,7 @@ function Table({
   const queryDesc = query.get('desc');
   useEffect(() => {
     if (querySort) toggleSortBy(querySort, queryDesc || false, false);
+    else toggleSortBy('health', false, false);
   }, [querySort, queryDesc, toggleSortBy]);
 
   // Synchronizes the params query with the Table sort state
@@ -281,17 +282,17 @@ function Table({
     const query = new URLSearchParams(window.location.search);
     const querySort = query.get('sort');
     const queryDesc = query.get('desc');
-    if (sorted !== querySort || desc !== queryDesc) {
+    if (data.length && (sorted !== querySort || desc !== queryDesc)) {
       if (sorted) {
         sorted ? query.set('sort', sorted) : query.delete('sort');
         desc ? query.set('desc', desc) : query.delete('desc');
-      } else {
+      } else if (!sorted && querySort) {
         query.delete('sort');
         query.delete('desc');
       }
       history.push(`?${query.toString()}`);
     }
-  }, [sorted, desc, history]);
+  }, [sorted, desc, history, data.length]);
 
   return (
     <>
