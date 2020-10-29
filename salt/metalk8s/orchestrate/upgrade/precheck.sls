@@ -52,4 +52,27 @@ Unable to compare version for node {{ node }}, version_cmp {{ dest_version }} {{
 
   {%- endif %}
 
+  {#- Check Kubernetes node object status (should be Ready) #}
+  {%- set node_obj = salt.metalk8s_kubernetes.get_object(kind='Node', apiVersion='v1', name=node) %}
+  {%- set condition = node_obj['status']['conditions'] | selectattr('type', 'equalto', 'Ready') | first %} 
+
+  {%- if condition['status'] != 'True' %}
+
+Node {{ node }} is not Ready - {{ condition['reason'] }}:
+  test.fail_without_changes
+
+  {%- else %}
+
+Node {{ node }} is Ready:
+  test.succeed_without_changes
+
+  {%- endif %}
+
+  {#- Check Salt communication with this Node #}
+Ensure {{ node }} salt-minion running and reachable:
+  salt.function:
+    - name: test.ping
+    - tgt: {{ node }}
+    - timeout: 10
+
 {%- endfor %}
