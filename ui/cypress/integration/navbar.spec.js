@@ -22,7 +22,7 @@ Object.keys(translations).map((lang) => {
       cy.window()
         .its('localStorage')
         .then((store) => store.setItem('language', lang));
-      cy.visit(Cypress.env('target_url'));
+      cy.visit('/');
     });
 
     it('displays the product name', () => {
@@ -79,7 +79,7 @@ Object.keys(translations).map((lang) => {
 
 describe('Navigation bar (common)', () => {
   beforeEach(() => {
-    cy.visit(Cypress.env('target_url'));
+    cy.visit('/');
   });
 
   it('shows my username', () => {
