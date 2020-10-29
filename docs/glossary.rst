@@ -117,6 +117,14 @@ Glossary
      |see K8s docs|
      `Nodes management <https://kubernetes.io/docs/concepts/architecture/nodes/#management>`_.
 
+   Operator
+     A Kubernetes operator is an application-specific controller that extends
+     the functionality of the Kubernetes API to create, configure, and manage
+     instances of complex applications.
+
+     |see K8s docs|
+     `Operator <https://kubernetes.io/docs/concepts/extend-kubernetes/operator/>`_.
+
    Pod
      A Pod is a group of one or more containers sharing storage and network
      resources, with a specification of how to run these containers.
