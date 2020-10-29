@@ -8,7 +8,7 @@ describe('Sidebar', () => {
     cy.window()
       .its('localStorage')
       .then((store) => store.setItem('sidebar_expanded', true));
-    cy.visit(Cypress.env('target_url'));
+    cy.visit('/');
   });
 
   // TODO: Remove the interaction from the E2E test as much as possible
