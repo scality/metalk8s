@@ -7,6 +7,7 @@ including all the components that are included in the stack.
 
 Supported Versions
 ******************
+
 .. note::
 
     MetalK8 supports downgrade of **at most** one minor version at a time.
@@ -18,6 +19,12 @@ Supported Versions
     Please refer to the
     `release notes <https://github.com/scality/metalk8s/releases>`_ for more
     information.
+
+.. only:: downgrade_not_supported
+
+   .. warning::
+
+      Version |release| only supports downgrade of patch version.
 
 Downgrade Pre-requisites
 ************************
