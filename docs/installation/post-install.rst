@@ -152,7 +152,7 @@ applications, perform the following sanity checks:
 #. Check that :term:`Pods <Pod>` are in their expected state (most of the time,
    **Running**, except for Prometheus and AlertManager if the required storage
    was not provisioned yet - see :ref:`the procedure above <Provision
-   Prometheus Storage>`).
+   Storage for Services>`).
 
    To look for all Pods at once, use the
    ``--all-namespaces`` flag. On the other hand, use the ``-n`` or
