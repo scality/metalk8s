@@ -130,7 +130,6 @@ const SortCaretWrapper = styled.span`
 `;
 
 const SortIncentive = styled.span`
-  padding-left: ${padding.smaller};
   position: absolute;
   display: none;
 `;
