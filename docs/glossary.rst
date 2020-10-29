@@ -58,6 +58,12 @@ Glossary
 
      For more information, see `etcd.io <https://etcd.io>`_.
 
+   Environment
+     An Environment is a namespace or group of namespaces with specific labels
+     containing one or more Solutions.
+     It allows to run multiple instances of a Solution on the same cluster,
+     without collision between them.
+
    Grafana
      Grafana is a service for analysing and visualizing metrics scraped by
      Prometheus.
