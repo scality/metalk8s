@@ -206,6 +206,8 @@ function Table({
   const history = useHistory();
   const query = useQuery();
   const querySearch = query.get('search');
+  const querySort = query.get('sort');
+  const queryDesc = query.get('desc');
 
   // Use the state and functions returned from useTable to build your UI
   const defaultColumn = React.useMemo(
@@ -248,13 +250,20 @@ function Table({
     // visibleColumns,
     preGlobalFilteredRows,
     setGlobalFilter,
-    toggleSortBy,
   } = useTable(
     {
       columns,
       data,
       defaultColumn,
-      initialState: { globalFilter: querySearch },
+      initialState: {
+        globalFilter: querySearch,
+        sortBy: [
+          {
+            id: querySort || 'health',
+            desc: queryDesc || false,
+          },
+        ],
+      },
       disableMultiSort: true,
       autoResetSortBy: false,
       sortTypes,
@@ -263,14 +272,6 @@ function Table({
     useGlobalFilter,
     useSortBy,
   );
-
-  // Triggers a sort when a param query is set
-  const querySort = query.get('sort');
-  const queryDesc = query.get('desc');
-  useEffect(() => {
-    if (querySort) toggleSortBy(querySort, queryDesc || false, false);
-    else toggleSortBy('health', false, false);
-  }, [querySort, queryDesc, toggleSortBy]);
 
   // Synchronizes the params query with the Table sort state
   const sorted = headerGroups[0].headers.find((item) => item.isSorted === true)
