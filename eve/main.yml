@@ -1531,6 +1531,7 @@ stages:
           doStepIf: "%(prop:minor_present)s"
           stage_names:
             - snapshot-single-node-upgrades
+            - snapshot-multi-node-upgrades
             - single-node-downgrade-promoted-centos
 
   snapshot-single-node-upgrades:
@@ -1548,6 +1549,22 @@ stages:
           stage_names:
             - snapshot-simple-environment-upgrade
 
+  snapshot-multi-node-upgrades:
+    # NOTE: This stage just set `environment_type` property to
+    # `multi node` and trigger all upgrade multi nodes stages
+    worker:
+      type: local
+    steps:
+      - SetProperty:
+          name: Set environment type to multi node
+          property: environment_type
+          value: multi node
+      - TriggerStages:
+          name: Trigger multi-node upgrade stages
+          stage_names:
+            - snapshot-3-nodes-upgrade
+
+
   snapshot-simple-environment-upgrade:
     # NOTE: This stage just set `environment_name` property to
     # `simple environment` and trigger the real upgrade tests
@@ -1560,6 +1577,25 @@ stages:
           value: simple environment
       - TriggerStages:
           name: Trigger simple environment upgrade stage
+          stage_names:
+            - snapshot-upgrade
+
+  snapshot-3-nodes-upgrade:
+    # NOTE: This stage just set `environment_name` property to
+    # `simple environment` and trigger the real upgrade tests
+    worker:
+      type: local
+    steps:
+      - SetProperty:
+          name: Set nodes count to 2 (bootstrap + 2 nodes)
+          property: nodes_count
+          value: "2"
+      - SetProperty:
+          name: Set environment name to 3 nodes
+          property: environment_name
+          value: "3 nodes"
+      - TriggerStages:
+          name: Trigger 3 node upgrade stage
           stage_names:
             - snapshot-upgrade
 
@@ -1615,7 +1651,26 @@ stages:
             TF_VAR_rhsm_username: "%(secret:rhel_ci_login)s"
             TF_VAR_rhsm_password: "%(secret:rhel_ci_password)s"
       # --- Wait for all pods to be running ---
-      - ShellCommand: *wait_pods_running_ssh
+      - ShellCommand:
+          <<: *wait_pods_running_ssh
+          # NOTE: Do not use `wait_pods_running_ssh` directly as we need to
+          # have a workaround to make sure all PVs are well recreated by
+          # storage operator
+          # Check https://github.com/scality/metalk8s/issues/2726
+          # As workaround if `wait_pods_status` failed just restart salt-minion
+          # everywhere and `wait_pods_status` again
+          command: >
+            git checkout "%(prop:branch)s" &&
+            scp -F ssh_config "%(prop:builddir)s/build/eve/wait_pods_status.sh" bootstrap:/tmp/ &&
+            ssh -F ssh_config bootstrap sudo bash -c "
+            /tmp/wait_pods_status.sh --sleep-time 5 --stabilization-time 30 --status Running
+            --retry 30 || (crictl exec -it
+            \$(sudo crictl ps -q --label io.kubernetes.pod.namespace=kube-system
+            --label io.kubernetes.container.name=salt-master --state Running)
+            salt '*' cmd.run_bg 'salt-call --local service.restart salt-minion' &&
+            sleep 10 &&
+            /tmp/wait_pods_status.sh --sleep-time 5 --stabilization-time 30 --status Running
+            --retry 30)"
       # --- We do not need to Test promoted version ---
       # --- Upgrade to version N ---
       - ShellCommand: *copy_iso_bootstrap_ssh
