@@ -217,7 +217,7 @@ export const getVolumeListData = createSelector(
         // compute the volume health based on the severity of the alerts
         // critical => if there is at least one critical
         if (volumeAlerts.length) {
-          volumeHealth = volumeAlerts.find(
+          volumeHealth = volumeAlerts.some(
             (vol) => vol.labels.severity === STATUS_CRITICAL,
           )
             ? STATUS_CRITICAL
