@@ -29,6 +29,7 @@ Cypress.Commands.add('setupMocks', () => {
   cy.server();
 
   cy.route('/config.json', 'fixture:config.json');
+  cy.route('/brand/theme.json', 'fixture:theme.json');
   cy.route(
     '/oidc/.well-known/openid-configuration',
     'fixture:openid-config.json',
@@ -45,6 +46,15 @@ Cypress.Commands.add('setupMocks', () => {
   cy.route(
     '/api/kubernetes/api/v1/namespaces?includeUninitialized=&pretty=&continue=&fieldSelector=metadata.name=kube-system',
     'fixture:kubernetes/namespace-kube-system.json',
+  );
+  cy.route('api/kubernetes/api/v1/nodes', 'fixture:kubernetes/nodes.json');
+  cy.route(
+    '/api/kubernetes/apis/storage.metalk8s.scality.com/v1alpha1/volumes',
+    'fixture:kubernetes/volumes.json',
+  );
+  cy.route(
+    'api/prometheus/api/v1/query?query=node_uname_info',
+    'fixture:prometheus/node-uname-info.json',
   );
 });
 
