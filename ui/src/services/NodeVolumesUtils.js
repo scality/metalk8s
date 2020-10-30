@@ -4,6 +4,7 @@ import {
   getVolumes,
   computeVolumeCondition,
   bytesToSize,
+  compareHealth,
 } from './utils.js';
 import {
   STATUS_UNKNOWN,
@@ -264,7 +265,7 @@ export const getVolumeListData = createSelector(
         latency:
           // for latency we need to query the volumeLatecyCurrent based on both `instance` and `deviceName`
           volumeCurrentLatency
-            ? Math.round(volumeCurrentLatency?.value[1]) + ' µs'
+            ? Math.round(volumeCurrentLatency?.value[1])
             : undefined,
         errorReason: volume?.status?.conditions[0]?.reason,
       };
@@ -272,14 +273,6 @@ export const getVolumeListData = createSelector(
 
     // Initial data sorting
     // Following sorts should be handled by react-table directly in the component
-    return nodeVolumes.sort((a, b) => {
-      const weights = {};
-      weights[STATUS_CRITICAL] = 3;
-      weights[STATUS_WARNING] = 2;
-      weights[STATUS_NONE] = 1;
-      weights[STATUS_HEALTH] = 0;
-
-      return weights[b.health] - weights[a.health];
-    })
+    return nodeVolumes.sort((a, b) => compareHealth(b.health, a.health));
   },
 );

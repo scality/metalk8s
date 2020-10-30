@@ -11,6 +11,10 @@ import {
   VOLUME_CONDITION_EXCLAMATION,
   VOLUME_CONDITION_UNLINK,
   VOLUME_CONDITION_LINK,
+  STATUS_CRITICAL,
+  STATUS_WARNING,
+  STATUS_NONE,
+  STATUS_HEALTH,
 } from '../constants';
 
 export function prettifyBytes(bytes, decimals) {
@@ -354,4 +358,15 @@ export const fromMilliSectoAge = (milliSecTime) => {
     }
     return age.slice(0, 2).join('');
   }
+};
+
+// Status comparison logic used to sort Items based on health (critical first)
+export const compareHealth = (status1, status2) => {
+  const weights = {};
+  weights[STATUS_CRITICAL] = 3;
+  weights[STATUS_WARNING] = 2;
+  weights[STATUS_NONE] = 1;
+  weights[STATUS_HEALTH] = 0;
+
+  return weights[status1] - weights[status2];
 };
