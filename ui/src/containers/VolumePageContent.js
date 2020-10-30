@@ -188,8 +188,16 @@ const VolumePageContent = (props) => {
     },
     {
       selected: isAlertsPage,
-      title: (<span>{intl.translate('alerts')}<TextBadge>{alertlist?.length}</TextBadge></span>),
-      onClick: () => history.push(`${match.url}/alerts${query.toString() && `?${query.toString()}`}`),
+      title: (
+        <span>
+          {intl.translate('alerts')}
+          {PVCName && <TextBadge>{alertlist?.length}</TextBadge>}
+        </span>
+      ),
+      onClick: () =>
+        history.push(
+          `${match.url}/alerts${query.toString() && `?${query.toString()}`}`,
+        ),
     },
     {
       selected: isMetricsPage,
