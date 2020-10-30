@@ -283,6 +283,7 @@ const NodePageMetricsTab = (props) => {
     LAST_ONE_HOUR,
   ].map((option) => ({
     label: option,
+    'data-cy': option,
     onClick: () => {
       dispatch(updateNodeStatsFetchArgumentAction({ metricsTimeSpan: option }));
       writeUrlTimeSpan(option);
