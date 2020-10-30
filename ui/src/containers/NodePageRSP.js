@@ -153,6 +153,7 @@ const NodePageRSP = (props) => {
       title: 'Overview',
       onClick: () =>
         history.push(`${url}/overview${queryString && `?${queryString}`}`),
+      'data-cy': 'overview_tab_node_page',
     },
     {
       selected: isAlertsTabActive,
@@ -164,30 +165,35 @@ const NodePageRSP = (props) => {
       ),
       onClick: () =>
         history.push(`${url}/alerts${queryString && `?${queryString}`}`),
+      'data-cy': 'alerts_tab_node_page',
     },
     {
       selected: isMetricsTabActive,
       title: 'Metrics',
       onClick: () =>
         history.push(`${url}/metrics${queryString && `?${queryString}`}`),
+      'data-cy': 'metrics_tab_node_page',
     },
     {
       selected: isVolumesTabActive,
       title: intl.translate('volumes'),
       onClick: () =>
         history.push(`${url}/volumes${queryString && `?${queryString}`}`),
+      'data-cy': 'volumes_tab_node_page',
     },
     {
       selected: isPodsTabActive,
       title: intl.translate('pods'),
       onClick: () =>
         history.push(`${url}/pods${queryString && `?${queryString}`}`),
+      'data-cy': 'pods_tab_node_page',
     },
     {
       selected: isDetailsTabActive,
       title: intl.translate('details'),
       onClick: () =>
         history.push(`${url}/details${queryString && `?${queryString}`}`),
+      'data-cy': 'details_tab_node_page',
     },
   ];
 
