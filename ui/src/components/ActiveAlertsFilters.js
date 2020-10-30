@@ -47,6 +47,7 @@ const ActiveAlertsFilter = (props) => {
         history.push(`${match.url}?${query.toString()}`);
       },
       iconCode: '',
+      'data-cy': 'severity_all',
     },
     {
       label: 'Critical',
@@ -56,6 +57,7 @@ const ActiveAlertsFilter = (props) => {
         history.push(`${match.url}?${query.toString()}`);
       },
       iconCode: 'fas fa-times-circle',
+      'data-cy': 'severity_critical',
     },
     {
       label: 'Warning',
@@ -65,6 +67,7 @@ const ActiveAlertsFilter = (props) => {
         history.push(`${match.url}?${query.toString()}`);
       },
       iconCode: 'fas fa-exclamation-triangle',
+      'data-cy': 'severity_warning',
     },
   ];
 
@@ -94,7 +97,7 @@ const ActiveAlertsFilter = (props) => {
         items={items}
         text={dropDownLabel}
         size="small"
-        data-cy="alert_filter_node"
+        data-cy="alert_filter"
       />
     </ActiveAlertsFilterWrapper>
   );
