@@ -58,6 +58,12 @@ Glossary
 
      For more information, see `etcd.io <https://etcd.io>`_.
 
+   Environment
+     An Environment is a namespace or group of namespaces with specific labels
+     containing one or more Solutions.
+     It allows to run multiple instances of a Solution on the same cluster,
+     without collision between them.
+
    Grafana
      Grafana is a service for analysing and visualizing metrics scraped by
      Prometheus.
@@ -110,6 +116,14 @@ Glossary
 
      |see K8s docs|
      `Nodes management <https://kubernetes.io/docs/concepts/architecture/nodes/#management>`_.
+
+   Operator
+     A Kubernetes operator is an application-specific controller that extends
+     the functionality of the Kubernetes API to create, configure, and manage
+     instances of complex applications.
+
+     |see K8s docs|
+     `Operator <https://kubernetes.io/docs/concepts/extend-kubernetes/operator/>`_.
 
    Pod
      A Pod is a group of one or more containers sharing storage and network

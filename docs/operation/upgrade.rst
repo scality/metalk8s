@@ -9,11 +9,11 @@ Supported Versions
 ******************
 .. note::
 
-    MetalK8 supports upgrade **strictly** from one supported
-    minor version to another. For example:
+    MetalK8s supports upgrade of **at most** one minor version at a time.
+    For example:
 
-    - Upgrade from 2.0.x to 2.0.x
-    - Upgrade from 2.0.x to 2.1.x
+    - from 2.4.0 to 2.4.4
+    - from 2.4.0 to 2.5.1
 
     Please refer to the
     `release notes <https://github.com/scality/metalk8s/releases>`_ for more

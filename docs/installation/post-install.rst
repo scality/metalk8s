@@ -125,13 +125,8 @@ After a fresh installation, an administrator account is created with default
 credentials. For production deployments, make sure to change those credentials
 and use safer values.
 
-To change user credentials and groups for :term:`K8s API <API Server>` (and as
-such, for :ref:`MetalK8s GUI <installation-services-admin-ui>` and
-:term:`SaltAPI`), follow :ref:`this procedure <ops-k8s-admin>`.
-
-To change Grafana user credentials, follow :ref:`this procedure
+To change Grafana or MetalK8s GUI user credentials, follow :ref:`this procedure
 <ops-grafana-admin>`.
-
 
 Validating the deployment
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -157,7 +152,7 @@ applications, perform the following sanity checks:
 #. Check that :term:`Pods <Pod>` are in their expected state (most of the time,
    **Running**, except for Prometheus and AlertManager if the required storage
    was not provisioned yet - see :ref:`the procedure above <Provision
-   Prometheus Storage>`).
+   Storage for Services>`).
 
    To look for all Pods at once, use the
    ``--all-namespaces`` flag. On the other hand, use the ``-n`` or
@@ -215,12 +210,11 @@ applications, perform the following sanity checks:
                               --cacert=/etc/kubernetes/pki/etcd/ca.crt \
                               --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
                               --key=/etc/kubernetes/pki/etcd/healthcheck-client.key \
-                              cluster-health
+                              endpoint health --cluster
 
-      member 46af28ca4af6c465 is healthy: got healthy result from https://<first-node-ip>:2379
-      member 81de403db853107e is healthy: got healthy result from https://<second-node-ip>:2379
-      member 8878627efe0f46be is healthy: got healthy result from https://<third-node-ip>:2379
-      cluster is healthy
+      https://<first-node-ip>:2379 is healthy: successfully committed proposal: took = 16.285672ms
+      https://<second-node-ip>:2379 is healthy: successfully committed proposal: took = 43.462092ms
+      https://<third-node-ip>:2379 is healthy: successfully committed proposal: took = 52.879358ms
 
 #. Finally, check that the exposed services are accessible, using the
    information from :doc:`this document <./services>`.

@@ -63,8 +63,7 @@ notation for it's various subfields.
       These values specify the range of IP addresses that will be used at the
       host level for each member of the cluster.
 
-
-      .. info::
+      .. note::
 
         Several CIDRs can be provided if all nodes do not sit in the same
         network. This is an :ref:`advanced configuration<multiple CIDR network>`
@@ -195,13 +194,13 @@ Validate the install
 
 .. note::
 
-   The administrator :term:`kubeconfig` file is used to configure access to
+   The administrator :term:`Kubeconfig` file is used to configure access to
    Kubernetes when used with :term:`kubectl` as shown below. This file contains
    sensitive information and should be kept securely.
 
    On all subsequent :term:`kubectl` commands, you may omit the
    ``--kubeconfig`` argument if you have exported the ``KUBECONFIG``
-   environment variable set to the path of the administrator :term:`kubeconfig`
+   environment variable set to the path of the administrator :term:`Kubeconfig`
    file for the cluster.
 
    By default, this path is ``/etc/kubernetes/admin.conf``.
