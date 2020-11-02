@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { useHistory, useLocation, useRouteMatch } from 'react-router';
 import { Switch, Route } from 'react-router-dom';
 import { Tabs } from '@scality/core-ui';
-import { padding } from '@scality/core-ui/dist/style/theme';
+import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import VolumeListTable from '../components/VolumeListTable';
 import VolumeOverviewTab from '../components/VolumeOverviewTab';
 import VolumeAlertsTab from '../components/VolumeAlertsTab';
@@ -49,6 +49,7 @@ width: 100%;
     border-top-right-radius: 4px;
     height: 40px;
     padding: ${padding.small}
+    font-size: ${fontSize.base};
   }
 }
 
