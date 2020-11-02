@@ -88,3 +88,11 @@ Cypress.Commands.add('login', () => {
       );
     });
 });
+
+Cypress.Commands.add('stubHistory', () => {
+  cy.window()
+    .its('__history__')
+    .then((history) => {
+      cy.stub(history, 'push').as('historyPush');
+    });
+});
