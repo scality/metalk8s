@@ -52,6 +52,7 @@ const Layout = (props) => {
   const sidebarConfig = {
     onToggleClick: toggleSidebar,
     expanded: sidebar.expanded,
+    'data-cy-state-isexpanded': sidebar.expanded,
     actions: [
       {
         label: intl.translate('monitoring'),
