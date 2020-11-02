@@ -382,7 +382,7 @@ function Table({
               <td
                 style={{
                   textAlign: 'center',
-                  background: theme.brand.primaryDark1,
+                  background: theme.brand.primary,
                 }}
               >
                 No Volume
