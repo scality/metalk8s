@@ -1,6 +1,5 @@
 {
   "env": {
-    "target_url": "http://localhost:3000",
     "email": "admin@metalk8s.invalid",
     "username": "admin",
     "password": "password",
@@ -15,5 +14,6 @@
     "mochaFile": "junit/cypress-junit.xml",
     "toConsole": true
   },
-  "chromeWebSecurity": false
+  "chromeWebSecurity": false,
+  "baseUrl": "http://localhost:3000"
 }

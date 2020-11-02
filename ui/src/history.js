@@ -1,6 +1,10 @@
 // history.js
 import { createBrowserHistory } from 'history';
 
-export default createBrowserHistory({
+const history = createBrowserHistory({
   /* pass a configuration object here if needed */
 });
+
+if (window.Cypress) window.__history__ = history;
+
+export default history;
