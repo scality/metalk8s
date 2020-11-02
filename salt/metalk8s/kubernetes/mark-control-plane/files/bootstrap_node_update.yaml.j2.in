@@ -14,6 +14,14 @@
 {%- if 'node-role.kubernetes.io/node' not in node_obj['metadata'].get('labels', {}) %}
   {%- set node_taints = node_obj['spec'].get('taints') | default([], True) %}
 
+  {#- Convert all `time_added` key to string as datetime cannot be serialized
+      as JSON automatically #}
+  {%- for taint in node_taints %}
+    {%- if 'time_added' in taint %}
+      {%- do taint.update({'time_added': taint['time_added'] | date_format("%Y-%m-%dT%H:%M:%SZ")}) %}
+    {%- endif %}
+  {%- endfor %}
+
   {%- for key_taint in ['node-role.kubernetes.io/bootstrap', 'node-role.kubernetes.io/infra'] %}
     {#- Only add taints if not present #}
     {%- if not (node_taints | selectattr('key', 'equalto', key_taint) | list) %}

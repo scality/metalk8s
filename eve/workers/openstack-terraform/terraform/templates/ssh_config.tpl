@@ -7,7 +7,7 @@ Host bastion
     StrictHostKeyChecking no
 
 Host bootstrap
-    User centos
+    User ${user}
     Port 22
     Hostname ${bootstrap_ip}
     IdentityFile ${identity_file}
@@ -16,7 +16,7 @@ Host bootstrap
 
 %{ for node in nodes ~}
 Host ${node.name}
-    User centos
+    User ${user}
     Port 22
     Hostname ${node.ip}
     IdentityFile ${identity_file}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useLocation } from 'react-router-dom';
@@ -8,6 +8,7 @@ import {
   useFilters,
   useGlobalFilter,
   useAsyncDebounce,
+  useSortBy,
 } from 'react-table';
 import { useQuery } from '../services/utils';
 import {
@@ -18,6 +19,12 @@ import {
 import CircleStatus from './CircleStatus';
 import { Button, ProgressBar, Tooltip } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
+import {
+  VOLUME_CONDITION_LINK,
+  VOLUME_CONDITION_UNLINK,
+  VOLUME_CONDITION_EXCLAMATION,
+} from '../constants';
+import { allSizeUnitsToBytes, compareHealth } from '../services/utils';
 
 const VolumeListContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
@@ -51,9 +58,11 @@ const VolumeListContainer = styled.div`
 
     th {
       font-weight: bold;
-      height: 56px;
+      height: 35px;
       text-align: left;
       padding: ${padding.smaller};
+      cursor: pointer;
+      vertical-align: baseline;
     }
 
     td {
@@ -113,6 +122,24 @@ const TooltipContent = styled.div`
   color: ${(props) => props.theme.brand.textSecondary};
   font-weight: ${fontWeight.bold};
   min-width: 60px;
+`;
+
+const SortCaretWrapper = styled.span`
+  padding-left: ${padding.smaller};
+  position: absolute;
+`;
+
+const SortIncentive = styled.span`
+  position: absolute;
+  display: none;
+`;
+
+const TableHeader = styled.th`
+  &:hover {
+    ${SortIncentive} {
+      display: block;
+    }
+  }
 `;
 
 function GlobalFilter({
@@ -178,6 +205,8 @@ function Table({
   const history = useHistory();
   const query = useQuery();
   const querySearch = query.get('search');
+  const querySort = query.get('sort');
+  const queryDesc = query.get('desc');
 
   // Use the state and functions returned from useTable to build your UI
   const defaultColumn = React.useMemo(
@@ -186,6 +215,29 @@ function Table({
     }),
     [],
   );
+
+  const sortTypes = React.useMemo(() => {
+    return {
+      health: (row1, row2) =>
+        compareHealth(row2?.values?.health, row1?.values?.health),
+      size: (row1, row2) => {
+        const size1 = row1?.values?.storageCapacity;
+        const size2 = row2?.values?.storageCapacity;
+
+        if (size1 && size2) {
+          return allSizeUnitsToBytes(size1) - allSizeUnitsToBytes(size2);
+        }
+      },
+      status: (row1, row2) => {
+        const weights = {};
+        weights[VOLUME_CONDITION_LINK] = 2;
+        weights[VOLUME_CONDITION_UNLINK] = 1;
+        weights[VOLUME_CONDITION_EXCLAMATION] = 0;
+
+        return weights[row1?.values?.status] - weights[row2?.values?.status];
+      },
+    };
+  }, []);
 
   const {
     getTableProps,
@@ -202,11 +254,45 @@ function Table({
       columns,
       data,
       defaultColumn,
-      initialState: { globalFilter: querySearch },
+      initialState: {
+        globalFilter: querySearch,
+        sortBy: [
+          {
+            id: querySort || 'health',
+            desc: queryDesc || false,
+          },
+        ],
+      },
+      disableMultiSort: true,
+      autoResetSortBy: false,
+      sortTypes,
     },
     useFilters,
     useGlobalFilter,
+    useSortBy,
   );
+
+  // Synchronizes the params query with the Table sort state
+  const sorted = headerGroups[0].headers.find((item) => item.isSorted === true)
+    ?.id;
+  const desc = headerGroups[0].headers.find((item) => item.isSorted === true)
+    ?.isSortedDesc;
+  useEffect(() => {
+    // Creating a local query instance to avoid having it in the useEffect dependencies and creating infinite loops on search change
+    const query = new URLSearchParams(window.location.search);
+    const querySort = query.get('sort');
+    const queryDesc = query.get('desc');
+    if (data.length && (sorted !== querySort || desc !== queryDesc)) {
+      if (sorted) {
+        sorted ? query.set('sort', sorted) : query.delete('sort');
+        desc ? query.set('desc', desc) : query.delete('desc');
+      } else if (!sorted && querySort) {
+        query.delete('sort');
+        query.delete('desc');
+      }
+      history.push(`?${query.toString()}`);
+    }
+  }, [sorted, desc, history, data.length]);
 
   return (
     <>
@@ -256,11 +342,28 @@ function Table({
             return (
               <HeadRow {...headerGroup.getHeaderGroupProps()}>
                 {headerGroup.headers.map((column) => {
-                  const headerStyleProps = column.getHeaderProps({
-                    style: column.cellStyle,
-                  });
+                  const headerStyleProps = column.getHeaderProps(
+                    Object.assign(column.getSortByToggleProps(), {
+                      style: column.cellStyle,
+                    }),
+                  );
                   return (
-                    <th {...headerStyleProps}>{column.render('Header')}</th>
+                    <TableHeader {...headerStyleProps}>
+                      {column.render('Header')}
+                      <SortCaretWrapper>
+                        {column.isSorted ? (
+                          column.isSortedDesc ? (
+                            <i className="fas fa-sort-down" />
+                          ) : (
+                            <i className="fas fa-sort-up" />
+                          )
+                        ) : (
+                          <SortIncentive>
+                            <i className="fas fa-sort" />
+                          </SortIncentive>
+                        )}
+                      </SortCaretWrapper>
+                    </TableHeader>
                   );
                 })}
               </HeadRow>
@@ -347,12 +450,13 @@ const VolumeListTable = (props) => {
       {
         Header: 'Health',
         accessor: 'health',
-        cellStyle: { textAlign: 'center', width: '50px' },
+        cellStyle: { textAlign: 'center', width: '90px' },
         Cell: (cellProps) => {
           return (
             <CircleStatus className="fas fa-circle" status={cellProps.value} />
           );
         },
+        sortType: 'health',
       },
       {
         Header: 'Name',
@@ -377,11 +481,12 @@ const VolumeListTable = (props) => {
         Header: 'Size',
         accessor: 'storageCapacity',
         cellStyle: { textAlign: 'center', width: '70px' },
+        sortType: 'size',
       },
       {
         Header: 'Status',
         accessor: 'status',
-        cellStyle: { textAlign: 'center', width: '50px' },
+        cellStyle: { textAlign: 'center', width: '70px' },
         Cell: (cellProps) => {
           const volume = volumeListData?.find(
             (vol) => vol.name === cellProps.cell.row.values.name,
@@ -420,11 +525,15 @@ const VolumeListTable = (props) => {
               return <div>{intl.translate('unknown')}</div>;
           }
         },
+        sortType: 'status',
       },
       {
         Header: 'Latency',
         accessor: 'latency',
         cellStyle: { textAlign: 'center', width: '70px' },
+        Cell: (cellProps) => {
+          return cellProps.value !== undefined ? cellProps.value + ' µs' : null;
+        },
       },
     ],
     [volumeListData, theme],

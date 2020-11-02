@@ -82,7 +82,8 @@ upgrade_bootstrap () {
         saltenv="$SALTENV"
 
     "${SALT_CALL}" --local --retcode-passthrough state.sls sync_mods="all" \
-        metalk8s.roles.bootstrap.components saltenv="$SALTENV" \
+        "['metalk8s.roles.bootstrap.components', 'metalk8s.container-engine']" \
+        saltenv="$SALTENV" \
         pillar="{'metalk8s': {'endpoints': {'salt-master': $saltmaster_endpoint, \
         'repositories': $repo_endpoint}}}"
 }
