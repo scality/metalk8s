@@ -4,7 +4,7 @@
 include:
   - metalk8s.repo
 
-{%- for pkg_name in kubeadm_preflight.mandatory.packages %}
+{%- for pkg_name in kubeadm_preflight.recommended.packages %}
 Install recommended package "{{ pkg_name }}":
   {{ pkg_installed(pkg_name) }}
     - require:
