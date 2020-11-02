@@ -9,7 +9,10 @@ Preparation
    from the Scality repositories.
 
 #. Download the MetalK8s ISO file on the machine that will host the bootstrap
-   node. Mount this ISO file at the specific following path:
+   node. Mount this ISO file at the path of your choice (we will use
+   ``/srv/scality/metalk8s-|version|`` for the rest of this guide, as this is
+   where the ISO will be mounted automatically after running the bootstrap
+   script):
 
    .. parsed-literal::
 
