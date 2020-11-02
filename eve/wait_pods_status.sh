@@ -117,4 +117,8 @@ done
 echo "Pods are still not $STATUS after $RETRY retries in" \
      "$SECONDS seconds!"
 
+kubectl get pods "$NAMESPACE" \
+    --field-selector="status.phase!=$STATUS" \
+    --kubeconfig="$KUBECONFIG"
+
 exit 1
