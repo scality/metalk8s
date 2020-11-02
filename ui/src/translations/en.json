@@ -158,8 +158,9 @@
   "node": "Node",
   "used_by": "Used By",
   "backend_disk": "Backend Disk",
-  "active_alerts": "Active alerts",
-  "metrics": "METRICS",
+  "active_alert": "Active Alert",
+  "metrics": "Metrics",
+  "advanced_metrics": "Advanced Metrics",
   "volume_is_not_bound": "The volume is not bound yet",
   "no_active_alerts": "No active alerts",
   "not_used": "Not used",
@@ -170,5 +171,8 @@
   "PIDPressure": "Insufficient PID available",
   "NetworkUnavailable": "Network Unavailable",
   "Unschedulable": "Unschedulable",
-  "advanced_metrics": "Advanced Metrics"
+  "overview": "Overview",
+  "volume_usage": "Volume Usage",
+  "usage": "Usage",
+  "error_volume_details": "Volume details request has failed."
 }

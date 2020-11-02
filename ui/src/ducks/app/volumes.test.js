@@ -20,6 +20,8 @@ import {
   stopRefreshPersistentVolumes,
   updateStorageClassAction,
   deleteVolume,
+  fetchCurrentVolumeObject,
+  setCurrentVolumeObjectAction,
 } from './volumes';
 import * as VolumesApi from '../../services/k8s/volumes';
 import { SET_STORAGECLASS } from './volumes.js';
@@ -345,7 +347,10 @@ it('create volume with the type sparseloopdevice', () => {
   };
 
   expect(gen.next(result).value).toEqual(
-    call(history.push, `/volumes/${newVolume.name}?node=${newVolume.node}`),
+    call(
+      history.push,
+      `/volumes/${newVolume.name}/overview?node=${newVolume.node}`,
+    ),
   );
 
   expect(gen.next().value.payload.action.type).toEqual(
@@ -419,7 +424,10 @@ it('create a volume with the type rawBlockdevice', () => {
   };
 
   expect(gen.next(result).value).toEqual(
-    call(history.push, `/volumes/${newVolume.name}?node=${newVolume.node}`),
+    call(
+      history.push,
+      `/volumes/${newVolume.name}/overview?node=${newVolume.node}`,
+    ),
   );
   expect(gen.next().value.payload.action.type).toEqual(
     ADD_NOTIFICATION_SUCCESS,
@@ -703,4 +711,35 @@ it('should display the error notification when there is error in delete volume',
   );
   expect(gen.next().value).toEqual(call(fetchVolumes));
   expect(gen.next().done).toEqual(true);
+});
+
+it('updates the current volume object on API success', () => {
+  const gen = fetchCurrentVolumeObject({ volumeName: 'test' });
+  expect(gen.next().value).toEqual(call(VolumesApi.getVolumeObject, 'test'));
+  const result = {
+    body: {
+      resultTest: 'test',
+    },
+  };
+  expect(gen.next(result).value).toEqual(
+    put(setCurrentVolumeObjectAction({ data: result.body })),
+  );
+  gen.next(result);
+  const finalGen = gen.next();
+  expect(finalGen.done).toEqual(true);
+});
+
+it('does not update the current volume object on API error', () => {
+  const gen = fetchCurrentVolumeObject({ volumeName: 'test' });
+  expect(gen.next().value).toEqual(call(VolumesApi.getVolumeObject, 'test'));
+  const result = {
+    error: {
+      errorText: 'test',
+    },
+  };
+  expect(gen.next(result).value).toEqual(
+    put(setCurrentVolumeObjectAction({ data: null })),
+  );
+  const finalGen = gen.next();
+  expect(finalGen.done).toEqual(true);
 });

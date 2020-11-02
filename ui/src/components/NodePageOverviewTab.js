@@ -71,6 +71,7 @@ const Detail = styled.div`
 
 const ActiveAlertTitle = styled.div`
   padding-bottom: ${padding.base};
+  font-size: ${fontSize.base};
 `;
 
 const ActiveAlertWrapper = styled.div`
@@ -299,7 +300,7 @@ const NodePageOverviewTab = (props) => {
           </div>
           <ActiveAlertWrapper>
             <ActiveAlertTitle>
-              {intl.translate('active_alerts')}
+              {intl.translate('active_alert')}
             </ActiveAlertTitle>
             <ActiveAlertsCounter
               criticalCounter={currentNode?.health?.criticalAlertsCounter}

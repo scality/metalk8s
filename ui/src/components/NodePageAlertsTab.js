@@ -13,6 +13,7 @@ import ActiveAlertsFilter from './ActiveAlertsFilter';
 import { useQuery } from '../services/utils';
 import { TabContainer } from './CommonLayoutStyle';
 import { STATUS_WARNING, STATUS_CRITICAL } from '../constants';
+import { intl } from '../translations/IntlGlobalProvider';
 
 const ActiveAlertsTableContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
@@ -60,6 +61,7 @@ const Body = styled.tbody`
 const ActiveAlertsText = styled.div`
   color: ${(props) => props.theme.brand.textTertiary};
   font-weight: ${fontWeight.bold};
+  font-size: ${fontSize.base};
 `;
 
 const TitleContainer = styled.div`
@@ -223,7 +225,9 @@ const NodePageAlertsTab = (props) => {
   return (
     <TabContainer>
       <TitleContainer>
-        <ActiveAlertsText theme={theme}>Active Alert</ActiveAlertsText>
+        <ActiveAlertsText theme={theme}>
+          {intl.translate('active_alert')}
+        </ActiveAlertsText>
         <ActiveAlertsFilter />
       </TitleContainer>
       <ActiveAlertsTableContainer>

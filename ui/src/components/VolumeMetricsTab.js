@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useHistory } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { LineChart, Dropdown } from '@scality/core-ui';
+import { LineChart, Dropdown, Button } from '@scality/core-ui';
 import {
   fetchVolumeStatsAction,
   updateVolumeStatsAction,
@@ -31,22 +31,35 @@ import {
   queryTimeSpansCodes,
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
+import { VolumeTab } from './CommonLayoutStyle';
 
 const MetricGraphCardContainer = styled.div`
   min-height: 270px;
-  background-color: ${(props) => props.theme.brand.primaryDark1};
-  margin: ${padding.small};
-  padding-bottom: ${padding.large};
+
+  .sc-vegachart svg {
+    background-color: inherit !important;
+  }
 `;
 
 const MetricGraphTitle = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.bold};
-  padding: ${padding.small} 0 0 ${padding.large};
+  padding: ${padding.small};
   display: flex;
+  flex-direction: row-reverse;
   .sc-dropdown {
     padding-left: 25px;
+  }
+  
+  .sc-dropdown > div {
+    background-color: ${(props) => props.theme.brand.primary};
+    border: 1px solid ${(props) => props.theme.brand.borderLight}
+    border-radius: 3px;
+  }
+  
+  .sc-button {
+    background-color: ${(props) => props.theme.brand.info};
   }
 `;
 
@@ -62,12 +75,6 @@ const RowGraphContainer = styled.div`
   padding-left: 3px;
 `;
 
-const SecondRowGraphContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  padding-left: 3px;
-`;
-
 const GraphTitle = styled.div`
   font-size: ${fontSize.small};
   font-weight: ${fontWeight.bold};
@@ -75,21 +82,11 @@ const GraphTitle = styled.div`
   padding: ${padding.small} 0 0 ${padding.larger};
 `;
 
-const UsageGraph = styled.div`
-  min-width: 308px;
+const LeftGraphContainer = styled.div`
+  padding-left: 0px;
 `;
 
-const LatencyGraph = styled.div`
-  min-width: 308px;
-  padding-left: ${padding.large};
-`;
-
-const TroughputGraph = styled.div`
-  min-width: 308px;
-`;
-
-const IOPSGraph = styled.div`
-  min-width: 308px;
+const RightGraphContainer = styled.div`
   padding-left: ${padding.large};
 `;
 
@@ -106,8 +103,14 @@ const NoDataGraphText = styled.div`
   padding: ${padding.small} 0 0 ${padding.larger};
 `;
 
-const MetricGraphCard = (props) => {
-  const { volumeCondition, volumeMetricGraphData, volumeName } = props;
+const MetricsTab = (props) => {
+  const {
+    volumeCondition,
+    volumeMetricGraphData,
+    volumeName,
+    volumeNamespace,
+    volumePVCName,
+  } = props;
   const dispatch = useDispatch();
   const history = useHistory();
   const query = new URLSearchParams(history?.location?.search);
@@ -115,6 +118,7 @@ const MetricGraphCard = (props) => {
   const metricsTimeSpan = useSelector(
     (state) => state.app.monitoring.volumeStats.metricsTimeSpan,
   );
+  const config = useSelector((state) => state.config);
 
   // write the selected timespan in URL
   const writeUrlTimeSpan = (timespan) => {
@@ -349,97 +353,112 @@ const MetricGraphCard = (props) => {
   );
 
   return (
-    <MetricGraphCardContainer>
-      <MetricGraphTitle>
-        {intl.translate('metrics')}
-        {volumeCondition === VOLUME_CONDITION_LINK && (
-          <Dropdown
-            items={metricsTimeSpanDropdownItems}
-            text={metricsTimeSpan}
-            size="smaller"
-          />
+    <VolumeTab>
+      <MetricGraphCardContainer>
+        <MetricGraphTitle>
+          {volumeCondition === VOLUME_CONDITION_LINK && (
+            <Dropdown
+              items={metricsTimeSpanDropdownItems}
+              text={metricsTimeSpan}
+              size="small"
+            />
+          )}
+          {config.api?.url_grafana && volumeNamespace && volumePVCName && (
+            <Button
+              text={intl.translate('advanced_metrics')}
+              variant={'base'}
+              onClick={() => {}}
+              icon={<i className="fas fa-external-link-alt" />}
+              size={'small'}
+              href={`${config.api.url_grafana}/dashboard/db/kubernetes-persistent-volumes?var-namespace=${volumeNamespace}&var-volume=${volumePVCName}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            />
+          )}
+        </MetricGraphTitle>
+        {volumeCondition === VOLUME_CONDITION_LINK ? (
+          <GraphsContainer>
+            <RowGraphContainer>
+              <LeftGraphContainer>
+                <GraphTitle>USAGE (%)</GraphTitle>
+                {volumeUsageData?.length > 0 ? (
+                  <LineChart
+                    id={'volume_usage_id'}
+                    data={volumeUsageData}
+                    xAxis={xAxis}
+                    yAxis={yAxisUsage}
+                    color={colorUsage}
+                    width={window.innerWidth / 4 - 110}
+                    height={window.innerHeight / 6 - 30}
+                    tooltip={false}
+                  />
+                ) : (
+                  <NoDataGraphText>No available usage data</NoDataGraphText>
+                )}
+              </LeftGraphContainer>
+              <RightGraphContainer>
+                <GraphTitle>LATENCY (µs) </GraphTitle>
+                {volumeLatencyData?.length > 0 ? (
+                  <LineChart
+                    id={'volume_latency_id'}
+                    data={volumeLatencyData}
+                    xAxis={xAxis}
+                    yAxis={yAxisWriteRead}
+                    color={colors}
+                    width={window.innerWidth / 4 - 110}
+                    height={window.innerHeight / 6 - 30}
+                    tooltip={false}
+                  />
+                ) : (
+                  <NoDataGraphText>No available latency data</NoDataGraphText>
+                )}
+              </RightGraphContainer>
+            </RowGraphContainer>
+            <RowGraphContainer>
+              <LeftGraphContainer>
+                <GraphTitle>THROUGHPUT (MB/s)</GraphTitle>
+                {volumeThroughputData?.length > 0 ? (
+                  <LineChart
+                    id={'volume_throughput_id'}
+                    data={volumeThroughputData}
+                    xAxis={xAxis}
+                    yAxis={yAxisWriteRead}
+                    color={colors}
+                    width={window.innerWidth / 4 - 110}
+                    height={window.innerHeight / 6 - 30}
+                    tooltip={false}
+                  />
+                ) : (
+                  <NoDataGraphText>
+                    No available throughput data
+                  </NoDataGraphText>
+                )}
+              </LeftGraphContainer>
+              <RightGraphContainer>
+                <GraphTitle>IOPS</GraphTitle>
+                {volumeIOPSData?.length > 0 ? (
+                  <LineChart
+                    id={'volume_IOPS_id'}
+                    data={volumeIOPSData}
+                    xAxis={xAxis}
+                    yAxis={yAxisWriteRead}
+                    color={colors}
+                    width={window.innerWidth / 4 - 110}
+                    height={window.innerHeight / 6 - 30}
+                    tooltip={false}
+                  />
+                ) : (
+                  <NoDataGraphText>No available IOPS data</NoDataGraphText>
+                )}
+              </RightGraphContainer>
+            </RowGraphContainer>
+          </GraphsContainer>
+        ) : (
+          <NoMetricsText>{intl.translate('volume_is_not_bound')}</NoMetricsText>
         )}
-      </MetricGraphTitle>
-      {volumeCondition === VOLUME_CONDITION_LINK ? (
-        <GraphsContainer>
-          <RowGraphContainer>
-            <UsageGraph>
-              <GraphTitle>USAGE (%)</GraphTitle>
-              {volumeUsageData?.length > 0 ? (
-                <LineChart
-                  id={'volume_usage_id'}
-                  data={volumeUsageData}
-                  xAxis={xAxis}
-                  yAxis={yAxisUsage}
-                  color={colorUsage}
-                  width={285}
-                  height={80}
-                  tooltip={false}
-                />
-              ) : (
-                <NoDataGraphText>No available usage data</NoDataGraphText>
-              )}
-            </UsageGraph>
-            <LatencyGraph>
-              <GraphTitle>LATENCY (µs) </GraphTitle>
-              {volumeLatencyData?.length > 0 ? (
-                <LineChart
-                  id={'volume_latency_id'}
-                  data={volumeLatencyData}
-                  xAxis={xAxis}
-                  yAxis={yAxisWriteRead}
-                  color={colors}
-                  width={285}
-                  height={80}
-                  tooltip={false}
-                />
-              ) : (
-                <NoDataGraphText>No available latency data</NoDataGraphText>
-              )}
-            </LatencyGraph>
-          </RowGraphContainer>
-          <SecondRowGraphContainer>
-            <TroughputGraph>
-              <GraphTitle>THROUGHPUT (MB/s)</GraphTitle>
-              {volumeThroughputData?.length > 0 ? (
-                <LineChart
-                  id={'volume_throughput_id'}
-                  data={volumeThroughputData}
-                  xAxis={xAxis}
-                  yAxis={yAxisWriteRead}
-                  color={colors}
-                  width={285}
-                  height={80}
-                  tooltip={false}
-                />
-              ) : (
-                <NoDataGraphText>No available throughput data</NoDataGraphText>
-              )}
-            </TroughputGraph>
-            <IOPSGraph>
-              <GraphTitle>IOPS</GraphTitle>
-              {volumeIOPSData?.length > 0 ? (
-                <LineChart
-                  id={'volume_IOPS_id'}
-                  data={volumeIOPSData}
-                  xAxis={xAxis}
-                  yAxis={yAxisWriteRead}
-                  color={colors}
-                  width={285}
-                  height={80}
-                  tooltip={false}
-                />
-              ) : (
-                <NoDataGraphText>No available IOPS data</NoDataGraphText>
-              )}
-            </IOPSGraph>
-          </SecondRowGraphContainer>
-        </GraphsContainer>
-      ) : (
-        <NoMetricsText>{intl.translate('volume_is_not_bound')}</NoMetricsText>
-      )}
-    </MetricGraphCardContainer>
+      </MetricGraphCardContainer>
+    </VolumeTab>
   );
 };
 
-export default MetricGraphCard;
+export default MetricsTab;

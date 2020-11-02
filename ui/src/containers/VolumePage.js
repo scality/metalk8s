@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useRouteMatch, useHistory } from 'react-router';
 import { useSelector, useDispatch } from 'react-redux';
 import VolumeContent from './VolumePageContent';
 import { fetchPodsAction } from '../ducks/app/pods';
@@ -15,6 +16,7 @@ import {
   refreshPersistentVolumesAction,
   stopRefreshPersistentVolumesAction,
   fetchPersistentVolumeClaimAction,
+  fetchCurrentVolumeObjectAction,
 } from '../ducks/app/volumes';
 import {
   fetchVolumeStatsAction,
@@ -30,12 +32,23 @@ import { getVolumeListData } from '../services/NodeVolumesUtils';
 import { Breadcrumb } from '@scality/core-ui';
 import { PageContainer } from '../components/CommonLayoutStyle';
 import { intl } from '../translations/IntlGlobalProvider';
+import { useQuery } from '../services/utils';
 
 // <VolumePage> component fetchs all the data used by volume page from redux store.
 // the data for <VolumeMetricGraphCard>: get the default metrics time span `last 24 hours`, and the component itself can change the time span base on the dropdown selection.
 // <VolumeContent> component extracts the current volume name from URL and sends volume specific data to sub components.
 const VolumePage = (props) => {
   const dispatch = useDispatch();
+  const match = useRouteMatch();
+  const currentVolumeName = match.params.name;
+  const query = useQuery();
+  const history = useHistory();
+
+  useEffect(() => {
+    if (currentVolumeName)
+      dispatch(fetchCurrentVolumeObjectAction(currentVolumeName));
+  }, [dispatch, currentVolumeName]);
+
 
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
@@ -64,6 +77,7 @@ const VolumePage = (props) => {
   const node = useSelector((state) => makeGetNodeFromUrl(state, props));
   const nodes = useSelector((state) => state.app.nodes.list);
   const volumes = useSelector((state) => state.app.volumes.list);
+  const currentVolumeObject = useSelector((state) => state.app.volumes.currentVolumeObject);
   const pVList = useSelector((state) => state.app.volumes.pVList);
   const alerts = useSelector((state) => state.app.alerts);
 
@@ -74,6 +88,16 @@ const VolumePage = (props) => {
   const volumeListData = useSelector((state) =>
     getVolumeListData(state, props),
   );
+
+  // If data has been retrieved and no volume is selected yet we select the first one
+  useEffect(() => {
+    if (volumeListData.length && !currentVolumeName) {
+      history.push({
+        pathname: `/volumes/${volumeListData[0]?.name}/overview`,
+        search: query.toString(),
+      });
+    }
+  }, [volumeListData, currentVolumeName, query, history])
 
   return (
     <PageContainer>
@@ -99,6 +123,7 @@ const VolumePage = (props) => {
         pods={pods}
         alerts={alerts}
         volumeStats={volumeStats}
+        currentVolumeObject={currentVolumeObject}
       ></VolumeContent>
     </PageContainer>
   );

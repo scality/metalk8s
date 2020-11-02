@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useRouteMatch, useHistory } from 'react-router';
+import { useHistory } from 'react-router';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import styled from 'styled-components';
@@ -154,7 +154,6 @@ const DocumentationIcon = styled.div`
 const CreateVolume = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
-  const match = useRouteMatch();
 
   const createVolume = (newVolumes) => dispatch(createVolumeAction(newVolumes));
 
@@ -525,9 +524,7 @@ const CreateVolume = (props) => {
                       text={intl.translate('cancel')}
                       type="button"
                       outlined
-                      onClick={() =>
-                        history.push(`/nodes/${match.params.id}/volumes`)
-                      }
+                      onClick={() => history.goBack()}
                     />
                     <Button
                       text={intl.translate('create')}

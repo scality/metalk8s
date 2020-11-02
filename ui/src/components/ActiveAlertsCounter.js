@@ -1,7 +1,6 @@
 import React from 'react';
-import { useRouteMatch } from 'react-router';
 import styled from 'styled-components';
-import { useHistory, useLocation } from 'react-router';
+import { useHistory, useLocation, useRouteMatch } from 'react-router';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import { STATUS_WARNING, STATUS_CRITICAL } from '../constants.js';
 
@@ -39,7 +38,7 @@ export const CounterIcon = styled.i`
 
     switch (props.status) {
       case STATUS_WARNING:
-        color = theme.warning;
+        color = theme.alert;
         break;
       case STATUS_CRITICAL:
         color = theme.danger;
