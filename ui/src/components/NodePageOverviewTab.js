@@ -14,7 +14,7 @@ import isEmpty from 'lodash.isempty';
 import { deployNodeAction } from '../ducks/app/nodes';
 import { TabContainer } from './CommonLayoutStyle';
 import CircleStatus from './CircleStatus';
-import { CIRCLE_DOUBLE_SIZE, API_STATUS_UNKNOWN } from '../constants';
+import { API_STATUS_UNKNOWN } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const TabContentContainer = styled.div`
@@ -23,7 +23,7 @@ const TabContentContainer = styled.div`
 `;
 
 const InformationSpan = styled.div`
-  padding-bottom: ${padding.base};
+  padding-bottom: ${padding.large};
   padding-left: ${padding.large};
   display: flex;
 `;
@@ -45,15 +45,12 @@ const NodeNameContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: ${padding.base} 0 ${padding.larger} ${padding.base};
+  padding: ${padding.base} 0 ${padding.larger} ${padding.large};
 `;
 
-const NodeNameStatusContainer = styled.div`
-  display: flex;
-  align-items: center;
-`;
+const NodeNameStatusContainer = styled.div``;
 
-const NodeName = styled.div`
+const NodeName = styled.span`
   font-size: ${fontSize.larger};
   padding-left: ${padding.smaller};
 `;
@@ -196,10 +193,7 @@ const NodePageOverviewTab = (props) => {
       <TabContentContainer>
         <NodeNameContainer>
           <NodeNameStatusContainer>
-            <CircleStatus
-              status={currentNode?.health?.health}
-              size={CIRCLE_DOUBLE_SIZE}
-            ></CircleStatus>
+            <CircleStatus status={currentNode?.health?.health}></CircleStatus>
             <NodeName>{name}</NodeName>
           </NodeNameStatusContainer>
           {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN ? (

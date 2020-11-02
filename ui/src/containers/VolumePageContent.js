@@ -54,7 +54,7 @@ width: 100%;
 
 .sc-tabs-item-content {
   background-color: ${(props) => props.theme.brand.primary};
-  padding: ${padding.small}
+  padding: 0;
 }
 `;
 
