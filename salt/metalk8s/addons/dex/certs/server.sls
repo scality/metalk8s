@@ -1,3 +1,4 @@
+{%- from "metalk8s/map.jinja" import certificates with context %}
 {%- from "metalk8s/map.jinja" import dex with context %}
 
 {%- set oidc_service_ip = salt.metalk8s_network.get_oidc_service_ip() %}
@@ -35,12 +36,18 @@ Create Dex server private key:
 
 Generate Dex server certificate:
   x509.certificate_managed:
-    - name: /etc/metalk8s/pki/dex/server.crt
+    - name: {{ certificates.server.files.dex.path }}
     - public_key: {{ private_key_path }}
     - ca_server: {{ pillar.metalk8s.ca.minion }}
     - signing_policy: {{ dex.cert.server_signing_policy }}
     - CN: dex-server
     - subjectAltName: "{{ salt['metalk8s.format_san'](certSANs | unique) }}"
+    - days_valid: {{
+        certificates.server.files.dex.days_valid |
+        default(certificates.server.days_valid) }}
+    - days_remaining: {{
+        certificates.server.files.dex.days_remaining |
+        default(certificates.server.days_remaining) }}
     - user: root
     - group: root
     - mode: 644

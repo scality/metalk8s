@@ -1,4 +1,6 @@
+{%- from "metalk8s/map.jinja" import certificates with context -%}
 {%- from "metalk8s/map.jinja" import metalk8s with context -%}
+
 {%- set salt_ip = grains['metalk8s']['control_plane_ip'] -%}
 {%- set archives = salt.metalk8s.get_archives() %}
 
@@ -15,7 +17,9 @@ Configure salt master:
     - defaults:
         debug: {{ metalk8s.debug }}
         salt_ip: "{{ salt_ip }}"
-        kubeconfig: "/etc/salt/master-kubeconfig.conf"
+        kubeconfig: "{{ certificates.kubeconfig.files['salt-master'].path }}"
+        salt_api_ssl_crt: {{ certificates.server.files['salt-api'].path }}
+        saltenv: "{{ saltenv }}"
 
 Configure salt master roots paths:
   file.serialize:

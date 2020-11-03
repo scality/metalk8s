@@ -1,5 +1,7 @@
 #!jinja | metalk8s_kubernetes
 
+{%- from "metalk8s/map.jinja" import certificates with context %}
+
 apiVersion: v1
 kind: Secret
 metadata:
@@ -8,8 +10,9 @@ metadata:
 type: Opaque
 data:
   tls.crt: "{{
-    salt['hashutil.base64_encodefile']('/etc/metalk8s/pki/dex/server.crt')
-    | replace('\n', '')
+    salt['hashutil.base64_encodefile'](
+        certificates.server.files.dex.path
+    ) | replace('\n', '')
   }}"
   tls.key: "{{
     salt['hashutil.base64_encodefile']('/etc/metalk8s/pki/dex/server.key')

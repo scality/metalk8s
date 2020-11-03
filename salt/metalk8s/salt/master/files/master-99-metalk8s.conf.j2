@@ -32,7 +32,7 @@ rest_cherrypy:
   port: 4507
   host: {{ salt_ip }}
   debug: {{ debug }}
-  ssl_crt: /etc/salt/pki/api/salt-api.crt
+  ssl_crt: {{ salt_api_ssl_crt }}
   ssl_key: /etc/salt/pki/api/salt-api.key
   ssl_chain: /etc/kubernetes/pki/ca.crt
 
