@@ -51,11 +51,11 @@ Cypress.Commands.add('setupMocks', () => {
   cy.route(
     '/api/kubernetes/apis/storage.metalk8s.scality.com/v1alpha1/volumes',
     'fixture:kubernetes/volumes.json',
-  );
+  ).as('getVolumes');
   cy.route(
     'api/prometheus/api/v1/query?query=node_uname_info',
     'fixture:prometheus/node-uname-info.json',
-  );
+  ).as('getNodeUNameInfo');
 });
 
 const ADMIN_JWT = {
