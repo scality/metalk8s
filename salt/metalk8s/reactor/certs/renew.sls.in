@@ -1,0 +1,17 @@
+{%- set target = data["id"] %}
+{%- set certificates = data["certificates"] |
+                       map(attribute="cert_path") | list %}
+
+# workaround for https://github.com/saltstack/salt/issues/50827,
+# saltenv is not passed to the reactor
+{%- set saltenv = "metalk8s-@@VERSION" %}
+
+Renew expired certificates:
+  runner.state.orchestrate:
+    - args:
+      - mods: metalk8s.orchestrate.certs.renew
+      - saltenv: {{ saltenv }}
+      - pillar:
+          orchestrate:
+            target: {{ target }}
+            certificates: {{ certificates | json }}

@@ -602,6 +602,18 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
 
     Path('salt/metalk8s/service-configuration/deployed/init.sls'),
 
+    targets.TemplateFile(
+        task_name='salt/metalk8s/reactor/certs/renew.sls',
+        source=constants.ROOT.joinpath(
+            'salt', 'metalk8s', 'reactor', 'certs', 'renew.sls.in'
+        ),
+        destination=constants.ISO_ROOT.joinpath(
+            'salt', 'metalk8s', 'reactor', 'certs', 'renew.sls'
+        ),
+        context={'VERSION': versions.VERSION},
+        file_dep=[versions.VERSION_FILE],
+    ),
+
     Path('salt/metalk8s/repo/configured.sls'),
     Path('salt/metalk8s/repo/deployed.sls'),
     Path('salt/metalk8s/repo/files/apt.sources.list.j2'),
