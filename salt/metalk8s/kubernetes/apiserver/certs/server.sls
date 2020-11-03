@@ -1,3 +1,4 @@
+{%- from "metalk8s/map.jinja" import certificates with context %}
 {%- from "metalk8s/map.jinja" import kube_api with context %}
 
 {%- set kubernetes_service_ip = salt.metalk8s_network.get_kubernetes_service_ip() %}
@@ -35,12 +36,18 @@ Create kube-apiserver private key:
 
 Generate kube-apiserver certificate:
   x509.certificate_managed:
-    - name: /etc/kubernetes/pki/apiserver.crt
+    - name: {{ certificates.server.files.apiserver.path }}
     - public_key: {{ private_key_path }}
     - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
     - signing_policy: {{ kube_api.cert.server_signing_policy }}
     - CN: kube-apiserver
     - subjectAltName: "{{ salt['metalk8s.format_san'](certSANs | unique) }}"
+    - days_valid: {{
+        certificates.server.files.apiserver.days_valid |
+        default(certificates.server.days_valid) }}
+    - days_remaining: {{
+        certificates.server.files.apiserver.days_remaining |
+        default(certificates.server.days_remaining) }}
     - user: root
     - group: root
     - mode: 644

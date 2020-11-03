@@ -1,4 +1,5 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+{%- from "metalk8s/map.jinja" import certificates with context %}
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
 {%- from "metalk8s/addons/nginx-ingress-control-plane/control-plane-ip.sls"
@@ -31,16 +32,16 @@ Create kube-apiserver Pod manifest:
     - source: salt://metalk8s/kubernetes/files/control-plane-manifest.yaml
     - config_files:
         - {{ encryption_k8s_path }}
-        - /etc/kubernetes/pki/apiserver.crt
+        - {{ certificates.server.files.apiserver.path }}
         - /etc/kubernetes/pki/apiserver.key
-        - /etc/kubernetes/pki/apiserver-etcd-client.crt
+        - {{ certificates.client.files['apiserver-etcd'].path }}
         - /etc/kubernetes/pki/apiserver-etcd-client.key
-        - /etc/kubernetes/pki/apiserver-kubelet-client.crt
+        - {{ certificates.client.files['apiserver-kubelet'].path }}
         - /etc/kubernetes/pki/apiserver-kubelet-client.key
         - /etc/kubernetes/pki/ca.crt
         - /etc/kubernetes/pki/etcd/ca.crt
         - /etc/kubernetes/pki/front-proxy-ca.crt
-        - /etc/kubernetes/pki/front-proxy-client.crt
+        - {{ certificates.client.files['front-proxy'].path }}
         - /etc/kubernetes/pki/front-proxy-client.key
         - /etc/kubernetes/pki/sa.pub
         - /etc/metalk8s/pki/nginx-ingress/ca.crt
@@ -61,14 +62,14 @@ Create kube-apiserver Pod manifest:
           - --enable-bootstrap-token-auth=true
           - --encryption-provider-config={{ encryption_k8s_path }}
           - --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt
-          - --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt
+          - --etcd-certfile={{ certificates.client.files['apiserver-etcd'].path }}
           - --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
           - --etcd-servers={{ etcd_servers | join(",") }}
           - --insecure-port=0
-          - --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt
+          - --kubelet-client-certificate={{ certificates.client.files['apiserver-kubelet'].path }}
           - --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key
           - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
-          - --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt
+          - --proxy-client-cert-file={{ certificates.client.files['front-proxy'].path }}
           - --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key
           - --requestheader-allowed-names=front-proxy-client
           - --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt
@@ -78,7 +79,7 @@ Create kube-apiserver Pod manifest:
           - --secure-port=6443
           - --service-account-key-file=/etc/kubernetes/pki/sa.pub
           - --service-cluster-ip-range={{ networks.service }}
-          - --tls-cert-file=/etc/kubernetes/pki/apiserver.crt
+          - --tls-cert-file={{ certificates.server.files.apiserver.path }}
           - --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
           - --oidc-issuer-url=https://{{ ingress_control_plane }}/oidc
           - --oidc-client-id=oidc-auth-client
