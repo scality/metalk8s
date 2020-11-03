@@ -46,7 +46,7 @@ const NodeListContainer = styled.div`
 
     th {
       font-weight: bold;
-      height: 56px;
+      height: 35px;
       text-align: left;
       padding: ${padding.smaller};
     }
@@ -107,6 +107,7 @@ const Cell = styled.td`
 
 const ActionContainer = styled.span`
   display: flex;
+  justify-content: space-between;
 `;
 
 const NodeNameText = styled.div`

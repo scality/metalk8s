@@ -118,6 +118,12 @@ const CreateVolumeButton = styled(Button)`
   margin-left: ${padding.larger};
 `;
 
+const ActionContainer = styled.span`
+  display: flex;
+  justify-content: space-between;
+  padding: ${padding.base};
+`;
+
 const TooltipContent = styled.div`
   color: ${(props) => props.theme.brand.textSecondary};
   font-weight: ${fontWeight.bold};
@@ -189,7 +195,7 @@ function GlobalFilter({
         letterSpacing: 'normal',
         paddingLeft: '10px',
       }}
-  />
+    />
   );
 }
 
@@ -300,41 +306,37 @@ function Table({
         <thead>
           {/* The first row should be the search bar */}
           <HeadRow>
-            {isSearchBar ? (
-              <th
-                style={{
-                  textAlign: 'left',
-                }}
-              >
-                <GlobalFilter
-                  preGlobalFilteredRows={preGlobalFilteredRows}
-                  globalFilter={state.globalFilter}
-                  setGlobalFilter={setGlobalFilter}
-                  nodeName={nodeName}
-                  theme={theme}
-                />
-              </th>
-            ) : null}
             <th
               style={{
-                textAlign: 'right',
+                textAlign: 'left',
               }}
             >
-              <CreateVolumeButton
-                size="small"
-                variant={isSearchBar ? 'secondary' : 'base'}
-                text={intl.translate('create_new_volume')}
-                icon={<i className="fas fa-plus-circle"></i>}
-                onClick={() => {
-                  // depends on if we add node filter
-                  if (nodeName) {
-                    history.push(`/volumes/createVolume?node=${nodeName}`);
-                  } else {
-                    history.push('/volumes/createVolume');
-                  }
-                }}
-                data-cy="create-volume-button"
-              />
+              <ActionContainer>
+                {isSearchBar ? (
+                  <GlobalFilter
+                    preGlobalFilteredRows={preGlobalFilteredRows}
+                    globalFilter={state.globalFilter}
+                    setGlobalFilter={setGlobalFilter}
+                    nodeName={nodeName}
+                    theme={theme}
+                  />
+                ) : null}
+                <CreateVolumeButton
+                  size="small"
+                  variant={isSearchBar ? 'secondary' : 'base'}
+                  text={intl.translate('create_new_volume')}
+                  icon={<i className="fas fa-plus-circle"></i>}
+                  onClick={() => {
+                    // depends on if we add node filter
+                    if (nodeName) {
+                      history.push(`/volumes/createVolume?node=${nodeName}`);
+                    } else {
+                      history.push('/volumes/createVolume');
+                    }
+                  }}
+                  data-cy="create-volume-button"
+                />
+              </ActionContainer>
             </th>
           </HeadRow>
 
