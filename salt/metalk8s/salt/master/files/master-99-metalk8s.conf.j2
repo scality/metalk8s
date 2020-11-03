@@ -59,3 +59,7 @@ kubernetes.kubeconfig: {{ kubeconfig }}
 {%- if kubecontext is defined and kubecontext %}
 kubernetes.context: {{ kubecontext }}
 {%- endif %}
+
+reactor:
+  - 'salt/beacon/*/metalk8s_watch_certificates_expiry/':
+    - salt://metalk8s/reactor/certs/renew.sls?saltenv={{ saltenv }}
