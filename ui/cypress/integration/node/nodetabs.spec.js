@@ -82,6 +82,7 @@ describe('Node page metrics tab', () => {
   tabSwitchingTestCases('metrics');
 
   it('brings me to the Grafana Node Detailed dashboard', () => {
+    cy.wait('@getNodeUNameInfo');
     cy.get('[data-cy="advanced_metrics_node_detailed"]')
       .should('have.attr', 'href')
       .and(
@@ -100,7 +101,8 @@ describe('Node page volumes tabs', () => {
   tabSwitchingTestCases('volumes');
 
   it('brings me to the loki-vol volume page', () => {
-    cy.get('[data-cy=volume_table_name_cell]')
+    cy.wait('@getVolumes');
+    cy.get('[data-cy="volume_table_name_cell"]')
       .contains('td', 'loki-vol')
       .click();
     cy.get('@historyPush').should(

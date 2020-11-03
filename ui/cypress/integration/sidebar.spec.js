@@ -40,9 +40,9 @@ describe('Sidebar', () => {
     cy.window()
       .its('localStorage')
       .invoke('setItem', SIDEBAR_EXPANDED, 'false');
-
+    // To make sure to apply the setting of sidebar in localStorage.
+    cy.visit('/');
     cy.get('.sc-sidebar > :first').click();
-
     cy.get('.sc-sidebar').should(
       'have.attr',
       'data-cy-state-isexpanded',
@@ -56,7 +56,7 @@ describe('Sidebar', () => {
 
   it('can be collapsed', () => {
     cy.window().its('localStorage').invoke('setItem', SIDEBAR_EXPANDED, 'true');
-
+    cy.visit('/');
     cy.get('.sc-sidebar > :first').click();
 
     cy.get('.sc-sidebar').should(
