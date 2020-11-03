@@ -181,7 +181,7 @@ function GlobalFilter({
         width: '223px',
         height: '27px',
         borderRadius: '4px',
-        backgroundColor: theme.brand.primary,
+        backgroundColor: theme.brand.primaryDark2,
         fontFamily: 'Lato',
         fontStyle: 'italic',
         opacity: '0.6',
@@ -189,7 +189,7 @@ function GlobalFilter({
         letterSpacing: 'normal',
         paddingLeft: '10px',
       }}
-    />
+  />
   );
 }
 
