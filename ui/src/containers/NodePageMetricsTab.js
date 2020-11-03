@@ -75,6 +75,10 @@ const ActionContainer = styled.div`
   flex-direction: row;
   justify-content: flex-end;
   padding: ${padding.large} ${padding.base};
+
+  .sc-button {
+    background-color: ${(props) => props.theme.brand.info};
+  }
 `;
 
 const DropdownContainer = styled.div`

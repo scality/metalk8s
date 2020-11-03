@@ -48,6 +48,8 @@ const MetricGraphTitle = styled.div`
   padding: ${padding.small};
   display: flex;
   flex-direction: row-reverse;
+  padding: ${padding.large} ${padding.base};
+
   .sc-dropdown {
     padding-left: 25px;
   }

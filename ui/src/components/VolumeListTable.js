@@ -122,6 +122,7 @@ const ActionContainer = styled.span`
   display: flex;
   justify-content: space-between;
   padding: ${padding.base};
+  flex-direction: row-reverse;
 `;
 
 const TooltipContent = styled.div`
@@ -312,18 +313,9 @@ function Table({
               }}
             >
               <ActionContainer>
-                {isSearchBar ? (
-                  <GlobalFilter
-                    preGlobalFilteredRows={preGlobalFilteredRows}
-                    globalFilter={state.globalFilter}
-                    setGlobalFilter={setGlobalFilter}
-                    nodeName={nodeName}
-                    theme={theme}
-                  />
-                ) : null}
                 <CreateVolumeButton
                   size="small"
-                  variant={isSearchBar ? 'secondary' : 'base'}
+                  variant={'secondary'}
                   text={intl.translate('create_new_volume')}
                   icon={<i className="fas fa-plus-circle"></i>}
                   onClick={() => {
@@ -336,6 +328,15 @@ function Table({
                   }}
                   data-cy="create-volume-button"
                 />
+                {isSearchBar ? (
+                  <GlobalFilter
+                    preGlobalFilteredRows={preGlobalFilteredRows}
+                    globalFilter={state.globalFilter}
+                    setGlobalFilter={setGlobalFilter}
+                    nodeName={nodeName}
+                    theme={theme}
+                  />
+                ) : null}
               </ActionContainer>
             </th>
           </HeadRow>
