@@ -7,6 +7,7 @@ import { VolumeTab } from './CommonLayoutStyle';
 const VolumeObjectContent = styled.div`
   white-space: pre-wrap;
   font-size: ${fontSize.base};
+  padding: ${padding.small};
 `;
 
 const ErrorText = styled.div`

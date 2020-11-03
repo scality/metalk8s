@@ -35,11 +35,8 @@ import {
 import { intl } from '../translations/IntlGlobalProvider';
 
 const NodePageRSPContainer = styled.div`
-  flex-direction: column;
-  width: 51%;
-  padding-left: ${padding.small};
   .sc-tabs {
-    margin-top: 0;
+    margin: 0;
   }
   .sc-tabs-bar {
     height: 40px;

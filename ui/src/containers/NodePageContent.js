@@ -11,6 +11,7 @@ import NodePageRSP from './NodePageRSP';
 import {
   LeftSideInstanceList,
   PageContentContainer,
+  RightSidePanel,
 } from '../components/CommonLayoutStyle';
 
 // <NodePageContent> get the current selected node and pass it to <NodeListTable> and <NodePageRSP>
@@ -27,24 +28,26 @@ const NodePageContent = (props) => {
       <LeftSideInstanceList>
         <NodeListTable nodeTableData={nodeTableData} />
       </LeftSideInstanceList>
-      <Switch>
-        {/* Auto select the first node in the list */}
-        <Route
-          exact
-          path={`${path}`}
-          render={() =>
-            defaultSelectNodeName && (
-              <Redirect to={`${path}/${defaultSelectNodeName}/overview`} />
-            )
-          }
-        ></Route>
-        <Route
-          path={`${path}/:name`}
-          render={() => {
-            return <NodePageRSP nodeTableData={nodeTableData} />;
-          }}
-        ></Route>
-      </Switch>
+      <RightSidePanel>
+        <Switch>
+          {/* Auto select the first node in the list */}
+          <Route
+            exact
+            path={`${path}`}
+            render={() =>
+              defaultSelectNodeName && (
+                <Redirect to={`${path}/${defaultSelectNodeName}/overview`} />
+              )
+            }
+          ></Route>
+          <Route
+            path={`${path}/:name`}
+            render={() => {
+              return <NodePageRSP nodeTableData={nodeTableData} />;
+            }}
+          ></Route>
+        </Switch>
+      </RightSidePanel>
     </PageContentContainer>
   );
 };

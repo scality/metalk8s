@@ -24,7 +24,7 @@ export const RightSidePanel = styled.div`
   width: 51%;
   /* Make it scrollable for the small laptop screen */
   overflow-y: scroll;
-  margin: ${padding.small};
+  margin: 0 ${padding.small} 0 8px;
 `;
 
 export const NoInstanceSelectedContainer = styled.div`

@@ -21,6 +21,7 @@ import {
   NoInstanceSelectedContainer,
   NoInstanceSelected,
   TextBadge,
+  RightSidePanel,
 } from '../components/CommonLayoutStyle';
 import { intl } from '../translations/IntlGlobalProvider';
 
@@ -31,7 +32,7 @@ height: 100%;
 width: 100%;
 
 .sc-tabs {
-  margin: 0 ${padding.small} 0 ${padding.smaller};
+  margin: 0;
 }
 
 .sc-tabs-bar {
@@ -57,13 +58,6 @@ width: 100%;
   background-color: ${(props) => props.theme.brand.primary};
   padding: 0;
 }
-`;
-
-const RightSidePanel = styled.div`
-  flex-direction: column;
-  width: 55%;
-  overflow-y: scroll;
-  margin: 0 ${padding.small} ${padding.small} 0;
 `;
 
 // <VolumePageContent> component extracts volume name from URL and holds the volume-specific data.

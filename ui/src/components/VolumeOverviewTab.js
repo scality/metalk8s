@@ -100,7 +100,7 @@ const VolumeSectionTitle = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.bold};
-  padding: ${padding.small} 0 ${padding.base} 0;
+  padding: 0 0 ${padding.base} 0;
 `;
 
 const ProgressBarContainer = styled.div`
