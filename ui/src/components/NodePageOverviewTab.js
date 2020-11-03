@@ -66,16 +66,23 @@ const Detail = styled.div`
   width: 100%;
 `;
 
+const InformationWrapper = styled.div`
+  width: 50%;
+  word-break: break-all;
+`;
+
 const ActiveAlertTitle = styled.div`
-  padding-bottom: ${padding.base};
+  color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.base};
+  font-weight: ${fontWeight.bold};
 `;
 
 const ActiveAlertWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding-left: ${padding.base};
-  width: 30%;
+  width: 48%;
+  margin-left: 2%;
 `;
 
 const DeployButton = styled(Button)`
@@ -216,7 +223,7 @@ const NodePageOverviewTab = (props) => {
         </NodeNameContainer>
 
         <Detail>
-          <div>
+          <InformationWrapper>
             <InformationSpan>
               <InformationLabel>Control Plane IP</InformationLabel>
               <InformationValue>
@@ -291,7 +298,7 @@ const NodePageOverviewTab = (props) => {
                   intl.translate('unknown')}
               </InformationValue>
             </InformationSpan>
-          </div>
+          </InformationWrapper>
           <ActiveAlertWrapper>
             <ActiveAlertTitle>
               {intl.translate('active_alert')}
