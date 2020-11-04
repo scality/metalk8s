@@ -15,7 +15,7 @@ import {
   yAxisWriteRead,
   yAxisInOut,
 } from '../components/LinechartSpec';
-import { TabContainer } from '../components/CommonLayoutStyle';
+import { NodeTab } from '../components/CommonLayoutStyle';
 import {
   addMissingDataPoint,
   fromUnixTimestampToDate,
@@ -296,7 +296,7 @@ const NodePageMetricsTab = (props) => {
   );
 
   return (
-    <TabContainer>
+    <NodeTab>
       <ActionContainer>
         <Button
           text={intl.translate('advanced_metrics')}
@@ -433,7 +433,7 @@ const NodePageMetricsTab = (props) => {
           </Graph>
         </RowGraphContainer>
       </GraphsContainer>
-    </TabContainer>
+    </NodeTab>
   );
 };
 

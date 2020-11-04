@@ -52,11 +52,12 @@ export const PageContentContainer = styled.div`
 `;
 
 // Common styles for the tabs in NodePageRSP
-export const TabContainer = styled.div`
+export const NodeTab = styled.div`
   background-color: ${(props) => props.theme.brand.primary};
   color: ${(props) => props.theme.brand.textPrimary};
   padding-top: ${padding.base};
   padding-bottom: ${padding.base};
+  height: calc(100vh - 172px);
 `;
 
 export const TextBadge = styled.span`
@@ -71,7 +72,7 @@ export const TextBadge = styled.span`
 
 export const VolumeTab = styled.div`
   overflow: scroll;
-  max-height: calc(100vh - 188px);
+  height: calc(100vh - 174px);
   color: ${(props) => props.theme.brand.textPrimary};
   padding-top: ${padding.base};
   padding-bottom: ${padding.base};

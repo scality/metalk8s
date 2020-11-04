@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { useTable } from 'react-table';
 import styled from 'styled-components';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
-import { TabContainer } from './CommonLayoutStyle';
+import { NodeTab } from './CommonLayoutStyle';
 import {
   STATUS_RUNNING,
   STATUS_PENDING,
@@ -198,11 +198,11 @@ const NodePagePodsTab = (props) => {
     [config],
   );
   return (
-    <TabContainer>
+    <NodeTab>
       <PodTableContainer>
         <Table columns={columns} data={pods} />
       </PodTableContainer>
-    </TabContainer>
+    </NodeTab>
   );
 };
 

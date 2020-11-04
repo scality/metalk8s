@@ -12,7 +12,7 @@ import ActiveAlertsCounter from './ActiveAlertsCounter';
 import { Button, Steppers, Loader } from '@scality/core-ui';
 import isEmpty from 'lodash.isempty';
 import { deployNodeAction } from '../ducks/app/nodes';
-import { TabContainer } from './CommonLayoutStyle';
+import { NodeTab } from './CommonLayoutStyle';
 import CircleStatus from './CircleStatus';
 import { API_STATUS_UNKNOWN } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
@@ -196,7 +196,7 @@ const NodePageOverviewTab = (props) => {
   );
 
   return (
-    <TabContainer>
+    <NodeTab>
       <TabContentContainer>
         <NodeNameContainer>
           <NodeNameStatusContainer>
@@ -331,7 +331,7 @@ const NodePageOverviewTab = (props) => {
           </NodeDeploymentWrapper>
         ) : null}
       </TabContentContainer>
-    </TabContainer>
+    </NodeTab>
   );
 };
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
-import { TabContainer } from './CommonLayoutStyle';
+import { NodeTab } from './CommonLayoutStyle';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const NodeObjectContent = styled.div`
@@ -24,7 +24,7 @@ const NodePageDetailsTab = (props) => {
   );
 
   return (
-    <TabContainer>
+    <NodeTab>
       <NodeObjectContent>
         {currentNodeObject ? (
           JSON.stringify(currentNodeObject, null, '\t')
@@ -32,7 +32,7 @@ const NodePageDetailsTab = (props) => {
           <ErrorText>{intl.translate('error_volume_details')}</ErrorText>
         )}
       </NodeObjectContent>
-    </TabContainer>
+    </NodeTab>
   );
 };
 
