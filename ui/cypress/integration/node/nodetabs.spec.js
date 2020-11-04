@@ -9,6 +9,7 @@ const tabSwitchingTestCases = (sourceTab) => {
     .filter((tab) => tab !== sourceTab)
     .map((tab) => {
       it(`brings me to the ${tab} tab`, () => {
+        cy.stubHistory();
         cy.get(`[data-cy="${tab}_tab_node_page"]`).click();
         cy.get('@historyPush').should(
           'be.calledWith',
@@ -19,6 +20,9 @@ const tabSwitchingTestCases = (sourceTab) => {
 
   it('does not switch to the current tab', () => {
     cy.get(`[data-cy="${sourceTab}_tab_node_page"]`).click();
+    // When it come to the volume tab, given we implement the sorting, the history should store `?sort=health`
+    // So we need to stub the history after the click()
+    cy.stubHistory();
     cy.get('@historyPush').should('not.be.called');
   });
 };
@@ -27,7 +31,6 @@ const tabSwitchingTestCases = (sourceTab) => {
 describe('Node page overview tab', () => {
   beforeEach(() => {
     cy.visit('/nodes/master-0/overview');
-    cy.stubHistory();
   });
 
   tabSwitchingTestCases('overview');
@@ -35,6 +38,7 @@ describe('Node page overview tab', () => {
   const alertSeverities = ['critical', 'warning'];
   alertSeverities.map((severity) => {
     it(`brings me to the alert tab prefiltered by ${severity} severity`, () => {
+      cy.stubHistory();
       cy.get(`[data-cy="${severity}_counter_node"]`).click();
       cy.get('@historyPush').should(
         'be.calledWith',
@@ -47,7 +51,6 @@ describe('Node page overview tab', () => {
 describe('Node page alerts tab', () => {
   beforeEach(() => {
     cy.visit('/nodes/master-0/alerts');
-    cy.stubHistory();
   });
 
   tabSwitchingTestCases('alerts');
@@ -59,6 +62,7 @@ describe('Node page alerts tab', () => {
   ];
   alertSeverities.map((severity) => {
     it(`adds the filter of ${severity.value}`, () => {
+      cy.stubHistory();
       cy.get('[data-cy="alert_filter"]').click();
 
       cy.get('.sc-dropdown .trigger .menu-item')
@@ -76,12 +80,12 @@ describe('Node page alerts tab', () => {
 describe('Node page metrics tab', () => {
   beforeEach(() => {
     cy.visit('/nodes/master-0/metrics');
-    cy.stubHistory();
   });
 
   tabSwitchingTestCases('metrics');
 
   it('brings me to the Grafana Node Detailed dashboard', () => {
+    cy.stubHistory();
     cy.wait('@getNodeUNameInfo');
     cy.get('[data-cy="advanced_metrics_node_detailed"]')
       .should('have.attr', 'href')
@@ -95,12 +99,12 @@ describe('Node page metrics tab', () => {
 describe('Node page volumes tabs', () => {
   beforeEach(() => {
     cy.visit('/nodes/master-0/volumes');
-    cy.stubHistory();
   });
 
   tabSwitchingTestCases('volumes');
 
   it('brings me to the loki-vol volume page', () => {
+    cy.stubHistory();
     cy.wait('@getVolumes');
     cy.get('[data-cy="volume_table_name_cell"]')
       .contains('td', 'loki-vol')
@@ -115,7 +119,6 @@ describe('Node page volumes tabs', () => {
 describe('Node page details tabs', () => {
   beforeEach(() => {
     cy.visit('/nodes/master-0/details');
-    cy.stubHistory();
   });
 
   tabSwitchingTestCases('details');
