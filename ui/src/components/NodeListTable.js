@@ -46,7 +46,7 @@ const NodeListContainer = styled.div`
 
     th {
       font-weight: bold;
-      height: 35px;
+      height: 31px;
       text-align: left;
       padding: ${padding.smaller};
     }
