@@ -63,3 +63,5 @@ kubernetes.context: {{ kubecontext }}
 reactor:
   - 'salt/beacon/*/metalk8s_watch_certificates_expiry/':
     - salt://metalk8s/reactor/certs/renew.sls?saltenv={{ saltenv }}
+  - 'salt/beacon/*/metalk8s_watch_kubeconfig_expiry/':
+    - salt://metalk8s/reactor/certs/renew.sls?saltenv={{ saltenv }}
