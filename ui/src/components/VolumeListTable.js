@@ -468,7 +468,7 @@ const VolumeListTable = (props) => {
       {
         Header: 'Usage',
         accessor: 'usage',
-        cellStyle: { textAlign: 'center', width: '100px' },
+        cellStyle: { textAlign: 'center', width: '130px' },
         Cell: ({ value }) => {
           return (
             <ProgressBar
