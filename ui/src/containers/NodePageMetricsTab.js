@@ -91,7 +91,6 @@ const DropdownContainer = styled.div`
     background-color: ${(props) => props.theme.brand.primary};
     border: 1px solid ${(props) => props.theme.brand.borderLight}
     border-radius: 3px;
-    height: 32px;
   }
   
   .sc-button {
@@ -312,7 +311,7 @@ const NodePageMetricsTab = (props) => {
           <Dropdown
             items={metricsTimeSpanDropdownItems}
             text={metricsTimeSpan}
-            size="smaller"
+            size="small"
           />
         </DropdownContainer>
       </ActionContainer>
