@@ -15,6 +15,7 @@ def managed(name,
             client_cert_info,
             apiserver,
             cluster,
+            days_remaining=90,
             **kwargs):
     """Generate kubeconfig file with identities for control plane components"""
     ret = {
@@ -44,7 +45,7 @@ def managed(name,
 
     # Validate if a kubeconfig already exists (idempotency)
     if __salt__['metalk8s_kubeconfig.validate'](
-            name, b64_ca_cert, apiserver, user):
+            name, b64_ca_cert, apiserver, user, days_remaining):
         ret.update({'comment': 'kubeconfig file exists and is up-to-date'})
         return ret
 
