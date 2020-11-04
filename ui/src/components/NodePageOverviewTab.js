@@ -75,6 +75,7 @@ const ActiveAlertTitle = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.bold};
+  padding: 0 0 ${padding.base} 0;
 `;
 
 const ActiveAlertWrapper = styled.div`
