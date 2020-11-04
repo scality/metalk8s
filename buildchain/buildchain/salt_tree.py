@@ -662,6 +662,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
 
     Path('salt/_auth/kubernetes_rbac.py'),
 
+    Path('salt/_beacons/metalk8s_kubeconfig_info.py'),
+
     Path('salt/_modules/containerd.py'),
     Path('salt/_modules/cri.py'),
     Path('salt/_modules/metalk8s.py'),
