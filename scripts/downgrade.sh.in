@@ -124,7 +124,7 @@ launch_downgrade () {
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
         metalk8s.orchestrate.downgrade \
         saltenv="$SALTENV" \
-        "${FORCE:+pillar={'metalk8s': {'downgrade': {'enabled': true\}\}\}}"
+        ${FORCE:+pillar="{'metalk8s': {'downgrade': {'enabled': true}}}"}
 }
 
 downgrade_bootstrap () {
