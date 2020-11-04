@@ -58,6 +58,7 @@ export const NodeTab = styled.div`
   padding-top: ${padding.base};
   padding-bottom: ${padding.base};
   height: calc(100vh - 172px);
+  overflow: scroll;
 `;
 
 export const TextBadge = styled.span`
