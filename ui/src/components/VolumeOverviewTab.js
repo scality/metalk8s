@@ -21,6 +21,7 @@ import {
 import { Button, Modal, ProgressBar, Loader } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 import { VolumeTab } from './CommonLayoutStyle';
+import { formatSizeForDisplay } from '../services/utils';
 
 const VolumeDetailCardContainer = styled.div`
   display: flex;
@@ -251,7 +252,7 @@ const VolumeDetailCard = (props) => {
           </InformationSpan>
           <InformationSpan>
             <InformationLabel>{intl.translate('size')}</InformationLabel>
-            <InformationValue>{storage}</InformationValue>
+            <InformationValue>{formatSizeForDisplay(storage)}</InformationValue>
           </InformationSpan>
           <InformationSpan>
             <InformationLabel>{intl.translate('status')}</InformationLabel>

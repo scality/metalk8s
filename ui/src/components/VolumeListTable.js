@@ -24,7 +24,11 @@ import {
   VOLUME_CONDITION_UNLINK,
   VOLUME_CONDITION_EXCLAMATION,
 } from '../constants';
-import { allSizeUnitsToBytes, compareHealth } from '../services/utils';
+import {
+  allSizeUnitsToBytes,
+  compareHealth,
+  formatSizeForDisplay,
+} from '../services/utils';
 
 const VolumeListContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
@@ -485,6 +489,7 @@ const VolumeListTable = (props) => {
         accessor: 'storageCapacity',
         cellStyle: { textAlign: 'center', width: '70px' },
         sortType: 'size',
+        Cell: ({ value }) => formatSizeForDisplay(value),
       },
       {
         Header: 'Status',
