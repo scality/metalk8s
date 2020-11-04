@@ -70,7 +70,7 @@
   "storageCapacity": "Capacité de Stockage",
   "storageClass": "Classe de Stockage",
   "creationTime": "Date de Création",
-  "create_new_volume": "Créer un Nouveau Volume",
+  "create_new_volume": "Créer Volume",
   "no_volume_found": "Aucun volume sur ce nœud",
   "no_searched_volume_found": "Aucun volume correspondant à la recherche",
   "volume_type": "Type de Volume",
