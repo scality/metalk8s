@@ -173,6 +173,7 @@ function GlobalFilter({
           letterSpacing: 'normal',
           paddingLeft: '10px',
         }}
+        data-cy="node_list_search"
       />
       <CreateNodeButton
         size="small"
@@ -182,7 +183,7 @@ function GlobalFilter({
         onClick={() => {
           history.push('/nodes/create');
         }}
-        data-cy="create-node-button"
+        data-cy="create_node_button"
       />
     </ActionContainer>
   );

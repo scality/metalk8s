@@ -340,7 +340,7 @@ function Table({
                       history.push('/volumes/createVolume');
                     }
                   }}
-                  data-cy="create-volume-button"
+                  data-cy="create_volume_button"
                 />
                 {isSearchBar ? (
                   <GlobalFilter
