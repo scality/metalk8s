@@ -12,7 +12,6 @@ import (
 	"k8s.io/client-go/rest"
 
 	"example-solution-operator/pkg/apis"
-	opConfig "example-solution-operator/pkg/config"
 	"example-solution-operator/pkg/controller"
 	"example-solution-operator/version"
 
@@ -22,6 +21,7 @@ import (
 	"github.com/operator-framework/operator-sdk/pkg/log/zap"
 	"github.com/operator-framework/operator-sdk/pkg/metrics"
 	sdkVersion "github.com/operator-framework/operator-sdk/version"
+	opConfig "github.com/scality/metalk8s/go/solution-operator-lib/pkg/config"
 	"github.com/spf13/pflag"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -78,16 +78,11 @@ func main() {
 
 	printVersion()
 
-	operatorConfig := &opConfig.OperatorConfig{}
-	if operatorConfigFile != "" {
-		cfg, err := opConfig.LoadConfigurationFromFile(operatorConfigFile)
-		if err != nil {
-			log.Error(err, "")
-			os.Exit(1)
-		}
-		operatorConfig = cfg
+	operatorConfig, err := loadOperatorConfig(operatorConfigFile)
+	if err != nil {
+		log.Error(err, "failed to load %s", operatorConfigFile)
+		os.Exit(1)
 	}
-
 	log.Info(fmt.Sprintf("Operator configuration loaded: %+v\n", operatorConfig))
 
 	namespace, err := k8sutil.GetWatchNamespace()
@@ -157,6 +152,14 @@ func main() {
 		log.Error(err, "Manager exited non-zero")
 		os.Exit(1)
 	}
+}
+
+func loadOperatorConfig(configPath string) (*opConfig.OperatorConfig, error) {
+	if configPath == "" {
+		return &opConfig.OperatorConfig{}, nil
+	}
+
+	return opConfig.LoadConfigurationFromFile(configPath)
 }
 
 // serveCRMetrics gets the Operator/CustomResource GVKs and generates metrics based on those types.

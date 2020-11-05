@@ -1,0 +1,13 @@
+apiVersion: solutions.metalk8s.scality.com/v1alpha1
+kind: OperatorConfig
+repositories:
+  1.0.0:
+    - endpoint: docker.io/grafana
+      images:
+        - grafana:6.7.4
+    - endpoint: docker.io/prom
+      images:
+        - prometheus:v2.16.0
+    - endpoint: docker.io/bitnami
+      images:
+        - prometheus-operator:v0.38.1

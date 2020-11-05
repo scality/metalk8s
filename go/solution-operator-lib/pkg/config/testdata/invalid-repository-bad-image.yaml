@@ -1,0 +1,7 @@
+apiVersion: solutions.metalk8s.scality.com/v1alpha1
+kind: OperatorConfig
+repositories:
+  1.0.0:
+    - endpoint: docker.io/grafana
+      images:
+        - ""
