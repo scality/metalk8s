@@ -477,7 +477,10 @@ const VolumeListTable = (props) => {
       {
         Header: 'Usage',
         accessor: 'usage',
-        cellStyle: { textAlign: 'center', width: '130px' },
+        cellStyle: {
+          textAlign: 'center',
+          width: isNodeColumn ? '120px' : '150px',
+        },
         Cell: ({ value }) => {
           return (
             <ProgressBar
@@ -492,14 +495,20 @@ const VolumeListTable = (props) => {
       {
         Header: 'Size',
         accessor: 'storageCapacity',
-        cellStyle: { textAlign: 'center', width: '70px' },
+        cellStyle: {
+          textAlign: 'center',
+          width: isNodeColumn ? '70px' : '110px',
+        },
         sortType: 'size',
         Cell: ({ value }) => formatSizeForDisplay(value),
       },
       {
         Header: 'Status',
         accessor: 'status',
-        cellStyle: { textAlign: 'center', width: '70px' },
+        cellStyle: {
+          textAlign: 'center',
+          width: isNodeColumn ? '70px' : '110px',
+        },
         Cell: (cellProps) => {
           const volume = volumeListData?.find(
             (vol) => vol.name === cellProps.cell.row.values.name,
@@ -543,13 +552,16 @@ const VolumeListTable = (props) => {
       {
         Header: 'Latency',
         accessor: 'latency',
-        cellStyle: { textAlign: 'center', width: '70px' },
+        cellStyle: {
+          textAlign: 'center',
+          width: isNodeColumn ? '70px' : '110px',
+        },
         Cell: (cellProps) => {
           return cellProps.value !== undefined ? cellProps.value + ' µs' : null;
         },
       },
     ],
-    [volumeListData, theme],
+    [volumeListData, theme, isNodeColumn],
   );
   const nodeCol = { Header: 'Node', accessor: 'node' };
   if (isNodeColumn) {
