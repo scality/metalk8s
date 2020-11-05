@@ -1,11 +1,11 @@
 package util
 
 import (
-	"example-solution-operator/pkg/config"
 	"example-solution-operator/version"
 	"fmt"
 	"os"
 
+	"github.com/scality/metalk8s/go/solution-operator-lib/pkg/config"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
