@@ -181,22 +181,22 @@ const VolumePageContent = (props) => {
     {
       selected: isOverviewPage,
       title: intl.translate('overview'),
-      onClick: () => history.push(`${match.url}/overview${query.toString() && `?${query.toString()}`}`),
+      onClick: () => history.replace(`${match.url}/overview${query.toString() && `?${query.toString()}`}`),
     },
     {
       selected: isAlertsPage,
       title: (<span>{intl.translate('alerts')}<TextBadge>{alertlist?.length}</TextBadge></span>),
-      onClick: () => history.push(`${match.url}/alerts${query.toString() && `?${query.toString()}`}`),
+      onClick: () => history.replace(`${match.url}/alerts${query.toString() && `?${query.toString()}`}`),
     },
     {
       selected: isMetricsPage,
       title: (<span>{intl.translate('metrics')}</span>),
-      onClick: () => history.push(`${match.url}/metrics${query.toString() && `?${query.toString()}`}`),
+      onClick: () => history.replace(`${match.url}/metrics${query.toString() && `?${query.toString()}`}`),
     },
     {
       selected: isDetailsPage,
       title: (<span>{intl.translate('details')}</span>),
-      onClick: () => history.push(`${match.url}/details${query.toString() && `?${query.toString()}`}`),
+      onClick: () => history.replace(`${match.url}/details${query.toString() && `?${query.toString()}`}`),
     },
   ];
 
