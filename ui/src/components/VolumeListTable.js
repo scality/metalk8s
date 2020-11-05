@@ -91,11 +91,16 @@ const HeadRow = styled.tr`
 
 const TableRow = styled(HeadRow)`
   height: 48px;
+  border-bottom: 1px solid ${(props) => props.theme.brand.border};
   &:hover,
   &:focus {
     background-color: ${(props) => props.theme.brand.backgroundBluer};
     outline: none;
     cursor: pointer;
+  }
+
+  &:last-child {
+    border: none;
   }
 
   background-color: ${(props) =>
