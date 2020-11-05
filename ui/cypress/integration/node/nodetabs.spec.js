@@ -68,7 +68,6 @@ describe('Node page alerts tab', () => {
       cy.get('.sc-dropdown .trigger .menu-item')
         .contains('li', severity.name)
         .click();
-      cy.get('[data-cy="metrics_tab_node_page"]').click();
       cy.get('@historyPush').should(
         'be.calledWith',
         `?severity=${severity.value}`,
@@ -94,6 +93,40 @@ describe('Node page metrics tab', () => {
         'grafana/dashboard/db/nodes-detailed?var-DS_PROMETHEUS=Prometheus&var-job=node-exporter&var-name=zenkotda-master-0.novalocal',
       );
   });
+
+  const LAST_SEVEN_DAYS = 'Last 7 days';
+  const LAST_ONE_HOUR = 'Last 1 hour';
+  const LAST_TWENTY_FOUR_HOURS = 'Last 24 hours';
+  const queryTimeSpansCodes = [
+    {
+      label: 'now-7d',
+      value: LAST_SEVEN_DAYS,
+    },
+    {
+      label: 'now-1h',
+      value: LAST_ONE_HOUR,
+    },
+  ];
+
+  queryTimeSpansCodes.map((timeSpan) => {
+    it(`brings me to the metrics of ${timeSpan.value}`, () => {
+      cy.stubHistory();
+      cy.get('[data-cy="metrics_timespan_selection"]').click();
+      cy.get(`[data-cy="${timeSpan.value}"]`).click();
+      cy.get('@historyPush').should('be.calledWith', {
+        search: `from=${timeSpan.label}`,
+      });
+    });
+  });
+  it(`brings me to the metrics of ${LAST_TWENTY_FOUR_HOURS}`, () => {
+    cy.visit('/nodes/master-0/metrics?from=now-1h');
+    cy.stubHistory();
+    cy.get('[data-cy="metrics_timespan_selection"]').click();
+    cy.get(`[data-cy="${LAST_TWENTY_FOUR_HOURS}"]`).click();
+    cy.get('@historyPush').should('be.calledWith', {
+      search: `from=now-24h`,
+    });
+  });
 });
 
 describe('Node page volumes tabs', () => {
@@ -112,6 +145,16 @@ describe('Node page volumes tabs', () => {
     cy.get('@historyPush').should(
       'be.calledWith',
       '/volumes/loki-vol/overview?node=master-0',
+    );
+  });
+
+  it('brings me to create a new volume', () => {
+    cy.stubHistory();
+
+    cy.get('[data-cy="create_volume_button"]').click();
+    cy.get('@historyPush').should(
+      'be.calledWith',
+      '/volumes/createVolume?node=master-0',
     );
   });
 });
