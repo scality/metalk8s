@@ -163,7 +163,7 @@ function GlobalFilter({
     } else {
       searchParams.set('search', value);
     }
-    history.push(`?${searchParams.toString()}`);
+    history.replace(`?${searchParams.toString()}`);
   }, 500);
 
   return (
@@ -290,7 +290,7 @@ function Table({
         query.delete('sort');
         query.delete('desc');
       }
-      history.push(`?${query.toString()}`);
+      history.replace(`?${query.toString()}`);
     }
   }, [sorted, desc, history, data.length]);
 
