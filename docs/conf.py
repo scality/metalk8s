@@ -7,6 +7,7 @@
 import os
 import pathlib
 import sys
+import yaml
 
 # -- Path setup --------------------------------------------------------------
 
@@ -47,6 +48,11 @@ if versions.VERSION_SUFFIX == "-dev":
 else:
     release = versions.VERSION
 
+with open("../salt/metalk8s/defaults.yaml", "r") as fd:
+    salt_defaults = yaml.safe_load(fd)
+
+if not salt_defaults['metalk8s']['downgrade']['enabled']:
+    tags.add('downgrade_not_supported')
 
 # -- General configuration ---------------------------------------------------
 

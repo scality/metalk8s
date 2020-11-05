@@ -67,13 +67,13 @@ Changing the hostname of a MetalK8s node
 
       $ kubectl delete node <node_name>
 
-#. Open a terminal into the :term:`Salt master` container:
+#. Open a terminal into the :term:`Salt Master` container:
 
    .. code-block:: shell
 
       $ kubectl -it exec salt-master-<bootstrap_node_name> -n kube-system -c salt-master bash
 
-#. Delete the now obsolete :term:`Salt minion` key for the changed Node:
+#. Delete the now obsolete :term:`Salt Minion` key for the changed Node:
 
    .. code-block:: shell
 
@@ -96,7 +96,7 @@ Changing the hostname of a MetalK8s node
           Total states run:     11
           Total run time:  132.435 s
 
-#. On the edited node, restart the :term:`kubelet` service:
+#. On the edited node, restart the :term:`Kubelet` service:
 
    .. code-block:: shell
 
