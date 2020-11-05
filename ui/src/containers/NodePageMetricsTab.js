@@ -314,6 +314,7 @@ const NodePageMetricsTab = (props) => {
             items={metricsTimeSpanDropdownItems}
             text={metricsTimeSpan}
             size="small"
+            data-cy="metrics_timespan_selection"
           />
         </DropdownContainer>
       </ActionContainer>
