@@ -688,10 +688,12 @@ by a bigger one.
    or is it only alerts with manual operations?
    If we go with an automatic purge, we should at least expose few parameters
    for the user to be able to customize this mechanism:
-     - whether this mechanism is activated or not (defaulted to yes or no?)
-     - % of space used for the purge to be triggered (90%?)
-     - minimum days of retention (even if we're above the threshold) to ensure
-       we're not removing everything in case of massive amount of logs
+
+   - whether this mechanism is activated or not (defaulted to yes or no?)
+   - % of space used for the purge to be triggered (90%?)
+   - minimum days of retention (even if we are above the threshold) to ensure
+     we are not removing everything in case of massive amount of logs
+
    We also need to trigger alerts everytime this purge is activated to be sure
    that the operator is aware that Loki volume is undersized.
 

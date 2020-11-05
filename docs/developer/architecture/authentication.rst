@@ -5,20 +5,20 @@ Context
 -------
 
 Currently, when we deploy MetalK8s we pre-provision a super admin user with a
-username/password pair. This implies that anyone wanting to use the K8S/Salt
+username/password pair. This implies that anyone wanting to use the K8s/Salt
 APIs needs to authenticate using this single super admin user.
 
-Another way to access the APIs is by using the K8S admin certificate which is
+Another way to access the APIs is by using the K8s admin certificate which is
 stored in ``/etc/kubernetes/admin.conf``. We could also manually provision
 other users, their corresponding credentials as well as role bindings but this
 current approach is inflexible to operate in production setups and security is
 not guaranteed since username/password pairs are stored in cleartext.
 
-We would atleast like to be able to add different users with different
-credentials and ideally integrate K8S authentication system with external an
+We would at least like to be able to add different users with different
+credentials and ideally integrate K8s authentication system with an external
 identity provider.
 
-Managing K8S role binding between user/groups High level roles and K8S roles
+Managing K8s role binding between user/groups high-level roles and K8s roles
 is not part of this specification.
 
 .. _authentication-requirements:
@@ -28,11 +28,11 @@ Requirements
 
 Basically, we are talking about:
 
-- Being able to provision users with an local Identity Provider (IDP)
+- Being able to provision users with a local Identity Provider (IDP)
 - Being able to integrate with an external IDP
 
-Integration with LDAP and Microsoft Active Directory(AD) are the most important
-ones to support.
+Integration with LDAP and Microsoft Active Directory (AD) are the most
+important ones to support.
 
 User Stories
 ------------
@@ -53,8 +53,8 @@ User Management with local IdP
 As an IT Generalist, I want to provision/edit users and high-level roles.
 The MetalK8s high-level roles are:
 
-- Cluster Admin role
-- Solution Admin role
+- Cluster Admin
+- Solution Admin
 - Read Only
 
 This is done from CLI with well-documented procedure.
@@ -67,7 +67,7 @@ External IDP Integration
 As an IT Generalist, I want to leverage my organisation's IDP to reuse
 already provisioned users & groups.
 The way we do that integration is through a CLI tool which does not require to
-have deep knowledge in K8S or in any local IDP specifics.
+have deep knowledge in K8s or in any local IDP specifics.
 When External IDP Integration is set up, we can always use local IDP to
 authenticate.
 
@@ -155,7 +155,7 @@ cumbersome.
 Keycloak Vs Dex
 ~~~~~~~~~~~~~~~
 
-Both systems use OpenID Connect(OIDC) to authenticate a user using a
+Both systems use OpenID Connect (OIDC) to authenticate a user using a
 standard OAuth2 flow.
 
 They both offer the ability to have short lived sessions so that user access
@@ -170,8 +170,8 @@ Why not `Keycloak <https://www.keycoak.org/>`_?
 Keycloak while offering similar features as Dex and even much more was rejected
 for the following reasons:
 
-- Keycloak is complex to operate(requires its own standalone database) and
-  manage(frequent database backups are required).
+- Keycloak is complex to operate (requires its own standalone database) and
+  manage (frequent database backups are required).
 
 - Currently, no use case exist for implementing a sophisticated Identity
   Provider like Keycloak when the minimal Identity Provider from Dex is
@@ -204,13 +204,13 @@ Iteration 1
 - Using Salt, generate self-signed certificates needed for Dex deployment
 - Deploy Dex in MetalK8s from the official **Dex Charts** while making use of
   the generated certificates above
-- Provision an admin superuser
+- Provision an admin super user
 - Configure Kubernetes API server flags to use Dex
 - Expose Dex on the control-plane using Ingress
 - Print the admin super user credentials to the CLI after MetalK8s bootstrap is
   complete
 - Implement MetalK8s UI integration with Dex
-- Theme the Dex GUI to match MetalK8s UI specs(optional for iteration 1)
+- Theme the Dex GUI to match MetalK8s UI specs (optional for iteration 1)
 
 Iteration 2
 ~~~~~~~~~~~
@@ -239,8 +239,8 @@ The following operations will be supported using the CLI tool:
 - Edit existing password
 
 The CLI tool will also be used to create MetalK8s dedicated roles as already
-specified in the requirements section of this document.
-(see high-level roles from the requirements document)
+specified in the requirements section of this document
+(see high-level roles from the requirements document).
 
 Since it is not advisable to perform the above mentioned operations at the Dex
 ConfigMap level, using the Dex gRPC API could be the way to go.
@@ -272,8 +272,8 @@ Documentation
 
 In the Operational Guide:
 
-* Document the predefined dex roles(Cluster Admin role, Solution Admin role,
-  Read Only role), their access levels and how to create them.
+* Document the predefined Dex roles (Cluster Admin, Solution Admin, Read Only),
+  their access levels and how to create them.
 * Document how to create users and the secrets associated to them.
 * Document how to integrate Dex with external Identity Providers such as LDAP
   and Microsoft Active Directory.
