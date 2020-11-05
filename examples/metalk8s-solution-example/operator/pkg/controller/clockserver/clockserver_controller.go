@@ -4,9 +4,9 @@ import (
 	"context"
 
 	examplesolutionv1alpha1 "example-solution-operator/pkg/apis/examplesolution/v1alpha1"
-	"example-solution-operator/pkg/config"
 	"example-solution-operator/pkg/controller/util"
 
+	"github.com/scality/metalk8s/go/solution-operator-lib/pkg/config"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"

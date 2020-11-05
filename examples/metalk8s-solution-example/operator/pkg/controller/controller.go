@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"example-solution-operator/pkg/config"
+	"github.com/scality/metalk8s/go/solution-operator-lib/pkg/config"
 
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )

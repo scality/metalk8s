@@ -1,0 +1,3 @@
+apiVersion: unknown.com/v1
+kind: OperatorConfig
+repositories: {}
