@@ -212,23 +212,23 @@ export const getVolumeListData = createSelector(
           (alert) =>
             alert.labels.persistentvolumeclaim === volumePVC.metadata.name,
         );
-      } else {
-        volumeHealth = STATUS_NONE;
-      }
 
-      // THE RULES TO COMPUTE THE HEALTH
-      // compute the volume health based on the severity of the alerts
-      // critical => if there is at least one critical
-      if (volumeAlerts.length) {
-        volumeHealth = volumeAlerts.find(
-          (vol) => vol.labels.severity === STATUS_CRITICAL,
-        )
-          ? STATUS_CRITICAL
-          : STATUS_WARNING;
-      } else if (volumeComputedCondition === ('exclamation' || 'unlink')) {
-        volumeHealth = STATUS_NONE;
+        // THE RULES TO COMPUTE THE HEALTH
+        // compute the volume health based on the severity of the alerts
+        // critical => if there is at least one critical
+        if (volumeAlerts.length) {
+          volumeHealth = volumeAlerts.some(
+            (vol) => vol.labels.severity === STATUS_CRITICAL,
+          )
+            ? STATUS_CRITICAL
+            : STATUS_WARNING;
+        } else if (volumeComputedCondition === ('exclamation' || 'unlink')) {
+          volumeHealth = STATUS_NONE;
+        } else {
+          volumeHealth = STATUS_HEALTH;
+        }
       } else {
-        volumeHealth = STATUS_HEALTH;
+        volumeHealth = STATUS_NONE;
       }
 
       const instanceIP = nodeList?.find(

@@ -20,7 +20,7 @@ import {
   LeftSideInstanceList,
   NoInstanceSelectedContainer,
   NoInstanceSelected,
-  TextBadge
+  TextBadge,
 } from '../components/CommonLayoutStyle';
 import { intl } from '../translations/IntlGlobalProvider';
 
@@ -181,22 +181,39 @@ const VolumePageContent = (props) => {
     {
       selected: isOverviewPage,
       title: intl.translate('overview'),
-      onClick: () => history.push(`${match.url}/overview${query.toString() && `?${query.toString()}`}`),
+      onClick: () =>
+        history.push(
+          `${match.url}/overview${query.toString() && `?${query.toString()}`}`,
+        ),
     },
     {
       selected: isAlertsPage,
-      title: (<span>{intl.translate('alerts')}<TextBadge>{alertlist?.length}</TextBadge></span>),
-      onClick: () => history.push(`${match.url}/alerts${query.toString() && `?${query.toString()}`}`),
+      title: (
+        <span>
+          {intl.translate('alerts')}
+          {PVCName && <TextBadge>{alertlist?.length}</TextBadge>}
+        </span>
+      ),
+      onClick: () =>
+        history.push(
+          `${match.url}/alerts${query.toString() && `?${query.toString()}`}`,
+        ),
     },
     {
       selected: isMetricsPage,
-      title: (<span>{intl.translate('metrics')}</span>),
-      onClick: () => history.push(`${match.url}/metrics${query.toString() && `?${query.toString()}`}`),
+      title: <span>{intl.translate('metrics')}</span>,
+      onClick: () =>
+        history.push(
+          `${match.url}/metrics${query.toString() && `?${query.toString()}`}`,
+        ),
     },
     {
       selected: isDetailsPage,
-      title: (<span>{intl.translate('details')}</span>),
-      onClick: () => history.push(`${match.url}/details${query.toString() && `?${query.toString()}`}`),
+      title: <span>{intl.translate('details')}</span>,
+      onClick: () =>
+        history.push(
+          `${match.url}/details${query.toString() && `?${query.toString()}`}`,
+        ),
     },
   ];
 
@@ -222,7 +239,9 @@ const VolumePageContent = (props) => {
                   <VolumeOverviewTab
                     name={currentVolumeName}
                     nodeName={volume?.spec?.nodeName}
-                    storage={pV?.spec?.capacity?.storage ?? intl.translate('unknown')}
+                    storage={
+                      pV?.spec?.capacity?.storage ?? intl.translate('unknown')
+                    }
                     status={volumeStatus ?? intl.translate('unknown')}
                     storageClassName={volume?.spec?.storageClassName}
                     creationTimestamp={volume?.metadata?.creationTimestamp}
@@ -231,7 +250,9 @@ const VolumePageContent = (props) => {
                         ? RAW_BLOCK_DEVICE
                         : SPARSE_LOOP_DEVICE
                     }
-                    usedPodName={UsedPod ? UsedPod?.name : intl.translate('not_used')}
+                    usedPodName={
+                      UsedPod ? UsedPod?.name : intl.translate('not_used')
+                    }
                     devicePath={
                       volume?.spec?.rawBlockDevice?.devicePath ??
                       intl.translate('not_applicable')
@@ -239,12 +260,14 @@ const VolumePageContent = (props) => {
                     volumeUsagePercentage={currentVolume?.usage}
                     volumeUsageBytes={currentVolume?.usageRawData ?? 0}
                     storageCapacity={
-                      volumeListData?.find((vol) => vol.name === currentVolumeName)
-                        .storageCapacity
+                      volumeListData?.find(
+                        (vol) => vol.name === currentVolumeName,
+                      ).storageCapacity
                     }
                     health={
-                      volumeListData?.find((vol) => vol.name === currentVolumeName)
-                        .health
+                      volumeListData?.find(
+                        (vol) => vol.name === currentVolumeName,
+                      ).health
                     }
                     condition={currentVolume.status}
                     // the delete button inside the volume detail card should know that which volume is the first one
@@ -257,31 +280,26 @@ const VolumePageContent = (props) => {
               <Route
                 path={`${match.url}/alerts`}
                 render={() => (
-                  <VolumeAlertsTab
-                    alertlist={alertlist}
-                    PVCName={PVCName}
-                  />
+                  <VolumeAlertsTab alertlist={alertlist} PVCName={PVCName} />
                 )}
               />
               <Route
                 path={`${match.url}/metrics`}
                 render={() => (
                   <VolumeMetricsTab
-                  volumeName={currentVolumeName}
-                  volumeMetricGraphData={volumeMetricGraphData}
-                  // the volume condition compute base on the `status` and `bound/unbound`
-                  volumeCondition={currentVolume.status}
-                  volumePVCName={PVCName}
-                  volumeNamespace={PVCNamespace}
+                    volumeName={currentVolumeName}
+                    volumeMetricGraphData={volumeMetricGraphData}
+                    // the volume condition compute base on the `status` and `bound/unbound`
+                    volumeCondition={currentVolume.status}
+                    volumePVCName={PVCName}
+                    volumeNamespace={PVCNamespace}
                   />
                 )}
               />
               <Route
                 path={`${match.url}/details`}
                 render={() => (
-                  <VolumeDetailsTab
-                    currentVolumeObject={currentVolumeObject}
-                  />
+                  <VolumeDetailsTab currentVolumeObject={currentVolumeObject} />
                 )}
               />
             </Switch>
