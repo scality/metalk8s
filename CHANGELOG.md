@@ -20,6 +20,17 @@
   the workload plane MTU to compute the MTU used by Calico
   (PR [#2677](https://github.com/scality/metalk8s/pull/2677))
 
+### Security fixes
+- Due to vulnerabilities (
+[CVE-2020-16846](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-16846)
+and
+[CVE-2020-25592](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-25592))
+affecting all Salt-API versions inferior to `3000.5`, this release ships with
+all Saltstack updated to `3000.5`.
+
+    Upgrade Salt to version `3000.5`
+    (PR [#2916](https://github.com/scality/metalk8s/pull/2916))
+
 ### Enhancements
 - [#2674](https://github.com/scality/metalk8s/issues/2674) - Bump K8S version
 to 1.17.13 (PR [#2859](https://github.com/scality/metalk8s/pull/2859))
