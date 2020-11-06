@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import { useLocation } from 'react-router';
 import styled from 'styled-components';
@@ -65,30 +66,45 @@ const ActiveAlertsTableContainer = styled.div`
   }
 `;
 
-const NoActiveAlerts = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
-  font-size: ${fontSize.base};
-  padding: ${padding.small} 0 0 ${padding.larger};
+const HeadRow = styled.tr`
+  width: 100%;
+  /* To display scroll bar on the table */
+  display: table;
+  table-layout: fixed;
+`;
+
+// * table body
+const Body = styled.tbody`
+  /* To display scroll bar on the table */
+  display: block;
+  height: calc(100vh - 250px);
+  overflow: auto;
+  overflow-y: scroll;
 `;
 
 const ActiveAlertsCard = (props) => {
   const { alertlist, PVCName } = props;
   const location = useLocation();
+  const theme = useSelector((state) => state.config.theme);
+
   const query = new URLSearchParams(location.search);
   const selectedFilter = query.get('severity');
 
-  let activeAlertListData = alertlist?.map((alert) => {
-    return {
-      name: alert.labels.alertname,
-      severity: alert.labels.severity,
-      alert_description: alert.annotations.message,
-      active_since: alert.startsAt,
-    };
-  });
+  let activeAlertListData =
+    alertlist?.map((alert) => {
+      return {
+        name: alert.labels.alertname,
+        severity: alert.labels.severity,
+        alert_description: alert.annotations.message,
+        active_since: alert.startsAt,
+      };
+    }) ?? [];
+
   if (activeAlertListData && selectedFilter)
     activeAlertListData = activeAlertListData.filter(
       (item) => item.severity === selectedFilter,
     );
+
   // React Table for the volume list
   function Table({ columns, data }) {
     // Use the state and functions returned from useTable to build your UI
@@ -108,22 +124,67 @@ const ActiveAlertsCard = (props) => {
       <table {...getTableProps()}>
         <thead>
           {headerGroups.map((headerGroup) => (
-            <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <th {...column.getHeaderProps()}>{column.render('Header')}</th>
-              ))}
-            </tr>
+            <HeadRow {...headerGroup.getHeaderGroupProps()}>
+              {headerGroup.headers.map((column) => {
+                const headerStyleProps = column.getHeaderProps({
+                  style: column.cellStyle,
+                });
+                return <th {...headerStyleProps}>{column.render('Header')}</th>;
+              })}
+            </HeadRow>
           ))}
         </thead>
-        <tbody {...getTableBodyProps()}>
-          {rows.map((row, i) => {
+
+        <Body {...getTableBodyProps()}>
+          {!PVCName && (
+            <HeadRow
+              style={{
+                width: '100%',
+                paddingTop: padding.base,
+                height: '60px',
+              }}
+            >
+              <td
+                style={{
+                  textAlign: 'center',
+                  background: theme.brand.primary,
+                }}
+              >
+                {intl.translate('volume_is_not_bound')}
+              </td>
+            </HeadRow>
+          )}
+          {PVCName && data?.length === 0 && (
+            <HeadRow
+              style={{
+                width: '100%',
+                paddingTop: padding.base,
+                height: '60px',
+              }}
+            >
+              <td
+                style={{
+                  textAlign: 'center',
+                  background: theme.brand.primary,
+                }}
+              >
+                {intl.translate('no_active_alerts')}
+              </td>
+            </HeadRow>
+          )}
+          {rows?.map((row, i) => {
             prepareRow(row);
             return (
-              <tr {...row.getRowProps()}>
+              <HeadRow {...row.getRowProps()}>
                 {row.cells.map((cell) => {
+                  let cellProps = cell.getCellProps({
+                    style: {
+                      ...cell.column.cellStyle,
+                    },
+                  });
                   if (cell.column.Header === 'Active since') {
                     return (
-                      <td {...cell.getCellProps()}>
+                      <td {...cellProps}>
                         <span>
                           <FormattedDate value={cell.value} />{' '}
                           <FormattedTime
@@ -138,13 +199,13 @@ const ActiveAlertsCard = (props) => {
                   } else if (cell.column.Header === 'Severity') {
                     if (cell.value === 'warning') {
                       return (
-                        <td {...cell.getCellProps()}>
+                        <td {...cellProps}>
                           <Chips text={cell.render('Cell')} variant="warning" />
                         </td>
                       );
                     } else if (cell.value === 'critical') {
                       return (
-                        <td {...cell.getCellProps()}>
+                        <td {...cellProps}>
                           <Chips
                             text={cell.render('Cell')}
                             variant="critical"
@@ -153,26 +214,36 @@ const ActiveAlertsCard = (props) => {
                       );
                     }
                   } else {
-                    return (
-                      <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
-                    );
+                    return <td {...cellProps}>{cell.render('Cell')}</td>;
                   }
                   return null;
                 })}
-              </tr>
+              </HeadRow>
             );
           })}
-        </tbody>
+        </Body>
       </table>
     );
   }
   // columns for alert table
   const columns = React.useMemo(
     () => [
-      { Header: 'Name', accessor: 'name' },
-      { Header: 'Severity', accessor: 'severity' },
+      {
+        Header: 'Name',
+        accessor: 'name',
+        cellStyle: { width: '200px' },
+      },
+      {
+        Header: 'Severity',
+        accessor: 'severity',
+        cellStyle: { textAlign: 'center', width: '100px' },
+      },
       { Header: 'Description', accessor: 'alert_description' },
-      { Header: 'Active since', accessor: 'active_since' },
+      {
+        Header: 'Active since',
+        accessor: 'active_since',
+        cellStyle: { textAlign: 'center', width: '150px' },
+      },
     ],
     [],
   );
@@ -182,15 +253,14 @@ const ActiveAlertsCard = (props) => {
       <ActiveAlertsCardContainer>
         <ActiveAlertsTitle>
           <div>{intl.translate('active_alert')}</div>
-          <ActiveAlertsFilters />
+          {PVCName && activeAlertListData?.length !== 0 && (
+            <ActiveAlertsFilters />
+          )}
         </ActiveAlertsTitle>
-        {PVCName && activeAlertListData.length !== 0 ? (
-          <ActiveAlertsTableContainer>
-            <Table columns={columns} data={activeAlertListData} />
-          </ActiveAlertsTableContainer>
-        ) : (
-          <NoActiveAlerts>{intl.translate('no_active_alerts')}</NoActiveAlerts>
-        )}
+
+        <ActiveAlertsTableContainer>
+          <Table columns={columns} data={activeAlertListData} />
+        </ActiveAlertsTableContainer>
       </ActiveAlertsCardContainer>
     </VolumeTab>
   );
