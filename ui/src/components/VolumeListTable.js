@@ -205,6 +205,7 @@ function GlobalFilter({
         letterSpacing: 'normal',
         paddingLeft: '10px',
       }}
+      data-cy="volume_list_search"
     />
   );
 }
