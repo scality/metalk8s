@@ -1,0 +1,863 @@
+[
+  {
+    "annotations": {
+      "message": "toto has been unready for more than 15 minutes.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubenodenotready"
+    },
+    "endsAt": "2020-11-09T11:05:08.336Z",
+    "fingerprint": "02a43ce4100af08d",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:42:38.336Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:08.363Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=kube_node_status_condition%7Bcondition%3D%22Ready%22%2Cjob%3D%22kube-state-metrics%22%2Cstatus%3D%22true%22%7D+%3D%3D+0&g0.tab=1",
+    "labels": {
+      "alertname": "KubeNodeNotReady",
+      "condition": "Ready",
+      "endpoint": "http",
+      "instance": "10.233.132.98:8080",
+      "job": "kube-state-metrics",
+      "namespace": "metalk8s-monitoring",
+      "node": "toto",
+      "pod": "prometheus-operator-kube-state-metrics-6567fcb474-cq7pt",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-kube-state-metrics",
+      "severity": "warning",
+      "status": "true"
+    }
+  },
+  {
+    "annotations": {
+      "message": "An aggregated API v1beta1.custom.metrics.k8s.io/default is down. It has not been available at least for the past five minutes.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-aggregatedapidown"
+    },
+    "endsAt": "2020-11-09T11:05:52.146Z",
+    "fingerprint": "0b18417adeeb0e78",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:31:22.146Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:52.182Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=sum+by%28name%2C+namespace%29+%28sum_over_time%28aggregator_unavailable_apiservice%5B5m%5D%29%29+%3E+0&g0.tab=1",
+    "labels": {
+      "alertname": "AggregatedAPIDown",
+      "name": "v1beta1.custom.metrics.k8s.io",
+      "namespace": "default",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "severity": "warning"
+    }
+  },
+  {
+    "annotations": {
+      "message": "The PersistentVolume claimed by alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-0 in Namespace metalk8s-monitoring is only 2.558% free.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumefillingup"
+    },
+    "endsAt": "2020-11-09T11:06:26.330Z",
+    "fingerprint": "0bad42d1eccaa7ac",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:33:26.330Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:03:26.157Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=kubelet_volume_stats_available_bytes%7Bjob%3D%22kubelet%22%2Cmetrics_path%3D%22%2Fmetrics%22%2Cnamespace%3D~%22.%2A%22%7D+%2F+kubelet_volume_stats_capacity_bytes%7Bjob%3D%22kubelet%22%2Cmetrics_path%3D%22%2Fmetrics%22%2Cnamespace%3D~%22.%2A%22%7D+%3C+0.03&g0.tab=1",
+    "labels": {
+      "alertname": "KubePersistentVolumeFillingUp",
+      "endpoint": "https-metrics",
+      "instance": "192.168.1.36:10250",
+      "job": "kubelet",
+      "metrics_path": "/metrics",
+      "namespace": "metalk8s-monitoring",
+      "node": "master-0",
+      "persistentvolumeclaim": "alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-0",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-kubelet",
+      "severity": "critical"
+    }
+  },
+  {
+    "annotations": {
+      "message": "Only 85.71% of the desired Pods of DaemonSet metalk8s-monitoring/prometheus-operator-prometheus-node-exporter are scheduled and ready.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedaemonsetrolloutstuck"
+    },
+    "endsAt": "2020-11-09T11:05:10.003Z",
+    "fingerprint": "1c91344f7443db42",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:42:40.003Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:10.127Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=kube_daemonset_status_number_ready%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%7D+%2F+kube_daemonset_status_desired_number_scheduled%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%7D+%3C+1&g0.tab=1",
+    "labels": {
+      "alertname": "KubeDaemonSetRolloutStuck",
+      "daemonset": "prometheus-operator-prometheus-node-exporter",
+      "endpoint": "http",
+      "instance": "10.233.132.98:8080",
+      "job": "kube-state-metrics",
+      "namespace": "metalk8s-monitoring",
+      "pod": "prometheus-operator-kube-state-metrics-6567fcb474-cq7pt",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-kube-state-metrics",
+      "severity": "critical"
+    }
+  },
+  {
+    "annotations": {
+      "message": "Only 85.71% of the desired Pods of DaemonSet kube-system/kube-proxy are scheduled and ready.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedaemonsetrolloutstuck"
+    },
+    "endsAt": "2020-11-09T11:05:10.003Z",
+    "fingerprint": "201e04740983199a",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:42:40.003Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:10.127Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=kube_daemonset_status_number_ready%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%7D+%2F+kube_daemonset_status_desired_number_scheduled%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%7D+%3C+1&g0.tab=1",
+    "labels": {
+      "alertname": "KubeDaemonSetRolloutStuck",
+      "daemonset": "kube-proxy",
+      "endpoint": "http",
+      "instance": "10.233.132.98:8080",
+      "job": "kube-state-metrics",
+      "namespace": "kube-system",
+      "pod": "prometheus-operator-kube-state-metrics-6567fcb474-cq7pt",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-kube-state-metrics",
+      "severity": "critical"
+    }
+  },
+  {
+    "annotations": {
+      "message": "Clock on 192.168.1.6:9100 is not synchronising. Ensure NTP is configured on this host.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodeclocknotsynchronising",
+      "summary": "Clock not synchronising."
+    },
+    "endsAt": "2020-11-09T11:06:05.358Z",
+    "fingerprint": "214f0f9f33edd36d",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:36:35.358Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:03:05.399Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=min_over_time%28node_timex_sync_status%5B5m%5D%29+%3D%3D+0&g0.tab=1",
+    "labels": {
+      "alertname": "NodeClockNotSynchronising",
+      "endpoint": "metrics",
+      "instance": "192.168.1.6:9100",
+      "job": "node-exporter",
+      "namespace": "metalk8s-monitoring",
+      "pod": "prometheus-operator-prometheus-node-exporter-zn64p",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-prometheus-node-exporter",
+      "severity": "warning"
+    }
+  },
+  {
+    "annotations": {
+      "message": "1 Pods of DaemonSet metalk8s-logging/fluent-bit are running where they are not supposed to run.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedaemonsetmisscheduled"
+    },
+    "endsAt": "2020-11-09T11:05:10.003Z",
+    "fingerprint": "2affd416bc8e3784",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:42:40.003Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:10.127Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=kube_daemonset_status_number_misscheduled%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%7D+%3E+0&g0.tab=1",
+    "labels": {
+      "alertname": "KubeDaemonSetMisScheduled",
+      "daemonset": "fluent-bit",
+      "endpoint": "http",
+      "instance": "10.233.132.98:8080",
+      "job": "kube-state-metrics",
+      "namespace": "metalk8s-logging",
+      "pod": "prometheus-operator-kube-state-metrics-6567fcb474-cq7pt",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-kube-state-metrics",
+      "severity": "warning"
+    }
+  },
+  {
+    "annotations": {
+      "message": "Pod metalk8s-ingress/nginx-ingress-controller-62gz6 has been in a non-ready state for longer than 15 minutes.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepodnotready"
+    },
+    "endsAt": "2020-11-09T11:05:10.003Z",
+    "fingerprint": "2be2a6daffcdb137",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:42:40.003Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:10.064Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=sum+by%28namespace%2C+pod%29+%28max+by%28namespace%2C+pod%29+%28kube_pod_status_phase%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%2Cphase%3D~%22Pending%7CUnknown%22%7D%29+%2A+on%28namespace%2C+pod%29+group_left%28owner_kind%29+max+by%28namespace%2C+pod%2C+owner_kind%29+%28kube_pod_owner%7Bowner_kind%21%3D%22Job%22%7D%29%29+%3E+0&g0.tab=1",
+    "labels": {
+      "alertname": "KubePodNotReady",
+      "namespace": "metalk8s-ingress",
+      "pod": "nginx-ingress-controller-62gz6",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "severity": "critical"
+    }
+  },
+  {
+    "annotations": {
+      "message": "Job zenko/zenko-zenko-reporting-count-items-1598389200 is taking more than one hour to complete.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubejobcompletion"
+    },
+    "endsAt": "2020-11-09T11:05:10.003Z",
+    "fingerprint": "4cd5caa8c043092b",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T09:27:40.003Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:10.127Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=kube_job_spec_completions%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%7D+-+kube_job_status_succeeded%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%7D+%3E+0&g0.tab=1",
+    "labels": {
+      "alertname": "KubeJobCompletion",
+      "endpoint": "http",
+      "instance": "10.233.132.98:8080",
+      "job": "kube-state-metrics",
+      "job_name": "zenko-zenko-reporting-count-items-1598389200",
+      "namespace": "zenko",
+      "pod": "prometheus-operator-kube-state-metrics-6567fcb474-cq7pt",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-kube-state-metrics",
+      "severity": "warning"
+    }
+  },
+  {
+    "annotations": {
+      "message": "Job zenko/zenko-zenko-reporting-count-items-1598392800 is taking more than one hour to complete.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubejobcompletion"
+    },
+    "endsAt": "2020-11-09T11:05:10.003Z",
+    "fingerprint": "50e8681d7398893d",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T09:27:40.003Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:10.127Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=kube_job_spec_completions%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%7D+-+kube_job_status_succeeded%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%7D+%3E+0&g0.tab=1",
+    "labels": {
+      "alertname": "KubeJobCompletion",
+      "endpoint": "http",
+      "instance": "10.233.132.98:8080",
+      "job": "kube-state-metrics",
+      "job_name": "zenko-zenko-reporting-count-items-1598392800",
+      "namespace": "zenko",
+      "pod": "prometheus-operator-kube-state-metrics-6567fcb474-cq7pt",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-kube-state-metrics",
+      "severity": "warning"
+    }
+  },
+  {
+    "annotations": {
+      "message": "Clock on 192.168.1.29:9100 is not synchronising. Ensure NTP is configured on this host.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodeclocknotsynchronising",
+      "summary": "Clock not synchronising."
+    },
+    "endsAt": "2020-11-09T11:05:35.358Z",
+    "fingerprint": "66054f0884ddd186",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:37:05.358Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:35.238Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=min_over_time%28node_timex_sync_status%5B5m%5D%29+%3D%3D+0&g0.tab=1",
+    "labels": {
+      "alertname": "NodeClockNotSynchronising",
+      "endpoint": "metrics",
+      "instance": "192.168.1.29:9100",
+      "job": "node-exporter",
+      "namespace": "metalk8s-monitoring",
+      "pod": "prometheus-operator-prometheus-node-exporter-7p8ng",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-prometheus-node-exporter",
+      "severity": "warning"
+    }
+  },
+  {
+    "annotations": {
+      "message": "Clock on 192.168.1.18:9100 is not synchronising. Ensure NTP is configured on this host.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodeclocknotsynchronising",
+      "summary": "Clock not synchronising."
+    },
+    "endsAt": "2020-11-09T11:06:05.358Z",
+    "fingerprint": "66a8d7eb293ba940",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:36:35.358Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:03:05.399Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=min_over_time%28node_timex_sync_status%5B5m%5D%29+%3D%3D+0&g0.tab=1",
+    "labels": {
+      "alertname": "NodeClockNotSynchronising",
+      "endpoint": "metrics",
+      "instance": "192.168.1.18:9100",
+      "job": "node-exporter",
+      "namespace": "metalk8s-monitoring",
+      "pod": "prometheus-operator-prometheus-node-exporter-65ph5",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-prometheus-node-exporter",
+      "severity": "warning"
+    }
+  },
+  {
+    "annotations": {
+      "message": "An aggregated API v1beta1.metrics.k8s.io/default is down. It has not been available at least for the past five minutes.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-aggregatedapidown"
+    },
+    "endsAt": "2020-11-09T11:05:52.146Z",
+    "fingerprint": "683549e06448ed15",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:31:22.146Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:52.182Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=sum+by%28name%2C+namespace%29+%28sum_over_time%28aggregator_unavailable_apiservice%5B5m%5D%29%29+%3E+0&g0.tab=1",
+    "labels": {
+      "alertname": "AggregatedAPIDown",
+      "name": "v1beta1.metrics.k8s.io",
+      "namespace": "default",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "severity": "warning"
+    }
+  },
+  {
+    "annotations": {
+      "message": "Pod metalk8s-logging/fluent-bit-tgxs2 has been in a non-ready state for longer than 15 minutes.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepodnotready"
+    },
+    "endsAt": "2020-11-09T11:05:10.003Z",
+    "fingerprint": "6af79fb44caeb6eb",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:42:40.003Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:10.064Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=sum+by%28namespace%2C+pod%29+%28max+by%28namespace%2C+pod%29+%28kube_pod_status_phase%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%2Cphase%3D~%22Pending%7CUnknown%22%7D%29+%2A+on%28namespace%2C+pod%29+group_left%28owner_kind%29+max+by%28namespace%2C+pod%2C+owner_kind%29+%28kube_pod_owner%7Bowner_kind%21%3D%22Job%22%7D%29%29+%3E+0&g0.tab=1",
+    "labels": {
+      "alertname": "KubePodNotReady",
+      "namespace": "metalk8s-logging",
+      "pod": "fluent-bit-tgxs2",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "severity": "critical"
+    }
+  },
+  {
+    "annotations": {
+      "message": "Job zenko/zenko-zenko-reporting-count-items-1598385600 failed to complete.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubejobfailed"
+    },
+    "endsAt": "2020-11-09T11:05:10.003Z",
+    "fingerprint": "853c7cf06589a7c7",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:42:40.003Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:10.174Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=kube_job_failed%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%7D+%3E+0&g0.tab=1",
+    "labels": {
+      "alertname": "KubeJobFailed",
+      "condition": "true",
+      "endpoint": "http",
+      "instance": "10.233.132.98:8080",
+      "job": "kube-state-metrics",
+      "job_name": "zenko-zenko-reporting-count-items-1598385600",
+      "namespace": "zenko",
+      "pod": "prometheus-operator-kube-state-metrics-6567fcb474-cq7pt",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-kube-state-metrics",
+      "severity": "warning"
+    }
+  },
+  {
+    "annotations": {
+      "message": "1 Pods of DaemonSet metalk8s-ingress/nginx-ingress-controller are running where they are not supposed to run.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedaemonsetmisscheduled"
+    },
+    "endsAt": "2020-11-09T11:05:10.003Z",
+    "fingerprint": "92a731defd26ac55",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:42:40.003Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:10.127Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=kube_daemonset_status_number_misscheduled%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%7D+%3E+0&g0.tab=1",
+    "labels": {
+      "alertname": "KubeDaemonSetMisScheduled",
+      "daemonset": "nginx-ingress-controller",
+      "endpoint": "http",
+      "instance": "10.233.132.98:8080",
+      "job": "kube-state-metrics",
+      "namespace": "metalk8s-ingress",
+      "pod": "prometheus-operator-kube-state-metrics-6567fcb474-cq7pt",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-kube-state-metrics",
+      "severity": "warning"
+    }
+  },
+  {
+    "annotations": {
+      "message": "toto is unreachable and some workloads may be rescheduled.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubenodeunreachable"
+    },
+    "endsAt": "2020-11-09T11:05:38.336Z",
+    "fingerprint": "a87f3db92cf37370",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:29:38.336Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:38.353Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=kube_node_spec_taint%7Beffect%3D%22NoSchedule%22%2Cjob%3D%22kube-state-metrics%22%2Ckey%3D%22node.kubernetes.io%2Funreachable%22%7D+%3D%3D+1&g0.tab=1",
+    "labels": {
+      "alertname": "KubeNodeUnreachable",
+      "effect": "NoSchedule",
+      "endpoint": "http",
+      "instance": "10.233.132.98:8080",
+      "job": "kube-state-metrics",
+      "key": "node.kubernetes.io/unreachable",
+      "namespace": "metalk8s-monitoring",
+      "node": "toto",
+      "pod": "prometheus-operator-kube-state-metrics-6567fcb474-cq7pt",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-kube-state-metrics",
+      "severity": "warning"
+    }
+  },
+  {
+    "annotations": {
+      "message": "Pod kube-system/kube-proxy-zt5zd has been in a non-ready state for longer than 15 minutes.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepodnotready"
+    },
+    "endsAt": "2020-11-09T11:05:10.003Z",
+    "fingerprint": "aef4db6325b7df20",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:42:40.003Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:10.064Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=sum+by%28namespace%2C+pod%29+%28max+by%28namespace%2C+pod%29+%28kube_pod_status_phase%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%2Cphase%3D~%22Pending%7CUnknown%22%7D%29+%2A+on%28namespace%2C+pod%29+group_left%28owner_kind%29+max+by%28namespace%2C+pod%2C+owner_kind%29+%28kube_pod_owner%7Bowner_kind%21%3D%22Job%22%7D%29%29+%3E+0&g0.tab=1",
+    "labels": {
+      "alertname": "KubePodNotReady",
+      "namespace": "kube-system",
+      "pod": "kube-proxy-zt5zd",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "severity": "critical"
+    }
+  },
+  {
+    "annotations": {
+      "message": "Job zenko/zenko-zenko-reporting-count-items-1598389200 failed to complete.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubejobfailed"
+    },
+    "endsAt": "2020-11-09T11:05:10.003Z",
+    "fingerprint": "afbe8fd055314537",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:42:40.003Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:10.174Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=kube_job_failed%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%7D+%3E+0&g0.tab=1",
+    "labels": {
+      "alertname": "KubeJobFailed",
+      "condition": "true",
+      "endpoint": "http",
+      "instance": "10.233.132.98:8080",
+      "job": "kube-state-metrics",
+      "job_name": "zenko-zenko-reporting-count-items-1598389200",
+      "namespace": "zenko",
+      "pod": "prometheus-operator-kube-state-metrics-6567fcb474-cq7pt",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-kube-state-metrics",
+      "severity": "warning"
+    }
+  },
+  {
+    "annotations": {
+      "message": "Clock on 192.168.1.9:9100 is not synchronising. Ensure NTP is configured on this host.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodeclocknotsynchronising",
+      "summary": "Clock not synchronising."
+    },
+    "endsAt": "2020-11-09T11:06:05.358Z",
+    "fingerprint": "b04ae818be768683",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:36:35.358Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:03:05.399Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=min_over_time%28node_timex_sync_status%5B5m%5D%29+%3D%3D+0&g0.tab=1",
+    "labels": {
+      "alertname": "NodeClockNotSynchronising",
+      "endpoint": "metrics",
+      "instance": "192.168.1.9:9100",
+      "job": "node-exporter",
+      "namespace": "metalk8s-monitoring",
+      "pod": "prometheus-operator-prometheus-node-exporter-lmxf2",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-prometheus-node-exporter",
+      "severity": "warning"
+    }
+  },
+  {
+    "annotations": {
+      "message": "Pod metalk8s-monitoring/prometheus-operator-prometheus-node-exporter-zvxxz has been in a non-ready state for longer than 15 minutes.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepodnotready"
+    },
+    "endsAt": "2020-11-09T11:05:10.003Z",
+    "fingerprint": "c1d276d684fba6b3",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:42:40.003Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:10.064Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=sum+by%28namespace%2C+pod%29+%28max+by%28namespace%2C+pod%29+%28kube_pod_status_phase%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%2Cphase%3D~%22Pending%7CUnknown%22%7D%29+%2A+on%28namespace%2C+pod%29+group_left%28owner_kind%29+max+by%28namespace%2C+pod%2C+owner_kind%29+%28kube_pod_owner%7Bowner_kind%21%3D%22Job%22%7D%29%29+%3E+0&g0.tab=1",
+    "labels": {
+      "alertname": "KubePodNotReady",
+      "namespace": "metalk8s-monitoring",
+      "pod": "prometheus-operator-prometheus-node-exporter-zvxxz",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "severity": "critical"
+    }
+  },
+  {
+    "annotations": {
+      "message": "Job zenko/zenko-zenko-reporting-count-items-1598385600 is taking more than one hour to complete.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubejobcompletion"
+    },
+    "endsAt": "2020-11-09T11:05:10.003Z",
+    "fingerprint": "ce51dc4373a4561b",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T09:27:40.003Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:10.127Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=kube_job_spec_completions%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%7D+-+kube_job_status_succeeded%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%7D+%3E+0&g0.tab=1",
+    "labels": {
+      "alertname": "KubeJobCompletion",
+      "endpoint": "http",
+      "instance": "10.233.132.98:8080",
+      "job": "kube-state-metrics",
+      "job_name": "zenko-zenko-reporting-count-items-1598385600",
+      "namespace": "zenko",
+      "pod": "prometheus-operator-kube-state-metrics-6567fcb474-cq7pt",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-kube-state-metrics",
+      "severity": "warning"
+    }
+  },
+  {
+    "annotations": {
+      "message": "Job zenko/zenko-zenko-reporting-count-items-1598392800 failed to complete.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubejobfailed"
+    },
+    "endsAt": "2020-11-09T11:05:10.003Z",
+    "fingerprint": "d90b7a42a9754d39",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:42:40.003Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:10.174Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=kube_job_failed%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%7D+%3E+0&g0.tab=1",
+    "labels": {
+      "alertname": "KubeJobFailed",
+      "condition": "true",
+      "endpoint": "http",
+      "instance": "10.233.132.98:8080",
+      "job": "kube-state-metrics",
+      "job_name": "zenko-zenko-reporting-count-items-1598392800",
+      "namespace": "zenko",
+      "pod": "prometheus-operator-kube-state-metrics-6567fcb474-cq7pt",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-kube-state-metrics",
+      "severity": "warning"
+    }
+  },
+  {
+    "annotations": {
+      "message": "CronJob zenko/zenko-zenko-reporting-count-items is taking more than 1h to complete.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubecronjobrunning"
+    },
+    "endsAt": "2020-11-09T11:05:10.003Z",
+    "fingerprint": "db46341460ff2be6",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T09:27:40.003Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:10.127Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=time%28%29+-+kube_cronjob_next_schedule_time%7Bjob%3D%22kube-state-metrics%22%2Cnamespace%3D~%22.%2A%22%7D+%3E+3600&g0.tab=1",
+    "labels": {
+      "alertname": "KubeCronJobRunning",
+      "cronjob": "zenko-zenko-reporting-count-items",
+      "endpoint": "http",
+      "instance": "10.233.132.98:8080",
+      "job": "kube-state-metrics",
+      "namespace": "zenko",
+      "pod": "prometheus-operator-kube-state-metrics-6567fcb474-cq7pt",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-kube-state-metrics",
+      "severity": "warning"
+    }
+  },
+  {
+    "annotations": {
+      "message": "Clock on 192.168.1.36:9100 is not synchronising. Ensure NTP is configured on this host.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodeclocknotsynchronising",
+      "summary": "Clock not synchronising."
+    },
+    "endsAt": "2020-11-09T11:06:05.358Z",
+    "fingerprint": "e85499781c4fcd13",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:37:05.358Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:03:05.399Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=min_over_time%28node_timex_sync_status%5B5m%5D%29+%3D%3D+0&g0.tab=1",
+    "labels": {
+      "alertname": "NodeClockNotSynchronising",
+      "endpoint": "metrics",
+      "instance": "192.168.1.36:9100",
+      "job": "node-exporter",
+      "namespace": "metalk8s-monitoring",
+      "pod": "prometheus-operator-prometheus-node-exporter-28cnh",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-prometheus-node-exporter",
+      "severity": "warning"
+    }
+  },
+  {
+    "annotations": {
+      "message": "Clock on 192.168.1.33:9100 is not synchronising. Ensure NTP is configured on this host.",
+      "runbook_url": "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodeclocknotsynchronising",
+      "summary": "Clock not synchronising."
+    },
+    "endsAt": "2020-11-09T11:05:35.358Z",
+    "fingerprint": "f6f20fb4a7543120",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:37:05.358Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:02:35.238Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=min_over_time%28node_timex_sync_status%5B5m%5D%29+%3D%3D+0&g0.tab=1",
+    "labels": {
+      "alertname": "NodeClockNotSynchronising",
+      "endpoint": "metrics",
+      "instance": "192.168.1.33:9100",
+      "job": "node-exporter",
+      "namespace": "metalk8s-monitoring",
+      "pod": "prometheus-operator-prometheus-node-exporter-gvplp",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "service": "prometheus-operator-prometheus-node-exporter",
+      "severity": "warning"
+    }
+  },
+  {
+    "annotations": {
+      "message": "This is an alert meant to ensure that the entire alerting pipeline is functional.\nThis alert is always firing, therefore it should always be firing in Alertmanager\nand always fire against a receiver. There are integrations with various notification\nmechanisms that send a notification when this alert is not firing. For example the\n\"DeadMansSnitch\" integration in PagerDuty."
+    },
+    "endsAt": "2020-11-09T11:06:25.520Z",
+    "fingerprint": "fc30b79dbdb0a043",
+    "receivers": [
+      {
+        "name": "null"
+      }
+    ],
+    "startsAt": "2020-11-09T08:26:25.520Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [],
+      "state": "active"
+    },
+    "updatedAt": "2020-11-09T11:03:25.538Z",
+    "generatorURL": "http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=vector%281%29&g0.tab=1",
+    "labels": {
+      "alertname": "Watchdog",
+      "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
+      "severity": "none"
+    }
+  }
+]
