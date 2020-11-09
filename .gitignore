@@ -4,6 +4,7 @@ __pycache__/
 .mypy_cache/
 .vagrant/
 .tox/
+.coverage
 
 buildchain/.venv/
 
