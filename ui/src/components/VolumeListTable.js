@@ -163,7 +163,7 @@ function GlobalFilter({
     } else {
       searchParams.set('search', value);
     }
-    history.replace(`?${searchParams.toString()}`);
+    history.push(`?${searchParams.toString()}`);
   }, 500);
 
   return (
