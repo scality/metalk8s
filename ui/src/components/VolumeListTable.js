@@ -302,6 +302,11 @@ function Table({
       if (sorted) {
         sorted ? query.set('sort', sorted) : query.delete('sort');
         desc ? query.set('desc', desc) : query.delete('desc');
+        // Remove the default sorting `sort=health` from the query string
+        if (sorted === 'health' && desc === false) {
+          query.delete('sort');
+          query.delete('desc');
+        }
       } else if (!sorted && querySort) {
         query.delete('sort');
         query.delete('desc');
