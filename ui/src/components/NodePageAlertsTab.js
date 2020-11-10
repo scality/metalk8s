@@ -9,9 +9,9 @@ import {
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
 import { useTable } from 'react-table';
-import ActiveAlertsFilter from './ActiveAlertsFilter';
+import ActiveAlertsFilter from './ActiveAlertsFilters';
 import { useQuery } from '../services/utils';
-import { TabContainer } from './CommonLayoutStyle';
+import { NodeTab } from './CommonLayoutStyle';
 import { STATUS_WARNING, STATUS_CRITICAL } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
@@ -223,7 +223,7 @@ const NodePageAlertsTab = (props) => {
   );
 
   return (
-    <TabContainer>
+    <NodeTab>
       <TitleContainer>
         <ActiveAlertsText theme={theme}>
           {intl.translate('active_alert')}
@@ -233,7 +233,7 @@ const NodePageAlertsTab = (props) => {
       <ActiveAlertsTableContainer>
         <Table columns={columns} data={activeAlertListData} />
       </ActiveAlertsTableContainer>
-    </TabContainer>
+    </NodeTab>
   );
 };
 

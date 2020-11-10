@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { useHistory, useLocation, useRouteMatch } from 'react-router';
 import { Switch, Route } from 'react-router-dom';
 import { Tabs } from '@scality/core-ui';
-import { padding } from '@scality/core-ui/dist/style/theme';
+import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import VolumeListTable from '../components/VolumeListTable';
 import VolumeOverviewTab from '../components/VolumeOverviewTab';
 import VolumeAlertsTab from '../components/VolumeAlertsTab';
@@ -21,6 +21,7 @@ import {
   NoInstanceSelectedContainer,
   NoInstanceSelected,
   TextBadge,
+  RightSidePanel,
 } from '../components/CommonLayoutStyle';
 import { intl } from '../translations/IntlGlobalProvider';
 
@@ -31,7 +32,7 @@ height: 100%;
 width: 100%;
 
 .sc-tabs {
-  margin: 0 ${padding.small} 0 ${padding.smaller};
+  margin: 0;
 }
 
 .sc-tabs-bar {
@@ -49,20 +50,14 @@ width: 100%;
     border-top-right-radius: 4px;
     height: 40px;
     padding: ${padding.small}
+    font-size: ${fontSize.base};
   }
 }
 
 .sc-tabs-item-content {
   background-color: ${(props) => props.theme.brand.primary};
-  padding: ${padding.small}
+  padding: 0;
 }
-`;
-
-const RightSidePanel = styled.div`
-  flex-direction: column;
-  width: 55%;
-  overflow-y: scroll;
-  margin: 0 ${padding.small} ${padding.small} 0;
 `;
 
 // <VolumePageContent> component extracts volume name from URL and holds the volume-specific data.

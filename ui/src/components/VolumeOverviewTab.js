@@ -21,11 +21,11 @@ import {
 import { Button, Modal, ProgressBar, Loader } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 import { VolumeTab } from './CommonLayoutStyle';
+import { formatSizeForDisplay } from '../services/utils';
 
 const VolumeDetailCardContainer = styled.div`
   display: flex;
   min-height: 270px;
-  margin: ${padding.small};
 `;
 
 const VolumeInformation = styled.div`
@@ -33,20 +33,22 @@ const VolumeInformation = styled.div`
   word-break: break-all;
 `;
 
-const VolumeNameTitle = styled.div`
+const VolumeTitleSection = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
-  font-size: ${fontSize.larger};
-  padding: ${padding.small} 0 ${padding.larger} ${padding.large};
+  padding: 0 0 ${padding.larger} ${padding.large};
   display: flex;
   justify-content: space-between;
+`;
 
-  i.fa-circle {
-    margin-right: ${padding.small};
-  }
+const VolumeNameContainer = styled.div``;
+
+const VolumeName = styled.span`
+  font-size: ${fontSize.larger};
+  padding-left: ${padding.smaller};
 `;
 
 const InformationSpan = styled.div`
-  padding-bottom: 25px;
+  padding-bottom: ${padding.large};
   padding-left: ${padding.large};
   display: flex;
 `;
@@ -99,7 +101,7 @@ const VolumeSectionTitle = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.bold};
-  padding: ${padding.small} 0 ${padding.base} ${padding.small};
+  padding: 0 0 ${padding.base} 0;
 `;
 
 const ProgressBarContainer = styled.div`
@@ -223,11 +225,11 @@ const VolumeDetailCard = (props) => {
 
   return (
     <VolumeTab>
-      <VolumeNameTitle data-cy="volume_detail_card_name">
-        <div>
+      <VolumeTitleSection data-cy="volume_detail_card_name">
+        <VolumeNameContainer>
           <CircleStatus className="fas fa-circle" status={health} />
-          {name}
-        </div>
+          <VolumeName>{name}</VolumeName>
+        </VolumeNameContainer>
         <DeleteButton
           variant="danger"
           icon={<i className="fas fa-sm fa-trash" />}
@@ -239,7 +241,7 @@ const VolumeDetailCard = (props) => {
           disabled={!isEnableClick}
           data-cy="delete_volume_button"
         />
-      </VolumeNameTitle>
+      </VolumeTitleSection>
       <VolumeDetailCardContainer>
         <VolumeInformation>
           <InformationSpan>
@@ -250,7 +252,7 @@ const VolumeDetailCard = (props) => {
           </InformationSpan>
           <InformationSpan>
             <InformationLabel>{intl.translate('size')}</InformationLabel>
-            <InformationValue>{storage}</InformationValue>
+            <InformationValue>{formatSizeForDisplay(storage)}</InformationValue>
           </InformationSpan>
           <InformationSpan>
             <InformationLabel>{intl.translate('status')}</InformationLabel>

@@ -35,26 +35,26 @@ import {
 import { intl } from '../translations/IntlGlobalProvider';
 
 const NodePageRSPContainer = styled.div`
-  flex-direction: column;
-  width: 51%;
-  padding-left: ${padding.small};
   .sc-tabs {
-    margin-top: 0;
+    margin: 0;
   }
   .sc-tabs-bar {
     height: 40px;
   }
-  .sc-tabs-item-title {
-    height: 40px;
-    font-size: ${fontSize.base};
-    // set the title vertical align
-    padding: 12px 0 ${padding.base};
-  }
   .sc-tabs-item {
     margin-right: ${padding.smaller};
     background-color: ${(props) => props.theme.brand.border};
-    border-radius: 3px 3px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
     height: 40px;
+
+    .sc-tabs-item-title {
+      height: 40px;
+      font-size: ${fontSize.base};
+      padding: ${padding.small}
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+    }
   }
   .sc-tabs-item-content {
     padding: 0;

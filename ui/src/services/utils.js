@@ -370,3 +370,8 @@ export const compareHealth = (status1, status2) => {
 
   return weights[status1] - weights[status2];
 };
+
+// Adds a space between size value and its unit since the API returns this as a string
+export const formatSizeForDisplay = (value) => {
+  return value.replace(/^(\d+)(\D+)$/, '$1 $2');
+};

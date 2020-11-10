@@ -24,7 +24,11 @@ import {
   VOLUME_CONDITION_UNLINK,
   VOLUME_CONDITION_EXCLAMATION,
 } from '../constants';
-import { allSizeUnitsToBytes, compareHealth } from '../services/utils';
+import {
+  allSizeUnitsToBytes,
+  compareHealth,
+  formatSizeForDisplay,
+} from '../services/utils';
 
 const VolumeListContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
@@ -87,11 +91,16 @@ const HeadRow = styled.tr`
 
 const TableRow = styled(HeadRow)`
   height: 48px;
+  border-bottom: 1px solid ${(props) => props.theme.brand.border};
   &:hover,
   &:focus {
     background-color: ${(props) => props.theme.brand.backgroundBluer};
     outline: none;
     cursor: pointer;
+  }
+
+  &:last-child {
+    border: none;
   }
 
   background-color: ${(props) =>
@@ -116,6 +125,13 @@ const Cell = styled.td`
 
 const CreateVolumeButton = styled(Button)`
   margin-left: ${padding.larger};
+`;
+
+const ActionContainer = styled.span`
+  display: flex;
+  justify-content: space-between;
+  padding: ${padding.base};
+  flex-direction: row-reverse;
 `;
 
 const TooltipContent = styled.div`
@@ -181,7 +197,7 @@ function GlobalFilter({
         width: '223px',
         height: '27px',
         borderRadius: '4px',
-        backgroundColor: theme.brand.primary,
+        backgroundColor: theme.brand.primaryDark2,
         fontFamily: 'Lato',
         fontStyle: 'italic',
         opacity: '0.6',
@@ -300,41 +316,37 @@ function Table({
         <thead>
           {/* The first row should be the search bar */}
           <HeadRow>
-            {isSearchBar ? (
-              <th
-                style={{
-                  textAlign: 'left',
-                }}
-              >
-                <GlobalFilter
-                  preGlobalFilteredRows={preGlobalFilteredRows}
-                  globalFilter={state.globalFilter}
-                  setGlobalFilter={setGlobalFilter}
-                  nodeName={nodeName}
-                  theme={theme}
-                />
-              </th>
-            ) : null}
             <th
               style={{
-                textAlign: 'right',
+                textAlign: 'left',
               }}
             >
-              <CreateVolumeButton
-                size="small"
-                variant={isSearchBar ? 'secondary' : 'base'}
-                text={intl.translate('create_new_volume')}
-                icon={<i className="fas fa-plus-circle"></i>}
-                onClick={() => {
-                  // depends on if we add node filter
-                  if (nodeName) {
-                    history.push(`/volumes/createVolume?node=${nodeName}`);
-                  } else {
-                    history.push('/volumes/createVolume');
-                  }
-                }}
-                data-cy="create-volume-button"
-              />
+              <ActionContainer>
+                <CreateVolumeButton
+                  size="small"
+                  variant={'secondary'}
+                  text={intl.translate('create_new_volume')}
+                  icon={<i className="fas fa-plus-circle"></i>}
+                  onClick={() => {
+                    // depends on if we add node filter
+                    if (nodeName) {
+                      history.push(`/volumes/createVolume?node=${nodeName}`);
+                    } else {
+                      history.push('/volumes/createVolume');
+                    }
+                  }}
+                  data-cy="create-volume-button"
+                />
+                {isSearchBar ? (
+                  <GlobalFilter
+                    preGlobalFilteredRows={preGlobalFilteredRows}
+                    globalFilter={state.globalFilter}
+                    setGlobalFilter={setGlobalFilter}
+                    nodeName={nodeName}
+                    theme={theme}
+                  />
+                ) : null}
+              </ActionContainer>
             </th>
           </HeadRow>
 
@@ -465,7 +477,10 @@ const VolumeListTable = (props) => {
       {
         Header: 'Usage',
         accessor: 'usage',
-        cellStyle: { textAlign: 'center', width: '100px' },
+        cellStyle: {
+          textAlign: 'center',
+          width: isNodeColumn ? '120px' : '150px',
+        },
         Cell: ({ value }) => {
           return (
             <ProgressBar
@@ -480,13 +495,20 @@ const VolumeListTable = (props) => {
       {
         Header: 'Size',
         accessor: 'storageCapacity',
-        cellStyle: { textAlign: 'center', width: '70px' },
+        cellStyle: {
+          textAlign: 'center',
+          width: isNodeColumn ? '70px' : '110px',
+        },
         sortType: 'size',
+        Cell: ({ value }) => formatSizeForDisplay(value),
       },
       {
         Header: 'Status',
         accessor: 'status',
-        cellStyle: { textAlign: 'center', width: '70px' },
+        cellStyle: {
+          textAlign: 'center',
+          width: isNodeColumn ? '70px' : '110px',
+        },
         Cell: (cellProps) => {
           const volume = volumeListData?.find(
             (vol) => vol.name === cellProps.cell.row.values.name,
@@ -530,13 +552,16 @@ const VolumeListTable = (props) => {
       {
         Header: 'Latency',
         accessor: 'latency',
-        cellStyle: { textAlign: 'center', width: '70px' },
+        cellStyle: {
+          textAlign: 'center',
+          width: isNodeColumn ? '70px' : '110px',
+        },
         Cell: (cellProps) => {
           return cellProps.value !== undefined ? cellProps.value + ' µs' : null;
         },
       },
     ],
-    [volumeListData, theme],
+    [volumeListData, theme, isNodeColumn],
   );
   const nodeCol = { Header: 'Node', accessor: 'node' };
   if (isNodeColumn) {

@@ -12,9 +12,9 @@ import ActiveAlertsCounter from './ActiveAlertsCounter';
 import { Button, Steppers, Loader } from '@scality/core-ui';
 import isEmpty from 'lodash.isempty';
 import { deployNodeAction } from '../ducks/app/nodes';
-import { TabContainer } from './CommonLayoutStyle';
+import { NodeTab } from './CommonLayoutStyle';
 import CircleStatus from './CircleStatus';
-import { CIRCLE_DOUBLE_SIZE, API_STATUS_UNKNOWN } from '../constants';
+import { API_STATUS_UNKNOWN } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const TabContentContainer = styled.div`
@@ -23,7 +23,7 @@ const TabContentContainer = styled.div`
 `;
 
 const InformationSpan = styled.div`
-  padding-bottom: ${padding.base};
+  padding-bottom: ${padding.large};
   padding-left: ${padding.large};
   display: flex;
 `;
@@ -45,15 +45,12 @@ const NodeNameContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: ${padding.base} 0 ${padding.larger} ${padding.base};
+  padding: 0 0 ${padding.larger} ${padding.large};
 `;
 
-const NodeNameStatusContainer = styled.div`
-  display: flex;
-  align-items: center;
-`;
+const NodeNameStatusContainer = styled.div``;
 
-const NodeName = styled.div`
+const NodeName = styled.span`
   font-size: ${fontSize.larger};
   padding-left: ${padding.smaller};
 `;
@@ -69,16 +66,24 @@ const Detail = styled.div`
   width: 100%;
 `;
 
+const InformationWrapper = styled.div`
+  width: 50%;
+  word-break: break-all;
+`;
+
 const ActiveAlertTitle = styled.div`
-  padding-bottom: ${padding.base};
+  color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.base};
+  font-weight: ${fontWeight.bold};
+  padding: 0 0 ${padding.base} 0;
 `;
 
 const ActiveAlertWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding-left: ${padding.base};
-  width: 30%;
+  width: 48%;
+  margin-left: 2%;
 `;
 
 const DeployButton = styled(Button)`
@@ -192,14 +197,11 @@ const NodePageOverviewTab = (props) => {
   );
 
   return (
-    <TabContainer>
+    <NodeTab>
       <TabContentContainer>
         <NodeNameContainer>
           <NodeNameStatusContainer>
-            <CircleStatus
-              status={currentNode?.health?.health}
-              size={CIRCLE_DOUBLE_SIZE}
-            ></CircleStatus>
+            <CircleStatus status={currentNode?.health?.health}></CircleStatus>
             <NodeName>{name}</NodeName>
           </NodeNameStatusContainer>
           {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN ? (
@@ -222,7 +224,7 @@ const NodePageOverviewTab = (props) => {
         </NodeNameContainer>
 
         <Detail>
-          <div>
+          <InformationWrapper>
             <InformationSpan>
               <InformationLabel>Control Plane IP</InformationLabel>
               <InformationValue>
@@ -297,7 +299,7 @@ const NodePageOverviewTab = (props) => {
                   intl.translate('unknown')}
               </InformationValue>
             </InformationSpan>
-          </div>
+          </InformationWrapper>
           <ActiveAlertWrapper>
             <ActiveAlertTitle>
               {intl.translate('active_alert')}
@@ -330,7 +332,7 @@ const NodePageOverviewTab = (props) => {
           </NodeDeploymentWrapper>
         ) : null}
       </TabContentContainer>
-    </TabContainer>
+    </NodeTab>
   );
 };
 
