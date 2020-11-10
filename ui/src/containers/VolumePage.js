@@ -49,7 +49,6 @@ const VolumePage = (props) => {
       dispatch(fetchCurrentVolumeObjectAction(currentVolumeName));
   }, [dispatch, currentVolumeName]);
 
-
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
   useRefreshEffect(
@@ -77,7 +76,9 @@ const VolumePage = (props) => {
   const node = useSelector((state) => makeGetNodeFromUrl(state, props));
   const nodes = useSelector((state) => state.app.nodes.list);
   const volumes = useSelector((state) => state.app.volumes.list);
-  const currentVolumeObject = useSelector((state) => state.app.volumes.currentVolumeObject);
+  const currentVolumeObject = useSelector(
+    (state) => state.app.volumes.currentVolumeObject,
+  );
   const pVList = useSelector((state) => state.app.volumes.pVList);
   const alerts = useSelector((state) => state.app.alerts);
 
@@ -92,12 +93,12 @@ const VolumePage = (props) => {
   // If data has been retrieved and no volume is selected yet we select the first one
   useEffect(() => {
     if (volumeListData.length && !currentVolumeName) {
-      history.push({
+      history.replace({
         pathname: `/volumes/${volumeListData[0]?.name}/overview`,
         search: query.toString(),
       });
     }
-  }, [volumeListData, currentVolumeName, query, history])
+  }, [volumeListData, currentVolumeName, query, history]);
 
   return (
     <PageContainer>

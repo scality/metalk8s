@@ -290,7 +290,7 @@ function Table({
         query.delete('sort');
         query.delete('desc');
       }
-      history.push(`?${query.toString()}`);
+      history.replace(`?${query.toString()}`);
     }
   }, [sorted, desc, history, data.length]);
 
