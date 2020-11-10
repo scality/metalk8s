@@ -92,7 +92,7 @@ const VolumePage = (props) => {
 
   // If data has been retrieved and no volume is selected yet we select the first one
   useEffect(() => {
-    if (volumeListData.length && !currentVolumeName) {
+    if (volumeListData[0]?.volumeAlertsRetrieved && !currentVolumeName) {
       history.replace({
         pathname: `/volumes/${volumeListData[0]?.name}/overview`,
         search: query.toString(),

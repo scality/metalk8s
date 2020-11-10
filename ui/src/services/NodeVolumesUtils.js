@@ -244,6 +244,7 @@ export const getVolumeListData = createSelector(
       return {
         name: volume?.metadata?.name,
         node: volume?.spec?.nodeName,
+        volumeAlertsRetrieved :  alerts?.list && pVCList.length,
         usage:
           volumeUsedCurrent && volumeCapacityCurrent
             ? (
