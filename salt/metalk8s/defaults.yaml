@@ -113,3 +113,137 @@ coredns:
 upgrade: false        # define if we're on an upgrade case
 
 proxies: {}
+
+certificates:
+  beacon:
+    interval: 86400  # once a day
+    notify_days: 45
+  client:
+    days_remaining: 90
+    days_valid: 365
+    files:
+      apiserver-etcd:
+        path: /etc/kubernetes/pki/apiserver-etcd-client.crt
+        renew:
+          sls:
+            - metalk8s.kubernetes.apiserver.certs.etcd-client
+        watched: False
+      apiserver-kubelet:
+        path: /etc/kubernetes/pki/apiserver-kubelet-client.crt
+        renew:
+          sls:
+            - metalk8s.kubernetes.apiserver.certs.kubelet-client
+        watched: False
+      etcd-healthcheck:
+        path: /etc/kubernetes/pki/etcd/healthcheck-client.crt
+        renew:
+          sls:
+            - metalk8s.kubernetes.etcd
+        watched: False
+      front-proxy:
+        path: /etc/kubernetes/pki/front-proxy-client.crt
+        renew:
+          sls:
+            - metalk8s.kubernetes.apiserver.certs.front-proxy-client
+        watched: False
+      salt-master-etcd:
+        path: /etc/kubernetes/pki/etcd/salt-master-etcd-client.crt
+        renew:
+          sls:
+            - metalk8s.salt.master.certs.etcd-client
+        watched: False
+  kubeconfig:
+    days_remaining: 90
+    days_valid: 365
+    files:
+      admin:
+        path: /etc/kubernetes/admin.conf
+        renew:
+          sls:
+            - metalk8s.kubernetes.apiserver.kubeconfig
+        watched: False
+      calico:
+        path: /etc/kubernetes/calico.conf
+        renew:
+          sls:
+            - metalk8s.kubernetes.cni.calico.configured
+        watched: False
+      controller-manager:
+        path: /etc/kubernetes/controller-manager.conf
+        renew:
+          sls:
+            - metalk8s.kubernetes.controller-manager.kubeconfig
+        watched: False
+      kubelet:
+        path: /etc/kubernetes/kubelet.conf
+        renew:
+          sls:
+            - metalk8s.kubernetes.kubelet.configured
+        watched: False
+      salt-master:
+        path: /etc/salt/master-kubeconfig.conf
+        renew:
+          sls:
+            - metalk8s.salt.master.kubeconfig
+        watched: False
+      scheduler:
+        path: /etc/kubernetes/scheduler.conf
+        renew:
+          sls:
+            - metalk8s.kubernetes.scheduler.kubeconfig
+        watched: False
+  server:
+    days_remaining: 90
+    days_valid: 365
+    files:
+      apiserver:
+        path: /etc/kubernetes/pki/apiserver.crt
+        renew:
+          sls:
+            - metalk8s.kubernetes.apiserver.installed
+        watched: False
+      control-plane-ingress:
+        path: /etc/metalk8s/pki/nginx-ingress/control-plane-server.crt
+        renew:
+          sls:
+            - metalk8s.addons.nginx-ingress-control-plane.certs
+          post:
+            orch:
+              - metalk8s.addons.nginx-ingress-control-plane.deployed.tls-secret
+        watched: False
+      dex:
+        path: /etc/metalk8s/pki/dex/server.crt
+        renew:
+          sls:
+            - metalk8s.addons.dex.certs
+          post:
+            orch:
+              - metalk8s.addons.dex.deployed.tls-secret
+        watched: False
+      etcd:
+        path: /etc/kubernetes/pki/etcd/server.crt
+        renew:
+          sls:
+            - metalk8s.kubernetes.etcd
+        watched: False
+      etcd-peer:
+        path: /etc/kubernetes/pki/etcd/peer.crt
+        renew:
+          sls:
+            - metalk8s.kubernetes.etcd
+        watched: False
+      salt-api:
+        path: /etc/salt/pki/api/salt-api.crt
+        renew:
+          sls:
+            - metalk8s.salt.master.certs.salt-api
+        watched: False
+      workload-plane-ingress:
+        path: /etc/metalk8s/pki/nginx-ingress/workload-plane-server.crt
+        renew:
+          sls:
+            - metalk8s.addons.nginx-ingress.certs
+          post:
+            orch:
+              - metalk8s.addons.nginx-ingress.deployed.tls-secret
+        watched: False

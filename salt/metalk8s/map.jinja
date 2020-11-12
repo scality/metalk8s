@@ -221,3 +221,7 @@
 {% set proxies = salt['grains.filter_by']({
   'default': {}
 }, merge=defaults.get('proxies')) %}
+
+{% set certificates = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('certificates')) %}
