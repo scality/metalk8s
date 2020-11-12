@@ -15,6 +15,7 @@ def managed(name,
             client_cert_info,
             apiserver,
             cluster,
+            days_valid=365,
             days_remaining=90,
             **kwargs):
     """Generate kubeconfig file with identities for control plane components"""
@@ -58,6 +59,7 @@ def managed(name,
         public_key=client_priv_key,  # pub key is sourced from priv key
         ca_server=ca_server,
         signing_policy=signing_policy,
+        days_valid=days_valid,
         **client_cert_info
     )
 
