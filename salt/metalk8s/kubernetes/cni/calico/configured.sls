@@ -1,3 +1,4 @@
+{%- from "metalk8s/map.jinja" import certificates with context %}
 {%- from "metalk8s/map.jinja" import kube_api with context %}
 {%- from "metalk8s/map.jinja" import kubernetes with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
@@ -16,7 +17,7 @@ include:
 
 Create kubeconf file for calico:
   metalk8s_kubeconfig.managed:
-    - name: /etc/kubernetes/calico.conf
+    - name: {{ certificates.kubeconfig.files.calico.path }}
     - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
     - signing_policy: {{ kube_api.cert.client_signing_policy }}
     - client_cert_info:
@@ -24,6 +25,12 @@ Create kubeconf file for calico:
         O: metalk8s:calico-node
     - apiserver: https://{{ kubernetes_service_ip }}:443
     - cluster: {{ kubernetes.cluster }}
+    - days_valid: {{
+        certificates.kubeconfig.files.calico.days_valid |
+        default(certificates.kubeconfig.days_valid) }}
+    - days_remaining: {{
+        certificates.kubeconfig.files.calico.days_remaining |
+        default(certificates.kubeconfig.days_remaining) }}
     - require:
       - metalk8s_package_manager: Install m2crypto
 
@@ -51,7 +58,7 @@ Create CNI calico configuration file:
             policy:
               type: "k8s"
             kubernetes:
-              kubeconfig: "/etc/kubernetes/calico.conf"
+              kubeconfig: "{{ certificates.kubeconfig.files.calico.path }}"
           - type: "portmap"
             snat: true
             capabilities:
