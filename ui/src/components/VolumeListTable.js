@@ -29,6 +29,11 @@ import {
   compareHealth,
   formatSizeForDisplay,
 } from '../services/utils';
+import {
+  SortCaretWrapper,
+  SortIncentive,
+  TableHeader,
+} from './CommonLayoutStyle';
 
 const VolumeListContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
@@ -138,24 +143,6 @@ const TooltipContent = styled.div`
   color: ${(props) => props.theme.brand.textSecondary};
   font-weight: ${fontWeight.bold};
   min-width: 60px;
-`;
-
-const SortCaretWrapper = styled.span`
-  padding-left: ${padding.smaller};
-  position: absolute;
-`;
-
-const SortIncentive = styled.span`
-  position: absolute;
-  display: none;
-`;
-
-const TableHeader = styled.th`
-  &:hover {
-    ${SortIncentive} {
-      display: block;
-    }
-  }
 `;
 
 function GlobalFilter({
