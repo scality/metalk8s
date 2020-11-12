@@ -67,7 +67,7 @@ const NodeListContainer = styled.div`
 
     td {
       margin: 0;
-      padding: 0.5rem;
+      padding: ${padding.smaller};
       text-align: left;
 
       :last-child {
@@ -236,6 +236,11 @@ function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
           weights[row1?.values?.status?.status] -
           weights[row2?.values?.status?.status]
         );
+      },
+      name: (row1, row2) => {
+        const a = row1?.values?.name?.name;
+        const b = row2.values?.name?.name;
+        return a.toLowerCase().localeCompare(b.toLowerCase());
       },
     };
   }, []);
@@ -418,7 +423,7 @@ const NodeListTable = (props) => {
       {
         Header: 'Health',
         accessor: 'health',
-        cellStyle: { textAlign: 'center', width: '50px' },
+        cellStyle: { textAlign: 'center', width: '70px' },
         Cell: (cellProps) => {
           const { health } = cellProps.value;
           return <CircleStatus status={health} />;
@@ -429,6 +434,7 @@ const NodeListTable = (props) => {
         Header: 'Name',
         accessor: 'name',
         cellStyle: { width: '180px' },
+        sortType: 'name',
       },
       {
         Header: 'Roles',
