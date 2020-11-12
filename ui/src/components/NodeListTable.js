@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useLocation, useRouteMatch } from 'react-router-dom';
@@ -8,12 +8,19 @@ import {
   useFilters,
   useGlobalFilter,
   useAsyncDebounce,
+  useSortBy,
 } from 'react-table';
 import { useQuery } from '../services/utils';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
 import { Button } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
+import {
+  SortCaretWrapper,
+  SortIncentive,
+  TableHeader,
+} from './CommonLayoutStyle';
+import { compareHealth } from '../services/utils';
 
 const NodeListContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
@@ -49,6 +56,7 @@ const NodeListContainer = styled.div`
       height: 31px;
       text-align: left;
       padding: ${padding.smaller};
+      cursor: pointer;
     }
 
     td {
@@ -189,8 +197,11 @@ function GlobalFilter({
 }
 
 function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
+  const history = useHistory();
   const query = useQuery();
   const querySearch = query.get('search');
+  const querySort = query.get('sort');
+  const queryDesc = query.get('desc');
 
   // Use the state and functions returned from useTable to build your UI
   const defaultColumn = React.useMemo(
@@ -199,6 +210,17 @@ function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
     }),
     [],
   );
+
+  const sortTypes = React.useMemo(() => {
+    return {
+      health: (row1, row2) => {
+        return compareHealth(
+          row2?.values?.health?.health,
+          row1?.values?.health?.health,
+        );
+      },
+    };
+  }, []);
 
   const {
     getTableProps,
@@ -215,11 +237,50 @@ function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
       columns,
       data,
       defaultColumn,
-      initialState: { globalFilter: querySearch },
+      initialState: {
+        globalFilter: querySearch,
+        sortBy: [
+          {
+            id: querySort || 'health',
+            desc: queryDesc || false,
+          },
+        ],
+      },
+      disableMultiSort: true,
+      autoResetSortBy: false,
+      sortTypes,
     },
     useFilters,
     useGlobalFilter,
+    useSortBy,
   );
+
+  // Synchronizes the params query with the Table sort state
+  const sorted = headerGroups[0].headers.find((item) => item.isSorted === true)
+    ?.id;
+  const desc = headerGroups[0].headers.find((item) => item.isSorted === true)
+    ?.isSortedDesc;
+  useEffect(() => {
+    // Creating a local query instance to avoid having it in the useEffect dependencies and creating infinite loops on search change
+    const query = new URLSearchParams(window.location.search);
+    const querySort = query.get('sort');
+    const queryDesc = query.get('desc');
+    if (data.length && (sorted !== querySort || desc !== queryDesc)) {
+      if (sorted) {
+        sorted ? query.set('sort', sorted) : query.delete('sort');
+        desc ? query.set('desc', desc) : query.delete('desc');
+        // Remove the default sorting `sort=health` from the query string
+        if (sorted === 'health' && desc === false) {
+          query.delete('sort');
+          query.delete('desc');
+        }
+      } else if (!sorted && querySort) {
+        query.delete('sort');
+        query.delete('desc');
+      }
+      history.replace(`?${query.toString()}`);
+    }
+  }, [sorted, desc, history, data.length]);
 
   return (
     <>
@@ -245,11 +306,28 @@ function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
             return (
               <HeadRow {...headerGroup.getHeaderGroupProps()}>
                 {headerGroup.headers.map((column) => {
-                  const headerStyleProps = column.getHeaderProps({
-                    style: column.cellStyle,
-                  });
+                  const headerStyleProps = column.getHeaderProps(
+                    Object.assign(column.getSortByToggleProps(), {
+                      style: column.cellStyle,
+                    }),
+                  );
                   return (
-                    <th {...headerStyleProps}>{column.render('Header')}</th>
+                    <TableHeader {...headerStyleProps}>
+                      {column.render('Header')}
+                      <SortCaretWrapper>
+                        {column.isSorted ? (
+                          column.isSortedDesc ? (
+                            <i className="fas fa-sort-down" />
+                          ) : (
+                            <i className="fas fa-sort-up" />
+                          )
+                        ) : (
+                          <SortIncentive>
+                            <i className="fas fa-sort" />
+                          </SortIncentive>
+                        )}
+                      </SortCaretWrapper>
+                    </TableHeader>
                   );
                 })}
               </HeadRow>
@@ -327,6 +405,7 @@ const NodeListTable = (props) => {
           const { health } = cellProps.value;
           return <CircleStatus status={health} />;
         },
+        sortType: 'health',
       },
       {
         Header: 'Name',
@@ -343,6 +422,7 @@ const NodeListTable = (props) => {
         cellStyle: { textAlign: 'center', width: '80px' },
         Cell: (cellProps) => {
           const { statusTextColor, computedStatus } = cellProps.value;
+          console.log(computedStatus);
           return computedStatus.map((status) => {
             return (
               <StatusText key={status} textColor={statusTextColor}>
