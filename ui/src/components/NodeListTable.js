@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useLocation, useRouteMatch } from 'react-router-dom';
@@ -20,7 +20,7 @@ import {
   SortIncentive,
   TableHeader,
 } from './CommonLayoutStyle';
-import { compareHealth } from '../services/utils';
+import { compareHealth, useTableSortURLSync } from '../services/utils';
 import {
   API_STATUS_READY,
   API_STATUS_NOT_READY,
@@ -203,7 +203,6 @@ function GlobalFilter({
 }
 
 function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
-  const history = useHistory();
   const query = useQuery();
   const querySearch = query.get('search');
   const querySort = query.get('sort');
@@ -283,27 +282,7 @@ function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
     ?.id;
   const desc = headerGroups[0].headers.find((item) => item.isSorted === true)
     ?.isSortedDesc;
-  useEffect(() => {
-    // Creating a local query instance to avoid having it in the useEffect dependencies and creating infinite loops on search change
-    const query = new URLSearchParams(window.location.search);
-    const querySort = query.get('sort');
-    const queryDesc = query.get('desc');
-    if (data.length && (sorted !== querySort || desc !== queryDesc)) {
-      if (sorted) {
-        sorted ? query.set('sort', sorted) : query.delete('sort');
-        desc ? query.set('desc', desc) : query.delete('desc');
-        // Remove the default sorting `sort=health` from the query string
-        if (sorted === 'health' && desc === false) {
-          query.delete('sort');
-          query.delete('desc');
-        }
-      } else if (!sorted && querySort) {
-        query.delete('sort');
-        query.delete('desc');
-      }
-      history.replace(`?${query.toString()}`);
-    }
-  }, [sorted, desc, history, data.length]);
+  useTableSortURLSync(sorted, desc, data);
 
   return (
     <>

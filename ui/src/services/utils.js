@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useHistory } from 'react-router-dom';
 import { createSelector } from 'reselect';
 import sortByArray from 'lodash.sortby';
 import { intl } from '../translations/IntlGlobalProvider';
@@ -374,4 +374,32 @@ export const compareHealth = (status1, status2) => {
 // Adds a space between size value and its unit since the API returns this as a string
 export const formatSizeForDisplay = (value) => {
   return value.replace(/^(\d+)(\D+)$/, '$1 $2');
+};
+
+/*
+** Custom hook that stores table sorting choice in the URL queries
+** Defaults to health sorting (used on Nodes and Volumes tables)
+*/
+export const useTableSortURLSync = (sorted, desc, data) => {
+  const history = useHistory();
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    const querySort = query.get('sort');
+    const queryDesc = query.get('desc');
+    if (data.length && (sorted !== querySort || desc !== queryDesc)) {
+      if (sorted) {
+        sorted ? query.set('sort', sorted) : query.delete('sort');
+        desc ? query.set('desc', desc) : query.delete('desc');
+        // Remove the default sorting `sort=health` from the query string
+        if (sorted === 'health' && desc === false) {
+          query.delete('sort');
+          query.delete('desc');
+        }
+      } else if (!sorted && querySort) {
+        query.delete('sort');
+        query.delete('desc');
+      }
+      history.replace(`?${query.toString()}`);
+    }
+  }, [sorted, desc, data.length]);
 };
