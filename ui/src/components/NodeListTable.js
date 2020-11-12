@@ -21,6 +21,12 @@ import {
   TableHeader,
 } from './CommonLayoutStyle';
 import { compareHealth } from '../services/utils';
+import {
+  API_STATUS_READY,
+  API_STATUS_NOT_READY,
+  API_STATUS_UNKNOWN,
+  API_STATUS_DEPLOYING,
+} from '../constants';
 
 const NodeListContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
@@ -217,6 +223,18 @@ function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
         return compareHealth(
           row2?.values?.health?.health,
           row1?.values?.health?.health,
+        );
+      },
+      status: (row1, row2) => {
+        const weights = {};
+        weights[API_STATUS_READY] = 3;
+        weights[API_STATUS_NOT_READY] = 2;
+        weights[API_STATUS_DEPLOYING] = 1;
+        weights[API_STATUS_UNKNOWN] = 0;
+
+        return (
+          weights[row1?.values?.status?.status] -
+          weights[row2?.values?.status?.status]
         );
       },
     };
@@ -422,7 +440,6 @@ const NodeListTable = (props) => {
         cellStyle: { textAlign: 'center', width: '80px' },
         Cell: (cellProps) => {
           const { statusTextColor, computedStatus } = cellProps.value;
-          console.log(computedStatus);
           return computedStatus.map((status) => {
             return (
               <StatusText key={status} textColor={statusTextColor}>
@@ -431,6 +448,7 @@ const NodeListTable = (props) => {
             );
           });
         },
+        sortType: 'status',
       },
     ],
     [],
