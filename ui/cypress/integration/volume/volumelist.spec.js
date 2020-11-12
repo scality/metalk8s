@@ -14,10 +14,9 @@ describe('Volume list', () => {
   it('brings me to the overview tab of the unhealthy volume', () => {
     // Volume `master-0-alertmanager` has alert.
     // According to the default sorting rule, it should appear at the first place.
-    cy.wait(['@getPVs', '@getPVCs', '@getAlerts', '@getVolumes']);
-    cy.url().should(
+    cy.location('pathname').should(
       'eq',
-      Cypress.config().baseUrl + '/volumes/master-0-alertmanager/overview',
+      '/volumes/master-0-alertmanager/overview',
     );
   });
 
@@ -38,7 +37,7 @@ describe('Volume list', () => {
     cy.get('[data-cy="volume_table_name_cell"]')
       .contains('prom-m0-reldev')
       .click();
-    cy.get('@historyPush').should('be.calledOnce').and('be.calledWithExactly', {
+    cy.get('@historyPush').should('be.calledWithExactly', {
       pathname: '/volumes/prom-m0-reldev/metrics',
       search: 'from=now-7d',
     });
@@ -54,14 +53,14 @@ describe('Volume list', () => {
     cy.get('@historyPush').and('be.calledWithExactly', '?search=hello');
   });
 
-  // it(`keeps warning severity for the alert while searching the node`, () => {
-  //   cy.visit('/nodes/master-0/alerts?severity=warning');
-  //   cy.stubHistory();
-  //   cy.get('[data-cy="node_list_search"]').type('hello');
+  it(`keeps warning severity for the alert while searching the node`, () => {
+    cy.visit('/volumes/master-1-prometheus/alerts?severity=warning');
+    cy.stubHistory();
+    cy.get('[data-cy="volume_list_search"]').type('hello');
 
-  //   cy.get('@historyPush').should(
-  //     'be.calledWithExactly',
-  //     '?severity=warning&search=hello',
-  //   );
-  // });
+    cy.get('@historyPush').should(
+      'be.calledWithExactly',
+      '?severity=warning&search=hello',
+    );
+  });
 });
