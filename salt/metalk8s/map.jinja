@@ -29,8 +29,9 @@
 {% set packages = salt['grains.filter_by']({
   'RedHat': {},
   'Debian': {
-    'm2crypto': 'python-m2crypto',
     'iproute': 'iproute2',
+    'm2crypto': 'python-m2crypto',
+    'python36-pyOpenSSL': 'python3-openssl',
   },
 }, grain='os_family') %}
 

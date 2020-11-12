@@ -446,6 +446,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/nginx-ingress-control-plane/',
          'post-upgrade-downgrade.sls'),
 
+    Path('salt/metalk8s/beacon/certificates.sls'),
+
     Path('salt/metalk8s/container-engine/containerd/configured.sls'),
     Path('salt/metalk8s/container-engine/containerd/files/50-metalk8s.conf.j2'),
     Path('salt/metalk8s/container-engine/containerd/init.sls'),
