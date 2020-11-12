@@ -11,9 +11,6 @@ Execute the upgrade prechecks:
     - mods:
       - metalk8s.orchestrate.upgrade.precheck
     - saltenv: {{ saltenv }}
-    - pillar:
-        orchestrate:
-          dest_version: {{ dest_version }}
 
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') | sort %}
 {%- set other_nodes = pillar.metalk8s.nodes.keys() | difference(cp_nodes) | sort %}
@@ -98,7 +95,7 @@ Deploy node {{ node }}:
     - require:
       - metalk8s_kubernetes: Set node {{ node }} version to {{ dest_version }}
     - require_in:
-      - salt: Deploy Kubernetes objects
+      - salt: Deploy Kubernetes service config objects
 
     {#- Ugly but needed since we have jinja2.7 (`loop.previtem` added in 2.10) #}
     {%- set previous_node = node %}
