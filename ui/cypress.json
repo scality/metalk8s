@@ -19,5 +19,6 @@
   "viewportWidth": 1440,
   "viewportHeight": 900,
   "defaultCommandTimeout": 30000,
-  "experimentalNetworkStubbing": true
+  "experimentalNetworkStubbing": true,
+  "experimentalFetchPolyfill": true
 }
