@@ -78,3 +78,21 @@ export const VolumeTab = styled.div`
   padding-top: ${padding.base};
   padding-bottom: ${padding.base};
 `;
+
+export const SortCaretWrapper = styled.span`
+  padding-left: ${padding.smaller};
+  position: absolute;
+`;
+
+export const SortIncentive = styled.span`
+  position: absolute;
+  display: none;
+`;
+
+export const TableHeader = styled.th`
+  &:hover {
+    ${SortIncentive} {
+      display: block;
+    }
+  }
+`;

@@ -13,6 +13,7 @@ export const STATUS_HEALTH = 'health';
 export const API_STATUS_READY = 'ready';
 export const API_STATUS_NOT_READY = 'not_ready';
 export const API_STATUS_UNKNOWN = 'unknown';
+export const API_STATUS_DEPLOYING = 'deploying';
 
 export const STATUS_BOUND = 'Bound';
 export const STATUS_PENDING = 'Pending';
