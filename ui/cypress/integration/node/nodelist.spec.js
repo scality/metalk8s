@@ -11,10 +11,9 @@ describe('Node list', () => {
 
     cy.fixture('kubernetes/nodes.json').then((nodes) => {
       // It may break when we implement sorting for the nodes
-      cy.url().should(
+      cy.location('pathname').should(
         'eq',
-        Cypress.config().baseUrl +
-          `/nodes/${nodes.items[0].metadata.name}/overview`,
+        `/nodes/${nodes.items[0].metadata.name}/overview`,
       );
     });
   });
