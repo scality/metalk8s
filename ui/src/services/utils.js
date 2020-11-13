@@ -377,9 +377,9 @@ export const formatSizeForDisplay = (value) => {
 };
 
 /*
-** Custom hook that stores table sorting choice in the URL queries
-** Defaults to health sorting (used on Nodes and Volumes tables)
-*/
+ ** Custom hook that stores table sorting choice in the URL queries
+ ** Defaults to health sorting (used on Nodes and Volumes tables)
+ */
 export const useTableSortURLSync = (sorted, desc, data) => {
   const history = useHistory();
   useEffect(() => {
@@ -401,5 +401,5 @@ export const useTableSortURLSync = (sorted, desc, data) => {
       }
       history.replace(`?${query.toString()}`);
     }
-  }, [sorted, desc, data.length]);
+  }, [sorted, desc, data.length, history]);
 };
