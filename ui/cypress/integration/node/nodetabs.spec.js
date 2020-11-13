@@ -57,8 +57,8 @@ describe('Node page alerts tab', () => {
 
   // Align Node and Volume Page
   const alertSeverities = [
-    { name: 'CRITICAL', value: 'critical' },
-    { name: 'WARNING', value: 'warning' },
+    { name: 'Critical', value: 'critical' },
+    { name: 'Warning', value: 'warning' },
   ];
   alertSeverities.map((severity) => {
     it(`adds the filter of ${severity.value}`, () => {
@@ -70,7 +70,7 @@ describe('Node page alerts tab', () => {
         .click();
       cy.get('@historyPush').should(
         'be.calledWith',
-        `?severity=${severity.value}`,
+        `/nodes/master-0/alerts?severity=${severity.value}`,
       );
     });
   });
