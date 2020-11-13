@@ -85,7 +85,6 @@ describe('Node page metrics tab', () => {
 
   it('brings me to the Grafana Node Detailed dashboard', () => {
     cy.stubHistory();
-    cy.wait('@getNodeUNameInfo');
     cy.get('[data-cy="advanced_metrics_node_detailed"]')
       .should('have.attr', 'href')
       .and(
@@ -138,7 +137,6 @@ describe('Node page volumes tabs', () => {
 
   it('brings me to the loki-vol volume page', () => {
     cy.stubHistory();
-    cy.wait('@getVolumes');
     cy.get('[data-cy="volume_table_name_cell"]')
       .contains('td', 'loki-vol')
       .click();
