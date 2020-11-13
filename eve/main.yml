@@ -456,7 +456,7 @@ models:
       command: >
         ssh -F ssh_config bastion --
         "cd metalk8s/ui &&
-        npm run test:$TEST_FILTER -- -e target_url=$TARGET_URL"
+        CYPRESS_BASE_URL=$TARGET_URL npm run test:$TEST_FILTER"
       workdir: build/eve/workers/openstack-terraform/terraform/
       haltOnFailure: true
   - ShellCommand: &add_final_status_artifact
