@@ -15,18 +15,11 @@
 
 import './commands';
 
-// Reduce the memory usage by enabling window.gc() and calling it globally in an afterEach callback.
-// Please find the issue here:
-// https://github.com/cypress-io/cypress/issues/350
 afterEach(() => {
+  // Redirect to empty page to cancel all requests in progress
   cy.window().then((win) => {
-    if (typeof win.gc === 'function') {
-      // calling this more often seems to trigger major GC event more reliably
-      win.gc();
-      win.gc();
-      win.gc();
-      win.gc();
-      win.gc();
-    }
+    win.location.href = 'about:blank';
   });
+  // Wait a bit for cancelling requests
+  cy.wait(100);
 });
