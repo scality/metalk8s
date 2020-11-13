@@ -665,6 +665,7 @@ stages:
             - docs
             - lint
             - unit_tests
+            - integration_tests_ui
           haltOnFailure: true
       - SetPropertyFromCommand: *set_version_prop
       - SetPropertyFromCommand: *set_short_version_prop
@@ -1053,6 +1054,73 @@ stages:
             STEP_NAME: lint
       - Upload: *upload_final_status_artifact
 
+  integration_tests_ui:
+    _metalk8s_internal_info:
+      junit_info: &_integration_tests_ui_junit_info
+        TEST_SUITE: integration tests
+        TEST_NAME: ui
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-integration-tests/ui/pod.yaml
+      images:
+        worker:
+          context: 'ui'
+          dockerfile: eve/workers/pod-integration-tests/ui/worker.Dockerfile
+        application:
+          context: 'ui'
+          dockerfile: eve/workers/pod-integration-tests/ui/app.Dockerfile
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            <<: *_integration_tests_ui_junit_info
+            STEP_NAME: integration_tests_ui
+      - ShellCommand: *setup_cache
+      - ShellCommand:
+          name: Install Cypress and its dependencies
+          workdir: build/ui
+          command: |
+            PKGS="cypress cypress-cucumber-preprocessor cypress-wait-until"
+            for pkg in $PKGS; do
+              npm install --no-save --no-package-lock $pkg@$(node -p \
+                -e "require('./package-lock.json').dependencies['$pkg'].version" \
+              )
+            done
+          haltOnFailure: true
+      - ShellCommand:
+          name: Run all UI integration tests
+          workdir: build/ui
+          env:
+            CYPRESS_BASE_URL: http://localhost:80
+          command: >
+            npm run test:integration --no-update-notifier
+          haltOnFailure: true
+      - ShellCommand:
+          name: Prepare upload folder
+          command: |
+            mkdir -p upload/ui/cypress
+            mv junit upload/ui
+            mv cypress/screenshots upload/ui/cypress/screenshots
+            mv cypress/videos upload/ui/cypress/videos
+          workdir: build/ui
+          alwaysRun: true
+      - Upload:
+          name: Upload Cypress and JUnit artifacts
+          source: ui/upload
+          urls:
+            - ui/junit/*.xml
+            - ui/cypress/videos/*
+          alwaysRun: true
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            <<: *_integration_tests_ui_junit_info
+            STEP_NAME: integration_tests_ui
+      - Upload: *upload_final_status_artifact
+
   unit_tests:
     worker:
       type: local
@@ -1078,10 +1146,6 @@ stages:
           dockerfile: eve/workers/pod-unit-tests/ui/Dockerfile
       vars:
         name: "metalk8s-unit-tests-ui-worker"
-        cpu_requests: "1"
-        cpu_limits: 1500m
-        mem_requests: 2Gi
-        mem_limits: 3Gi
     steps:
       - Git: *git_pull
       - ShellCommand:
@@ -1104,41 +1168,10 @@ stages:
             npm run test:nowatch --no-update-notifier
           haltOnFailure: true
       - ShellCommand:
-          name: Run all UI integration tests
-          workdir: build/ui
-          env:
-            CI: "true"
-          command: |
-            # Start application in background and store PID
-            start_time=$(date +%s)
-            npm run start --no-update-notifier 2>&1 > application.log &
-            application_pid=$!
-            # Wait for application to start
-            until curl -Isfo /dev/null http://localhost:3000/; do printf '.'; sleep 2; done
-            end_time=$(date +%s)
-            echo -e "\nApplication is ready (took $((end_time - start_time))s)!"
-            # Run Cypress integration tests
-            npm run test:integration --no-update-notifier
-            cypress_result=$?
-            # Kill application (and its descendants)
-            list_descendants () {
-              local children=$(ps -o pid= --ppid "$1")
-              for pid in $children; do
-                list_descendants "$pid"
-              done
-              echo "$children"
-            }
-            kill $(list_descendants $application_pid)
-            # Exit with Cypress result
-            exit $cypress_result
-      - ShellCommand:
           name: Prepare upload folder
           command: |
-            mkdir -p upload/ui/cypress
+            mkdir -p upload/ui
             mv junit upload/ui
-            mv application.log upload/ui/cypress/application.log
-            mv cypress/screenshots upload/ui/cypress/screenshots
-            mv cypress/videos upload/ui/cypress/videos
           workdir: build/ui
           alwaysRun: true
       - Upload:
@@ -1146,7 +1179,6 @@ stages:
           source: ui/upload
           urls:
             - ui/junit/*.xml
-            - ui/cypress/videos/*
           alwaysRun: true
       - ShellCommand:
           <<: *add_final_status_artifact_success
