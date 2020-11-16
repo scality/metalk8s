@@ -87,6 +87,10 @@ Cypress.Commands.add('setupMocks', () => {
     { fixture: 'kubernetes/volumes.json' },
   );
 
+  cy.route2('GET', '/api/kubernetes/api/v1/persistentvolumeclaims', {
+    fixture: 'kubernetes/persistentvolumeclaims.json',
+  });
+
   // Prometheus
   cy.route2(
     {
@@ -140,27 +144,10 @@ Cypress.Commands.add('setupMocks', () => {
     fixture: 'prometheus/empty-alerts.json',
   });
 
-  cy.route('api/kubernetes/api/v1/nodes', 'fixture:kubernetes/nodes.json');
-  cy.route(
-    '/api/kubernetes/apis/storage.metalk8s.scality.com/v1alpha1/volumes',
-    'fixture:kubernetes/volumes.json',
-  ).as('getVolumes');
-  cy.route(
-    'api/prometheus/api/v1/query?query=node_uname_info',
-    'fixture:prometheus/node-uname-info.json',
-  ).as('getNodeUNameInfo');
-  cy.route(
-    'api/alertmanager/api/v2/alerts',
-    'fixture:alertmanager/alerts.json',
-  ).as('getAlerts');
-  cy.route(
-    '/api/kubernetes/api/v1/persistentvolumes',
-    'fixture:kubernetes/pv.json',
-  ).as('getPVs');
-  cy.route(
-    '/api/kubernetes/api/v1/persistentvolumeclaims',
-    'fixture:kubernetes/pvc.json',
-  ).as('getPVCs');
+  // Alertmanager
+  cy.route2('GET', '/api/alertmanager/api/v2/alerts', {
+    fixture: 'alertmanager/alerts.json',
+  });
 });
 
 const ADMIN_JWT = {
