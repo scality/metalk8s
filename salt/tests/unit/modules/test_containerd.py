@@ -1,15 +1,15 @@
+from unittest import TestCase
+from unittest.mock import MagicMock, patch
+
 from parameterized import parameterized
-
-from salttesting.mixins import LoaderModuleMockMixin
-from salttesting.unit import TestCase
-from salttesting.mock import MagicMock, patch
-
-from tests.unit import utils
 
 import containerd
 
+from tests.unit import mixins
+from tests.unit import utils
 
-class ContainerdTestCase(TestCase, LoaderModuleMockMixin):
+
+class ContainerdTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
     TestCase for `containerd` module
     """

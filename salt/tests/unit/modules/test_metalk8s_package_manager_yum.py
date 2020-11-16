@@ -1,18 +1,16 @@
+from importlib import reload
 import os.path
-import yaml
+from unittest import TestCase
+from unittest.mock import MagicMock, patch
 
 from parameterized import param, parameterized
-
 from salt.exceptions import CommandExecutionError
-
-from salttesting.mixins import LoaderModuleMockMixin
-from salttesting.unit import TestCase
-from salttesting.mock import MagicMock, patch
-from salttesting.helpers import ForceImportErrorOn
-
-from tests.unit import utils
+import yaml
 
 import metalk8s_package_manager_yum
+
+from tests.unit import mixins
+from tests.unit import utils
 
 
 YAML_TESTS_FILE = os.path.join(
@@ -23,7 +21,7 @@ with open(YAML_TESTS_FILE) as fd:
     YAML_TESTS_CASES = yaml.safe_load(fd)
 
 
-class Metalk8sPackageManagerYumTestCase(TestCase, LoaderModuleMockMixin):
+class Metalk8sPackageManagerYumTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
     TestCase for `metalk8s_package_manager_yum` module
     """
@@ -165,7 +163,7 @@ class Metalk8sPackageManagerYumTestCase(TestCase, LoaderModuleMockMixin):
 
         with patch.dict(metalk8s_package_manager_yum.__salt__, salt_dict):
             if raise_msg:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     raise_msg,
                     metalk8s_package_manager_yum.check_pkg_availability,

@@ -1,13 +1,14 @@
-from parameterized import parameterized
+from importlib import reload
+from unittest import TestCase
+from unittest.mock import MagicMock, patch
 
+from parameterized import parameterized
 from salt.exceptions import CommandExecutionError
 
-from salttesting.mixins import LoaderModuleMockMixin
-from salttesting.unit import TestCase
-from salttesting.mock import MagicMock, patch
-from salttesting.helpers import ForceImportErrorOn
-
 import metalk8s_etcd
+
+from tests.unit import mixins
+from tests.unit import utils
 
 MEMBERS_LIST_DICT = [{
     "client_urls": [
@@ -36,7 +37,7 @@ for i, member in enumerate(MEMBERS_LIST):
     member.name = MEMBERS_LIST_DICT[i]["name"]
 
 
-class Metalk8sEtcdTestCase(TestCase, LoaderModuleMockMixin):
+class Metalk8sEtcdTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
     TestCase for `metalk8s_etcd` module
     """
@@ -53,7 +54,7 @@ class Metalk8sEtcdTestCase(TestCase, LoaderModuleMockMixin):
         """
         Tests the return of `__virtual__` function, unable to import etcd3
         """
-        with ForceImportErrorOn("etcd3"):
+        with utils.ForceImportErrorOn("etcd3"):
             reload(metalk8s_etcd)
             self.assertTupleEqual(
                 metalk8s_etcd.__virtual__(),
@@ -101,7 +102,7 @@ class Metalk8sEtcdTestCase(TestCase, LoaderModuleMockMixin):
                 patch("etcd3.client", etcd3_mock), \
                 patch("etcd3.exceptions.ConnectionFailedError", Exception):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     Exception,
                     result,
                     metalk8s_etcd._get_endpoint_up,
@@ -208,7 +209,7 @@ class Metalk8sEtcdTestCase(TestCase, LoaderModuleMockMixin):
                       MagicMock(return_value=endpoint)):
             minion_id = "minion1" if cp_ips else None
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s_etcd.check_etcd_health,
