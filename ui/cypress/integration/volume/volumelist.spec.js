@@ -5,13 +5,13 @@ beforeEach(() => {
 
 // Navigation tests
 describe('Volume list', () => {
-  beforeEach(() => {
-    // Visit is automatically prefixed with baseUrl
+  it('brings me to the overview tab of the unhealthy volume', () => {
+    // Note that:
+    // If we visit() in beforeEach, make sure we don't visit() again within each test case, or it may create issues with the test
+    // (some network requests would be interrupted) - see 07a34b5 (#2891)
     cy.visit('/volumes');
     cy.stubHistory();
-  });
 
-  it('brings me to the overview tab of the unhealthy volume', () => {
     // Volume `master-0-alertmanager` has alert.
     // According to the default sorting rule, it should appear at the first place.
     cy.location('pathname').should(
@@ -21,6 +21,9 @@ describe('Volume list', () => {
   });
 
   it('brings me to the overview tab of master-0-alertmanager Volume', () => {
+    cy.visit('/volumes');
+    cy.stubHistory();
+
     cy.get('[data-cy="volume_table_name_cell"]')
       .contains('master-1-prometheus')
       .click();
@@ -37,18 +40,24 @@ describe('Volume list', () => {
     cy.get('[data-cy="volume_table_name_cell"]')
       .contains('prom-m0-reldev')
       .click();
-    cy.get('@historyPush').should('be.calledWithExactly', {
+    cy.get('@historyPush').should('be.calledOnce').and('be.calledWithExactly', {
       pathname: '/volumes/prom-m0-reldev/metrics',
       search: 'from=now-7d',
     });
   });
 
   it('brings me to create volume page', () => {
+    cy.visit('/volumes');
+    cy.stubHistory();
+
     cy.get('[data-cy="create_volume_button"]').click();
     cy.get('@historyPush').and('be.calledWithExactly', '/volumes/createVolume');
   });
 
   it('updates url with the search', () => {
+    cy.visit('/volumes');
+    cy.stubHistory();
+
     cy.get('[data-cy="volume_list_search"]').type('hello');
     cy.get('@historyPush').and('be.calledWithExactly', '?search=hello');
   });
@@ -56,8 +65,8 @@ describe('Volume list', () => {
   it(`keeps warning severity for the alert while searching the node`, () => {
     cy.visit('/volumes/master-1-prometheus/alerts?severity=warning');
     cy.stubHistory();
-    cy.get('[data-cy="volume_list_search"]').type('hello');
 
+    cy.get('[data-cy="volume_list_search"]').type('hello');
     cy.get('@historyPush').should(
       'be.calledWithExactly',
       '?severity=warning&search=hello',
