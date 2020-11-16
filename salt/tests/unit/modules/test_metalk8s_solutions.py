@@ -1,17 +1,15 @@
 import errno
 import os.path
-import yaml
+from unittest import TestCase
+from unittest.mock import MagicMock, mock_open, patch
 
 from parameterized import param, parameterized
-
 from salt.exceptions import CommandExecutionError
-
-from salttesting.mixins import LoaderModuleMockMixin
-from salttesting.unit import TestCase
-from salttesting.mock import MagicMock, mock_open, patch
+import yaml
 
 import metalk8s_solutions
 
+from tests.unit import mixins
 from tests.unit import utils
 
 
@@ -23,7 +21,7 @@ with open(YAML_TESTS_FILE) as fd:
     YAML_TESTS_CASES = yaml.safe_load(fd)
 
 
-class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
+class Metalk8sSolutionsTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
     TestCase for `metalk8s_solutions` module
     """
@@ -52,7 +50,7 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
         with patch("metalk8s_solutions.open", open_mock), \
                 patch("metalk8s_solutions._write_config_file", MagicMock()):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s_solutions.read_config
@@ -89,7 +87,7 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
                 patch("metalk8s_solutions._write_config_file",
                       write_config_file_mock):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     "Failed to write Solutions config file",
                     metalk8s_solutions.configure_archive,
@@ -124,7 +122,7 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
                 patch("metalk8s_solutions.open", mock_open()), \
                 patch("yaml.safe_dump", yaml_safe_dump_mock):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s_solutions.activate_solution,
@@ -165,7 +163,7 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
                 patch("yaml.safe_dump", yaml_safe_dump_mock), \
                 patch("metalk8s_solutions.open", mock_open()):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     "Failed to write Solutions config file",
                     metalk8s_solutions.deactivate_solution,
@@ -216,14 +214,14 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
         with patch("os.path.isdir", path_isdir_mock), \
                 patch("os.listdir", listdir_mock):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s_solutions.list_solution_images,
                     mountpoint
                 )
             else:
-                self.assertItemsEqual(
+                self.assertEqual(
                     metalk8s_solutions.list_solution_images(mountpoint),
                     result
                 )
@@ -244,7 +242,7 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
                 patch("metalk8s_solutions.list_solution_images",
                       list_solution_images_mock):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s_solutions.read_solution_manifest,
@@ -272,7 +270,7 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
         path = '/tmp/my-solution.iso'
         with patch.dict(metalk8s_solutions.__salt__, patch_dict):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s_solutions.manifest_from_iso,
@@ -302,7 +300,7 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
                 patch("metalk8s_solutions.read_solution_manifest",
                       read_solution_manifest_mock):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     Exception,
                     'Path has no "product.txt"',
                     metalk8s_solutions.list_available
@@ -328,7 +326,7 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
         with patch("os.path.isfile", path_isfile_mock), \
                 patch("salt.utils.files.fopen", fopen_mock):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s_solutions.operator_roles_from_manifest,

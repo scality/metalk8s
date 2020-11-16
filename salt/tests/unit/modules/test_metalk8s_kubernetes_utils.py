@@ -1,19 +1,16 @@
+from importlib import reload
 import os.path
-import yaml
-
-from parameterized import param, parameterized
+from unittest import TestCase
+from unittest.mock import MagicMock, mock_open, patch
 
 from kubernetes.client.rest import ApiException
-
+from parameterized import param, parameterized
 from salt.exceptions import CommandExecutionError
-
-from salttesting.mixins import LoaderModuleMockMixin
-from salttesting.unit import TestCase
-from salttesting.mock import MagicMock, mock_open, patch
-from salttesting.helpers import ForceImportErrorOn
+import yaml
 
 import metalk8s_kubernetes_utils
 
+from tests.unit import mixins
 from tests.unit import utils
 
 
@@ -25,7 +22,7 @@ with open(YAML_TESTS_FILE) as fd:
     YAML_TESTS_CASES = yaml.safe_load(fd)
 
 
-class Metalk8sKubernetesUtilsTestCase(TestCase, LoaderModuleMockMixin):
+class Metalk8sKubernetesUtilsTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
     TestCase for `metalk8s_kubernetes_utils` module
     """
@@ -50,7 +47,7 @@ class Metalk8sKubernetesUtilsTestCase(TestCase, LoaderModuleMockMixin):
         """
         Tests the return of `__virtual__` function, fail import
         """
-        with ForceImportErrorOn(import_error_on):
+        with utils.ForceImportErrorOn(import_error_on):
             reload(metalk8s_kubernetes_utils)
             self.assertTupleEqual(
                 metalk8s_kubernetes_utils.__virtual__(),
@@ -120,7 +117,7 @@ class Metalk8sKubernetesUtilsTestCase(TestCase, LoaderModuleMockMixin):
                 "kubernetes.config.new_client_from_config", MagicMock()
                 ), patch("kubernetes.client.VersionApi", api_instance_mock):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s_kubernetes_utils.get_version_info
@@ -192,7 +189,7 @@ class Metalk8sKubernetesUtilsTestCase(TestCase, LoaderModuleMockMixin):
                 patch.dict(metalk8s_kubernetes_utils.__salt__, patch_dict), \
                 patch("salt.utils.files.fopen", open_file_mock):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s_kubernetes_utils.read_and_render_yaml_file,
@@ -233,7 +230,7 @@ class Metalk8sKubernetesUtilsTestCase(TestCase, LoaderModuleMockMixin):
 
         with patch.dict(metalk8s_kubernetes_utils.__salt__, salt_dict):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s_kubernetes_utils.get_service_endpoints,

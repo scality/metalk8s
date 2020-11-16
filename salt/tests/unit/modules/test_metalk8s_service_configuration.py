@@ -1,15 +1,15 @@
 import os.path
-import yaml
+from unittest import TestCase
+from unittest.mock import MagicMock, patch
 
 from parameterized import param, parameterized
-
 from salt.exceptions import CommandExecutionError
-
-from salttesting.mixins import LoaderModuleMockMixin
-from salttesting.unit import TestCase
-from salttesting.mock import MagicMock, patch
+import yaml
 
 import metalk8s_service_configuration
+
+from tests.unit import mixins
+
 
 YAML_TESTS_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
@@ -19,7 +19,9 @@ with open(YAML_TESTS_FILE) as fd:
     YAML_TESTS_CASES = yaml.safe_load(fd)
 
 
-class Metalk8sServiceConfigurationTestCase(TestCase, LoaderModuleMockMixin):
+class Metalk8sServiceConfigurationTestCase(
+    TestCase, mixins.LoaderModuleMockMixin
+):
     """
     TestCase for `metalk8s_service_configuration` module
     """
@@ -69,7 +71,7 @@ class Metalk8sServiceConfigurationTestCase(TestCase, LoaderModuleMockMixin):
 
         with patch.dict(metalk8s_service_configuration.__salt__, salt_dict):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s_service_configuration.get_service_conf,

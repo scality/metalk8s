@@ -1,16 +1,15 @@
 import os.path
-import yaml
-
-from salt.exceptions import CommandExecutionError
+from unittest import TestCase
+from unittest.mock import MagicMock, patch
 
 from parameterized import param, parameterized
-from salttesting.mixins import LoaderModuleMockMixin
-from salttesting.unit import TestCase
-from salttesting.mock import MagicMock, patch
-
-from tests.unit import utils
+from salt.exceptions import CommandExecutionError
+import yaml
 
 import metalk8s_volumes
+
+from tests.unit import mixins
+from tests.unit import utils
 
 
 YAML_TESTS_FILE = os.path.join(
@@ -23,7 +22,7 @@ with open(YAML_TESTS_FILE) as fd:
 def device_name_mock(path):
     return {'success': True, 'result': os.path.basename(path)}
 
-class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
+class Metalk8sVolumesTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
     TestCase for `metalk8s_volumes` module
     """
@@ -64,7 +63,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                 patch("os.path.isfile", is_file_mock), \
                 patch("os.path.getsize", get_size_mock):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     ValueError,
                     result,
                     metalk8s_volumes.exists,
@@ -102,7 +101,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                 patch("os.unlink", MagicMock()), \
                 patch("os.ftruncate", ftruncate_mock):
             if raise_msg:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     Exception,
                     raise_msg,
                     metalk8s_volumes.create,
@@ -152,7 +151,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                 patch("metalk8s_volumes.device_name", _device_name), \
                 patch("glob.glob", glob_mock):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     Exception,
                     result,
                     metalk8s_volumes.is_prepared,
@@ -212,7 +211,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                 patch("metalk8s_volumes.device_name", device_name_mock), \
                 patch("glob.glob", glob_mock):
             if raise_msg:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     Exception,
                     raise_msg,
                     metalk8s_volumes.prepare,
@@ -243,7 +242,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                 patch("metalk8s_volumes.device_name", device_name_mock), \
                 patch("glob.glob", glob_mock):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     Exception,
                     result,
                     metalk8s_volumes.is_cleaned_up,
@@ -277,7 +276,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                 patch("metalk8s_volumes.device_name", device_name_mock), \
                 patch("os.remove", remove_mock):
             if raise_msg:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     Exception,
                     raise_msg,
                     metalk8s_volumes.clean_up,
@@ -333,7 +332,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                 patch("metalk8s_volumes.device_name", device_name_mock), \
                 patch("glob.glob", glob_mock):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     Exception,
                     result,
                     metalk8s_volumes.device_info,

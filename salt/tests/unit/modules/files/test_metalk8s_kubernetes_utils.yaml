@@ -208,4 +208,4 @@ get_service_endpoints:
         uid: fad86410-00d9-43c2-b91c-8288b18b0337
       subsets: null
     raises: True
-    result: "Unable to get kubernetes endpoints for my_service in namespace my_namespace:\n'NoneType' object has no attribute '__getitem__'"
+    result: "Unable to get kubernetes endpoints for my_service in namespace my_namespace:\n'NoneType' object is not subscriptable"

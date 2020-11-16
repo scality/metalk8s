@@ -1,7 +1,10 @@
 # Standard library
+from importlib import reload
 import json
 import logging
 import os.path
+from unittest import TestCase
+from unittest.mock import MagicMock, patch
 
 # Runtime dependencies
 from kubernetes.client.rest import ApiException
@@ -10,10 +13,6 @@ from urllib3.exceptions import HTTPError
 
 # Test dependencies
 from parameterized import parameterized
-from salttesting.mixins import LoaderModuleMockMixin
-from salttesting.unit import TestCase
-from salttesting.mock import MagicMock, patch
-from salttesting.helpers import ForceImportErrorOn
 import yaml
 
 # Runtime modules
@@ -21,8 +20,9 @@ import metalk8s_drain
 
 # Test modules
 from tests.unit.log_utils import capture_logs, check_captured_logs
-from tests.unit.utils import parameterized_from_cases
+from tests.unit import mixins
 from tests.unit.mocks import kubernetes as mock_kubernetes
+from tests.unit import utils
 
 
 YAML_TESTS_FILE = os.path.join(
@@ -33,7 +33,7 @@ with open(YAML_TESTS_FILE) as fd:
     YAML_TESTS_CASES = yaml.safe_load(fd)
 
 
-class Metalk8sDrainTestCase(TestCase, LoaderModuleMockMixin):
+class Metalk8sDrainTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """Tests for `metalk8s_drain` execution module."""
 
     loader_module = metalk8s_drain
@@ -59,7 +59,7 @@ class Metalk8sDrainTestCase(TestCase, LoaderModuleMockMixin):
     ])
     def test_virtual_fail_import(self, _, package):
         """Behaviour for `__virtual__` on failed imports."""
-        with ForceImportErrorOn(package):
+        with utils.ForceImportErrorOn(package):
             reload(metalk8s_drain)
             self.assertTupleEqual(
                 metalk8s_drain.__virtual__(),
@@ -83,7 +83,7 @@ class Metalk8sDrainTestCase(TestCase, LoaderModuleMockMixin):
             "<<class 'metalk8s_drain.DrainTimeoutException'>> too slow!"
         )
 
-    @parameterized_from_cases(YAML_TESTS_CASES['evict_pod'])
+    @utils.parameterized_from_cases(YAML_TESTS_CASES['evict_pod'])
     def test_evict_pod(self, result, raises=False, create_raises=False,
                        create_error_status=None, create_error_body=None,
                        log_lines=None, **kwargs):
@@ -112,7 +112,7 @@ class Metalk8sDrainTestCase(TestCase, LoaderModuleMockMixin):
         with patch.dict(metalk8s_drain.__utils__, utils_dict), \
                 capture_logs(metalk8s_drain.log, logging.DEBUG) as captured:
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s_drain.evict_pod,
@@ -153,7 +153,7 @@ class Metalk8sDrainTestCase(TestCase, LoaderModuleMockMixin):
         with patch.dict(metalk8s_drain.__salt__, salt_dict), \
                 patch("metalk8s_drain.Drain", drain_cls_mock):
             if cordon_raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s_drain.node_drain,
@@ -167,7 +167,7 @@ class Metalk8sDrainTestCase(TestCase, LoaderModuleMockMixin):
                 run_drain_mock.assert_called_once()
 
 
-class DrainTestCase(TestCase, LoaderModuleMockMixin):
+class DrainTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """Tests for the `Drain` interface used by the `metalk8s_drain` module.
 
     These are split from the main execution module tests, as we can consider
@@ -226,7 +226,7 @@ class DrainTestCase(TestCase, LoaderModuleMockMixin):
         self.api_mock.seed(YAML_TESTS_CASES['datasets'][dataset])
         self.time_mock = self.api_mock.time_mock_from_events(events or {})
 
-    @parameterized_from_cases(YAML_TESTS_CASES['drain']['nominal'])
+    @utils.parameterized_from_cases(YAML_TESTS_CASES['drain']['nominal'])
     def test_nominal(self, node_name, dataset, pods_to_evict, events=None,
                      log_lines=None, **kwargs):
         self.seed_api_mock(dataset, events)
@@ -244,7 +244,7 @@ class DrainTestCase(TestCase, LoaderModuleMockMixin):
             set(pods_to_evict)
         )
 
-    @parameterized_from_cases(YAML_TESTS_CASES['drain']['dry-run'])
+    @utils.parameterized_from_cases(YAML_TESTS_CASES['drain']['dry-run'])
     def test_dry_run(self, node_name, dataset, pods_to_evict, **kwargs):
         self.seed_api_mock(dataset)
         drainer = metalk8s_drain.Drain(node_name, **kwargs)
@@ -261,7 +261,7 @@ class DrainTestCase(TestCase, LoaderModuleMockMixin):
         self.assertEqual(result, expected_result)
         self.evict_pod_mock.assert_not_called()
 
-    @parameterized_from_cases(YAML_TESTS_CASES['drain']['eviction-filters'])
+    @utils.parameterized_from_cases(YAML_TESTS_CASES['drain']['eviction-filters'])
     def test_eviction_filters(self, node_name, dataset, pods_to_evict,
                               log_lines=None, raises=False, raise_msg=None,
                               **kwargs):
@@ -270,7 +270,7 @@ class DrainTestCase(TestCase, LoaderModuleMockMixin):
 
         with capture_logs(metalk8s_drain.log, logging.WARNING) as captured:
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     "The following are not deletable: {}".format(raise_msg),
                     drainer.run_drain,
@@ -287,7 +287,7 @@ class DrainTestCase(TestCase, LoaderModuleMockMixin):
 
         check_captured_logs(captured, log_lines)
 
-    @parameterized_from_cases(YAML_TESTS_CASES['drain']['eviction-retry'])
+    @utils.parameterized_from_cases(YAML_TESTS_CASES['drain']['eviction-retry'])
     def test_eviction_retry(self, node_name, dataset, eviction_attempts,
                             events=None, **kwargs):
         """Check that eviction temporary failures (429) will be retried."""
@@ -300,7 +300,7 @@ class DrainTestCase(TestCase, LoaderModuleMockMixin):
         self.assertEqual(result, "Eviction complete.")
         self.assertEqual(self.evict_pod_mock.call_count, eviction_attempts)
 
-    @parameterized_from_cases(
+    @utils.parameterized_from_cases(
         YAML_TESTS_CASES['drain']['waiting-for-eviction']
     )
     def test_waiting_for_eviction(self, node_name, dataset, sleep_time,
@@ -315,27 +315,27 @@ class DrainTestCase(TestCase, LoaderModuleMockMixin):
         self.assertEqual(result, "Eviction complete.")
         self.assertEqual(self.time_mock.time(), sleep_time)
 
-    @parameterized_from_cases(YAML_TESTS_CASES['drain']['timeout'])
+    @utils.parameterized_from_cases(YAML_TESTS_CASES['drain']['timeout'])
     def test_timeout(self, node_name, dataset, **kwargs):
         """Check different sources of timeout."""
         self.seed_api_mock(dataset)
         drainer = metalk8s_drain.Drain(node_name, timeout=10, **kwargs)
 
         with self.time_mock.patch():
-            self.assertRaisesRegexp(
+            self.assertRaisesRegex(
                 CommandExecutionError,
                 "Drain did not complete within 10 seconds",
                 drainer.run_drain,
             )
 
-    @parameterized_from_cases(YAML_TESTS_CASES['drain']['eviction-error'])
+    @utils.parameterized_from_cases(YAML_TESTS_CASES['drain']['eviction-error'])
     def test_eviction_error(self, node_name, dataset, **kwargs):
         """Check that errors when evicting are stopping the drain process."""
         self.seed_api_mock(dataset)
         drainer = metalk8s_drain.Drain(node_name, **kwargs)
 
         with self.time_mock.patch():
-            self.assertRaisesRegexp(
+            self.assertRaisesRegex(
                 CommandExecutionError,
                 "Failed to evict pod",
                 drainer.run_drain,
