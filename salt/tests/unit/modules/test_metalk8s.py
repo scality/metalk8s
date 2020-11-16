@@ -1,17 +1,15 @@
 import os.path
-import yaml
+from unittest import TestCase
+from unittest.mock import MagicMock, mock_open, patch
 
 from parameterized import param, parameterized
-
 from salt.exceptions import CommandExecutionError
-
-from salttesting.mixins import LoaderModuleMockMixin
-from salttesting.unit import TestCase
-from salttesting.mock import MagicMock, mock_open, patch
-
-from tests.unit import utils
+import yaml
 
 import metalk8s
+
+from tests.unit import mixins
+from tests.unit import utils
 
 
 YAML_TESTS_FILE = os.path.join(
@@ -33,7 +31,7 @@ BUILD_HOST=kw029-prod-metalk8s-backend-0-22391-14681
 '''
 
 
-class Metalk8sTestCase(TestCase, LoaderModuleMockMixin):
+class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
     TestCase for `metalk8s` module
     """
@@ -115,7 +113,7 @@ class Metalk8sTestCase(TestCase, LoaderModuleMockMixin):
 
         with patch.dict(metalk8s.__pillar__, pillar_dict):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s.minions_by_role,
@@ -143,7 +141,7 @@ class Metalk8sTestCase(TestCase, LoaderModuleMockMixin):
         with patch("os.path.isfile", is_file_mock), \
                 patch("salt.utils.files.fopen", open_file_mock):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s.archive_info_from_tree,
@@ -183,7 +181,7 @@ class Metalk8sTestCase(TestCase, LoaderModuleMockMixin):
 
         with patch.dict(metalk8s.__salt__, {'cmd.run_all': iso_info_cmd_mock}):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s.archive_info_from_iso,
@@ -228,7 +226,7 @@ class Metalk8sTestCase(TestCase, LoaderModuleMockMixin):
                 patch("metalk8s.archive_info_from_iso", infos_mock), \
                 patch.dict(metalk8s.__pillar__, pillar_dict):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s.get_archives,
@@ -254,7 +252,7 @@ class Metalk8sTestCase(TestCase, LoaderModuleMockMixin):
         with patch("metalk8s.get_pillar", pillar_get_mock), \
                 patch.dict(metalk8s.__pillar__, pillar_content or {}):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s.check_pillar_keys,
@@ -296,7 +294,7 @@ class Metalk8sTestCase(TestCase, LoaderModuleMockMixin):
 
         with patch.dict(metalk8s.__salt__, salt_dict):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s.format_slots,

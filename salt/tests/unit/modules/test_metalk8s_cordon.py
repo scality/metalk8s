@@ -1,16 +1,16 @@
-from parameterized import parameterized
+from unittest import TestCase
+from unittest.mock import MagicMock, patch
 
+from parameterized import parameterized
 import salt
 from salt.exceptions import CommandExecutionError
 
-from salttesting.mixins import LoaderModuleMockMixin
-from salttesting.unit import TestCase
-from salttesting.mock import MagicMock, patch
-
 import metalk8s_cordon
 
+from tests.unit import mixins
 
-class Metalk8sCordonTestCase(TestCase, LoaderModuleMockMixin):
+
+class Metalk8sCordonTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
     TestCase for `metalk8s_cordon` module
     """
@@ -59,7 +59,7 @@ class Metalk8sCordonTestCase(TestCase, LoaderModuleMockMixin):
         Tests the unavailability of `metalk8s_kubernetes.update_object` module
         in salt
         """
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             CommandExecutionError,
             "'metalk8s_kubernetes.update_object' is not available",
             metalk8s_cordon._check_deps)

@@ -1,15 +1,14 @@
 import json
 import os.path
-import yaml
+from unittest import TestCase
+from unittest.mock import MagicMock, patch
 
 from parameterized import param, parameterized
-
-from salttesting.mixins import LoaderModuleMockMixin
-from salttesting.unit import TestCase
-from salttesting.mock import MagicMock, patch
+import yaml
 
 import metalk8s_grafana
 
+from tests.unit import mixins
 from tests.unit import utils
 
 YAML_TESTS_FILE = os.path.join(
@@ -20,7 +19,7 @@ with open(YAML_TESTS_FILE) as fd:
     YAML_TESTS_CASES = yaml.safe_load(fd)
 
 
-class Metalk8sGrafanaTestCase(TestCase, LoaderModuleMockMixin):
+class Metalk8sGrafanaTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
     TestCase for `metalk8s_grafana` module
     """
@@ -45,7 +44,7 @@ class Metalk8sGrafanaTestCase(TestCase, LoaderModuleMockMixin):
         }
         with patch.dict(metalk8s_grafana.__salt__, patch_dict):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     AssertionError,
                     result,
                     metalk8s_grafana.load_dashboard,
@@ -53,11 +52,9 @@ class Metalk8sGrafanaTestCase(TestCase, LoaderModuleMockMixin):
                     **kwargs
                 )
             else:
-                self.assertDictContainsSubset(
-                    result,
-                    metalk8s_grafana.load_dashboard(
-                        path="my_dashboard.json",
-                        **kwargs
-                    )
+                actual = metalk8s_grafana.load_dashboard(
+                    path="my_dashboard.json",
+                    **kwargs
                 )
+                self.assertEqual(dict(actual, **result), actual)
 

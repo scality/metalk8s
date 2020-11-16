@@ -6,9 +6,9 @@ arbitrary problems for specific test needs.
 """
 import contextlib
 import copy
+from unittest.mock import MagicMock, patch
 
 from salt.utils import dictupdate
-from salttesting.mock import MagicMock, patch
 
 from tests.unit import utils
 

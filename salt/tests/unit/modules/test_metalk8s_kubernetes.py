@@ -1,19 +1,17 @@
+from importlib import reload
 import os.path
-import yaml
-
-from parameterized import param, parameterized
+from unittest import TestCase
+from unittest.mock import MagicMock, patch
 
 from kubernetes.client.rest import ApiException
+from parameterized import param, parameterized
 from salt.utils import dictupdate, hashutils
 from salt.exceptions import CommandExecutionError
-
-from salttesting.mixins import LoaderModuleMockMixin
-from salttesting.unit import TestCase
-from salttesting.mock import MagicMock, patch
-from salttesting.helpers import ForceImportErrorOn
+import yaml
 
 import metalk8s_kubernetes
 
+from tests.unit import mixins
 from tests.unit import utils
 
 
@@ -25,7 +23,7 @@ with open(YAML_TESTS_FILE) as fd:
     YAML_TESTS_CASES = yaml.safe_load(fd)
 
 
-class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
+class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
     TestCase for `metalk8s_kubernetes` module
     """
@@ -107,6 +105,9 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
             '__salt__': salt_obj
         }
 
+    def assertDictContainsSubset(self, subdict, maindict):
+        return self.assertEqual(dict(maindict, **subdict), maindict)
+
     def test_virtual_success(self):
         """
         Tests the return of `__virtual__` function, success
@@ -125,7 +126,7 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
         """
         Tests the return of `__virtual__` function, fail import
         """
-        with ForceImportErrorOn(import_error_on):
+        with utils.ForceImportErrorOn(import_error_on):
             reload(metalk8s_kubernetes)
             self.assertEqual(
                 metalk8s_kubernetes.__virtual__(),
@@ -200,7 +201,7 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
         with patch.dict(metalk8s_kubernetes.__utils__, utils_dict), \
                 patch.dict(metalk8s_kubernetes.__salt__, salt_dict):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     Exception,
                     result,
                     metalk8s_kubernetes.create_object,
@@ -215,7 +216,7 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
                 if called_with:
                     self.assertDictContainsSubset(
                         called_with,
-                        create_mock.call_args.kwargs
+                        create_mock.call_args[1]
                     )
 
     @utils.parameterized_from_cases(
@@ -273,7 +274,7 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
         with patch.dict(metalk8s_kubernetes.__utils__, utils_dict), \
                 patch.dict(metalk8s_kubernetes.__salt__, salt_dict):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     Exception,
                     result,
                     metalk8s_kubernetes.delete_object,
@@ -288,7 +289,7 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
                 if called_with:
                     self.assertDictContainsSubset(
                         called_with,
-                        delete_mock.call_args.kwargs
+                        delete_mock.call_args[1]
                     )
 
     @utils.parameterized_from_cases(
@@ -343,7 +344,7 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
         with patch.dict(metalk8s_kubernetes.__utils__, utils_dict), \
                 patch.dict(metalk8s_kubernetes.__salt__, salt_dict):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     Exception,
                     result,
                     metalk8s_kubernetes.replace_object,
@@ -358,7 +359,7 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
                 if called_with:
                     self.assertDictContainsSubset(
                         called_with,
-                        replace_mock.call_args.kwargs
+                        replace_mock.call_args[1]
                     )
 
     @utils.parameterized_from_cases(
@@ -416,7 +417,7 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
         with patch.dict(metalk8s_kubernetes.__utils__, utils_dict), \
                 patch.dict(metalk8s_kubernetes.__salt__, salt_dict):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     Exception,
                     result,
                     metalk8s_kubernetes.get_object,
@@ -431,7 +432,7 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
                 if called_with:
                     self.assertDictContainsSubset(
                         called_with,
-                        retrieve_mock.call_args.kwargs
+                        retrieve_mock.call_args[1]
                     )
 
     @utils.parameterized_from_cases(
@@ -485,7 +486,7 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
         with patch.dict(metalk8s_kubernetes.__utils__, utils_dict), \
                 patch.dict(metalk8s_kubernetes.__salt__, salt_dict):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     Exception,
                     result,
                     metalk8s_kubernetes.update_object,
@@ -500,7 +501,7 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
                 if called_with:
                     self.assertDictContainsSubset(
                         called_with,
-                        update_mock.call_args.kwargs
+                        update_mock.call_args[1]
                     )
 
     @parameterized.expand([
@@ -565,7 +566,7 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
         }
         with patch.dict(metalk8s_kubernetes.__utils__, utils_dict):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     Exception,
                     result,
                     metalk8s_kubernetes.list_objects,
@@ -580,7 +581,7 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
                 if called_with:
                     self.assertDictContainsSubset(
                         called_with,
-                        list_mock.call_args.kwargs
+                        list_mock.call_args[1]
                     )
 
     @parameterized.expand(
@@ -596,7 +597,7 @@ class Metalk8sKubernetesTestCase(TestCase, LoaderModuleMockMixin):
 
         with patch("metalk8s_kubernetes.get_object", get_obj_mock):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     Exception,
                     result,
                     metalk8s_kubernetes.get_object_digest,

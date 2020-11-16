@@ -1,15 +1,15 @@
+from unittest import TestCase
+from unittest.mock import MagicMock, patch
+
 from parameterized import parameterized
-
 from salt.exceptions import CommandExecutionError
-
-from salttesting.mixins import LoaderModuleMockMixin
-from salttesting.unit import TestCase
-from salttesting.mock import MagicMock, patch
 
 import metalk8s_network
 
+from tests.unit import mixins
 
-class Metalk8sNetworkTestCase(TestCase, LoaderModuleMockMixin):
+
+class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
     TestCase for `metalk8s_network` module
     """
@@ -51,7 +51,7 @@ class Metalk8sNetworkTestCase(TestCase, LoaderModuleMockMixin):
         with patch.dict(
                 metalk8s_network.__pillar__,
                 {'networks': {'service': service_ip}}):
-            self.assertRaisesRegexp(
+            self.assertRaisesRegex(
                 CommandExecutionError,
                 error_msg,
                 metalk8s_network.get_kubernetes_service_ip
@@ -77,7 +77,7 @@ class Metalk8sNetworkTestCase(TestCase, LoaderModuleMockMixin):
         with patch.dict(
                 metalk8s_network.__pillar__,
                 {'networks': {'service': service_ip}}):
-            self.assertRaisesRegexp(
+            self.assertRaisesRegex(
                 CommandExecutionError,
                 error_msg,
                 metalk8s_network.get_cluster_dns_ip
@@ -103,7 +103,7 @@ class Metalk8sNetworkTestCase(TestCase, LoaderModuleMockMixin):
         with patch.dict(
                 metalk8s_network.__pillar__,
                 {'networks': {'service': service_ip}}):
-            self.assertRaisesRegexp(
+            self.assertRaisesRegex(
                 CommandExecutionError,
                 error_msg,
                 metalk8s_network.get_oidc_service_ip
@@ -143,7 +143,7 @@ class Metalk8sNetworkTestCase(TestCase, LoaderModuleMockMixin):
 
         with patch.dict(metalk8s_network.__salt__, salt_dict):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s_network.get_ip_from_cidrs,
@@ -183,7 +183,7 @@ class Metalk8sNetworkTestCase(TestCase, LoaderModuleMockMixin):
 
         with patch.dict(metalk8s_network.__salt__, salt_dict):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s_network.get_mtu_from_ip,
