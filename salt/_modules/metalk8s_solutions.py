@@ -302,7 +302,7 @@ def manifest_from_iso(path):
 
     cmd = ' '.join([
         'isoinfo',
-        '-x', '/{}\;1'.format(SOLUTION_MANIFEST.upper()),
+        '-x', r'/{}\;1'.format(SOLUTION_MANIFEST.upper()),
         '-i', '"{}"'.format(path),
     ])
     result = __salt__['cmd.run_all'](cmd=cmd)
