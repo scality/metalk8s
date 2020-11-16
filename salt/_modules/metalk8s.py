@@ -171,7 +171,7 @@ def archive_info_from_iso(path):
 
     cmd = ' '.join([
         'isoinfo',
-        '-x', '/PRODUCT.TXT\;1',
+        '-x', r'/PRODUCT.TXT\;1',
         '-i', '"{}"'.format(path),
     ])
     result = __salt__['cmd.run_all'](cmd=cmd)
