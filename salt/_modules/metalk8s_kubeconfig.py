@@ -17,7 +17,7 @@ def __virtual__():
 def validate(filename,
              expected_ca_data,
              expected_api_server,
-             expected_cn,
+             expected_cn=None,
              days_remaining=90):
     """Validate a kubeconfig filename.
 
@@ -77,13 +77,14 @@ def validate(filename,
     client_cert_detail = __salt__['x509.read_certificate'](client_cert)
 
     # Verify client cn
-    try:
-        current_cn = client_cert_detail['Subject']['CN']
-    except KeyError:
-        return False
-    else:
-        if current_cn != expected_cn:
+    if expected_cn is not None:
+        try:
+            current_cn = client_cert_detail['Subject']['CN']
+        except KeyError:
             return False
+        else:
+            if current_cn != expected_cn:
+                return False
 
     # Verify client client cert expiration date is > 30days
     try:
