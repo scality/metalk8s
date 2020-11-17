@@ -21,5 +21,5 @@ afterEach(() => {
     win.location.href = 'about:blank';
   });
   // Wait a bit for cancelling requests
-  cy.wait(100);
+  cy.wait(500);
 });
