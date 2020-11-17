@@ -87,6 +87,10 @@ Cypress.Commands.add('setupMocks', () => {
     { fixture: 'kubernetes/volumes.json' },
   );
 
+  cy.route2('GET', '/api/kubernetes/api/v1/persistentvolumeclaims', {
+    fixture: 'kubernetes/persistentvolumeclaims.json',
+  });
+
   // Prometheus
   cy.route2(
     {
@@ -141,7 +145,9 @@ Cypress.Commands.add('setupMocks', () => {
   });
 
   // Alertmanager
-  cy.route2('GET', '/api/alertmanager/api/v2/alerts', '[]');
+  cy.route2('GET', '/api/alertmanager/api/v2/alerts', {
+    fixture: 'alertmanager/alerts.json',
+  });
 });
 
 const ADMIN_JWT = {
