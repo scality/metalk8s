@@ -1,3 +1,8 @@
+# NOTE: This orchestrate does not follow the Kubernetes upgrade process, and
+#       instead upgrades nodes fully (highstate), one by one.
+#       This orchestrate should only be called after several other upgrade
+#       steps, refer to the upgrade script.
+
 {%- set dest_version = pillar.metalk8s.cluster_version %}
 
 Execute the upgrade prechecks:
@@ -6,33 +11,6 @@ Execute the upgrade prechecks:
     - mods:
       - metalk8s.orchestrate.upgrade.precheck
     - saltenv: {{ saltenv }}
-    - pillar:
-        orchestrate:
-          dest_version: {{ dest_version }}
-
-Upgrade etcd cluster:
-  salt.runner:
-    - name: state.orchestrate
-    - mods:
-      - metalk8s.orchestrate.etcd
-    - saltenv: {{ saltenv }}
-    - pillar:
-        orchestrate:
-          dest_version: {{ dest_version }}
-    - require:
-      - salt: Execute the upgrade prechecks
-
-Upgrade apiserver instances:
-  salt.runner:
-    - name: state.orchestrate
-    - mods:
-      - metalk8s.orchestrate.apiserver
-    - saltenv: {{ saltenv }}
-    - pillar:
-        orchestrate:
-          dest_version: {{ dest_version }}
-    - require:
-      - salt: Upgrade etcd cluster
 
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') | sort %}
 {%- set other_nodes = pillar.metalk8s.nodes.keys() | difference(cp_nodes) | sort %}
@@ -66,7 +44,7 @@ Check pillar on {{ node }} before installing apiserver-proxy:
     - retry:
         attempts: 5
     - require:
-      - salt: Upgrade apiserver instances
+      - salt: Execute the upgrade prechecks
 
 Install apiserver-proxy on {{ node }}:
   salt.state:
@@ -85,7 +63,6 @@ Wait for API server to be available on {{ node }}:
   - verify_ssl: false
   - require:
     - salt: Install apiserver-proxy on {{ node }}
-    - salt: Upgrade etcd cluster
   {%- if previous_node is defined %}
     - salt: Deploy node {{ previous_node }}
   {%- endif %}
@@ -118,7 +95,7 @@ Deploy node {{ node }}:
     - require:
       - metalk8s_kubernetes: Set node {{ node }} version to {{ dest_version }}
     - require_in:
-      - salt: Deploy Kubernetes objects
+      - salt: Deploy Kubernetes service config objects
 
     {#- Ugly but needed since we have jinja2.7 (`loop.previtem` added in 2.10) #}
     {%- set previous_node = node %}
@@ -149,5 +126,4 @@ Deploy Kubernetes objects:
     - saltenv: metalk8s-{{ dest_version }}
     - require:
       - salt: Sync module on salt-master
-      - salt: Upgrade etcd cluster
       - salt: Deploy Kubernetes service config objects

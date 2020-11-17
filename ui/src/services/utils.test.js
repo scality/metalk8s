@@ -1,4 +1,10 @@
-import { sortCapacity, addMissingDataPoint, fromMilliSectoAge } from './utils';
+import {
+  sortCapacity,
+  addMissingDataPoint,
+  fromMilliSectoAge,
+  useTableSortURLSync,
+} from './utils';
+import { renderHook } from '@testing-library/react-hooks';
 
 const testcases = [
   { storageCapacity: '1Ki' },
@@ -234,4 +240,35 @@ it('should return 1h1s if {milliSecTime} is 3601000', () => {
 it('should return 1d1m instead of 1d1m1s or 1d1s', () => {
   const result = fromMilliSectoAge(86461000);
   expect(result).toEqual('1d1m');
+});
+
+// Mocking history from react-router to test the URL sync hook
+const mockHistoryReplace = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useHistory: () => ({
+    replace: mockHistoryReplace,
+  }),
+}));
+
+describe('useTableSortURLSync hook', () => {
+  it('should not set anything in the URL if data is not ready', () => {
+    renderHook(() => useTableSortURLSync('name', false, []));
+    expect(mockHistoryReplace).not.toHaveBeenCalled();
+  });
+
+  it('should set a name sorting in the URL', () => {
+    renderHook(() => useTableSortURLSync('name', false, ['foo']));
+    expect(mockHistoryReplace).toHaveBeenCalledWith('?sort=name');
+  });
+
+  it('should set a status sorting in the URL with a desc parameter', () => {
+    renderHook(() => useTableSortURLSync('status', true, ['foo']));
+    expect(mockHistoryReplace).toHaveBeenCalledWith('?sort=status&desc=true');
+  });
+
+  it('should clear the URL params if status goes back to default (health)', () => {
+    renderHook(() => useTableSortURLSync('health', false, ['foo']));
+    expect(mockHistoryReplace).toHaveBeenCalledWith('?');
+  });
 });

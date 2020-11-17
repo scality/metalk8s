@@ -82,8 +82,7 @@ upgrade_bootstrap () {
         saltenv="$SALTENV"
 
     "${SALT_CALL}" --local --retcode-passthrough state.sls sync_mods="all" \
-        "['metalk8s.roles.bootstrap.components', 'metalk8s.container-engine']" \
-        saltenv="$SALTENV" \
+        metalk8s.roles.bootstrap.components saltenv="$SALTENV" \
         pillar="{'metalk8s': {'endpoints': {'salt-master': $saltmaster_endpoint, \
         'repositories': $repo_endpoint}}}"
 }
@@ -105,7 +104,7 @@ launch_post_upgrade () {
         saltenv="$SALTENV"
 }
 
-launch_upgrade () {
+upgrade_etcd () {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
         saltenv="$SALTENV"
@@ -116,6 +115,36 @@ launch_upgrade () {
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_roster  \
         saltenv="$SALTENV"
 
+    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
+        metalk8s.orchestrate.etcd saltenv="$SALTENV"
+}
+
+upgrade_apiservers () {
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
+        metalk8s.orchestrate.apiserver saltenv="$SALTENV"
+}
+
+# NOTE: We need to upgrade local engine (kubelet + containerd) locally
+#       before starting the node upgrade as we rely on salt-master running
+#       in a container managed by kubelet and containerd
+upgrade_local_engines () {
+    local saltmaster_endpoint repo_endpoint
+    saltmaster_endpoint="$($SALT_CALL pillar.get \
+        metalk8s:endpoints:salt-master --out txt | cut -d' ' -f2- )"
+    repo_endpoint="$($SALT_CALL pillar.get \
+        metalk8s:endpoints:repositories --out txt | cut -d' ' -f2- )"
+
+    # NOTE: Sleep a bit at the end so that salt-master container properly stop
+    #       before going to the next step
+    "${SALT_CALL}" --local --retcode-passthrough state.sls sync_mods="all" \
+        metalk8s.kubernetes.kubelet.standalone saltenv="$SALTENV" \
+        pillar="{'metalk8s': {'endpoints': {'salt-master': $saltmaster_endpoint, \
+        'repositories': $repo_endpoint}}}" && sleep 20
+}
+
+upgrade_nodes () {
+    SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
         metalk8s.orchestrate.upgrade saltenv="$SALTENV"
 }
@@ -152,7 +181,10 @@ run "Performing Pre-Upgrade checks" precheck_upgrade
 run "Upgrading bootstrap" upgrade_bootstrap
 run "Setting cluster version to $DESTINATION_VERSION" patch_kubesystem_namespace
 run "Launching the pre-upgrade" launch_pre_upgrade
-run "Launching the upgrade" launch_upgrade
+run "Upgrading etcd cluster" upgrade_etcd
+run "Upgrading all kube-api-server instances" upgrade_apiservers
+run "Upgrading local containerd and kubelet" upgrade_local_engines
+run "Upgrading all nodes one by one" upgrade_nodes
 run "Launching the post-upgrade" launch_post_upgrade
 
 "$BASE_DIR"/backup.sh
