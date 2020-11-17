@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Route, useRouteMatch, Switch, Redirect } from 'react-router-dom';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
 import {
@@ -16,12 +16,19 @@ import {
 
 // <NodePageContent> get the current selected node and pass it to <NodeListTable> and <NodePageRSP>
 const NodePageContent = (props) => {
-  const { nodeTableData } = props;
+  const { nodeTableData, alerts } = props;
   const { path } = useRouteMatch();
-  const defaultSelectNodeName = nodeTableData[0]?.name?.name;
+  const [defaultSelectNodeName, setDefaultSelectNodeName] = useState(null);
 
   useRefreshEffect(refreshAlertManagerAction, stopRefreshAlertManagerAction);
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
+
+  // Making sure the alerts have been retrieved (mandatory for health sorting) before selecting the first node
+  useEffect(() => {
+    if (alerts.list.length && !defaultSelectNodeName) {
+      setDefaultSelectNodeName(nodeTableData[0]?.name?.name);
+    }
+  }, [alerts, nodeTableData, defaultSelectNodeName]);
 
   return (
     <PageContentContainer>

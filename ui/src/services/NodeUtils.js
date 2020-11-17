@@ -11,6 +11,7 @@ import {
   API_STATUS_UNKNOWN,
   API_STATUS_DEPLOYING,
 } from '../constants';
+import { compareHealth } from './utils';
 
 const METALK8S_CONTROL_PLANE_IP = 'metalk8s:control_plane_ip';
 const METALK8S_WORKLOAD_PLANE_IP = 'metalk8s:workload_plane_ip';
@@ -28,7 +29,7 @@ export const getNodeListData = createSelector(
   brandSelector,
   alertsSelector,
   (nodes, nodeIPsInfo, brand, alerts) => {
-    return (
+    const mapped =
       nodes?.map((node) => {
         const IPsInfo = nodeIPsInfo?.[node.name];
         let statusTextColor, health;
@@ -67,10 +68,16 @@ export const getNodeListData = createSelector(
         // "yellow" when status.conditions['Ready'] == True and some other conditions are true
         // "red" when status.conditions['Ready'] == False
         // "grey" when there is no status.conditions
-        if (node?.status === API_STATUS_READY && node?.conditions.length === 0) {
+        if (
+          node?.status === API_STATUS_READY &&
+          node?.conditions.length === 0
+        ) {
           statusTextColor = brand?.healthy;
           computedStatus.push(API_STATUS_READY);
-        } else if (node?.status === API_STATUS_READY && node?.conditions.length !== 0) {
+        } else if (
+          node?.status === API_STATUS_READY &&
+          node?.conditions.length !== 0
+        ) {
           statusTextColor = brand?.warning;
           nodes.conditions.map((cond) => {
             return computedStatus.push(cond);
@@ -110,7 +117,10 @@ export const getNodeListData = createSelector(
             warningAlertsCounter,
           },
         };
-      }) ?? []
+      }) ?? [];
+
+    return mapped.sort((a, b) =>
+      compareHealth(b.health.health, a.health.health),
     );
   },
 );
