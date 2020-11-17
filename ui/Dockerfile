@@ -5,11 +5,10 @@ FROM node:${NODE_IMAGE_VERSION}
 USER node
 WORKDIR /home/node
 
-# These are ordered by 'likeliness of change'
-COPY config-overrides.js .babelrc /home/node/
-COPY public /home/node/public
+# Setup build dependencies
 COPY package.json package-lock.json /home/node/
-COPY src /home/node/src
+RUN npm ci
+
 COPY entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]

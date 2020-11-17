@@ -1,0 +1,1703 @@
+{
+  "kind": "PersistentVolumeList",
+  "apiVersion": "v1",
+  "metadata": {
+    "selfLink": "/api/v1/persistentvolumes",
+    "resourceVersion": "24000842"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "bigvol",
+        "selfLink": "/api/v1/persistentvolumes/bigvol",
+        "uid": "77d4f97c-c972-4d36-8dfd-ff2da7a77050",
+        "resourceVersion": "20905220",
+        "creationTimestamp": "2020-10-28T13:07:17Z",
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "bigvol",
+            "uid": "c51a9213-ba48-48d2-90dd-3614e4a9b417",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "10Ti"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/c51a9213-ba48-48d2-90dd-3614e4a9b417",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "hyperdrive-data",
+        "mountOptions": ["noatime", "data=ordered", "barrier=1"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["master-1"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Available"
+      }
+    },
+    {
+      "metadata": {
+        "name": "keycloak-postgresql-master",
+        "selfLink": "/api/v1/persistentvolumes/keycloak-postgresql-master",
+        "uid": "e2bee732-0bc7-4d94-9ede-367073a26cef",
+        "resourceVersion": "13337599",
+        "creationTimestamp": "2020-09-30T07:11:06Z",
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "keycloak-postgresql-master",
+            "uid": "76e8b31e-2fa3-4f68-934b-f46cbabe7be5",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "10Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/76e8b31e-2fa3-4f68-934b-f46cbabe7be5",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "ringx-auth",
+          "name": "data-keycloak-solution-postgresql-master-0",
+          "uid": "954a92ad-30fa-4ec1-aab1-6638115fe1d5",
+          "apiVersion": "v1",
+          "resourceVersion": "13331761"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "ringx-keycloak",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["master-0"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "keycloak-postgresql-slave",
+        "selfLink": "/api/v1/persistentvolumes/keycloak-postgresql-slave",
+        "uid": "942237fe-2be1-4277-84a0-5875cdcaaad9",
+        "resourceVersion": "13337752",
+        "creationTimestamp": "2020-09-30T07:11:43Z",
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "keycloak-postgresql-slave",
+            "uid": "c0369103-f41a-42fd-9909-ba9d1656701b",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "10Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/c0369103-f41a-42fd-9909-ba9d1656701b",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "ringx-auth",
+          "name": "data-keycloak-solution-postgresql-slave-0",
+          "uid": "a920a8e4-ce68-42bd-a38b-daace8e159ba",
+          "apiVersion": "v1",
+          "resourceVersion": "13331760"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "ringx-keycloak",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["master-1"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "loki-vol",
+        "selfLink": "/api/v1/persistentvolumes/loki-vol",
+        "uid": "fdc233a8-25a5-484b-ab60-cee5b5425c7f",
+        "resourceVersion": "3759931",
+        "creationTimestamp": "2020-08-20T16:33:53Z",
+        "deletionTimestamp": "2020-08-20T16:37:04Z",
+        "deletionGracePeriodSeconds": 0,
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "loki-vol",
+            "uid": "6efe6d86-21a6-4712-a784-7888630eee1c",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "10Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/6efe6d86-21a6-4712-a784-7888630eee1c",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "metalk8s-logging",
+          "name": "storage-loki-0",
+          "uid": "e213eb1d-a4a4-40e3-bbb5-750233a8b4fc",
+          "apiVersion": "v1",
+          "resourceVersion": "3747401"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "metalk8s-loki",
+        "mountOptions": ["rw", "discard"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["master-0"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "master-0-alertmanager",
+        "selfLink": "/api/v1/persistentvolumes/master-0-alertmanager",
+        "uid": "fb9ee37d-7f56-4598-82ce-df35b5bf536a",
+        "resourceVersion": "6123",
+        "creationTimestamp": "2020-08-06T15:18:19Z",
+        "labels": {
+          "app.kubernetes.io/name": "prometheus-operator-alertmanager"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "master-0-alertmanager",
+            "uid": "dadda9e7-dc1f-4632-8450-61eb3bdf0db3",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "5Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/dadda9e7-dc1f-4632-8450-61eb3bdf0db3",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "metalk8s-monitoring",
+          "name": "alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-0",
+          "uid": "dad7079f-c565-47cd-b7f9-adac7d22139c",
+          "apiVersion": "v1",
+          "resourceVersion": "1100"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "metalk8s-prometheus",
+        "mountOptions": ["rw", "discard"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["master-0"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "master-1-alertmanager",
+        "selfLink": "/api/v1/persistentvolumes/master-1-alertmanager",
+        "uid": "47f87e8c-2376-4aa9-afd8-e69f37974575",
+        "resourceVersion": "7225",
+        "creationTimestamp": "2020-08-06T15:23:11Z",
+        "labels": {
+          "app.kubernetes.io/name": "prometheus-operator-alertmanager"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "master-1-alertmanager",
+            "uid": "5d31d785-7364-49fd-93bd-86baedbca860",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "5Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/5d31d785-7364-49fd-93bd-86baedbca860",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "metalk8s-monitoring",
+          "name": "alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-1",
+          "uid": "dfb10f4a-b200-4561-b000-1c15918de452",
+          "apiVersion": "v1",
+          "resourceVersion": "1659"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "metalk8s-prometheus",
+        "mountOptions": ["rw", "discard"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["master-1"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "master-1-prometheus",
+        "selfLink": "/api/v1/persistentvolumes/master-1-prometheus",
+        "uid": "6134dfb5-84f5-4fe1-9f09-f19bbc41e0ac",
+        "resourceVersion": "5982",
+        "creationTimestamp": "2020-08-06T15:17:58Z",
+        "labels": {
+          "app.kubernetes.io/name": "prometheus-operator-prometheus"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "master-1-prometheus",
+            "uid": "183dd142-9c46-411f-b160-d99bbd03f6c9",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "20Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/183dd142-9c46-411f-b160-d99bbd03f6c9",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "metalk8s-monitoring",
+          "name": "prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0",
+          "uid": "2e2db599-5f27-4c0d-b490-a5dd48cc711c",
+          "apiVersion": "v1",
+          "resourceVersion": "1193"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "metalk8s-prometheus",
+        "mountOptions": ["rw", "discard"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["master-1"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "prom-m0-reldev",
+        "selfLink": "/api/v1/persistentvolumes/prom-m0-reldev",
+        "uid": "383ffdf1-c2b4-4c46-990c-54af854cf199",
+        "resourceVersion": "1483668",
+        "creationTimestamp": "2020-08-12T07:57:11Z",
+        "labels": {
+          "app.kubernetes.io/name": "prometheus-operator-prometheus"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "prom-m0-reldev",
+            "uid": "bfd1709b-b4ce-4e53-8cea-8fbe236b31e5",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "20Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/bfd1709b-b4ce-4e53-8cea-8fbe236b31e5",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "metalk8s-monitoring",
+          "name": "prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-1",
+          "uid": "0c00f9a7-968d-4d8c-b519-78dd5fa4d32f",
+          "apiVersion": "v1",
+          "resourceVersion": "1483663"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "metalk8s-prometheus",
+        "mountOptions": ["rw", "discard"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["master-0"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "worker-0-burry-1",
+        "selfLink": "/api/v1/persistentvolumes/worker-0-burry-1",
+        "uid": "f3ed0e8c-0e16-4cf5-9c69-76ab08518c2d",
+        "resourceVersion": "12131",
+        "creationTimestamp": "2020-08-06T15:37:06Z",
+        "labels": {
+          "app": "burry"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "worker-0-burry-1",
+            "uid": "38747a66-1515-4325-9c88-ecada20c65f3",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "1Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/38747a66-1515-4325-9c88-ecada20c65f3",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "zenko",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["worker-0"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Available"
+      }
+    },
+    {
+      "metadata": {
+        "name": "worker-0-mgob-1",
+        "selfLink": "/api/v1/persistentvolumes/worker-0-mgob-1",
+        "uid": "b3ed4209-9339-473d-bafd-9ce414d3564a",
+        "resourceVersion": "13738",
+        "creationTimestamp": "2020-08-06T15:40:00Z",
+        "labels": {
+          "app": "mgob"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "worker-0-mgob-1",
+            "uid": "6e7a43c2-9cf6-4404-99e0-22c78faf41b6",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "10Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/6e7a43c2-9cf6-4404-99e0-22c78faf41b6",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "zenko",
+          "name": "mgob-storage-zenko-mgob-0",
+          "uid": "f8ce047b-c2fc-4c95-90d8-9cb0dc555356",
+          "apiVersion": "v1",
+          "resourceVersion": "13451"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "zenko",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["worker-0"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "worker-0-mongodb-replicaset-1",
+        "selfLink": "/api/v1/persistentvolumes/worker-0-mongodb-replicaset-1",
+        "uid": "4818a72b-ff73-46d4-81d7-7644d248297f",
+        "resourceVersion": "16523",
+        "creationTimestamp": "2020-08-06T15:39:40Z",
+        "labels": {
+          "app": "mongodb-replicaset"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "worker-0-mongodb-replicaset-1",
+            "uid": "71d650d1-b260-43d0-bd48-ed27021687e7",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "50Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/71d650d1-b260-43d0-bd48-ed27021687e7",
+          "fsType": "xfs"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "zenko",
+          "name": "datadir-zenko-mongodb-replicaset-1",
+          "uid": "cd2f1f62-9601-425e-b723-d828d50c4dc4",
+          "apiVersion": "v1",
+          "resourceVersion": "16511"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "zenko-xfs",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["worker-0"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "worker-0-prometheus-server-1",
+        "selfLink": "/api/v1/persistentvolumes/worker-0-prometheus-server-1",
+        "uid": "27bd2f32-4177-433e-92cc-33e09400d3de",
+        "resourceVersion": "13613",
+        "creationTimestamp": "2020-08-06T15:39:02Z",
+        "labels": {
+          "app": "prometheus-server"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "worker-0-prometheus-server-1",
+            "uid": "9d022008-0448-46ae-8921-69769ceadae4",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "10Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/9d022008-0448-46ae-8921-69769ceadae4",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "zenko",
+          "name": "storage-volume-zenko-prometheus-server-0",
+          "uid": "c8657f34-5135-48b5-82f8-6d8b8320dbcc",
+          "apiVersion": "v1",
+          "resourceVersion": "13444"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "zenko",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["worker-0"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "worker-0-redis-ha-1",
+        "selfLink": "/api/v1/persistentvolumes/worker-0-redis-ha-1",
+        "uid": "c253fb00-2992-49fa-814f-853c6c793606",
+        "resourceVersion": "16564",
+        "creationTimestamp": "2020-08-06T15:39:17Z",
+        "labels": {
+          "app": "redis-ha"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "worker-0-redis-ha-1",
+            "uid": "d5a17e6c-4bc8-4f8d-9ab5-b0d364865ec6",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "10Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/d5a17e6c-4bc8-4f8d-9ab5-b0d364865ec6",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "zenko",
+          "name": "data-zenko-redis-ha-server-2",
+          "uid": "fb53f9c0-8797-48d1-91f2-ff5d59afd7ca",
+          "apiVersion": "v1",
+          "resourceVersion": "16557"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "zenko",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["worker-0"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "worker-0-s3-data-1",
+        "selfLink": "/api/v1/persistentvolumes/worker-0-s3-data-1",
+        "uid": "269aa073-5810-4407-8b2e-3b59ed6e15dc",
+        "resourceVersion": "13797",
+        "creationTimestamp": "2020-08-06T15:40:20Z",
+        "labels": {
+          "app": "s3-data"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "worker-0-s3-data-1",
+            "uid": "c75e9bc2-3ad7-4338-87b3-f3e0518a6d2a",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "90Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/c75e9bc2-3ad7-4338-87b3-f3e0518a6d2a",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "zenko",
+          "name": "zenko-s3-data",
+          "uid": "a781326c-ef72-48e5-9912-5e93da6fe1f1",
+          "apiVersion": "v1",
+          "resourceVersion": "13237"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "zenko",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["worker-0"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "worker-0-zenko-queue-1",
+        "selfLink": "/api/v1/persistentvolumes/worker-0-zenko-queue-1",
+        "uid": "e3d9e7ca-9aa2-44fc-ba6d-c4678169aae5",
+        "resourceVersion": "18345",
+        "creationTimestamp": "2020-08-06T15:39:31Z",
+        "labels": {
+          "app": "zenko-queue"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "worker-0-zenko-queue-1",
+            "uid": "67068bc2-a79d-44fc-89e2-06ca8ca6fbe7",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "20Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/67068bc2-a79d-44fc-89e2-06ca8ca6fbe7",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "zenko",
+          "name": "datadir-zenko-zenko-queue-2",
+          "uid": "684f6bbc-4eea-4510-a940-31cc55ecf1e3",
+          "apiVersion": "v1",
+          "resourceVersion": "18338"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "zenko",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["worker-0"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "worker-0-zenko-quorum-1",
+        "selfLink": "/api/v1/persistentvolumes/worker-0-zenko-quorum-1",
+        "uid": "7f15d224-9be9-4219-bff2-d18eb7ebeb45",
+        "resourceVersion": "17635",
+        "creationTimestamp": "2020-08-06T15:38:22Z",
+        "labels": {
+          "app": "zenko-quorum"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "worker-0-zenko-quorum-1",
+            "uid": "9ca42001-54e2-4488-8bf2-71029287e2f7",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "5Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/9ca42001-54e2-4488-8bf2-71029287e2f7",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "zenko",
+          "name": "data-zenko-zenko-quorum-2",
+          "uid": "660f238c-bc5c-452b-87f0-4079df87f770",
+          "apiVersion": "v1",
+          "resourceVersion": "17627"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "zenko",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["worker-0"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "worker-1-mongodb-replicaset-2",
+        "selfLink": "/api/v1/persistentvolumes/worker-1-mongodb-replicaset-2",
+        "uid": "27fd4fa1-c5e7-41e5-96b6-7dd3758a7e61",
+        "resourceVersion": "17326",
+        "creationTimestamp": "2020-08-06T15:39:17Z",
+        "labels": {
+          "app": "mongodb-replicaset"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "worker-1-mongodb-replicaset-2",
+            "uid": "0a744e86-634e-4d21-b4a2-86bb0fe1adcd",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "50Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/0a744e86-634e-4d21-b4a2-86bb0fe1adcd",
+          "fsType": "xfs"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "zenko",
+          "name": "datadir-zenko-mongodb-replicaset-2",
+          "uid": "489dc4cb-ed79-4f68-9b66-cf1c82312e1d",
+          "apiVersion": "v1",
+          "resourceVersion": "17317"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "zenko-xfs",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["worker-1"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "worker-1-prometheus-server-2",
+        "selfLink": "/api/v1/persistentvolumes/worker-1-prometheus-server-2",
+        "uid": "9101ba44-9b30-4658-9365-869e87ac16b6",
+        "resourceVersion": "16456",
+        "creationTimestamp": "2020-08-06T15:38:22Z",
+        "labels": {
+          "app": "prometheus-server"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "worker-1-prometheus-server-2",
+            "uid": "f1358af3-3307-49e1-9fa4-d3d77a486ced",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "10Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/f1358af3-3307-49e1-9fa4-d3d77a486ced",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "zenko",
+          "name": "storage-volume-zenko-prometheus-server-1",
+          "uid": "425740e0-2b0f-4100-a177-cc78fd98d721",
+          "apiVersion": "v1",
+          "resourceVersion": "16440"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "zenko",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["worker-1"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "worker-1-redis-ha-2",
+        "selfLink": "/api/v1/persistentvolumes/worker-1-redis-ha-2",
+        "uid": "02fe771b-8d73-4b18-b4e2-808ddbf7e111",
+        "resourceVersion": "15409",
+        "creationTimestamp": "2020-08-06T15:36:34Z",
+        "labels": {
+          "app": "redis-ha"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "worker-1-redis-ha-2",
+            "uid": "238d24a4-9e62-49ae-b3dd-f5192b36326f",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "10Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/238d24a4-9e62-49ae-b3dd-f5192b36326f",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "zenko",
+          "name": "data-zenko-redis-ha-server-1",
+          "uid": "6ee15f24-56f0-4ce8-a753-3c093cecf3cf",
+          "apiVersion": "v1",
+          "resourceVersion": "15396"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "zenko",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["worker-1"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "worker-1-zenko-queue-2",
+        "selfLink": "/api/v1/persistentvolumes/worker-1-zenko-queue-2",
+        "uid": "167a1e51-f173-4d72-af2d-223bba92b34d",
+        "resourceVersion": "13765",
+        "creationTimestamp": "2020-08-06T15:39:03Z",
+        "labels": {
+          "app": "zenko-queue"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "worker-1-zenko-queue-2",
+            "uid": "15877758-0cae-4ac2-95a1-36f2ef674eb3",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "20Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/15877758-0cae-4ac2-95a1-36f2ef674eb3",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "zenko",
+          "name": "datadir-zenko-zenko-queue-0",
+          "uid": "9d53b70a-69e1-4132-9bea-141655e6ef98",
+          "apiVersion": "v1",
+          "resourceVersion": "13503"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "zenko",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["worker-1"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "worker-1-zenko-quorum-2",
+        "selfLink": "/api/v1/persistentvolumes/worker-1-zenko-quorum-2",
+        "uid": "adc360b6-d095-4ab4-8889-26f8e515a7da",
+        "resourceVersion": "13514",
+        "creationTimestamp": "2020-08-06T15:39:31Z",
+        "labels": {
+          "app": "zenko-quorum"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "worker-1-zenko-quorum-2",
+            "uid": "33a841f0-382a-42b4-ac1b-0f3809715bf3",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "5Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/33a841f0-382a-42b4-ac1b-0f3809715bf3",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "zenko",
+          "name": "data-zenko-zenko-quorum-0",
+          "uid": "8dc920ac-3630-4fc8-8f65-bddcca4e2495",
+          "apiVersion": "v1",
+          "resourceVersion": "13435"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "zenko",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["worker-1"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "worker-2-mongodb-replicaset-3",
+        "selfLink": "/api/v1/persistentvolumes/worker-2-mongodb-replicaset-3",
+        "uid": "7b071429-e724-4662-ad23-3f9c439344f7",
+        "resourceVersion": "13670",
+        "creationTimestamp": "2020-08-06T15:38:21Z",
+        "labels": {
+          "app": "mongodb-replicaset"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "worker-2-mongodb-replicaset-3",
+            "uid": "2b1cf5a1-d48e-4399-b14b-74b10be7bd73",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "50Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/2b1cf5a1-d48e-4399-b14b-74b10be7bd73",
+          "fsType": "xfs"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "zenko",
+          "name": "datadir-zenko-mongodb-replicaset-0",
+          "uid": "ad4c1cca-d57e-4ffd-8e81-4cc3385c61ef",
+          "apiVersion": "v1",
+          "resourceVersion": "13429"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "zenko-xfs",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["worker-2"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "worker-2-redis-ha-3",
+        "selfLink": "/api/v1/persistentvolumes/worker-2-redis-ha-3",
+        "uid": "0c3bdc00-124d-4ef5-8e07-4004af7d3fde",
+        "resourceVersion": "13781",
+        "creationTimestamp": "2020-08-06T15:36:34Z",
+        "labels": {
+          "app": "redis-ha"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "worker-2-redis-ha-3",
+            "uid": "c46bc17a-65a3-4fd6-bbe0-76e6eef66634",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "10Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/c46bc17a-65a3-4fd6-bbe0-76e6eef66634",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "zenko",
+          "name": "data-zenko-redis-ha-server-0",
+          "uid": "00d90ef1-b70d-4cf5-a386-ba3c57d9b1c3",
+          "apiVersion": "v1",
+          "resourceVersion": "13551"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "zenko",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["worker-2"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "worker-2-zenko-queue-3",
+        "selfLink": "/api/v1/persistentvolumes/worker-2-zenko-queue-3",
+        "uid": "2b1db45b-4f26-4537-a02c-73e9c052745b",
+        "resourceVersion": "17831",
+        "creationTimestamp": "2020-08-06T15:39:17Z",
+        "labels": {
+          "app": "zenko-queue"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "worker-2-zenko-queue-3",
+            "uid": "59d22d94-20c7-4fc5-9be2-40838afacc67",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "20Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/59d22d94-20c7-4fc5-9be2-40838afacc67",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "zenko",
+          "name": "datadir-zenko-zenko-queue-1",
+          "uid": "0c9579fc-e34d-4091-ad98-c7d6325518bf",
+          "apiVersion": "v1",
+          "resourceVersion": "17823"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "zenko",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["worker-2"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "name": "worker-2-zenko-quorum-3",
+        "selfLink": "/api/v1/persistentvolumes/worker-2-zenko-quorum-3",
+        "uid": "536705e6-fedf-462c-891b-41650cd02e2a",
+        "resourceVersion": "7272138",
+        "creationTimestamp": "2020-09-07T15:00:22Z",
+        "labels": {
+          "app": "zenko-quorum"
+        },
+        "annotations": {
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "name": "worker-2-zenko-quorum-3",
+            "uid": "01606f31-33ec-4051-95c6-82ec4e567a5b",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ],
+        "finalizers": [
+          "storage.metalk8s.scality.com/volume-protection",
+          "kubernetes.io/pv-protection"
+        ]
+      },
+      "spec": {
+        "capacity": {
+          "storage": "5Gi"
+        },
+        "local": {
+          "path": "/dev/disk/by-uuid/01606f31-33ec-4051-95c6-82ec4e567a5b",
+          "fsType": "ext4"
+        },
+        "accessModes": ["ReadWriteOnce"],
+        "claimRef": {
+          "kind": "PersistentVolumeClaim",
+          "namespace": "zenko",
+          "name": "data-zenko-zenko-quorum-1",
+          "uid": "00482a56-ba53-4cc6-82e6-2254d71fa759",
+          "apiVersion": "v1",
+          "resourceVersion": "7272136"
+        },
+        "persistentVolumeReclaimPolicy": "Retain",
+        "storageClassName": "zenko",
+        "mountOptions": ["rw"],
+        "volumeMode": "Filesystem",
+        "nodeAffinity": {
+          "required": {
+            "nodeSelectorTerms": [
+              {
+                "matchExpressions": [
+                  {
+                    "key": "kubernetes.io/hostname",
+                    "operator": "In",
+                    "values": ["worker-2"]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "status": {
+        "phase": "Bound"
+      }
+    }
+  ]
+}

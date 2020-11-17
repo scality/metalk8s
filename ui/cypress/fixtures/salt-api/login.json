@@ -1,0 +1,12 @@
+{
+  "return": [
+    {
+      "perms": [{ "*": [".*"] }, "@wheel", "@runner", "@jobs"],
+      "start": 1603349562.577489,
+      "token": "fc14fe8d2c99b575642546ee219cc714204cf31a",
+      "expire": 1603392762.577489,
+      "user": "admin@metalk8s.invalid",
+      "eauth": "kubernetes_rbac"
+    }
+  ]
+}
