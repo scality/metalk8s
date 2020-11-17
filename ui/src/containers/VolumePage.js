@@ -80,6 +80,12 @@ const VolumePage = (props) => {
     (state) => state.app.volumes.currentVolumeObject,
   );
   const pVList = useSelector((state) => state.app.volumes.pVList);
+
+  /*
+   ** The PVCs list is used to check when the alerts will be mapped to the corresponding volumes
+   ** in order to auto select the volume when all the data are there.
+   */
+  const pVCList = useSelector((state) => state?.app?.volumes?.pVCList);
   const alerts = useSelector((state) => state.app.alerts);
 
   const volumeStats = useSelector(
@@ -92,13 +98,18 @@ const VolumePage = (props) => {
 
   // If data has been retrieved and no volume is selected yet we select the first one
   useEffect(() => {
-    if (volumeListData.length && !currentVolumeName) {
+    if (
+      volumeListData[0]?.name &&
+      alerts.list?.length &&
+      pVCList.length &&
+      !currentVolumeName
+    ) {
       history.replace({
         pathname: `/volumes/${volumeListData[0]?.name}/overview`,
         search: query.toString(),
       });
     }
-  }, [volumeListData, currentVolumeName, query, history]);
+  }, [volumeListData, currentVolumeName, query, history, alerts.list, pVCList]);
 
   return (
     <PageContainer>
