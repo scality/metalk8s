@@ -72,13 +72,13 @@ export const getNodeListData = createSelector(
           node?.status === API_STATUS_READY &&
           node?.conditions.length === 0
         ) {
-          statusTextColor = brand?.healthy;
+          statusTextColor = brand?.healthySecondary;
           computedStatus.push(API_STATUS_READY);
         } else if (
           node?.status === API_STATUS_READY &&
           node?.conditions.length !== 0
         ) {
-          statusTextColor = brand?.warning;
+          statusTextColor = brand?.alert;
           nodes.conditions.map((cond) => {
             return computedStatus.push(cond);
           });

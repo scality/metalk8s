@@ -77,7 +77,7 @@ const DeleteButton = styled(Button)`
   padding: ${padding.base};
   margin: 0px ${padding.base};
   font-size: ${fontSize.small};
-  background-color: ${(props) => props.theme.brand.critical};
+  background-color: ${(props) => props.theme.brand.danger};
   ${(props) => {
     if (props.disabled) return { opacity: 0.2 };
   }};

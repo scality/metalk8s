@@ -21,7 +21,7 @@ const Circle = styled.i`
         color = theme.success;
         break;
       case STATUS_WARNING:
-        color = theme.alert;
+        color = theme.warning;
         break;
       case STATUS_CRITICAL:
         color = theme.danger;
@@ -30,7 +30,7 @@ const Circle = styled.i`
         color = theme.base;
         break;
       case STATUS_HEALTH:
-        color = theme.healthyLight;
+        color = theme.healthy;
         break;
       default:
         color = theme.textPrimary;
