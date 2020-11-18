@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useLocation } from 'react-router-dom';
@@ -28,7 +28,13 @@ import {
   allSizeUnitsToBytes,
   compareHealth,
   formatSizeForDisplay,
+  useTableSortURLSync,
 } from '../services/utils';
+import {
+  SortCaretWrapper,
+  SortIncentive,
+  TableHeader,
+} from './CommonLayoutStyle';
 
 const VolumeListContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
@@ -138,24 +144,6 @@ const TooltipContent = styled.div`
   color: ${(props) => props.theme.brand.textSecondary};
   font-weight: ${fontWeight.bold};
   min-width: 60px;
-`;
-
-const SortCaretWrapper = styled.span`
-  padding-left: ${padding.smaller};
-  position: absolute;
-`;
-
-const SortIncentive = styled.span`
-  position: absolute;
-  display: none;
-`;
-
-const TableHeader = styled.th`
-  &:hover {
-    ${SortIncentive} {
-      display: block;
-    }
-  }
 `;
 
 function GlobalFilter({
@@ -293,27 +281,7 @@ function Table({
     ?.id;
   const desc = headerGroups[0].headers.find((item) => item.isSorted === true)
     ?.isSortedDesc;
-  useEffect(() => {
-    // Creating a local query instance to avoid having it in the useEffect dependencies and creating infinite loops on search change
-    const query = new URLSearchParams(window.location.search);
-    const querySort = query.get('sort');
-    const queryDesc = query.get('desc');
-    if (data.length && (sorted !== querySort || desc !== queryDesc)) {
-      if (sorted) {
-        sorted ? query.set('sort', sorted) : query.delete('sort');
-        desc ? query.set('desc', desc) : query.delete('desc');
-        // Remove the default sorting `sort=health` from the query string
-        if (sorted === 'health' && desc === false) {
-          query.delete('sort');
-          query.delete('desc');
-        }
-      } else if (!sorted && querySort) {
-        query.delete('sort');
-        query.delete('desc');
-      }
-      history.replace(`?${query.toString()}`);
-    }
-  }, [sorted, desc, history, data.length]);
+  useTableSortURLSync(sorted, desc, data);
 
   return (
     <>

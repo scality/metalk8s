@@ -24,6 +24,7 @@ const NodePage = (props) => {
 
   const theme = useSelector((state) => state.config.theme);
   const nodeTableData = useSelector((state) => getNodeListData(state, props));
+  const alerts = useSelector((state) => state.app.alerts);
 
   return (
     <PageContainer>
@@ -40,7 +41,7 @@ const NodePage = (props) => {
           ]}
         />
       </BreadcrumbContainer>
-      <NodePageContent nodeTableData={nodeTableData}></NodePageContent>
+      <NodePageContent nodeTableData={nodeTableData} alerts={alerts} />
     </PageContainer>
   );
 };
