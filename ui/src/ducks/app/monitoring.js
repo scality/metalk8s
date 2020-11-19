@@ -654,129 +654,131 @@ export function* fetchNodeStats() {
   const workloadPlaneNetworkBandwidthInQuery = `sum(irate(node_network_receive_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${workloadPlaneInterface}"}[5m])) * 0.000001`;
   const workloadPlaneNetworkBandwidthOutQuery = `sum(irate(node_network_transmit_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${workloadPlaneInterface}"}[5m])) * 0.000001`;
 
-  // Running Tasks In Parallel
-  const [
-    cpuUsageQueryResult,
-    systemLoadQueryResult,
-    memoryQueryResult,
-    iopsReadQueryResult,
-    iopsWriteQueryResult,
-    controlPlaneNetworkBandwidthInQueryResult,
-    controlPlaneNetworkBandwidthOutQueryResult,
-    workloadPlaneNetworkBandwidthInQueryResult,
-    workloadPlaneNetworkBandwidthOutQueryResult,
-  ] = yield all([
-    call(
-      queryPrometheusRange,
-      startingTimeISO,
-      currentTimeISO,
-      sampleFrequency,
-      cpuUsageQuery,
-    ),
-    call(
-      queryPrometheusRange,
-      startingTimeISO,
-      currentTimeISO,
-      sampleFrequency,
-      systemLoadQuery,
-    ),
-    call(
-      queryPrometheusRange,
-      startingTimeISO,
-      currentTimeISO,
-      sampleFrequency,
-      memoryQuery,
-    ),
-    call(
-      queryPrometheusRange,
-      startingTimeISO,
-      currentTimeISO,
-      sampleFrequency,
-      iopsReadQuery,
-    ),
-    call(
-      queryPrometheusRange,
-      startingTimeISO,
-      currentTimeISO,
-      sampleFrequency,
-      iopsWriteQuery,
-    ),
-    call(
-      queryPrometheusRange,
-      startingTimeISO,
-      currentTimeISO,
-      sampleFrequency,
-      controlPlaneNetworkBandwidthInQuery,
-    ),
-    call(
-      queryPrometheusRange,
-      startingTimeISO,
-      currentTimeISO,
-      sampleFrequency,
-      controlPlaneNetworkBandwidthOutQuery,
-    ),
-    call(
-      queryPrometheusRange,
-      startingTimeISO,
-      currentTimeISO,
-      sampleFrequency,
-      workloadPlaneNetworkBandwidthInQuery,
-    ),
-    call(
-      queryPrometheusRange,
-      startingTimeISO,
-      currentTimeISO,
-      sampleFrequency,
-      workloadPlaneNetworkBandwidthOutQuery,
-    ),
-  ]);
+  // Make sure the props are ready before sending the requests.
+  if (instanceIP && controlPlaneInterface && workloadPlaneInterface) {
+    // Running Tasks In Parallel
+    const [
+      cpuUsageQueryResult,
+      systemLoadQueryResult,
+      memoryQueryResult,
+      iopsReadQueryResult,
+      iopsWriteQueryResult,
+      controlPlaneNetworkBandwidthInQueryResult,
+      controlPlaneNetworkBandwidthOutQueryResult,
+      workloadPlaneNetworkBandwidthInQueryResult,
+      workloadPlaneNetworkBandwidthOutQueryResult,
+    ] = yield all([
+      call(
+        queryPrometheusRange,
+        startingTimeISO,
+        currentTimeISO,
+        sampleFrequency,
+        cpuUsageQuery,
+      ),
+      call(
+        queryPrometheusRange,
+        startingTimeISO,
+        currentTimeISO,
+        sampleFrequency,
+        systemLoadQuery,
+      ),
+      call(
+        queryPrometheusRange,
+        startingTimeISO,
+        currentTimeISO,
+        sampleFrequency,
+        memoryQuery,
+      ),
+      call(
+        queryPrometheusRange,
+        startingTimeISO,
+        currentTimeISO,
+        sampleFrequency,
+        iopsReadQuery,
+      ),
+      call(
+        queryPrometheusRange,
+        startingTimeISO,
+        currentTimeISO,
+        sampleFrequency,
+        iopsWriteQuery,
+      ),
+      call(
+        queryPrometheusRange,
+        startingTimeISO,
+        currentTimeISO,
+        sampleFrequency,
+        controlPlaneNetworkBandwidthInQuery,
+      ),
+      call(
+        queryPrometheusRange,
+        startingTimeISO,
+        currentTimeISO,
+        sampleFrequency,
+        controlPlaneNetworkBandwidthOutQuery,
+      ),
+      call(
+        queryPrometheusRange,
+        startingTimeISO,
+        currentTimeISO,
+        sampleFrequency,
+        workloadPlaneNetworkBandwidthInQuery,
+      ),
+      call(
+        queryPrometheusRange,
+        startingTimeISO,
+        currentTimeISO,
+        sampleFrequency,
+        workloadPlaneNetworkBandwidthOutQuery,
+      ),
+    ]);
 
-  if (!cpuUsageQueryResult.error) {
-    cpuUsage = cpuUsageQueryResult.data.result;
-  }
-  if (!systemLoadQueryResult.error) {
-    systemLoad = systemLoadQueryResult.data.result;
-  }
-  if (!memoryQueryResult.error) {
-    memory = memoryQueryResult.data.result;
-  }
-  if (!iopsReadQueryResult.error) {
-    iopsRead = iopsReadQueryResult.data.result;
-  }
-  if (!iopsWriteQueryResult.error) {
-    iopsWrite = iopsWriteQueryResult.data.result;
-  }
-  if (!controlPlaneNetworkBandwidthInQueryResult.error) {
-    controlPlaneNetworkBandwidthIn =
-      controlPlaneNetworkBandwidthInQueryResult.data.result;
-  }
-  if (!controlPlaneNetworkBandwidthOutQueryResult.error) {
-    controlPlaneNetworkBandwidthOut =
-      controlPlaneNetworkBandwidthOutQueryResult.data.result;
-  }
-  if (!workloadPlaneNetworkBandwidthInQueryResult.error) {
-    workloadPlaneNetworkBandwidthIn =
-      workloadPlaneNetworkBandwidthInQueryResult.data.result;
-  }
-  if (!workloadPlaneNetworkBandwidthOutQueryResult.error) {
-    workloadPlaneNetworkBandwidthOut =
-      workloadPlaneNetworkBandwidthOutQueryResult.data.result;
-  }
+    if (!cpuUsageQueryResult.error) {
+      cpuUsage = cpuUsageQueryResult.data.result;
+    }
+    if (!systemLoadQueryResult.error) {
+      systemLoad = systemLoadQueryResult.data.result;
+    }
+    if (!memoryQueryResult.error) {
+      memory = memoryQueryResult.data.result;
+    }
+    if (!iopsReadQueryResult.error) {
+      iopsRead = iopsReadQueryResult.data.result;
+    }
+    if (!iopsWriteQueryResult.error) {
+      iopsWrite = iopsWriteQueryResult.data.result;
+    }
+    if (!controlPlaneNetworkBandwidthInQueryResult.error) {
+      controlPlaneNetworkBandwidthIn =
+        controlPlaneNetworkBandwidthInQueryResult.data.result;
+    }
+    if (!controlPlaneNetworkBandwidthOutQueryResult.error) {
+      controlPlaneNetworkBandwidthOut =
+        controlPlaneNetworkBandwidthOutQueryResult.data.result;
+    }
+    if (!workloadPlaneNetworkBandwidthInQueryResult.error) {
+      workloadPlaneNetworkBandwidthIn =
+        workloadPlaneNetworkBandwidthInQueryResult.data.result;
+    }
+    if (!workloadPlaneNetworkBandwidthOutQueryResult.error) {
+      workloadPlaneNetworkBandwidthOut =
+        workloadPlaneNetworkBandwidthOutQueryResult.data.result;
+    }
 
-  const metrics = {
-    cpuUsage,
-    systemLoad,
-    memory,
-    iopsRead,
-    iopsWrite,
-    controlPlaneNetworkBandwidthIn,
-    controlPlaneNetworkBandwidthOut,
-    workloadPlaneNetworkBandwidthIn,
-    workloadPlaneNetworkBandwidthOut,
-    queryStartingTime: startingTimestamp,
-  };
-
-  yield put(updateNodeStatsAction({ metrics: metrics }));
+    const metrics = {
+      cpuUsage,
+      systemLoad,
+      memory,
+      iopsRead,
+      iopsWrite,
+      controlPlaneNetworkBandwidthIn,
+      controlPlaneNetworkBandwidthOut,
+      workloadPlaneNetworkBandwidthIn,
+      workloadPlaneNetworkBandwidthOut,
+      queryStartingTime: startingTimestamp,
+    };
+    yield put(updateNodeStatsAction({ metrics: metrics }));
+  }
 }
 
 // A long-running saga to handle the refresh, we should launch this saga as part of the root saga.

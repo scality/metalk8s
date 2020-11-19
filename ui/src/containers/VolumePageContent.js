@@ -180,6 +180,7 @@ const VolumePageContent = (props) => {
         history.push(
           `${match.url}/overview${query.toString() && `?${query.toString()}`}`,
         ),
+      'data-cy': 'overview_tab_volume_page',
     },
     {
       selected: isAlertsPage,
@@ -193,6 +194,7 @@ const VolumePageContent = (props) => {
         history.push(
           `${match.url}/alerts${query.toString() && `?${query.toString()}`}`,
         ),
+      'data-cy': 'alerts_tab_volume_page',
     },
     {
       selected: isMetricsPage,
@@ -201,6 +203,7 @@ const VolumePageContent = (props) => {
         history.push(
           `${match.url}/metrics${query.toString() && `?${query.toString()}`}`,
         ),
+      'data-cy': 'metrics_tab_volume_page',
     },
     {
       selected: isDetailsPage,
@@ -209,6 +212,7 @@ const VolumePageContent = (props) => {
         history.push(
           `${match.url}/details${query.toString() && `?${query.toString()}`}`,
         ),
+      'data-cy': 'details_tab_volume_page',
     },
   ];
 

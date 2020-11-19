@@ -1,0 +1,330 @@
+{
+  "status": "success",
+  "data": {
+    "resultType": "vector",
+    "result": [
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.9:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "zenko",
+          "node": "worker-2",
+          "persistentvolumeclaim": "datadir-zenko-zenko-queue-1",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "47562752"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.29:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "zenko",
+          "node": "worker-0",
+          "persistentvolumeclaim": "datadir-zenko-zenko-queue-2",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "47505408"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.9:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "zenko",
+          "node": "worker-2",
+          "persistentvolumeclaim": "data-zenko-zenko-quorum-1",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "32653312"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.36:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "metalk8s-logging",
+          "node": "master-0",
+          "persistentvolumeclaim": "storage-loki-0",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "1447206912"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.36:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "metalk8s-monitoring",
+          "node": "master-0",
+          "persistentvolumeclaim": "prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-1",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "7676829696"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.33:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "metalk8s-monitoring",
+          "node": "master-1",
+          "persistentvolumeclaim": "alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-1",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "20967424"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.33:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "metalk8s-monitoring",
+          "node": "master-1",
+          "persistentvolumeclaim": "prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "7684698112"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.29:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "zenko",
+          "node": "worker-0",
+          "persistentvolumeclaim": "data-zenko-redis-ha-server-2",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "37789696"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.29:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "zenko",
+          "node": "worker-0",
+          "persistentvolumeclaim": "data-zenko-zenko-quorum-2",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "105365504"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.6:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "zenko",
+          "node": "worker-1",
+          "persistentvolumeclaim": "datadir-zenko-zenko-queue-0",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "47513600"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.36:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "metalk8s-monitoring",
+          "node": "master-0",
+          "persistentvolumeclaim": "alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-0",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "5001707520"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.29:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "zenko",
+          "node": "worker-0",
+          "persistentvolumeclaim": "datadir-zenko-mongodb-replicaset-1",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "622575616"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.29:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "zenko",
+          "node": "worker-0",
+          "persistentvolumeclaim": "storage-volume-zenko-prometheus-server-0",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "571498496"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.6:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "zenko",
+          "node": "worker-1",
+          "persistentvolumeclaim": "datadir-zenko-mongodb-replicaset-2",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "628342784"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.6:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "zenko",
+          "node": "worker-1",
+          "persistentvolumeclaim": "data-zenko-zenko-quorum-0",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "105345024"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.33:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "ringx-auth",
+          "node": "master-1",
+          "persistentvolumeclaim": "data-keycloak-solution-postgresql-slave-0",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "108204032"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.29:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "zenko",
+          "node": "worker-0",
+          "persistentvolumeclaim": "mgob-storage-zenko-mgob-0",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "37822464"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.36:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "ringx-auth",
+          "node": "master-0",
+          "persistentvolumeclaim": "data-keycloak-solution-postgresql-master-0",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "125124608"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.29:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "zenko",
+          "node": "worker-0",
+          "persistentvolumeclaim": "zenko-s3-data",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "169029632"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.6:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "zenko",
+          "node": "worker-1",
+          "persistentvolumeclaim": "data-zenko-redis-ha-server-1",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "37789696"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.6:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "zenko",
+          "node": "worker-1",
+          "persistentvolumeclaim": "storage-volume-zenko-prometheus-server-1",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "1111007232"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.9:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "zenko",
+          "node": "worker-2",
+          "persistentvolumeclaim": "data-zenko-redis-ha-server-0",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "37789696"]
+      },
+      {
+        "metric": {
+          "__name__": "kubelet_volume_stats_used_bytes",
+          "endpoint": "https-metrics",
+          "instance": "192.168.1.9:10250",
+          "job": "kubelet",
+          "metrics_path": "/metrics",
+          "namespace": "zenko",
+          "node": "worker-2",
+          "persistentvolumeclaim": "datadir-zenko-mongodb-replicaset-0",
+          "service": "prometheus-operator-kubelet"
+        },
+        "value": [1604930220.935, "624500736"]
+      }
+    ]
+  }
+}

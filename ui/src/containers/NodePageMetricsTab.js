@@ -283,6 +283,7 @@ const NodePageMetricsTab = (props) => {
     LAST_ONE_HOUR,
   ].map((option) => ({
     label: option,
+    'data-cy': option,
     onClick: () => {
       dispatch(updateNodeStatsFetchArgumentAction({ metricsTimeSpan: option }));
       writeUrlTimeSpan(option);
@@ -306,12 +307,14 @@ const NodePageMetricsTab = (props) => {
           href={`${config.api.url_grafana}/dashboard/db/nodes-detailed?var-DS_PROMETHEUS=Prometheus&var-job=node-exporter&var-name=${hostnameLabel}`}
           target="_blank"
           rel="noopener noreferrer"
+          data-cy="advanced_metrics_node_detailed"
         />
         <DropdownContainer>
           <Dropdown
             items={metricsTimeSpanDropdownItems}
             text={metricsTimeSpan}
             size="small"
+            data-cy="metrics_timespan_selection"
           />
         </DropdownContainer>
       </ActionContainer>

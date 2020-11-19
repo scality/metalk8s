@@ -2,7 +2,7 @@ import { And, Then, When } from 'cypress-cucumber-preprocessor/steps';
 
 And('I am on the volume creation page', () => {
   cy.get('.sc-sidebar-item').eq(2).click();
-  cy.get('[data-cy="create-volume-button"]').click();
+  cy.get('[data-cy="create_volume_button"]').click();
 });
 
 When('I fill out the volume creation form using:', (dataTable) => {

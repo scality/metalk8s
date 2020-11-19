@@ -1,0 +1,28 @@
+{
+  "kind": "NamespaceList",
+  "apiVersion": "v1",
+  "metadata": {
+    "selfLink": "/api/v1/namespaces",
+    "resourceVersion": "1471014"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "kube-system",
+        "selfLink": "/api/v1/namespaces/kube-system",
+        "uid": "b6cb7681-6923-4b31-bebb-7864811c0e5f",
+        "resourceVersion": "1081",
+        "creationTimestamp": "2020-10-15T13:56:42Z",
+        "annotations": {
+          "metalk8s.scality.com/cluster-version": "2.6.0-dev"
+        }
+      },
+      "spec": {
+        "finalizers": ["kubernetes"]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    }
+  ]
+}

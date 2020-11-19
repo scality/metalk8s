@@ -8,10 +8,16 @@ spec:
     image: {{ images['docker-unit-tests'] }}
     resources:
       requests:
-        cpu: 500m
-        memory: 1Gi
+        cpu: {{ cpu_requests | default('500m') }}
+        memory: {{ mem_requests | default('1Gi') }}
       limits:
-        cpu: "1"
-        memory: 2Gi
+        cpu: {{ cpu_limits | default('"1"') }}
+        memory: {{ mem_limits | default('2Gi') }}
     command: ["/bin/sh"]
     args: ["-c", "buildbot-worker create-worker . ${BUILDMASTER}:${BUILDMASTER_PORT} ${WORKERNAME} ${WORKERPASS} && buildbot-worker start --nodaemon"]
+    volumeMounts:
+      - name: worker-workspace
+        mountPath: /home/eve/workspace
+  volumes:
+    - name: worker-workspace
+      emptyDir: {}

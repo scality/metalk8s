@@ -1,0 +1,1007 @@
+{
+  "apiVersion": "v1",
+  "items": [
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-20T15:39:21.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "loki",
+          "release": "loki"
+        },
+        "name": "storage-loki-0",
+        "namespace": "metalk8s-logging",
+        "resourceVersion": "3759320",
+        "selfLink": "/api/v1/namespaces/metalk8s-logging/persistentvolumeclaims/storage-loki-0",
+        "uid": "e213eb1d-a4a4-40e3-bbb5-750233a8b4fc"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "10Gi"
+          }
+        },
+        "storageClassName": "metalk8s-loki",
+        "volumeMode": "Filesystem",
+        "volumeName": "loki-vol"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "10Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-06T15:00:25.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "alertmanager": "prometheus-operator-alertmanager",
+          "app": "alertmanager"
+        },
+        "name": "alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-0",
+        "namespace": "metalk8s-monitoring",
+        "resourceVersion": "6125",
+        "selfLink": "/api/v1/namespaces/metalk8s-monitoring/persistentvolumeclaims/alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-0",
+        "uid": "dad7079f-c565-47cd-b7f9-adac7d22139c"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "1Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app.kubernetes.io/name": "prometheus-operator-alertmanager"
+          }
+        },
+        "storageClassName": "metalk8s-prometheus",
+        "volumeMode": "Filesystem",
+        "volumeName": "master-0-alertmanager"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "5Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-06T15:01:05.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "alertmanager": "prometheus-operator-alertmanager",
+          "app": "alertmanager"
+        },
+        "name": "alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-1",
+        "namespace": "metalk8s-monitoring",
+        "resourceVersion": "7227",
+        "selfLink": "/api/v1/namespaces/metalk8s-monitoring/persistentvolumeclaims/alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-1",
+        "uid": "dfb10f4a-b200-4561-b000-1c15918de452"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "1Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app.kubernetes.io/name": "prometheus-operator-alertmanager"
+          }
+        },
+        "storageClassName": "metalk8s-prometheus",
+        "volumeMode": "Filesystem",
+        "volumeName": "master-1-alertmanager"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "5Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-06T15:00:36.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "prometheus",
+          "prometheus": "prometheus-operator-prometheus"
+        },
+        "name": "prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0",
+        "namespace": "metalk8s-monitoring",
+        "resourceVersion": "5985",
+        "selfLink": "/api/v1/namespaces/metalk8s-monitoring/persistentvolumeclaims/prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-0",
+        "uid": "2e2db599-5f27-4c0d-b490-a5dd48cc711c"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "10Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app.kubernetes.io/name": "prometheus-operator-prometheus"
+          }
+        },
+        "storageClassName": "metalk8s-prometheus",
+        "volumeMode": "Filesystem",
+        "volumeName": "master-1-prometheus"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "20Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"PersistentVolumeClaim\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"prometheus\",\"prometheus\":\"prometheus-operator-prometheus\"},\"name\":\"prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-1\",\"namespace\":\"metalk8s-monitoring\"},\"spec\":{\"accessModes\":[\"ReadWriteOnce\"],\"resources\":{\"requests\":{\"storage\":\"10Gi\"}},\"selector\":{\"matchLabels\":{\"app.kubernetes.io/name\":\"prometheus-operator-prometheus\"}},\"storageClassName\":\"metalk8s-prometheus\"}}\n",
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-12T09:59:16.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "prometheus",
+          "prometheus": "prometheus-operator-prometheus"
+        },
+        "name": "prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-1",
+        "namespace": "metalk8s-monitoring",
+        "resourceVersion": "1483670",
+        "selfLink": "/api/v1/namespaces/metalk8s-monitoring/persistentvolumeclaims/prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-1",
+        "uid": "0c00f9a7-968d-4d8c-b519-78dd5fa4d32f"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "10Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app.kubernetes.io/name": "prometheus-operator-prometheus"
+          }
+        },
+        "storageClassName": "metalk8s-prometheus",
+        "volumeMode": "Filesystem",
+        "volumeName": "prom-m0-reldev"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "20Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-09-30T06:45:43.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app.kubernetes.io/instance": "keycloak-solution",
+          "app.kubernetes.io/name": "postgresql",
+          "role": "master"
+        },
+        "name": "data-keycloak-solution-postgresql-master-0",
+        "namespace": "ringx-auth",
+        "resourceVersion": "13337607",
+        "selfLink": "/api/v1/namespaces/ringx-auth/persistentvolumeclaims/data-keycloak-solution-postgresql-master-0",
+        "uid": "954a92ad-30fa-4ec1-aab1-6638115fe1d5"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "10Gi"
+          }
+        },
+        "storageClassName": "ringx-keycloak",
+        "volumeMode": "Filesystem",
+        "volumeName": "keycloak-postgresql-master"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "10Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-09-30T06:45:43.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app.kubernetes.io/instance": "keycloak-solution",
+          "app.kubernetes.io/name": "postgresql",
+          "role": "slave"
+        },
+        "name": "data-keycloak-solution-postgresql-slave-0",
+        "namespace": "ringx-auth",
+        "resourceVersion": "13337756",
+        "selfLink": "/api/v1/namespaces/ringx-auth/persistentvolumeclaims/data-keycloak-solution-postgresql-slave-0",
+        "uid": "a920a8e4-ce68-42bd-a38b-daace8e159ba"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "10Gi"
+          }
+        },
+        "storageClassName": "ringx-keycloak",
+        "volumeMode": "Filesystem",
+        "volumeName": "keycloak-postgresql-slave"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "10Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-06T15:40:37.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "redis-ha",
+          "release": "zenko"
+        },
+        "name": "data-zenko-redis-ha-server-0",
+        "namespace": "zenko",
+        "resourceVersion": "13794",
+        "selfLink": "/api/v1/namespaces/zenko/persistentvolumeclaims/data-zenko-redis-ha-server-0",
+        "uid": "00d90ef1-b70d-4cf5-a386-ba3c57d9b1c3"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "10Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "redis-ha"
+          }
+        },
+        "storageClassName": "zenko",
+        "volumeMode": "Filesystem",
+        "volumeName": "worker-2-redis-ha-3"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "10Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-06T15:43:14.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "redis-ha",
+          "release": "zenko"
+        },
+        "name": "data-zenko-redis-ha-server-1",
+        "namespace": "zenko",
+        "resourceVersion": "15424",
+        "selfLink": "/api/v1/namespaces/zenko/persistentvolumeclaims/data-zenko-redis-ha-server-1",
+        "uid": "6ee15f24-56f0-4ce8-a753-3c093cecf3cf"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "10Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "redis-ha"
+          }
+        },
+        "storageClassName": "zenko",
+        "volumeMode": "Filesystem",
+        "volumeName": "worker-1-redis-ha-2"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "10Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-06T15:44:56.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "redis-ha",
+          "release": "zenko"
+        },
+        "name": "data-zenko-redis-ha-server-2",
+        "namespace": "zenko",
+        "resourceVersion": "16570",
+        "selfLink": "/api/v1/namespaces/zenko/persistentvolumeclaims/data-zenko-redis-ha-server-2",
+        "uid": "fb53f9c0-8797-48d1-91f2-ff5d59afd7ca"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "10Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "redis-ha"
+          }
+        },
+        "storageClassName": "zenko",
+        "volumeMode": "Filesystem",
+        "volumeName": "worker-0-redis-ha-1"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "10Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-06T15:40:36.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "zenko-quorum",
+          "component": "server",
+          "release": "zenko"
+        },
+        "name": "data-zenko-zenko-quorum-0",
+        "namespace": "zenko",
+        "resourceVersion": "13587",
+        "selfLink": "/api/v1/namespaces/zenko/persistentvolumeclaims/data-zenko-zenko-quorum-0",
+        "uid": "8dc920ac-3630-4fc8-8f65-bddcca4e2495"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "5Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "zenko-quorum"
+          }
+        },
+        "storageClassName": "zenko",
+        "volumeMode": "Filesystem",
+        "volumeName": "worker-1-zenko-quorum-2"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "5Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"PersistentVolumeClaim\",\"metadata\":{\"annotations\":{},\"finalizers\":[\"kubernetes.io/pvc-protection\"],\"labels\":{\"app\":\"zenko-quorum\",\"component\":\"server\",\"release\":\"zenko\"},\"name\":\"data-zenko-zenko-quorum-1\",\"namespace\":\"zenko\",\"resourceVersion\":\"17021\",\"selfLink\":\"/api/v1/namespaces/zenko/persistentvolumeclaims/data-zenko-zenko-quorum-1\"},\"spec\":{\"accessModes\":[\"ReadWriteOnce\"],\"resources\":{\"requests\":{\"storage\":\"5Gi\"}},\"selector\":{\"matchLabels\":{\"app\":\"zenko-quorum\"}},\"storageClassName\":\"zenko\",\"volumeMode\":\"Filesystem\",\"volumeName\":\"worker-2-zenko-quorum-3\"},\"status\":{\"accessModes\":[\"ReadWriteOnce\"],\"capacity\":{\"storage\":\"5Gi\"},\"phase\":\"Bound\"}}\n",
+          "pv.kubernetes.io/bind-completed": "yes"
+        },
+        "creationTimestamp": "2020-09-07T15:02:46.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "zenko-quorum",
+          "component": "server",
+          "release": "zenko"
+        },
+        "name": "data-zenko-zenko-quorum-1",
+        "namespace": "zenko",
+        "resourceVersion": "7272143",
+        "selfLink": "/api/v1/namespaces/zenko/persistentvolumeclaims/data-zenko-zenko-quorum-1",
+        "uid": "00482a56-ba53-4cc6-82e6-2254d71fa759"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "5Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "zenko-quorum"
+          }
+        },
+        "storageClassName": "zenko",
+        "volumeMode": "Filesystem",
+        "volumeName": "worker-2-zenko-quorum-3"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "5Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-06T15:47:11.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "zenko-quorum",
+          "component": "server",
+          "release": "zenko"
+        },
+        "name": "data-zenko-zenko-quorum-2",
+        "namespace": "zenko",
+        "resourceVersion": "17637",
+        "selfLink": "/api/v1/namespaces/zenko/persistentvolumeclaims/data-zenko-zenko-quorum-2",
+        "uid": "660f238c-bc5c-452b-87f0-4079df87f770"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "5Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "zenko-quorum"
+          }
+        },
+        "storageClassName": "zenko",
+        "volumeMode": "Filesystem",
+        "volumeName": "worker-0-zenko-quorum-1"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "5Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-06T15:40:36.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "mongodb-replicaset",
+          "release": "zenko"
+        },
+        "name": "datadir-zenko-mongodb-replicaset-0",
+        "namespace": "zenko",
+        "resourceVersion": "13717",
+        "selfLink": "/api/v1/namespaces/zenko/persistentvolumeclaims/datadir-zenko-mongodb-replicaset-0",
+        "uid": "ad4c1cca-d57e-4ffd-8e81-4cc3385c61ef"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "50Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "mongodb-replicaset"
+          }
+        },
+        "storageClassName": "zenko-xfs",
+        "volumeMode": "Filesystem",
+        "volumeName": "worker-2-mongodb-replicaset-3"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "50Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-06T15:44:53.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "mongodb-replicaset",
+          "release": "zenko"
+        },
+        "name": "datadir-zenko-mongodb-replicaset-1",
+        "namespace": "zenko",
+        "resourceVersion": "16528",
+        "selfLink": "/api/v1/namespaces/zenko/persistentvolumeclaims/datadir-zenko-mongodb-replicaset-1",
+        "uid": "cd2f1f62-9601-425e-b723-d828d50c4dc4"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "50Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "mongodb-replicaset"
+          }
+        },
+        "storageClassName": "zenko-xfs",
+        "volumeMode": "Filesystem",
+        "volumeName": "worker-0-mongodb-replicaset-1"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "50Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-06T15:46:30.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "mongodb-replicaset",
+          "release": "zenko"
+        },
+        "name": "datadir-zenko-mongodb-replicaset-2",
+        "namespace": "zenko",
+        "resourceVersion": "17330",
+        "selfLink": "/api/v1/namespaces/zenko/persistentvolumeclaims/datadir-zenko-mongodb-replicaset-2",
+        "uid": "489dc4cb-ed79-4f68-9b66-cf1c82312e1d"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "50Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "mongodb-replicaset"
+          }
+        },
+        "storageClassName": "zenko-xfs",
+        "volumeMode": "Filesystem",
+        "volumeName": "worker-1-mongodb-replicaset-2"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "50Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-06T15:40:36.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "zenko-queue",
+          "release": "zenko"
+        },
+        "name": "datadir-zenko-zenko-queue-0",
+        "namespace": "zenko",
+        "resourceVersion": "13775",
+        "selfLink": "/api/v1/namespaces/zenko/persistentvolumeclaims/datadir-zenko-zenko-queue-0",
+        "uid": "9d53b70a-69e1-4132-9bea-141655e6ef98"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "20Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "zenko-queue"
+          }
+        },
+        "storageClassName": "zenko",
+        "volumeMode": "Filesystem",
+        "volumeName": "worker-1-zenko-queue-2"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "20Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-06T15:47:36.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "zenko-queue",
+          "release": "zenko"
+        },
+        "name": "datadir-zenko-zenko-queue-1",
+        "namespace": "zenko",
+        "resourceVersion": "17836",
+        "selfLink": "/api/v1/namespaces/zenko/persistentvolumeclaims/datadir-zenko-zenko-queue-1",
+        "uid": "0c9579fc-e34d-4091-ad98-c7d6325518bf"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "20Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "zenko-queue"
+          }
+        },
+        "storageClassName": "zenko",
+        "volumeMode": "Filesystem",
+        "volumeName": "worker-2-zenko-queue-3"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "20Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-06T15:49:05.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "zenko-queue",
+          "release": "zenko"
+        },
+        "name": "datadir-zenko-zenko-queue-2",
+        "namespace": "zenko",
+        "resourceVersion": "18349",
+        "selfLink": "/api/v1/namespaces/zenko/persistentvolumeclaims/datadir-zenko-zenko-queue-2",
+        "uid": "684f6bbc-4eea-4510-a940-31cc55ecf1e3"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "20Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "zenko-queue"
+          }
+        },
+        "storageClassName": "zenko",
+        "volumeMode": "Filesystem",
+        "volumeName": "worker-0-zenko-queue-1"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "20Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-06T15:40:36.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "role": "zenko-mgob-backup"
+        },
+        "name": "mgob-storage-zenko-mgob-0",
+        "namespace": "zenko",
+        "resourceVersion": "13758",
+        "selfLink": "/api/v1/namespaces/zenko/persistentvolumeclaims/mgob-storage-zenko-mgob-0",
+        "uid": "f8ce047b-c2fc-4c95-90d8-9cb0dc555356"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "10Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "mgob"
+          }
+        },
+        "storageClassName": "zenko",
+        "volumeMode": "Filesystem",
+        "volumeName": "worker-0-mgob-1"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "10Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-06T15:40:36.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "prometheus",
+          "release": "zenko"
+        },
+        "name": "storage-volume-zenko-prometheus-server-0",
+        "namespace": "zenko",
+        "resourceVersion": "13648",
+        "selfLink": "/api/v1/namespaces/zenko/persistentvolumeclaims/storage-volume-zenko-prometheus-server-0",
+        "uid": "c8657f34-5135-48b5-82f8-6d8b8320dbcc"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "10Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "prometheus-server"
+          }
+        },
+        "storageClassName": "zenko",
+        "volumeMode": "Filesystem",
+        "volumeName": "worker-0-prometheus-server-1"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "10Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-06T15:44:47.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "prometheus",
+          "release": "zenko"
+        },
+        "name": "storage-volume-zenko-prometheus-server-1",
+        "namespace": "zenko",
+        "resourceVersion": "16463",
+        "selfLink": "/api/v1/namespaces/zenko/persistentvolumeclaims/storage-volume-zenko-prometheus-server-1",
+        "uid": "425740e0-2b0f-4100-a177-cc78fd98d721"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "10Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "prometheus-server"
+          }
+        },
+        "storageClassName": "zenko",
+        "volumeMode": "Filesystem",
+        "volumeName": "worker-1-prometheus-server-2"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "10Gi"
+        },
+        "phase": "Bound"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "helm.sh/resource-policy": "keep"
+        },
+        "creationTimestamp": "2020-08-06T15:40:30.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "burry",
+          "chart": "burry-0.1.0",
+          "heritage": "Tiller",
+          "release": "zenko"
+        },
+        "name": "zenko-burry",
+        "namespace": "zenko",
+        "resourceVersion": "13238",
+        "selfLink": "/api/v1/namespaces/zenko/persistentvolumeclaims/zenko-burry",
+        "uid": "bd045f31-8375-4b98-82b9-94ed5b1f35fa"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "1Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "burry"
+          }
+        },
+        "storageClassName": "zenko",
+        "volumeMode": "Filesystem"
+      },
+      "status": {
+        "phase": "Pending"
+      }
+    },
+    {
+      "metadata": {
+        "annotations": {
+          "helm.sh/resource-policy": "keep",
+          "pv.kubernetes.io/bind-completed": "yes",
+          "pv.kubernetes.io/bound-by-controller": "yes"
+        },
+        "creationTimestamp": "2020-08-06T15:40:30.000Z",
+        "finalizers": ["kubernetes.io/pvc-protection"],
+        "labels": {
+          "app": "s3-data",
+          "chart": "s3-data-1.2.0",
+          "heritage": "Tiller",
+          "release": "zenko"
+        },
+        "name": "zenko-s3-data",
+        "namespace": "zenko",
+        "resourceVersion": "13815",
+        "selfLink": "/api/v1/namespaces/zenko/persistentvolumeclaims/zenko-s3-data",
+        "uid": "a781326c-ef72-48e5-9912-5e93da6fe1f1"
+      },
+      "spec": {
+        "accessModes": ["ReadWriteOnce"],
+        "resources": {
+          "requests": {
+            "storage": "90Gi"
+          }
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "s3-data"
+          }
+        },
+        "storageClassName": "zenko",
+        "volumeMode": "Filesystem",
+        "volumeName": "worker-0-s3-data-1"
+      },
+      "status": {
+        "accessModes": ["ReadWriteOnce"],
+        "capacity": {
+          "storage": "90Gi"
+        },
+        "phase": "Bound"
+      }
+    }
+  ],
+  "kind": "PersistentVolumeClaimList",
+  "metadata": {
+    "resourceVersion": "23986862",
+    "selfLink": "/api/v1/persistentvolumeclaims"
+  }
+}
