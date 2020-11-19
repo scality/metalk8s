@@ -327,6 +327,7 @@ const MetricsTab = (props) => {
         updateMetricsGraph();
       },
       selected: metricsTimeSpan === LAST_SEVEN_DAYS,
+      'data-cy': LAST_SEVEN_DAYS,
     },
     {
       label: LAST_TWENTY_FOUR_HOURS,
@@ -338,6 +339,7 @@ const MetricsTab = (props) => {
         updateMetricsGraph();
       },
       selected: metricsTimeSpan === LAST_TWENTY_FOUR_HOURS,
+      'data-cy': LAST_TWENTY_FOUR_HOURS,
     },
     {
       label: LAST_ONE_HOUR,
@@ -347,6 +349,7 @@ const MetricsTab = (props) => {
         updateMetricsGraph();
       },
       selected: metricsTimeSpan === LAST_ONE_HOUR,
+      'data-cy': LAST_ONE_HOUR,
     },
   ];
 
@@ -363,6 +366,7 @@ const MetricsTab = (props) => {
               items={metricsTimeSpanDropdownItems}
               text={metricsTimeSpan}
               size="small"
+              data-cy="metrics_timespan_selection"
             />
           )}
           {config.api?.url_grafana && volumeNamespace && volumePVCName && (
@@ -375,6 +379,7 @@ const MetricsTab = (props) => {
               href={`${config.api.url_grafana}/dashboard/db/kubernetes-persistent-volumes?var-namespace=${volumeNamespace}&var-volume=${volumePVCName}`}
               target="_blank"
               rel="noopener noreferrer"
+              data-cy="advanced_metrics_volume_detailed"
             />
           )}
         </MetricGraphTitle>

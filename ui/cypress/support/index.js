@@ -13,15 +13,13 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-// Import commands.js using ES2015 syntax:
 import './commands';
 
-// Alternatively you can use CommonJS syntax:
-// require('./commands')
-
-// In Cypress, we disable fetch feature to catch the response.
-// You can find the solution here:
-// https://github.com/cypress-io/cypress/issues/1619
-Cypress.on('window:before:load', win => {
-  win.fetch = null;
+afterEach(() => {
+  // Redirect to empty page to cancel all requests in progress
+  cy.window().then((win) => {
+    win.location.href = 'about:blank';
+  });
+  // Wait a bit for cancelling requests
+  cy.wait(500);
 });

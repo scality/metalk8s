@@ -52,6 +52,7 @@ const Layout = (props) => {
   const sidebarConfig = {
     onToggleClick: toggleSidebar,
     expanded: sidebar.expanded,
+    'data-cy-state-isexpanded': sidebar.expanded,
     actions: [
       {
         label: intl.translate('monitoring'),
@@ -64,6 +65,7 @@ const Layout = (props) => {
           exact: true,
           strict: true,
         }),
+        'data-cy': 'sidebar_item_monitoring',
       },
       {
         label: intl.translate('nodes'),
@@ -76,6 +78,7 @@ const Layout = (props) => {
           exact: false,
           strict: true,
         }),
+        'data-cy': 'sidebar_item_nodes',
       },
       {
         label: intl.translate('volumes'),
@@ -88,6 +91,7 @@ const Layout = (props) => {
           exact: false,
           strict: true,
         }),
+        'data-cy': 'sidebar_item_volumes',
       },
       {
         label: intl.translate('environments'),
@@ -100,6 +104,7 @@ const Layout = (props) => {
           exact: false,
           strict: true,
         }),
+        'data-cy': 'sidebar_item_environments',
       },
     ],
   };

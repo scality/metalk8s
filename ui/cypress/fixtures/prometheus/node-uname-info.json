@@ -1,0 +1,134 @@
+{
+  "status": "success",
+  "data": {
+    "resultType": "vector",
+    "result": [
+      {
+        "metric": {
+          "__name__": "node_uname_info",
+          "domainname": "(none)",
+          "endpoint": "metrics",
+          "instance": "192.168.1.36:9100",
+          "job": "node-exporter",
+          "machine": "x86_64",
+          "namespace": "metalk8s-monitoring",
+          "nodename": "zenkotda-master-0.novalocal",
+          "pod": "prometheus-operator-prometheus-node-exporter-28cnh",
+          "release": "3.10.0-957.27.2.el7.x86_64",
+          "service": "prometheus-operator-prometheus-node-exporter",
+          "sysname": "Linux",
+          "version": "#1 SMP Mon Jul 29 17:46:05 UTC 2019"
+        },
+        "value": [
+          1603811601.266,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "node_uname_info",
+          "domainname": "(none)",
+          "endpoint": "metrics",
+          "instance": "192.168.1.9:9100",
+          "job": "node-exporter",
+          "machine": "x86_64",
+          "namespace": "metalk8s-monitoring",
+          "nodename": "zenkotda-worker-2.novalocal",
+          "pod": "prometheus-operator-prometheus-node-exporter-lmxf2",
+          "release": "3.10.0-957.27.2.el7.x86_64",
+          "service": "prometheus-operator-prometheus-node-exporter",
+          "sysname": "Linux",
+          "version": "#1 SMP Mon Jul 29 17:46:05 UTC 2019"
+        },
+        "value": [
+          1603811601.266,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "node_uname_info",
+          "domainname": "(none)",
+          "endpoint": "metrics",
+          "instance": "192.168.1.6:9100",
+          "job": "node-exporter",
+          "machine": "x86_64",
+          "namespace": "metalk8s-monitoring",
+          "nodename": "zenkotda-worker-1.novalocal",
+          "pod": "prometheus-operator-prometheus-node-exporter-zn64p",
+          "release": "3.10.0-957.27.2.el7.x86_64",
+          "service": "prometheus-operator-prometheus-node-exporter",
+          "sysname": "Linux",
+          "version": "#1 SMP Mon Jul 29 17:46:05 UTC 2019"
+        },
+        "value": [
+          1603811601.266,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "node_uname_info",
+          "domainname": "(none)",
+          "endpoint": "metrics",
+          "instance": "192.168.1.18:9100",
+          "job": "node-exporter",
+          "machine": "x86_64",
+          "namespace": "metalk8s-monitoring",
+          "nodename": "zenkotda-bootstrap.novalocal",
+          "pod": "prometheus-operator-prometheus-node-exporter-65ph5",
+          "release": "3.10.0-957.27.2.el7.x86_64",
+          "service": "prometheus-operator-prometheus-node-exporter",
+          "sysname": "Linux",
+          "version": "#1 SMP Mon Jul 29 17:46:05 UTC 2019"
+        },
+        "value": [
+          1603811601.266,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "node_uname_info",
+          "domainname": "(none)",
+          "endpoint": "metrics",
+          "instance": "192.168.1.33:9100",
+          "job": "node-exporter",
+          "machine": "x86_64",
+          "namespace": "metalk8s-monitoring",
+          "nodename": "zenkotda-master-1.novalocal",
+          "pod": "prometheus-operator-prometheus-node-exporter-gvplp",
+          "release": "3.10.0-957.27.2.el7.x86_64",
+          "service": "prometheus-operator-prometheus-node-exporter",
+          "sysname": "Linux",
+          "version": "#1 SMP Mon Jul 29 17:46:05 UTC 2019"
+        },
+        "value": [
+          1603811601.266,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "node_uname_info",
+          "domainname": "(none)",
+          "endpoint": "metrics",
+          "instance": "192.168.1.29:9100",
+          "job": "node-exporter",
+          "machine": "x86_64",
+          "namespace": "metalk8s-monitoring",
+          "nodename": "zenkotda-worker-0.novalocal",
+          "pod": "prometheus-operator-prometheus-node-exporter-7p8ng",
+          "release": "3.10.0-957.27.2.el7.x86_64",
+          "service": "prometheus-operator-prometheus-node-exporter",
+          "sysname": "Linux",
+          "version": "#1 SMP Mon Jul 29 17:46:05 UTC 2019"
+        },
+        "value": [
+          1603811601.266,
+          "1"
+        ]
+      }
+    ]
+  }
+}

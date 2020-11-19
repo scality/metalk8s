@@ -20,9 +20,9 @@ RPM_PACKAGES=(
     xorg-x11-server-Xvfb
 )
 NODE_PACKAGES=(
-    cypress@3.5.0
-    cypress-cucumber-preprocessor@1.12.0
-    cypress-wait-until@1.6.0
+    cypress@5.6.0
+    cypress-cucumber-preprocessor@4.0.0
+    cypress-wait-until@1.7.1
 )
 
 curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -
@@ -33,5 +33,5 @@ npm install "${NPM_OPTS[@]}" "${NODE_PACKAGES[@]}"
 
 sudo ln -s "$PWD/node_modules/cypress/bin/cypress" /usr/local/bin/cypress
 
-sudo chown root:root "$HOME/.cache/Cypress/3.5.0/Cypress/chrome-sandbox"
-sudo chmod 4755 "$HOME/.cache/Cypress/3.5.0/Cypress/chrome-sandbox"
+sudo chown root:root "$HOME/.cache/Cypress/5.6.0/Cypress/chrome-sandbox"
+sudo chmod 4755 "$HOME/.cache/Cypress/5.6.0/Cypress/chrome-sandbox"
