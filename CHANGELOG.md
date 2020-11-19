@@ -1,6 +1,8 @@
 # CHANGELOG
 
-## Release 2.6.0 (in development)
+## Release 2.6.1 (development in progress)
+
+## Release 2.6.0
 
 ### Breaking changes
 - [#2581](https://github.com/scality/metalk8s/issues/2851) - Solution UI are
@@ -19,6 +21,12 @@
   multiple CIDRs for control plane and workload plane networks and to specify
   the workload plane MTU to compute the MTU used by Calico
   (PR [#2677](https://github.com/scality/metalk8s/pull/2677))
+- Deploy log aggregation layer, based on Loki and Fluentbit (see
+  [#2722](https://github.com/scality/metalk8s/pull/2722),
+  [#2723](https://github.com/scality/metalk8s/pull/2723),
+  [#2727](https://github.com/scality/metalk8s/pull/2727),
+  [#2738](https://github.com/scality/metalk8s/pull/2738), and
+  [#2745](https://github.com/scality/metalk8s/pull/2745))
 
 ### Security fixes
 - Due to vulnerabilities (
