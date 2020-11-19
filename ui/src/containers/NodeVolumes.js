@@ -322,7 +322,7 @@ const NodeVolumes = (props) => {
               onClick={() => {
                 history.push('createVolume');
               }}
-              data-cy="create-volume-button"
+              data-cy="create_volume_button"
             />
           </Tooltip>
         </ButtonContainer>

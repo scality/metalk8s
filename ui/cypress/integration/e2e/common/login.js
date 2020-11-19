@@ -1,8 +1,7 @@
 import { Given, Then } from 'cypress-cucumber-preprocessor/steps';
 
 Given('I am logged in', () => {
-  const target_url = Cypress.env('target_url');
-  cy.visit(target_url);
+  cy.visit('/');
   cy.server();
   cy.route('GET', '/oidc/.well-known/openid-configuration').as(
     'getOidcConfiguration',

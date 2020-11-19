@@ -4,7 +4,7 @@ import { put, takeEvery, select } from 'redux-saga/effects';
 const TOGGLE_SIDEBAR = 'TOGGLE_SIDEBAR';
 const INIT_TOGGLE_SIDEBAR = 'INIT_TOGGLE_SIDEBAR';
 export const SET_TOGGLE_SIDEBAR = 'SET_TOGGLE_SIDEBAR';
-export const SIDEBAR_EXPENDED = 'sidebar_expended';
+export const SIDEBAR_EXPANDED = 'sidebar_expanded';
 
 // Reducer
 const defaultState = {
@@ -42,20 +42,20 @@ export const initToggleSideBarAction = () => {
 };
 
 // Selectors
-export const isSidebarExpandedSelector = state =>
+export const isSidebarExpandedSelector = (state) =>
   state.app.layout.sidebar.expanded;
 
 // Sagas
 export function* toggleSideBar() {
   yield put(setToggleSidebarAction());
   const expanded = yield select(isSidebarExpandedSelector);
-  localStorage.setItem(SIDEBAR_EXPENDED, expanded);
+  localStorage.setItem(SIDEBAR_EXPANDED, expanded);
 }
 
 export function* initToggleSideBar() {
-  if (localStorage.getItem(SIDEBAR_EXPENDED)) {
+  if (localStorage.getItem(SIDEBAR_EXPANDED)) {
     const expanded = yield select(isSidebarExpandedSelector);
-    if (expanded !== JSON.parse(localStorage.getItem(SIDEBAR_EXPENDED))) {
+    if (expanded !== JSON.parse(localStorage.getItem(SIDEBAR_EXPANDED))) {
       yield put(setToggleSidebarAction());
     }
   }
