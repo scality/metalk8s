@@ -1,9 +1,9 @@
-import { call, put } from 'redux-saga/effects';
+import { put } from 'redux-saga/effects';
 import {
   SET_TOGGLE_SIDEBAR,
-  SIDEBAR_EXPENDED,
+  SIDEBAR_EXPANDED,
   toggleSideBar,
-  initToggleSideBar
+  initToggleSideBar,
 } from './layout.js';
 
 it('should toggleSideBar', () => {
@@ -11,22 +11,22 @@ it('should toggleSideBar', () => {
 
   expect(gen.next().value).toEqual(
     put({
-      type: SET_TOGGLE_SIDEBAR
-    })
+      type: SET_TOGGLE_SIDEBAR,
+    }),
   );
   expect(gen.next().value.type).toEqual('SELECT');
   expect(gen.next().done).toEqual(true);
 });
 
 it('should initToggleSideBar', () => {
-  localStorage.setItem(SIDEBAR_EXPENDED, 'true');
+  localStorage.setItem(SIDEBAR_EXPANDED, 'true');
   const gen = initToggleSideBar();
 
   expect(gen.next().value.type).toEqual('SELECT');
   expect(gen.next().value).toEqual(
     put({
-      type: SET_TOGGLE_SIDEBAR
-    })
+      type: SET_TOGGLE_SIDEBAR,
+    }),
   );
   expect(gen.next().done).toEqual(true);
 });

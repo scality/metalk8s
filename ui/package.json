@@ -42,8 +42,9 @@
     "test": "react-app-rewired test --env=jsdom",
     "eject": "react-scripts eject",
     "test:nowatch": "CI=true react-app-rewired test --env=jsdom --reporters=default --reporters=jest-junit",
-    "test:e2e": "cypress run --spec 'cypress/integration/common/**/*'",
-    "test:e2esolutions": "cypress run --spec 'cypress/integration/solutions/**/*'",
+    "test:integration": "cypress run --spec 'cypress/integration/**/*.spec.js'",
+    "test:e2e": "cypress run --spec 'cypress/integration/e2e/**/!(Solutions).feature'",
+    "test:e2esolutions": "cypress run --spec 'cypress/integration/e2e/Solutions.feature'",
     "flow": "flow check"
   },
   "eslintConfig": {
@@ -73,9 +74,9 @@
     "babel-eslint": "10.1.0",
     "compression-webpack-plugin": "^6.0.0",
     "customize-cra": "^0.4.1",
-    "cypress": "^3.2.0",
-    "cypress-cucumber-preprocessor": "^2.5.5",
-    "cypress-wait-until": "1.6.0",
+    "cypress": "^5.6.0",
+    "cypress-cucumber-preprocessor": "^4.0.0",
+    "cypress-wait-until": "^1.7.1",
     "eslint": "6.8.0",
     "flow-bin": "^0.107.0",
     "jest-junit": "^7.0.0",
@@ -84,7 +85,9 @@
     "source-map-explorer": "^2.0.1"
   },
   "cypress-cucumber-preprocessor": {
-    "nonGlobalStepDefinitions": true
+    "nonGlobalStepDefinitions": true,
+    "nonGlobalStepBaseDir": "cypress/integration/e2e",
+    "stepDefinitions": "cypress/integration/e2e"
   },
   "jest-junit": {
     "output": "junit/jest-junit.xml",

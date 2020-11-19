@@ -1,0 +1,1155 @@
+{
+    "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+    "items": [
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "creationTimestamp": "2020-09-30T07:10:00Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "name": "keycloak-postgresql-master",
+          "resourceVersion": "20127334",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/keycloak-postgresql-master",
+          "uid": "76e8b31e-2fa3-4f68-934b-f46cbabe7be5"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "master-0",
+          "sparseLoopDevice": {
+            "size": "10Gi"
+          },
+          "storageClassName": "ringx-keycloak",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-09-30T07:11:10Z",
+              "lastUpdateTime": "2020-09-30T07:11:10Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop2"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "creationTimestamp": "2020-09-30T07:10:21Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "name": "keycloak-postgresql-slave",
+          "resourceVersion": "13665817",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/keycloak-postgresql-slave",
+          "uid": "c0369103-f41a-42fd-9909-ba9d1656701b"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "master-1",
+          "sparseLoopDevice": {
+            "size": "10Gi"
+          },
+          "storageClassName": "ringx-keycloak",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-09-30T07:11:48Z",
+              "lastUpdateTime": "2020-09-30T07:11:48Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop0"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "creationTimestamp": "2020-08-20T16:20:11Z",
+          "deletionGracePeriodSeconds": 0,
+          "deletionTimestamp": "2020-08-20T16:32:11Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 3,
+          "name": "loki-vol",
+          "resourceVersion": "3759289",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/loki-vol",
+          "uid": "6efe6d86-21a6-4712-a784-7888630eee1c"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "master-0",
+          "sparseLoopDevice": {
+            "size": "10Gi"
+          },
+          "storageClassName": "metalk8s-loki",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-20T16:34:02Z",
+              "lastUpdateTime": "2020-08-20T16:34:02Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ]
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app.kubernetes.io/name\":\"prometheus-operator-alertmanager\"},\"name\":\"master-0-alertmanager\"},\"spec\":{\"nodeName\":\"master-0\",\"sparseLoopDevice\":{\"size\":\"5Gi\"},\"storageClassName\":\"metalk8s-prometheus\",\"template\":{\"metadata\":{\"labels\":{\"app.kubernetes.io/name\":\"prometheus-operator-alertmanager\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:16:37Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 4,
+          "labels": {
+            "app.kubernetes.io/name": "prometheus-operator-alertmanager"
+          },
+          "name": "master-0-alertmanager",
+          "resourceVersion": "18223911",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/master-0-alertmanager",
+          "uid": "dadda9e7-dc1f-4632-8450-61eb3bdf0db3"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "master-0",
+          "sparseLoopDevice": {
+            "size": "5Gi"
+          },
+          "storageClassName": "metalk8s-prometheus",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app.kubernetes.io/name": "prometheus-operator-alertmanager"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:18:20Z",
+              "lastUpdateTime": "2020-08-06T15:18:20Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop0"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app.kubernetes.io/name\":\"prometheus-operator-alertmanager\"},\"name\":\"master-1-alertmanager\"},\"spec\":{\"nodeName\":\"master-1\",\"sparseLoopDevice\":{\"size\":\"5Gi\"},\"storageClassName\":\"metalk8s-prometheus\",\"template\":{\"metadata\":{\"labels\":{\"app.kubernetes.io/name\":\"prometheus-operator-alertmanager\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:16:38Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 4,
+          "labels": {
+            "app.kubernetes.io/name": "prometheus-operator-alertmanager"
+          },
+          "name": "master-1-alertmanager",
+          "resourceVersion": "20127353",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/master-1-alertmanager",
+          "uid": "5d31d785-7364-49fd-93bd-86baedbca860"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "master-1",
+          "sparseLoopDevice": {
+            "size": "5Gi"
+          },
+          "storageClassName": "metalk8s-prometheus",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app.kubernetes.io/name": "prometheus-operator-alertmanager"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:23:11Z",
+              "lastUpdateTime": "2020-08-06T15:23:11Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop1"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app.kubernetes.io/name\":\"prometheus-operator-prometheus\"},\"name\":\"master-1-prometheus\"},\"spec\":{\"nodeName\":\"master-1\",\"sparseLoopDevice\":{\"size\":\"20Gi\"},\"storageClassName\":\"metalk8s-prometheus\",\"template\":{\"metadata\":{\"labels\":{\"app.kubernetes.io/name\":\"prometheus-operator-prometheus\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:16:38Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 4,
+          "labels": {
+            "app.kubernetes.io/name": "prometheus-operator-prometheus"
+          },
+          "name": "master-1-prometheus",
+          "resourceVersion": "20129261",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/master-1-prometheus",
+          "uid": "183dd142-9c46-411f-b160-d99bbd03f6c9"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "master-1",
+          "sparseLoopDevice": {
+            "size": "20Gi"
+          },
+          "storageClassName": "metalk8s-prometheus",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app.kubernetes.io/name": "prometheus-operator-prometheus"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:17:58Z",
+              "lastUpdateTime": "2020-08-06T15:17:58Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop2"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "creationTimestamp": "2020-08-12T07:56:38Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "labels": {
+            "app.kubernetes.io/name": "prometheus-operator-prometheus"
+          },
+          "name": "prom-m0-reldev",
+          "resourceVersion": "1454956",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/prom-m0-reldev",
+          "uid": "bfd1709b-b4ce-4e53-8cea-8fbe236b31e5"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "master-0",
+          "rawBlockDevice": {
+            "devicePath": "/dev/vdd"
+          },
+          "storageClassName": "metalk8s-prometheus",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app.kubernetes.io/name": "prometheus-operator-prometheus"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-12T07:57:13Z",
+              "lastUpdateTime": "2020-08-12T07:57:13Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "vdd"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"burry\"},\"name\":\"worker-0-burry-1\"},\"spec\":{\"nodeName\":\"worker-0\",\"sparseLoopDevice\":{\"size\":\"1Gi\"},\"storageClassName\":\"zenko\",\"template\":{\"metadata\":{\"labels\":{\"app\":\"burry\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:34:37Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "labels": {
+            "app": "burry"
+          },
+          "name": "worker-0-burry-1",
+          "resourceVersion": "20127408",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/worker-0-burry-1",
+          "uid": "38747a66-1515-4325-9c88-ecada20c65f3"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "worker-0",
+          "sparseLoopDevice": {
+            "size": "1Gi"
+          },
+          "storageClassName": "zenko",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app": "burry"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:37:06Z",
+              "lastUpdateTime": "2020-08-06T15:37:06Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop0"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"mgob\"},\"name\":\"worker-0-mgob-1\"},\"spec\":{\"nodeName\":\"worker-0\",\"sparseLoopDevice\":{\"size\":\"10Gi\"},\"storageClassName\":\"zenko\",\"template\":{\"metadata\":{\"labels\":{\"app\":\"mgob\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:34:50Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "labels": {
+            "app": "mgob"
+          },
+          "name": "worker-0-mgob-1",
+          "resourceVersion": "20129197",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/worker-0-mgob-1",
+          "uid": "6e7a43c2-9cf6-4404-99e0-22c78faf41b6"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "worker-0",
+          "sparseLoopDevice": {
+            "size": "10Gi"
+          },
+          "storageClassName": "zenko",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app": "mgob"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:40:00Z",
+              "lastUpdateTime": "2020-08-06T15:40:00Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop3"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"mongodb-replicaset\"},\"name\":\"worker-0-mongodb-replicaset-1\"},\"spec\":{\"nodeName\":\"worker-0\",\"sparseLoopDevice\":{\"size\":\"50Gi\"},\"storageClassName\":\"zenko-xfs\",\"template\":{\"metadata\":{\"labels\":{\"app\":\"mongodb-replicaset\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:34:48Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "labels": {
+            "app": "mongodb-replicaset"
+          },
+          "name": "worker-0-mongodb-replicaset-1",
+          "resourceVersion": "20132070",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/worker-0-mongodb-replicaset-1",
+          "uid": "71d650d1-b260-43d0-bd48-ed27021687e7"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "worker-0",
+          "sparseLoopDevice": {
+            "size": "50Gi"
+          },
+          "storageClassName": "zenko-xfs",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app": "mongodb-replicaset"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:39:40Z",
+              "lastUpdateTime": "2020-08-06T15:39:40Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop7"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"prometheus-server\"},\"name\":\"worker-0-prometheus-server-1\"},\"spec\":{\"nodeName\":\"worker-0\",\"sparseLoopDevice\":{\"size\":\"10Gi\"},\"storageClassName\":\"zenko\",\"template\":{\"metadata\":{\"labels\":{\"app\":\"prometheus-server\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:34:40Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "labels": {
+            "app": "prometheus-server"
+          },
+          "name": "worker-0-prometheus-server-1",
+          "resourceVersion": "20129207",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/worker-0-prometheus-server-1",
+          "uid": "9d022008-0448-46ae-8921-69769ceadae4"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "worker-0",
+          "sparseLoopDevice": {
+            "size": "10Gi"
+          },
+          "storageClassName": "zenko",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app": "prometheus-server"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:39:02Z",
+              "lastUpdateTime": "2020-08-06T15:39:02Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop6"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"redis-ha\"},\"name\":\"worker-0-redis-ha-1\"},\"spec\":{\"nodeName\":\"worker-0\",\"sparseLoopDevice\":{\"size\":\"10Gi\"},\"storageClassName\":\"zenko\",\"template\":{\"metadata\":{\"labels\":{\"app\":\"redis-ha\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:34:38Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "labels": {
+            "app": "redis-ha"
+          },
+          "name": "worker-0-redis-ha-1",
+          "resourceVersion": "20127503",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/worker-0-redis-ha-1",
+          "uid": "d5a17e6c-4bc8-4f8d-9ab5-b0d364865ec6"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "worker-0",
+          "sparseLoopDevice": {
+            "size": "10Gi"
+          },
+          "storageClassName": "zenko",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app": "redis-ha"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:39:17Z",
+              "lastUpdateTime": "2020-08-06T15:39:17Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop2"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"s3-data\"},\"name\":\"worker-0-s3-data-1\"},\"spec\":{\"nodeName\":\"worker-0\",\"sparseLoopDevice\":{\"size\":\"90Gi\"},\"storageClassName\":\"zenko\",\"template\":{\"metadata\":{\"labels\":{\"app\":\"s3-data\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:34:42Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "labels": {
+            "app": "s3-data"
+          },
+          "name": "worker-0-s3-data-1",
+          "resourceVersion": "20129239",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/worker-0-s3-data-1",
+          "uid": "c75e9bc2-3ad7-4338-87b3-f3e0518a6d2a"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "worker-0",
+          "sparseLoopDevice": {
+            "size": "90Gi"
+          },
+          "storageClassName": "zenko",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app": "s3-data"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:40:20Z",
+              "lastUpdateTime": "2020-08-06T15:40:20Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop5"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"zenko-queue\"},\"name\":\"worker-0-zenko-queue-1\"},\"spec\":{\"nodeName\":\"worker-0\",\"sparseLoopDevice\":{\"size\":\"20Gi\"},\"storageClassName\":\"zenko\",\"template\":{\"metadata\":{\"labels\":{\"app\":\"zenko-queue\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:34:46Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "labels": {
+            "app": "zenko-queue"
+          },
+          "name": "worker-0-zenko-queue-1",
+          "resourceVersion": "20127409",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/worker-0-zenko-queue-1",
+          "uid": "67068bc2-a79d-44fc-89e2-06ca8ca6fbe7"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "worker-0",
+          "sparseLoopDevice": {
+            "size": "20Gi"
+          },
+          "storageClassName": "zenko",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app": "zenko-queue"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:39:31Z",
+              "lastUpdateTime": "2020-08-06T15:39:31Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop4"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"zenko-quorum\"},\"name\":\"worker-0-zenko-quorum-1\"},\"spec\":{\"nodeName\":\"worker-0\",\"sparseLoopDevice\":{\"size\":\"5Gi\"},\"storageClassName\":\"zenko\",\"template\":{\"metadata\":{\"labels\":{\"app\":\"zenko-quorum\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:34:44Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "labels": {
+            "app": "zenko-quorum"
+          },
+          "name": "worker-0-zenko-quorum-1",
+          "resourceVersion": "20127438",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/worker-0-zenko-quorum-1",
+          "uid": "9ca42001-54e2-4488-8bf2-71029287e2f7"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "worker-0",
+          "sparseLoopDevice": {
+            "size": "5Gi"
+          },
+          "storageClassName": "zenko",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app": "zenko-quorum"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:38:22Z",
+              "lastUpdateTime": "2020-08-06T15:38:22Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop1"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"mongodb-replicaset\"},\"name\":\"worker-1-mongodb-replicaset-2\"},\"spec\":{\"nodeName\":\"worker-1\",\"sparseLoopDevice\":{\"size\":\"50Gi\"},\"storageClassName\":\"zenko-xfs\",\"template\":{\"metadata\":{\"labels\":{\"app\":\"mongodb-replicaset\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:34:48Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "labels": {
+            "app": "mongodb-replicaset"
+          },
+          "name": "worker-1-mongodb-replicaset-2",
+          "resourceVersion": "18222768",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/worker-1-mongodb-replicaset-2",
+          "uid": "0a744e86-634e-4d21-b4a2-86bb0fe1adcd"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "worker-1",
+          "sparseLoopDevice": {
+            "size": "50Gi"
+          },
+          "storageClassName": "zenko-xfs",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app": "mongodb-replicaset"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:39:17Z",
+              "lastUpdateTime": "2020-08-06T15:39:17Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop0"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"prometheus-server\"},\"name\":\"worker-1-prometheus-server-2\"},\"spec\":{\"nodeName\":\"worker-1\",\"sparseLoopDevice\":{\"size\":\"10Gi\"},\"storageClassName\":\"zenko\",\"template\":{\"metadata\":{\"labels\":{\"app\":\"prometheus-server\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:34:41Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "labels": {
+            "app": "prometheus-server"
+          },
+          "name": "worker-1-prometheus-server-2",
+          "resourceVersion": "20129185",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/worker-1-prometheus-server-2",
+          "uid": "f1358af3-3307-49e1-9fa4-d3d77a486ced"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "worker-1",
+          "sparseLoopDevice": {
+            "size": "10Gi"
+          },
+          "storageClassName": "zenko",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app": "prometheus-server"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:38:22Z",
+              "lastUpdateTime": "2020-08-06T15:38:22Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop4"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"redis-ha\"},\"name\":\"worker-1-redis-ha-2\"},\"spec\":{\"nodeName\":\"worker-1\",\"sparseLoopDevice\":{\"size\":\"10Gi\"},\"storageClassName\":\"zenko\",\"template\":{\"metadata\":{\"labels\":{\"app\":\"redis-ha\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:34:39Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "labels": {
+            "app": "redis-ha"
+          },
+          "name": "worker-1-redis-ha-2",
+          "resourceVersion": "20127369",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/worker-1-redis-ha-2",
+          "uid": "238d24a4-9e62-49ae-b3dd-f5192b36326f"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "worker-1",
+          "sparseLoopDevice": {
+            "size": "10Gi"
+          },
+          "storageClassName": "zenko",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app": "redis-ha"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:36:34Z",
+              "lastUpdateTime": "2020-08-06T15:36:34Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop1"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"zenko-queue\"},\"name\":\"worker-1-zenko-queue-2\"},\"spec\":{\"nodeName\":\"worker-1\",\"sparseLoopDevice\":{\"size\":\"20Gi\"},\"storageClassName\":\"zenko\",\"template\":{\"metadata\":{\"labels\":{\"app\":\"zenko-queue\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:34:46Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "labels": {
+            "app": "zenko-queue"
+          },
+          "name": "worker-1-zenko-queue-2",
+          "resourceVersion": "20127402",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/worker-1-zenko-queue-2",
+          "uid": "15877758-0cae-4ac2-95a1-36f2ef674eb3"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "worker-1",
+          "sparseLoopDevice": {
+            "size": "20Gi"
+          },
+          "storageClassName": "zenko",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app": "zenko-queue"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:39:03Z",
+              "lastUpdateTime": "2020-08-06T15:39:03Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop3"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"zenko-quorum\"},\"name\":\"worker-1-zenko-quorum-2\"},\"spec\":{\"nodeName\":\"worker-1\",\"sparseLoopDevice\":{\"size\":\"5Gi\"},\"storageClassName\":\"zenko\",\"template\":{\"metadata\":{\"labels\":{\"app\":\"zenko-quorum\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:34:44Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "labels": {
+            "app": "zenko-quorum"
+          },
+          "name": "worker-1-zenko-quorum-2",
+          "resourceVersion": "20127436",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/worker-1-zenko-quorum-2",
+          "uid": "33a841f0-382a-42b4-ac1b-0f3809715bf3"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "worker-1",
+          "sparseLoopDevice": {
+            "size": "5Gi"
+          },
+          "storageClassName": "zenko",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app": "zenko-quorum"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:39:31Z",
+              "lastUpdateTime": "2020-08-06T15:39:31Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop2"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"mongodb-replicaset\"},\"name\":\"worker-2-mongodb-replicaset-3\"},\"spec\":{\"nodeName\":\"worker-2\",\"sparseLoopDevice\":{\"size\":\"50Gi\"},\"storageClassName\":\"zenko-xfs\",\"template\":{\"metadata\":{\"labels\":{\"app\":\"mongodb-replicaset\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:34:49Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "labels": {
+            "app": "mongodb-replicaset"
+          },
+          "name": "worker-2-mongodb-replicaset-3",
+          "resourceVersion": "20129203",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/worker-2-mongodb-replicaset-3",
+          "uid": "2b1cf5a1-d48e-4399-b14b-74b10be7bd73"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "worker-2",
+          "sparseLoopDevice": {
+            "size": "50Gi"
+          },
+          "storageClassName": "zenko-xfs",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app": "mongodb-replicaset"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:38:21Z",
+              "lastUpdateTime": "2020-08-06T15:38:21Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop0"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"redis-ha\"},\"name\":\"worker-2-redis-ha-3\"},\"spec\":{\"nodeName\":\"worker-2\",\"sparseLoopDevice\":{\"size\":\"10Gi\"},\"storageClassName\":\"zenko\",\"template\":{\"metadata\":{\"labels\":{\"app\":\"redis-ha\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:34:40Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "labels": {
+            "app": "redis-ha"
+          },
+          "name": "worker-2-redis-ha-3",
+          "resourceVersion": "20127410",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/worker-2-redis-ha-3",
+          "uid": "c46bc17a-65a3-4fd6-bbe0-76e6eef66634"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "worker-2",
+          "sparseLoopDevice": {
+            "size": "10Gi"
+          },
+          "storageClassName": "zenko",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app": "redis-ha"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:36:34Z",
+              "lastUpdateTime": "2020-08-06T15:36:34Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop2"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"storage.metalk8s.scality.com/v1alpha1\",\"kind\":\"Volume\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"zenko-queue\"},\"name\":\"worker-2-zenko-queue-3\"},\"spec\":{\"nodeName\":\"worker-2\",\"sparseLoopDevice\":{\"size\":\"20Gi\"},\"storageClassName\":\"zenko\",\"template\":{\"metadata\":{\"labels\":{\"app\":\"zenko-queue\"}}}}}\n"
+          },
+          "creationTimestamp": "2020-08-06T15:34:47Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "labels": {
+            "app": "zenko-queue"
+          },
+          "name": "worker-2-zenko-queue-3",
+          "resourceVersion": "20129186",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/worker-2-zenko-queue-3",
+          "uid": "59d22d94-20c7-4fc5-9be2-40838afacc67"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "worker-2",
+          "sparseLoopDevice": {
+            "size": "20Gi"
+          },
+          "storageClassName": "zenko",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app": "zenko-queue"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-08-06T15:39:17Z",
+              "lastUpdateTime": "2020-08-06T15:39:17Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop1"
+        }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "creationTimestamp": "2020-09-07T14:59:59Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "labels": {
+            "app": "zenko-quorum"
+          },
+          "name": "worker-2-zenko-quorum-3",
+          "resourceVersion": "20127422",
+          "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/worker-2-zenko-quorum-3",
+          "uid": "01606f31-33ec-4051-95c6-82ec4e567a5b"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "worker-2",
+          "sparseLoopDevice": {
+            "size": "5Gi"
+          },
+          "storageClassName": "zenko",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null,
+              "labels": {
+                "app": "zenko-quorum"
+              }
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2020-09-07T15:00:22Z",
+              "lastUpdateTime": "2020-09-07T15:00:22Z",
+              "status": "True",
+              "type": "Ready"
+            }
+          ],
+          "deviceName": "loop3"
+        }
+      }
+    ],
+    "kind": "VolumeList",
+    "metadata": {
+      "continue": "",
+      "resourceVersion": "20594489",
+      "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes"
+    }
+}

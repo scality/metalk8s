@@ -207,6 +207,7 @@ models:
           cp -r "$artifact" "${DEST_DIR}"
         done'
       haltOnFailure: true
+      alwaysRun: true
   - ShellCommand: &copy_report_artifacts
       name: Put the sosreport logs to upload in a separate directory
       env:
@@ -455,7 +456,7 @@ models:
       command: >
         ssh -F ssh_config bastion --
         "cd metalk8s/ui &&
-        npm run test:$TEST_FILTER -- -e target_url=$TARGET_URL"
+        CYPRESS_BASE_URL=$TARGET_URL npm run test:$TEST_FILTER"
       workdir: build/eve/workers/openstack-terraform/terraform/
       haltOnFailure: true
   - ShellCommand: &add_final_status_artifact
@@ -664,6 +665,7 @@ stages:
             - docs
             - lint
             - unit_tests
+            - integration_tests_ui
           haltOnFailure: true
       - SetPropertyFromCommand: *set_version_prop
       - SetPropertyFromCommand: *set_short_version_prop
@@ -1052,6 +1054,87 @@ stages:
             STEP_NAME: lint
       - Upload: *upload_final_status_artifact
 
+  integration_tests_ui:
+    _metalk8s_internal_info:
+      junit_info: &_integration_tests_ui_junit_info
+        TEST_SUITE: integration tests
+        TEST_NAME: ui
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-integration-tests/ui/pod.yaml
+      images:
+        worker:
+          context: 'ui'
+          dockerfile: eve/workers/pod-integration-tests/ui/worker.Dockerfile
+        application:
+          context: 'ui'
+          dockerfile: eve/workers/pod-integration-tests/ui/app.Dockerfile
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            <<: *_integration_tests_ui_junit_info
+            STEP_NAME: integration_tests_ui
+      - ShellCommand: *setup_cache
+      - ShellCommand:
+          name: Install Cypress and its dependencies
+          workdir: build/ui
+          command: |
+            PKGS="cypress cypress-cucumber-preprocessor cypress-wait-until"
+            for pkg in $PKGS; do
+              npm install --no-save --no-package-lock $pkg@$(node -p \
+                -e "require('./package-lock.json').dependencies['$pkg'].version" \
+              )
+            done
+          haltOnFailure: true
+      - ShellCommand:
+          name: Wait for application to be available
+          command: |
+            bash -c '
+              attempts=0
+              until curl -Isfo /dev/null http://localhost:80/; do
+                (( attempts++ ))
+                if [ $attempts -gt 40 ]; then
+                  >&2 echo "Failed to reach application after 2 minutes"
+                  exit 1
+                fi
+                sleep 3
+              done
+            '
+      - ShellCommand:
+          name: Run all UI integration tests
+          workdir: build/ui
+          env:
+            CYPRESS_BASE_URL: http://localhost:80
+          command: >
+            npm run test:integration --no-update-notifier
+          haltOnFailure: true
+      - ShellCommand:
+          name: Prepare upload folder
+          command: |
+            mkdir -p upload/ui/cypress
+            mv junit upload/ui
+            mv cypress/screenshots upload/ui/cypress/screenshots
+            mv cypress/videos upload/ui/cypress/videos
+          workdir: build/ui
+          alwaysRun: true
+      - Upload:
+          name: Upload Cypress and JUnit artifacts
+          source: ui/upload
+          urls:
+            - ui/junit/*.xml
+            - ui/cypress/videos/*
+          alwaysRun: true
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            <<: *_integration_tests_ui_junit_info
+            STEP_NAME: integration_tests_ui
+      - Upload: *upload_final_status_artifact
+
   unit_tests:
     worker:
       type: local
@@ -1087,25 +1170,29 @@ stages:
             STEP_NAME: unit_tests_ui
       - ShellCommand: *setup_cache
       - ShellCommand:
+          name: Install UI dependencies
+          workdir: build/ui
+          command: >
+            npm ci --prefer-offline --no-audit
+          haltOnFailure: true
+      - ShellCommand:
           name: Run all UI unit tests
           workdir: build/ui
           command: >
-            npm ci
-            --no-cache
-            --no-save
-            -q
-            --no-update-notifier &&
             npm run test:nowatch --no-update-notifier
           haltOnFailure: true
       - ShellCommand:
           name: Prepare upload folder
-          command: >
-            mkdir upload && mv junit upload
+          command: |
+            mkdir -p upload/ui
+            mv junit upload/ui
           workdir: build/ui
           alwaysRun: true
       - Upload:
-          name: Upload cypress and junit folder
+          name: Upload Cypress and JUnit artifacts
           source: ui/upload
+          urls:
+            - ui/junit/*.xml
           alwaysRun: true
       - ShellCommand:
           <<: *add_final_status_artifact_success

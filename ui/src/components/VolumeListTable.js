@@ -193,6 +193,7 @@ function GlobalFilter({
         letterSpacing: 'normal',
         paddingLeft: '10px',
       }}
+      data-cy="volume_list_search"
     />
   );
 }
@@ -308,7 +309,7 @@ function Table({
                       history.push('/volumes/createVolume');
                     }
                   }}
-                  data-cy="create-volume-button"
+                  data-cy="create_volume_button"
                 />
                 {isSearchBar ? (
                   <GlobalFilter

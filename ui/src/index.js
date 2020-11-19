@@ -20,6 +20,8 @@ const sagaMiddleware = createSagaMiddleware();
 const enhancer = composeEnhancers(applyMiddleware(sagaMiddleware));
 export const store = createStore(reducer, enhancer);
 
+if (window.Cypress) window.__store__ = store;
+
 sagaMiddleware.run(sagas);
 
 ReactDOM.render(
