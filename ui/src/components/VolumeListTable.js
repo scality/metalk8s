@@ -319,7 +319,19 @@ function Table({
             ) {
               return (
                 <td {...cellProps}>
-                  <div>{intl.translate('unknown')}</div>
+                  <Tooltip
+                    placement="top"
+                    overlay={
+                      <TooltipContent>
+                        {intl.translate('unknown')}
+                      </TooltipContent>
+                    }
+                  >
+                    <UnknownIcon
+                      className="fas fa-minus"
+                      theme={theme}
+                    ></UnknownIcon>
+                  </Tooltip>
                 </td>
               );
             } else {
@@ -329,7 +341,7 @@ function Table({
         </TableRow>
       );
     },
-    [prepareRow, rowClicked, rows, volumeName],
+    [prepareRow, rowClicked, rows, volumeName, theme],
   );
 
   return (
@@ -553,7 +565,19 @@ const VolumeListTable = (props) => {
                 </Tooltip>
               );
             default:
-              return <div>{intl.translate('unknown')}</div>;
+              return (
+                <Tooltip
+                  placement="top"
+                  overlay={
+                    <TooltipContent>{intl.translate('unknown')}</TooltipContent>
+                  }
+                >
+                  <UnknownIcon
+                    className="fas fa-minus"
+                    theme={theme}
+                  ></UnknownIcon>
+                </Tooltip>
+              );
           }
         },
         sortType: 'status',
