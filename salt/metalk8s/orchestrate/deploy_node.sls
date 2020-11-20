@@ -150,6 +150,7 @@ Check pillar before etcd deployment:
         attempts: 5
     - require:
       - salt: Sync module on the node
+      - salt: Wait minion available
 
 Install etcd node:
   salt.state:
@@ -253,4 +254,3 @@ Kill kube-controller-manager on all master nodes:
         pattern: kube-controller-manager
     - require:
       - salt: Run the highstate
-
