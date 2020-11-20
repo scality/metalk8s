@@ -39,7 +39,11 @@ Wait for API server to be available on {{ node }}:
   - verify_ssl: false
   - require:
     - salt: Execute the downgrade prechecks
-  {%- if previous_node is defined %}
+  {%- if loop.previtem is defined %}
+    - salt: Deploy node {{ loop.previtem }}
+  {%- endif %}
+  {#- NOTE: This can be removed in `development/2.8` #}
+  {%- if salt.pkg.version_cmp(dest_version, '2.7.0') == -1 and previous_node is defined %}
     - salt: Deploy node {{ previous_node }}
   {%- endif %}
 
@@ -97,8 +101,11 @@ Deploy node {{ node }}:
     - require_in:
       - salt: Downgrade etcd cluster
 
-    {#- Ugly but needed since we have jinja2.7 (`loop.previtem` added in 2.10) #}
-    {%- set previous_node = node %}
+    {#- NOTE: This can be removed in `development/2.8` #}
+    {%- if salt.pkg.version_cmp(dest_version, '2.7.0') == -1 %}
+      {#- Ugly but needed since we have jinja2.7 (`loop.previtem` added in 2.10) #}
+      {%- set previous_node = node %}
+    {%- endif %}
 
   {%- endif %}
 
