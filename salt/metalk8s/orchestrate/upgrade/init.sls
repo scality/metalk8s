@@ -79,6 +79,22 @@ Set node {{ node }} version to {{ dest_version }}:
     - require:
       - http: Wait for API server to be available on {{ node }}
 
+# We need a new step to upgrade salt-minion as if we come from 2.6.x
+# we have to migrate salt from Python2 to Python3
+# NOTE: This can be removed in `development/2.8`
+Upgrade salt-minion on {{ node }}:
+  salt.runner:
+    - name: state.orchestrate
+    - mods:
+      - metalk8s.orchestrate.migrate_salt
+    - pillar:
+        orchestrate:
+          node_name: {{ node }}
+    - require:
+      - metalk8s_kubernetes: Set node {{ node }} version to {{ dest_version }}
+    - require_in:
+      - salt: Deploy node {{ node }}
+
 Deploy node {{ node }}:
   salt.runner:
     - name: state.orchestrate
