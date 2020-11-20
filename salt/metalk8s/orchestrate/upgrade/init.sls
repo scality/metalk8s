@@ -45,6 +45,9 @@ Check pillar on {{ node }} before installing apiserver-proxy:
         attempts: 5
     - require:
       - salt: Execute the upgrade prechecks
+    {%- if loop.previtem is defined %}
+      - salt: Deploy node {{ loop.previtem }}
+    {%- endif %}
 
 Install apiserver-proxy on {{ node }}:
   salt.state:
@@ -63,9 +66,6 @@ Wait for API server to be available on {{ node }}:
   - verify_ssl: false
   - require:
     - salt: Install apiserver-proxy on {{ node }}
-  {%- if previous_node is defined %}
-    - salt: Deploy node {{ previous_node }}
-  {%- endif %}
 
 Set node {{ node }} version to {{ dest_version }}:
   metalk8s_kubernetes.object_updated:
@@ -112,9 +112,6 @@ Deploy node {{ node }}:
       - metalk8s_kubernetes: Set node {{ node }} version to {{ dest_version }}
     - require_in:
       - salt: Deploy Kubernetes service config objects
-
-    {#- Ugly but needed since we have jinja2.7 (`loop.previtem` added in 2.10) #}
-    {%- set previous_node = node %}
 
   {%- endif %}
 
