@@ -20,15 +20,21 @@ describe('Volume list', () => {
     );
   });
 
-  it('brings me to the overview tab of master-0-alertmanager Volume', () => {
+  it('brings me to the overview tab of worker-0-burry-1 Volume', () => {
+    // After implementing the virtualized table, not all the volumes are visible at the first render.
+    // So we should test the first several volumes which are visiable.
+
     cy.visit('/volumes');
     cy.stubHistory();
+    // The application re-renders, it's possible the element we're interacting with has become "dead"
+    // cy... failed because the element has been detached from the DOM
 
     cy.get('[data-cy="volume_table_name_cell"]')
-      .contains('master-1-prometheus')
-      .click();
+      .contains('worker-0-burry-1')
+      .click({ force: true });
+
     cy.get('@historyPush').should('be.calledWithExactly', {
-      pathname: '/volumes/master-1-prometheus/overview',
+      pathname: '/volumes/worker-0-burry-1/overview',
       search: '',
     });
   });
@@ -38,10 +44,10 @@ describe('Volume list', () => {
     cy.stubHistory();
 
     cy.get('[data-cy="volume_table_name_cell"]')
-      .contains('prom-m0-reldev')
-      .click();
+      .contains('master-0-alertmanager')
+      .click({ force: true });
     cy.get('@historyPush').should('be.calledOnce').and('be.calledWithExactly', {
-      pathname: '/volumes/prom-m0-reldev/metrics',
+      pathname: '/volumes/master-0-alertmanager/metrics',
       search: 'from=now-7d',
     });
   });
