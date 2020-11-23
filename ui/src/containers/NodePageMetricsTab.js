@@ -42,7 +42,6 @@ import { intl } from '../translations/IntlGlobalProvider';
 const GraphsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
   height: 78vh;
   // Change the background color of to primary, should change it in core-ui.
   .sc-vegachart > svg {
