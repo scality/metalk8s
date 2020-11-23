@@ -57,6 +57,11 @@ const VolumeListContainer = styled.div`
       width: 120px;
       height: 10px;
     }
+
+    thead tr[role='row'] {
+      border-bottom: 1px solid ${(props) => props.theme.brand.border};
+    }
+
     tr {
       :last-child {
         td {
