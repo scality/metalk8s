@@ -175,17 +175,13 @@
 
 {% set kubelet = salt['grains.filter_by']({
   'Debian': {
-    'service': {
-      'options': {
-        'resolv-conf': '/run/systemd/resolve/resolv.conf'
-      }
+    'config': {
+      'resolvConf': '/run/systemd/resolve/resolv.conf'
     }
   },
   'RedHat': {
-    'service': {
-      'options': {
-        'resolv-conf': '/etc/resolv.conf'
-      }
+    'config': {
+      'resolvConf': '/etc/resolv.conf'
     }
   }
 }, grain='os_family', merge=defaults.get('kubelet')) %}
