@@ -96,3 +96,24 @@ export const TableHeader = styled.th`
     }
   }
 `;
+
+export const MetricsActionContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding: ${padding.large} ${padding.base};
+
+  .sc-dropdown {
+    padding-left: 25px;
+  }
+
+  .sc-dropdown > div {
+    background-color: ${(props) => props.theme.brand.primary};
+    border: 1px solid ${(props) => props.theme.brand.borderLight}
+    border-radius: 3px;
+  }
+
+  .sc-button {
+    background-color: ${(props) => props.theme.brand.info};
+  }
+`;

@@ -15,7 +15,10 @@ import {
   yAxisWriteRead,
   yAxisInOut,
 } from '../components/LinechartSpec';
-import { NodeTab } from '../components/CommonLayoutStyle';
+import {
+  NodeTab,
+  MetricsActionContainer,
+} from '../components/CommonLayoutStyle';
 import {
   addMissingDataPoint,
   fromUnixTimestampToDate,
@@ -68,17 +71,6 @@ const Graph = styled.div`
 
 const LoaderContainer = styled(Loader)`
   padding-left: ${padding.larger};
-`;
-
-const ActionContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  padding: ${padding.large} ${padding.base};
-
-  .sc-button {
-    background-color: ${(props) => props.theme.brand.info};
-  }
 `;
 
 const DropdownContainer = styled.div`
@@ -297,7 +289,7 @@ const NodePageMetricsTab = (props) => {
 
   return (
     <NodeTab>
-      <ActionContainer>
+      <MetricsActionContainer>
         <Button
           text={intl.translate('advanced_metrics')}
           variant={'base'}
@@ -317,7 +309,7 @@ const NodePageMetricsTab = (props) => {
             data-cy="metrics_timespan_selection"
           />
         </DropdownContainer>
-      </ActionContainer>
+      </MetricsActionContainer>
       <GraphsContainer>
         <RowGraphContainer>
           <Graph>

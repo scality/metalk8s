@@ -31,37 +31,13 @@ import {
   queryTimeSpansCodes,
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
-import { VolumeTab } from './CommonLayoutStyle';
+import { VolumeTab, MetricsActionContainer } from './CommonLayoutStyle';
 
 const MetricGraphCardContainer = styled.div`
   min-height: 270px;
 
   .sc-vegachart svg {
     background-color: inherit !important;
-  }
-`;
-
-const MetricGraphTitle = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
-  font-size: ${fontSize.base};
-  font-weight: ${fontWeight.bold};
-  padding: ${padding.small};
-  display: flex;
-  flex-direction: row-reverse;
-  padding: ${padding.large} ${padding.base};
-
-  .sc-dropdown {
-    padding-left: 25px;
-  }
-  
-  .sc-dropdown > div {
-    background-color: ${(props) => props.theme.brand.primary};
-    border: 1px solid ${(props) => props.theme.brand.borderLight}
-    border-radius: 3px;
-  }
-  
-  .sc-button {
-    background-color: ${(props) => props.theme.brand.info};
   }
 `;
 
@@ -360,15 +336,7 @@ const MetricsTab = (props) => {
   return (
     <VolumeTab>
       <MetricGraphCardContainer>
-        <MetricGraphTitle>
-          {volumeCondition === VOLUME_CONDITION_LINK && (
-            <Dropdown
-              items={metricsTimeSpanDropdownItems}
-              text={metricsTimeSpan}
-              size="small"
-              data-cy="metrics_timespan_selection"
-            />
-          )}
+        <MetricsActionContainer>
           {config.api?.url_grafana && volumeNamespace && volumePVCName && (
             <Button
               text={intl.translate('advanced_metrics')}
@@ -382,7 +350,15 @@ const MetricsTab = (props) => {
               data-cy="advanced_metrics_volume_detailed"
             />
           )}
-        </MetricGraphTitle>
+          {volumeCondition === VOLUME_CONDITION_LINK && (
+            <Dropdown
+              items={metricsTimeSpanDropdownItems}
+              text={metricsTimeSpan}
+              size="small"
+              data-cy="metrics_timespan_selection"
+            />
+          )}
+        </MetricsActionContainer>
         {volumeCondition === VOLUME_CONDITION_LINK ? (
           <GraphsContainer>
             <RowGraphContainer>
