@@ -5,11 +5,11 @@ metadata:
   namespace: {{ namespace }}
   labels:
     app: {{ solution }}-operator
-    app.kubernetes.io/name: {{ solution }}-operator
-    app.kubernetes.io/instance: {{ solution }}-operator
+    app.kubernetes.io/name: {{ solution }}-operator
+    app.kubernetes.io/instance: {{ solution }}-operator
     app.kubernetes.io/version: {{ version }}
     app.kubernetes.io/component: operator
-    app.kubernetes.io/part-of: {{ solution }}
+    app.kubernetes.io/part-of: {{ solution }}
 spec:
   replicas: 1
   selector:
@@ -19,11 +19,11 @@ spec:
     metadata:
       labels:
         app: {{ solution }}-operator
-        app.kubernetes.io/name: {{ solution }}-operator
-        app.kubernetes.io/instance: {{ solution }}-operator
+        app.kubernetes.io/name: {{ solution }}-operator
+        app.kubernetes.io/instance: {{ solution }}-operator
         app.kubernetes.io/version: {{ version }}
         app.kubernetes.io/component: operator
-        app.kubernetes.io/part-of: {{ solution }}
+        app.kubernetes.io/part-of: {{ solution }}
         app.kubernetes.io/managed-by: salt
         heritage: salt
     spec:
