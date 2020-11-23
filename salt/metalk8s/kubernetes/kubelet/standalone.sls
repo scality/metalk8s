@@ -106,7 +106,7 @@ Create kubelet config file:
         port: 10250
         registryBurst: 10
         registryPullQPS: 5
-        rotateCertificates: true
+        rotateCertificates: false
         runtimeRequestTimeout: 2m0s
         serializeImagePulls: true
         streamingConnectionIdleTimeout: 4h0m0s
