@@ -544,7 +544,7 @@ const VolumeListTable = (props) => {
   );
   const nodeCol = { Header: 'Node', accessor: 'node' };
   if (isNodeColumn) {
-    columns.splice(1, 0, nodeCol);
+    columns.splice(2, 0, nodeCol);
   }
 
   // handle the row selection by updating the URL
