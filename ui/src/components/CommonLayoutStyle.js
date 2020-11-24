@@ -119,3 +119,30 @@ export const MetricsActionContainer = styled.div`
     background-color: ${(props) => props.theme.brand.info};
   }
 `;
+
+export const GraphsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: ${padding.small};
+
+  .sc-vegachart svg {
+    background-color: inherit !important;
+  }
+`;
+
+export const RowGraphContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+`;
+
+export const GraphTitle = styled.div`
+  font-size: ${fontSize.small};
+  font-weight: ${fontWeight.bold};
+  color: ${(props) => props.theme.brand.textSecondary};
+  padding: ${padding.small} 0 0 ${padding.larger};
+`;
+
+export const GraphWrapper = styled.div`
+  padding-left: 0px;
+`;

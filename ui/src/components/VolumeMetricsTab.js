@@ -7,14 +7,11 @@ import {
   fetchVolumeStatsAction,
   updateVolumeStatsAction,
 } from '../ducks/app/monitoring';
-import {
-  fontSize,
-  padding,
-  fontWeight,
-} from '@scality/core-ui/dist/style/theme';
+import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import {
   addMissingDataPoint,
   fromUnixTimestampToDate,
+  useDynamicChartSize,
 } from '../services/utils';
 import { yAxisUsage, yAxisWriteRead } from './LinechartSpec';
 import {
@@ -31,41 +28,17 @@ import {
   queryTimeSpansCodes,
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
-import { VolumeTab, MetricsActionContainer } from './CommonLayoutStyle';
+import {
+  VolumeTab,
+  MetricsActionContainer,
+  GraphsContainer,
+  RowGraphContainer,
+  GraphTitle,
+  GraphWrapper,
+} from './CommonLayoutStyle';
 
 const MetricGraphCardContainer = styled.div`
   min-height: 270px;
-
-  .sc-vegachart svg {
-    background-color: inherit !important;
-  }
-`;
-
-const GraphsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding-left: ${padding.small};
-`;
-
-const RowGraphContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  padding-left: 3px;
-`;
-
-const GraphTitle = styled.div`
-  font-size: ${fontSize.small};
-  font-weight: ${fontWeight.bold};
-  color: ${(props) => props.theme.brand.textSecondary};
-  padding: ${padding.small} 0 0 ${padding.larger};
-`;
-
-const LeftGraphContainer = styled.div`
-  padding-left: 0px;
-`;
-
-const RightGraphContainer = styled.div`
-  padding-left: ${padding.large};
 `;
 
 // No data rendering should be extracted to an common style
@@ -97,6 +70,7 @@ const MetricsTab = (props) => {
     (state) => state.app.monitoring.volumeStats.metricsTimeSpan,
   );
   const config = useSelector((state) => state.config);
+  const [graphWidth, graphHeight] = useDynamicChartSize('graph_container');
 
   // write the selected timespan in URL
   const writeUrlTimeSpan = (timespan) => {
@@ -360,9 +334,9 @@ const MetricsTab = (props) => {
           )}
         </MetricsActionContainer>
         {volumeCondition === VOLUME_CONDITION_LINK ? (
-          <GraphsContainer>
+          <GraphsContainer id="graph_container">
             <RowGraphContainer>
-              <LeftGraphContainer>
+              <GraphWrapper>
                 <GraphTitle>USAGE (%)</GraphTitle>
                 {volumeUsageData?.length > 0 ? (
                   <LineChart
@@ -371,15 +345,15 @@ const MetricsTab = (props) => {
                     xAxis={xAxis}
                     yAxis={yAxisUsage}
                     color={colorUsage}
-                    width={window.innerWidth / 4 - 110}
-                    height={window.innerHeight / 6 - 30}
+                    width={graphWidth}
+                    height={graphHeight}
                     tooltip={false}
                   />
                 ) : (
                   <NoDataGraphText>No available usage data</NoDataGraphText>
                 )}
-              </LeftGraphContainer>
-              <RightGraphContainer>
+              </GraphWrapper>
+              <GraphWrapper>
                 <GraphTitle>LATENCY (µs) </GraphTitle>
                 {volumeLatencyData?.length > 0 ? (
                   <LineChart
@@ -388,17 +362,17 @@ const MetricsTab = (props) => {
                     xAxis={xAxis}
                     yAxis={yAxisWriteRead}
                     color={colors}
-                    width={window.innerWidth / 4 - 110}
-                    height={window.innerHeight / 6 - 30}
+                    width={graphWidth}
+                    height={graphHeight}
                     tooltip={false}
                   />
                 ) : (
                   <NoDataGraphText>No available latency data</NoDataGraphText>
                 )}
-              </RightGraphContainer>
+              </GraphWrapper>
             </RowGraphContainer>
             <RowGraphContainer>
-              <LeftGraphContainer>
+              <GraphWrapper>
                 <GraphTitle>THROUGHPUT (MB/s)</GraphTitle>
                 {volumeThroughputData?.length > 0 ? (
                   <LineChart
@@ -407,8 +381,8 @@ const MetricsTab = (props) => {
                     xAxis={xAxis}
                     yAxis={yAxisWriteRead}
                     color={colors}
-                    width={window.innerWidth / 4 - 110}
-                    height={window.innerHeight / 6 - 30}
+                    width={graphWidth}
+                    height={graphHeight}
                     tooltip={false}
                   />
                 ) : (
@@ -416,8 +390,8 @@ const MetricsTab = (props) => {
                     No available throughput data
                   </NoDataGraphText>
                 )}
-              </LeftGraphContainer>
-              <RightGraphContainer>
+              </GraphWrapper>
+              <GraphWrapper>
                 <GraphTitle>IOPS</GraphTitle>
                 {volumeIOPSData?.length > 0 ? (
                   <LineChart
@@ -426,14 +400,14 @@ const MetricsTab = (props) => {
                     xAxis={xAxis}
                     yAxis={yAxisWriteRead}
                     color={colors}
-                    width={window.innerWidth / 4 - 110}
-                    height={window.innerHeight / 6 - 30}
+                    width={graphWidth}
+                    height={graphHeight}
                     tooltip={false}
                   />
                 ) : (
                   <NoDataGraphText>No available IOPS data</NoDataGraphText>
                 )}
-              </RightGraphContainer>
+              </GraphWrapper>
             </RowGraphContainer>
           </GraphsContainer>
         ) : (
