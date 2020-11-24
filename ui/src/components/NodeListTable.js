@@ -15,11 +15,6 @@ import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
 import { Button } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
-import {
-  SortCaretWrapper,
-  SortIncentive,
-  TableHeader,
-} from './CommonLayoutStyle';
 import { compareHealth, useTableSortURLSync } from '../services/utils';
 import {
   API_STATUS_READY,
@@ -138,6 +133,24 @@ const StatusText = styled.div`
   color: ${(props) => {
     return props.textColor;
   }};
+`;
+
+export const SortCaretWrapper = styled.span`
+  padding-left: ${padding.smaller};
+  position: absolute;
+`;
+
+export const SortIncentive = styled.span`
+  position: absolute;
+  display: none;
+`;
+
+export const TableHeader = styled.th`
+  &:hover {
+    ${SortIncentive} {
+      display: block;
+    }
+  }
 `;
 
 function GlobalFilter({
@@ -315,7 +328,7 @@ function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
                     }),
                   );
                   return (
-                    <TableHeader {...headerStyleProps}>
+                    <TableHeader {...headerStyleProps} className="th">
                       {column.render('Header')}
                       <SortCaretWrapper>
                         {column.isSorted ? (

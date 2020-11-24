@@ -139,7 +139,7 @@ describe('Node page volumes tabs', () => {
     cy.stubHistory();
 
     cy.get('[data-cy="volume_table_name_cell"]')
-      .contains('td', 'loki-vol')
+      .contains('div', 'loki-vol')
       .click({ force: true });
     cy.get('@historyPush').should(
       'be.calledWith',
