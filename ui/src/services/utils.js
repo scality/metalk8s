@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useLocation, useHistory } from 'react-router-dom';
 import { createSelector } from 'reselect';
@@ -402,4 +402,20 @@ export const useTableSortURLSync = (sorted, desc, data) => {
       history.replace(`?${query.toString()}`);
     }
   }, [sorted, desc, data.length, history]);
+};
+
+/*
+ ** Custom hook to define chart dimension based on their container
+ ** This calculates the width for rows of 2 charts
+ ** Takes container id as a param and returns [ width, heigth ]
+ */
+export const useDynamicChartSize = (container_id) => {
+  const graphsContainerWidth = document.getElementById(container_id)
+    ?.offsetWidth;
+  const [graphWidth, setGraphWidth] = useState(0);
+  useEffect(() => {
+    if (graphsContainerWidth) setGraphWidth(graphsContainerWidth / 2 - 50);
+  }, [graphsContainerWidth]);
+
+  return [graphWidth, window.innerHeight / 6 - 30];
 };
