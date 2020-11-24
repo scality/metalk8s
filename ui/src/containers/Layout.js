@@ -55,7 +55,7 @@ const Layout = (props) => {
     'data-cy-state-isexpanded': sidebar.expanded,
     actions: [
       {
-        label: intl.translate('monitoring'),
+        label: intl.translate('alerts'),
         icon: <i className="fas fa-desktop" />,
         onClick: () => {
           history.push('/');
@@ -65,7 +65,7 @@ const Layout = (props) => {
           exact: true,
           strict: true,
         }),
-        'data-cy': 'sidebar_item_monitoring',
+        'data-cy': 'sidebar_item_alerts',
       },
       {
         label: intl.translate('nodes'),
