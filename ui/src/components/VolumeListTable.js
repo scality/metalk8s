@@ -236,7 +236,7 @@ function Table({
 
         if (size1 && size2) {
           return allSizeUnitsToBytes(size1) - allSizeUnitsToBytes(size2);
-        }
+        } else return !size1 ? -1 : 1;
       },
       status: (row1, row2) => {
         const weights = {};
