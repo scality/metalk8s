@@ -5,6 +5,14 @@
 - [#2855](https://github.com/scality/metalk8s/issues/2855) - Bump `containerd`
   version to 1.4.1 (PR [#2869](https://github.com/scality/metalk8s/pull/2869))
 
+- Bump `coredns` version to 1.6.7 (PR [#2816](https://github.com/scality/metalk8s/pull/2816))
+
+### Bug fixes
+
+- [#2908](https://github.com/scality/metalk8s/issues/2908) - Make upgrade script
+  more robust about static pod restart and improve user experience
+  (PR [#2928](https://github.com/scality/metalk8s/pull/2928))
+
 ## Release 2.6.1 (in development)
 
 ## Release 2.6.0
