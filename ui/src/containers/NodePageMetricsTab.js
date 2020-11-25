@@ -286,7 +286,7 @@ const NodePageMetricsTab = (props) => {
         <RowGraphContainer>
           <GraphWrapper>
             <GraphTitle>CPU USAGE (%)</GraphTitle>
-            {nodeStatsData['cpuUsage'].length !== 0 ? (
+            {nodeStatsData['cpuUsage'].length !== 0 && graphWidth ? (
               <LineChart
                 id={'node_cpu_usage_id'}
                 data={nodeStatsData['cpuUsage']}
@@ -304,7 +304,7 @@ const NodePageMetricsTab = (props) => {
           </GraphWrapper>
           <GraphWrapper>
             <GraphTitle>CPU SYSTEM LOAD (%)</GraphTitle>
-            {nodeStatsData['systemLoad'].length !== 0 ? (
+            {nodeStatsData['systemLoad'].length !== 0 && graphWidth ? (
               <LineChart
                 id={'node_system_load_id'}
                 data={nodeStatsData['systemLoad']}
@@ -324,7 +324,7 @@ const NodePageMetricsTab = (props) => {
         <RowGraphContainer>
           <GraphWrapper>
             <GraphTitle>MEMORY (%)</GraphTitle>
-            {nodeStatsData['memory'].length !== 0 ? (
+            {nodeStatsData['memory'].length !== 0 && graphWidth ? (
               <LineChart
                 id={'node_memory_id'}
                 data={nodeStatsData['memory']}
@@ -342,7 +342,7 @@ const NodePageMetricsTab = (props) => {
           </GraphWrapper>
           <GraphWrapper>
             <GraphTitle>IOPS</GraphTitle>
-            {iopsData.length !== 0 ? (
+            {iopsData.length !== 0 && graphWidth ? (
               <LineChart
                 id={'node_IOPS_id'}
                 data={iopsData}
@@ -363,7 +363,7 @@ const NodePageMetricsTab = (props) => {
         <RowGraphContainer>
           <GraphWrapper>
             <GraphTitle>CONTROL PLANE BANDWIDTH (MB)</GraphTitle>
-            {controlPlaneNetworkBandwidthData.length !== 0 ? (
+            {controlPlaneNetworkBandwidthData.length !== 0 && graphWidth ? (
               <LineChart
                 id={'node_control_plane_bandwidth_id'}
                 data={controlPlaneNetworkBandwidthData}
@@ -381,7 +381,7 @@ const NodePageMetricsTab = (props) => {
           </GraphWrapper>
           <GraphWrapper>
             <GraphTitle>WORKLOAD PLANE BANDWIDTH (MB)</GraphTitle>
-            {workloadPlaneNetworkBandwidthData.length !== 0 ? (
+            {workloadPlaneNetworkBandwidthData.length !== 0 && graphWidth ? (
               <LineChart
                 id={'node_workload_plane_bandwidth_id'}
                 data={workloadPlaneNetworkBandwidthData}
