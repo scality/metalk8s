@@ -51,43 +51,6 @@ def present(name):
     return ret
 
 
-def provisioned(name):
-    """Provision the given volume.
-
-    Args:
-        name (str): Volume name
-
-    Returns:
-        dict: state return value
-    """
-    ret = {'name': name, 'changes': {}, 'result': False, 'comment': ''}
-    # Idempotence.
-    if __salt__['metalk8s_volumes.is_provisioned'](name):
-        ret['result'] = True
-        ret['comment'] = 'Storage for volume {} already provisioned.'\
-            .format(name)
-        return ret
-    # Dry-run.
-    if __opts__['test']:
-        ret['changes'][name] = 'Provisioned'
-        ret['result'] = None
-        ret['comment'] = 'Storage for volume {} is going to be provisioned.'\
-            .format(name)
-        return ret
-    # Let's go for real.
-    try:
-        __salt__['metalk8s_volumes.provision'](name)
-    except CommandExecutionError as exn:
-        ret['result'] = False
-        ret['comment'] = 'Storage provisioning for volume {} failed: {}.'\
-            .format(name, exn)
-    else:
-        ret['changes'][name] = 'Provisioned'
-        ret['result'] = True
-        ret['comment'] = 'Storage provisioned for volume {}.'.format(name)
-    return ret
-
-
 def prepared(name):
     """Prepare the given volume.
 

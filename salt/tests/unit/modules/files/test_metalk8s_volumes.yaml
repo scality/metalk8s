@@ -465,127 +465,6 @@ create:
     pillar_volumes: *volumes_details
     raise_msg: unsupported Volume type for Volume my-invalid-type-volume
 
-is_provisioned:
-  ## SPARSE volume
-  # sparse file associated with a loop device
-  - name: my-sparse-volume
-    pillar_volumes: *volumes_details
-    losetup_output: |
-      /dev/loop3: [64769]:41159 (/var/lib/metalk8s/storage/sparse/f1d78810-3787-4ca4-b712-50a269e42560)
-    result: True
-
-  # sparse file not associated with any device
-  - name: my-sparse-volume
-    pillar_volumes: *volumes_details
-    losetup_output: |
-    result: False
-
-  # error when checking sparse file association
-  - name: my-sparse-volume
-    pillar_volumes: *volumes_details
-    raises: True
-    result: "error while trying to run `losetup --associated /var/lib/metalk8s/storage/sparse/f1d78810-3787-4ca4-b712-50a269e42560`: An error has occurred"
-
-  ## SPARSE block volume
-  # sparse file associated with a loop device
-  - name: my-sparse-block-volume
-    pillar_volumes: *volumes_details
-    losetup_output: |
-      /dev/loop4: [64769]:41159 (/var/lib/metalk8s/storage/sparse/8474cda7-0dbe-40fc-9842-3cb0404a725a)
-    result: True
-
-  # sparse file not associated with any device
-  - name: my-sparse-block-volume
-    pillar_volumes: *volumes_details
-    losetup_output: |
-    result: False
-
-  # error when checking sparse file association
-  - name: my-sparse-block-volume
-    pillar_volumes: *volumes_details
-    raises: True
-    result: "error while trying to run `losetup --associated /var/lib/metalk8s/storage/sparse/8474cda7-0dbe-40fc-9842-3cb0404a725a`: An error has occurred"
-
-  ## RAW BLOCK DEVICE volume
-  # raw block device always provisioned (nothing to provision)
-  - name: my-raw-block-device-volume
-    pillar_volumes: *volumes_details
-    result: True
-
-  ## RAW BLOCK DEVICE block disk volume
-  # raw block device always provisioned (nothing to provision)
-  - name: my-raw-block-device-block-disk-volume
-    pillar_volumes: *volumes_details
-    result: True
-
-  ## RAW BLOCK DEVICE block partition volume
-  # raw block device always provisioned (nothing to provision)
-  - name: my-raw-block-device-block-partition-volume
-    pillar_volumes: *volumes_details
-    result: True
-
-  ## RAW BLOCK DEVICE block lvm volume
-  # raw block device always provisioned (nothing to provision)
-  - name: my-raw-block-device-block-lvm-volume
-    pillar_volumes: *volumes_details
-    result: True
-
-  ## Invalid volumes
-  # specified volume is not in the pillar
-  - name: unknown-volume
-    pillar_volumes: *volumes_details
-    raises: True
-    result: volume unknown-volume not found in pillar
-
-provision:
-  ## SPARSE volume
-  # provision a sparse file with a loop device
-  - name: my-sparse-volume
-    pillar_volumes: *volumes_details
-    losetup_output: |
-
-  # error when searching a loop device for the sparse file
-  - name: my-sparse-volume
-    pillar_volumes: *volumes_details
-    raise_msg: "error while trying to run `losetup --find /var/lib/metalk8s/storage/sparse/f1d78810-3787-4ca4-b712-50a269e42560`: An error has occurred"
-
-  ## SPARSE block volume
-  # provision a sparse file with a loop device
-  - name: my-sparse-block-volume
-    pillar_volumes: *volumes_details
-    losetup_output: |
-
-  # error when searching a loop device for the sparse file
-  - name: my-sparse-block-volume
-    pillar_volumes: *volumes_details
-    raise_msg: "error while trying to run `losetup --find --partscan /var/lib/metalk8s/storage/sparse/8474cda7-0dbe-40fc-9842-3cb0404a725a`: An error has occurred"
-
-  ## RAW BLOCK DEVICE volume
-  # nothing to provision for raw block device
-  - name: my-raw-block-device-volume
-    pillar_volumes: *volumes_details
-
-  ## RAW BLOCK DEVICE block disk volume
-  # nothing to provision for raw block device
-  - name: my-raw-block-device-block-disk-volume
-    pillar_volumes: *volumes_details
-
-  ## RAW BLOCK DEVICE block partition volume
-  # nothing to provision for raw block device
-  - name: my-raw-block-device-block-partition-volume
-    pillar_volumes: *volumes_details
-
-  ## RAW BLOCK DEVICE block lvm volume
-  # nothing to provision for raw block device
-  - name: my-raw-block-device-block-lvm-volume
-    pillar_volumes: *volumes_details
-
-  ## Invalid volumes
-  # specified volume is not in the pillar
-  - name: unknown-volume
-    pillar_volumes: *volumes_details
-    raise_msg: volume unknown-volume not found in pillar
-
 is_prepared:
   ## SPARSE volume
   # sparse volume already prepared - right UUID
@@ -789,17 +668,9 @@ is_cleaned_up:
     pillar_volumes: *volumes_details
     result: True
 
-  # sparse file exists and associated with a loop device
+  # sparse file exists
   - name: my-sparse-volume
     pillar_volumes: *volumes_details
-    is_provisioned: True
-    exists: True
-    result: False
-
-  # sparse file exists but not associated with any device
-  - name: my-sparse-volume
-    pillar_volumes: *volumes_details
-    is_provisioned: False
     exists: True
     result: False
 
@@ -809,17 +680,9 @@ is_cleaned_up:
     pillar_volumes: *volumes_details
     result: True
 
-  # sparse file exists and associated with a loop device
+  # sparse file exists
   - name: my-sparse-block-volume
     pillar_volumes: *volumes_details
-    is_provisioned: True
-    exists: True
-    result: False
-
-  # sparse file exists but not associated with any device
-  - name: my-sparse-block-volume
-    pillar_volumes: *volumes_details
-    is_provisioned: False
     exists: True
     result: False
 
@@ -871,12 +734,6 @@ clean_up:
     remove_error: "An error has occurred during remove"
     raise_msg: "An error has occurred during remove"
 
-  # error when running ioctl on the sparse file
-  - name: my-sparse-volume
-    pillar_volumes: *volumes_details
-    ioctl_error: "An error has occurred during ioctl"
-    raise_msg: "An error has occurred during ioctl"
-
   ## SPARSE block volume
   # clean up a sparse file
   - name: my-sparse-block-volume
@@ -892,12 +749,6 @@ clean_up:
     pillar_volumes: *volumes_details
     remove_error: "An error has occurred during remove"
     raise_msg: "An error has occurred during remove"
-
-  # error when running ioctl on the sparse file
-  - name: my-sparse-block-volume
-    pillar_volumes: *volumes_details
-    ioctl_error: "An error has occurred during ioctl"
-    raise_msg: "An error has occurred during ioctl"
 
   ## RAW BLOCK DEVICE volume
   # nothing to clean up for raw block device

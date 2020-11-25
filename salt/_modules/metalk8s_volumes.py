@@ -62,39 +62,6 @@ def create(name):
     _get_volume(name).create()
 
 
-def is_provisioned(name):
-    """Check if the backing storage device is provisioned for the given volume.
-
-    Args:
-        name (str): volume name
-
-    Returns:
-        bool: True if the backing storage device is provisioned, otherwise False
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        salt '<NODE_NAME>' metalk8s_volumes.is_provisioned example-volume
-    """
-    return _get_volume(name).is_provisioned
-
-
-def provision(name):
-    """Provision the backing storage device of the given volume.
-
-    Args:
-        name (str): volume name
-
-    CLI Example:
-
-    .. code-block:: bash
-
-        salt '<NODE_NAME>' metalk8s_volumes.provision example-volume
-    """
-    _get_volume(name).provision()
-
-
 def is_prepared(name):
     """Check if the given volume is prepared.
 
@@ -234,16 +201,6 @@ class Volume():
         return
 
     @abc.abstractproperty
-    def is_provisioned(self):  # pragma: no cover
-        """Check if the backing storage device is provisioned."""
-        return
-
-    @abc.abstractmethod
-    def provision(self):  # pragma: no cover
-        """Provision the backing storage device."""
-        return
-
-    @abc.abstractproperty
     def is_cleaned_up(self):  # pragma: no cover
         """Check if the backing storage device is cleaned up."""
         return
@@ -313,10 +270,6 @@ class Volume():
 
 
 class SparseLoopDevice(Volume):
-    # Recent losetup support `--nooverlap` but not the one shipped with
-    # CentOS 7.
-    PROVISIONING_COMMAND = ('losetup', '--find')
-
     @property
     def path(self):
         return '/var/lib/metalk8s/storage/sparse/{}'.format(self.uuid)
@@ -347,32 +300,16 @@ class SparseLoopDevice(Volume):
                 self.path, exn
             ))
 
-    @property
-    def is_provisioned(self):
-        # A sparse loop device is provisioned when a sparse file is associated
-        # to a loop device.
-        command = ' '.join(['losetup', '--associated', self.path])
-        pattern = r'\({}\)'.format(re.escape(self.path))
-        result  = _run_cmd(command)
-        return re.search(pattern, result['stdout']) is not None
-
-    def provision(self):
-        command = ' '.join(list(self.PROVISIONING_COMMAND) + [self.path])
-        return _run_cmd(command)
-
     def prepare(self, force=False):
         # We format a "normal" file, not a block device: we need force=True.
         super(SparseLoopDevice, self).prepare(force=True)
 
     @property
     def is_cleaned_up(self):
-        return not (self.is_provisioned or self.exists)
+        return not self.exists
 
     def clean_up(self):
-        LOOP_CLR_FD = 0x4C01  # From /usr/include/linux/loop.h
         try:
-            with _open_fd(self.persistent_path, os.O_RDONLY) as fd:
-                fcntl.ioctl(fd, LOOP_CLR_FD, 0)
             os.remove(self.path)
         except OSError as exn:
             if exn.errno != errno.ENOENT:
@@ -381,10 +318,6 @@ class SparseLoopDevice(Volume):
 
 
 class SparseLoopDeviceBlock(SparseLoopDevice):
-    # Recent losetup support `--nooverlap` but not the one shipped with
-    # CentOS 7.
-    PROVISIONING_COMMAND = ('losetup', '--find', '--partscan')
-
     @property
     def persistent_path(self):
         return '/dev/disk/by-partuuid/{}'.format(self.uuid)
@@ -419,13 +352,6 @@ class RawBlockDevice(Volume):
         raise Exception('block device {} does not exists'.format(
             self.path
         ))
-
-    @property
-    def is_provisioned(self):
-        return True  # Nothing to do so it's always True.
-
-    def provision(self):
-        return  # Nothing to do
 
     @property
     def path(self):
