@@ -12,6 +12,8 @@
 - [#2203](https://github.com/scality/metalk8s/issues/2203) - Migrate Salt to Python3
   and bump to version 3002.2 (PR [#2839](https://github.com/scality/metalk8s/pull/2839))
 
+- Bump `calico` version to 3.17.0 (PR [#2943](https://github.com/scality/metalk8s/pull/2943))
+
 ### Bug fixes
 
 - [#2908](https://github.com/scality/metalk8s/issues/2908) - Make upgrade script

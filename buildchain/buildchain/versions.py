@@ -17,7 +17,7 @@ Image = namedtuple('Image', ('name', 'version', 'digest'))
 
 # Project-wide versions {{{
 
-CALICO_VERSION     : str = '3.16.1'
+CALICO_VERSION     : str = '3.17.0'
 K8S_VERSION        : str = '1.18.12'
 SALT_VERSION       : str = '3002.2'
 CONTAINERD_VERSION : str = '1.4.1'
@@ -87,12 +87,12 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     Image(
         name='calico-node',
         version=_version_prefix(CALICO_VERSION),
-        digest='sha256:8f7ae199f9f00e03527c515008aa1dbc21f8a27eaefe4b00ca789f732b0f0aef',
+        digest='sha256:92227666988edccd1222d463173489fd656c5a37b8dedab0dadfbc22a471893a',
     ),
     Image(
         name='calico-kube-controllers',
         version=_version_prefix(CALICO_VERSION),
-        digest='sha256:04bba565d9e133ce7c8184d3b08fab09df061b7fb5936b08c5d12cc9e56a3799',
+        digest='sha256:78a6e7648e22b2c87fcc06db610d753e49c6f9b3cf622ab23fdc3a63c1563fc8',
     ),
     Image(
         name='configmap-reload',

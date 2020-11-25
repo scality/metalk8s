@@ -17,7 +17,7 @@ from buildchain import config
 CMD_WIDTH : int = 14
 
 # URLs of the main container repositories.
-CALICO_REPOSITORY             : str = 'quay.io/calico'
+CALICO_REPOSITORY             : str = 'docker.io/calico'
 COREOS_REPOSITORY             : str = 'quay.io/coreos'
 DEX_REPOSITORY                : str = 'quay.io/dexidp'
 DOCKER_REPOSITORY             : str = 'docker.io/library'
