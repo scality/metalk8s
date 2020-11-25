@@ -35,7 +35,7 @@ const VolumeInformation = styled.div`
 
 const VolumeTitleSection = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
-  padding: 0 0 ${padding.larger} ${padding.large};
+  padding: ${padding.large} 0 ${padding.larger} ${padding.large};
   display: flex;
   justify-content: space-between;
 `;

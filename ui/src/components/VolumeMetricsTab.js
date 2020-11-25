@@ -338,7 +338,7 @@ const MetricsTab = (props) => {
             <RowGraphContainer>
               <GraphWrapper>
                 <GraphTitle>USAGE (%)</GraphTitle>
-                {volumeUsageData?.length > 0 ? (
+                {volumeUsageData?.length > 0 && graphWidth ? (
                   <LineChart
                     id={'volume_usage_id'}
                     data={volumeUsageData}
@@ -355,7 +355,7 @@ const MetricsTab = (props) => {
               </GraphWrapper>
               <GraphWrapper>
                 <GraphTitle>LATENCY (µs) </GraphTitle>
-                {volumeLatencyData?.length > 0 ? (
+                {volumeLatencyData?.length > 0 && graphWidth ? (
                   <LineChart
                     id={'volume_latency_id'}
                     data={volumeLatencyData}
@@ -374,7 +374,7 @@ const MetricsTab = (props) => {
             <RowGraphContainer>
               <GraphWrapper>
                 <GraphTitle>THROUGHPUT (MB/s)</GraphTitle>
-                {volumeThroughputData?.length > 0 ? (
+                {volumeThroughputData?.length > 0 && graphWidth ? (
                   <LineChart
                     id={'volume_throughput_id'}
                     data={volumeThroughputData}
@@ -393,7 +393,7 @@ const MetricsTab = (props) => {
               </GraphWrapper>
               <GraphWrapper>
                 <GraphTitle>IOPS</GraphTitle>
-                {volumeIOPSData?.length > 0 ? (
+                {volumeIOPSData?.length > 0 && graphWidth ? (
                   <LineChart
                     id={'volume_IOPS_id'}
                     data={volumeIOPSData}
