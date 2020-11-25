@@ -112,100 +112,6 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                 # This function does not return anything
                 metalk8s_volumes.create(name)
 
-    @utils.parameterized_from_cases(YAML_TESTS_CASES["is_provisioned"])
-    def test_is_provisioned(self, name, result, raises=False,
-                            pillar_volumes=None, losetup_output=None):
-        """
-        Tests the return of `is_provisioned` function
-        """
-        pillar_dict = {
-            'metalk8s': {
-                'volumes': pillar_volumes or {}
-            }
-        }
-
-        if losetup_output is None:
-            losetup_cmd_kwargs = {
-                'retcode': 1,
-                'stderr': 'An error has occurred'
-            }
-        else:
-            losetup_cmd_kwargs = {
-                'stdout': losetup_output
-            }
-
-        salt_dict = {
-            'cmd.run_all': MagicMock(
-                return_value=utils.cmd_output(**losetup_cmd_kwargs)
-            )
-        }
-
-        # Glob is used only for lvm, let simulate that we have 2 lvm volume
-        glob_mock = MagicMock(return_value=["/dev/dm-1", "/dev/dm-2"])
-
-        with patch.dict(metalk8s_volumes.__pillar__, pillar_dict), \
-                patch.dict(metalk8s_volumes.__salt__, salt_dict), \
-                patch("metalk8s_volumes.device_name", device_name_mock), \
-                patch("glob.glob", glob_mock):
-            if raises:
-                self.assertRaisesRegexp(
-                    Exception,
-                    result,
-                    metalk8s_volumes.is_provisioned,
-                    name
-                )
-            else:
-                self.assertEqual(
-                    metalk8s_volumes.is_provisioned(name),
-                    result
-                )
-
-    @utils.parameterized_from_cases(YAML_TESTS_CASES["provision"])
-    def test_provision(self, name, raise_msg=False,
-                       pillar_volumes=None, losetup_output=None):
-        """
-        Tests the return of `provision` function
-        """
-        pillar_dict = {
-            'metalk8s': {
-                'volumes': pillar_volumes or {}
-            }
-        }
-
-        if losetup_output is None:
-            losetup_cmd_kwargs = {
-                'retcode': 1,
-                'stderr': 'An error has occurred'
-            }
-        else:
-            losetup_cmd_kwargs = {
-                'stdout': losetup_output
-            }
-
-        salt_dict = {
-            'cmd.run_all': MagicMock(
-                return_value=utils.cmd_output(**losetup_cmd_kwargs)
-            )
-        }
-
-        # Glob is used only for lvm, let simulate that we have 2 lvm volume
-        glob_mock = MagicMock(return_value=["/dev/dm-1", "/dev/dm-2"])
-
-        with patch.dict(metalk8s_volumes.__pillar__, pillar_dict), \
-                patch.dict(metalk8s_volumes.__salt__, salt_dict), \
-                patch("metalk8s_volumes.device_name", device_name_mock), \
-                patch("glob.glob", glob_mock):
-            if raise_msg:
-                self.assertRaisesRegexp(
-                    Exception,
-                    raise_msg,
-                    metalk8s_volumes.provision,
-                    name
-                )
-            else:
-                # This function does not return anything
-                metalk8s_volumes.provision(name)
-
     @utils.parameterized_from_cases(YAML_TESTS_CASES["is_prepared"])
     def test_is_prepared(self, name, result, raises=False,
                          uuid_return=None, device_name_return=True,
@@ -318,8 +224,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["is_cleaned_up"])
     def test_is_cleaned_up(self, name, result, raises=False,
-                           is_provisioned=False, exists=False,
-                           pillar_volumes=None):
+                           exists=False, pillar_volumes=None):
         """
         Tests the return of `is_cleaned_up` function
         """
@@ -334,11 +239,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
 
         with patch.dict(metalk8s_volumes.__pillar__, pillar_dict), \
                 patch.object(metalk8s_volumes.SparseLoopDevice,
-                             'is_provisioned',
-                             is_provisioned), \
-                patch.object(metalk8s_volumes.SparseLoopDevice,
-                             'exists',
-                             exists), \
+                             'exists', exists), \
                 patch("metalk8s_volumes.device_name", device_name_mock), \
                 patch("glob.glob", glob_mock):
             if raises:
@@ -356,7 +257,7 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["clean_up"])
     def test_clean_up(self, name, raise_msg=False, pillar_volumes=None,
-                      remove_error=None, ioctl_error=None):
+                      remove_error=None):
         """
         Tests the return of `clean_up` function
         """
@@ -372,19 +273,9 @@ class Metalk8sVolumesTestCase(TestCase, LoaderModuleMockMixin):
                 remove_error = [remove_error]
             remove_mock.side_effect = OSError(*remove_error)
 
-        ioctl_mock = MagicMock()
-        if ioctl_error:
-            ioctl_mock.side_effect = IOError(ioctl_error)
-
-        # Glob is used only for lvm, let simulate that we have 2 lvm volume
-        glob_mock = MagicMock(return_value=["/dev/dm-1", "/dev/dm-2"])
-
         with patch.dict(metalk8s_volumes.__pillar__, pillar_dict), \
                 patch("metalk8s_volumes.device_name", device_name_mock), \
-                patch("glob.glob", glob_mock), \
-                patch("os.open", MagicMock()), \
-                patch("os.remove", remove_mock), \
-                patch("fcntl.ioctl", ioctl_mock):
+                patch("os.remove", remove_mock):
             if raise_msg:
                 self.assertRaisesRegexp(
                     Exception,

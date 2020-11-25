@@ -3,22 +3,23 @@ include:
 
 {%- set volumes_to_create = [] %}
 {%- set all_volumes = pillar.metalk8s.volumes %}
-{%- set target_volume = pillar.get('volume') %}
+{%- set target_volume_name = pillar.get('volume') %}
 
 {#- If a volume is given we only take this one, otherwise we take them all. #}
-{%- if target_volume is not none %}
-  {%- if target_volume in all_volumes.keys() %}
+{%- if target_volume_name is not none %}
+  {%- set target_volume = all_volumes.get(target_volume_name) %}
+  {%- if target_volume is not none %}
     {%- do volumes_to_create.append(target_volume) %}
   {%- else %}
-Volume {{ target_volume }} not found in pillar:
+Volume {{ target_volume_name }} not found in pillar:
   test.configurable_test_state:
-    - name: {{ target_volume }}
+    - name: {{ target_volume_name }}
     - changes: False
     - result: False
-    - comment: Volume {{ target_volume }} not found in pillar
+    - comment: Volume {{ target_volume_name }} not found in pillar
   {%- endif %}
 {%- else %}
-    {%- do volumes_to_create.extend(all_volumes.keys()|list) %}
+    {%- do volumes_to_create.extend(all_volumes.values()|list) %}
 {%- endif %}
 
 Create the sparse file directory:
@@ -26,28 +27,50 @@ Create the sparse file directory:
     - name: /var/lib/metalk8s/storage/sparse/
     - makedirs: True
 
-{%- for volume in volumes_to_create %}
+Set up systemd template unit for sparse loop device provisioning:
+  file.managed:
+    - name: /etc/systemd/system/metalk8s-sparse-volume@.service
+    - source: salt://{{ slspath }}/files/metalk8s-sparse-volume@.service
+    - user: root
+    - group : root
+    - mode: 644
 
-Create backing storage for {{ volume }}:
+Install clean-up script:
+  file.managed:
+    - name: /usr/local/libexec/metalk8s-sparse-volume-cleanup
+    - source: salt://{{ slspath }}/files/sparse_volume_cleanup.py
+    - user: root
+    - group : root
+    - mode: 755
+
+{%- for volume in volumes_to_create %}
+  {%- set volume_name = volume.metadata.name %}
+
+Create backing storage for {{ volume_name }}:
   metalk8s_volumes.present:
-    - name: {{ volume }}
+    - name: {{ volume_name }}
     - require:
       - file: Create the sparse file directory
 
-Prepare backing storage for {{ volume }}:
+Prepare backing storage for {{ volume_name }}:
   metalk8s_volumes.prepared:
-    - name: {{ volume }}
+    - name: {{ volume_name }}
     - require:
       - metalk8s_package_manager: Install e2fsprogs
       - metalk8s_package_manager: Install xfsprogs
       - metalk8s_package_manager: Install gdisk
-      - metalk8s_volumes: Create backing storage for {{ volume }}
+      - metalk8s_volumes: Create backing storage for {{ volume_name }}
+  {%- if 'sparseLoopDevice' in volume.spec %}
 
-Provision backing storage for {{ volume }}:
-  metalk8s_volumes.provisioned:
-    - name: {{ volume }}
+Provision backing storage for {{ volume_name }}:
+  service.running:
+    - name: metalk8s-sparse-volume@{{ volume.metadata.uid }}
+    - enable: true
     - require:
-      - metalk8s_volumes: Prepare backing storage for {{ volume }}
+      - metalk8s_volumes: Prepare backing storage for {{ volume_name }}
+      - file: Set up systemd template unit for sparse loop device provisioning
+      - test: Ensure Python 2 is available
+  {%- endif %}
     - require_in:
       - module: Update pillar after volume provisioning
 

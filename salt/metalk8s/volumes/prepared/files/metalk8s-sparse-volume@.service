@@ -1,0 +1,15 @@
+[Unit]
+Description=Setup MetalK8s sparse loop volume %I
+RequiresMountsFor=/var/lib/metalk8s/storage/sparse
+AssertFileNotEmpty=/var/lib/metalk8s/storage/sparse/%i
+
+[Service]
+Type=oneshot
+ExecStart=/bin/flock --exclusive --wait 10 /var/lock/metalk8s-sparse-volume.lock \
+             /sbin/losetup --find --partscan "/var/lib/metalk8s/storage/sparse/%i"
+ExecStop=/usr/local/libexec/metalk8s-sparse-volume-cleanup "%i"
+TimeoutStartSec=10
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

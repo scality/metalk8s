@@ -651,7 +651,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/volumes/init.sls'),
     Path('salt/metalk8s/volumes/prepared/init.sls'),
     Path('salt/metalk8s/volumes/prepared/installed.sls'),
-    Path('salt/metalk8s/volumes/provisioned/init.sls'),
+    Path('salt/metalk8s/volumes/prepared/files/metalk8s-sparse-volume@.service'),
+    Path('salt/metalk8s/volumes/prepared/files/sparse_volume_cleanup.py'),
     Path('salt/metalk8s/volumes/unprepared/init.sls'),
 
     Path('salt/_auth/kubernetes_rbac.py'),

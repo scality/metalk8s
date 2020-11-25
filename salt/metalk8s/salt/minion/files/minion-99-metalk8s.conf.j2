@@ -10,8 +10,3 @@ use_superseded:
 log_level_logfile: {{ 'debug' if debug else 'info' }}
 
 saltenv: {{ saltenv }}
-
-# Prepare volume at startup (required for loop devices persistency).
-startup_states: sls
-sls_list:
-  - /metalk8s/volumes/provisioned
