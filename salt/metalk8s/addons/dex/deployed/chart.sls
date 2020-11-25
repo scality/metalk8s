@@ -14,8 +14,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.23.0
-    helm.sh/chart: dex-2.10.0
+    app.kubernetes.io/version: 2.24.0
+    helm.sh/chart: dex-2.15.2
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -28,8 +28,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.23.0
-    helm.sh/chart: dex-2.10.0
+    app.kubernetes.io/version: 2.24.0
+    helm.sh/chart: dex-2.15.2
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -55,8 +55,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.23.0
-    helm.sh/chart: dex-2.10.0
+    app.kubernetes.io/version: 2.24.0
+    helm.sh/chart: dex-2.15.2
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -77,13 +77,12 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.23.0
-    helm.sh/chart: dex-2.10.0
+    app.kubernetes.io/version: 2.24.0
+    helm.sh/chart: dex-2.15.2
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
 spec:
-  clusterIP: {% endraw -%}{{ salt.metalk8s_network.get_oidc_service_ip() }}{%- raw %}
   ports:
   - name: https
     port: 32000
@@ -103,8 +102,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.23.0
-    helm.sh/chart: dex-2.10.0
+    app.kubernetes.io/version: 2.24.0
+    helm.sh/chart: dex-2.15.2
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -136,7 +135,7 @@ spec:
         - serve
         - /etc/dex/cfg/config.yaml
         env: []
-        image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.23.0
+        image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.24.0
         imagePullPolicy: IfNotPresent
         name: main
         ports:
@@ -194,8 +193,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.23.0
-    helm.sh/chart: dex-2.10.0
+    app.kubernetes.io/version: 2.24.0
+    helm.sh/chart: dex-2.15.2
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
