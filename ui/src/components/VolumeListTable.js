@@ -140,6 +140,12 @@ const TooltipContent = styled.div`
   min-width: 60px;
 `;
 
+const UnknownIcon = styled.i`
+  color: ${(props) => props.theme.brand.textSecondary};
+  // Increase the height so that the users don't need to hover precisely on the hyphen.
+  height: 30px;
+`;
+
 function GlobalFilter({
   preGlobalFilteredRows,
   globalFilter,
