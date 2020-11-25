@@ -321,6 +321,11 @@ if HAS_LIBS:
         ),
         # }}}
         # /apis/policy/v1beta1/ {{{
+        ('policy/v1beta1', 'PodDisruptionBudget'): KindInfo(
+            model=k8s_client.V1beta1PodDisruptionBudget,
+            api_cls=k8s_client.PolicyV1beta1Api,
+            name='namespaced_pod_disruption_budget',
+        ),
         ('policy/v1beta1', 'PodSecurityPolicy'): KindInfo(
             model=k8s_client.PolicyV1beta1PodSecurityPolicy,
             api_cls=k8s_client.PolicyV1beta1Api,
