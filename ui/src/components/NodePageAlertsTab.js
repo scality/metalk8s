@@ -68,6 +68,10 @@ const TitleContainer = styled.div`
   display: flex;
   justify-content: space-between;
   padding: ${padding.large} ${padding.base} 0 ${padding.larger};
+  position: sticky;
+  top: 0px;
+  z-index: 100;
+  background-color: ${(props) => props.theme.brand.primary};
 `;
 
 const NodePageAlertsTab = (props) => {

@@ -19,8 +19,16 @@ import {
 import VolumeListTable from '../components/VolumeListTable';
 import { getVolumeListData } from '../services/NodeVolumesUtils';
 import { useRefreshEffect } from '../services/utils';
-import { fontSize } from '@scality/core-ui/dist/style/theme';
-import { NodeTab } from './CommonLayoutStyle';
+import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
+
+// Custom Volumes styling instead of the CommonLayout one because the volumes table component has inner scroll
+export const NodesVolumesTab = styled.div`
+  background-color: ${(props) => props.theme.brand.primary};
+  color: ${(props) => props.theme.brand.textPrimary};
+  padding-bottom: ${padding.base};
+  height: calc(100vh - 172px);
+  overflow: hidden;
+`;
 
 const TabContent = styled.div`
   height: 78vh;
@@ -56,7 +64,7 @@ const NodePageVolumesTab = (props) => {
   }, [dispatch]);
 
   return (
-    <NodeTab>
+    <NodesVolumesTab>
       <TabContent>
         <VolumeListTable
           volumeListData={volumeListData}
@@ -65,7 +73,7 @@ const NodePageVolumesTab = (props) => {
           nodeName={name}
         ></VolumeListTable>
       </TabContent>
-    </NodeTab>
+    </NodesVolumesTab>
   );
 };
 

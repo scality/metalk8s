@@ -26,6 +26,10 @@ const ActiveAlertsTitle = styled.div`
   padding: ${padding.small} 0 0 ${padding.large};
   display: flex;
   justify-content: space-between;
+  position: sticky;
+  top: 0px;
+  z-index: 100;
+  background-color: ${(props) => props.theme.brand.primary};
 `;
 
 const ActiveAlertsTableContainer = styled.div`
