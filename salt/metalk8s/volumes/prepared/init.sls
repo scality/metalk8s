@@ -69,7 +69,7 @@ Provision backing storage for {{ volume_name }}:
     - require:
       - metalk8s_volumes: Prepare backing storage for {{ volume_name }}
       - file: Set up systemd template unit for sparse loop device provisioning
-      - test: Ensure Python 2 is available
+      - test: Ensure Python 3 is available
   {%- endif %}
     - require_in:
       - module: Update pillar after volume provisioning
