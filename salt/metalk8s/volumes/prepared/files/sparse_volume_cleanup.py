@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 """Script for cleaning up MetalK8s sparse loop volumes.
 
 Handle discovery of the device through a Volume's UUID, and then detach the
