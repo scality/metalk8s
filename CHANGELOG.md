@@ -46,6 +46,12 @@
 
 ## Release 2.6.1 (in development)
 
+### Features Added
+- [#1887](https://github.com/scality/metalk8s/issues/1887) - All Kubernetes
+  kubeconfig, client and server certificates are now automatically regenerated
+  when close to the expiration date (less than 45 days)
+  (PR [#2914](https://github.com/scality/metalk8s/pull/2914))
+
 ## Release 2.6.0
 
 ### Breaking changes
