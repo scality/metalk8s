@@ -7,6 +7,9 @@
 
 - Bump `coredns` version to 1.6.7 (PR [#2816](https://github.com/scality/metalk8s/pull/2816))
 
+- [#2203](https://github.com/scality/metalk8s/issues/2203) - Migrate Salt to Python3
+  and bump to version 3002.2 (PR [#2839](https://github.com/scality/metalk8s/pull/2839))
+
 ### Bug fixes
 
 - [#2908](https://github.com/scality/metalk8s/issues/2908) - Make upgrade script
