@@ -13,6 +13,10 @@
   more robust about static pod restart and improve user experience
   (PR [#2928](https://github.com/scality/metalk8s/pull/2928))
 
+- [#2726](https://github.com/scality/metalk8s/issues/2726) - Ensure sparse loop
+  volumes are all provisioned on reboot
+  (PR [#2936](https://github.com/scality/metalk8s/pull/2936))
+
 ## Release 2.6.1 (in development)
 
 ## Release 2.6.0
