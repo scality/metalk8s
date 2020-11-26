@@ -74,7 +74,7 @@ def check_cp_ingress_pod_and_container(
     control_plane_ip
 ):
     ssh_config = request.config.getoption('--ssh-config')
-    label = "release=nginx-ingress-control-plane"
+    label = "app.kubernetes.io/instance=ingress-nginx-control-plane"
     namespace = "metalk8s-ingress"
 
     def _wait_for_ingress_pod_and_container():

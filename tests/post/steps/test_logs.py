@@ -18,7 +18,7 @@ SKIP_CONTAINERS = frozenset((
     'kube-rbac-proxy-main',
     'kube-rbac-proxy-self',
     'rules-configmap-reloader',
-    'nginx-ingress-default-backend',
+    'ingress-nginx-default-backend',
 ))
 
 

@@ -211,6 +211,7 @@ IMGS_PER_REPOSITORY : Dict[str, List[str]] = {
 REMOTE_NAMES : Dict[str, str] = {
     'calico-node': 'node',
     'calico-kube-controllers': 'kube-controllers',
+    'nginx-ingress-controller': 'controller',
     'nginx-ingress-defaultbackend-amd64': 'defaultbackend-amd64',
 }
 

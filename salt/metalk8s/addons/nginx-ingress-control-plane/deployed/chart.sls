@@ -3,34 +3,52 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 
+
 {% raw %}
 
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
-    app: nginx-ingress
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: ingress-nginx-control-plane
     app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: nginx-ingress
+    app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.36.3
+    app.kubernetes.io/version: 0.41.2
+    helm.sh/chart: ingress-nginx-3.13.0
     heritage: metalk8s
-    release: nginx-ingress-control-plane
-  name: nginx-ingress-control-plane
+  name: ingress-nginx-control-plane
+  namespace: metalk8s-ingress
+---
+apiVersion: v1
+data: null
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: ingress-nginx-control-plane
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 0.41.2
+    helm.sh/chart: ingress-nginx-3.13.0
+    heritage: metalk8s
+  name: ingress-nginx-control-plane-controller
   namespace: metalk8s-ingress
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    app: nginx-ingress
+    app.kubernetes.io/instance: ingress-nginx-control-plane
     app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: nginx-ingress
+    app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.36.3
+    app.kubernetes.io/version: 0.41.2
+    helm.sh/chart: ingress-nginx-3.13.0
     heritage: metalk8s
-    release: nginx-ingress-control-plane
-  name: nginx-ingress-control-plane
+  name: ingress-nginx-control-plane
   namespace: metalk8s-ingress
 rules:
 - apiGroups:
@@ -82,41 +100,50 @@ rules:
   - ingresses/status
   verbs:
   - update
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingressclasses
+  verbs:
+  - get
+  - list
+  - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
-    app: nginx-ingress
+    app.kubernetes.io/instance: ingress-nginx-control-plane
     app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: nginx-ingress
+    app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.36.3
+    app.kubernetes.io/version: 0.41.2
+    helm.sh/chart: ingress-nginx-3.13.0
     heritage: metalk8s
-    release: nginx-ingress-control-plane
-  name: nginx-ingress-control-plane
+  name: ingress-nginx-control-plane
   namespace: metalk8s-ingress
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: nginx-ingress-control-plane
+  name: ingress-nginx-control-plane
 subjects:
 - kind: ServiceAccount
-  name: nginx-ingress-control-plane
+  name: ingress-nginx-control-plane
   namespace: metalk8s-ingress
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   labels:
-    app: nginx-ingress
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: ingress-nginx-control-plane
     app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: nginx-ingress
+    app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.36.3
+    app.kubernetes.io/version: 0.41.2
+    helm.sh/chart: ingress-nginx-3.13.0
     heritage: metalk8s
-    release: nginx-ingress-control-plane
-  name: nginx-ingress-control-plane
+  name: ingress-nginx-control-plane
   namespace: metalk8s-ingress
 rules:
 - apiGroups:
@@ -162,6 +189,14 @@ rules:
   verbs:
   - update
 - apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingressclasses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - ''
   resourceNames:
   - ingress-control-plane-controller-leader-nginx-control-plane
@@ -196,38 +231,39 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   labels:
-    app: nginx-ingress
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: ingress-nginx-control-plane
     app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: nginx-ingress
+    app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.36.3
+    app.kubernetes.io/version: 0.41.2
+    helm.sh/chart: ingress-nginx-3.13.0
     heritage: metalk8s
-    release: nginx-ingress-control-plane
-  name: nginx-ingress-control-plane
+  name: ingress-nginx-control-plane
   namespace: metalk8s-ingress
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: nginx-ingress-control-plane
+  name: ingress-nginx-control-plane
 subjects:
 - kind: ServiceAccount
-  name: nginx-ingress-control-plane
+  name: ingress-nginx-control-plane
   namespace: metalk8s-ingress
 ---
 apiVersion: v1
 kind: Service
 metadata:
+  annotations: null
   labels:
-    app: nginx-ingress
     app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: ingress-nginx-control-plane
     app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: nginx-ingress
+    app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.36.3
-    component: controller
+    app.kubernetes.io/version: 0.41.2
+    helm.sh/chart: ingress-nginx-3.13.0
     heritage: metalk8s
-    release: nginx-ingress-control-plane
-  name: nginx-ingress-control-plane-controller
+  name: ingress-nginx-control-plane-controller
   namespace: metalk8s-ingress
 spec:
   externalIPs:
@@ -238,48 +274,47 @@ spec:
     protocol: TCP
     targetPort: https
   selector:
-    app: nginx-ingress
     app.kubernetes.io/component: controller
-    release: nginx-ingress-control-plane
+    app.kubernetes.io/instance: ingress-nginx-control-plane
+    app.kubernetes.io/name: ingress-nginx
   type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  annotations: {}
   labels:
-    app: nginx-ingress
     app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: ingress-nginx-control-plane
     app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: nginx-ingress
+    app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    chart: nginx-ingress-1.36.3
+    app.kubernetes.io/version: 0.41.2
+    helm.sh/chart: ingress-nginx-3.13.0
     heritage: metalk8s
-    release: nginx-ingress-control-plane
-  name: nginx-ingress-control-plane-controller
+  name: ingress-nginx-control-plane-controller
   namespace: metalk8s-ingress
 spec:
   minReadySeconds: 0
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: nginx-ingress
-      release: nginx-ingress-control-plane
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/instance: ingress-nginx-control-plane
+      app.kubernetes.io/name: ingress-nginx
   template:
     metadata:
       labels:
-        app: nginx-ingress
         app.kubernetes.io/component: controller
-        component: controller
-        release: nginx-ingress-control-plane
+        app.kubernetes.io/instance: ingress-nginx-control-plane
+        app.kubernetes.io/name: ingress-nginx
     spec:
       containers:
       - args:
         - /nginx-ingress-controller
-        - --default-backend-service=metalk8s-ingress/nginx-ingress-default-backend
+        - --publish-service=$(POD_NAMESPACE)/ingress-nginx-control-plane-controller
         - --election-id=ingress-control-plane-controller-leader
         - --ingress-class=nginx-control-plane
-        - --configmap=metalk8s-ingress/nginx-ingress-control-plane-controller
+        - --configmap=metalk8s-ingress/ingress-nginx-control-plane-controller
         - --default-ssl-certificate=metalk8s-ingress/ingress-control-plane-default-certificate
         env:
         - name: POD_NAME
@@ -290,11 +325,18 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: LD_PRELOAD
+          value: /usr/local/lib/libmimalloc.so
         image: '{%- endraw -%}{{ build_image_name("nginx-ingress-controller", False)
-          }}{%- raw -%}:0.30.0'
+          }}{%- raw -%}:v0.41.2'
         imagePullPolicy: IfNotPresent
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /wait-shutdown
         livenessProbe:
-          failureThreshold: 3
+          failureThreshold: 5
           httpGet:
             path: /healthz
             port: 10254
@@ -303,7 +345,7 @@ spec:
           periodSeconds: 10
           successThreshold: 1
           timeoutSeconds: 1
-        name: nginx-ingress-controller
+        name: controller
         ports:
         - containerPort: 80
           name: http
@@ -321,7 +363,10 @@ spec:
           periodSeconds: 10
           successThreshold: 1
           timeoutSeconds: 1
-        resources: {}
+        resources:
+          requests:
+            cpu: 100m
+            memory: 90Mi
         securityContext:
           allowPrivilegeEscalation: true
           capabilities:
@@ -331,11 +376,11 @@ spec:
             - ALL
           runAsUser: 101
       dnsPolicy: ClusterFirst
-      hostNetwork: false
       nodeSelector:
+        kubernetes.io/os: linux
         node-role.kubernetes.io/master: ''
-      serviceAccountName: nginx-ingress-control-plane
-      terminationGracePeriodSeconds: 60
+      serviceAccountName: ingress-nginx-control-plane
+      terminationGracePeriodSeconds: 300
       tolerations:
       - effect: NoSchedule
         key: node-role.kubernetes.io/bootstrap

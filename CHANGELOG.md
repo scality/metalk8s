@@ -30,6 +30,8 @@
   - prometheus-operator from v0.38.1 to v0.43.2
   (PR [#2948](https://github.com/scality/metalk8s/pull/2948))
 
+- Bump `ingress-nginx` chart to 3.13.0 (PR[#2961](https://github.com/scality/metalk8s/pull/2961))
+
 ### Bug fixes
 
 - [#2908](https://github.com/scality/metalk8s/issues/2908) - Make upgrade script

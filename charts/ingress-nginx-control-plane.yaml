@@ -1,0 +1,49 @@
+controller:
+  image:
+    digest: null
+    repository: '{%- endraw -%}{{ build_image_name(\"nginx-ingress-controller\", False) }}{%- raw -%}'
+
+  defaultBackendService: 'metalk8s-ingress/nginx-ingress-default-backend'
+
+  electionID: ingress-control-plane-controller-leader
+
+  ingressClass: nginx-control-plane
+
+  admissionWebhooks:
+    enabled: false
+
+  kind: DaemonSet
+
+  updateStrategy:
+    type: RollingUpdate
+
+  tolerations:
+    - key: "node-role.kubernetes.io/bootstrap"
+      operator: "Exists"
+      effect: "NoSchedule"
+    - key: "node-role.kubernetes.io/master"
+      operator: "Exists"
+      effect: "NoSchedule"
+    - key: "node-role.kubernetes.io/infra"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+  nodeSelector:
+    node-role.kubernetes.io/master: ''
+
+  service:
+    type: ClusterIP
+
+    externalIPs:
+    - '{%- endraw -%}{{ grains.metalk8s.control_plane_ip }}{%- raw -%}'
+
+    enableHttp: false
+
+    ports:
+      https: 8443
+
+  extraArgs:
+    default-ssl-certificate: "metalk8s-ingress/ingress-control-plane-default-certificate"
+
+defaultBackend:
+  enabled: false

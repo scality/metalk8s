@@ -1,0 +1,43 @@
+controller:
+  image:
+    digest: null
+    repository: '{%- endraw -%}{{ build_image_name(\"nginx-ingress-controller\", False) }}{%- raw -%}'
+
+  hostPort:
+    enabled: true
+
+  admissionWebhooks:
+    enabled: false
+
+  kind: DaemonSet
+
+  tolerations:
+    - key: "node-role.kubernetes.io/bootstrap"
+      operator: "Exists"
+      effect: "NoSchedule"
+    - key: "node-role.kubernetes.io/infra"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+  service:
+    type: ClusterIP
+
+  extraArgs:
+    default-ssl-certificate: "metalk8s-ingress/ingress-workload-plane-default-certificate"
+
+defaultBackend:
+  enabled: true
+
+  image:
+    repository: '{%- endraw -%}{{ build_image_name(\"nginx-ingress-defaultbackend-amd64\", False) }}{%- raw -%}'
+
+  tolerations:
+    - key: "node-role.kubernetes.io/bootstrap"
+      operator: "Exists"
+      effect: "NoSchedule"
+    - key: "node-role.kubernetes.io/infra"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+  nodeSelector:
+    node-role.kubernetes.io/infra: ''
