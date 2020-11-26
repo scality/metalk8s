@@ -14,6 +14,9 @@
 
 - Bump `calico` version to 3.17.0 (PR [#2943](https://github.com/scality/metalk8s/pull/2943))
 
+- Bump `fluent-bit` chart to 2.0.1 and `loki` chart to 2.1.0
+  (PR [#2946](https://github.com/scality/metalk8s/pull/2946))
+
 ### Bug fixes
 
 - [#2908](https://github.com/scality/metalk8s/issues/2908) - Make upgrade script
