@@ -4,6 +4,7 @@
 # list see the documentation:
 # http://www.sphinx-doc.org/en/master/config
 
+import datetime
 import os
 import pathlib
 import subprocess
@@ -32,7 +33,7 @@ ON_RTD = os.environ.get('READTHEDOCS') == 'True'
 # -- Project information -----------------------------------------------------
 
 project = 'MetalK8s'
-copyright = '2019, Scality'
+copyright = '{}, Scality'.format(datetime.datetime.now().year)
 author = 'Scality'
 
 # Used for finding the project logo and defining some links
