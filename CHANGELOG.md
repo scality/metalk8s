@@ -17,6 +17,19 @@
 - Bump `fluent-bit` chart to 2.0.1 and `loki` chart to 2.1.0
   (PR [#2946](https://github.com/scality/metalk8s/pull/2946))
 
+- Replace the prometheus-operator chart by the kube-prometheus-stack one and
+  bump the version to 12.2.3.
+  All the container images of this stack have also been bumped:
+  - alertmanager from v0.20.0 to v0.21.0
+  - grafana from 6.7.4 to 7.2.1
+  - k8s-sidecar from 0.1.20 to 1.1.0
+  - kube-state-metrics from v1.9.5 to v1.9.7
+  - node-exporter from v0.18.1 to v1.0.1
+  - prometheus from v2.16.0 to v2.22.1
+  - prometheus-config-reload from v0.38.1 to v0.43.2
+  - prometheus-operator from v0.38.1 to v0.43.2
+  (PR [#2948](https://github.com/scality/metalk8s/pull/2948))
+
 ### Bug fixes
 
 - [#2908](https://github.com/scality/metalk8s/issues/2908) - Make upgrade script
