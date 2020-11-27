@@ -1,3 +1,5 @@
+nameOverride: prometheus-operator
+
 kubeTargetVersionOverride: 1.15.3
 
 commonLabels:
@@ -57,7 +59,7 @@ alertmanager:
     useExistingSecret: true
 
 prometheusOperator:
-  tlsProxy:
+  tls:
     enabled: false
 
   admissionWebhooks:
@@ -82,9 +84,6 @@ prometheusOperator:
 
   prometheusConfigReloaderImage:
     repository: '__image__(prometheus-config-reloader)'
-
-  hyperkubeImage:
-    repository: '__image__(hyperkube)'
 
 
 prometheus:
@@ -124,10 +123,10 @@ grafana:
 
   image:
     repository: '__image__(grafana)'
-    tag: '6.7.4'
 
   sidecar:
-    image: '__image__(k8s-sidecar):0.1.20'
+    image:
+      repository: '__image__(k8s-sidecar)'
 
   nodeSelector:
     node-role.kubernetes.io/infra: ''
@@ -145,7 +144,6 @@ grafana:
     checksum/config: '__slot__:salt:metalk8s_kubernetes.get_object_digest(kind="ConfigMap", apiVersion="v1", namespace="metalk8s-monitoring", name="prometheus-operator-grafana", path="data:grafana.ini")'
 
   replicas: '__var__(grafana.spec.deployment.replicas)'
-
 
   ingress:
     enabled: true
@@ -199,6 +197,10 @@ kube-state-metrics:
 prometheus-node-exporter:
   image:
     repository: '__image__(node-exporter)'
+  extraArgs:
+    - --collector.diskstats.ignored-devices=^(ram|fd)\\d+$
+    - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+)($|/)
+    - --collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$
 
 
 kubeEtcd:
