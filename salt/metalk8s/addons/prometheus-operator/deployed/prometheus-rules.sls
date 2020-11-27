@@ -221,4 +221,33 @@ spec:
       for: 10m
       labels:
         severity: warning
+    - alert: NodeTextFileCollectorScrapeError
+      annotations:
+        description: Node Exporter text file collector failed to scrape.
+        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodetextfilecollectorscrapeerror
+        summary: Node Exporter text file collector failed to scrape.
+      expr: node_textfile_scrape_error{job="node-exporter"} == 1
+      labels:
+        severity: warning
+    - alert: NodeRAIDDegraded
+      annotations:
+        description: RAID array '{{ $labels.device }}' on {{ $labels.instance }} is
+          in degraded state due to {% endraw %}{{ rules.node_exporter.node_raid_degraded.critical.threshold }}{% raw %} or more disks failures. Number of spare drives
+          is insufficient to fix issue automatically.
+        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-noderaiddegraded
+        summary: RAID Array is degraded
+      expr: node_md_disks_required - ignoring (state) (node_md_disks{state="active"})
+        >= {% endraw %}{{ rules.node_exporter.node_raid_degraded.critical.threshold }}{% raw %}
+      for: 15m
+      labels:
+        severity: critical
+    - alert: NodeRAIDDiskFailure
+      annotations:
+        description: At least {% endraw %}{{ rules.node_exporter.node_raid_disk_failure.warning.threshold }}{% raw %} device in RAID array on {{ $labels.instance }} failed.
+          Array '{{ $labels.device }}' needs attention and possibly a disk swap.
+        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-noderaiddiskfailure
+        summary: Failed device in RAID array
+      expr: node_md_disks{state="fail"} >= {% endraw %}{{ rules.node_exporter.node_raid_disk_failure.warning.threshold }}{% raw %}
+      labels:
+        severity: warning
 {%- endraw %}

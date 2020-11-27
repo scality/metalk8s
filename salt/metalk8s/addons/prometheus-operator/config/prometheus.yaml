@@ -50,3 +50,9 @@ spec:
       node_clock_not_synchronising:
         warning:
           threshold: 0
+      node_raid_degraded:
+        critical:
+          threshold: 1
+      node_raid_disk_failure:
+        warning:
+          threshold: 1
