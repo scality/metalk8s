@@ -180,7 +180,7 @@ const SolutionsList = (props) => {
             {isEnvironmentPreparing && (
               <LoaderContainer>
                 <Loader size="small"></Loader>
-                {intl.translate('preparing_environemnt', {
+                {intl.translate('preparing_environment', {
                   envName: environment.name,
                 })}
               </LoaderContainer>
