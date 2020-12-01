@@ -1,5 +1,5 @@
 %global goipath github.com/containerd/containerd
-Version:        1.4.1
+Version:        1.4.3
 
 %if %{defined fedora}
 %gometa
@@ -57,11 +57,11 @@ Provides:       bundled(golang(github.com/BurntSushi/toml)) = v0.3.1
 Provides:       bundled(golang(github.com/cespare/xxhash/v2)) = v2.1.1
 Provides:       bundled(golang(github.com/cilium/ebpf)) = 1c8d4c9ef7759622653a1d319284a44652333b28
 Provides:       bundled(golang(github.com/containerd/aufs)) = 371312c1e31c210a21e49bf3dfd3f31729ed9f2f
-Provides:       bundled(golang(github.com/containerd/btrfs)) = 153935315f4ab9be5bf03650a1341454b05efa5d
+Provides:       bundled(golang(github.com/containerd/btrfs)) = 404b9149801e455c8076f615b06dc0abee0a977a
 Provides:       bundled(golang(github.com/containerd/cgroups)) = 318312a373405e5e91134d8063d04d59768a1bff
 Provides:       bundled(golang(github.com/containerd/console)) = v1.0.0
 Provides:       bundled(golang(github.com/containerd/continuity)) = efbc4488d8fe1bdc16bde3b2d2990d9b3a899165
-Provides:       bundled(golang(github.com/containerd/cri)) = 4e6644c8cf7fb825f62e0007421b7d83dfeab5a1
+Provides:       bundled(golang(github.com/containerd/cri)) = adc0b6a578ed6f646bb24c1c639d65b70e14cccc
 Provides:       bundled(golang(github.com/containerd/fifo)) = f15a3290365b9d2627d189e619ab4008e0069caf
 Provides:       bundled(golang(github.com/containerd/go-cni)) = v1.0.1
 Provides:       bundled(golang(github.com/containerd/go-runc)) = 7016d3ce2328dd2cb1192b2076ebd565c4e8df0c
@@ -100,7 +100,7 @@ Provides:       bundled(golang(github.com/json-iterator/go)) = v1.1.10
 Provides:       bundled(golang(github.com/konsorten/go-windows-terminal-sequences)) = v1.0.3
 Provides:       bundled(golang(github.com/matttproud/golang_protobuf_extensions)) = v1.0.1
 Provides:       bundled(golang(github.com/Microsoft/go-winio)) = v0.4.14
-Provides:       bundled(golang(github.com/Microsoft/hcsshim)) = v0.8.9
+Provides:       bundled(golang(github.com/Microsoft/hcsshim)) = v0.8.10
 Provides:       bundled(golang(github.com/mistifyio/go-zfs)) = f784269be439d704d3dfa1906f45dd848fed2beb
 Provides:       bundled(golang(github.com/modern-go/concurrent)) = 1.0.3
 Provides:       bundled(golang(github.com/modern-go/reflect2)) = v1.0.1
@@ -120,7 +120,7 @@ Provides:       bundled(golang(github.com/sirupsen/logrus)) = v1.6.0
 Provides:       bundled(golang(github.com/syndtr/gocapability)) = d98352740cb2c55f81556b63d4a1ec64c5a319c2
 Provides:       bundled(golang(github.com/tchap/go-patricia)) = v2.2.6
 Provides:       bundled(golang(github.com/urfave/cli)) = v1.22.1
-Provides:       bundled(golang(github.com/willf/bitset)) = d5bec3311243426a3c6d1b7a795f24b17c686dbb
+Provides:       bundled(golang(github.com/willf/bitset)) = v1.1.11
 Provides:       bundled(golang(go.etcd.io/bbolt)) = v1.3.5
 Provides:       bundled(golang(golang.org/x/crypto)) = 75b288015ac94e66e3d6715fb68a9b41bf046ec2
 Provides:       bundled(golang(golang.org/x/net)) = ab34263943818b32f575efc978a3d24e80b04bd7
@@ -136,14 +136,14 @@ Provides:       bundled(golang(gopkg.in/inf.v0)) = v0.9.1
 Provides:       bundled(golang(gopkg.in/square/go-jose.v2)) = v2.3.1
 Provides:       bundled(golang(gopkg.in/yaml.v2)) = v2.2.8
 Provides:       bundled(golang(gotest.tools/v3)) = v3.0.2
-Provides:       bundled(golang(k8s.io/apimachinery)) = v0.19.0-rc.4
-Provides:       bundled(golang(k8s.io/apiserver)) = v0.19.0-rc.4
-Provides:       bundled(golang(k8s.io/api)) = v0.19.0-rc.4
-Provides:       bundled(golang(k8s.io/client-go)) = v0.19.0-rc.4
-Provides:       bundled(golang(k8s.io/cri-api)) = v0.19.0-rc.4
+Provides:       bundled(golang(k8s.io/apimachinery)) = v0.19.4
+Provides:       bundled(golang(k8s.io/apiserver)) = v0.19.4
+Provides:       bundled(golang(k8s.io/api)) = v0.19.4
+Provides:       bundled(golang(k8s.io/client-go)) = v0.19.4
+Provides:       bundled(golang(k8s.io/cri-api)) = v0.19.4
 Provides:       bundled(golang(k8s.io/klog/v2)) = v2.2.0
-Provides:       bundled(golang(k8s.io/utils)) = 2df71ebbae66f39338aed4cd0bb82d2212ee33cc
-Provides:       bundled(golang(sigs.k8s.io/structured-merge-diff/v3)) = v3.0.0
+Provides:       bundled(golang(k8s.io/utils)) = d5654de09c73da55eb19ae4ab4f734f7a61747a6
+Provides:       bundled(golang(sigs.k8s.io/structured-merge-diff/v4)) = v4.0.1
 Provides:       bundled(golang(sigs.k8s.io/yaml)) = v1.2.0
 
 
@@ -219,6 +219,9 @@ install -D -p -m 0644 %{S:2} %{buildroot}%{_sysconfdir}/containerd/config.toml
 
 
 %changelog
+* Tue Dec 1 2020 Nicolas Trangez <nicolas.trangez@scality.com> - 1.4.3-1
+- Latest upstream
+
 * Fri Oct 16 2020 Nicolas Trangez <nicolas.trangez@scality.com> - 1.4.1-1
 - Update to 1.4.1, based on containerd-1.4.1-1.fc34
 

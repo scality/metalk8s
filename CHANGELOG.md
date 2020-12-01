@@ -4,8 +4,8 @@
 ### Enhancements
 - Bump Kubernetes version to 1.18.12 (PR[#2947](https://github.com/scality/metalk8s/pull/2947))
 
-- [#2855](https://github.com/scality/metalk8s/issues/2855) - Bump `containerd`
-  version to 1.4.1 (PR [#2869](https://github.com/scality/metalk8s/pull/2869))
+- [#2955](https://github.com/scality/metalk8s/issues/2955) - Bump `containerd`
+  version to 1.4.3 (PR [#2956](https://github.com/scality/metalk8s/pull/2956)).
 
 - Bump `coredns` version to 1.6.7 (PR [#2816](https://github.com/scality/metalk8s/pull/2816))
 
