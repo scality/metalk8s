@@ -22,7 +22,7 @@ def _load_solutions(bootstrap_id):
 
     try:
         result['config'] = __salt__['metalk8s_solutions.read_config']()
-    except (IOError, CommandExecutionError) as exc:
+    except CommandExecutionError as exc:
         result['config'] = __utils__['pillar_utils.errors_to_dict']([
             "Error when reading Solutions config file: {}".format(exc)
         ])

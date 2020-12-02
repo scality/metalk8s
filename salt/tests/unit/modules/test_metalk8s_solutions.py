@@ -39,18 +39,18 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["read_config"])
     def test_read_config(self, create=False, config=None, result=None,
-                         raises=False):
+                         raises=False, errcode=errno.ENOENT):
         """
         Tests the return of `read_config` function
         """
         open_mock = mock_open(read_data=config)
         if not config:
-            open_mock.side_effect = IOError(
-                errno.ENOENT, "No such file or directory"
-            )
+            open_mock.side_effect = IOError(errcode, "Some IO error")
+
+        write_mock = MagicMock()
 
         with patch("metalk8s_solutions.open", open_mock), \
-                patch("metalk8s_solutions._write_config_file", MagicMock()):
+                patch("metalk8s_solutions._write_config_file", write_mock):
             if raises:
                 self.assertRaisesRegexp(
                     CommandExecutionError,
@@ -58,16 +58,14 @@ class Metalk8sSolutionsTestCase(TestCase, LoaderModuleMockMixin):
                     metalk8s_solutions.read_config
                 )
             else:
+                self.assertEqual(
+                    metalk8s_solutions.read_config(create=create),
+                    result
+                )
                 if create:
-                    self.assertEqual(
-                        metalk8s_solutions.read_config(create),
-                        result
-                    )
+                    write_mock.assert_called_once()
                 else:
-                    self.assertEqual(
-                        metalk8s_solutions.read_config(),
-                        result
-                    )
+                    write_mock.assert_not_called()
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["configure_archive"])
     def test_configure_archive(self, archive, removed=None, config=None,

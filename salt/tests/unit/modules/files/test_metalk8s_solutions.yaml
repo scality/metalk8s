@@ -1,7 +1,7 @@
 read_config:
   # Ok - no solutions configuration file, create set to True
   - create: True
-    result:
+    result: &default_config
       kind: SolutionsConfiguration
       apiVersion: solutions.metalk8s.scality.com/v1alpha1
       archives: []
@@ -21,9 +21,17 @@ read_config:
         - /tmp/my-solution.iso
       active:
         my-solution: 1.0.0
-  # Nok - no solutions configuration file, create left to default (False)
-  - raises: True
+  # Ok - no solutions configuration file, create left to default (False)
+  - result: *default_config
+  # Nok - invalid YAML
+  - config: |-
+      This: cannot: work
+    raises: True
     result: 'Failed to load ".*": .*'
+  # Nok - other IOError
+  - errcode: 21 # EISDIR
+    raises: True
+    result: 'Failed to load ".*": \[Errno 21\] .*'
   # Nok - no solutions configuration kind
   - raises: True
     config: |-

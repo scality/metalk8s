@@ -21,6 +21,13 @@ SUPPORTED_CONFIG_VERSIONS = [
     'solutions.metalk8s.scality.com/{}'.format(version)
     for version in ['v1alpha1']
 ]
+DEFAULT_CONFIG = {
+    'apiVersion': SUPPORTED_CONFIG_VERSIONS[0],
+    'kind': CONFIG_KIND,
+    'archives': [],
+    'active': {},
+}
+
 # https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#dns-label-names
 # - contain at most 63 characters
 # - contain only lowercase alphanumeric characters or '-'
@@ -40,10 +47,11 @@ def _load_config_file(create=False):
         with open(CONFIG_FILE, 'r') as fd:
             return yaml.safe_load(fd)
     except IOError as exc:
-        if create and exc.errno == errno.ENOENT:
-            return _create_config_file()
-        msg = 'Failed to load "{}": {}'.format(CONFIG_FILE, str(exc))
-        raise CommandExecutionError(message=msg)
+        if exc.errno == errno.ENOENT:
+            if create:
+                _write_config_file(DEFAULT_CONFIG)
+            return DEFAULT_CONFIG
+        raise
 
 
 def _write_config_file(data):
@@ -55,17 +63,6 @@ def _write_config_file(data):
             CONFIG_FILE, exc
         )
         raise CommandExecutionError(message=msg)
-
-
-def _create_config_file():
-    default_data = {
-        'apiVersion': SUPPORTED_CONFIG_VERSIONS[0],
-        'kind': CONFIG_KIND,
-        'archives': [],
-        'active': {},
-    }
-    _write_config_file(default_data)
-    return default_data
 
 
 def read_config(create=False):
@@ -85,10 +82,15 @@ def read_config(create=False):
       active:
         solution-name: X.Y.Z-suffix (or 'latest')
 
-    If `create` is set to True, this will create an empty configuration file
-    if it does not exist yet.
+    If `create` is set to True and the file does not exist, this will create
+    a configuration with default values (with `archives` and `active` empty).
     """
-    config = _load_config_file(create=create)
+    try:
+        config = _load_config_file(create=create)
+    except Exception as exc:
+        raise CommandExecutionError(
+            'Failed to load "{}": {}'.format(CONFIG_FILE, str(exc))
+        )
 
     if config.get('kind') != 'SolutionsConfiguration':
         raise CommandExecutionError(
