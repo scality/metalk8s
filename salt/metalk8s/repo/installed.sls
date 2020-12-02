@@ -17,12 +17,16 @@
 {%- set image_fullname = docker_repository ~ '/' ~ image_name ~ ':' ~ image_version %}
 
 include:
+  - metalk8s.container-engine.containerd
   - .configured
 
 Inject nginx image:
   containerd.image_managed:
     - name: {{ image_fullname }}
     - archive_path: {{ archives[saltenv].path }}/images/{{ image_name }}-{{ image_version }}.tar
+    - require:
+      - service: Start and enable containerd
+      - metalk8s_package_manager: Install and configure cri-tools
 
 Install repositories manifest:
   metalk8s.static_pod_managed:
