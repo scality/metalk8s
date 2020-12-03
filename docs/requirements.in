@@ -2,11 +2,13 @@
 # Added here because `pip-compile` doesn't work cross-platform.
 colorama >= 0.3.9
 plantuml >= 0.2
+PyYAML >= 5.3.1
 Sphinx >= 3.0.4
 sphinx_rtd_theme >= 0.3
 sphinxcontrib_github_alt >= 1.0
 sphinxcontrib-plantuml >= 0.16.1
 sphinxcontrib-spelling >= 4.1
 sphinx-autobuild >= 0.7.1
+-e git+https://github.com/scality/sphinx-tools.git@v3.0#egg=sphinx_scality
 
 doc8 >= 0.8.0

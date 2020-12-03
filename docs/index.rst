@@ -24,10 +24,8 @@ Welcome to MetalK8s's documentation!
    developer/index
    glossary
 
-
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
