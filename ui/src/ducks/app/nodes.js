@@ -476,7 +476,7 @@ export function* fetchNodesIPsInterface() {
     //TODO: We're missing proper error-handling here.
   }
 
-  if (!result.error) {
+  if (result && !result.error) {
     const nodesIPsInfo = result.return[0];
     const IPsInfo = Object.keys(nodesIPsInfo)?.reduce((ipsInfo, nodeName) => {
       ipsInfo[nodeName] = nodesCPWPIPsInterface(nodesIPsInfo[nodeName]);
