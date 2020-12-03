@@ -118,6 +118,12 @@ prometheus:
             matchLabels:
               app.kubernetes.io/name: prometheus-operator-prometheus
 
+    ## How long to retain metrics
+    retention: '__var__(prometheus.spec.config.retention_time)'
+
+    ## Maximum size of metrics
+    retentionSize: '__escape__({{ prometheus.spec.config.retention_size | string }})'
+
 grafana:
   adminPassword: admin
 
