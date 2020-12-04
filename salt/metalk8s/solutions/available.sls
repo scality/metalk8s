@@ -6,16 +6,17 @@
 
 {%- from "metalk8s/map.jinja" import repo with context %}
 
-{%- set available = pillar.metalk8s.solutions.available | d({}) %}
+{%- set available = salt.metalk8s_solutions.list_available() %}
+{%- set active = pillar.metalk8s.solutions.active | d({}) %}
 {%- set configured = pillar.metalk8s.solutions.config.archives | d([]) %}
 
-{%- if '_errors' in pillar.metalk8s.solutions.config %}
+{%- if '_errors' in pillar.metalk8s.solutions %}
 Cannot proceed with mounting of Solution archives:
   test.fail_without_changes:
-    - comment: "Errors: {{ pillar.metalk8s.solutions.config._errors | join('; ') }}"
+    - comment: "Errors: {{ pillar.metalk8s.solutions._errors | join('; ') }}"
 
 {%- elif not available and not configured %}
-No Solution found in configuration:
+No Solution to manage:
   test.succeed_without_changes
 
 {%- else %}
@@ -80,7 +81,7 @@ Expose container images for Solution {{ display_name }}:
     {%- for info in versions %}
       {%- if info.archive not in configured %}
         {%- set display_name = info.name ~ ' ' ~ info.version %}
-        {%- if info.active %}
+        {%- if active.get(machine_name) == info.version %}
 Cannot remove archive for active Solution {{ display_name }}:
   test.fail_without_changes:
     - name: Solution {{ display_name }} is still active, cannot remove it

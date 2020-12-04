@@ -70,8 +70,7 @@ Apply Operator Deployment for Solution {{ solution.name }}:
 
 {%- endmacro %}
 
-{%- if '_errors' in pillar.metalk8s.solutions.environments %}
-
+{%- if '_errors' in pillar.metalk8s.solutions %}
 Cannot proceed with preparation of environment {{ env_name }}:
   test.configurable_test_state:
     - name: Cannot proceed due to pillar errors
@@ -89,14 +88,18 @@ Cannot prepare environment {{ env_name }}:
     - name: Environment {{ env_name }} does not exist
 
   {%- else %}
+    {%- set available = salt.saltutil.cmd(
+          tgt=pillar.bootstrap_id,
+          fun='metalk8s_solutions.list_available',
+      )[pillar.bootstrap_id]['ret']
+    %}
     {%- set env_namespaces = environment.get('namespaces', {}) %}
     {%- if env_namespaces %}
       {%- for namespace, ns_conf in env_namespaces.items() %}
         {%- set env_config = ns_conf.get('config', {}) %}
         {%- if env_config %}
           {%- for name, version in env_config.items() %}
-            {%- set available_versions =
-                    pillar.metalk8s.solutions.available.get(name, []) %}
+            {%- set available_versions = available.get(name, []) %}
             {%- if not available_versions %}
 
 Cannot deploy Solution {{ name }} for environment {{ env_name }}:

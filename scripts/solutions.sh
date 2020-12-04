@@ -433,6 +433,7 @@ add_solution() {
 
     local -ra pillar=(
         "{"
+        "  'bootstrap_id': '$(get_salt_minion_id)',"
         "  'orchestrate': {"
         "    'env_name': '$NAME'"
         "  }"
@@ -474,6 +475,7 @@ delete_solution() {
 
     local -ra pillar=(
         "{"
+        "  'bootstrap_id': '$(get_salt_minion_id)',"
         "  'orchestrate': {"
         "    'env_name': '$NAME'"
         "  }"

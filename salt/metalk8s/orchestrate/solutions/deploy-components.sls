@@ -93,7 +93,12 @@ Cannot proceed with deployment of Solution cluster-wide components:
 {%- else %}
   {# Dict of (name, version) pairs, where version can be set to 'latest' #}
   {%- set desired = pillar.metalk8s.solutions.config.active %}
-  {%- set available = pillar.metalk8s.solutions.available %}
+  {%- set active = pillar.metalk8s.solutions.active %}
+  {%- set available = salt.saltutil.cmd(
+          tgt=pillar.bootstrap_id,
+          fun='metalk8s_solutions.list_available',
+      )[pillar.bootstrap_id]['ret']
+  %}
 
   {%- for name, versions in available.items() %}
     {%- set desired_version = desired.get(name) %}
@@ -103,12 +108,11 @@ Cannot proceed with deployment of Solution cluster-wide components:
 
     {%- if not desired_version %}
       {# Solution is not present in config.active #}
-      {%- set active_versions = versions
-                                | selectattr('active', 'equalto', true)
-                                | list %}
-      {%- if active_versions %}
-        {# There should only be one #}
-        {%- set solution = active_versions | first %}
+      {%- set active_version = active.get(name) %}
+      {%- if active_version %}
+        {%- set solution = versions
+                           | selectattr('version', 'equalto', active_version)
+                           | first %}
         {{- remove_solution_components(solution) }}
       {%- endif %}
     {%- else %}

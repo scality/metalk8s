@@ -12,7 +12,7 @@ def __virtual__():
     return __virtualname__
 
 
-def _load_solutions(bootstrap_id):
+def _load_solutions():
     """Load Solutions from ConfigMap and config file."""
     result = {
         'available': {},
@@ -27,42 +27,12 @@ def _load_solutions(bootstrap_id):
             "Error when reading Solutions config file: {}".format(exc)
         ])
 
-    errors = []
     try:
-        available_ret = __salt__['saltutil.cmd'](
-            tgt=bootstrap_id,
-            fun='metalk8s_solutions.list_available',
-        )[bootstrap_id]
-        if available_ret['retcode'] != 0:
-            raise Exception('[{}] {}'.format(
-                available_ret['retcode'],
-                available_ret['ret']
-            ))
-
-        result['available'] = available_ret['ret']
+        result['active'] = __salt__['metalk8s_solutions.list_active']()
     except Exception as exc:
-        errors.append(
-            "Error when listing available Solutions: {}".format(exc)
-        )
-
-    try:
-        active = __salt__['metalk8s_solutions.list_active']()
-    except Exception as exc:
-        errors.append(
+        result['active'] = __utils__['pillar_utils.errors_to_dict']([
             "Error when listing active Solution versions: {}".format(exc)
-        )
-
-    if errors:
-        result['available'].update(
-            __utils__['pillar_utils.errors_to_dict'](errors)
-        )
-    else:
-        # Set `active` flag on active Solution versions
-        for solution, versions in result['available'].items():
-            active_version = active.get(solution)
-            for version_info in versions:
-                version_info['active'] = \
-                    version_info['version'] == active_version
+        ])
 
     try:
         result['environments'] = \
@@ -72,36 +42,11 @@ def _load_solutions(bootstrap_id):
             "Error when listing Solution Environments: {}".format(exc)
         ])
 
-    for key in ['available', 'config', 'environments']:
+    for key in ['active', 'config', 'environments']:
         __utils__['pillar_utils.promote_errors'](result, key)
 
     return result
 
 
 def ext_pillar(minion_id, pillar):
-    # NOTE: this ext_pillar relies on the `metalk8s_nodes` ext_pillar to find
-    # the Bootstrap minion ID, for the remote execution of
-    # `metalk8s_solutions.list_available`.
-    errors = []
-    pillar_nodes = pillar.get('metalk8s', {}).get('nodes', {})
-    if '_errors' in pillar_nodes:
-        errors.append("Pillar 'metalk8s:nodes' has errors")
-    else:
-        bootstrap_nodes = [
-            node_name for node_name, node_info in pillar_nodes.items()
-            if 'bootstrap' in node_info['roles']
-        ]
-        try:
-            bootstrap_id, = bootstrap_nodes
-        except ValueError:
-            errors.append(
-                'Must have one and only one bootstrap Node (found {})'.format(
-                    len(bootstrap_nodes)
-                )
-            )
-
-    if errors:
-        error_dict = __utils__['pillar_utils.errors_to_dict'](errors)
-        return {"metalk8s": {"solutions": error_dict}}
-
-    return {"metalk8s": {'solutions': _load_solutions(bootstrap_id)}}
+    return {"metalk8s": {'solutions': _load_solutions()}}
