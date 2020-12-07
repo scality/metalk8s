@@ -5,7 +5,7 @@ import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import styled from 'styled-components';
 import Loader from '../components/Loader';
-import { Input, Button, Breadcrumb, Banner, Tooltip } from '@scality/core-ui';
+import { Input, Button, Banner, Tooltip, Checkbox } from '@scality/core-ui';
 import isEmpty from 'lodash.isempty';
 import {
   fetchStorageClassAction,
@@ -18,11 +18,6 @@ import {
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
 import { SPARSE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
-import {
-  BreadcrumbContainer,
-  BreadcrumbLabel,
-  StyledLink,
-} from '../components/BreadcrumbStyle';
 import { sizeUnits, useQuery } from '../services/utils';
 import { intl } from '../translations/IntlGlobalProvider';
 
@@ -159,7 +154,7 @@ const CreateVolume = (props) => {
 
   const nodes = useSelector((state) => state.app.nodes.list);
   const storageClass = useSelector((state) => state.app.volumes.storageClass);
-  const theme = useSelector((state) => state.config.theme);
+
   const api = useSelector((state) => state.config.api);
 
   useEffect(() => {
@@ -252,23 +247,7 @@ const CreateVolume = (props) => {
   ) : (
     <PageContainer>
       <CreateVolumeFormContainer>
-        <BreadcrumbContainer>
-          <Breadcrumb
-            activeColor={theme.brand.secondary}
-            paths={[
-              <BreadcrumbLabel title={intl.translate('platform')}>
-                {intl.translate('platform')}
-              </BreadcrumbLabel>,
-              <StyledLink to="/volumes">
-                {intl.translate('volumes')}
-              </StyledLink>,
-              <BreadcrumbLabel>
-                {intl.translate('create_new_volume')}
-              </BreadcrumbLabel>,
-            ]}
-          />
-        </BreadcrumbContainer>
-
+        <TitlePage>Create New Volume</TitlePage>
         {isStorageClassExist ? null : (
           <Banner
             variant="warning"
