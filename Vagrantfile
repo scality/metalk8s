@@ -182,8 +182,9 @@ RHSM_UNREGISTER = 'subscription-manager unregister || true'
 
 EXPORT_KUBECONFIG = 'echo KUBECONFIG=/etc/kubernetes/admin.conf >> /etc/environment'
 
-# To support VirtualBox linked clones
-Vagrant.require_version(">= 1.8")
+# To support CentOS / RHEL 8, we need at least a version 2.2
+# https://github.com/hashicorp/vagrant/commit/ff021fcab404c95e52566bfca4207da9c0101e01
+Vagrant.require_version(">= 2.2")
 
 def declare_bootstrap(machine, os_data)
   machine.vm.box = os_data[:name]
@@ -241,6 +242,10 @@ Vagrant.configure("2") do |config|
       name: 'centos/7',
       version: '1811.02'
     },
+    centos_8: {
+      name: 'centos/8',
+      version: '2011.0'
+    },
     ubuntu: {
       name: 'ubuntu/bionic64',
       version: '20190514.0.0',
@@ -277,6 +282,7 @@ Vagrant.configure("2") do |config|
     }
   }
 
+
   config.vm.box = os_data[:centos][:name]
   config.vm.box_version = os_data[:centos][:version]
 
@@ -300,6 +306,10 @@ Vagrant.configure("2") do |config|
     declare_bootstrap machine, os_data[:centos]
   end
 
+  config.vm.define :bootstrap_centos_8, autostart: false do |machine|
+    declare_bootstrap machine, os_data[:centos_8]
+  end
+
   config.vm.define :bootstrap_ubuntu, autostart: false do |machine|
     declare_bootstrap machine, os_data[:ubuntu]
   end
@@ -310,7 +320,7 @@ Vagrant.configure("2") do |config|
 
   os_data.each do |os, os_data|
     (1..5).each do |i|
-      node_name = "#{os}#{i}"
+      node_name = "#{os}-#{i}"
       config.vm.define node_name, autostart: false do |node|
 
         node.vm.box = os_data[:name]
