@@ -161,6 +161,7 @@ install_packages() {
         redhat)
             local -a yum_opts=(
                 '--assumeyes'
+                --setopt 'skip_missing_names_on_install=False'
             )
             "$YUM" install "${yum_opts[@]}" "${packages[@]}"
             ;;
