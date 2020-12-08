@@ -106,13 +106,15 @@ Create kubelet config file:
         port: 10250
         registryBurst: 10
         registryPullQPS: 5
-        resolvConf: /etc/resolv.conf
-        rotateCertificates: true
+        rotateCertificates: false
         runtimeRequestTimeout: 2m0s
         serializeImagePulls: true
         streamingConnectionIdleTimeout: 4h0m0s
         syncFrequency: 1m0s
         volumeStatsAggPeriod: 1m0s
+{%- for key, value in kubelet.config.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
     - require:
       - metalk8s_package_manager: Install kubelet
     - watch_in:
