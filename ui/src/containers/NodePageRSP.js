@@ -26,7 +26,7 @@ import NodePageMetricsTab from './NodePageMetricsTab';
 import NodePageVolumesTab from '../components/NodePageVolumesTab';
 import NodePagePodsTab from '../components/NodePagePodsTab';
 import NodePageDetailsTab from '../components/NodeDetailsTab';
-import { TextBadge } from '../components/CommonLayoutStyle';
+import { TextBadge, NoInstanceSelected } from '../components/CommonLayoutStyle';
 import {
   queryTimeSpansCodes,
   NODE_ALERTS_GROUP,
@@ -107,6 +107,7 @@ const NodePageRSP = (props) => {
     nodes?.find((node) => node.name === name)?.internalIP ?? '';
   const controlPlaneInterface = nodesIPsInfo[name]?.controlPlane?.interface;
   const workloadPlaneInterface = nodesIPsInfo[name]?.workloadPlane?.interface;
+  const currentNode = nodeTableData?.find((node) => node.name.name === name);
 
   useEffect(() => {
     dispatch(
@@ -197,7 +198,7 @@ const NodePageRSP = (props) => {
     },
   ];
 
-  return (
+  return name && currentNode ? (
     <NodePageRSPContainer>
       <Tabs items={items}>
         <Switch>
@@ -241,6 +242,12 @@ const NodePageRSP = (props) => {
         </Switch>
       </Tabs>
     </NodePageRSPContainer>
+  ) : (
+    <NoInstanceSelected>
+      {name
+        ? `Node ${name} ${intl.translate('not_found')}`
+        : intl.translate('no_node_selected')}
+    </NoInstanceSelected>
   );
 };
 
