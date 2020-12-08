@@ -2,11 +2,7 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
-import {
-  fontSize,
-  padding,
-  fontWeight,
-} from '@scality/core-ui/dist/style/theme';
+import { padding } from '@scality/core-ui/dist/style/theme';
 import { LineChart, Loader, Dropdown, Button } from '@scality/core-ui';
 import { updateNodeStatsFetchArgumentAction } from '../ducks/app/monitoring';
 import {
@@ -15,11 +11,19 @@ import {
   yAxisWriteRead,
   yAxisInOut,
 } from '../components/LinechartSpec';
-import { NodeTab } from '../components/CommonLayoutStyle';
+import {
+  NodeTab,
+  MetricsActionContainer,
+  GraphsContainer,
+  RowGraphContainer,
+  GraphTitle,
+  GraphWrapper,
+} from '../components/CommonLayoutStyle';
 import {
   addMissingDataPoint,
   fromUnixTimestampToDate,
   useQuery,
+  useDynamicChartSize,
 } from '../services/utils';
 import {
   LAST_SEVEN_DAYS,
@@ -36,49 +40,8 @@ import {
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
-const GraphsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  height: 78vh;
-  // Change the background color of to primary, should change it in core-ui.
-  .sc-vegachart > svg {
-    background-color: ${(props) => props.theme.brand.primary} !important;
-  }
-`;
-
-const GraphTitle = styled.div`
-  font-size: ${fontSize.small};
-  font-weight: ${fontWeight.bold};
-  color: ${(props) => props.theme.brand.textSecondary};
-  padding: ${padding.small} 0 0 ${padding.larger};
-`;
-
-const RowGraphContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  padding-left: 3px;
-`;
-
-const Graph = styled.div`
-  min-width: 308px;
-  padding-right: 40px;
-`;
-
 const LoaderContainer = styled(Loader)`
   padding-left: ${padding.larger};
-`;
-
-const ActionContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  padding: ${padding.large} ${padding.base};
-
-  .sc-button {
-    background-color: ${(props) => props.theme.brand.info};
-  }
 `;
 
 const DropdownContainer = styled.div`
@@ -108,6 +71,7 @@ const NodePageMetricsTab = (props) => {
   const metricsTimeSpan = useSelector(
     (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
   );
+  const [graphWidth, graphHeight] = useDynamicChartSize('graph_container');
 
   // To redirect to the right Node(Detailed) dashboard in Grafana
   const unameInfos = useSelector((state) => state.app.monitoring.unameInfo);
@@ -297,7 +261,7 @@ const NodePageMetricsTab = (props) => {
 
   return (
     <NodeTab>
-      <ActionContainer>
+      <MetricsActionContainer>
         <Button
           text={intl.translate('advanced_metrics')}
           variant={'base'}
@@ -317,122 +281,122 @@ const NodePageMetricsTab = (props) => {
             data-cy="metrics_timespan_selection"
           />
         </DropdownContainer>
-      </ActionContainer>
-      <GraphsContainer>
+      </MetricsActionContainer>
+      <GraphsContainer id="graph_container">
         <RowGraphContainer>
-          <Graph>
+          <GraphWrapper>
             <GraphTitle>CPU USAGE (%)</GraphTitle>
-            {nodeStatsData['cpuUsage'].length !== 0 ? (
+            {nodeStatsData['cpuUsage'].length !== 0 && graphWidth ? (
               <LineChart
                 id={'node_cpu_usage_id'}
                 data={nodeStatsData['cpuUsage']}
                 xAxis={xAxis}
                 yAxis={yAxisUsage}
                 color={colorUsage}
-                width={window.innerWidth / 4 - 60}
-                height={window.innerHeight / 6 - 30}
+                width={graphWidth}
+                height={graphHeight}
                 tooltip={false}
                 lineConfig={lineConfig}
               />
             ) : (
               <LoaderContainer size="small"></LoaderContainer>
             )}
-          </Graph>
-          <Graph>
+          </GraphWrapper>
+          <GraphWrapper>
             <GraphTitle>CPU SYSTEM LOAD (%)</GraphTitle>
-            {nodeStatsData['systemLoad'].length !== 0 ? (
+            {nodeStatsData['systemLoad'].length !== 0 && graphWidth ? (
               <LineChart
                 id={'node_system_load_id'}
                 data={nodeStatsData['systemLoad']}
                 xAxis={xAxis}
                 yAxis={yAxis}
                 color={colorSystemLoad}
-                width={window.innerWidth / 4 - 60}
-                height={window.innerHeight / 6 - 30}
+                width={graphWidth}
+                height={graphHeight}
                 tooltip={false}
                 lineConfig={lineConfig}
               />
             ) : (
               <LoaderContainer size="small"></LoaderContainer>
             )}
-          </Graph>
+          </GraphWrapper>
         </RowGraphContainer>
         <RowGraphContainer>
-          <Graph>
+          <GraphWrapper>
             <GraphTitle>MEMORY (%)</GraphTitle>
-            {nodeStatsData['memory'].length !== 0 ? (
+            {nodeStatsData['memory'].length !== 0 && graphWidth ? (
               <LineChart
                 id={'node_memory_id'}
                 data={nodeStatsData['memory']}
                 xAxis={xAxis}
                 yAxis={yAxisUsage}
                 color={colorMemory}
-                width={window.innerWidth / 4 - 60}
-                height={window.innerHeight / 6 - 30}
+                width={graphWidth}
+                height={graphHeight}
                 tooltip={false}
                 lineConfig={lineConfig}
               />
             ) : (
               <LoaderContainer size="small"></LoaderContainer>
             )}
-          </Graph>
-          <Graph>
+          </GraphWrapper>
+          <GraphWrapper>
             <GraphTitle>IOPS</GraphTitle>
-            {iopsData.length !== 0 ? (
+            {iopsData.length !== 0 && graphWidth ? (
               <LineChart
                 id={'node_IOPS_id'}
                 data={iopsData}
                 xAxis={xAxis}
                 yAxis={yAxisWriteRead}
                 color={colorsWriteRead}
-                width={window.innerWidth / 4 - 60}
-                height={window.innerHeight / 6 - 30}
+                width={graphWidth}
+                height={graphHeight}
                 tooltip={false}
                 lineConfig={lineConfig}
               />
             ) : (
               <LoaderContainer size="small"></LoaderContainer>
             )}
-          </Graph>
+          </GraphWrapper>
         </RowGraphContainer>
 
         <RowGraphContainer>
-          <Graph>
+          <GraphWrapper>
             <GraphTitle>CONTROL PLANE BANDWIDTH (MB)</GraphTitle>
-            {controlPlaneNetworkBandwidthData.length !== 0 ? (
+            {controlPlaneNetworkBandwidthData.length !== 0 && graphWidth ? (
               <LineChart
                 id={'node_control_plane_bandwidth_id'}
                 data={controlPlaneNetworkBandwidthData}
                 xAxis={xAxis}
                 yAxis={yAxisInOut}
                 color={colorsInOut}
-                width={window.innerWidth / 4 - 60}
-                height={window.innerHeight / 6 - 30}
+                width={graphWidth}
+                height={graphHeight}
                 tooltip={false}
                 lineConfig={lineConfig}
               />
             ) : (
               <LoaderContainer size="small"></LoaderContainer>
             )}
-          </Graph>
-          <Graph>
+          </GraphWrapper>
+          <GraphWrapper>
             <GraphTitle>WORKLOAD PLANE BANDWIDTH (MB)</GraphTitle>
-            {workloadPlaneNetworkBandwidthData.length !== 0 ? (
+            {workloadPlaneNetworkBandwidthData.length !== 0 && graphWidth ? (
               <LineChart
                 id={'node_workload_plane_bandwidth_id'}
                 data={workloadPlaneNetworkBandwidthData}
                 xAxis={xAxis}
                 yAxis={yAxisInOut}
                 color={colorsInOut}
-                width={window.innerWidth / 4 - 60}
-                height={window.innerHeight / 6 - 30}
+                width={graphWidth}
+                height={graphHeight}
                 tooltip={false}
                 lineConfig={lineConfig}
               />
             ) : (
               <LoaderContainer size="small"></LoaderContainer>
             )}
-          </Graph>
+          </GraphWrapper>
         </RowGraphContainer>
       </GraphsContainer>
     </NodeTab>

@@ -57,6 +57,11 @@ const VolumeListContainer = styled.div`
       width: 120px;
       height: 10px;
     }
+
+    thead tr[role='row'] {
+      border-bottom: 1px solid ${(props) => props.theme.brand.border};
+    }
+
     tr {
       :last-child {
         td {
@@ -231,7 +236,7 @@ function Table({
 
         if (size1 && size2) {
           return allSizeUnitsToBytes(size1) - allSizeUnitsToBytes(size2);
-        }
+        } else return !size1 ? -1 : 1;
       },
       status: (row1, row2) => {
         const weights = {};
@@ -539,7 +544,7 @@ const VolumeListTable = (props) => {
   );
   const nodeCol = { Header: 'Node', accessor: 'node' };
   if (isNodeColumn) {
-    columns.splice(1, 0, nodeCol);
+    columns.splice(2, 0, nodeCol);
   }
 
   // handle the row selection by updating the URL

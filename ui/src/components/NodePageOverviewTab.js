@@ -45,7 +45,7 @@ const NodeNameContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 0 ${padding.larger} ${padding.large};
+  padding: ${padding.large} 0 ${padding.larger} ${padding.large};
 `;
 
 const NodeNameStatusContainer = styled.div``;

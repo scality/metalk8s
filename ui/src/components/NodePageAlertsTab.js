@@ -15,6 +15,11 @@ import { NodeTab } from './CommonLayoutStyle';
 import { STATUS_WARNING, STATUS_CRITICAL } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
+// Overriding overflow for the Tab since the table components has inner scroll
+const NodeAlertsTab = styled(NodeTab)`
+  overflow: hidden;
+`;
+
 const ActiveAlertsTableContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   padding: 1rem;
@@ -223,7 +228,7 @@ const NodePageAlertsTab = (props) => {
   );
 
   return (
-    <NodeTab>
+    <NodeAlertsTab>
       <TitleContainer>
         <ActiveAlertsText theme={theme}>
           {intl.translate('active_alert')}
@@ -233,7 +238,7 @@ const NodePageAlertsTab = (props) => {
       <ActiveAlertsTableContainer>
         <Table columns={columns} data={activeAlertListData} />
       </ActiveAlertsTableContainer>
-    </NodeTab>
+    </NodeAlertsTab>
   );
 };
 
