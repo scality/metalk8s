@@ -146,6 +146,48 @@ const DocumentationIcon = styled.div`
   }
 `;
 
+const TitlePage = styled.div`
+  color: ${(props) => props.theme.brand.textPrimary};
+  font-size: 24px;
+  padding-left: 40px;
+`;
+
+const CheckboxContainer = styled.div`
+  padding: ${padding.base} 0 0 ${padding.small};
+  .text {
+    font-size: ${fontSize.base};
+  }
+`;
+
+const InputNumberComponentStyle = styled.input`
+  width: 60px;
+  height: 25px;
+  border: solid 1px ${(props) => props.theme.brand.border};
+  border-radius: 4px;
+  background-color: ${(props) => props.theme.brand.primary};
+  color: ${(props) => props.theme.brand.textPrimary};
+`;
+
+const MultiCreationFormContainer = styled.div`
+  padding-left: ${padding.base};
+  display: flex;
+  flex-direction: column;
+  color: ${(props) => props.theme.brand.textPrimary};
+  font-size: ${fontSize.base};
+`;
+
+const SingleVolumeContainer = styled.div`
+  display: flex;
+  align-items: flex-start;
+  padding-top: ${padding.base};
+`;
+
+const SingleVolumeForm = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding-left: ${padding.base};
+`;
+
 const CreateVolume = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
@@ -194,6 +236,17 @@ const CreateVolume = (props) => {
     selectedUnit: sizeUnits[3].value,
     sizeInput: '',
     labels: {},
+    multiVolumeCreation: false,
+    // When the multi-volume creation mode is active, the default number is 1.
+    numberOfVolumes: 1,
+    // MultiVolumes should be the array of objects.
+    // For example:
+    // [
+    //   { name: "volume01'", devicePath: '/dev/sdb' },
+    //   { name: "volume02'", devicePath: '/dev/sdc' },
+    //   ...
+    // ];
+    multiVolumes: [],
   };
 
   const volumeNameRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
@@ -348,6 +401,74 @@ const CreateVolume = (props) => {
                 };
               });
 
+              const multiVolumeInputs = [];
+              for (let i = 0; i < values.numberOfVolumes; i++) {
+                multiVolumeInputs.push(
+                  <SingleVolumeContainer>
+                    <div style={{ paddingTop: `${padding.base}` }}>
+                      {i + 1}-
+                    </div>
+                    <SingleVolumeForm>
+                      <Input
+                        name="multiVolumeName"
+                        value={values.name && `${values.name}${i + 1}`}
+                        label={intl.translate('name')}
+                        error={touched.name && errors.name}
+                        onBlur={handleOnBlur}
+                        onChange={(e) => {
+                          console.log('e', e);
+                        }}
+                      />
+                      {values.type === RAW_BLOCK_DEVICE ? (
+                        <Input
+                          name="path"
+                          value={values.path}
+                          onChange={handleChange('path')}
+                          label={intl.translate('device_path')}
+                          error={touched.path && errors.path}
+                          onBlur={handleOnBlur}
+                        />
+                      ) : (
+                        <SizeFieldContainer>
+                          <Input
+                            name="sizeInput"
+                            type="number"
+                            min="1"
+                            value={values.sizeInput}
+                            onChange={handleChange('sizeInput')}
+                            label={intl.translate('volume_size')}
+                            error={touched.sizeInput && errors.sizeInput}
+                            onBlur={handleOnBlur}
+                          />
+                          <SizeUnitFieldSelectContainer>
+                            <Input
+                              id="unit_input"
+                              label=""
+                              clearable={false}
+                              type="select"
+                              options={optionsSizeUnits}
+                              noOptionsMessage={() =>
+                                intl.translate('no_results')
+                              }
+                              name="selectedUnit"
+                              onChange={handleSelectChange('selectedUnit')}
+                              value={getSelectedObjectItem(
+                                optionsSizeUnits,
+                                values?.selectedUnit,
+                              )}
+                              error={
+                                touched.selectedUnit && errors.selectedUnit
+                              }
+                              onBlur={handleOnBlur}
+                            />
+                          </SizeUnitFieldSelectContainer>
+                        </SizeFieldContainer>
+                      )}
+                    </SingleVolumeForm>
+                  </SingleVolumeContainer>,
+                );
+              }
+
               return (
                 <Form>
                   <FormSection>
@@ -497,7 +618,57 @@ const CreateVolume = (props) => {
                         onBlur={handleOnBlur}
                       />
                     )}
+                    <CheckboxContainer>
+                      <Checkbox
+                        name="multiVolumeCreation"
+                        label={'Create multiple volumes?'}
+                        checked={values.multiVolumeCreation}
+                        value={values.multiVolumeCreation}
+                        onChange={handleChange('multiVolumeCreation')}
+                        onBlur={handleOnBlur}
+                      />
+                    </CheckboxContainer>
                   </FormSection>
+
+                  {values.multiVolumeCreation === true && (
+                    <FormSection>
+                      <MultiCreationFormContainer>
+                        <div
+                          style={{
+                            paddingLeft: '40px',
+                            paddingTop: `${padding.large}`,
+                          }}
+                        >
+                          <span
+                            style={{
+                              paddingRight: `${padding.base}`,
+                            }}
+                          >
+                            Number of volume to create
+                          </span>
+                          {/* TODO: Generalize the number input component to core-ui. */}
+                          <InputNumberComponentStyle
+                            type="number"
+                            name="numberOfVolumes"
+                            value={values.numberOfVolumes}
+                            min="1"
+                            onChange={handleChange('numberOfVolumes')}
+                          />
+                        </div>
+                        <div
+                          style={{
+                            paddingLeft: '40px',
+                            paddingTop: `${padding.large}`,
+                          }}
+                        >
+                          Name the Volumes and provide the Device paths. You may
+                          use the defaults or override them.
+                        </div>
+                        {multiVolumeInputs}
+                      </MultiCreationFormContainer>
+                      }
+                    </FormSection>
+                  )}
                   <ActionContainer>
                     <Button
                       text={intl.translate('cancel')}
