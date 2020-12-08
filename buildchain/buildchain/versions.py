@@ -59,7 +59,7 @@ CENTOS_BASE_IMAGE : str = 'docker.io/centos'
 CENTOS_BASE_IMAGE_SHA256 : str = \
     '6ae4cddb2b37f889afd576a17a5286b311dcbf10a904409670827f6f9b50065e'
 
-GRAFANA_IMAGE_VERSION : str = '6.7.4'
+GRAFANA_IMAGE_VERSION : str = '7.2.1'
 NGINX_IMAGE_VERSION   : str = '1.15.8'
 NODEJS_IMAGE_VERSION  : str = '10.16.0'
 
@@ -81,8 +81,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     # Remote images
     Image(
         name='alertmanager',
-        version='v0.20.0',
-        digest='sha256:7e4e9f7a0954b45736d149c40e9620a6664036bb05f0dce447bef5042b139f5d',
+        version='v0.21.0',
+        digest='sha256:24a5204b418e8fa0214cfb628486749003b039c279c56b5bddb5b10cd100d926',
     ),
     Image(
         name='calico-node',
@@ -96,8 +96,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='configmap-reload',
-        version='v0.0.1',
-        digest='sha256:e2fd60ff0ae4500a75b80ebaa30e0e7deba9ad107833e8ca53f0047c42c5a057',
+        version='v0.4.0',
+        digest='sha256:17d34fd73f9e8a78ba7da269d96822ce8972391c2838e08d92a990136adb8e4a',
     ),
     Image(
         name='coredns',
@@ -116,8 +116,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='k8s-sidecar',
-        version='0.1.20',
-        digest='sha256:af151f677a63cdfcdfc18a4e3043520ec506d5e116692e5190f6f765dca42a52',
+        version='1.1.0',
+        digest='sha256:3e86186656d346b440519bf1f41c2784d10fc63f907eac7e4f2a4bda1a7331f0',
     ),
     Image(
         name='kube-apiserver',
@@ -141,8 +141,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='kube-state-metrics',
-        version='v1.9.5',
-        digest='sha256:9d29333ad1cc8e14b26e40daea3739cec21b765f6077c6764546779deec3f54b',
+        version='v1.9.7',
+        digest='sha256:2f82f0da199c60a7699c43c63a295c44e673242de0b7ee1b17c2d5a23bec34cb',
     ),
     Image(
         name='nginx',
@@ -161,8 +161,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='node-exporter',
-        version='v0.18.1',
-        digest='sha256:a2f29256e53cc3e0b64d7a472512600b2e9410347d53cdc85b49f659c17e02ee',
+        version='v1.0.1',
+        digest='sha256:cf66a6bbd573fd819ea09c72e21b528e9252d58d01ae13564a29749de1e48e0f',
     ),
     Image(
         name='pause',
@@ -171,8 +171,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='prometheus',
-        version='v2.16.0',
-        digest='sha256:e4ca62c0d62f3e886e684806dfe9d4e0cda60d54986898173c1083856cfda0f4',
+        version='v2.22.1',
+        digest='sha256:b899dbd1b9017b9a379f76ce5b40eead01a62762c4f2057eacef945c3c22d210',
     ),
     Image(
         name='k8s-prometheus-adapter-amd64',
@@ -181,13 +181,13 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='prometheus-config-reloader',
-        version='v0.38.1',
-        digest='sha256:d1cce64093d4a850d28726ec3e48403124808f76567b5bd7b26e4416300996a7',
+        version='v0.43.2',
+        digest='sha256:cd6e5084f2d2c2290f4ace1a74d100a41050bbe797274eda3784db19191f63be',
     ),
     Image(
         name='prometheus-operator',
-        version='v0.38.1',
-        digest='sha256:62b8cf466e9b238a9fcf0bcba74562c8833e7451042321e323a46de3f1dbe1bc',
+        version='v0.43.2',
+        digest='sha256:240b10b07e15e95c3009da938e3abb8bef2fa47ea1f719ae58f7dd116bcb2f10',
     ),
     # Local images
     Image(

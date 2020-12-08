@@ -72,8 +72,8 @@ def maybe_copy(doc, src, dest):
 
 
 def fixup_dict(doc):
-    if doc.get('heritage') == 'Tiller' or \
-            doc.get('app.kubernetes.io/managed-by') == 'Tiller':
+    if doc.get('heritage') == 'Helm' or \
+            doc.get('app.kubernetes.io/managed-by') == 'Helm':
         maybe_copy(doc, 'app', 'app.kubernetes.io/name')
         maybe_copy(doc, 'component', 'app.kubernetes.io/component')
 
@@ -279,10 +279,10 @@ def main():
     args = parser.parse_args()
 
     template = subprocess.check_output([
-        'helm', 'template',
-        '--name', args.name,
+        'helm', 'template', args.name,
         '--namespace', args.namespace,
         '--values', args.values,
+        '--include-crds',
         args.path,
     ])
 
