@@ -307,7 +307,9 @@ const VolumePageContent = (props) => {
       ) : (
         <NoInstanceSelectedContainer>
           <NoInstanceSelected>
-            {intl.translate('no_volume_selected')}
+            {currentVolumeName
+              ? `Volume ${currentVolumeName} ${intl.translate('not_found')}`
+              : intl.translate('no_volume_selected')}
           </NoInstanceSelected>
         </NoInstanceSelectedContainer>
       )}
