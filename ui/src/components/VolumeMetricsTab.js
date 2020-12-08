@@ -7,14 +7,11 @@ import {
   fetchVolumeStatsAction,
   updateVolumeStatsAction,
 } from '../ducks/app/monitoring';
-import {
-  fontSize,
-  padding,
-  fontWeight,
-} from '@scality/core-ui/dist/style/theme';
+import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import {
   addMissingDataPoint,
   fromUnixTimestampToDate,
+  useDynamicChartSize,
 } from '../services/utils';
 import { yAxisUsage, yAxisWriteRead } from './LinechartSpec';
 import {
@@ -31,65 +28,17 @@ import {
   queryTimeSpansCodes,
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
-import { VolumeTab } from './CommonLayoutStyle';
+import {
+  VolumeTab,
+  MetricsActionContainer,
+  GraphsContainer,
+  RowGraphContainer,
+  GraphTitle,
+  GraphWrapper,
+} from './CommonLayoutStyle';
 
 const MetricGraphCardContainer = styled.div`
   min-height: 270px;
-
-  .sc-vegachart svg {
-    background-color: inherit !important;
-  }
-`;
-
-const MetricGraphTitle = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
-  font-size: ${fontSize.base};
-  font-weight: ${fontWeight.bold};
-  padding: ${padding.small};
-  display: flex;
-  flex-direction: row-reverse;
-  padding: ${padding.large} ${padding.base};
-
-  .sc-dropdown {
-    padding-left: 25px;
-  }
-  
-  .sc-dropdown > div {
-    background-color: ${(props) => props.theme.brand.primary};
-    border: 1px solid ${(props) => props.theme.brand.borderLight}
-    border-radius: 3px;
-  }
-  
-  .sc-button {
-    background-color: ${(props) => props.theme.brand.info};
-  }
-`;
-
-const GraphsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding-left: ${padding.small};
-`;
-
-const RowGraphContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  padding-left: 3px;
-`;
-
-const GraphTitle = styled.div`
-  font-size: ${fontSize.small};
-  font-weight: ${fontWeight.bold};
-  color: ${(props) => props.theme.brand.textSecondary};
-  padding: ${padding.small} 0 0 ${padding.larger};
-`;
-
-const LeftGraphContainer = styled.div`
-  padding-left: 0px;
-`;
-
-const RightGraphContainer = styled.div`
-  padding-left: ${padding.large};
 `;
 
 // No data rendering should be extracted to an common style
@@ -121,6 +70,7 @@ const MetricsTab = (props) => {
     (state) => state.app.monitoring.volumeStats.metricsTimeSpan,
   );
   const config = useSelector((state) => state.config);
+  const [graphWidth, graphHeight] = useDynamicChartSize('graph_container');
 
   // write the selected timespan in URL
   const writeUrlTimeSpan = (timespan) => {
@@ -360,15 +310,7 @@ const MetricsTab = (props) => {
   return (
     <VolumeTab>
       <MetricGraphCardContainer>
-        <MetricGraphTitle>
-          {volumeCondition === VOLUME_CONDITION_LINK && (
-            <Dropdown
-              items={metricsTimeSpanDropdownItems}
-              text={metricsTimeSpan}
-              size="small"
-              data-cy="metrics_timespan_selection"
-            />
-          )}
+        <MetricsActionContainer>
           {config.api?.url_grafana && volumeNamespace && volumePVCName && (
             <Button
               text={intl.translate('advanced_metrics')}
@@ -382,57 +324,65 @@ const MetricsTab = (props) => {
               data-cy="advanced_metrics_volume_detailed"
             />
           )}
-        </MetricGraphTitle>
+          {volumeCondition === VOLUME_CONDITION_LINK && (
+            <Dropdown
+              items={metricsTimeSpanDropdownItems}
+              text={metricsTimeSpan}
+              size="small"
+              data-cy="metrics_timespan_selection"
+            />
+          )}
+        </MetricsActionContainer>
         {volumeCondition === VOLUME_CONDITION_LINK ? (
-          <GraphsContainer>
+          <GraphsContainer id="graph_container">
             <RowGraphContainer>
-              <LeftGraphContainer>
+              <GraphWrapper>
                 <GraphTitle>USAGE (%)</GraphTitle>
-                {volumeUsageData?.length > 0 ? (
+                {volumeUsageData?.length > 0 && graphWidth ? (
                   <LineChart
                     id={'volume_usage_id'}
                     data={volumeUsageData}
                     xAxis={xAxis}
                     yAxis={yAxisUsage}
                     color={colorUsage}
-                    width={window.innerWidth / 4 - 110}
-                    height={window.innerHeight / 6 - 30}
+                    width={graphWidth}
+                    height={graphHeight}
                     tooltip={false}
                   />
                 ) : (
                   <NoDataGraphText>No available usage data</NoDataGraphText>
                 )}
-              </LeftGraphContainer>
-              <RightGraphContainer>
+              </GraphWrapper>
+              <GraphWrapper>
                 <GraphTitle>LATENCY (µs) </GraphTitle>
-                {volumeLatencyData?.length > 0 ? (
+                {volumeLatencyData?.length > 0 && graphWidth ? (
                   <LineChart
                     id={'volume_latency_id'}
                     data={volumeLatencyData}
                     xAxis={xAxis}
                     yAxis={yAxisWriteRead}
                     color={colors}
-                    width={window.innerWidth / 4 - 110}
-                    height={window.innerHeight / 6 - 30}
+                    width={graphWidth}
+                    height={graphHeight}
                     tooltip={false}
                   />
                 ) : (
                   <NoDataGraphText>No available latency data</NoDataGraphText>
                 )}
-              </RightGraphContainer>
+              </GraphWrapper>
             </RowGraphContainer>
             <RowGraphContainer>
-              <LeftGraphContainer>
+              <GraphWrapper>
                 <GraphTitle>THROUGHPUT (MB/s)</GraphTitle>
-                {volumeThroughputData?.length > 0 ? (
+                {volumeThroughputData?.length > 0 && graphWidth ? (
                   <LineChart
                     id={'volume_throughput_id'}
                     data={volumeThroughputData}
                     xAxis={xAxis}
                     yAxis={yAxisWriteRead}
                     color={colors}
-                    width={window.innerWidth / 4 - 110}
-                    height={window.innerHeight / 6 - 30}
+                    width={graphWidth}
+                    height={graphHeight}
                     tooltip={false}
                   />
                 ) : (
@@ -440,24 +390,24 @@ const MetricsTab = (props) => {
                     No available throughput data
                   </NoDataGraphText>
                 )}
-              </LeftGraphContainer>
-              <RightGraphContainer>
+              </GraphWrapper>
+              <GraphWrapper>
                 <GraphTitle>IOPS</GraphTitle>
-                {volumeIOPSData?.length > 0 ? (
+                {volumeIOPSData?.length > 0 && graphWidth ? (
                   <LineChart
                     id={'volume_IOPS_id'}
                     data={volumeIOPSData}
                     xAxis={xAxis}
                     yAxis={yAxisWriteRead}
                     color={colors}
-                    width={window.innerWidth / 4 - 110}
-                    height={window.innerHeight / 6 - 30}
+                    width={graphWidth}
+                    height={graphHeight}
                     tooltip={false}
                   />
                 ) : (
                   <NoDataGraphText>No available IOPS data</NoDataGraphText>
                 )}
-              </RightGraphContainer>
+              </GraphWrapper>
             </RowGraphContainer>
           </GraphsContainer>
         ) : (

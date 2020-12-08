@@ -55,7 +55,6 @@ export const PageContentContainer = styled.div`
 export const NodeTab = styled.div`
   background-color: ${(props) => props.theme.brand.primary};
   color: ${(props) => props.theme.brand.textPrimary};
-  padding-top: ${padding.base};
   padding-bottom: ${padding.base};
   height: calc(100vh - 172px);
   overflow: scroll;
@@ -75,7 +74,6 @@ export const VolumeTab = styled.div`
   overflow: scroll;
   height: calc(100vh - 174px);
   color: ${(props) => props.theme.brand.textPrimary};
-  padding-top: ${padding.base};
   padding-bottom: ${padding.base};
 `;
 
@@ -95,4 +93,56 @@ export const TableHeader = styled.th`
       display: block;
     }
   }
+`;
+
+export const MetricsActionContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding: ${padding.base} ${padding.base};
+  position: sticky;
+  top: 0px;
+  z-index: 100;
+  background-color: ${(props) => props.theme.brand.primary};
+
+  .sc-dropdown {
+    padding-left: 25px;
+  }
+
+  .sc-dropdown > div {
+    background-color: ${(props) => props.theme.brand.primary};
+    border: 1px solid ${(props) => props.theme.brand.borderLight}
+    border-radius: 3px;
+  }
+
+  .sc-button {
+    background-color: ${(props) => props.theme.brand.info};
+  }
+`;
+
+export const GraphsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: ${padding.small};
+
+  .sc-vegachart svg {
+    background-color: inherit !important;
+  }
+`;
+
+export const RowGraphContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+`;
+
+export const GraphTitle = styled.div`
+  font-size: ${fontSize.small};
+  font-weight: ${fontWeight.bold};
+  color: ${(props) => props.theme.brand.textSecondary};
+  padding: ${padding.small} 0 0 ${padding.larger};
+`;
+
+export const GraphWrapper = styled.div`
+  padding-left: 0px;
 `;

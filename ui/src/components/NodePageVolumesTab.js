@@ -22,6 +22,11 @@ import { useRefreshEffect } from '../services/utils';
 import { fontSize } from '@scality/core-ui/dist/style/theme';
 import { NodeTab } from './CommonLayoutStyle';
 
+// Overriding overflow for the Tab since the table components has inner scroll
+export const NodesVolumesTab = styled(NodeTab)`
+  overflow: hidden;
+`;
+
 const TabContent = styled.div`
   height: 78vh;
   .sc-progressbarcontainer {
@@ -56,7 +61,7 @@ const NodePageVolumesTab = (props) => {
   }, [dispatch]);
 
   return (
-    <NodeTab>
+    <NodesVolumesTab>
       <TabContent>
         <VolumeListTable
           volumeListData={volumeListData}
@@ -65,7 +70,7 @@ const NodePageVolumesTab = (props) => {
           nodeName={name}
         ></VolumeListTable>
       </TabContent>
-    </NodeTab>
+    </NodesVolumesTab>
   );
 };
 
