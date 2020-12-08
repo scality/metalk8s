@@ -1,6 +1,15 @@
+# ⚠️ Repo Archive Notice
+
+As of Nov 13, 2020, charts in this repo will no longer be updated.
+For more information, see the Helm Charts [Deprecation and Archive Notice](https://github.com/helm/charts#%EF%B8%8F-deprecation-and-archive-notice), and [Update](https://helm.sh/blog/charts-repo-deprecation/).
+
 # dex
 
 [Dex][dex] is an identity service that uses OpenID Connect to drive authentication for other apps.
+
+## DEPRECATION NOTICE
+
+This chart is deprecated and no longer supported.
 
 ## Introduction
 
@@ -64,7 +73,13 @@ Parameters introduced starting from v2
 | Parameter | Description | Default |
 | --------- | ----------- | ------- |
 | `certs.grpc.pod.annotations` | Annotations for the pod created by the `grpc-certs` job | `{}` |
+| `certs.grpc.pod.affinity` | Affinity for the pod created by the `grpc-certs` job | `{}` |
+| `certs.grpc.pod.nodeSelector` | nodeSelector for the pod created by the `grpc-certs` job | `{}` |
+| `certs.grpc.pod.tolerations` | Tolerations for the pod created by the `grpc-certs` job | `[]` |
 | `certs.web.pod.annotations` | Annotations for the pod created by the `web-certs` job | `{}` |
+| `certs.web.pod.affinity` | Affinity for the pod created by the `web-certs` job | `{}` |
+| `certs.web.pod.nodeSelector` | nodeSelector for the pod created by the `web-certs` job | `{}` |
+| `certs.web.pod.tolerations` | Tolerations for the pod created by the `web-certs` job | `[]` |
 | `config.connectors` | Maps to the dex config `connectors` dict param | `{}` |
 | `config.enablePasswordDB` | Maps to the dex config `enablePasswordDB` param | `true` |
 | `config.frontend` | Maps to the dex config `frontend` dict param | `""` |
@@ -82,6 +97,7 @@ Parameters introduced starting from v2
 | `config.web.address` | dex http/https listen address | `0.0.0.0` |
 | `config.web.tlsCert` | Maps to the dex config `web.tlsCert` param | `/etc/dex/tls/https/server/tls.crt` |
 | `config.web.tlsKey` | Maps to the dex config `web.tlsKey` param | `/etc/dex/tls/https/server/tls.key` |
+| `config.web.allowedOrigins` | Maps to the dex config `web.allowedOrigins` param | `[]` |
 | `config.expiry.signingKeys` | Maps to the dex config `expiry.signingKeys` param | `6h` |
 | `config.expiry.idTokens` | Maps to the dex config `expiry.idTokens` param | `24h` |
 | `crd.present` | Whether dex's CRDs are already present (if not cluster role and cluster role binding will be created to enable dex to create them). Depends on `rbac.create` | `false` |
@@ -109,6 +125,7 @@ Parameters introduced starting from v2
 | `readinessProbe.periodSeconds` | How often (in seconds) to perform the probe  |  `10` |
 | `readinessProbe.timeoutSeconds` | Number of seconds after which the probe times out | `1`  |
 | `readinessProbe.failureThreshold` | Times to perform probe before marking the container `Unready` |  `3` |
+| `imagePullSecrets` | Allows to run containers based on images in private registries. |  `{}` |
 
 
 Check [values.yaml](values.yaml) notes together with [dex documentation][dex] and [config examples](https://github.com/dexidp/dex/tree/master/examples) for all the possible configuration options.
