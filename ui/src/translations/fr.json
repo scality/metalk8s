@@ -174,5 +174,6 @@
   "overview": "Aperçu",
   "volume_usage": "Utilisation du Volume",
   "usage": "Utilisation",
-  "error_volume_details": "Échec de la récuperation des details du volume."
+  "error_volume_details": "Échec de la récuperation des details du volume.",
+  "not_found": "introuvable."
 }
