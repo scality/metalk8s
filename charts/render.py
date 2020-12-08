@@ -129,8 +129,8 @@ def keep_doc(doc):
     if not doc:
         return False
 
-    if doc.get('metadata', {}) \
-            .get('annotations', {}) \
+    if ((doc.get('metadata') or {})
+            .get('annotations') or {}) \
             .get('helm.sh/hook') == 'test-success':
         return False
 
