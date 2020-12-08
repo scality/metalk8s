@@ -17,10 +17,10 @@ Image = namedtuple('Image', ('name', 'version', 'digest'))
 
 # Project-wide versions {{{
 
-CALICO_VERSION     : str = '3.16.1'
-K8S_VERSION        : str = '1.18.10'
-SALT_VERSION       : str = '3000.5'
-CONTAINERD_VERSION : str = '1.4.1'
+CALICO_VERSION     : str = '3.17.0'
+K8S_VERSION        : str = '1.18.12'
+SALT_VERSION       : str = '3002.2'
+CONTAINERD_VERSION : str = '1.4.3'
 CONTAINERD_RELEASE : str = '1.el7'
 
 def load_version_information() -> None:
@@ -59,7 +59,7 @@ CENTOS_BASE_IMAGE : str = 'docker.io/centos'
 CENTOS_BASE_IMAGE_SHA256 : str = \
     '6ae4cddb2b37f889afd576a17a5286b311dcbf10a904409670827f6f9b50065e'
 
-GRAFANA_IMAGE_VERSION : str = '6.7.4'
+GRAFANA_IMAGE_VERSION : str = '7.2.1'
 NGINX_IMAGE_VERSION   : str = '1.15.8'
 NODEJS_IMAGE_VERSION  : str = '10.16.0'
 
@@ -81,23 +81,23 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     # Remote images
     Image(
         name='alertmanager',
-        version='v0.20.0',
-        digest='sha256:7e4e9f7a0954b45736d149c40e9620a6664036bb05f0dce447bef5042b139f5d',
+        version='v0.21.0',
+        digest='sha256:24a5204b418e8fa0214cfb628486749003b039c279c56b5bddb5b10cd100d926',
     ),
     Image(
         name='calico-node',
         version=_version_prefix(CALICO_VERSION),
-        digest='sha256:8f7ae199f9f00e03527c515008aa1dbc21f8a27eaefe4b00ca789f732b0f0aef',
+        digest='sha256:92227666988edccd1222d463173489fd656c5a37b8dedab0dadfbc22a471893a',
     ),
     Image(
         name='calico-kube-controllers',
         version=_version_prefix(CALICO_VERSION),
-        digest='sha256:04bba565d9e133ce7c8184d3b08fab09df061b7fb5936b08c5d12cc9e56a3799',
+        digest='sha256:78a6e7648e22b2c87fcc06db610d753e49c6f9b3cf622ab23fdc3a63c1563fc8',
     ),
     Image(
         name='configmap-reload',
-        version='v0.0.1',
-        digest='sha256:e2fd60ff0ae4500a75b80ebaa30e0e7deba9ad107833e8ca53f0047c42c5a057',
+        version='v0.4.0',
+        digest='sha256:17d34fd73f9e8a78ba7da269d96822ce8972391c2838e08d92a990136adb8e4a',
     ),
     Image(
         name='coredns',
@@ -116,33 +116,33 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='k8s-sidecar',
-        version='0.1.20',
-        digest='sha256:af151f677a63cdfcdfc18a4e3043520ec506d5e116692e5190f6f765dca42a52',
+        version='1.1.0',
+        digest='sha256:3e86186656d346b440519bf1f41c2784d10fc63f907eac7e4f2a4bda1a7331f0',
     ),
     Image(
         name='kube-apiserver',
         version=_version_prefix(K8S_VERSION),
-        digest='sha256:ff1e3568d00c3f6ed45e9d9032a1099ca44a3919afdfe6e709978b980d6de43f',
+        digest='sha256:939637424b77e049556915a038eb09a85234f372eac2184233ba5d336d20cb3e',
     ),
     Image(
         name='kube-controller-manager',
         version=_version_prefix(K8S_VERSION),
-        digest='sha256:ae5c16b3bb1fccb3436bde805e35767889c819b34dd4fbba6b0afe5576672095',
+        digest='sha256:842498cf3757fcf6aa12b480590126ced656f4cf6a250573101a864f2f60ce30',
     ),
     Image(
         name='kube-proxy',
         version=_version_prefix(K8S_VERSION),
-        digest='sha256:0b30d182bac0e9efac530ca043a7cdc492b5c26488cda53e68e3f8ecfa4072ea',
+        digest='sha256:b639ad7fcbf49b855153861e55b8c6246b88ffff0b7c7d0e3610c9711add1460',
     ),
     Image(
         name='kube-scheduler',
         version=_version_prefix(K8S_VERSION),
-        digest='sha256:1da1284ab66e12db5e1b0d68fbc1c6c119418d81c5b922474987376754931b53',
+        digest='sha256:f7eb0ee797aecce73e85b0d6aafb6c356ffe232bca2779cf0195423b918d883b',
     ),
     Image(
         name='kube-state-metrics',
-        version='v1.9.5',
-        digest='sha256:9d29333ad1cc8e14b26e40daea3739cec21b765f6077c6764546779deec3f54b',
+        version='v1.9.7',
+        digest='sha256:2f82f0da199c60a7699c43c63a295c44e673242de0b7ee1b17c2d5a23bec34cb',
     ),
     Image(
         name='nginx',
@@ -161,8 +161,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='node-exporter',
-        version='v0.18.1',
-        digest='sha256:a2f29256e53cc3e0b64d7a472512600b2e9410347d53cdc85b49f659c17e02ee',
+        version='v1.0.1',
+        digest='sha256:cf66a6bbd573fd819ea09c72e21b528e9252d58d01ae13564a29749de1e48e0f',
     ),
     Image(
         name='pause',
@@ -171,8 +171,8 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='prometheus',
-        version='v2.16.0',
-        digest='sha256:e4ca62c0d62f3e886e684806dfe9d4e0cda60d54986898173c1083856cfda0f4',
+        version='v2.22.1',
+        digest='sha256:b899dbd1b9017b9a379f76ce5b40eead01a62762c4f2057eacef945c3c22d210',
     ),
     Image(
         name='k8s-prometheus-adapter-amd64',
@@ -181,13 +181,13 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='prometheus-config-reloader',
-        version='v0.38.1',
-        digest='sha256:d1cce64093d4a850d28726ec3e48403124808f76567b5bd7b26e4416300996a7',
+        version='v0.43.2',
+        digest='sha256:cd6e5084f2d2c2290f4ace1a74d100a41050bbe797274eda3784db19191f63be',
     ),
     Image(
         name='prometheus-operator',
-        version='v0.38.1',
-        digest='sha256:62b8cf466e9b238a9fcf0bcba74562c8833e7451042321e323a46de3f1dbe1bc',
+        version='v0.43.2',
+        digest='sha256:240b10b07e15e95c3009da938e3abb8bef2fa47ea1f719ae58f7dd116bcb2f10',
     ),
     # Local images
     Image(
@@ -219,13 +219,13 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     ),
     Image(
         name='loki',
-        version='1.5.0',
-        digest='sha256:922b3f412fdd9a8fb01115b6aebf5dac162647ce1c5ee3637ce1e2cff69e097b',
+        version='2.0.0',
+        digest='sha256:77e138f81a8e253f1d0ea5d2dc329a02212ecab3247c87f85f1f2182a0160ccd',
     ),
     Image(
         name='fluent-bit-plugin-loki',
-        version='1.5.0-amd64',
-        digest='sha256:2d0e9b06a2bf894fa91300fa38a185ac44a7bedcb8a2c63b8f6077e5cf80fc4d',
+        version='1.6.0-amd64',
+        digest='sha256:cb1cd95d0fcf76b626623684f0c8b204a9f773443650c7b3d243b96c29ff7020',
     ),
 )
 
@@ -353,6 +353,7 @@ PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
             version=SHORT_VERSION,
             release='1.el7'
         ),
+        PackageVersion(name='python36-rpm'),
         PackageVersion(name='yum-plugin-versionlock'),
         PackageVersion(name='yum-utils'),
     ),

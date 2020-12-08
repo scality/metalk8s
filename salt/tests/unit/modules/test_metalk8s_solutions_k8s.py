@@ -1,14 +1,13 @@
 import os.path
-import yaml
+from unittest import TestCase
+from unittest.mock import MagicMock, patch
 
 from parameterized import param, parameterized
-
-from salttesting.mixins import LoaderModuleMockMixin
-from salttesting.unit import TestCase
-from salttesting.mock import MagicMock, patch
+import yaml
 
 import metalk8s_solutions_k8s
 
+from tests.unit import mixins
 from tests.unit import utils
 
 
@@ -20,7 +19,7 @@ with open(YAML_TESTS_FILE) as fd:
     YAML_TESTS_CASES = yaml.safe_load(fd)
 
 
-class Metalk8sSolutionsK8sTestCase(TestCase, LoaderModuleMockMixin):
+class Metalk8sSolutionsK8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
     TestCase for `metalk8s_solutions_k8s` module
     """

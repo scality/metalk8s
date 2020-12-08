@@ -1,16 +1,14 @@
 import os.path
-import yaml
+from unittest import TestCase
+from unittest.mock import MagicMock, patch
 
 from parameterized import parameterized
-
 from salt.exceptions import CheckError
-
-from salttesting.mixins import LoaderModuleMockMixin
-from salttesting.unit import TestCase
-from salttesting.mock import MagicMock, patch
+import yaml
 
 import metalk8s_checks
 
+from tests.unit import mixins
 from tests.unit import utils
 
 
@@ -22,7 +20,7 @@ with open(YAML_TESTS_FILE) as fd:
     YAML_TESTS_CASES = yaml.safe_load(fd)
 
 
-class Metalk8sChecksTestCase(TestCase, LoaderModuleMockMixin):
+class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
     TestCase for `metalk8s_checks` module
     """
@@ -47,7 +45,7 @@ class Metalk8sChecksTestCase(TestCase, LoaderModuleMockMixin):
 
         with patch.dict(metalk8s_checks.__salt__, patch_dict):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CheckError,
                     result,
                     metalk8s_checks.sysctl,

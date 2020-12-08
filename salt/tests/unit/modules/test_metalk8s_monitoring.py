@@ -1,16 +1,18 @@
 from datetime import datetime
+from importlib import reload
 import os.path
+from unittest.mock import MagicMock, patch
+from unittest import TestCase
 
-from salt.exceptions import CommandExecutionError
 
 from parameterized import param, parameterized
-from salttesting.helpers import ForceImportErrorOn
-from salttesting.mixins import LoaderModuleMockMixin
-from salttesting.mock import MagicMock, patch
-from salttesting.unit import TestCase
+from salt.exceptions import CommandExecutionError
 import yaml
 
 import metalk8s_monitoring
+
+from tests.unit import mixins
+from tests.unit import utils
 
 
 YAML_TESTS_FILE = os.path.join(
@@ -28,7 +30,7 @@ def _custom_name_func(testcase_func, _, param):
     )
 
 
-class Metalk8sMonitoringTestCase(TestCase, LoaderModuleMockMixin):
+class Metalk8sMonitoringTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """Tests for `metalk8s_monitoring` module."""
     loader_module = metalk8s_monitoring
 
@@ -42,7 +44,7 @@ class Metalk8sMonitoringTestCase(TestCase, LoaderModuleMockMixin):
 
     def test_virtual_missing_deps(self):
         """Test the behaviour of `__virtual__` when missing dependencies."""
-        with ForceImportErrorOn("requests"):
+        with utils.ForceImportErrorOn("requests"):
             reload(metalk8s_monitoring)
             self.assertTupleEqual(
                 metalk8s_monitoring.__virtual__(),
@@ -87,7 +89,7 @@ class Metalk8sMonitoringTestCase(TestCase, LoaderModuleMockMixin):
         with patch.dict(metalk8s_monitoring.__utils__, utils_mocks), \
                 patch.dict(metalk8s_monitoring.__salt__, salt_mocks):
             if raises:
-                self.assertRaisesRegexp(
+                self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s_monitoring._requests_alertmanager_api,
@@ -104,9 +106,9 @@ class Metalk8sMonitoringTestCase(TestCase, LoaderModuleMockMixin):
 
             session_mock.request.assert_called_once()
             if called_with:
-                call = session_mock.request.call_args
-                self.assertEqual(call.args, tuple(called_with['args']))
-                self.assertEqual(call.kwargs, called_with.get('kwargs', {}))
+                args, kwargs = session_mock.request.call_args
+                self.assertEqual(args, tuple(called_with['args']))
+                self.assertEqual(kwargs, called_with.get('kwargs', {}))
 
     @parameterized.expand([
         param.explicit(kwargs=test_case)
@@ -138,9 +140,9 @@ class Metalk8sMonitoringTestCase(TestCase, LoaderModuleMockMixin):
             )
 
         request_mock.assert_called_once()
-        self.assertDictContainsSubset(
-            call_body, request_mock.call_args.kwargs['json']
-        )
+        _, call_kwargs = request_mock.call_args
+        actual_body = call_kwargs['json']
+        self.assertEqual(dict(actual_body, **call_body), actual_body)
 
     def test_delete_silence(self):
         silence_id = 'd287796c-cf59-4d10-8e5b-d5cc3ff51b9c'
@@ -152,7 +154,7 @@ class Metalk8sMonitoringTestCase(TestCase, LoaderModuleMockMixin):
 
         request_mock.assert_called_once()
         self.assertEqual(
-            request_mock.call_args.args,
+            request_mock.call_args[0],
             ('api/v1/silence/d287796c-cf59-4d10-8e5b-d5cc3ff51b9c', 'DELETE'),
         )
 

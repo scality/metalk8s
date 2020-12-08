@@ -10,3 +10,6 @@ node-exporter:
   - NodeHighNumberConntrackEntriesUsed
   - NodeClockSkewDetected
   - NodeClockNotSynchronising
+  - NodeRAIDDegraded
+  - NodeRAIDDiskFailure
+  - NodeTextFileCollectorScrapeError

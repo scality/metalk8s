@@ -14,6 +14,11 @@ import { useTable } from 'react-table';
 import { intl } from '../translations/IntlGlobalProvider';
 import { VolumeTab } from './CommonLayoutStyle';
 
+// Overriding overflow for the Tab since the table components has inner scroll
+const VolumeAlertTab = styled(VolumeTab)`
+  overflow: hidden;
+`;
+
 const ActiveAlertsCardContainer = styled.div`
   margin: ${padding.small};
   padding: ${padding.small};
@@ -249,7 +254,7 @@ const ActiveAlertsCard = (props) => {
   );
 
   return (
-    <VolumeTab>
+    <VolumeAlertTab>
       <ActiveAlertsCardContainer>
         <ActiveAlertsTitle>
           <div>{intl.translate('active_alert')}</div>
@@ -262,7 +267,7 @@ const ActiveAlertsCard = (props) => {
           <Table columns={columns} data={activeAlertListData} />
         </ActiveAlertsTableContainer>
       </ActiveAlertsCardContainer>
-    </VolumeTab>
+    </VolumeAlertTab>
   );
 };
 

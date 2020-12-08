@@ -5,11 +5,11 @@ metadata:
   namespace: {{ namespace }}
   labels:
     app: {{ solution }}-operator
-    app.kubernetes.io/name: {{ solution }}-operator
-    app.kubernetes.io/instance: {{ solution }}-operator
+    app.kubernetes.io/name: {{ solution }}-operator
+    app.kubernetes.io/instance: {{ solution }}-operator
     app.kubernetes.io/version: {{ version }}
     app.kubernetes.io/component: operator
-    app.kubernetes.io/part-of: {{ solution }}
+    app.kubernetes.io/part-of: {{ solution }}
 data:
   operator.yaml: |
     apiVersion: solutions.metalk8s.scality.com/v1alpha1

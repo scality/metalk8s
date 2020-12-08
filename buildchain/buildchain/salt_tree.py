@@ -563,6 +563,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/orchestrate/apiserver.sls'),
     Path('salt/metalk8s/orchestrate/deploy_node.sls'),
     Path('salt/metalk8s/orchestrate/etcd.sls'),
+    Path('salt/metalk8s/orchestrate/migrate_salt.sls'),
     Path('salt/metalk8s/orchestrate/register_etcd.sls'),
 
     Path('salt/metalk8s/orchestrate/bootstrap/init.sls'),
@@ -635,6 +636,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/salt/master/certs/salt-api.sls'),
 
     Path('salt/metalk8s/salt/minion/configured.sls'),
+    Path('salt/metalk8s/salt/minion/dependencies.sls'),
     Path('salt/metalk8s/salt/minion/files/minion-99-metalk8s.conf.j2'),
     Path('salt/metalk8s/salt/minion/init.sls'),
     Path('salt/metalk8s/salt/minion/installed.sls'),
@@ -651,7 +653,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/volumes/init.sls'),
     Path('salt/metalk8s/volumes/prepared/init.sls'),
     Path('salt/metalk8s/volumes/prepared/installed.sls'),
-    Path('salt/metalk8s/volumes/provisioned/init.sls'),
+    Path('salt/metalk8s/volumes/prepared/files/metalk8s-sparse-volume@.service'),
+    Path('salt/metalk8s/volumes/prepared/files/sparse_volume_cleanup.py'),
     Path('salt/metalk8s/volumes/unprepared/init.sls'),
 
     Path('salt/_auth/kubernetes_rbac.py'),

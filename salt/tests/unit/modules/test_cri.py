@@ -1,14 +1,13 @@
 import json
+from unittest import TestCase
+from unittest.mock import MagicMock, patch
 
 from parameterized import parameterized
 
-from salttesting.mixins import LoaderModuleMockMixin
-from salttesting.unit import TestCase
-from salttesting.mock import MagicMock, patch
-
-from tests.unit import utils
-
 import cri
+
+from tests.unit import mixins
+from tests.unit import utils
 
 
 IMAGES_LIST = [{
@@ -62,7 +61,7 @@ COMPONENT_LIST = [{
 }]
 
 
-class CriTestCase(TestCase, LoaderModuleMockMixin):
+class CriTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
     TestCase for `cri` module
     """

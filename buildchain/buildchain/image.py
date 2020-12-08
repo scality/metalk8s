@@ -164,10 +164,7 @@ IMGS_PER_REPOSITORY : Dict[str, List[str]] = {
         'calico-kube-controllers',
     ],
     constants.COREOS_REPOSITORY: [
-        'configmap-reload',
         'kube-state-metrics',
-        'prometheus-config-reloader',
-        'prometheus-operator',
     ],
     constants.DEX_REPOSITORY: [
         'dex',
@@ -191,11 +188,18 @@ IMGS_PER_REPOSITORY : Dict[str, List[str]] = {
     constants.INGRESS_REPOSITORY: [
         'nginx-ingress-controller',
     ],
+    constants.JIMMIDYSON_REPOSITORY: [
+        'configmap-reload',
+    ],
     constants.KIWIGRID_REPOSITORY: [
         'k8s-sidecar',
     ],
     constants.PROMETHEUS_ADAPTER_REPOSITORY: [
         'k8s-prometheus-adapter-amd64',
+    ],
+    constants.PROMETHEUS_OPERATOR_REPOSITORY: [
+        'prometheus-config-reloader',
+        'prometheus-operator',
     ],
     constants.PROMETHEUS_REPOSITORY: [
         'alertmanager',

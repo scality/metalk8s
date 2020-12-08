@@ -39,7 +39,11 @@ Wait for API server to be available on {{ node }}:
   - verify_ssl: false
   - require:
     - salt: Execute the downgrade prechecks
-  {%- if previous_node is defined %}
+  {%- if loop.previtem is defined %}
+    - salt: Deploy node {{ loop.previtem }}
+  {%- endif %}
+  {#- NOTE: This can be removed in `development/2.8` #}
+  {%- if salt.pkg.version_cmp(dest_version, '2.7.0') == -1 and previous_node is defined %}
     - salt: Deploy node {{ previous_node }}
   {%- endif %}
 
@@ -54,6 +58,24 @@ Set node {{ node }} version to {{ dest_version }}:
             metalk8s.scality.com/version: "{{ dest_version }}"
     - require:
       - http: Wait for API server to be available on {{ node }}
+
+{%- if salt.pkg.version_cmp(dest_version, '2.7.0') == -1 %}
+# We need a new step to upgrade salt-minion as if we downgrade to 2.6.x
+# we have to migrate salt from Python3 to Python2
+# NOTE: This can be removed in `development/2.8`
+Upgrade salt-minion on {{ node }}:
+  salt.runner:
+    - name: state.orchestrate
+    - mods:
+      - metalk8s.orchestrate.migrate_salt
+    - pillar:
+        orchestrate:
+          node_name: {{ node }}
+    - require:
+      - metalk8s_kubernetes: Set node {{ node }} version to {{ dest_version }}
+    - require_in:
+      - salt: Deploy node {{ node }}
+{%- endif %}
 
 Deploy node {{ node }}:
   salt.runner:
@@ -79,8 +101,11 @@ Deploy node {{ node }}:
     - require_in:
       - salt: Downgrade etcd cluster
 
-    {#- Ugly but needed since we have jinja2.7 (`loop.previtem` added in 2.10) #}
-    {%- set previous_node = node %}
+    {#- NOTE: This can be removed in `development/2.8` #}
+    {%- if salt.pkg.version_cmp(dest_version, '2.7.0') == -1 %}
+      {#- Ugly but needed since we have jinja2.7 (`loop.previtem` added in 2.10) #}
+      {%- set previous_node = node %}
+    {%- endif %}
 
   {%- endif %}
 

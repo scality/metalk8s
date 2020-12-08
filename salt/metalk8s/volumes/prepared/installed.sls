@@ -17,3 +17,9 @@ Install gdisk:
   {{ pkg_installed('gdisk') }}
     - require:
       - test: Repositories configured
+
+# Needed by the sparse volume cleanup script
+Ensure Python 3 is available:
+  test.fail_without_changes:
+    - comment: Could not find a working Python 3 installation
+    - unless: /usr/bin/env python3 --version

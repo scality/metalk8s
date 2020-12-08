@@ -2,8 +2,43 @@
 
 ## Release 2.7.0 (in development)
 ### Enhancements
-- [#2855](https://github.com/scality/metalk8s/issues/2855) - Bump `containerd`
-  version to 1.4.1 (PR [#2869](https://github.com/scality/metalk8s/pull/2869))
+- Bump Kubernetes version to 1.18.12 (PR[#2947](https://github.com/scality/metalk8s/pull/2947))
+
+- [#2955](https://github.com/scality/metalk8s/issues/2955) - Bump `containerd`
+  version to 1.4.3 (PR [#2956](https://github.com/scality/metalk8s/pull/2956)).
+
+- Bump `coredns` version to 1.6.7 (PR [#2816](https://github.com/scality/metalk8s/pull/2816))
+
+- [#2203](https://github.com/scality/metalk8s/issues/2203) - Migrate Salt to Python3
+  and bump to version 3002.2 (PR [#2839](https://github.com/scality/metalk8s/pull/2839))
+
+- Bump `calico` version to 3.17.0 (PR [#2943](https://github.com/scality/metalk8s/pull/2943))
+
+- Bump `fluent-bit` chart to 2.0.1 and `loki` chart to 2.1.0
+  (PR [#2946](https://github.com/scality/metalk8s/pull/2946))
+
+- Replace the prometheus-operator chart by the kube-prometheus-stack one and
+  bump the version to 12.2.3.
+  All the container images of this stack have also been bumped:
+  - alertmanager from v0.20.0 to v0.21.0
+  - grafana from 6.7.4 to 7.2.1
+  - k8s-sidecar from 0.1.20 to 1.1.0
+  - kube-state-metrics from v1.9.5 to v1.9.7
+  - node-exporter from v0.18.1 to v1.0.1
+  - prometheus from v2.16.0 to v2.22.1
+  - prometheus-config-reload from v0.38.1 to v0.43.2
+  - prometheus-operator from v0.38.1 to v0.43.2
+  (PR [#2948](https://github.com/scality/metalk8s/pull/2948))
+
+### Bug fixes
+
+- [#2908](https://github.com/scality/metalk8s/issues/2908) - Make upgrade script
+  more robust about static pod restart and improve user experience
+  (PR [#2928](https://github.com/scality/metalk8s/pull/2928))
+
+- [#2726](https://github.com/scality/metalk8s/issues/2726) - Ensure sparse loop
+  volumes are all provisioned on reboot
+  (PR [#2936](https://github.com/scality/metalk8s/pull/2936))
 
 ## Release 2.6.1 (in development)
 

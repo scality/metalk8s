@@ -14,7 +14,7 @@ Install kubelet:
 # status of the kubelet service
 # $ systemctl status kubelet
 # Failed to get properties: Access denied
-# 
+#
 # Workaround: Reload systemctl
 Reload systemctl:
   module.wait:
