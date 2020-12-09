@@ -233,7 +233,11 @@ const VolumePageContent = (props) => {
   return (
     <VolumePageContentContainer>
       {!volumeListData.length && firstLoading ? (
-        <EmptyState label={'Volume'} link="/volumes/createVolume" />
+        <EmptyState
+          label={'Volume'}
+          link="/volumes/createVolume"
+          icon="fa-database"
+        />
       ) : (
         <Fragment>
           <LeftSideInstanceList>

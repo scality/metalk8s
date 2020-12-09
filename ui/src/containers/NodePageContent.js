@@ -45,7 +45,7 @@ const NodePageContent = (props) => {
   return (
     <PageContentContainer>
       {!nodeTableData.length && firstLoading ? (
-        <EmptyState label={'Node'} link="/nodes/create" />
+        <EmptyState label={'Node'} link="/nodes/create" icon="fa-server" />
       ) : (
         <Fragment>
           <LeftSideInstanceList>

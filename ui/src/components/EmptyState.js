@@ -46,14 +46,14 @@ export const IconWrapper = styled.div`
 `;
 
 const EmptyState = (props) => {
-  const { label, link } = props;
+  const { label, link, icon } = props;
   const history = useHistory();
 
   return (
     <EmptyStateWrapper>
       <EmptyStateRow>
         <IconWrapper>
-          <i className="fas fa-server"></i>
+          <i className={`fas ${icon}`}></i>
         </IconWrapper>
       </EmptyStateRow>
       <EmptyStateRow>
