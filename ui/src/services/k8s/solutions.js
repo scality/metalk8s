@@ -106,11 +106,10 @@ export async function getEnvironmentConfigMap(environment) {
   // we may support multiple namespaces in one environment later
   const environmentConfigMaps = [];
   for (const namespace of environment.namespaces) {
-    const result = await coreV1.readNamespacedConfigMap(
+    const result = await core.readNamespacedConfigMap(
       ENVIRONMENT_CONFIGMAP_NAME,
       namespace.metadata.name,
     );
-
     if (!result.error) {
       environmentConfigMaps.push(result?.body?.data);
     }
@@ -119,7 +118,7 @@ export async function getEnvironmentConfigMap(environment) {
 }
 
 export async function addSolutionToEnvironment(namespace, solName, solVersion) {
-  const result = await coreV1.readNamespacedConfigMap(
+  const result = await core.readNamespacedConfigMap(
     ENVIRONMENT_CONFIGMAP_NAME,
     namespace,
   );

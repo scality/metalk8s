@@ -134,3 +134,11 @@ export async function readNode(name) {
     return { error };
   }
 }
+
+export async function readNamespacedConfigMap(nameConfigMap, namespace) {
+  try {
+    return await coreV1.readNamespacedConfigMap(nameConfigMap, namespace);
+  } catch (error) {
+    return { error };
+  }
+}
