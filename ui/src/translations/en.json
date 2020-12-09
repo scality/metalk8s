@@ -72,6 +72,7 @@
   "creationTime": "Creation Time",
   "create_new_volume": "Create Volume",
   "no_volume_found": "No volumes found",
+  "no_node_found": "No nodes found",
   "no_searched_volume_found": "No volumes matching the search",
   "volume_type": "Type",
   "volume_size": "Volume Capacity",
