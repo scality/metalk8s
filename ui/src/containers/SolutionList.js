@@ -29,6 +29,7 @@ import {
   prepareEnvironmentAction,
   deleteEnvironmentAction,
 } from '../ducks/app/solutions';
+import { STATUS_TERMINATING } from '../constants';
 
 const PageSubtitle = styled.h3`
   color: ${(props) => props.theme.brand.textPrimary};
@@ -73,10 +74,19 @@ const LoaderContainer = styled.div`
   flex-wrap: nowrap;
   padding: 0 0 0 ${padding.smaller};
 `;
+
 const TrashButtonContainer = styled(Button)`
+  .sc-button-text {
+    cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+    // To make the graphic element become the target of the pointer events.
+    pointer-events: all;
+  }
   ${(props) => {
-    if (props.disabled) return { opacity: 0.2 };
+    if (props.disabled) {
+      return { opacity: 0.2 };
+    }
   }};
+  }
 `;
 
 const SolutionsList = (props) => {
@@ -170,7 +180,7 @@ const SolutionsList = (props) => {
             {isEnvironmentPreparing && (
               <LoaderContainer>
                 <Loader size="small"></Loader>
-                {intl.translate('preparing_environemnt', {
+                {intl.translate('preparing_environment', {
                   envName: environment.name,
                 })}
               </LoaderContainer>
@@ -193,6 +203,10 @@ const SolutionsList = (props) => {
                 dispatch(deleteEnvironmentAction(environment.name));
               }}
               inverted={true}
+              // An Environment may contain more than one Namespace
+              disabled={environment.namespaces.some(
+                (ns) => ns.status.phase === STATUS_TERMINATING,
+              )}
               icon={<i className="fas fa-lg fa-trash" />}
               data-cy={`delete_${environment.name}_button`}
             ></TrashButtonContainer>
