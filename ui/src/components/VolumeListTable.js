@@ -376,7 +376,7 @@ function Table({
                   background: theme.brand.primary,
                 }}
               >
-                No Volume
+                {intl.translate('no_volume_found')}
               </td>
             </HeadRow>
           ) : null}

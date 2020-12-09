@@ -338,6 +338,25 @@ function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
           })}
         </thead>
         <Body {...getTableBodyProps()}>
+          {rows.length === 0 ? (
+            <HeadRow
+              style={{
+                width: '100%',
+                paddingTop: padding.base,
+                height: '60px',
+              }}
+            >
+              <td
+                style={{
+                  textAlign: 'center',
+                  background: theme.brand.primary,
+                }}
+              >
+                {intl.translate('no_node_found')}
+              </td>
+            </HeadRow>
+          ) : null}
+
           {rows.map((row, i) => {
             prepareRow(row);
             return (
