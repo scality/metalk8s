@@ -113,50 +113,49 @@ if RELEASE_BUILD:
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_scality'
+if ON_RTD:
+    html_theme = 'sphinx_rtd_theme'
+else:
+    html_theme = 'sphinx_scality'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
 
-html_theme_options = {
-    'social_links': [
-        ("github", "https://www.github.com/scality/metalk8s"),
-        ("linkedin", "https://www.linkedin.com/company/scality/"),
-        ("twitter", "https://twitter.com/scality"),
-        ("instagram", "https://instagram.com/scalitylife"),
-        ("facebook", "https://www.facebook.com/scality/"),
-    ],
-}
-
-# Build tag for Scality product documentation
-if tags.has('scality-product'):
-    _kblink = 'https://support.scality.com/hc/en-us'
-    _homelink = 'https://documentation.scality.com'
-    html_theme_options['footer_links'] = [
-        ("Support", "https://support.scality.com"),
-        ("Knowledge Base", _kblink),
-        ("Training", "https://training.scality.com"),
-    ]
-    html_theme_options['kblink'] = _kblink
-    html_theme_options['homelink'] = _homelink
-    html_theme_options['parentlink'] = _homelink + '/metalk8s'
+if ON_RTD:
+    html_theme_options = {'logo_only': True}
 else:
-    html_theme_options['footer_links'] = [
-        ("Support", "https://www.github.com/scality/metalk8s/issues"),
-    ]
+    html_theme_options = {
+        'social_links': [
+            ("github", "https://www.github.com/scality/metalk8s"),
+            ("linkedin", "https://www.linkedin.com/company/scality/"),
+            ("twitter", "https://twitter.com/scality"),
+            ("instagram", "https://instagram.com/scalitylife"),
+            ("facebook", "https://www.facebook.com/scality/"),
+        ],
+    }
 
-    # Only add header links for RTD-hosted docs (otherwise, we assume it's
-    # embedded documentation in the product ISO and ignore links for now)
-    if ON_RTD:
-        _homelink = 'https://metal-k8s.readthedocs.io'
+    # Build tag for Scality product documentation
+    if tags.has('scality-product'):
+        _kblink = 'https://support.scality.com/hc/en-us'
+        _homelink = 'https://documentation.scality.com'
+        html_theme_options['footer_links'] = [
+            ("Support", "https://support.scality.com"),
+            ("Knowledge Base", _kblink),
+            ("Training", "https://training.scality.com"),
+        ]
+        html_theme_options['kblink'] = _kblink
         html_theme_options['homelink'] = _homelink
-        html_theme_options['parentlink'] = _homelink
+        html_theme_options['parentlink'] = _homelink + '/metalk8s'
+    else:
+        html_theme_options['footer_links'] = [
+            ("Support", "https://www.github.com/scality/metalk8s/issues"),
+        ]
 
-html_theme_options['footer_links'].append(
-    ("Privacy Policy", "https://www.scality.com/privacy-policy/")
-)
+    html_theme_options['footer_links'].append(
+        ("Privacy Policy", "https://www.scality.com/privacy-policy/")
+    )
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -171,7 +170,10 @@ html_context = {
 
 html_show_sourcelink = False
 
-html_logo = '../artwork/generated/metalk8s-logo-wide-black-400.png'
+if ON_RTD:
+    html_logo = '../artwork/generated/metalk8s-logo-wide-white-200.png'
+else:
+    html_logo = '../artwork/generated/metalk8s-logo-wide-black-400.png'
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -256,7 +258,7 @@ googleanalytics_enabled = ON_RTD
 
 # -- Options for sphinxcontrib_github_alt ------------------------------------
 # See https://pypi.org/project/sphinxcontrib_github_alt/
-github_project_url = 'https://github.com/Scality/metalk8s'
+github_project_url = 'https://github.com/scality/metalk8s'
 
 # -- Options for sphinx.ext.intersphinx --------------------------------------
 # See http://www.sphinx-doc.org/en/stable/ext/intersphinx.html

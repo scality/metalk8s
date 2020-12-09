@@ -990,14 +990,29 @@ stages:
             STEP_NAME: docs
       - ShellCommand: *setup_cache
       - ShellCommand:
-          name: Build documentation
+          name: Build documentation for ReadTheDocs
           env:
             # Fake that we are building in a ReadTheDocs environment
             READTHEDOCS: 'True'
-          command: tox --workdir /tmp/tox -e docs -- html latexpdf
+          command: tox --workdir /tmp/tox -e docs -- html
           haltOnFailure: true
       - ShellCommand:
           <<: *copy_artifacts
+          name: Copy generated docs for ReadTheDocs
+          env:
+            <<: *_env_copy_artifacts
+            DEST_DIR: "artifacts/docs/readthedocs"
+            ARTIFACTS: >-
+              docs/_build/*
+      - ShellCommand:
+          name: Build documentation with Scality theme
+          command: >-
+            rm -rf docs/_build &&
+            tox --workdir /tmp/tox -e docs -- html latexpdf
+          haltOnFailure: true
+      - ShellCommand:
+          <<: *copy_artifacts
+          name: Copy generated docs with Scality theme
           env:
             <<: *_env_copy_artifacts
             DEST_DIR: "artifacts/docs"
