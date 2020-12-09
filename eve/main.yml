@@ -563,6 +563,8 @@ models:
         OS_USERNAME: "%(secret:scality_cloud_username)s"
         OS_PASSWORD: "%(secret:scality_cloud_password)s"
         OS_TENANT_NAME: "%(secret:scality_cloud_tenant_name)s"
+        OS_PROJECT_DOMAIN_ID: "default"
+        OS_USER_DOMAIN_ID: "default"
         TF_VAR_prefix: "%(prop:buildnumber)s-%(prop:stage_name)s"
         TF_VAR_os: "%(prop:os:-centos-7)s"
         TF_VAR_nodes_count: "%(prop:nodes_count:-0)s"
@@ -570,6 +572,15 @@ models:
         TF_VAR_rhsm_password: "%(secret:rhel_ci_password)s"
         TF_VAR_debug: "%(prop:metalk8s_debug:-false)s"
         MAX_RETRIES: "3"
+      workdir: build/eve/workers/openstack-terraform/terraform/
+      haltOnFailure: true
+  - ShellCommand: &terraform_gen_snapshot
+      name: Generate snapshot from terraform environment
+      doStepIf: "%(prop:generate_snapshot:-false)s"
+      env:
+        <<: *_env_terraform
+        SNAPSHOT_NAME: "%(prop:metalk8s_version)s-%(prop:os:-centos-7)s-%(prop:environment_type)s-%(prop:environment_name)s"
+      command: ./generate_snapshot.sh
       workdir: build/eve/workers/openstack-terraform/terraform/
       haltOnFailure: true
   - ShellCommand: &terraform_destroy
@@ -1667,6 +1678,10 @@ stages:
             <<: *_install_single-node_junit_info
             STEP_NAME: single-node-install-rhel
       - Upload: *upload_final_status_artifact
+    # NOTE: This section only run if property "generate_snapshot" is True
+    # {{{
+      - ShellCommand: *terraform_gen_snapshot
+    # }}}
       - ShellCommand:
           <<: *wait_debug
           env:
@@ -1749,7 +1764,7 @@ stages:
     worker:
       type: local
     steps:
-      - SetProperty:
+      - SetProperty: &prop_single_node_env_type
           name: Set environment type to single node
           property: environment_type
           value: single node
@@ -1764,7 +1779,7 @@ stages:
     worker:
       type: local
     steps:
-      - SetProperty:
+      - SetProperty: &prop_multi_node_env_type
           name: Set environment type to multi node
           property: environment_type
           value: multi node
@@ -1780,7 +1795,7 @@ stages:
     worker:
       type: local
     steps:
-      - SetProperty:
+      - SetProperty: &prop_simple_env_name
           name: Set environment name to simple environment
           property: environment_name
           value: simple environment
@@ -1795,11 +1810,11 @@ stages:
     worker:
       type: local
     steps:
-      - SetProperty:
+      - SetProperty: &prop_3nodes_count
           name: Set nodes count to 2 (bootstrap + 2 nodes)
           property: nodes_count
           value: "2"
-      - SetProperty:
+      - SetProperty: &prop_3nodes_env_name
           name: Set environment name to 3 nodes
           property: environment_name
           value: "3 nodes"
@@ -2197,6 +2212,10 @@ stages:
             <<: *_install_multi-node_junit_info
             STEP_NAME: "multiple-nodes-%(prop:os:-centos-7)s"
       - Upload: *upload_final_status_artifact
+    # NOTE: This section only run if property "generate_snapshot" is True
+    # {{{
+      - ShellCommand: *terraform_gen_snapshot
+    # }}}
       - ShellCommand:
           <<: *wait_debug
           timeout: 14400
@@ -2508,3 +2527,56 @@ stages:
           env:
             STEP_NAME: single-node-solutions
       - ShellCommand: *terraform_destroy
+
+  generate-snapshot:
+    worker:
+      type: local
+    steps:
+      - GetArtifactsFromStage:
+          name: Get pre-merge artifacts_name
+          stage: pre-merge
+          property: premerge_artifacts_name
+          haltOnFailure: True
+      - SetProperty: *set_premerge_url
+      - TriggerStages:
+          name: Trigger snapshot generations stages simultaneously
+          stage_names:
+            - gen-single-node-snapshot
+            - gen-3-nodes-snapshot
+
+  gen-single-node-snapshot:
+    worker:
+      type: local
+    steps:
+      - SetPropertyFromCommand: *set_version_prop
+      - SetPropertyFromCommand: *set_short_version_prop
+      - SetProperty: *prop_single_node_env_type
+      - SetProperty: *prop_simple_env_name
+      - SetProperty: &prop_enable_solution_install
+          name: Enable solution install
+          property: install_solution
+          value: "true"
+      - SetProperty: &prop_enable_snapshot_generation
+          name: Enable snapshot mode
+          property: generate_snapshot
+          value: "true"
+      - TriggerStages:
+          name: Trigger single-node step with snapshot enabled
+          stage_names:
+            - single-node-install
+
+  gen-3-nodes-snapshot:
+    worker:
+      type: local
+    steps:
+      - SetPropertyFromCommand: *set_version_prop
+      - SetPropertyFromCommand: *set_short_version_prop
+      - SetProperty: *prop_multi_node_env_type
+      - SetProperty: *prop_3nodes_count
+      - SetProperty: *prop_3nodes_env_name
+      - SetProperty: *prop_enable_solution_install
+      - SetProperty: *prop_enable_snapshot_generation
+      - TriggerStages:
+          name: Trigger multiple-nodes step with snapshot enabled
+          stage_names:
+            - multiple-nodes
