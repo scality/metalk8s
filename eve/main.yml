@@ -43,34 +43,31 @@ models:
         echo "Could not reach Docker daemon from buildbot worker" >&2
         exit 1'
       haltOnFailure: true
-  - ShellCommand: &wait_pods_running
-      name: Wait for pods to be in running state
-      env: &_env_wait_pods_running
+  - ShellCommand: &wait_pods_stable
+      name: Wait for pods to stabilize
+      env: &_env_wait_pods_stable
         RETRY: "60"
         SLEEP_TIME: "5"
         STABILIZATION_TIME: "30"
-        STATUS: "Running"
-        EXTRA_OPTS: ""
       command: >
         git checkout "%(prop:branch)s" &&
-        sudo eve/wait_pods_status.sh
+        sudo eve/wait_pods_stable.sh
         --sleep-time "$SLEEP_TIME" --stabilization-time "$STABILIZATION_TIME"
-        --status "$STATUS" --retry "$RETRY" $EXTRA_OPTS
+        --retry "$RETRY"
       usePTY: true
       haltOnFailure: true
-  - ShellCommand: &wait_pods_running_ssh
-      name: Wait for pods to be in running state
-      env: &_env_wait_pods_running_ssh
-        <<: *_env_wait_pods_running
+  - ShellCommand: &wait_pods_stable_ssh
+      name: Wait for pods to stabilize
+      env: &_env_wait_pods_stable_ssh
+        <<: *_env_wait_pods_stable
         SSH_CONFIG: ssh_config
         SSH_HOST: bootstrap
-        EXTRA_OPTS: ""
       command: >
         git checkout "%(prop:branch)s" &&
-        scp -F "$SSH_CONFIG" %(prop:builddir)s/build/eve/wait_pods_status.sh "$SSH_HOST":/tmp/ &&
-        ssh -F "$SSH_CONFIG" "$SSH_HOST" sudo /tmp/wait_pods_status.sh
+        scp -F "$SSH_CONFIG" %(prop:builddir)s/build/eve/wait_pods_stable.sh "$SSH_HOST":/tmp/ &&
+        ssh -F "$SSH_CONFIG" "$SSH_HOST" sudo /tmp/wait_pods_stable.sh
         --sleep-time "$SLEEP_TIME" --stabilization-time "$STABILIZATION_TIME"
-        --status "$STATUS" --retry "$RETRY" $EXTRA_OPTS
+        --retry "$RETRY"
       usePTY: true
       workdir: build/eve/workers/openstack-terraform/terraform/
       haltOnFailure: true
@@ -1347,7 +1344,7 @@ stages:
             sudo -E eve/create-volumes.sh
           haltOnFailure: true
       # --- Wait for the cluster to be stabilized ---
-      - ShellCommand: *wait_pods_running
+      - ShellCommand: *wait_pods_stable
       # --- Test version N ---
       - ShellCommand: &fast_tests
           <<: *local_tests
@@ -1376,7 +1373,7 @@ stages:
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
             --destination-version "%(prop:metalk8s_version_prev)s" --verbose
           haltOnFailure: true
-      - ShellCommand: *wait_pods_running
+      - ShellCommand: *wait_pods_stable
       # --- Test version N-1 ---
       - ShellCommand: &fast_tests_prev
           <<: *local_tests
@@ -1456,7 +1453,7 @@ stages:
             BRANCH: "development/%(prop:product_version_prev)s"
             PRODUCT_TXT: "/srv/scality/metalk8s-%(prop:metalk8s_version_prev)s/product.txt"
             PRODUCT_MOUNT: "/srv/scality/metalk8s-%(prop:metalk8s_version_prev)s"
-      - ShellCommand: *wait_pods_running
+      - ShellCommand: *wait_pods_stable
       # --- Test version N-1 ---
       - ShellCommand: *fast_tests_prev
       # --- Upgrade to version N ---
@@ -1474,7 +1471,7 @@ stages:
             --verbose
           haltOnFailure: true
       - ShellCommand: *provision_prometheus_volumes
-      - ShellCommand: *wait_pods_running
+      - ShellCommand: *wait_pods_stable
       # --- Test version N ---
       - ShellCommand: *fast_tests
       # --- Collect logs ---
@@ -1539,7 +1536,7 @@ stages:
       - ShellCommand: *mount_iso_ssh
       - ShellCommand: *run_bootstrap_ssh
       - ShellCommand: *provision_volumes_ssh
-      - ShellCommand: *wait_pods_running_ssh
+      - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand: *git_pull_ssh
       - ShellCommand: *bastion_fast_tests
       - SetPropertyFromCommand: *set_bootstrap_cp_ip_ssh
@@ -1761,24 +1758,24 @@ stages:
             TF_VAR_rhsm_password: "%(secret:rhel_ci_password)s"
       # --- Wait for all pods to be running ---
       - ShellCommand:
-          <<: *wait_pods_running_ssh
-          # NOTE: Do not use `wait_pods_running_ssh` directly as we need to
+          <<: *wait_pods_stable_ssh
+          # NOTE: Do not use `wait_pods_stable_ssh` directly as we need to
           # have a workaround to make sure all PVs are well recreated by
           # storage operator
           # Check https://github.com/scality/metalk8s/issues/2726
-          # As workaround if `wait_pods_status` failed just restart salt-minion
-          # everywhere and `wait_pods_status` again
+          # As workaround if `wait_pods_stable` failed just restart salt-minion
+          # everywhere and `wait_pods_stable` again
           command: >
             git checkout "%(prop:branch)s" &&
-            scp -F ssh_config "%(prop:builddir)s/build/eve/wait_pods_status.sh" bootstrap:/tmp/ &&
+            scp -F ssh_config "%(prop:builddir)s/build/eve/wait_pods_stable.sh" bootstrap:/tmp/ &&
             ssh -F ssh_config bootstrap sudo bash -c "
-            /tmp/wait_pods_status.sh --sleep-time 5 --stabilization-time 30 --status Running
+            /tmp/wait_pods_stable.sh --sleep-time 5 --stabilization-time 30 --status Running
             --retry 30 || (crictl exec -it
             \$(sudo crictl ps -q --label io.kubernetes.pod.namespace=kube-system
             --label io.kubernetes.container.name=salt-master --state Running)
             salt '*' cmd.run_bg 'salt-call --local service.restart salt-minion' &&
             sleep 10 &&
-            /tmp/wait_pods_status.sh --sleep-time 5 --stabilization-time 30 --status Running
+            /tmp/wait_pods_stable.sh --sleep-time 5 --stabilization-time 30 --status Running
             --retry 30)"
       # --- We do not need to Test promoted version ---
       # --- Upgrade to version N ---
@@ -1803,7 +1800,7 @@ stages:
             <<: *_env_provision_volumes
             PRODUCT_MOUNT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
             PRODUCT_TXT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s/product.txt"
-      - ShellCommand: *wait_pods_running_ssh
+      - ShellCommand: *wait_pods_stable_ssh
       # --- Test version N ---
       - ShellCommand: *git_pull_ssh
       - ShellCommand:
@@ -1882,7 +1879,7 @@ stages:
       # --- Install version N ---
       - ShellCommand: *run_bootstrap
       - ShellCommand: *provision_prometheus_volumes
-      - ShellCommand: *wait_pods_running
+      - ShellCommand: *wait_pods_stable
       # --- Test version N ---
       - ShellCommand: *fast_tests
       # --- Downgrade to promoted version ---
@@ -1899,7 +1896,7 @@ stages:
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/downgrade.sh
             --destination-version %(prop:product_promoted_version)s --verbose
           haltOnFailure: true
-      - ShellCommand: *wait_pods_running
+      - ShellCommand: *wait_pods_stable
       # --- Test promoted version ---
       - ShellCommand:
           <<: *local_tests
@@ -2026,12 +2023,7 @@ stages:
             --enablerepo=metalk8s-kubernetes
           workdir: build/eve/workers/openstack-terraform/terraform/
       - ShellCommand: *git_pull_ssh
-      - ShellCommand: &wait_kube_system_pods_running_ssh
-          <<: *wait_pods_running_ssh
-          name: Wait for "kube-system" Pods to be in running state
-          env:
-            <<: *_env_wait_pods_running_ssh
-            EXTRA_OPTS: "--namespace kube-system"
+      - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand:
           <<: *bastion_tests
           name: Run installation scenarii on the bastion
@@ -2043,7 +2035,7 @@ stages:
           env:
             <<: *_env_provision_volumes
             NODE_NAME: node-1
-      - ShellCommand: *wait_pods_running_ssh
+      - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand: &multi_node_fast_tests
           <<: *bastion_tests
           name: Run fast tests on Bastion
@@ -2126,7 +2118,7 @@ stages:
       - ShellCommand: *mount_iso_ssh
       - ShellCommand: *run_bootstrap_ssh
       - ShellCommand: *git_pull_ssh
-      - ShellCommand: *wait_kube_system_pods_running_ssh
+      - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand:
           <<: *bastion_tests
           name: Run installation scenario on the bastion
@@ -2134,7 +2126,7 @@ stages:
             <<: *_env_bastion_tests
             PYTEST_FILTERS: "install and ci and multinodes"
       - ShellCommand: *provision_volumes_on_node1
-      - ShellCommand: *wait_pods_running_ssh
+      - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand: *multi_node_fast_tests
       - ShellCommand: *multi_node_slow_tests
       - SetPropertyFromCommand:
@@ -2241,7 +2233,7 @@ stages:
             <<: *_env_bastion_tests
             PYTEST_FILTERS: "restore"
             BOOTSTRAP_BACKUP_ARCHIVE: "/tmp/%(prop:bootstrap_backup_archive)s"
-      - ShellCommand: *wait_pods_running_ssh
+      - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand: *multi_node_fast_tests
       - ShellCommand: *multi_node_slow_tests
       - ShellCommand:
@@ -2311,7 +2303,7 @@ stages:
       - ShellCommand: *run_bootstrap_ssh
       - ShellCommand: *provision_volumes_ssh
       - ShellCommand: *install_kubectl_bootstrap_ssh
-      - ShellCommand: *wait_pods_running_ssh
+      - ShellCommand: *wait_pods_stable_ssh
       - SetPropertyFromCommand: *set_example_solution_version
       - SetPropertyFromCommand:
           name: Set Example Solution version next property
