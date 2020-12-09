@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useLocation, useHistory } from 'react-router-dom';
 import { createSelector } from 'reselect';
@@ -418,4 +418,17 @@ export const useDynamicChartSize = (container_id) => {
   }, [graphsContainerWidth]);
 
   return [graphWidth, window.innerHeight / 6 - 30];
+};
+
+/*
+ ** Hook to store previous value of a given variable
+ ** Used to compare prev and next props or equivalent
+ */
+export const usePrevious = (value) => {
+  const ref = useRef();
+  // Store current value in ref
+  useEffect(() => {
+    ref.current = value;
+  }, [value]); // Only re-run if value changes
+  return ref.current;
 };
