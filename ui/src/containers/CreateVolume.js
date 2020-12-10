@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { Formik, Form } from 'formik';
+import { Formik, Form, FieldArray, useFormikContext, useField } from 'formik';
 import * as yup from 'yup';
 import styled from 'styled-components';
 import Loader from '../components/Loader';
@@ -18,7 +18,11 @@ import {
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
 import { SPARSE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
-import { sizeUnits, useQuery } from '../services/utils';
+import {
+  sizeUnits,
+  useQuery,
+  linuxDrivesNamingIncrement,
+} from '../services/utils';
 import { intl } from '../translations/IntlGlobalProvider';
 
 // We might want to do a factorization later for
@@ -237,16 +241,55 @@ const CreateVolume = (props) => {
     sizeInput: '',
     labels: {},
     multiVolumeCreation: false,
-    // When the multi-volume creation mode is active, the default number is 1.
+    // When the multi-volume creation mode is active, the default/min number is 1.
     numberOfVolumes: 1,
-    // MultiVolumes should be the array of objects.
-    // For example:
-    // [
-    //   { name: "volume01'", devicePath: '/dev/sdb' },
-    //   { name: "volume02'", devicePath: '/dev/sdc' },
-    //   ...
-    // ];
-    multiVolumes: [],
+    volumes: [{ name: '', path: '' }],
+  };
+
+  // Set the dependend /recommand fields based on the default values of other fields (DevicePath / Size / SizeUnit) in Formik.
+  const RecommendNameField = (props) => {
+    const {
+      values: { name },
+      touched,
+      setFieldValue,
+    } = useFormikContext();
+    const [field, meta] = useField(props);
+    React.useEffect(() => {
+      if (name.trim() !== '' && touched.name) {
+        setFieldValue(props.name, `${name}${props.index + 1}`);
+      }
+    }, [name, touched.name, setFieldValue, props.name, props.index]);
+
+    return (
+      <>
+        <Input {...props} {...field} />
+        {!!meta.touched && !!meta.error && <div>{meta.error}</div>}
+      </>
+    );
+  };
+
+  const RecommendDevicePathField = (props) => {
+    const {
+      values: { path },
+      touched,
+      setFieldValue,
+    } = useFormikContext();
+    const [field, meta] = useField(props);
+    React.useEffect(() => {
+      if (path.trim() !== '' && touched.path) {
+        setFieldValue(
+          props.name,
+          linuxDrivesNamingIncrement(path, props.index + 1),
+        );
+      }
+    }, [path, touched.path, setFieldValue, props.name, props.index]);
+
+    return (
+      <>
+        <Input {...props} {...field} />
+        {!!meta.touched && !!meta.error && <div>{meta.error}</div>}
+      </>
+    );
   };
 
   const volumeNameRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
@@ -291,6 +334,14 @@ const CreateVolume = (props) => {
       then: yup.string(),
     }),
     labels: yup.object(),
+    volumes: yup.array().of(
+      yup.object().shape({
+        name: yup
+          .string()
+          .matches(volumeNameRegex, intl.translate('name_error'))
+          .required(''),
+      }),
+    ),
   });
 
   const isStorageClassExist = storageClassesName.length > 0;
@@ -362,6 +413,34 @@ const CreateVolume = (props) => {
                 setFieldValue('labels', labels);
               };
 
+              // Update the volume list base on the current input number
+              const setVolumeNumber = (field, arrayHelpers) => (
+                selectedObj,
+              ) => {
+                const inputVolNum = selectedObj.target.value;
+                const preVolNum = values.numberOfVolumes;
+
+                setFieldValue(field, inputVolNum);
+                var diff = preVolNum - inputVolNum;
+                if (diff > 0) {
+                  // REMOVE volume object from `values.volumes` base on the index
+                  for (var i = inputVolNum; i < preVolNum; i++) {
+                    arrayHelpers.remove(i);
+                  }
+                } else if (diff < 0) {
+                  // PUSH new volume object to `values.volumes`
+                  var absDiff = Math.abs(diff);
+                  while (absDiff--) {
+                    arrayHelpers.push({
+                      name: '',
+                      path: '',
+                      sizeInput: '',
+                      selectedUnit: sizeUnits[3].value,
+                    });
+                  }
+                }
+              };
+
               const optionsStorageClasses = storageClassesName.map((SCName) => {
                 return {
                   label: SCName,
@@ -400,74 +479,6 @@ const CreateVolume = (props) => {
                   'data-cy': `node-${node.name}`,
                 };
               });
-
-              const multiVolumeInputs = [];
-              for (let i = 0; i < values.numberOfVolumes; i++) {
-                multiVolumeInputs.push(
-                  <SingleVolumeContainer>
-                    <div style={{ paddingTop: `${padding.base}` }}>
-                      {i + 1}-
-                    </div>
-                    <SingleVolumeForm>
-                      <Input
-                        name="multiVolumeName"
-                        value={values.name && `${values.name}${i + 1}`}
-                        label={intl.translate('name')}
-                        error={touched.name && errors.name}
-                        onBlur={handleOnBlur}
-                        onChange={(e) => {
-                          console.log('e', e);
-                        }}
-                      />
-                      {values.type === RAW_BLOCK_DEVICE ? (
-                        <Input
-                          name="path"
-                          value={values.path}
-                          onChange={handleChange('path')}
-                          label={intl.translate('device_path')}
-                          error={touched.path && errors.path}
-                          onBlur={handleOnBlur}
-                        />
-                      ) : (
-                        <SizeFieldContainer>
-                          <Input
-                            name="sizeInput"
-                            type="number"
-                            min="1"
-                            value={values.sizeInput}
-                            onChange={handleChange('sizeInput')}
-                            label={intl.translate('volume_size')}
-                            error={touched.sizeInput && errors.sizeInput}
-                            onBlur={handleOnBlur}
-                          />
-                          <SizeUnitFieldSelectContainer>
-                            <Input
-                              id="unit_input"
-                              label=""
-                              clearable={false}
-                              type="select"
-                              options={optionsSizeUnits}
-                              noOptionsMessage={() =>
-                                intl.translate('no_results')
-                              }
-                              name="selectedUnit"
-                              onChange={handleSelectChange('selectedUnit')}
-                              value={getSelectedObjectItem(
-                                optionsSizeUnits,
-                                values?.selectedUnit,
-                              )}
-                              error={
-                                touched.selectedUnit && errors.selectedUnit
-                              }
-                              onBlur={handleOnBlur}
-                            />
-                          </SizeUnitFieldSelectContainer>
-                        </SizeFieldContainer>
-                      )}
-                    </SingleVolumeForm>
-                  </SingleVolumeContainer>,
-                );
-              }
 
               return (
                 <Form>
@@ -589,8 +600,6 @@ const CreateVolume = (props) => {
                         />
                         <SizeUnitFieldSelectContainer>
                           <Input
-                            id="unit_input"
-                            label=""
                             clearable={false}
                             type="select"
                             options={optionsSizeUnits}
@@ -630,44 +639,73 @@ const CreateVolume = (props) => {
                     </CheckboxContainer>
                   </FormSection>
 
-                  {values.multiVolumeCreation === true && (
-                    <FormSection>
-                      <MultiCreationFormContainer>
-                        <div
-                          style={{
-                            paddingLeft: '40px',
-                            paddingTop: `${padding.large}`,
-                          }}
-                        >
-                          <span
-                            style={{
-                              paddingRight: `${padding.base}`,
-                            }}
-                          >
-                            Number of volume to create
-                          </span>
-                          {/* TODO: Generalize the number input component to core-ui. */}
-                          <InputNumberComponentStyle
-                            type="number"
-                            name="numberOfVolumes"
-                            value={values.numberOfVolumes}
-                            min="1"
-                            onChange={handleChange('numberOfVolumes')}
-                          />
-                        </div>
-                        <div
-                          style={{
-                            paddingLeft: '40px',
-                            paddingTop: `${padding.large}`,
-                          }}
-                        >
-                          Name the Volumes and provide the Device paths. You may
-                          use the defaults or override them.
-                        </div>
-                        {multiVolumeInputs}
-                      </MultiCreationFormContainer>
-                      }
-                    </FormSection>
+                  {values.multiVolumeCreation && (
+                    <MultiCreationFormContainer>
+                      <FieldArray
+                        name="volumes"
+                        render={(arrayHelpers) => (
+                          <div>
+                            <div
+                              style={{
+                                paddingLeft: '40px',
+                                paddingTop: `${padding.large}`,
+                              }}
+                            >
+                              <span
+                                style={{
+                                  paddingRight: `${padding.base}`,
+                                }}
+                              >
+                                Number of volume to create
+                              </span>
+                              {/* TODO: Generalize the number input component to core-ui. */}
+                              <InputNumberComponentStyle
+                                type="number"
+                                name="numberOfVolumes"
+                                value={values.numberOfVolumes}
+                                min="1"
+                                onChange={setVolumeNumber(
+                                  'numberOfVolumes',
+                                  arrayHelpers,
+                                )}
+                              />
+                            </div>
+                            <div
+                              style={{
+                                paddingLeft: '40px',
+                                paddingTop: `${padding.large}`,
+                              }}
+                            >
+                              Name the Volumes and provide the Device paths. You
+                              may use the defaults or override them.
+                            </div>
+                            {values.volumes.map((volume, index) => (
+                              <SingleVolumeContainer key={`volume${index}`}>
+                                <div style={{ paddingTop: `${padding.base}` }}>
+                                  {index + 1}-
+                                </div>
+                                <SingleVolumeForm>
+                                  <RecommendNameField
+                                    name={`volumes[${index}]name`}
+                                    label={intl.translate('name')}
+                                    onBlur={handleOnBlur}
+                                    index={index}
+                                  />
+                                  {values.type === RAW_BLOCK_DEVICE ? (
+                                    <RecommendDevicePathField
+                                      name={`volumes.${index}.path`}
+                                      label={intl.translate('device_path')}
+                                      onBlur={handleOnBlur}
+                                      index={index}
+                                    />
+                                  ) : null}
+                                </SingleVolumeForm>
+                              </SingleVolumeContainer>
+                            ))}
+                          </div>
+                        )}
+                      ></FieldArray>
+                    </MultiCreationFormContainer>
                   )}
                   <ActionContainer>
                     <Button
