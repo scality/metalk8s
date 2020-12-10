@@ -2,7 +2,7 @@
 
 ## Release 2.7.0 (in development)
 ### Enhancements
-- Bump Kubernetes version to 1.18.12 (PR[#2947](https://github.com/scality/metalk8s/pull/2947))
+- Bump Kubernetes version to 1.18.13 (PR[#2973](https://github.com/scality/metalk8s/pull/2973))
 
 - [#2955](https://github.com/scality/metalk8s/issues/2955) - Bump `containerd`
   version to 1.4.3 (PR [#2956](https://github.com/scality/metalk8s/pull/2956)).
