@@ -1758,25 +1758,33 @@ stages:
             TF_VAR_rhsm_password: "%(secret:rhel_ci_password)s"
       # --- Wait for all pods to be running ---
       - ShellCommand:
-          <<: *wait_pods_stable_ssh
-          # NOTE: Do not use `wait_pods_stable_ssh` directly as we need to
-          # have a workaround to make sure all PVs are well recreated by
-          # storage operator
-          # Check https://github.com/scality/metalk8s/issues/2726
-          # As workaround if `wait_pods_stable` failed just restart salt-minion
-          # everywhere and `wait_pods_stable` again
+          # NOTE: manually ensure all loop devices are provisioned after node
+          # startup - see https://github.com/scality/metalk8s/issues/2726
+          # This workaround can be removed in development/2.8
+          name: Ensure all loop devices are provisioned
           command: >
-            git checkout "%(prop:branch)s" &&
-            scp -F ssh_config "%(prop:builddir)s/build/eve/wait_pods_stable.sh" bootstrap:/tmp/ &&
-            ssh -F ssh_config bootstrap sudo bash -c "
-            /tmp/wait_pods_stable.sh --sleep-time 5 --stabilization-time 30 --status Running
-            --retry 30 || (crictl exec -it
-            \$(sudo crictl ps -q --label io.kubernetes.pod.namespace=kube-system
-            --label io.kubernetes.container.name=salt-master --state Running)
-            salt '*' cmd.run_bg 'salt-call --local service.restart salt-minion' &&
-            sleep 10 &&
-            /tmp/wait_pods_stable.sh --sleep-time 5 --stabilization-time 30 --status Running
-            --retry 30)"
+            ssh -F ssh_config bootstrap 'sudo bash -c "
+            . /srv/scality/metalk8s-%(prop:product_promoted_version)s/common.sh
+            &&
+            crictl exec \$(get_salt_container)
+            salt \\* state.sls metalk8s.volumes.provisioned
+            saltenv=metalk8s-%(prop:product_promoted_version)s
+            || echo Something went wrong, maybe a node does not have volumes
+            to provision?"'
+          workdir: build/eve/workers/openstack-terraform/terraform/
+          haltOnFailure: true
+      - ShellCommand: *wait_pods_stable_ssh
+      - ShellCommand:
+          # NOTE: we ignore Succeeded pods which were scheduled by Jobs, since
+          # their Ready condition is False
+          name: Ensure all pods are running
+          command: >
+            ssh -F ssh_config bootstrap 'sudo bash -c "
+            kubectl --kubeconfig=/etc/kubernetes/admin.conf
+            wait pods --for=condition=Ready --all --all-namespaces
+            --field-selector=status.phase!=Succeeded"'
+          workdir: build/eve/workers/openstack-terraform/terraform/
+          haltOnFailure: true
       # --- We do not need to Test promoted version ---
       # --- Upgrade to version N ---
       - ShellCommand: *copy_iso_bootstrap_ssh
