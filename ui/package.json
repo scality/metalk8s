@@ -7,7 +7,7 @@
     "@kubernetes/client-node": "github:scality/kubernetes-client-javascript.git#browser-0.10.2-62-g61d8543",
     "@scality/core-ui": "github:scality/core-ui.git#3a7cd45",
     "axios": "^0.18.0",
-    "formik": "1.5.1",
+    "formik": "2.2.5",
     "lodash.isempty": "^4.4.0",
     "lodash.sortby": "^4.7.0",
     "oidc-client": "^1.8.0",
