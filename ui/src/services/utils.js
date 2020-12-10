@@ -419,3 +419,45 @@ export const useDynamicChartSize = (container_id) => {
 
   return [graphWidth, window.innerHeight / 6 - 30];
 };
+
+/**
+ * This function increments the string by 1
+ *
+ * Note that, for the moment, we only support device path '/dev/vda'
+ *
+ * Drive # —	Name
+ * 1	        vda
+ * 26	        vdz
+ * 27	        vdaa
+ * 28	        vdab
+ * 52	        vdaz
+ * 53	        vdba
+ * 54	        vdbb
+ * 702	      vdzz
+ * 703	      vdaaa
+ * 704	      vdaab
+ * 18278	    vdzzz
+ *
+ * @param {string} string - The string that will be incremented
+ *
+ * @example
+ * const string = '/dev/vda'
+ *
+ * const nextDevicePath = linuxDrivesNamingIncrement(string)
+ */
+export const linuxDrivesNamingIncrement = (string, increment) => {
+  if (string.match(/^\/dev\/vd[a-z]/)) {
+    while (increment--) {
+      var lastChar = string.slice(-1);
+      var sub = string.slice(0, -1);
+      if (lastChar === 'z' && string.lenth === 8) {
+        string = '/dev/vdaa';
+      } else {
+        string = sub + String.fromCharCode(lastChar.charCodeAt() + 1);
+      }
+    }
+    return string;
+  } else {
+    return '';
+  }
+};
