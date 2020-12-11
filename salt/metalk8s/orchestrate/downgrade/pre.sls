@@ -2,5 +2,5 @@
 # NOTE: This state should be called by salt-master using the saltenv of
 # the current version (salt-master should not have been downgraded yet)
 
-include:
-  - metalk8s.addons.prometheus-operator.pre-downgrade
+Nothing to do before downgrading:
+  test.nop: []
