@@ -24,22 +24,22 @@ Upgrade Pre-requisites
 Before proceeding with the upgrade procedure, make sure to complete the
 pre-requisites listed in :doc:`/operation/preparation`.
 
-Run pre-check
--------------
+Run pre-checks
+--------------
 You can test if your environment will successfully upgrade with the following
 command.
-This will simulate the upgrade prechecks and provide an overview of the
+This will simulate the upgrade pre-checks and provide an overview of the
 changes to be carried out in your MetalK8s cluster.
 
 .. important::
 
-    The version prefix metalk8s-**X.X.X** as used below during a MetalK8s
+    The version prefix metalk8s-**X.Y.Z** as used below during a MetalK8s
     upgrade must be the new MetalK8s version you would like to upgrade
     to.
 
    .. code::
 
-     /srv/scality/metalk8s-X.X.X/upgrade.sh --dry-run --verbose
+     /srv/scality/metalk8s-X.Y.Z/upgrade.sh --dry-run --verbose
 
 Backup old credentials
 ----------------------
@@ -71,7 +71,7 @@ with the **new** version you want to upgrade to:
 
 .. important::
 
-    The version prefix metalk8s-**X.X.X** as used below during a MetalK8s
+    The version prefix metalk8s-**X.Y.Z** as used below during a MetalK8s
     upgrade must be the new MetalK8s version you would like to upgrade
     to.
 
@@ -79,4 +79,4 @@ with the **new** version you want to upgrade to:
 
    .. code::
 
-     /srv/scality/metalk8s-X.X.X/upgrade.sh
+     /srv/scality/metalk8s-X.Y.Z/upgrade.sh

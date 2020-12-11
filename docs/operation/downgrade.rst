@@ -31,21 +31,21 @@ Downgrade Pre-requisites
 Before proceeding with the downgrade procedure, make sure to complete the
 pre-requisites listed in :doc:`/operation/preparation`.
 
-Run pre-check
--------------
+Run pre-checks
+--------------
 You can test if your environment will successfully downgrade with the following
 command.
-This will simulate the downgrade prechecks and provide an overview of the
+This will simulate the downgrade pre-checks and provide an overview of the
 changes to be carried out in your MetalK8s cluster.
 
 .. important::
 
-    The version prefix metalk8s-**X.X.X** as used below during a MetalK8s
-    downgrade must be the currently-installed MetalKs8 version.
+    The version prefix metalk8s-**X.Y.Z** as used below during a MetalK8s
+    downgrade must be the currently installed MetalK8s version.
 
    .. code::
 
-     /srv/scality/metalk8s-X.X.X/downgrade.sh --destination-version \
+     /srv/scality/metalk8s-X.Y.Z/downgrade.sh --destination-version \
        <destination_version> --dry-run --verbose
 
 Downgrade Steps
@@ -61,12 +61,12 @@ with the **current** installation providing it with the destination version:
 
 .. important::
 
-    The version prefix metalk8s-**X.X.X** as used below during a MetalK8s
-    downgrade must be the currently-installed MetalKs8 version.
+    The version prefix metalk8s-**X.Y.Z** as used below during a MetalK8s
+    downgrade must be the currently installed MetalK8s version.
 
 - From the :term:`Bootstrap node`, launch the downgrade.
 
    .. code::
 
-     /srv/scality/metalk8s-X.X.X/downgrade.sh --destination-version <version>
+     /srv/scality/metalk8s-X.Y.Z/downgrade.sh --destination-version <version>
 
