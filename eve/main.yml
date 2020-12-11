@@ -562,6 +562,10 @@ models:
         OS_PASSWORD: "%(secret:scality_cloud_password)s"
         OS_TENANT_NAME: "%(secret:scality_cloud_tenant_name)s"
         TF_VAR_prefix: "%(prop:buildnumber)s-%(prop:stage_name)s"
+        TF_VAR_os: "%(prop:os:-centos-7)s"
+        TF_VAR_nodes_count: "%(prop:nodes_count:-0)s"
+        TF_VAR_rhsm_username: "%(secret:rhel_ci_login)s"
+        TF_VAR_rhsm_password: "%(secret:rhel_ci_password)s"
         TF_VAR_debug: "%(prop:metalk8s_debug:-false)s"
         MAX_RETRIES: "3"
       workdir: build/eve/workers/openstack-terraform/terraform/
@@ -597,11 +601,20 @@ models:
   - ShellCommand: &generate_report_over_ssh
       name: Generate sosreport on every machine
       env: &_env_generate_report_over_ssh
-        HOSTS_LIST: "bootstrap"
+        # NOTE: If HOSTS_LIST is empty auto detect nodes number from
+        # nodes_count property
+        HOSTS_LIST: ""
         SSH_CONFIG: ssh_config
-        REPORT_OWNER: centos
-        REPORT_GROUP: centos
-      command: >
+        # NOTE: If REPORT_OWNER or REPORT_GROUP is empty auto detect from
+        # os property (which default to centos-7)
+        REPORT_OWNER: ""
+        REPORT_GROUP: ""
+      command: |-
+        HOSTS_LIST=${HOSTS_LIST:-bootstrap$(seq -s '' --format ' node-%%g' 1 %(prop:nodes_count:-0)s)}
+        case "%(prop:os:-centos-7)s" in
+          "centos-7") REPORT_OWNER=${REPORT_OWNER:-centos} REPORT_GROUP=${REPORT_GROUP:-centos};;
+          "rhel-7") REPORT_OWNER=${REPORT_OWNER:-cloud-user} REPORT_GROUP=${REPORT_GROUP:-cloud-user};;
+        esac
         for host in $HOSTS_LIST; do
           ssh -F "$SSH_CONFIG" $host \
           "sudo sosreport --all-logs -o metalk8s -kmetalk8s.podlogs=True\
@@ -614,11 +627,14 @@ models:
   - ShellCommand: &collect_report_over_ssh
       name: Download every sosreports on worker
       env: &_env_collect_report_over_ssh
-        HOSTS_LIST: "bootstrap"
+        # NOTE: If HOSTS_LIST is empty auto detect nodes number from
+        # nodes_count property
+        HOSTS_LIST: ""
         SSH_CONFIG: ssh_config
         DEST_DIR: "%(prop:builddir)s/build/sosreport/sosreport"
         STEP_NAME: ''
       command: >
+        HOSTS_LIST=${HOSTS_LIST:-bootstrap$(seq -s '' --format ' node-%%g' 1 %(prop:nodes_count:-0)s)}
         mkdir -p "$DEST_DIR/$STEP_NAME" &&
         for host in $HOSTS_LIST; do
           scp -F "$SSH_CONFIG" \
@@ -670,7 +686,7 @@ stages:
           name: Trigger multiple-nodes step with built ISO
           stage_names:
             - single-node-install-rhel
-            - multiple-nodes-centos
+            - multiple-nodes
       - ShellCommand: *add_final_status_artifact_success
       - Upload: *upload_final_status_artifact
 
@@ -1494,10 +1510,23 @@ stages:
             STEP_NAME: single-node-upgrade-centos
 
   single-node-install-rhel:
+    worker:
+      type: local
+    steps:
+      - SetProperty:
+          name: Set OS property to rhel-7
+          property: os
+          value: "rhel-7"
+      - TriggerStages:
+          name: Trigger single-node-install with os set to rhel-7
+          stage_names:
+            - single-node-install
+
+  single-node-install:
     _metalk8s_internal_info:
       junit_info: &_install_single-node_junit_info
         TEST_SUITE: install
-        CLASS_NAME: single node.rhel7
+        CLASS_NAME: "single node.%(prop:os:-centos-7)s"
         TEST_NAME: simple environment
     simultaneous_build: 20
     worker: &terraform_worker
@@ -1511,7 +1540,7 @@ stages:
           env:
             <<: *_env_final_status_artifact_failed
             <<: *_install_single-node_junit_info
-            STEP_NAME: single-node-install-rhel
+            STEP_NAME: "single-node-install-%(prop:os:-centos-7)s"
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       - ShellCommand: *retrieve_iso
@@ -1521,14 +1550,7 @@ stages:
       - ShellCommand: *terraform_install_check
       - ShellCommand: *terraform_init
       - ShellCommand: *terraform_validate
-      - ShellCommand:
-          <<: *terraform_apply
-          env: &_env_terraform_single_node_rhel
-            <<: *_env_terraform
-            TF_VAR_rhsm_username: "%(secret:rhel_ci_login)s"
-            TF_VAR_rhsm_password: "%(secret:rhel_ci_password)s"
-            TF_VAR_nodes_count: "0"
-            TF_VAR_os: "rhel-7"
+      - ShellCommand: *terraform_apply
       - ShellCommand: *set_bootstrap_minion_id_ssh
       - ShellCommand: *bootstrap_config_ssh
       - ShellCommand: *copy_iso_bootstrap_ssh
@@ -1543,17 +1565,12 @@ stages:
       - ShellCommand: *bastion_ui_tests
       - ShellCommand: *collect_cypress_result_ssh
       - Upload: *upload_cypress_artifacts
-      - ShellCommand:
-          <<: *generate_report_over_ssh
-          env:
-            <<: *_env_generate_report_over_ssh
-            REPORT_OWNER: cloud-user
-            REPORT_GROUP: cloud-user
+      - ShellCommand: *generate_report_over_ssh
       - ShellCommand:
           <<: *collect_report_over_ssh
           env:
             <<: *_env_collect_report_over_ssh
-            STEP_NAME: single-node-install-rhel
+            STEP_NAME: "single-node-install-%(prop:os:-centos-7)s"
       - Upload: *upload_report_artifacts
       - ShellCommand:
           <<: *add_final_status_artifact_success
@@ -1565,10 +1582,8 @@ stages:
       - ShellCommand:
           <<: *wait_debug
           env:
-            STEP_NAME: single-node-install-rhel
-      - ShellCommand:
-          <<: *terraform_destroy
-          env: *_env_terraform_single_node_rhel
+            STEP_NAME: "single-node-install-%(prop:os:-centos-7)s"
+      - ShellCommand: *terraform_destroy
 
   lifecycle-patch-version:
     worker:
@@ -1752,10 +1767,6 @@ stages:
           env: &_env_terraform_upgrade
             <<: *_env_terraform
             TF_VAR_restore_env: "%(prop:product_promoted_version)s-%(prop:os:-centos-7)s-%(prop:environment_type)s-%(prop:environment_name)s"
-            TF_VAR_nodes_count: "%(prop:nodes_count:-0)s"
-            TF_VAR_os: "%(prop:os:-centos-7)s"
-            TF_VAR_rhsm_username: "%(secret:rhel_ci_login)s"
-            TF_VAR_rhsm_password: "%(secret:rhel_ci_password)s"
       # --- Wait for all pods to be running ---
       - ShellCommand:
           # NOTE: manually ensure all loop devices are provisioned after node
@@ -1938,22 +1949,28 @@ stages:
           env:
             STEP_NAME: "single-node-downgrade-%(prop:promoted_version_type)s-centos"
 
-  multiple-nodes-centos:
+  multiple-nodes:
     _metalk8s_internal_info:
       junit_info: &_install_multi-node_junit_info
         TEST_SUITE: install
-        CLASS_NAME: multi node.centos7
-        TEST_NAME: 1 bootstrap 1 master,etcd
+        CLASS_NAME: "multi node.%(prop:os:-centos-7)s"
+        TEST_NAME: "1 bootstrap %(prop:nodes_count:-1)s master,etcd"
     simultaneous_builds: 20
     worker: *terraform_worker
     steps:
       - Git: *git_pull
+      - SetProperty:
+          # NOTE: Set property will be skipped if the value is already set,
+          # so this step just set default value to 1
+          name: Set nodes count default to 1
+          property: nodes_count
+          value: "%(prop:nodes_count:-1)s"
       - ShellCommand:
           <<: *add_final_status_artifact_failed
           env:
             <<: *_env_final_status_artifact_failed
             <<: *_install_multi-node_junit_info
-            STEP_NAME: multiple-nodes-centos
+            STEP_NAME: "multiple-nodes-%(prop:os:-centos-7)s"
       - ShellCommand: *setup_cache
       - ShellCommand: *ssh_ip_setup
       - ShellCommand: *retrieve_iso
@@ -1975,11 +1992,7 @@ stages:
       - ShellCommand: *terraform_install_check
       - ShellCommand: *terraform_init
       - ShellCommand: *terraform_validate
-      - ShellCommand:
-          <<: *terraform_apply
-          env: &_env_terraform_multi_node
-            <<: *_env_terraform
-            TF_VAR_nodes_count: "1"
+      - ShellCommand: *terraform_apply
       - ShellCommand: &check_ssh_config_bootstrap
           name: Check SSH config for bootstrap node
           command: |-
@@ -2042,7 +2055,7 @@ stages:
           name: Run installation scenarii on the bastion
           env:
             <<: *_env_bastion_tests
-            PYTEST_FILTERS: "install and ci and multinodes and not node2"
+            PYTEST_FILTERS: "install and ci and multinodes and not node$((%(prop:nodes_count)s + 1))"
       - ShellCommand: &provision_volumes_on_node1
           <<: *provision_volumes_ssh
           env:
@@ -2073,45 +2086,44 @@ stages:
       - ShellCommand:
           <<: *multi_node_fast_tests
           name: Run fast tests on Bastion after certificates renewal
-      - ShellCommand:
-          <<: *generate_report_over_ssh
-          env:
-            <<: *_env_generate_report_over_ssh
-            HOSTS_LIST: "bootstrap node-1"
+      - ShellCommand: *generate_report_over_ssh
       - ShellCommand:
           <<: *collect_report_over_ssh
           env:
             <<: *_env_collect_report_over_ssh
-            HOSTS_LIST: "bootstrap node-1"
-            STEP_NAME: multiple-nodes-centos
+            STEP_NAME: "multiple-nodes-%(prop:os:-centos-7)s"
       - Upload: *upload_report_artifacts
       - ShellCommand:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
             <<: *_install_multi-node_junit_info
-            STEP_NAME: multiple-nodes-centos
+            STEP_NAME: "multiple-nodes-%(prop:os:-centos-7)s"
       - Upload: *upload_final_status_artifact
       - ShellCommand:
           <<: *wait_debug
           timeout: 14400
           env:
-            STEP_NAME: multiple-nodes-centos
+            STEP_NAME: "multiple-nodes-%(prop:os:-centos-7)s"
             DURATION: "14400"
-      - ShellCommand:
-          <<: *terraform_destroy
-          env: *_env_terraform_multi_node
+      - ShellCommand: *terraform_destroy
 
   bootstrap-restore:
     _metalk8s_internal_info:
       junit_info: &_bootstrap_restore_junit_info
         TEST_SUITE: install
-        CLASS_NAME: multi node.centos7
+        CLASS_NAME: "multi node.%(prop:os:-centos-7)s"
         TEST_NAME: bootstrap restore
       simultaneous_builds: 20
     worker: *terraform_worker
     steps:
       - Git: *git_pull
+      - SetProperty:
+          # NOTE: Set property will be skipped if the value is already set,
+          # so this step just set default value to 2
+          name: Set nodes count default to 2
+          property: nodes_count
+          value: "%(prop:nodes_count:-2)s"
       - ShellCommand:
           <<: *add_final_status_artifact_failed
           env:
@@ -2127,11 +2139,7 @@ stages:
       - ShellCommand: *terraform_install_check
       - ShellCommand: *terraform_init
       - ShellCommand: *terraform_validate
-      - ShellCommand:
-          <<: *terraform_apply
-          env: &_env_terraform_bootstrap_restore
-            <<: *_env_terraform
-            TF_VAR_nodes_count: "2"
+      - ShellCommand: *terraform_apply
       - ShellCommand: *check_ssh_config_bootstrap
       - ShellCommand: *copy_bastion_priv_key_to_bootstrap
       - ShellCommand: *set_bootstrap_minion_id_ssh
@@ -2171,7 +2179,7 @@ stages:
           haltOnFailure: true
       - ShellCommand:
           name: Destroy the bootstrap node
-          env: *_env_terraform_bootstrap_restore
+          env: *_env_terraform
           command: >
             terraform destroy -auto-approve
             -target openstack_compute_instance_v2.bootstrap
@@ -2221,7 +2229,7 @@ stages:
           haltOnFailure: true
       - ShellCommand:
           name: Create a new bootstrap node
-          env: *_env_terraform_bootstrap_restore
+          env: *_env_terraform
           command:
             terraform apply -auto-approve -refresh
             -target openstack_compute_instance_v2.bootstrap
@@ -2259,16 +2267,11 @@ stages:
       - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand: *multi_node_fast_tests
       - ShellCommand: *multi_node_slow_tests
-      - ShellCommand:
-          <<: *generate_report_over_ssh
-          env:
-            <<: *_env_generate_report_over_ssh
-            HOSTS_LIST: "bootstrap node-1 node-2"
+      - ShellCommand: *generate_report_over_ssh
       - ShellCommand:
           <<: *collect_report_over_ssh
           env:
             <<: *_env_collect_report_over_ssh
-            HOSTS_LIST: "bootstrap node-1 node-2"
             STEP_NAME: bootstrap-restore
       - Upload: *upload_report_artifacts
       - ShellCommand:
@@ -2284,15 +2287,13 @@ stages:
           env:
             STEP_NAME: bootstrap-restore
             DURATION: "14400"
-      - ShellCommand:
-          <<: *terraform_destroy
-          env: *_env_terraform_bootstrap_restore
+      - ShellCommand: *terraform_destroy
 
   single-node-solutions:
     _metalk8s_internal_info:
       junit_info: &_solutions_single-node_junit_info
         TEST_SUITE: install
-        CLASS_NAME: single node.centos7
+        CLASS_NAME: "single node.%(prop:os:-centos-7)s"
         TEST_NAME: solutions
     simultaneous_builds: 20
     worker: *terraform_worker
@@ -2313,11 +2314,7 @@ stages:
       - ShellCommand: *terraform_install_check
       - ShellCommand: *terraform_init
       - ShellCommand: *terraform_validate
-      - ShellCommand:
-          <<: *terraform_apply
-          env: &_env_terraform_single_node_solutions
-            <<: *_env_terraform
-            TF_VAR_nodes_count: "0"
+      - ShellCommand: *terraform_apply
       - ShellCommand: *set_bootstrap_minion_id_ssh
       - ShellCommand: *bootstrap_config_ssh
       - ShellCommand: *copy_iso_bootstrap_ssh
@@ -2413,6 +2410,4 @@ stages:
           <<: *wait_debug
           env:
             STEP_NAME: single-node-solutions
-      - ShellCommand:
-          <<: *terraform_destroy
-          env: *_env_terraform_single_node_solutions
+      - ShellCommand: *terraform_destroy
