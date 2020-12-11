@@ -44,44 +44,21 @@ const VolumeListContainer = styled.div`
   font-family: 'Lato';
   font-size: ${fontSize.base};
   background-color: ${(props) => props.theme.brand.primary};
-  table {
+
+  .table {
     display: block;
     padding-bottom: 13px;
 
-    thead {
-      width: 100%;
-      display: inline-block;
-    }
     .sc-select-container {
       width: 120px;
       height: 10px;
     }
 
-    thead tr[role='row'] {
+    .thead > div[role='row'] {
       border-bottom: 1px solid ${(props) => props.theme.brand.border};
     }
 
-    tr {
-      display: table;
-      table-layout: fixed;
-      width: 100%;
-      :last-child {
-        td {
-          border-bottom: 0;
-          font-weight: normal;
-        }
-      }
-    }
-
-    th {
-      font-weight: bold;
-      height: 35px;
-      text-align: left;
-      padding-top: 3px;
-      cursor: pointer;
-    }
-
-    td {
+    .td {
       margin: 0;
       text-align: left;
       border-bottom: 1px solid ${(props) => props.theme.brand.border};
@@ -144,6 +121,7 @@ const UnknownIcon = styled.i`
   color: ${(props) => props.theme.brand.textSecondary};
   // Increase the height so that the users don't need to hover precisely on the hyphen.
   height: 30px;
+  padding-top: ${padding.base};
 `;
 
 function GlobalFilter({
@@ -506,14 +484,19 @@ const VolumeListTable = (props) => {
       {
         Header: 'Name',
         accessor: 'name',
-        cellStyle: { flex: 1 },
+        cellStyle: {
+          flex: 1,
+          wordWrap: 'break-word',
+          wordBreak: 'break-all',
+          paddingRight: '3px',
+        },
       },
       {
         Header: 'Usage',
         accessor: 'usage',
         cellStyle: {
           textAlign: 'center',
-          width: isNodeColumn ? '120px' : '150px',
+          width: isNodeColumn ? '110px' : '150px',
         },
         Cell: ({ value }) => {
           return (
@@ -614,6 +597,8 @@ const VolumeListTable = (props) => {
     accessor: 'node',
     cellStyle: {
       width: '100px',
+      wordWrap: 'break-word',
+      wordBreak: 'break-all',
     },
   };
   if (isNodeColumn) {
