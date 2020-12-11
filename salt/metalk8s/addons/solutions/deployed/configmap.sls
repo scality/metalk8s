@@ -2,7 +2,9 @@
 
 {# Find all nodes with bootstrap role #}
 {%- set found = [] %}
+{%- do salt.log.error('Debug nodes pillar: ' ~ pillar.metalk8s.nodes | tojson) %}
 {%- for name, node in pillar.metalk8s.nodes.items() %}
+  {%- do salt.log.error('Debug node "' ~ name ~ '": ' ~ node | tojson) %}
   {%- if 'bootstrap' in node.roles %}
     {%- do found.append(name) %}
   {%- endif %}
