@@ -84,7 +84,7 @@ const VolumePageContent = (props) => {
   const location = useLocation();
   const match = useRouteMatch();
   const query = new URLSearchParams(location.search);
-  const [firstLoading, setFirstLoading] = useState(false);
+  const [isFirstLoadingDone, setIsFirstLoadingDone] = useState(false);
   const previousLoading = usePrevious(loading);
 
   const theme = useSelector((state) => state.config.theme);
@@ -227,12 +227,13 @@ const VolumePageContent = (props) => {
    ** This allow us to check if we need to display EmptyState or not
    */
   useEffect(() => {
-    if (previousLoading && !loading && !firstLoading) setFirstLoading(true);
-  }, [previousLoading, loading, firstLoading]);
+    if (previousLoading && !loading && !isFirstLoadingDone)
+      setIsFirstLoadingDone(true);
+  }, [previousLoading, loading, isFirstLoadingDone]);
 
   return (
     <VolumePageContentContainer>
-      {!volumeListData.length && firstLoading ? (
+      {!volumeListData.length && isFirstLoadingDone ? (
         <EmptyState
           label={'Volume'}
           link="/volumes/createVolume"

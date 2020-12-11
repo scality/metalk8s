@@ -21,7 +21,7 @@ const NodePageContent = (props) => {
   const { nodeTableData, alerts, loading } = props;
   const { path } = useRouteMatch();
   const [defaultSelectNodeName, setDefaultSelectNodeName] = useState(null);
-  const [firstLoading, setFirstLoading] = useState(false);
+  const [isFirstLoadingDone, setIsFirstLoadingDone] = useState(false);
   const previousLoading = usePrevious(loading);
 
   /*
@@ -29,8 +29,9 @@ const NodePageContent = (props) => {
    ** This allow us to check if we need to display EmptyState or not
    */
   useEffect(() => {
-    if (previousLoading && !loading && !firstLoading) setFirstLoading(true);
-  }, [previousLoading, loading, firstLoading]);
+    if (previousLoading && !loading && !isFirstLoadingDone)
+      setIsFirstLoadingDone(true);
+  }, [previousLoading, loading, isFirstLoadingDone]);
 
   useRefreshEffect(refreshAlertManagerAction, stopRefreshAlertManagerAction);
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
@@ -44,7 +45,7 @@ const NodePageContent = (props) => {
 
   return (
     <PageContentContainer>
-      {!nodeTableData.length && firstLoading ? (
+      {!nodeTableData.length && isFirstLoadingDone ? (
         <EmptyState label={'Node'} link="/nodes/create" icon="fa-server" />
       ) : (
         <Fragment>
