@@ -2,5 +2,5 @@
 # NOTE: This state should be called by salt-master using the saltenv of
 # the destination version (salt-master should have been upgraded)
 
-include:
-  - metalk8s.addons.prometheus-operator.pre-upgrade
+Nothing to do before upgrading:
+  test.nop: []
