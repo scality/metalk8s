@@ -118,8 +118,8 @@ export const updateStorageClassAction = (payload) => {
   return { type: UPDATE_STORAGECLASS, payload };
 };
 
-export const createVolumeAction = (newVolume) => {
-  return { type: CREATE_VOLUMES, payload: { newVolume } };
+export const createVolumeAction = (newVolumes) => {
+  return { type: CREATE_VOLUMES, payload: { newVolumes } };
 };
 
 export const refreshVolumesAction = () => {
@@ -205,7 +205,7 @@ export function* fetchStorageClass() {
  * This function construct the body that is needed to create a volume.
  * Then it calls K8s API to create it.
  *
- * @param {object} newVolume - fields of the createVolume form
+ * @param {array} newVolume - The array of fields of the createVolume form
  * @param {string} nodeName
  *
  * More examples in volumes.test.js
@@ -213,89 +213,89 @@ export function* fetchStorageClass() {
  *
  * const action = {
  *  payload: {
- *    newVolume: {
+ *    newVolume: [{
  *      name: 'volume1',
  *      node: 'bootrap',
  *      storageClass: 'metalk8s-default',
  *      type: 'sparseLoopDevice',
  *      size: '1Gi'
- *    },
+ *    }],
  *  }
  * };
  *
  * createVolumes(action)
  */
 export function* createVolumes({ payload }) {
-  const { newVolume } = payload;
-
-  const body = {
-    apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
-    kind: 'Volume',
-    metadata: {
-      name: newVolume.name,
-      labels: newVolume.labels,
-    },
-    spec: {
-      nodeName: newVolume.node,
-      storageClassName: newVolume.storageClass,
-      template: {
-        metadata: {
-          labels: newVolume.labels,
+  const { newVolumes } = payload;
+  for (var i = 0; i < newVolumes?.length; i++) {
+    const body = {
+      apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
+      kind: 'Volume',
+      metadata: {
+        name: newVolumes[i].name,
+        labels: newVolumes[i].labels,
+      },
+      spec: {
+        nodeName: newVolumes[i].node,
+        storageClassName: newVolumes[i].storageClass,
+        template: {
+          metadata: {
+            labels: newVolumes[i].labels,
+          },
         },
       },
-    },
-  };
+    };
+    /**
+     * Size should be set for SPARSE_LOOP_DEVICE
+     * Path should be set for RAW_BLOCK_DEVICE
+     */
+    let isNewVolumeValid =
+      newVolumes[i] &&
+      newVolumes[i].name &&
+      newVolumes[i].storageClass &&
+      ((newVolumes[i].type === SPARSE_LOOP_DEVICE && newVolumes[i].size) ||
+        (newVolumes[i].type === RAW_BLOCK_DEVICE && newVolumes[i].path));
 
-  /**
-   * Size should be set for SPARSE_LOOP_DEVICE
-   * Path should be set for RAW_BLOCK_DEVICE
-   */
-  let isNewVolumeValid =
-    newVolume &&
-    newVolume.name &&
-    newVolume.storageClass &&
-    ((newVolume.type === SPARSE_LOOP_DEVICE && newVolume.size) ||
-      (newVolume.type === RAW_BLOCK_DEVICE && newVolume.path));
+    if (isNewVolumeValid) {
+      if (newVolumes[i].type === SPARSE_LOOP_DEVICE) {
+        body.spec.sparseLoopDevice = { size: newVolumes[i].size };
+      } else {
+        body.spec.rawBlockDevice = { devicePath: newVolumes[i].path };
+      }
 
-  if (isNewVolumeValid) {
-    if (newVolume.type === SPARSE_LOOP_DEVICE) {
-      body.spec.sparseLoopDevice = { size: newVolume.size };
-    } else {
-      body.spec.rawBlockDevice = { devicePath: newVolume.path };
-    }
-
-    const result = yield call(VolumesApi.createVolume, body);
-    if (!result.error) {
-      yield call(
-        history.push,
-        `/volumes/${newVolume.name}/overview?node=${newVolume.node}`,
-      );
-      yield put(
-        addNotificationSuccessAction({
-          title: intl.translate('volume_creation'),
-          message: intl.translate('volume_creation_success', {
-            name: newVolume.name,
+      const result = yield call(VolumesApi.createVolume, body);
+      if (!result.error) {
+        yield call(
+          history.push,
+          `/volumes/${newVolumes[i].name}/overview?node=${newVolumes[i].node}`,
+        );
+        yield put(
+          addNotificationSuccessAction({
+            title: intl.translate('volume_creation'),
+            message: intl.translate('volume_creation_success', {
+              name: newVolumes[i].name,
+            }),
           }),
-        }),
-      );
+        );
+      } else {
+        yield put(
+          addNotificationErrorAction({
+            title: intl.translate('volume_creation'),
+            message: intl.translate('volume_creation_failed', {
+              name: newVolumes[i].name,
+            }),
+          }),
+        );
+      }
     } else {
+      // We might want to change this behavior later
       yield put(
         addNotificationErrorAction({
-          title: intl.translate('volume_creation'),
-          message: intl.translate('volume_creation_failed', {
-            name: newVolume.name,
-          }),
+          title: 'Volume Form Error',
+          message: 'Volume not created, some fields are missing.',
         }),
       );
     }
-  } else {
-    // We might want to change this behavior later
-    yield put(
-      addNotificationErrorAction({
-        title: 'Volume Form Error',
-        message: 'Volume not created, some fields are missing.',
-      }),
-    );
   }
 }
 
