@@ -76,6 +76,7 @@ const VolumePage = (props) => {
   const node = useSelector((state) => makeGetNodeFromUrl(state, props));
   const nodes = useSelector((state) => state.app.nodes.list);
   const volumes = useSelector((state) => state.app.volumes.list);
+  const volumesLoading = useSelector((state) => state.app.volumes.isLoading);
   const currentVolumeObject = useSelector(
     (state) => state.app.volumes.currentVolumeObject,
   );
@@ -136,6 +137,7 @@ const VolumePage = (props) => {
         alerts={alerts}
         volumeStats={volumeStats}
         currentVolumeObject={currentVolumeObject}
+        loading={volumesLoading}
       ></VolumeContent>
     </PageContainer>
   );

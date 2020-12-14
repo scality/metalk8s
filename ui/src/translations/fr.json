@@ -71,7 +71,8 @@
   "storageClass": "Classe de Stockage",
   "creationTime": "Date de Création",
   "create_new_volume": "Créer Volume",
-  "no_volume_found": "Aucun volume sur ce nœud",
+  "no_volume_found": "Aucun volume",
+  "no_node_found": "Aucun nœud",
   "no_searched_volume_found": "Aucun volume correspondant à la recherche",
   "volume_type": "Type de Volume",
   "volume_size": "Capacité du volume",
@@ -175,5 +176,6 @@
   "overview": "Aperçu",
   "volume_usage": "Utilisation du Volume",
   "usage": "Utilisation",
-  "error_volume_details": "Échec de la récuperation des details du volume."
+  "error_volume_details": "Échec de la récuperation des details du volume.",
+  "not_found": "introuvable."
 }

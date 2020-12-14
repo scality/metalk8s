@@ -71,7 +71,8 @@
   "storageClass": "Storage Class",
   "creationTime": "Creation Time",
   "create_new_volume": "Create Volume",
-  "no_volume_found": "No volumes on this node",
+  "no_volume_found": "No volumes found",
+  "no_node_found": "No nodes found",
   "no_searched_volume_found": "No volumes matching the search",
   "volume_type": "Type",
   "volume_size": "Volume Capacity",
@@ -175,5 +176,6 @@
   "overview": "Overview",
   "volume_usage": "Volume Usage",
   "usage": "Usage",
-  "error_volume_details": "Volume details request has failed."
+  "error_volume_details": "Volume details request has failed.",
+  "not_found": "not found."
 }
