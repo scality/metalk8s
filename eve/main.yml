@@ -244,11 +244,13 @@ models:
       # Increase default timeout for ISOs, as artifacts may be too slow
       timeout: 2400
   - ShellCommand: &copy_iso_bootstrap_ssh
-      name: Copy ISO to bootstrap node
+      name: Copy archive to bootstrap node
       env: &_env_copy_iso_bootstrap_ssh
+        ARCHIVE_DIRECTORY: "%(prop:builddir)s/build"
+        ARCHIVE: "metalk8s.iso"
         DEST: ''
       command: >
-        scp -F ssh_config "%(prop:builddir)s/build/metalk8s.iso"
+        scp -F ssh_config "$ARCHIVE_DIRECTORY/$ARCHIVE"
         bootstrap:"$DEST"
       workdir: build/eve/workers/openstack-terraform/terraform/
       haltOnFailure: true
@@ -322,7 +324,7 @@ models:
       name: Create bootstrap configuration file on bootstrap
       env: &_env_bootstrap_config_ssh
         DEBUG: "%(prop:metalk8s_debug:-false)s"
-        ARCHIVE: /var/tmp/metalk8s
+        ARCHIVE: metalk8s.iso
       command: |
         ssh -F ssh_config bootstrap "
         sudo bash << EOF
@@ -338,7 +340,7 @@ models:
         ca:
           minion: \"bootstrap\"
         archives:
-          - \"${ARCHIVE}\"
+          - \"\$(readlink -f \"${ARCHIVE}\")\"
         debug: ${DEBUG}
         END
         EOF"
@@ -588,6 +590,83 @@ models:
       workdir: build/eve/workers/openstack-terraform/terraform/
       alwaysRun: true
       sigtermTime: 600
+
+  # --- Solutions management ---
+  - ShellCommand: &retrieve_iso_solution
+      # NOTE: Retrieve solution from property
+      # "<solution_base_url>/<solution_archive>"
+      # OR if solution_base_url not set
+      # "<solution_repo>/<solution_version>/<solution_archive>"
+      # default to:
+      # "https://github.com/scality/metalk8s-solution-example/releases/download/1.0.0/example-solution-1.0.0.iso"
+      <<: *retrieve_iso
+      doStepIf: "%(prop:install_solution:-false)s"
+      name: Retrieve Solution archive
+      env:
+        <<: *_env_retrieve_artifact_retry
+        BASE_URL: >-
+          %(prop:solution_base_url:-%(prop:solution_repo:-https://github.com/scality/metalk8s-solution-example/releases/download)s/%(prop:solution_version:-1.0.0)s)s
+        FILE_SOURCE: "%(prop:solution_archive:-example-solution-1.0.0.iso)s"
+        FILE_DEST: "%(prop:solution_archive:-example-solution-1.0.0.iso)s"
+  - ShellCommand: &copy_solution_archive_bootstrap_ssh
+      doStepIf: "%(prop:install_solution:-false)s"
+      name: Copy Solution archive to bootstrap
+      <<: *copy_iso_bootstrap_ssh
+      env:
+        <<: *_env_copy_iso_bootstrap_ssh
+        ARCHIVE: "%(prop:solution_archive:-example-solution-1.0.0.iso)s"
+  - ShellCommand: &import_solution
+      doStepIf: "%(prop:install_solution:-false)s"
+      name: Import Solution archive
+      env:
+        SOLUTION_ARCHIVE: "%(prop:solution_archive:-example-solution-1.0.0.iso)s"
+        METALK8S_MOUNTPOINT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
+      command: >
+        ssh -F ssh_config bootstrap
+        sudo "$METALK8S_MOUNTPOINT/solutions.sh"
+        import --archive "\$(readlink -f \"$SOLUTION_ARCHIVE\")"
+      workdir: build/eve/workers/openstack-terraform/terraform/
+      haltOnFailure: true
+  - ShellCommand: &activate_solution
+      doStepIf: "%(prop:install_solution:-false)s"
+      name: Activate Solution
+      env:
+        SOLUTION_NAME: "%(prop:solution_name:-example-solution)s"
+        SOLUTION_VERSION: "%(prop:solution_version:-1.0.0)s"
+        METALK8S_MOUNTPOINT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
+      command: >
+        ssh -F ssh_config bootstrap
+        sudo "$METALK8S_MOUNTPOINT/solutions.sh"
+        activate --name "$SOLUTION_NAME" --version "$SOLUTION_VERSION"
+      workdir: build/eve/workers/openstack-terraform/terraform/
+      haltOnFailure: true
+  - ShellCommand: &create_solution_env
+      doStepIf: "%(prop:install_solution:-false)s"
+      name: Create Solution environment
+      env:
+        ENVIRONMENT_NAME: "%(prop:solution_env_name:-example-environment)s"
+        METALK8S_MOUNTPOINT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
+      command: >
+        ssh -F ssh_config bootstrap
+        sudo "$METALK8S_MOUNTPOINT/solutions.sh"
+        create-env --name "$ENVIRONMENT_NAME"
+      workdir: build/eve/workers/openstack-terraform/terraform/
+      haltOnFailure: true
+  - ShellCommand: &deploy_solution
+      doStepIf: "%(prop:install_solution:-false)s"
+      name: Deploy Solution
+      env:
+        ENVIRONMENT_NAME: "%(prop:solution_env_name:-example-environment)s"
+        SOLUTION_NAME: "%(prop:solution_name:-example-solution)s"
+        SOLUTION_VERSION: "%(prop:solution_version:-1.0.0)s"
+        METALK8S_MOUNTPOINT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
+      command: >
+        ssh -F ssh_config bootstrap
+        sudo "$METALK8S_MOUNTPOINT/solutions.sh"
+        add-solution --name "$ENVIRONMENT_NAME"
+        --solution "$SOLUTION_NAME" --version "$SOLUTION_VERSION"
+      workdir: build/eve/workers/openstack-terraform/terraform/
+      haltOnFailure: true
 
   # --- Previous version (for Upgrade/Downgrade) ---
   - Git: &git_pull_prev
@@ -1558,6 +1637,15 @@ stages:
       - ShellCommand: *mount_iso_ssh
       - ShellCommand: *run_bootstrap_ssh
       - ShellCommand: *provision_volumes_ssh
+    # NOTE: This section only run if property "install_solution" is True
+    # {{{
+      - ShellCommand: *retrieve_iso_solution
+      - ShellCommand: *copy_solution_archive_bootstrap_ssh
+      - ShellCommand: *import_solution
+      - ShellCommand: *activate_solution
+      - ShellCommand: *create_solution_env
+      - ShellCommand: *deploy_solution
+    # }}}
       - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand: *git_pull_ssh
       - ShellCommand: *bastion_fast_tests
@@ -2061,6 +2149,15 @@ stages:
           env:
             <<: *_env_provision_volumes
             NODE_NAME: node-1
+    # NOTE: This section only run if property "install_solution" is True
+    # {{{
+      - ShellCommand: *retrieve_iso_solution
+      - ShellCommand: *copy_solution_archive_bootstrap_ssh
+      - ShellCommand: *import_solution
+      - ShellCommand: *activate_solution
+      - ShellCommand: *create_solution_env
+      - ShellCommand: *deploy_solution
+    # }}}
       - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand: &multi_node_fast_tests
           <<: *bastion_tests
