@@ -34,6 +34,11 @@
 
 - Bump `ingress-nginx` chart to 3.13.0 (PR[#2961](https://github.com/scality/metalk8s/pull/2961))
 
+- [#2953](https://github.com/scality/metalk8s/issues/2953) - Allow customization
+  of Prometheus retention (time and size based), see
+  [MetalK8s documentation](https://metal-k8s.readthedocs.io/en/2.7.0/operation/cluster_and_service_configuration.html#prometheus-configuration-customization)
+  (PR [#2968](https://github.com/scality/metalk8s/pull/2968))
+
 ### Bug fixes
 
 - [#2908](https://github.com/scality/metalk8s/issues/2908) - Make upgrade script
