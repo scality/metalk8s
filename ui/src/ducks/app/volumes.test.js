@@ -281,20 +281,22 @@ it('does not update PV if there is an error', () => {
 it('create volume with the type sparseloopdevice', () => {
   const action = {
     payload: {
-      newVolume: {
-        name: 'volume1',
-        node: 'bootstrap',
-        storageClass: 'metalk8s-default',
-        type: 'sparseLoopDevice',
-        size: '1Gi',
-        labels: {
-          name: 'carlito',
+      newVolumes: [
+        {
+          name: 'volume1',
+          node: 'bootstrap',
+          storageClass: 'metalk8s-default',
+          type: 'sparseLoopDevice',
+          size: '1Gi',
+          labels: {
+            name: 'carlito',
+          },
         },
-      },
+      ],
     },
   };
 
-  const { newVolume } = action.payload;
+  const { newVolumes } = action.payload;
 
   const gen = createVolumes(action);
 
@@ -302,16 +304,15 @@ it('create volume with the type sparseloopdevice', () => {
     apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
     kind: 'Volume',
     metadata: {
-      name: newVolume.name,
+      name: newVolumes[0].name,
       labels: {
         name: 'carlito',
       },
     },
     spec: {
-      nodeName: newVolume.node,
-      storageClassName: newVolume.storageClass,
-      sparseLoopDevice: { size: newVolume.size },
-      storageClassName: 'metalk8s-default',
+      nodeName: newVolumes[0].node,
+      storageClassName: newVolumes[0].storageClass,
+      sparseLoopDevice: { size: newVolumes[0].size },
       template: {
         metadata: {
           labels: {
@@ -349,7 +350,7 @@ it('create volume with the type sparseloopdevice', () => {
   expect(gen.next(result).value).toEqual(
     call(
       history.push,
-      `/volumes/${newVolume.name}/overview?node=${newVolume.node}`,
+      `/volumes/${newVolumes[0].name}/overview?node=${newVolumes[0].node}`,
     ),
   );
 
@@ -363,34 +364,36 @@ it('create volume with the type sparseloopdevice', () => {
 it('create a volume with the type rawBlockdevice', () => {
   const action = {
     payload: {
-      newVolume: {
-        name: 'volume1',
-        node: 'bootstrap',
-        storageClass: 'metalk8s-default',
-        type: 'rawBlockDevice',
-        path: '/dev/disk1',
-        labels: {
-          name: 'carlito',
+      newVolumes: [
+        {
+          name: 'volume1',
+          node: 'bootstrap',
+          storageClass: 'metalk8s-default',
+          type: 'rawBlockDevice',
+          path: '/dev/disk1',
+          labels: {
+            name: 'carlito',
+          },
         },
-      },
+      ],
     },
   };
-  const { newVolume } = action.payload;
+  const { newVolumes } = action.payload;
   const gen = createVolumes(action);
 
   const body = {
     apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
     kind: 'Volume',
     metadata: {
-      name: newVolume.name,
+      name: newVolumes[0].name,
       labels: {
         name: 'carlito',
       },
     },
     spec: {
-      nodeName: newVolume.node,
-      storageClassName: newVolume.storageClass,
-      rawBlockDevice: { devicePath: newVolume.path },
+      nodeName: newVolumes[0].node,
+      storageClassName: newVolumes[0].storageClass,
+      rawBlockDevice: { devicePath: newVolumes[0].path },
       template: {
         metadata: {
           labels: {
@@ -426,7 +429,7 @@ it('create a volume with the type rawBlockdevice', () => {
   expect(gen.next(result).value).toEqual(
     call(
       history.push,
-      `/volumes/${newVolume.name}/overview?node=${newVolume.node}`,
+      `/volumes/${newVolumes[0].name}/overview?node=${newVolumes[0].node}`,
     ),
   );
   expect(gen.next().value.payload.action.type).toEqual(
@@ -439,12 +442,14 @@ it('create a volume with the type rawBlockdevice', () => {
 it('display a notification when the params are wrong', () => {
   const action = {
     payload: {
-      newVolume: {
-        name: 'volume1',
-        storageClass: 'metalk8s-default',
-        type: 'rawBlockDevice',
-        path: '',
-      },
+      newVolumes: [
+        {
+          name: 'volume1',
+          storageClass: 'metalk8s-default',
+          type: 'rawBlockDevice',
+          path: '',
+        },
+      ],
       nodeName: 'bootstrap',
     },
   };
@@ -458,33 +463,35 @@ it('display a notification when the params are wrong', () => {
 it('does not create a volume when there is an error', () => {
   const action = {
     payload: {
-      newVolume: {
-        name: 'volume1',
-        node: 'bootstrap',
-        storageClass: 'metalk8s-default',
-        type: 'rawBlockDevice',
-        path: '/dev/disk1',
-        labels: {
-          name: 'carlito',
+      newVolumes: [
+        {
+          name: 'volume1',
+          node: 'bootstrap',
+          storageClass: 'metalk8s-default',
+          type: 'rawBlockDevice',
+          path: '/dev/disk1',
+          labels: {
+            name: 'carlito',
+          },
         },
-      },
+      ],
     },
   };
-  const { newVolume } = action.payload;
+  const { newVolumes } = action.payload;
   const gen = createVolumes(action);
   const body = {
     apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
     kind: 'Volume',
     metadata: {
-      name: newVolume.name,
+      name: newVolumes[0].name,
       labels: {
         name: 'carlito',
       },
     },
     spec: {
-      nodeName: newVolume.node,
-      storageClassName: newVolume.storageClass,
-      rawBlockDevice: { devicePath: newVolume.path },
+      nodeName: newVolumes[0].node,
+      storageClassName: newVolumes[0].storageClass,
+      rawBlockDevice: { devicePath: newVolumes[0].path },
       template: {
         metadata: {
           labels: {
