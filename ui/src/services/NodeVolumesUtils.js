@@ -276,3 +276,28 @@ export const getVolumeListData = createSelector(
     return nodeVolumes.sort((a, b) => compareHealth(b.health, a.health));
   },
 );
+
+export const formatDataForBatchVolumeCreation = (newVolumes) => {
+  const {
+    multiVolumeCreation,
+    volumes,
+    node,
+    labels,
+    type,
+    size,
+    storageClass,
+  } = newVolumes;
+  if (multiVolumeCreation) {
+    // multi volume creation mode
+    return (
+      volumes?.map((volume) => {
+        volume.node = node;
+        volume.labels = labels;
+        volume.type = type;
+        volume.size = size;
+        volume.storageClass = storageClass;
+        return volume;
+      }) ?? []
+    );
+  }
+};
