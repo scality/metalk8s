@@ -1787,11 +1787,16 @@ stages:
           haltOnFailure: true
       # --- We do not need to Test promoted version ---
       # --- Upgrade to version N ---
-      - ShellCommand: *copy_iso_bootstrap_ssh
+      - ShellCommand:
+          <<: *copy_iso_bootstrap_ssh
+          env:
+            <<: *_env_copy_iso_bootstrap_ssh
+            DEST: "metalk8s-%(prop:metalk8s_version)s.iso"
       - ShellCommand:
           <<: *add_archive_ssh
           env:
             <<: *_env_add_archive_ssh
+            ISO_PATH: "metalk8s-%(prop:metalk8s_version)s.iso"
             PRODUCT_VERSION: "%(prop:product_promoted_version)s"
       - ShellCommand:
           name: Run upgrade from promoted version
