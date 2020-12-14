@@ -23,6 +23,7 @@ import {
   useQuery,
   linuxDrivesNamingIncrement,
 } from '../services/utils';
+import { formatDataForBatchVolumeCreation } from '../services/NodeVolumesUtils';
 import { intl } from '../translations/IntlGlobalProvider';
 
 // We might want to do a factorization later for
@@ -54,6 +55,8 @@ const ActionContainer = styled.div`
 const CreateVolumeLayout = styled.div`
   display: inline-block;
   margin-top: ${padding.base};
+  overflow-y: scroll;
+  height: 85vh;
   form {
     .sc-input {
       display: inline-flex;
@@ -138,7 +141,8 @@ const LabelsName = styled(LabelsValue)`
 
 const PageContainer = styled.div`
   display: flex;
-  justify-content: space-between;
+  // To avoid the big empty space on the right side of page
+  justify-content: space-around;
 `;
 
 const DocumentationIcon = styled.div`
@@ -153,7 +157,7 @@ const DocumentationIcon = styled.div`
 const TitlePage = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: 24px;
-  padding-left: 40px;
+  padding: ${padding.small} 0 0 ${padding.large};
 `;
 
 const CheckboxContainer = styled.div`
@@ -183,13 +187,18 @@ const MultiCreationFormContainer = styled.div`
 const SingleVolumeContainer = styled.div`
   display: flex;
   align-items: flex-start;
-  padding-top: ${padding.base};
+  padding: ${padding.base} 0 0 ${padding.larger};
 `;
 
 const SingleVolumeForm = styled.div`
   display: flex;
   flex-direction: column;
-  padding-left: ${padding.base};
+  padding-left: ${padding.smaller};
+`;
+
+const InputQuestionMark = styled.i`
+  padding-left: ${padding.small};
+  color: ${(props) => props.theme.brand.info};
 `;
 
 const CreateVolume = (props) => {
@@ -373,9 +382,18 @@ const CreateVolume = (props) => {
             initialValues={initialValues}
             validationSchema={validationSchema}
             onSubmit={(values) => {
-              const newVolume = { ...values };
-              newVolume.size = `${values.sizeInput}${values.selectedUnit}`;
-              createVolume(newVolume);
+              const newVolumes = { ...values };
+              newVolumes.size = `${values.sizeInput}${values.selectedUnit}`;
+              if (newVolumes.multiVolumeCreation) {
+                // batch volume creation
+                const formattedVolumes = formatDataForBatchVolumeCreation(
+                  newVolumes,
+                );
+                createVolume(formattedVolumes);
+              } else {
+                // single volume creation
+                createVolume([newVolumes]);
+              }
             }}
           >
             {(formikProps) => {
@@ -622,7 +640,22 @@ const CreateVolume = (props) => {
                         name="path"
                         value={values.path}
                         onChange={handleChange('path')}
-                        label={intl.translate('device_path')}
+                        label={
+                          <>
+                            {intl.translate('device_path')}
+                            <Tooltip
+                              placement="right"
+                              overlay={
+                                <div style={{ minWidth: '200px' }}>
+                                  A devicePath or a partition mount point.
+                                  Example: "/dev/sdb"
+                                </div>
+                              }
+                            >
+                              <InputQuestionMark className="fas fa-question-circle"></InputQuestionMark>
+                            </Tooltip>
+                          </>
+                        }
                         error={touched.path && errors.path}
                         onBlur={handleOnBlur}
                       />
@@ -647,7 +680,7 @@ const CreateVolume = (props) => {
                           <div>
                             <div
                               style={{
-                                paddingLeft: '40px',
+                                paddingLeft: '60px',
                                 paddingTop: `${padding.large}`,
                               }}
                             >
@@ -672,7 +705,7 @@ const CreateVolume = (props) => {
                             </div>
                             <div
                               style={{
-                                paddingLeft: '40px',
+                                paddingLeft: '60px',
                                 paddingTop: `${padding.large}`,
                               }}
                             >
@@ -728,7 +761,7 @@ const CreateVolume = (props) => {
         </CreateVolumeLayout>
       </CreateVolumeFormContainer>
       <DocumentationIcon>
-        <Tooltip placement="left" overlay={intl.translate('documentation')}>
+        <Tooltip placement="top" overlay={intl.translate('documentation')}>
           <Button
             icon={<i className="fas fa-book-reader fa-lg" />}
             inverted={true}
