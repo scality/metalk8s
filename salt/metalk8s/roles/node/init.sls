@@ -5,3 +5,4 @@ include:
   - metalk8s.kubernetes.apiserver-proxy
   - metalk8s.internal.preflight
   - metalk8s.beacon.certificates
+  - metalk8s.volumes
