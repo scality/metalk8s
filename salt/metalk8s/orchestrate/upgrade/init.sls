@@ -108,6 +108,11 @@ Deploy node {{ node }}:
           {#- Do not drain if we are in single node cluster #}
           skip_draining: True
           {%- endif %}
+          {%- if salt.pkg.version_cmp(node_version, '2.7.0') < 0 %}
+          {#- Nodes in 2.6 or lower rely on manual provisioning of loop
+              devices, which we need to clean-up while the node is drained #}
+          cleanup_loop_devices: True
+          {%- endif %}
     - require:
       - metalk8s_kubernetes: Set node {{ node }} version to {{ dest_version }}
     - require_in:

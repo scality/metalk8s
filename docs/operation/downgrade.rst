@@ -5,6 +5,13 @@ packaged with your current installation.
 This section describes a reliable downgrade procedure for **MetalK8s**
 including all the components that are included in the stack.
 
+.. warning::
+
+   Downgrading a single-node cluster from 2.7.x to 2.6.y with
+   ``SparseLoopDevice`` volumes will force draining of this single node.
+   Expect an interruption of service during this downgrade (production
+   deployments **should not** rely on ``SparseLoopDevice`` volumes).
+
 Supported Versions
 ******************
 

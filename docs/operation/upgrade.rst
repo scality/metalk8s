@@ -5,6 +5,13 @@ with every new release.
 This section describes a reliable upgrade procedure for **MetalK8s** including
 all the components that are included in the stack.
 
+.. warning::
+
+   Upgrading a single-node cluster from 2.6.x to 2.7.y with
+   ``SparseLoopDevice`` volumes will force draining of this single node.
+   Expect an interruption of service during this upgrade (production
+   deployments **should not** rely on ``SparseLoopDevice`` volumes).
+
 Supported Versions
 ******************
 .. note::

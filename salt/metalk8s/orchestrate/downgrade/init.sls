@@ -73,8 +73,60 @@ Upgrade salt-minion on {{ node }}:
           node_name: {{ node }}
     - require:
       - metalk8s_kubernetes: Set node {{ node }} version to {{ dest_version }}
+
+  {%- set force_drain = True %}
+
+  {%- if pillar.metalk8s.nodes|length == 1 %}
+    {# Check if we can avoid the drain (if no loop device needs cleaning up) #}
+    {%- set volumes = salt.metalk8s_kubernetes.list_objects(
+      kind="Volume", apiVersion="storage.metalk8s.scality.com/v1alpha1",
+    ) %}
+    {%- set volumes_to_clean = volumes
+                             | selectattr('spec.nodeName', 'equalto', node)
+                             | selectattr('spec.sparseLoopDevice', 'defined')
+                             | list
+    %}
+    {%- if volumes_to_clean %}
+      {%- do salt.log.warning(
+        'Forcing drain to clean up loop devices for the following Volumes: '
+        ~ volumes_to_clean | map(attribute='metadata.name') | join(', ')
+      ) %}
+    {%- else %}
+      {%- set force_drain = False %}
+    {%- endif %}
+  {%- endif %}
+
+  {%- if force_drain %}
+# We force a node drain manually to handle cleanup of loop devices outside
+# of the `deploy_node` orchestrate, since it comes from `dest_version`.
+# The `deploy_node` orchestrate will take care of uncordoning.
+Cordon node {{ node }}:
+  metalk8s_cordon.node_cordoned:
+    - name: {{ node }}
+    - require:
+      - salt: Upgrade salt-minion on {{ node }}
+
+Drain node {{ node }}:
+  metalk8s_drain.node_drained:
+    - name: {{ node }}
+    - ignore_daemonset: True
+    - delete_local_data: True
+    - force: True
+    - require:
+      - metalk8s_cordon: Cordon node {{ node }}
+
+Cleanup loop devices from node {{ node }}:
+  salt.state:
+    - tgt: {{ node }}
+    - saltenv: {{ saltenv }} {#- Use current version of this formula #}
+    - sls:
+      - metalk8s.volumes.cleanup
+    - require:
+      - metalk8s_drain: Drain node {{ node }}
     - require_in:
       - salt: Deploy node {{ node }}
+
+  {%- endif %}
 {%- endif %}
 
 Deploy node {{ node }}:
