@@ -358,3 +358,35 @@ get_salt_env() {
 get_salt_minion_id() {
     "$SALT_CALL" --out txt grains.get id | cut -c 8-
 }
+
+get_salt_minion_ids() {
+    local salt_container
+
+    salt_container=$(get_salt_container)
+
+    (
+        set -o pipefail
+        retry 5 10 crictl exec -i "$salt_container" \
+            salt \* grains.get id --out txt | \
+            cut -d ' ' -f 2
+    )
+}
+
+retry() {
+    local stdout
+    local -i try=0 exit_code=0
+    local -ri retries=$1 sleep_time=$2
+    shift 2
+
+    until stdout=$("$@"); do
+        exit_code=$?
+        (( ++try ))
+        if [ $try -gt "$retries" ]; then
+            echo "Failed to run '$*' after $retries retries." >&2
+            return $exit_code
+        fi
+        sleep "$sleep_time"
+    done
+
+    echo "$stdout"
+}

@@ -446,6 +446,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/nginx-ingress-control-plane/',
          'post-upgrade-downgrade.sls'),
 
+    Path('salt/metalk8s/beacon/certificates.sls'),
+
     Path('salt/metalk8s/container-engine/containerd/configured.sls'),
     Path('salt/metalk8s/container-engine/containerd/files/50-metalk8s.conf.j2'),
     Path('salt/metalk8s/container-engine/containerd/init.sls'),
@@ -574,6 +576,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/orchestrate/bootstrap/pre-downgrade.sls'),
     Path('salt/metalk8s/orchestrate/bootstrap/pre-upgrade.sls'),
 
+    Path('salt/metalk8s/orchestrate/certs/renew.sls'),
+
     Path('salt/metalk8s/orchestrate/downgrade/init.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/precheck.sls'),
     Path('salt/metalk8s/orchestrate/downgrade/pre.sls'),
@@ -597,6 +601,18 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/archives/mounted.sls'),
 
     Path('salt/metalk8s/service-configuration/deployed/init.sls'),
+
+    targets.TemplateFile(
+        task_name='salt/metalk8s/reactor/certs/renew.sls',
+        source=constants.ROOT.joinpath(
+            'salt', 'metalk8s', 'reactor', 'certs', 'renew.sls.in'
+        ),
+        destination=constants.ISO_ROOT.joinpath(
+            'salt', 'metalk8s', 'reactor', 'certs', 'renew.sls'
+        ),
+        context={'VERSION': versions.VERSION},
+        file_dep=[versions.VERSION_FILE],
+    ),
 
     Path('salt/metalk8s/repo/configured.sls'),
     Path('salt/metalk8s/repo/deployed.sls'),
@@ -662,6 +678,8 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
 
     Path('salt/_auth/kubernetes_rbac.py'),
 
+    Path('salt/_beacons/metalk8s_kubeconfig_info.py'),
+
     Path('salt/_modules/containerd.py'),
     Path('salt/_modules/cri.py'),
     Path('salt/_modules/metalk8s.py'),
@@ -670,6 +688,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/_modules/metalk8s_drain.py'),
     Path('salt/_modules/metalk8s_etcd.py'),
     Path('salt/_modules/metalk8s_grafana.py'),
+    Path('salt/_modules/metalk8s_kubeconfig.py'),
     Path('salt/_modules/metalk8s_kubernetes.py'),
     Path('salt/_modules/metalk8s_kubernetes_utils.py'),
     Path('salt/_modules/metalk8s_monitoring.py'),

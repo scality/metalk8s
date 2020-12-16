@@ -328,6 +328,7 @@ PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
         PackageVersion(name='iptables'),
         PackageVersion(name='kubernetes-cni'),
         PackageVersion(name='m2crypto'),
+        PackageVersion(name='python36-pyOpenSSL'),
         PackageVersion(name='runc'),
         PackageVersion(name='salt-minion', version=SALT_VERSION),
         PackageVersion(name='socat'),
@@ -370,6 +371,7 @@ PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
             release='1'
         ),
         PackageVersion(name='python-m2crypto', override='m2crypto'),
+        PackageVersion(name='python3-openssl', override='python36-pyOpenSSL'),
         PackageVersion(name='sosreport', override='sos'),
     ),
 }

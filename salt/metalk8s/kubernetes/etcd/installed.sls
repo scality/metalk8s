@@ -1,3 +1,4 @@
+{%- from "metalk8s/map.jinja" import certificates with context %}
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 include:
@@ -50,9 +51,9 @@ Create local etcd Pod manifest:
     - source: salt://{{ slspath }}/files/manifest.yaml
     - config_files:
         - /etc/kubernetes/pki/etcd/ca.crt
-        - /etc/kubernetes/pki/etcd/peer.crt
+        - {{ certificates.server.files['etcd-peer'].path }}
         - /etc/kubernetes/pki/etcd/peer.key
-        - /etc/kubernetes/pki/etcd/server.crt
+        - {{ certificates.server.files.etcd.path }}
         - /etc/kubernetes/pki/etcd/server.key
     - context:
         name: etcd
@@ -60,7 +61,7 @@ Create local etcd Pod manifest:
         command:
           - etcd
           - --advertise-client-urls=https://{{ node_ip }}:2379
-          - --cert-file=/etc/kubernetes/pki/etcd/server.crt
+          - --cert-file={{ certificates.server.files.etcd.path }}
           - --client-cert-auth=true
           - --data-dir=/var/lib/etcd
           - --initial-advertise-peer-urls=https://{{ node_ip }}:2380
@@ -71,7 +72,7 @@ Create local etcd Pod manifest:
           - --listen-peer-urls=https://{{ node_ip }}:2380
           - --listen-metrics-urls=http://127.0.0.1:2381,http://{{ node_ip }}:2381
           - --name={{ node_name }}
-          - --peer-cert-file=/etc/kubernetes/pki/etcd/peer.crt
+          - --peer-cert-file={{ certificates.server.files['etcd-peer'].path }}
           - --peer-client-cert-auth=true
           - --peer-key-file=/etc/kubernetes/pki/etcd/peer.key
           - --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
@@ -83,6 +84,7 @@ Create local etcd Pod manifest:
           - path: /etc/kubernetes/pki/etcd
             name: etcd-certs
             readOnly: true
+        etcd_healthcheck_cert: {{ certificates.client.files['etcd-healthcheck'].path }}
     - require:
       - file: Create etcd database directory
       - file: Ensure etcd CA cert is present
@@ -105,7 +107,7 @@ Waiting for etcd running:
     - verify_ssl: True
     - ca_bundle: /etc/kubernetes/pki/etcd/ca.crt
     - cert:
-      - /etc/kubernetes/pki/etcd/server.crt
+      - {{ certificates.server.files.etcd.path }}
       - /etc/kubernetes/pki/etcd/server.key
     - status: 200
     - match: '{"health":"true"}'

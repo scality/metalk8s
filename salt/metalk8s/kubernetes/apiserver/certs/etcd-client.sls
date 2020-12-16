@@ -1,3 +1,4 @@
+{%- from "metalk8s/map.jinja" import certificates with context %}
 {%- from "metalk8s/map.jinja" import etcd with context %}
 
 {%- set private_key_path = "/etc/kubernetes/pki/apiserver-etcd-client.key" %}
@@ -22,12 +23,18 @@ Create apiserver etcd client private key:
 
 Generate apiserver etcd client certificate:
   x509.certificate_managed:
-    - name: /etc/kubernetes/pki/apiserver-etcd-client.crt
+    - name: {{ certificates.client.files['apiserver-etcd'].path }}
     - public_key: {{ private_key_path }}
     - ca_server: {{ pillar['metalk8s']['ca']['minion'] }}
     - signing_policy: {{ etcd.cert.apiserver_client_signing_policy }}
     - CN: kube-apiserver-etcd-client
     - O: "system:masters"
+    - days_valid: {{
+        certificates.client.files['apiserver-etcd'].days_valid |
+        default(certificates.client.days_valid) }}
+    - days_remaining: {{
+        certificates.client.files['apiserver-etcd'].days_remaining |
+        default(certificates.client.days_remaining) }}
     - user: root
     - group: root
     - mode: 644

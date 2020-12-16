@@ -30,46 +30,39 @@ x509_signing_policies:
     - signing_cert: /etc/kubernetes/pki/ca.crt
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: clientAuth
-    - days_valid: 365
   kube_apiserver_server_policy:
     - minions: '*'
     - signing_private_key: /etc/kubernetes/pki/ca.key
     - signing_cert: /etc/kubernetes/pki/ca.crt
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: serverAuth
-    - days_valid: 365
   etcd_client_policy:
     - minions: '*'
     - signing_private_key: /etc/kubernetes/pki/etcd/ca.key
     - signing_cert: /etc/kubernetes/pki/etcd/ca.crt
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: clientAuth
-    - days_valid: 365
   etcd_server_client_policy:
     - minions: '*'
     - signing_private_key: /etc/kubernetes/pki/etcd/ca.key
     - signing_cert: /etc/kubernetes/pki/etcd/ca.crt
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: serverAuth, clientAuth
-    - days_valid: 365
   front_proxy_client_policy:
     - minions: '*'
     - signing_private_key: /etc/kubernetes/pki/front-proxy-ca.key
     - signing_cert: /etc/kubernetes/pki/front-proxy-ca.crt
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: clientAuth
-    - days_valid: 365
   ingress_server_policy:
     - minions: '*'
     - signing_private_key: /etc/metalk8s/pki/nginx-ingress/ca.key
     - signing_cert: /etc/metalk8s/pki/nginx-ingress/ca.crt
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: serverAuth
-    - days_valid: 365
   dex_server_policy:
     - minions: '*'
     - signing_private_key: /etc/metalk8s/pki/dex/ca.key
     - signing_cert: /etc/metalk8s/pki/dex/ca.crt
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: serverAuth
-    - days_valid: 365

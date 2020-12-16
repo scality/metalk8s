@@ -2059,6 +2059,16 @@ stages:
             PYTEST_FILTERS: >
               post and ci and slow and not bootstrap and not restore
       - ShellCommand:
+          name: Certificates expiration beacons test
+          command: |
+              scp -F ssh_config %(prop:builddir)s/build/tests/test-certificates-beacon.sh bootstrap:
+              ssh -F ssh_config bootstrap "sudo ./test-certificates-beacon.sh /var/tmp/metalk8s"
+          workdir: build/eve/workers/openstack-terraform/terraform/
+          haltOnFailure: true
+      - ShellCommand:
+          <<: *multi_node_fast_tests
+          name: Run fast tests on Bastion after certificates renewal
+      - ShellCommand:
           <<: *generate_report_over_ssh
           env:
             <<: *_env_generate_report_over_ssh
