@@ -53429,7 +53429,7 @@ spec:
         - --path.sysfs=/host/sys
         - --path.rootfs=/host/root
         - --web.listen-address=$(HOST_IP):9100
-        - --collector.diskstats.ignored-devices=^(ram|fd|(h|s|v)d[a-z]|nvme\\d+n\\d+p)\\d+$
+        - --collector.diskstats.ignored-devices=^(ram|fd)\\d+$
         - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+)($|/)
         - --collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|cgroup|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$
         env:
@@ -53924,7 +53924,8 @@ spec:
     matchLabels:
       release: prometheus-operator
   replicas: {% endraw -%}{{ prometheus.spec.deployment.replicas }}{%- raw %}
-  retention: 10d
+  retention: {% endraw -%}{{ prometheus.spec.config.retention_time }}{%- raw %}
+  retentionSize: "{% endraw -%}{{ prometheus.spec.config.retention_size | string }}{%- raw %}"
   routePrefix: /
   ruleNamespaceSelector: {}
   ruleSelector:

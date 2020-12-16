@@ -219,22 +219,84 @@ applied with Salt.
 Prometheus Configuration Customization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Default configuration for Prometheus can be overridden by editing its
+Cluster and Service ConfigMap ``metalk8s-prometheus-config`` in namespace
+``metalk8s-monitoring`` under the key ``data.config.yaml``:
+
+.. code-block:: shell
+
+   root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                      edit configmap -n metalk8s-monitoring \
+                      metalk8s-prometheus-config
+
+Change Retention Time
+"""""""""""""""""""""
+
+Prometheus is deployed with a retention based on time (10d).
+This value can be overriden:
+
+.. code-block:: yaml
+
+   ---
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: metalk8s-prometheus-config
+     namespace: metalk8s-monitoring
+   data:
+     config.yaml: |-
+       apiVersion: addons.metalk8s.scality.com
+       kind: PrometheusConfig
+       spec:
+         config:
+           retention_time: 30d
+
+.. note::
+
+   Supported time units are y, w, d, h, m s and ms
+   (years, weeks, days, hours, minutes, seconds and milliseconds).
+
+Set Retention Size
+""""""""""""""""""
+
+Prometheus is deployed with the size-based retention disabled.
+This functionality can be actived:
+
+.. code-block:: yaml
+
+   ---
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: metalk8s-prometheus-config
+     namespace: metalk8s-monitoring
+   data:
+     config.yaml: |-
+       apiVersion: addons.metalk8s.scality.com
+       kind: PrometheusConfig
+       spec:
+         config:
+           retention_size: 10GB
+
+.. note::
+
+   Supported size units are B, KB, MB, GB, TB and PB.
+
+.. warning::
+
+   Prometheus does not take the write-ahead log (WAL) size in account to
+   calculate the retention, so the actual disk consumption can be greater
+   than `retention_size`. You should at least add a 10% margin to be safe.
+   (i.e.: set `retention_size` to 9GB for a 10GB volume)
+
+Both size and time based retentions can be activated at the same time.
+
 Predefined Alert Rules Customization
 """"""""""""""""""""""""""""""""""""
 
 A subset of the predefined Alert rules can be customized, the exhaustive list
 can be found :ref:`here<csc-prometheus-default-configuration>`.
 
-To change these Alert rules thresholds, the ``metalk8s-prometheus-config``
-ConfigMap in namespace ``metalk8s-monitoring`` must be edited as follows.
-
-.. code-block:: shell
-
-   root@bootstrap $ kubectl edit --kubeconfig=/etc/kubernetes/admin.conf \
-                      configmap -n metalk8s-monitoring \
-                      metalk8s-prometheus-config
-
-Then, add the rules you want to override under the ``data.config.yaml`` key.
 For example, to change the threshold for the disk space alert
 (% of free space left) from 5% to 10%, simply do:
 
@@ -310,6 +372,20 @@ For more details on Alert Rules, see the official
 `Prometheus alerting rules documentation`_
 
 .. _Prometheus alerting rules documentation: https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/
+
+Applying configuration
+""""""""""""""""""""""
+
+Any changes made to ``metalk8s-prometheus-config`` ConfigMap must then be
+applied with Salt.
+
+.. parsed-literal::
+
+   root\@bootstrap $ kubectl exec --kubeconfig /etc/kubernetes/admin.conf \\
+                      -n kube-system -c salt-master salt-master-bootstrap -- \\
+                      salt-run state.sls \\
+                      metalk8s.addons.prometheus-operator.deployed \\
+                      saltenv=metalk8s-|version|
 
 .. _csc-dex-customization:
 
