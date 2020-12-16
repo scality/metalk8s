@@ -63,10 +63,13 @@ RPM_BUILDER : Dict[str, LocalImage] = {
     ),
 }
 
-DEB_BUILDER : LocalImage = _builder_image(
-    name='ubuntu-18.04-deb',
-    dockerfile=constants.ROOT/'packages/debian/18.04/Dockerfile',
-)
+DEB_BUILDER : Dict[str, LocalImage] = {
+    '18.04': _builder_image(
+        name='ubuntu-18.04-deb',
+        dockerfile=constants.ROOT/'packages/debian/18.04/Dockerfile',
+        build_context=constants.ROOT/'packages/debian',
+    ),
+}
 
 DOC_BUILDER : LocalImage = _builder_image(
     name='doc',

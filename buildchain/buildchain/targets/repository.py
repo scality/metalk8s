@@ -345,8 +345,8 @@ class DEBRepository(Repository):
         """Repository where to download the packages."""
         if self.packages:
             # Built packages are not under a sub-directory.
-            return constants.PKG_DEB_ROOT
-        return constants.PKG_DEB_ROOT/self.fullname
+            return constants.PKG_DEB_ROOT/self._releasever
+        return constants.PKG_DEB_ROOT/self._releasever/self.fullname
 
     def build_packages(self) -> List[types.TaskDict]:
         # Nothing to do: packages are already built.
@@ -382,7 +382,8 @@ class DEBRepository(Repository):
         """Return the command to run `reprepro` inside a container."""
         mounts = [
             utils.bind_ro_mount(
-                source=constants.ROOT/'packages'/'debian'/'distributions',
+                source=constants.ROOT/'packages'/'debian'/'common'/
+                    'distributions',
                 target=Path('/distributions')
             ),
             utils.bind_ro_mount(source=self.pkgdir, target=Path('/packages')),

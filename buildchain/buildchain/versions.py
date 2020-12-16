@@ -363,22 +363,24 @@ PACKAGES: Dict[str, Any] = {
             PackageVersion(name='yum-utils'),
         ),
     },
-    'debian': (
-        PackageVersion(
-            name='calico-cni-plugin',
-            version=CALICO_VERSION,
-            release='1'
+    'debian': {
+        '18.04': (
+            PackageVersion(
+                name='calico-cni-plugin',
+                version=CALICO_VERSION,
+                release=CALICO_RELEASE,
+            ),
+            PackageVersion(name='iproute2', override='iproute'),
+            PackageVersion(
+                name='metalk8s-sosreport',
+                version=SHORT_VERSION,
+                release=SOSREPORT_RELEASE,
+            ),
+            PackageVersion(name='python-m2crypto', override='m2crypto'),
+            PackageVersion(name='python3-openssl', override='python36-pyOpenSSL'),
+            PackageVersion(name='sosreport', override='sos'),
         ),
-        PackageVersion(name='iproute2', override='iproute'),
-        PackageVersion(
-            name='metalk8s-sosreport',
-            version=SHORT_VERSION,
-            release='1'
-        ),
-        PackageVersion(name='python-m2crypto', override='m2crypto'),
-        PackageVersion(name='python3-openssl', override='python36-pyOpenSSL'),
-        PackageVersion(name='sosreport', override='sos'),
-    ),
+    },
 }
 
 
@@ -423,6 +425,9 @@ REDHAT_PACKAGES_MAP = {
 
 DEB_PACKAGES = _list_pkgs_for_os_family('debian')
 
-DEB_PACKAGES_MAP = {pkg.name: pkg for pkg in DEB_PACKAGES}
+DEB_PACKAGES_MAP = {
+    version: {pkg.name: pkg for pkg in pkgs}
+    for version, pkgs in DEB_PACKAGES.items()
+}
 
 # }}}

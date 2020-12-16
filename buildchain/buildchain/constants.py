@@ -64,7 +64,7 @@ STORAGE_OPERATOR_ROOT : Path = ROOT/'storage-operator'
 UI_BUILD_ROOT : Path = config.BUILD_ROOT/'ui'
 
 # Docker entrypoints.
-DEBIAN_ENTRYPOINT : Path = ROOT/'packages/debian/entrypoint.sh'
+DEBIAN_ENTRYPOINT : Path = ROOT/'packages/debian/common/entrypoint.sh'
 REDHAT_ENTRYPOINT : Path = ROOT/'packages/redhat/common/entrypoint.sh'
 
 # Path to UI static files.

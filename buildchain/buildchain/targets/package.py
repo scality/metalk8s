@@ -352,6 +352,7 @@ class DEBPackage(Package):
         sources: Path,
         build_id: int,
         builder: image.ContainerImage,
+        releasever: str,
         **kwargs: Any
     ):
         kwargs.setdefault('task_dep', []).extend([
@@ -360,7 +361,7 @@ class DEBPackage(Package):
         ])
         super().__init__(
             basename, name, version, build_id, builder,
-            constants.PKG_DEB_ROOT, **kwargs
+            constants.PKG_DEB_ROOT, releasever, **kwargs
          )
         self._sources = sources
 
@@ -375,7 +376,9 @@ class DEBPackage(Package):
     @property
     def debuild_sources(self) -> Path:
         """Path to the directory that contains input files for debuild."""
-        return constants.ROOT.joinpath('packages','debian',self.name)
+        return constants.ROOT.joinpath(
+            'packages', 'debian', 'common', self.name
+        )
 
     @property
     def execution_plan(self) -> List[types.TaskDict]:

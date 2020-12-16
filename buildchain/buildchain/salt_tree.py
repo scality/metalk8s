@@ -218,8 +218,9 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
                     } for version, pkgs in versions.REDHAT_PACKAGES.items()
                 },
                 'ubuntu': {
-                    pkg.name: {'version': pkg.full_version}
-                    for pkg in versions.DEB_PACKAGES
+                    version: {
+                        pkg.name: {'version': pkg.full_version} for pkg in pkgs
+                    } for version, pkgs in versions.DEB_PACKAGES.items()
                 },
             },
             'images': {
