@@ -4,7 +4,7 @@
 
 
 from pathlib import Path
-from typing import Any, Iterator, Tuple
+from typing import Any, Dict, Iterator, Tuple
 
 from buildchain import config
 from buildchain import constants
@@ -45,22 +45,27 @@ def _builder_image(
     )
 
 
-RPM_BUILDER : LocalImage = _builder_image(
-    name='rpm',
-    dockerfile=constants.ROOT/'packages/redhat/Dockerfile',
-    file_dep=[
-        constants.ROOT/'packages/redhat/yum_repositories/kubernetes.repo',
-        constants.ROOT/'packages/redhat/yum_repositories/saltstack.repo'
-    ],
-    build_args={
-        # Used to template the SaltStack repository definition
-        'SALT_VERSION': versions.SALT_VERSION,
-    },
-)
+RPM_BUILDER : Dict[str, LocalImage] = {
+    '7': _builder_image(
+        name='redhat-7-rpm',
+        dockerfile=constants.ROOT/'packages/redhat/7/Dockerfile',
+        build_context=constants.ROOT/'packages/redhat',
+        file_dep=[
+            constants.ROOT/'packages'/'redhat'/'common'/
+                'yum_repositories'/'kubernetes.repo',
+            constants.ROOT/'packages'/'redhat'/'common'/
+                'yum_repositories'/'saltstack.repo',
+        ],
+        build_args={
+            # Used to template the SaltStack repository definition
+            'SALT_VERSION': versions.SALT_VERSION,
+        },
+    ),
+}
 
 DEB_BUILDER : LocalImage = _builder_image(
-    name='deb',
-    dockerfile=constants.ROOT/'packages/debian/Dockerfile',
+    name='ubuntu-18.04-deb',
+    dockerfile=constants.ROOT/'packages/debian/18.04/Dockerfile',
 )
 
 DOC_BUILDER : LocalImage = _builder_image(
@@ -94,12 +99,11 @@ UI_BUILDER : LocalImage = _builder_image(
 
 
 _BUILDERS : Tuple[LocalImage, ...] = (
-    RPM_BUILDER,
-    DEB_BUILDER,
     DOC_BUILDER,
     GO_BUILDER,
     UI_BUILDER,
-)
+) + tuple(RPM_BUILDER.values()) \
+  + tuple(DEB_BUILDER.values())
 
 
 __all__ = utils.export_only_tasks(__name__)

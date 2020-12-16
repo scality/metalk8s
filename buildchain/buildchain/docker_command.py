@@ -33,7 +33,7 @@ DOCKER_CLIENT : docker.DockerClient = docker.from_env()
 
 RPMLINTRC_MOUNT : Mount = utils.bind_ro_mount(
     target=Path('/rpmbuild/rpmlintrc'),
-    source=constants.ROOT/'packages'/'redhat'/'rpmlintrc',
+    source=constants.ROOT/'packages'/'redhat'/'common'/'rpmlintrc',
 )
 
 

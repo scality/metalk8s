@@ -208,12 +208,14 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
             'kubernetes': {'version': versions.K8S_VERSION},
             'packages': {
                 'centos': {
-                    pkg.name: {'version': pkg.full_version}
-                    for pkg in versions.RPM_PACKAGES
+                    version: {
+                        pkg.name: {'version': pkg.full_version} for pkg in pkgs
+                    } for version, pkgs in versions.REDHAT_PACKAGES.items()
                 },
                 'redhat': {
-                    pkg.name: {'version': pkg.full_version}
-                    for pkg in versions.RPM_PACKAGES
+                    version: {
+                        pkg.name: {'version': pkg.full_version} for pkg in pkgs
+                    } for version, pkgs in versions.REDHAT_PACKAGES.items()
                 },
                 'ubuntu': {
                     pkg.name: {'version': pkg.full_version}

@@ -57,6 +57,7 @@ class Package(base.CompositeTarget):
         build_id: int,
         builder: image.ContainerImage,
         pkg_root: Path,
+        releasever: str,
         **kwargs: Any
     ):
         self._name = name
@@ -64,6 +65,7 @@ class Package(base.CompositeTarget):
         self._build_id = build_id
         self._builder = builder
         self._pkg_root = pkg_root
+        self._releasever = releasever
         super().__init__(basename=basename, **kwargs)
 
     name     = property(operator.attrgetter('_name'))
@@ -84,9 +86,8 @@ class Package(base.CompositeTarget):
 
 
 class RPMPackage(Package):
-    """A RPM software package for CentOS 7."""
+    """A RPM software package for CentOS."""
 
-    SUFFIX = 'el7'
     SOURCE_URL_PATTERN = re.compile(r'^(Source|Patch)\d+:\s+(?P<url>.+)$')
 
     def __init__(
@@ -97,6 +98,7 @@ class RPMPackage(Package):
         build_id: int,
         sources: Sequence[Path],
         builder: image.ContainerImage,
+        releasever: str,
         **kwargs: Any
     ):
         """Initialize the package.
@@ -113,7 +115,8 @@ class RPMPackage(Package):
             They are passed to `Target` init method.
         """
         super().__init__(
-            basename, name, version, build_id, builder, constants.PKG_RPM_ROOT,
+            basename, name, version, build_id, builder,
+            constants.PKG_REDHAT_ROOT, releasever,
             **kwargs
         )
         self._sources = [
@@ -125,7 +128,7 @@ class RPMPackage(Package):
     @property
     def rootdir(self) -> Path:
         """Package root directory."""
-        return self._pkg_root/self._name
+        return self._pkg_root/self._releasever/self._name
 
     @property
     def srcdir(self) -> Path:
@@ -135,7 +138,9 @@ class RPMPackage(Package):
     @property
     def spec(self) -> Path:
         """.spec file path."""
-        return constants.ROOT/'packages'/'redhat'/'{}.spec'.format(self.name)
+        return constants.ROOT/'packages'/'redhat'/'common'/'{}.spec'.format(
+            self.name
+        )
 
     @property
     def meta(self) -> Path:
@@ -145,8 +150,11 @@ class RPMPackage(Package):
     @property
     def srpm(self) -> Path:
         """SRPM path."""
-        fmt = '{pkg.name}-{pkg.version}-{pkg.build_id}.{pkg.SUFFIX}.src.rpm'
-        return constants.PKG_RPM_ROOT/fmt.format(pkg=self)
+        fmt = (
+            '{pkg.name}-{pkg.version}-{pkg.build_id}'
+            '.el{pkg._releasever}.src.rpm'
+        )
+        return constants.PKG_REDHAT_ROOT/self._releasever/fmt.format(pkg=self)
 
     @property
     def execution_plan(self) -> List[types.TaskDict]:
@@ -273,7 +281,9 @@ class RPMPackage(Package):
                     with open(srcfile, 'wb') as fp:
                         fp.write(conn.read())
             else:
-                url = os.path.join(constants.ROOT/'packages'/'redhat', url)
+                url = os.path.join(
+                    constants.ROOT/'packages'/'redhat'/'common', url
+                )
                 shutil.copyfile(url, srcfile)
 
     def _get_source_files_urls(self) -> Dict[Path, str]:
