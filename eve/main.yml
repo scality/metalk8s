@@ -823,11 +823,14 @@ stages:
     worker:
       type: local
     steps:
-      - TriggerStages:
-          name: Trigger build of Example Solution archive
-          stage_names:
-            - build-example-solution
-          haltOnFailure: true
+      - SetProperty:
+          name: Set Example Solution version property
+          property: example_solution_version
+          value: 1.0.0
+      - SetProperty:
+          name: Set Example Solution version next property
+          property: example_solution_version_next
+          value: 1.0.1
       - TriggerStages:
           name: Trigger Solutions framework tests
           stage_names:
@@ -1005,71 +1008,6 @@ stages:
             <<: *_env_final_status_artifact_success
             <<: *_build_metalk8s-previous_junit_info
             STEP_NAME: buildprev
-      - Upload: *upload_final_status_artifact
-
-  build-example-solution:
-    _metalk8s_internal_info:
-      junit_info: &_build_ex-solution_junit_info
-        TEST_SUITE: build
-        TEST_NAME: example solution
-    worker:
-      type: kube_pod
-      path: eve/workers/pod-example-solution-builder/pod.yaml
-      images:
-        example-solution-builder: eve/workers/pod-example-solution-builder
-    steps:
-      - ShellCommand: *wait_for_docker
-      - Git: *git_pull
-      - ShellCommand:
-          <<: *add_final_status_artifact_failed
-          env:
-            <<: *_env_final_status_artifact_failed
-            <<: *_build_ex-solution_junit_info
-            STEP_NAME: build-example-solution
-      - ShellCommand: *setup_cache
-      - SetPropertyFromCommand: &set_example_solution_version
-          name: Set Example Solution version property
-          property: example_solution_version
-          command: >
-            . examples/metalk8s-solution-example/VERSION &&
-            echo "$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH$VERSION_SUFFIX"
-      - ShellCommand: &build_example_solution_iso
-          name: Build Example Solution ISO
-          command: >
-            cd examples/metalk8s-solution-example &&
-            DOCKER_SOCKET=http://localhost:2375 make iso &&
-            rm -rf examples/metalk8s-solution-example/_build/images
-            examples/metalk8s-solution-example/_build/root/images
-          haltOnFailure: True
-          timeout: 3600
-      - ShellCommand:
-          name: Increment Example Solution patch version
-          command: >
-            bash -c '
-            . examples/metalk8s-solution-example/VERSION &&
-            sed -i "s/^VERSION_PATCH=.*$/VERSION_PATCH=$(( ++VERSION_PATCH ))/"
-            examples/metalk8s-solution-example/VERSION
-            '
-          haltOnFailure: True
-      - SetPropertyFromCommand:
-          <<: *set_example_solution_version
-          name: Set Example Solution version next property
-          property: example_solution_version_next
-      - ShellCommand: *build_example_solution_iso
-      - ShellCommand:
-          <<: *copy_artifacts
-          env:
-            <<: *_env_copy_artifacts
-            ARTIFACTS: >-
-              examples/metalk8s-solution-example/_build/example-solution-%(prop:example_solution_version)s.iso
-              examples/metalk8s-solution-example/_build/example-solution-%(prop:example_solution_version_next)s.iso
-      - Upload: *upload_artifacts
-      - ShellCommand:
-          <<: *add_final_status_artifact_success
-          env:
-            <<: *_env_final_status_artifact_success
-            <<: *_build_ex-solution_junit_info
-            STEP_NAME: build-example-solution
       - Upload: *upload_final_status_artifact
 
   docs:
@@ -2443,16 +2381,6 @@ stages:
       - ShellCommand: *provision_volumes_ssh
       - ShellCommand: *install_kubectl_bootstrap_ssh
       - ShellCommand: *wait_pods_stable_ssh
-      - SetPropertyFromCommand: *set_example_solution_version
-      - SetPropertyFromCommand:
-          name: Set Example Solution version next property
-          property: example_solution_version_next
-          command: >
-            eval $(bash -c '
-            . examples/metalk8s-solution-example/VERSION &&
-            sed "s/^VERSION_PATCH=.*$/VERSION_PATCH=$(( ++VERSION_PATCH ))/"
-            examples/metalk8s-solution-example/VERSION') &&
-            echo "$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH$VERSION_SUFFIX"
       - ShellCommand:
           <<: *retrieve_iso
           name: Retrieve Solution example-solution ISO image
@@ -2461,7 +2389,9 @@ stages:
             FILE_SOURCE: >-
               example-solution-%(prop:example_solution_version)s.iso
             FILE_DEST: example-solution.iso
-            BASE_URL: "%(prop:artifacts_private_url)s"
+            BASE_URL: "http://artifacts/builds/github:\
+                       scality:metalk8s-solution-example:\
+                       promoted-%(prop:example_solution_version)s"
       - ShellCommand:
           <<: *retrieve_iso
           name: Retrieve Solution next example-solution ISO image
@@ -2470,7 +2400,9 @@ stages:
             FILE_SOURCE: >-
               example-solution-%(prop:example_solution_version_next)s.iso
             FILE_DEST: example-solution-next.iso
-            BASE_URL: "%(prop:artifacts_private_url)s"
+            BASE_URL: "http://artifacts/builds/github:\
+                       scality:metalk8s-solution-example:\
+                       promoted-%(prop:example_solution_version_next)s"
       - ShellCommand:
           name: Copy Solutions ISOs to bootstrap node
           command: >
