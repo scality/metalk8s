@@ -19,7 +19,7 @@ const PodTableContainer = styled.div`
   font-size: ${fontSize.base};
   border-color: ${(props) => props.theme.brand.borderLight};
   .ReactTable .rt-thead {
-    overflow-y: scroll;
+    overflow-y: auto;
   }
   table {
     border-spacing: 0;
@@ -49,7 +49,7 @@ const Body = styled.tbody`
   display: block;
   height: calc(100vh - 250px);
   overflow: auto;
-  overflow-y: scroll;
+  overflow-y: auto;
 `;
 
 const Cell = styled.td`

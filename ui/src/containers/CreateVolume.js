@@ -55,7 +55,7 @@ const ActionContainer = styled.div`
 const CreateVolumeLayout = styled.div`
   display: inline-block;
   margin-top: ${padding.base};
-  overflow-y: scroll;
+  overflow-y: auto;
   height: 85vh;
   form {
     .sc-input {
