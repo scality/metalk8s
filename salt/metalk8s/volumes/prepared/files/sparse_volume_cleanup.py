@@ -99,7 +99,7 @@ def cleanup(volume_id):
                     device_path, str(exn)
                 ),
                 exit_code=exn.errno,
-            )
+            ) from exn
         print("Device already freed")
     finally:
         os.close(device_handle)
