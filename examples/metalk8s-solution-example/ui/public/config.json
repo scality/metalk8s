@@ -1,4 +1,0 @@
-{
-    "url": "https://apiserver:6443",
-    "registry_prefix": "registry:8080"
-}
