@@ -217,7 +217,7 @@ models:
         BASE_URL: "%(prop:premerge_artifacts_private_url)s"
         DEST_DIR: "."
       command: >
-        curl -s -XGET -o "${DEST_DIR}/SHA256SUM" "${BASE_URL}/SHA256SUM"
+        curl -L -s -XGET -o "${DEST_DIR}/SHA256SUM" "${BASE_URL}/SHA256SUM"
       # Three minutes should be enough for this small file
       timeout: 180
   - ShellCommand: &retrieve_iso
@@ -235,7 +235,7 @@ models:
           if [ $(( $i % 10 )) -eq 1 ]; then
             echo "Attempt $i out of ${MAX_ATTEMPTS}"
           fi
-          curl -s -XGET -o "${out_path}" "${in_url}" && exit
+          curl -L -s -XGET -o "${out_path}" "${in_url}" && exit
           sleep 2
         done
         echo "Could not retrieve $FILE_SOURCE after $MAX_ATTEMPTS attempts" >&2
