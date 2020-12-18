@@ -17,7 +17,8 @@
 - Bump `fluent-bit` chart to 2.0.1 and `loki` chart to 2.1.0
   (PR [#2946](https://github.com/scality/metalk8s/pull/2946))
 
-- Bump `dex` version to 2.24.0 (PR [#2942](https://github.com/scality/metalk8s/pull/2942))
+- [#2985](https://github.com/scality/metalk8s/issues/2985) - Bump `dex` version
+  to 2.27.0 (PR [#2990](https://github.com/scality/metalk8s/pull/2990))
 
 - Replace the prometheus-operator chart by the kube-prometheus-stack one and
   bump the version to 12.2.3.

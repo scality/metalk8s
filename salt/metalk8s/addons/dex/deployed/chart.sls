@@ -136,7 +136,7 @@ spec:
         - serve
         - /etc/dex/cfg/config.yaml
         env: []
-        image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.24.0
+        image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.27.0
         imagePullPolicy: IfNotPresent
         name: main
         ports:
