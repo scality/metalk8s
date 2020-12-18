@@ -9,7 +9,7 @@ BUILDCHAIN=buildchain
 # Location of the virtual environment for the buildchain.
 BUILDENV="${BUILDCHAIN}/.venv"
 # requirements.txt for the buildchain.
-REQUIREMENTS="${BUILDCHAIN}/requirements-$OSTYPE.txt"
+REQUIREMENTS="${BUILDCHAIN}/requirements.txt"
 # Dummy file to keep track of when the virtual environment was installed.
 WITNESS_FILE="${BUILDENV}/installed.tstamp"
 # File containing environment variables.
