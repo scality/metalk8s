@@ -358,7 +358,6 @@ PACKAGES: Dict[str, Any] = {
                 version=SHORT_VERSION,
                 release='{0}.el7'.format(SOSREPORT_RELEASE),
             ),
-            PackageVersion(name='python36-rpm'),
             PackageVersion(name='yum-plugin-versionlock'),
             PackageVersion(name='yum-utils'),
         ),
