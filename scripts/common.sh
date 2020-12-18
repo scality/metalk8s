@@ -23,6 +23,7 @@ DPKG=${DPKG:-$(command -v dpkg || true)}
 YUM=${YUM:-$(command -v yum || true)}
 APT=${APT:-$(command -v apt || true)}
 SYSTEMCTL=${SYSTEMCTL:-$(command -v systemctl)}
+PYTHON=${PYTHON:-$(command -v python3 || command -v python || true)}
 
 determine_os() {
     # We rely on /etc/os-release to discover the OS because its present on all
@@ -31,6 +32,7 @@ determine_os() {
         # shellcheck disable=SC1091
         . /etc/os-release
         OS=$ID
+        OS_VERSION=$VERSION_ID
         [[ $OS = rhel ]] && OS=redhat
         if [[ $OS =~ ^(redhat|centos)$ ]]; then
             OS_FAMILY=redhat
@@ -82,7 +84,7 @@ configure_apt_local_repositories() {
 
 configure_yum_local_repository() {
     local -r repo_name=$1 gpgcheck=${2:-0}
-    local -r repo_path="$BASE_DIR/packages/redhat/$repo_name-el7"
+    local -r repo_path="$BASE_DIR/packages/redhat/$OS_VERSION/$repo_name-el$OS_VERSION"
     local gpg_keys
 
     gpg_keys=$(
@@ -103,19 +105,19 @@ EOF
 
 configure_apt_local_repository() {
     local -r repo_name=$1
-    local -r repo_path="$BASE_DIR/packages/debian/$repo_name"
+    local -r repo_path="$BASE_DIR/packages/debian/$OS_VERSION/$repo_name"
     echo "deb [trusted=yes] file://$repo_path bionic $repo_name" \
         > /etc/apt/sources.list.d/"$repo_name".list
 }
 
 get_packages_list() {
-    python -c "
+    "$PYTHON" -c "
 import json
 
 with open('$BASE_DIR/salt/metalk8s/versions.json', 'r') as fd:
     versions = json.load(fd)
 
-packages = versions.get('packages', {}).get('$OS', {})
+packages = versions.get('packages', {}).get('$OS', {}).get('$OS_VERSION', {})
 for pkg, pkg_info in packages.items():
     print('{0}{1}'.format(
         pkg, '-' + pkg_info['version'] if pkg_info.get('version') else '')
