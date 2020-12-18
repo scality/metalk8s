@@ -9,7 +9,7 @@ import { Input, Button, Banner, Tooltip, Checkbox } from '@scality/core-ui';
 import isEmpty from 'lodash.isempty';
 import {
   fetchStorageClassAction,
-  createVolumeAction,
+  createVolumesAction,
 } from '../ducks/app/volumes';
 import { fetchNodesAction } from '../ducks/app/nodes';
 import {
@@ -205,7 +205,8 @@ const CreateVolume = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
 
-  const createVolume = (newVolumes) => dispatch(createVolumeAction(newVolumes));
+  const createVolumes = (newVolumes) =>
+    dispatch(createVolumesAction(newVolumes));
 
   const nodes = useSelector((state) => state.app.nodes.list);
   const storageClass = useSelector((state) => state.app.volumes.storageClass);
@@ -255,43 +256,35 @@ const CreateVolume = (props) => {
     volumes: [{ name: '', path: '' }],
   };
 
-  // Set the dependend /recommand fields based on the default values of other fields (DevicePath / Size / SizeUnit) in Formik.
-  const RecommendNameField = (props) => {
-    const {
-      values: { name },
-      touched,
-      setFieldValue,
-    } = useFormikContext();
+  // Factorized field for the recommended device path and name
+  const RecommendField = (props) => {
+    const { fieldname, name, index } = props;
+    const { values, touched, setFieldValue } = useFormikContext();
     const [field, meta] = useField(props);
+
     React.useEffect(() => {
-      if (name.trim() !== '' && touched.name) {
-        setFieldValue(props.name, `${name}${props.index + 1}`);
+      if (fieldname === 'name') {
+        if (values.name.trim() !== '' && touched.name) {
+          setFieldValue(name, `${values.name}${index + 1}`);
+        }
+      } else if (fieldname === 'path') {
+        if (values.path.trim() !== '' && touched.path) {
+          setFieldValue(
+            name,
+            linuxDrivesNamingIncrement(values.path, index + 1),
+          );
+        }
       }
-    }, [name, touched.name, setFieldValue, props.name, props.index]);
-
-    return (
-      <>
-        <Input {...props} {...field} />
-        {!!meta.touched && !!meta.error && <div>{meta.error}</div>}
-      </>
-    );
-  };
-
-  const RecommendDevicePathField = (props) => {
-    const {
-      values: { path },
-      touched,
+    }, [
       setFieldValue,
-    } = useFormikContext();
-    const [field, meta] = useField(props);
-    React.useEffect(() => {
-      if (path.trim() !== '' && touched.path) {
-        setFieldValue(
-          props.name,
-          linuxDrivesNamingIncrement(path, props.index + 1),
-        );
-      }
-    }, [path, touched.path, setFieldValue, props.name, props.index]);
+      fieldname,
+      name,
+      index,
+      values.name,
+      values.path,
+      touched.path,
+      touched.name,
+    ]);
 
     return (
       <>
@@ -432,21 +425,19 @@ const CreateVolume = (props) => {
                 const preVolNum = values.numberOfVolumes;
 
                 setFieldValue(field, inputVolNum);
-                var diff = preVolNum - inputVolNum;
+                const diff = preVolNum - inputVolNum;
                 if (diff > 0) {
                   // REMOVE volume object from `values.volumes` base on the index
-                  for (var i = inputVolNum; i < preVolNum; i++) {
+                  for (let i = inputVolNum; i < preVolNum; i++) {
                     arrayHelpers.remove(i);
                   }
                 } else if (diff < 0) {
                   // PUSH new volume object to `values.volumes`
-                  var absDiff = Math.abs(diff);
+                  let absDiff = Math.abs(diff);
                   while (absDiff--) {
                     arrayHelpers.push({
                       name: '',
                       path: '',
-                      sizeInput: '',
-                      selectedUnit: sizeUnits[3].value,
                     });
                   }
                 }
@@ -711,18 +702,20 @@ const CreateVolume = (props) => {
                                   {index + 1}-
                                 </div>
                                 <SingleVolumeForm>
-                                  <RecommendNameField
+                                  <RecommendField
                                     name={`volumes[${index}]name`}
                                     label={intl.translate('name')}
                                     onBlur={handleOnBlur}
                                     index={index}
+                                    fieldname="name"
                                   />
                                   {values.type === RAW_BLOCK_DEVICE ? (
-                                    <RecommendDevicePathField
+                                    <RecommendField
                                       name={`volumes.${index}.path`}
                                       label={intl.translate('device_path')}
                                       onBlur={handleOnBlur}
                                       index={index}
+                                      fieldname="path"
                                     />
                                   ) : null}
                                 </SingleVolumeForm>

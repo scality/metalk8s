@@ -118,7 +118,7 @@ export const updateStorageClassAction = (payload) => {
   return { type: UPDATE_STORAGECLASS, payload };
 };
 
-export const createVolumeAction = (newVolumes) => {
+export const createVolumesAction = (newVolumes) => {
   return { type: CREATE_VOLUMES, payload: { newVolumes } };
 };
 
