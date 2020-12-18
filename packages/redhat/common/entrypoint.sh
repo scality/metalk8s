@@ -175,7 +175,7 @@ download_packages() {
         repoquery --queryformat="$query_format" \
                   --disablerepo="*" \
                   --enablerepo="$enabled_repos_yum" \
-                  "${packages_to_download[@]}" | sort
+                  "${packages_to_download[@]}" | grep -vE '\.src$' | sort
     )
 
     chown -R "$TARGET_UID:$TARGET_GID" "/repositories"
