@@ -631,8 +631,7 @@ const CreateVolume = (props) => {
                               placement="right"
                               overlay={
                                 <div style={{ minWidth: '200px' }}>
-                                  A devicePath or a partition mount point.
-                                  Example: "/dev/sdb"
+                                  {intl.translate('device_path_explanation')}
                                 </div>
                               }
                             >
@@ -647,7 +646,7 @@ const CreateVolume = (props) => {
                     <CheckboxContainer>
                       <Checkbox
                         name="multiVolumeCreation"
-                        label={'Create multiple volumes?'}
+                        label={intl.translate('create_multiple_volumes')}
                         checked={values.multiVolumeCreation}
                         value={values.multiVolumeCreation}
                         onChange={handleChange('multiVolumeCreation')}
@@ -673,7 +672,7 @@ const CreateVolume = (props) => {
                                   paddingRight: `${padding.base}`,
                                 }}
                               >
-                                Number of volume to create
+                                {intl.translate('number_volume_create')}
                               </span>
                               {/* TODO: Generalize the number input component to core-ui. */}
                               <InputNumberComponentStyle
@@ -693,8 +692,9 @@ const CreateVolume = (props) => {
                                 paddingTop: `${padding.large}`,
                               }}
                             >
-                              Name the Volumes and provide the Device paths. You
-                              may use the defaults or override them.
+                              {intl.translate(
+                                'default_batch_volume_values_explanation',
+                              )}
                             </div>
                             {values.volumes.map((volume, index) => (
                               <SingleVolumeContainer key={`volume${index}`}>
