@@ -277,7 +277,7 @@ export const getVolumeListData = createSelector(
   },
 );
 
-export const formatDataForBatchVolumeCreation = (newVolumes) => {
+export const formatVolumeCreationData = (newVolumes) => {
   const {
     multiVolumeCreation,
     volumes,
@@ -288,7 +288,7 @@ export const formatDataForBatchVolumeCreation = (newVolumes) => {
     storageClass,
   } = newVolumes;
   if (multiVolumeCreation) {
-    // multi volume creation mode
+    // multi-volume creation mode
     return (
       volumes?.map((volume) => {
         volume.node = node;
@@ -299,5 +299,8 @@ export const formatDataForBatchVolumeCreation = (newVolumes) => {
         return volume;
       }) ?? []
     );
+  } else {
+    // single volume creation
+    return [newVolumes];
   }
 };

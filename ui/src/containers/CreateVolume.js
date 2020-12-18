@@ -23,7 +23,7 @@ import {
   useQuery,
   linuxDrivesNamingIncrement,
 } from '../services/utils';
-import { formatDataForBatchVolumeCreation } from '../services/NodeVolumesUtils';
+import { formatVolumeCreationData } from '../services/NodeVolumesUtils';
 import { intl } from '../translations/IntlGlobalProvider';
 
 // We might want to do a factorization later for
@@ -384,16 +384,9 @@ const CreateVolume = (props) => {
             onSubmit={(values) => {
               const newVolumes = { ...values };
               newVolumes.size = `${values.sizeInput}${values.selectedUnit}`;
-              if (newVolumes.multiVolumeCreation) {
-                // batch volume creation
-                const formattedVolumes = formatDataForBatchVolumeCreation(
-                  newVolumes,
-                );
-                createVolume(formattedVolumes);
-              } else {
-                // single volume creation
-                createVolume([newVolumes]);
-              }
+
+              const formattedVolumes = formatVolumeCreationData(newVolumes);
+              createVolumes(formattedVolumes);
             }}
           >
             {(formikProps) => {
