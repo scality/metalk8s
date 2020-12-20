@@ -417,7 +417,7 @@ const CreateVolume = (props) => {
                 setFieldValue('labels', labels);
               };
 
-              // Update the volume list base on the current input number
+              // Update the number of the volumes to create base on the input number
               const setVolumeNumber = (field, arrayHelpers) => (
                 selectedObj,
               ) => {
@@ -428,7 +428,7 @@ const CreateVolume = (props) => {
                 const diff = preVolNum - inputVolNum;
                 if (diff > 0) {
                   // REMOVE volume object from `values.volumes` base on the index
-                  for (let i = inputVolNum; i < preVolNum; i++) {
+                  for (let i = preVolNum - 1; i >= inputVolNum; i--) {
                     arrayHelpers.remove(i);
                   }
                 } else if (diff < 0) {
