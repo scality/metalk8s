@@ -269,10 +269,7 @@ const CreateVolume = (props) => {
         }
       } else if (fieldname === 'path') {
         if (values.path.trim() !== '' && touched.path) {
-          setFieldValue(
-            name,
-            linuxDrivesNamingIncrement(values.path, index + 1),
-          );
+          setFieldValue(name, linuxDrivesNamingIncrement(values.path, index));
         }
       }
     }, [

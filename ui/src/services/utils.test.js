@@ -285,6 +285,11 @@ it('should return /dev/vdaa after /dev/vdz', () => {
   expect(result).toEqual('/dev/vdaa');
 });
 
+it('should return the original path if the increment is 0', () => {
+  const result = linuxDrivesNamingIncrement('/dev/vdc', 0);
+  expect(result).toEqual('/dev/vdc');
+});
+
 it('should return an empty string if the driver is not virtualization-aware disk driver', () => {
   const result = linuxDrivesNamingIncrement('/dev/sda', 2);
   expect(result).toEqual('');
@@ -295,7 +300,7 @@ it('should return an empty string if the device path is empty', () => {
   expect(result).toEqual('');
 });
 
-it('should return an empty string if the increment is smaller than 1', () => {
-  const result = linuxDrivesNamingIncrement('/dev/vda', 0);
+it('should return an empty string if the increment is smaller than 0', () => {
+  const result = linuxDrivesNamingIncrement('/dev/vda', -1);
   expect(result).toEqual('');
 });

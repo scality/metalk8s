@@ -473,6 +473,8 @@ export const linuxDrivesNamingIncrement = (devicePath, increment) => {
       }
     }
     return devicePath;
+  } else if (devicePath.match(/^\/dev\/vd[a-z]/) && increment === 0) {
+    return devicePath;
   } else {
     return '';
   }
