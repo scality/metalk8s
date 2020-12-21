@@ -23,9 +23,9 @@ export GOPATH=$GO_BUILD_PATH:%{gopath}
 %define gobuild(o:) %{expand:
 %global _dwz_low_mem_die_limit 0
 %ifnarch ppc64
-go build -buildmode pie -compiler gc -tags="rpm_crashtraceback ${BUILDTAGS:-seccomp}" -ldflags "${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '%__global_ldflags %{?__golang_extldflags}'" -a -v -x %{?**};
+go build -buildmode pie -compiler gc -tags="rpm_crashtraceback ${BUILDTAGS:-seccomp %{!?el7:no_btrfs}}" -ldflags "${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '%__global_ldflags %{?__golang_extldflags}'" -a -v -x %{?**};
 %else
-go build -compiler gc -tags="rpm_crashtraceback ${BUILDTAGS:-seccomp}" -ldflags "${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '%__global_ldflags %{?__golang_extldflags}'" -a -v -x %{?**};
+go build -compiler gc -tags="rpm_crashtraceback ${BUILDTAGS:-seccomp %{!?el7:no_btrfs}}" -ldflags "${LDFLAGS:-} -B 0x$(head -c20 /dev/urandom|od -An -tx1|tr -d ' \\n') -extldflags '%__global_ldflags %{?__golang_extldflags}'" -a -v -x %{?**};
 %endif
 }
 %endif
@@ -43,7 +43,7 @@ Source2:        containerd.toml
 Patch0:         0001-Revert-commit-for-Windows-metrics.patch
 
 BuildRequires:  golang >= 1.10
-BuildRequires:  btrfs-progs-devel
+%{?el7:BuildRequires:  btrfs-progs-devel}
 BuildRequires:  go-md2man
 BuildRequires:  libseccomp-devel
 BuildRequires:  systemd

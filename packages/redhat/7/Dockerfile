@@ -19,7 +19,7 @@ RUN yum install -y \
     yum clean all
 
 # To build containerd
-RUN yum install -y \
+RUN yum install -y --setopt=skip_missing_names_on_install=False \
         golang \
         btrfs-progs-devel \
         go-md2man \
