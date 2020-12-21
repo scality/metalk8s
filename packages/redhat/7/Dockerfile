@@ -8,9 +8,10 @@ ARG SALT_VERSION
 ADD common/yum_repositories/*.repo /etc/yum.repos.d/
 RUN sed -i s/@SALT_VERSION@/$SALT_VERSION/ /etc/yum.repos.d/saltstack.repo
 
-RUN yum install -y \
+RUN yum install -y --setopt=skip_missing_names_on_install=False \
         createrepo \
         epel-release \
+        python36-rpm \
         rpm-build \
         rpmdevtools \
         rpmlint \
