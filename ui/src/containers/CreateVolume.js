@@ -691,6 +691,8 @@ const CreateVolume = (props) => {
                                 name="numberOfVolumes"
                                 value={values.numberOfVolumes}
                                 min="1"
+                                // Max number of the batch volume creation is 70.
+                                max="70"
                                 onChange={setVolumeNumber(
                                   'numberOfVolumes',
                                   arrayHelpers,

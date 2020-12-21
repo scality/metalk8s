@@ -286,6 +286,11 @@ it('should return /dev/vdaa after /dev/vdz', () => {
   expect(result).toEqual('/dev/vdaa');
 });
 
+it('should return /dev/vdaa after /dev/vdz', () => {
+  const result = linuxDrivesNamingIncrement('/dev/vdaz', 1);
+  expect(result).toEqual('/dev/vdba');
+});
+
 it('should return the original path if the increment is 0', () => {
   const result = linuxDrivesNamingIncrement('/dev/vdc', 0);
   expect(result).toEqual('/dev/vdc');

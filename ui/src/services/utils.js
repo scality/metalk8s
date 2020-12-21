@@ -464,10 +464,16 @@ export const linuxDrivesNamingIncrement = (devicePath, increment) => {
   if (devicePath.match(/^\/dev\/vd[a-z]/) && increment >= 1) {
     while (increment--) {
       const lastChar = devicePath.slice(-1);
-      let sub = devicePath.slice(0, -1);
+      const sub = devicePath.slice(0, -1);
 
       if (lastChar === 'z' && devicePath.length === 8) {
         devicePath = '/dev/vdaa';
+      } else if (lastChar === 'z' && devicePath.length === 9) {
+        // when the path is `/dev/vdaz`, `/dev/vdbz`,
+        const last2ndChar = devicePath.slice(-2);
+        const subBefore = devicePath.slice(0, -2);
+        devicePath =
+          subBefore + String.fromCharCode(last2ndChar.charCodeAt() + 1) + 'a';
       } else {
         devicePath = sub + String.fromCharCode(lastChar.charCodeAt() + 1);
       }
