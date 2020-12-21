@@ -95,11 +95,13 @@ RUN yum install -y epel-release && \
         rsync \
         salt-master \
         salt-minion \
+        screen \
         socat \
         strace \
         sysstat \
         tcpdump \
         telnet \
+        tmux \
         util-linux \
         vim \
         wget \
