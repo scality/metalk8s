@@ -21,4 +21,5 @@ do not have a working MetalK8s_ setup.
    account_administration
    cluster_and_service_configuration
    cluster_monitoring
+   metalk8s-utils
    troubleshooting
