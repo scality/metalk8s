@@ -46,6 +46,10 @@
   `metalk8s-utils` container image
   (PR [#2995](https://github.com/scality/metalk8s/pull/2995))
 
+- The `bash-completion` completions for the `kubectl` command are now included
+  in the `metalk8s-utils` container image
+  (PR [#2995](https://github.com/scality/metalk8s/pull/2995))
+
 ### Bug fixes
 
 - [#2908](https://github.com/scality/metalk8s/issues/2908) - Make upgrade script

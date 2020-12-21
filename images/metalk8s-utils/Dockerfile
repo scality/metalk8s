@@ -109,3 +109,5 @@ RUN yum install -y epel-release && \
         xfsprogs \
         && \
     yum clean all
+
+RUN kubectl completion bash > /etc/bash_completion.d/kubectl
