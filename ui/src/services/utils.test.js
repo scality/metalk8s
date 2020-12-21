@@ -4,6 +4,7 @@ import {
   fromMilliSectoAge,
   useTableSortURLSync,
   linuxDrivesNamingIncrement,
+  formatBatchName,
 } from './utils';
 import { renderHook } from '@testing-library/react-hooks';
 

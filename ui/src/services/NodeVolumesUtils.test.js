@@ -11,6 +11,7 @@ import {
   volumeGetError,
   getVolumeListData,
   formatVolumeCreationData,
+  formatBatchName,
 } from './NodeVolumesUtils';
 import { stateApp } from './NodeVolumesUtilsData';
 
@@ -650,4 +651,19 @@ it('should return an array with formatted batch volume', () => {
 it('should return an array with formatted batch rawblock device volume', () => {
   const result = formatVolumeCreationData(rawBlockVolumes);
   expect(result).toEqual(batchRawVolume);
+});
+
+it('should volume01 when the index is 1', () => {
+  const result = formatBatchName('volume', 1);
+  expect(result).toEqual('volume01');
+});
+
+it('should volume09 when the index is 9', () => {
+  const result = formatBatchName('volume', 9);
+  expect(result).toEqual('volume09');
+});
+
+it('should volume09 when the index is 10', () => {
+  const result = formatBatchName('volume', 10);
+  expect(result).toEqual('volume10');
 });

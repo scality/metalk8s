@@ -23,7 +23,10 @@ import {
   useQuery,
   linuxDrivesNamingIncrement,
 } from '../services/utils';
-import { formatVolumeCreationData } from '../services/NodeVolumesUtils';
+import {
+  formatVolumeCreationData,
+  formatBatchName,
+} from '../services/NodeVolumesUtils';
 import { intl } from '../translations/IntlGlobalProvider';
 
 // We might want to do a factorization later for
@@ -264,12 +267,14 @@ const CreateVolume = (props) => {
 
     React.useEffect(() => {
       if (fieldname === 'name') {
+        // Set the defaults when the field is empty, means even if we change the global value afterwards,
+        // the field of batch volumes will not be override.
         if (
           values.name.trim() !== '' &&
           touched.name &&
           values.volumes[index].name === ''
         ) {
-          setFieldValue(name, `${values.name}${index + 1}`);
+          setFieldValue(name, formatBatchName(values.name, index + 1));
         }
       } else if (fieldname === 'path') {
         if (
