@@ -84,7 +84,8 @@ configure_apt_local_repositories() {
 
 configure_yum_local_repository() {
     local -r repo_name=$1 gpgcheck=${2:-0}
-    local -r repo_path="$BASE_DIR/packages/redhat/$OS_VERSION/$repo_name-el$OS_VERSION"
+    local -r osmajorrelease=${OS_VERSION%%.*}
+    local -r repo_path="$BASE_DIR/packages/redhat/$osmajorrelease/$repo_name-el$osmajorrelease"
     local gpg_keys
 
     gpg_keys=$(

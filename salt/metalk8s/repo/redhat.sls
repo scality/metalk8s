@@ -1,4 +1,5 @@
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
+{%- from "metalk8s/map.jinja" import packages with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
 
 {%- set repo_host = pillar.metalk8s.endpoints['repositories'].ip %}
@@ -15,7 +16,8 @@ Install yum-utils:
 
 Install yum-plugin-versionlock:
   pkg.installed:
-    - name: yum-plugin-versionlock
+    - name: {{
+        packages.get('yum-plugin-versionlock', 'yum-plugin-versionlock') }}
 
 Ensure yum plugins are enabled:
   ini.options_present:
@@ -42,11 +44,13 @@ Ensure yum versionlock plugin is enabled:
     {%- set repo_base_url = "file://" ~
                             salt.metalk8s.get_archives()[saltenv].path ~ "/" ~
                             repo.relative_path ~ "/" ~
-                            grains['os_family'].lower() %}
+                            grains['os_family'].lower() ~ "/" ~
+                            "$metalk8s_osmajorrelease" %}
   {%- else %}
     {%- set repo_base_url = "http://" ~ repo_host ~ ':' ~ repo_port ~
                             "/" ~ saltenv ~ "/" ~
-                            grains['os_family'].lower() %}
+                            grains['os_family'].lower() ~ "/" ~
+                            "$metalk8s_osmajorrelease" %}
   {%- endif %}
   {%- set repo_url = repo_base_url ~ "/" ~ repo_name ~
                      "-el$metalk8s_osmajorrelease" %}

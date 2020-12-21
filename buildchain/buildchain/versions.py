@@ -365,12 +365,12 @@ PACKAGES: Dict[str, Any] = {
             PackageVersion(
                 name='calico-cni-plugin',
                 version=CALICO_VERSION,
-                release='1.el8'
+                release='{0}.el8'.format(CALICO_RELEASE)
             ),
             PackageVersion(
                 name='containerd',
                 version=CONTAINERD_VERSION,
-                release='2.el8',
+                release='{0}.el8'.format(CONTAINERD_RELEASE),
             ),
             PackageVersion(name='container-selinux'),
             PackageVersion(name='iptables-ebtables', override='ebtables'),
@@ -378,7 +378,7 @@ PACKAGES: Dict[str, Any] = {
             PackageVersion(
                 name='metalk8s-sosreport',
                 version=SHORT_VERSION,
-                release='2.el8'
+                release='{0}.el8'.format(SOSREPORT_RELEASE)
             ),
             PackageVersion(name='python3-m2crypto', override='m2crypto'),
             PackageVersion(name='python3-dnf-plugin-versionlock'),
