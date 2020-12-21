@@ -99,7 +99,7 @@ def cleanup(volume_id):
                     device_path, str(exn)
                 ),
                 exit_code=exn.errno,
-            )
+            ) from exn
         print("Device already freed")
     finally:
         os.close(device_handle)
@@ -130,7 +130,7 @@ def die(message, exit_code=1):
 class Error(Exception):
     """Base-class for errors raised by methods from this module."""
     def __init__(self, message, *args, exit_code=1):
-        super(Error, self).__init__(self, message, *args)
+        super().__init__(self, message, *args)
         self.message = message
         self.exit_code = exit_code
 

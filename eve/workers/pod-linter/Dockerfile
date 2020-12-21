@@ -21,6 +21,7 @@ RUN dnf install -y git \
   python-pip \
   python3 \
   python3-devel \
+  python36 \
   ShellCheck \
   && dnf clean all \
   && adduser -u 1042 --home /home/eve eve \

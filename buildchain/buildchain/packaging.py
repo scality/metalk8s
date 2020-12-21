@@ -253,10 +253,10 @@ def task__build_deb_repositories() -> Iterator[types.TaskDict]:
 def _rpm_package(name: str, sources: List[Path]) -> targets.RPMPackage:
     try:
         pkg_info = versions.RPM_PACKAGES_MAP[name]
-    except KeyError:
+    except KeyError as exc:
         raise ValueError(
             'Missing version for package "{}"'.format(name)
-        )
+        ) from exc
 
     # In case the `release` is of form "{build_id}.{os}", which is standard
     build_id_str, _, _ = pkg_info.release.partition('.')
@@ -366,10 +366,10 @@ RPM_REPOSITORIES : Tuple[targets.RPMRepository, ...] = (
 def _deb_package(name: str, sources: Path) -> targets.DEBPackage:
     try:
         pkg_info = versions.DEB_PACKAGES_MAP[name]
-    except KeyError:
+    except KeyError as exc:
         raise ValueError(
             'Missing version for package "{}"'.format(name)
-        )
+        ) from exc
 
     return targets.DEBPackage(
         basename='_build_deb_packages',

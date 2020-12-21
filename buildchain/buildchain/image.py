@@ -96,10 +96,10 @@ def _get_image_info(name: str) -> versions.Image:
     """Retrieve an `Image` information by name from the versions listing."""
     try:
         return versions.CONTAINER_IMAGES_MAP[name]
-    except KeyError:
+    except KeyError as exc:
         raise ValueError(
             'Missing version for container image "{}"'.format(name)
-        )
+        ) from exc
 
 def _remote_image(
     name: str, repository: str, **overrides: Any
