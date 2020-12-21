@@ -264,11 +264,19 @@ const CreateVolume = (props) => {
 
     React.useEffect(() => {
       if (fieldname === 'name') {
-        if (values.name.trim() !== '' && touched.name) {
+        if (
+          values.name.trim() !== '' &&
+          touched.name &&
+          values.volumes[index].name === ''
+        ) {
           setFieldValue(name, `${values.name}${index + 1}`);
         }
       } else if (fieldname === 'path') {
-        if (values.path.trim() !== '' && touched.path) {
+        if (
+          values.path.trim() !== '' &&
+          touched.path &&
+          values.volumes[index].path === ''
+        ) {
           setFieldValue(name, linuxDrivesNamingIncrement(values.path, index));
         }
       }
@@ -281,6 +289,7 @@ const CreateVolume = (props) => {
       values.path,
       touched.path,
       touched.name,
+      values.volumes,
     ]);
 
     return (
