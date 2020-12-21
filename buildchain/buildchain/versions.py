@@ -361,6 +361,30 @@ PACKAGES: Dict[str, Any] = {
             PackageVersion(name='yum-plugin-versionlock'),
             PackageVersion(name='yum-utils'),
         ),
+        '8': (
+            PackageVersion(
+                name='calico-cni-plugin',
+                version=CALICO_VERSION,
+                release='1.el8'
+            ),
+            PackageVersion(
+                name='containerd',
+                version=CONTAINERD_VERSION,
+                release='2.el8',
+            ),
+            PackageVersion(name='container-selinux'),
+            PackageVersion(name='iptables-ebtables', override='ebtables'),
+            PackageVersion(name='httpd-tools'),
+            PackageVersion(
+                name='metalk8s-sosreport',
+                version=SHORT_VERSION,
+                release='2.el8'
+            ),
+            PackageVersion(name='python3-m2crypto', override='m2crypto'),
+            PackageVersion(name='python3-dnf-plugin-versionlock'),
+            PackageVersion(name='python3-pyOpenSSL', override='python36-pyOpenSSL'),
+            PackageVersion(name='yum-utils'),
+        ),
     },
     'debian': {
         '18.04': (

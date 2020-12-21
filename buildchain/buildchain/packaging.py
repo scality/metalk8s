@@ -88,6 +88,7 @@ def task__build_packages() -> types.TaskDict:
         'actions': None,
         'task_dep': [
             '_build_redhat_7_packages',
+            '_build_redhat_8_packages',
             '_build_ubuntu_18_04_packages',
         ],
     }
@@ -98,6 +99,7 @@ def task__download_packages() -> types.TaskDict:
         'actions': None,
         'task_dep': [
             '_download_redhat_7_packages',
+            '_download_redhat_8_packages',
             '_download_ubuntu_18_04_packages',
         ],
     }
@@ -108,6 +110,7 @@ def task__build_repositories() -> types.TaskDict:
         'actions': None,
         'task_dep': [
             '_build_redhat_7_repositories',
+            '_build_redhat_8_repositories',
             '_build_ubuntu_18_04_repositories',
         ],
     }
@@ -135,6 +138,10 @@ def _package_mkdir_redhat_release_root(releasever: str) -> types.TaskDict:
 def task__package_mkdir_redhat_7_root() -> types.TaskDict:
     """Create the RedHat 7 packages root directory."""
     return _package_mkdir_redhat_release_root('7')
+
+def task__package_mkdir_redhat_8_root() -> types.TaskDict:
+    """Create the RedHat 8 packages root directory."""
+    return _package_mkdir_redhat_release_root('8')
 
 def task__package_mkdir_deb_root() -> types.TaskDict:
     """Create the Debian packages root directory."""
@@ -179,6 +186,10 @@ def _package_mkdir_redhat_release_iso_root(releasever: str) -> types.TaskDict:
 def task__package_mkdir_redhat_7_iso_root() -> types.TaskDict:
     """Create the RedHat 7 packages root directory on the ISO."""
     return _package_mkdir_redhat_release_iso_root('7')
+
+def task__package_mkdir_redhat_8_iso_root() -> types.TaskDict:
+    """Create the RedHat 8 packages root directory on the ISO."""
+    return _package_mkdir_redhat_release_iso_root('8')
 
 def task__package_mkdir_deb_iso_root() -> types.TaskDict:
     """Create the Debian packages root directory on the ISO."""
@@ -256,6 +267,10 @@ def task__download_redhat_7_packages() -> types.TaskDict:
     """Download RedHat 7 packages locally."""
     return _download_rpm_packages('7')
 
+def task__download_redhat_8_packages() -> types.TaskDict:
+    """Download RedHat 8 packages locally."""
+    return _download_rpm_packages('8')
+
 def _download_deb_packages(releasever: str) -> types.TaskDict:
     """Download Debian packages locally."""
     witness = constants.PKG_DEB_ROOT/releasever/'.witness'
@@ -328,6 +343,10 @@ def task__build_redhat_7_packages() -> Iterator[types.TaskDict]:
     """Build RPM packages for RedHat 7."""
     return _build_rpm_packages('7')
 
+def task__build_redhat_8_packages() -> Iterator[types.TaskDict]:
+    """Build RPM packages for RedHat 8."""
+    return _build_rpm_packages('8')
+
 def _build_deb_packages(releasever: str) -> Iterator[types.TaskDict]:
     """Build DEB packages."""
     for repo_pkgs in DEB_TO_BUILD.values():
@@ -346,6 +365,10 @@ def _build_redhat_repositories(releasever: str) -> Iterator[types.TaskDict]:
 def task__build_redhat_7_repositories() -> Iterator[types.TaskDict]:
     """Build RedHat 7 repositories."""
     return _build_redhat_repositories('7')
+
+def task__build_redhat_8_repositories() -> Iterator[types.TaskDict]:
+    """Build RedHat 8 repositories."""
+    return _build_redhat_repositories('8')
 
 def _build_deb_repositories(releasever: str) -> Iterator[types.TaskDict]:
     """Build a DEB repository."""
@@ -458,6 +481,11 @@ RPM_TO_BUILD : Dict[str, Dict[str, Tuple[targets.RPMPackage, ...]]] = {
             _rpm_package_containerd('7'),
             _rpm_package_metalk8s_sosreport('7'),
         ),
+        '8': (
+            _rpm_package_calico('8'),
+            _rpm_package_containerd('8'),
+            _rpm_package_metalk8s_sosreport('8'),
+        ),
     },
 }
 
@@ -486,6 +514,9 @@ _TO_DOWNLOAD_RPM_CONFIG: Dict[str, Dict[str, Optional[str]]] = \
 SCALITY_REDHAT_7_REPOSITORY : targets.RPMRepository = _rpm_repository(
     name='scality', packages=RPM_TO_BUILD['scality']['7'], releasever='7'
 )
+SCALITY_REDHAT_8_REPOSITORY : targets.RPMRepository = _rpm_repository(
+    name='scality', packages=RPM_TO_BUILD['scality']['8'], releasever='8'
+)
 
 
 REDHAT_REPOSITORIES : Dict[str, Tuple[targets.RPMRepository, ...]] = {
@@ -495,6 +526,12 @@ REDHAT_REPOSITORIES : Dict[str, Tuple[targets.RPMRepository, ...]] = {
         _rpm_repository(name='kubernetes', releasever='7'),
         _rpm_repository(name='saltstack', releasever='7'),
     ),
+    '8': (
+        SCALITY_REDHAT_8_REPOSITORY,
+        _rpm_repository(name='epel', releasever='8'),
+        _rpm_repository(name='kubernetes', releasever='8'),
+        _rpm_repository(name='saltstack', releasever='8'),
+    )
 }
 
 # }}}

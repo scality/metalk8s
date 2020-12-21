@@ -43,8 +43,10 @@ Source2:        containerd.toml
 Patch0:         0001-Revert-commit-for-Windows-metrics.patch
 
 BuildRequires:  golang >= 1.10
-%{?el7:BuildRequires:  btrfs-progs-devel}
+%if 0%{?el7}
+BuildRequires:  btrfs-progs-devel
 BuildRequires:  go-md2man
+%endif
 BuildRequires:  libseccomp-devel
 BuildRequires:  systemd
 %{?systemd_requires}
