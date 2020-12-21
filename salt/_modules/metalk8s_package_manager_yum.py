@@ -36,9 +36,9 @@ def _list_dependents(
     allowed_versions = allowed_versions or {}
 
     command = [
-        'repoquery', '--whatrequires', '--recursive',
+        'repoquery', '--recursive',
         '--qf', '%{NAME} %{VERSION}-%{RELEASE}',
-        '{}-{}'.format(name, version)
+        '--whatrequires', '{}-{}'.format(name, version)
     ]
 
     if fromrepo:
