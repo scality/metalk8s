@@ -61,6 +61,21 @@ RPM_BUILDER : Dict[str, LocalImage] = {
             'SALT_VERSION': versions.SALT_VERSION,
         },
     ),
+    '8': _builder_image(
+        name='redhat-8-rpm',
+        dockerfile=constants.ROOT/'packages/redhat/8/Dockerfile',
+        build_context=constants.ROOT/'packages/redhat',
+        file_dep=[
+            constants.ROOT/'packages'/'redhat'/'common'/
+                'yum_repositories'/'kubernetes.repo',
+            constants.ROOT/'packages'/'redhat'/'common'/
+                'yum_repositories'/'saltstack.repo',
+        ],
+        build_args={
+            # Used to template the SaltStack repository definition
+            'SALT_VERSION': versions.SALT_VERSION,
+        },
+    ),
 }
 
 DEB_BUILDER : Dict[str, LocalImage] = {
