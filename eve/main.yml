@@ -1621,11 +1621,11 @@ stages:
       type: local
     steps:
       - SetProperty:
-          name: Set OS property to rhel-7
+          name: Set OS property to rhel-8
           property: os
-          value: "rhel-7"
+          value: "rhel-8"
       - TriggerStages:
-          name: Trigger single-node-install with os set to rhel-7
+          name: Trigger single-node-install with os set to rhel-8
           stage_names:
             - single-node-install
 

@@ -63,7 +63,7 @@ resource "openstack_compute_instance_v2" "bastion" {
       "sudo chmod +x scripts/network.sh",
       "sudo scripts/network.sh eth1",
       "sudo scripts/network.sh eth2",
-      "sudo systemctl restart network"
+      "sudo systemctl restart network || sudo systemctl restart NetworkManager"
     ]
   }
 
@@ -157,15 +157,15 @@ resource "openstack_compute_instance_v2" "bootstrap" {
       "sudo chmod +x scripts/network.sh",
       "sudo scripts/network.sh eth1",
       "sudo scripts/network.sh eth2",
-      "sudo systemctl restart network"
+      "sudo systemctl restart network || sudo systemctl restart NetworkManager"
     ]
   }
 
   # Register RHSM if OS = rhel
   provisioner "remote-exec" {
     inline = [
-      "if [ '${var.os}' = 'rhel-7' ]; then sudo chmod +x scripts/rhsm-register.sh; fi",
-      "if [ '${var.os}' = 'rhel-7' ]; then sudo scripts/rhsm-register.sh '${var.rhsm_username}' '${var.rhsm_password}'; fi"
+      "case '${var.os}' in rhel-*) sudo chmod +x scripts/rhsm-register.sh;; esac",
+      "case '${var.os}' in rhel-*) sudo scripts/rhsm-register.sh '${var.rhsm_username}' '${var.rhsm_password}';; esac"
     ]
   }
 
@@ -173,7 +173,7 @@ resource "openstack_compute_instance_v2" "bootstrap" {
     when = "destroy"
     on_failure = "continue"
     inline = [
-      "if [ '${var.os}' = 'rhel-7' ]; then sudo subscription-manager unregister; fi"
+      "case '${var.os}' in rhel-*) sudo subscription-manager unregister;; esac"
     ]
   }
 }
@@ -247,15 +247,15 @@ resource "openstack_compute_instance_v2" "nodes" {
       "sudo chmod +x scripts/network.sh",
       "sudo scripts/network.sh eth1",
       "sudo scripts/network.sh eth2",
-      "sudo systemctl restart network"
+      "sudo systemctl restart network || sudo systemctl restart NetworkManager"
     ]
   }
 
   # Register RHSM if OS = rhel
   provisioner "remote-exec" {
     inline = [
-      "if [ '${var.os}' = 'rhel-7' ]; then sudo chmod +x scripts/rhsm-register.sh; fi",
-      "if [ '${var.os}' = 'rhel-7' ]; then sudo scripts/rhsm-register.sh '${var.rhsm_username}' '${var.rhsm_password}'; fi"
+      "case '${var.os}' in rhel-*) sudo chmod +x scripts/rhsm-register.sh;; esac",
+      "case '${var.os}' in rhel-*) sudo scripts/rhsm-register.sh '${var.rhsm_username}' '${var.rhsm_password}';; esac"
     ]
   }
 
@@ -263,7 +263,7 @@ resource "openstack_compute_instance_v2" "nodes" {
     when = "destroy"
     on_failure = "continue"
     inline = [
-      "if [ '${var.os}' = 'rhel-7' ]; then sudo subscription-manager unregister; fi"
+      "case '${var.os}' in rhel-*) sudo subscription-manager unregister;; esac"
     ]
   }
 

@@ -5,13 +5,35 @@ declare -r RHSM_USERNAME=$1
            RETRIES=${3:-5}
            WAIT=${4:-2}
 
+# shellcheck disable=SC1091
+. /etc/os-release
+
+declare -r OS_MAJOR_RELEASE=${VERSION_ID%%.*}
+
+case "$OS_MAJOR_RELEASE" in
+    7)
+        declare -ra REPOS_TO_ENABLE=(
+            rhel-7-server-optional-rpms
+            rhel-7-server-extras-rpms
+        )
+        ;;
+    8)
+        declare -ra REPOS_TO_ENABLE=(
+            rhel-8-for-x86_64-baseos-rpms
+            rhel-8-for-x86_64-appstream-rpms
+        )
+        ;;
+esac
+
 # We retry $RETRIES times in case of transient network issues.
 for (( try=0; try <= RETRIES; ++try )); do
     if subscription-manager register --username "$RHSM_USERNAME" \
             --password "$RHSM_PASSWORD" --auto-attach; then
         echo "Successfully registered to RHSM"
-        if subscription-manager repos --enable=rhel-7-server-extras-rpms \
-                --enable=rhel-7-server-optional-rpms; then
+
+        # shellcheck disable=SC2046
+        if subscription-manager repos \
+                $(printf -- "--enable=%s " "${REPOS_TO_ENABLE[@]}"); then
             echo "Yum repositories successfully enabled"
             break
         fi

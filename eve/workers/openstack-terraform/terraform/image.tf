@@ -8,6 +8,7 @@ variable "openstack_images_name" {
   default = {
     "centos-7"  = "CentOS-7-x86_64-GenericCloud-latest",
     "rhel-7"    = "rhel-server-updated-7.6-x86_64-kvm.qcow2"
+    "rhel-8"    = "rhel-8.2-x86_64-kvm"
   }
 }
 
