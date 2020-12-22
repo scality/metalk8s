@@ -175,8 +175,19 @@ fi
 subscription-manager register --username="#{RHSM_USERNAME}" \
                               --password="#{RHSM_PASSWORD}"
 subscription-manager attach --pool="#{RHSM_POOL}"
-subscription-manager repos --enable=rhel-7-server-optional-rpms \
-                           --enable=rhel-7-server-extras-rpms
+
+. /etc/os-release
+
+case "${VERSION_ID%%.*}" in
+    7)
+        subscription-manager repos --enable=rhel-7-server-optional-rpms \
+                                   --enable=rhel-7-server-extras-rpms
+        ;;
+    8)
+        subscription-manager repos --enable=rhel-8-for-x86_64-baseos-rpms \
+                                   --enable=rhel-8-for-x86_64-appstream-rpms
+        ;;
+esac
 SCRIPT
 RHSM_UNREGISTER = 'subscription-manager unregister || true'
 
@@ -262,9 +273,27 @@ Vagrant.configure("2") do |config|
         }
       ]
     },
-    redhat: {
+    redhat_7: {
       name: 'generic/rhel7',
       version: '1.9.36',
+      scripts: [
+        {
+          name: 'rhsm-register',
+          type: 'shell',
+          data: RHSM_REGISTER
+        }
+      ],
+      triggers_before: [
+        {
+          on: 'destroy',
+          info: 'Unregistering host from RHSM',
+          run: {inline: RHSM_UNREGISTER}
+        }
+      ]
+    },
+    redhat_8: {
+      name: 'generic/rhel8',
+      version: '3.1.16',
       scripts: [
         {
           name: 'rhsm-register',
@@ -314,8 +343,12 @@ Vagrant.configure("2") do |config|
     declare_bootstrap machine, os_data[:ubuntu]
   end
 
-  config.vm.define :bootstrap_redhat, autostart: false do |machine|
-    declare_bootstrap machine, os_data[:redhat]
+  config.vm.define :bootstrap_redhat_7, autostart: false do |machine|
+    declare_bootstrap machine, os_data[:redhat_7]
+  end
+
+  config.vm.define :bootstrap_redhat_8, autostart: false do |machine|
+    declare_bootstrap machine, os_data[:redhat_8]
   end
 
   os_data.each do |os, os_data|
