@@ -29,6 +29,8 @@ import {
 } from '../services/NodeVolumesUtils';
 import { intl } from '../translations/IntlGlobalProvider';
 
+const MAX_VOLUME_BATCH_CREATION = 70;
+
 // We might want to do a factorization later for
 // form styled components
 const CreateVolumeFormContainer = styled.div`
@@ -347,6 +349,11 @@ const CreateVolume = (props) => {
       then: yup.string(),
     }),
     labels: yup.object(),
+    numberOfVolumes: yup
+      .number()
+      .positive()
+      .max(MAX_VOLUME_BATCH_CREATION)
+      .integer(),
     volumes: yup.array().of(
       yup.object().shape({
         name: yup
@@ -692,11 +699,16 @@ const CreateVolume = (props) => {
                                 value={values.numberOfVolumes}
                                 min="1"
                                 // Max number of the batch volume creation is 70.
-                                max="70"
+                                max={`${MAX_VOLUME_BATCH_CREATION}`}
                                 onChange={setVolumeNumber(
                                   'numberOfVolumes',
                                   arrayHelpers,
                                 )}
+                                onBlur={handleOnBlur}
+                                error={
+                                  touched.numberOfVolumes &&
+                                  errors.numberOfVolumes
+                                }
                               />
                             </div>
                             <div
@@ -709,31 +721,35 @@ const CreateVolume = (props) => {
                                 'default_batch_volume_values_explanation',
                               )}
                             </div>
-                            {values.volumes.map((volume, index) => (
-                              <SingleVolumeContainer key={`volume${index}`}>
-                                <div style={{ paddingTop: `${padding.base}` }}>
-                                  {index + 1}-
-                                </div>
-                                <SingleVolumeForm>
-                                  <RecommendField
-                                    name={`volumes[${index}]name`}
-                                    label={intl.translate('name')}
-                                    onBlur={handleOnBlur}
-                                    index={index}
-                                    fieldname="name"
-                                  />
-                                  {values.type === RAW_BLOCK_DEVICE ? (
+                            {values.numberOfVolumes <=
+                              MAX_VOLUME_BATCH_CREATION &&
+                              values.volumes.map((volume, index) => (
+                                <SingleVolumeContainer key={`volume${index}`}>
+                                  <div
+                                    style={{ paddingTop: `${padding.base}` }}
+                                  >
+                                    {index + 1}-
+                                  </div>
+                                  <SingleVolumeForm>
                                     <RecommendField
-                                      name={`volumes.${index}.path`}
-                                      label={intl.translate('device_path')}
+                                      name={`volumes[${index}]name`}
+                                      label={intl.translate('name')}
                                       onBlur={handleOnBlur}
                                       index={index}
-                                      fieldname="path"
+                                      fieldname="name"
                                     />
-                                  ) : null}
-                                </SingleVolumeForm>
-                              </SingleVolumeContainer>
-                            ))}
+                                    {values.type === RAW_BLOCK_DEVICE ? (
+                                      <RecommendField
+                                        name={`volumes.${index}.path`}
+                                        label={intl.translate('device_path')}
+                                        onBlur={handleOnBlur}
+                                        index={index}
+                                        fieldname="path"
+                                      />
+                                    ) : null}
+                                  </SingleVolumeForm>
+                                </SingleVolumeContainer>
+                              ))}
                           </div>
                         )}
                       ></FieldArray>
