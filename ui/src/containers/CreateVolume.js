@@ -421,6 +421,21 @@ const CreateVolume = (props) => {
                 return items.find((item) => item.value === selectedValue);
               };
 
+              //if re-check the box again, we should only update/pre-fill the defaults for unchanged field.
+              // to make sure to keep the user customization.
+              const handleCheckboxChange = (field) => (selectedObj) => {
+                setFieldValue(field, selectedObj.target.checked);
+                // Clear the untouched field to get the update from the global value
+                for (let i = 0; i < values.numberOfVolumes; i++) {
+                  if (!touched?.volumes?.[i]?.name) {
+                    setFieldValue(`volumes[${i}]name`, '');
+                  }
+                  if (!touched?.volumes?.[i]?.path) {
+                    setFieldValue(`volumes[${i}]path`, '');
+                  }
+                }
+              };
+
               const addLabel = () => {
                 const labels = values.labels;
                 labels[labelName] = labelValue;
@@ -667,7 +682,7 @@ const CreateVolume = (props) => {
                         label={intl.translate('create_multiple_volumes')}
                         checked={values.multiVolumeCreation}
                         value={values.multiVolumeCreation}
-                        onChange={handleChange('multiVolumeCreation')}
+                        onChange={handleCheckboxChange('multiVolumeCreation')}
                         onBlur={handleOnBlur}
                       />
                     </CheckboxContainer>
