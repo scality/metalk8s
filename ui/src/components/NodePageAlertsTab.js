@@ -60,7 +60,7 @@ const Body = styled.tbody`
   display: block;
   height: calc(100vh - 250px);
   overflow: auto;
-  overflow-y: scroll;
+  overflow-y: auto;
 `;
 
 const ActiveAlertsText = styled.div`

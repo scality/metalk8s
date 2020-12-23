@@ -177,5 +177,9 @@
   "volume_usage": "Utilisation du Volume",
   "usage": "Utilisation",
   "error_volume_details": "Échec de la récuperation des details du volume.",
-  "not_found": "introuvable."
+  "not_found": "introuvable.",
+  "device_path_explanation": "Chemin du disque ou de la partition. Exemple : « /dev/sdb »",
+  "number_volume_create": "Nombre de volume à créer",
+  "default_batch_volume_values_explanation": "Nommez les volumes et fournissez les chemins des disques. Vouz pouvez utiliser les valeurs par défaut ou les modifier.",
+  "create_multiple_volumes": "Créer plusieurs volumes?"
 }

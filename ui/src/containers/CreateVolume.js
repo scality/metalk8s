@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { Formik, Form } from 'formik';
+import { Formik, Form, FieldArray, useFormikContext, useField } from 'formik';
 import * as yup from 'yup';
 import styled from 'styled-components';
 import Loader from '../components/Loader';
-import { Input, Button, Breadcrumb, Banner, Tooltip } from '@scality/core-ui';
+import { Input, Button, Banner, Tooltip, Checkbox } from '@scality/core-ui';
 import isEmpty from 'lodash.isempty';
 import {
   fetchStorageClassAction,
-  createVolumeAction,
+  createVolumesAction,
 } from '../ducks/app/volumes';
 import { fetchNodesAction } from '../ducks/app/nodes';
 import {
@@ -19,12 +19,17 @@ import {
 } from '@scality/core-ui/dist/style/theme';
 import { SPARSE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
 import {
-  BreadcrumbContainer,
-  BreadcrumbLabel,
-  StyledLink,
-} from '../components/BreadcrumbStyle';
-import { sizeUnits, useQuery } from '../services/utils';
+  sizeUnits,
+  useQuery,
+  linuxDrivesNamingIncrement,
+} from '../services/utils';
+import {
+  formatVolumeCreationData,
+  formatBatchName,
+} from '../services/NodeVolumesUtils';
 import { intl } from '../translations/IntlGlobalProvider';
+
+const MAX_VOLUME_BATCH_CREATION = 70;
 
 // We might want to do a factorization later for
 // form styled components
@@ -55,6 +60,8 @@ const ActionContainer = styled.div`
 const CreateVolumeLayout = styled.div`
   display: inline-block;
   margin-top: ${padding.base};
+  overflow-y: auto;
+  height: 85vh;
   form {
     .sc-input {
       display: inline-flex;
@@ -139,7 +146,8 @@ const LabelsName = styled(LabelsValue)`
 
 const PageContainer = styled.div`
   display: flex;
-  justify-content: space-between;
+  // To avoid the big empty space on the right side of page
+  justify-content: space-around;
 `;
 
 const DocumentationIcon = styled.div`
@@ -151,15 +159,63 @@ const DocumentationIcon = styled.div`
   }
 `;
 
+const TitlePage = styled.div`
+  color: ${(props) => props.theme.brand.textPrimary};
+  font-size: 24px;
+  padding: ${padding.small} 0 0 ${padding.large};
+`;
+
+const CheckboxContainer = styled.div`
+  padding: ${padding.base} 0 0 ${padding.small};
+  .text {
+    font-size: ${fontSize.base};
+  }
+`;
+
+const InputNumberComponentStyle = styled.input`
+  width: 60px;
+  height: 25px;
+  border: solid 1px ${(props) => props.theme.brand.border};
+  border-radius: 4px;
+  background-color: ${(props) => props.theme.brand.primary};
+  color: ${(props) => props.theme.brand.textPrimary};
+`;
+
+const MultiCreationFormContainer = styled.div`
+  padding-left: ${padding.base};
+  display: flex;
+  flex-direction: column;
+  color: ${(props) => props.theme.brand.textPrimary};
+  font-size: ${fontSize.base};
+`;
+
+const SingleVolumeContainer = styled.div`
+  display: flex;
+  align-items: flex-start;
+  padding: ${padding.base} 0 0 ${padding.larger};
+`;
+
+const SingleVolumeForm = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding-left: ${padding.smaller};
+`;
+
+const InputQuestionMark = styled.i`
+  padding-left: ${padding.small};
+  color: ${(props) => props.theme.brand.info};
+`;
+
 const CreateVolume = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
 
-  const createVolume = (newVolumes) => dispatch(createVolumeAction(newVolumes));
+  const createVolumes = (newVolumes) =>
+    dispatch(createVolumesAction(newVolumes));
 
   const nodes = useSelector((state) => state.app.nodes.list);
   const storageClass = useSelector((state) => state.app.volumes.storageClass);
-  const theme = useSelector((state) => state.config.theme);
+
   const api = useSelector((state) => state.config.api);
 
   useEffect(() => {
@@ -199,6 +255,56 @@ const CreateVolume = (props) => {
     selectedUnit: sizeUnits[3].value,
     sizeInput: '',
     labels: {},
+    multiVolumeCreation: false,
+    // When the multi-volume creation mode is active, the default/min number is 1.
+    numberOfVolumes: 1,
+    volumes: [{ name: '', path: '' }],
+  };
+
+  // Factorized field for the recommended device path and name
+  const RecommendField = (props) => {
+    const { fieldname, name, index } = props;
+    const { values, touched, setFieldValue } = useFormikContext();
+    const [field, meta] = useField(props);
+
+    React.useEffect(() => {
+      if (fieldname === 'name') {
+        // Set the defaults when the field is empty, means even if we change the global value afterwards,
+        // the field of batch volumes will not be override.
+        if (
+          values.name.trim() !== '' &&
+          touched.name &&
+          values.volumes[index].name === ''
+        ) {
+          setFieldValue(name, formatBatchName(values.name, index + 1));
+        }
+      } else if (fieldname === 'path') {
+        if (
+          values.path.trim() !== '' &&
+          touched.path &&
+          values.volumes[index].path === ''
+        ) {
+          setFieldValue(name, linuxDrivesNamingIncrement(values.path, index));
+        }
+      }
+    }, [
+      setFieldValue,
+      fieldname,
+      name,
+      index,
+      values.name,
+      values.path,
+      touched.path,
+      touched.name,
+      values.volumes,
+    ]);
+
+    return (
+      <>
+        <Input {...props} {...field} />
+        {!!meta.touched && !!meta.error && <div>{meta.error}</div>}
+      </>
+    );
   };
 
   const volumeNameRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
@@ -243,6 +349,19 @@ const CreateVolume = (props) => {
       then: yup.string(),
     }),
     labels: yup.object(),
+    numberOfVolumes: yup
+      .number()
+      .positive()
+      .max(MAX_VOLUME_BATCH_CREATION)
+      .integer(),
+    volumes: yup.array().of(
+      yup.object().shape({
+        name: yup
+          .string()
+          .matches(volumeNameRegex, intl.translate('name_error'))
+          .required(''),
+      }),
+    ),
   });
 
   const isStorageClassExist = storageClassesName.length > 0;
@@ -252,23 +371,7 @@ const CreateVolume = (props) => {
   ) : (
     <PageContainer>
       <CreateVolumeFormContainer>
-        <BreadcrumbContainer>
-          <Breadcrumb
-            activeColor={theme.brand.secondary}
-            paths={[
-              <BreadcrumbLabel title={intl.translate('platform')}>
-                {intl.translate('platform')}
-              </BreadcrumbLabel>,
-              <StyledLink to="/volumes">
-                {intl.translate('volumes')}
-              </StyledLink>,
-              <BreadcrumbLabel>
-                {intl.translate('create_new_volume')}
-              </BreadcrumbLabel>,
-            ]}
-          />
-        </BreadcrumbContainer>
-
+        <TitlePage>Create New Volume</TitlePage>
         {isStorageClassExist ? null : (
           <Banner
             variant="warning"
@@ -290,9 +393,11 @@ const CreateVolume = (props) => {
             initialValues={initialValues}
             validationSchema={validationSchema}
             onSubmit={(values) => {
-              const newVolume = { ...values };
-              newVolume.size = `${values.sizeInput}${values.selectedUnit}`;
-              createVolume(newVolume);
+              const newVolumes = { ...values };
+              newVolumes.size = `${values.sizeInput}${values.selectedUnit}`;
+
+              const formattedVolumes = formatVolumeCreationData(newVolumes);
+              createVolumes(formattedVolumes);
             }}
           >
             {(formikProps) => {
@@ -316,6 +421,21 @@ const CreateVolume = (props) => {
                 return items.find((item) => item.value === selectedValue);
               };
 
+              //if re-check the box again, we should only update/pre-fill the defaults for unchanged field.
+              // to make sure to keep the user customization.
+              const handleCheckboxChange = (field) => (selectedObj) => {
+                setFieldValue(field, selectedObj.target.checked);
+                // Clear the untouched field to get the update from the global value
+                for (let i = 0; i < values.numberOfVolumes; i++) {
+                  if (!touched?.volumes?.[i]?.name) {
+                    setFieldValue(`volumes[${i}]name`, '');
+                  }
+                  if (!touched?.volumes?.[i]?.path) {
+                    setFieldValue(`volumes[${i}]path`, '');
+                  }
+                }
+              };
+
               const addLabel = () => {
                 const labels = values.labels;
                 labels[labelName] = labelValue;
@@ -328,6 +448,32 @@ const CreateVolume = (props) => {
                 const labels = values.labels;
                 delete labels[key];
                 setFieldValue('labels', labels);
+              };
+
+              // Update the number of the volumes to create base on the input number
+              const setVolumeNumber = (field, arrayHelpers) => (
+                selectedObj,
+              ) => {
+                const inputVolNum = selectedObj.target.value;
+                const preVolNum = values.numberOfVolumes;
+
+                setFieldValue(field, inputVolNum);
+                const diff = preVolNum - inputVolNum;
+                if (diff > 0) {
+                  // REMOVE volume object from `values.volumes` base on the index
+                  for (let i = preVolNum - 1; i >= inputVolNum; i--) {
+                    arrayHelpers.remove(i);
+                  }
+                } else if (diff < 0) {
+                  // PUSH new volume object to `values.volumes`
+                  let absDiff = Math.abs(diff);
+                  while (absDiff--) {
+                    arrayHelpers.push({
+                      name: '',
+                      path: '',
+                    });
+                  }
+                }
               };
 
               const optionsStorageClasses = storageClassesName.map((SCName) => {
@@ -489,8 +635,6 @@ const CreateVolume = (props) => {
                         />
                         <SizeUnitFieldSelectContainer>
                           <Input
-                            id="unit_input"
-                            label=""
                             clearable={false}
                             type="select"
                             options={optionsSizeUnits}
@@ -513,12 +657,119 @@ const CreateVolume = (props) => {
                         name="path"
                         value={values.path}
                         onChange={handleChange('path')}
-                        label={intl.translate('device_path')}
+                        label={
+                          <>
+                            {intl.translate('device_path')}
+                            <Tooltip
+                              placement="right"
+                              overlay={
+                                <div style={{ minWidth: '200px' }}>
+                                  {intl.translate('device_path_explanation')}
+                                </div>
+                              }
+                            >
+                              <InputQuestionMark className="fas fa-question-circle"></InputQuestionMark>
+                            </Tooltip>
+                          </>
+                        }
                         error={touched.path && errors.path}
                         onBlur={handleOnBlur}
                       />
                     )}
+                    <CheckboxContainer>
+                      <Checkbox
+                        name="multiVolumeCreation"
+                        label={intl.translate('create_multiple_volumes')}
+                        checked={values.multiVolumeCreation}
+                        value={values.multiVolumeCreation}
+                        onChange={handleCheckboxChange('multiVolumeCreation')}
+                        onBlur={handleOnBlur}
+                      />
+                    </CheckboxContainer>
                   </FormSection>
+
+                  {values.multiVolumeCreation && (
+                    <MultiCreationFormContainer>
+                      <FieldArray
+                        name="volumes"
+                        render={(arrayHelpers) => (
+                          <div>
+                            <div
+                              style={{
+                                paddingLeft: '60px',
+                                paddingTop: `${padding.large}`,
+                              }}
+                            >
+                              <span
+                                style={{
+                                  paddingRight: `${padding.base}`,
+                                }}
+                              >
+                                {intl.translate('number_volume_create')}
+                              </span>
+                              {/* TODO: Generalize the number input component to core-ui. */}
+                              <InputNumberComponentStyle
+                                type="number"
+                                name="numberOfVolumes"
+                                value={values.numberOfVolumes}
+                                min="1"
+                                // Max number of the batch volume creation is 70.
+                                max={`${MAX_VOLUME_BATCH_CREATION}`}
+                                onChange={setVolumeNumber(
+                                  'numberOfVolumes',
+                                  arrayHelpers,
+                                )}
+                                onBlur={handleOnBlur}
+                                error={
+                                  touched.numberOfVolumes &&
+                                  errors.numberOfVolumes
+                                }
+                              />
+                            </div>
+                            <div
+                              style={{
+                                paddingLeft: '60px',
+                                paddingTop: `${padding.large}`,
+                              }}
+                            >
+                              {intl.translate(
+                                'default_batch_volume_values_explanation',
+                              )}
+                            </div>
+                            {values.numberOfVolumes <=
+                              MAX_VOLUME_BATCH_CREATION &&
+                              values.volumes.map((volume, index) => (
+                                <SingleVolumeContainer key={`volume${index}`}>
+                                  <div
+                                    style={{ paddingTop: `${padding.base}` }}
+                                  >
+                                    {index + 1}-
+                                  </div>
+                                  <SingleVolumeForm>
+                                    <RecommendField
+                                      name={`volumes[${index}]name`}
+                                      label={intl.translate('name')}
+                                      onBlur={handleOnBlur}
+                                      index={index}
+                                      fieldname="name"
+                                    />
+                                    {values.type === RAW_BLOCK_DEVICE ? (
+                                      <RecommendField
+                                        name={`volumes.${index}.path`}
+                                        label={intl.translate('device_path')}
+                                        onBlur={handleOnBlur}
+                                        index={index}
+                                        fieldname="path"
+                                      />
+                                    ) : null}
+                                  </SingleVolumeForm>
+                                </SingleVolumeContainer>
+                              ))}
+                          </div>
+                        )}
+                      ></FieldArray>
+                    </MultiCreationFormContainer>
+                  )}
                   <ActionContainer>
                     <Button
                       text={intl.translate('cancel')}
@@ -540,7 +791,7 @@ const CreateVolume = (props) => {
         </CreateVolumeLayout>
       </CreateVolumeFormContainer>
       <DocumentationIcon>
-        <Tooltip placement="left" overlay={intl.translate('documentation')}>
+        <Tooltip placement="top" overlay={intl.translate('documentation')}>
           <Button
             icon={<i className="fas fa-book-reader fa-lg" />}
             inverted={true}

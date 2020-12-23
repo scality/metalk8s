@@ -23,7 +23,7 @@ export const RightSidePanel = styled.div`
   flex-direction: column;
   width: 51%;
   /* Make it scrollable for the small laptop screen */
-  overflow-y: scroll;
+  overflow-y: auto;
   margin: 0 ${padding.small} 0 8px;
 `;
 

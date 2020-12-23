@@ -276,3 +276,51 @@ export const getVolumeListData = createSelector(
     return nodeVolumes.sort((a, b) => compareHealth(b.health, a.health));
   },
 );
+
+export const formatVolumeCreationData = (newVolumes) => {
+  const {
+    multiVolumeCreation,
+    volumes,
+    node,
+    labels,
+    type,
+    size,
+    storageClass,
+  } = newVolumes;
+  if (multiVolumeCreation) {
+    // multi-volume creation mode
+    return (
+      volumes?.map((volume) => {
+        volume.node = node;
+        volume.labels = labels;
+        volume.type = type;
+        volume.size = size;
+        volume.storageClass = storageClass;
+        return volume;
+      }) ?? []
+    );
+  } else {
+    // single volume creation
+    return [newVolumes];
+  }
+};
+
+/**
+ * This function formats the name base on the index
+ * @param {string} name - The name the default volume name
+ * @param {number} index  - The number of index
+ *
+ * @example
+ * const name = 'volume-test'
+ *
+ * const formatedVolumeName = formatBatchName(name, 1)
+ */
+export const formatBatchName = (name, index) => {
+  if (index >= 1) {
+    if (index <= 9) {
+      return `${name}0${index}`;
+    } else if (index >= 10) return `${name}${index}`;
+  } else {
+    return '';
+  }
+};

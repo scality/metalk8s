@@ -10,6 +10,8 @@ import {
   isVolumeDeletable,
   volumeGetError,
   getVolumeListData,
+  formatVolumeCreationData,
+  formatBatchName,
 } from './NodeVolumesUtils';
 import { stateApp } from './NodeVolumesUtilsData';
 
@@ -505,4 +507,163 @@ const props = {
 it('should return an empty array when there is no volume at all in this platform', () => {
   const result = getVolumeListData(stateEmptyVolume, props);
   expect(result).toEqual([]);
+});
+
+// The tests of `formatVolumeCreationData` function
+const singleVolume = {
+  name: 'volume-test',
+  node: 'expansion',
+  storageClass: 'metalk8s',
+  type: 'sparseLoopDevice',
+  path: '',
+  selectedUnit: 'Gi',
+  sizeInput: '2',
+  labels: {},
+  multiVolumeCreation: false,
+  numberOfVolumes: 1,
+  volumes: [
+    {
+      name: '',
+      path: '',
+    },
+  ],
+  size: '2Gi',
+};
+it('should return a single array containing one volume', () => {
+  const result = formatVolumeCreationData(singleVolume);
+  expect(result).toEqual([singleVolume]);
+});
+
+const sparseLoopVolumes = {
+  name: 'batch-volume',
+  node: 'expansion',
+  storageClass: 'metalk8s',
+  type: 'sparseLoopDevice',
+  path: '',
+  selectedUnit: 'Gi',
+  sizeInput: '1',
+  labels: {},
+  multiVolumeCreation: true,
+  numberOfVolumes: '3',
+  volumes: [
+    {
+      name: 'batch-volume1',
+      path: '',
+    },
+    {
+      name: 'batch-volume2',
+      path: '',
+    },
+    {
+      name: 'batch-volume3',
+      path: '',
+    },
+  ],
+  size: '3Gi',
+};
+const rawBlockVolumes = {
+  name: 'batch-volume',
+  node: 'expansion',
+  storageClass: 'metalk8s',
+  type: 'rawBlockDevice',
+  path: '/dev/vda',
+  labels: {},
+  multiVolumeCreation: true,
+  numberOfVolumes: '3',
+  volumes: [
+    {
+      name: 'batch-volume1',
+      path: '/dev/vda',
+    },
+    {
+      name: 'batch-volume2',
+      path: '/dev/vdb',
+    },
+    {
+      name: 'batch-volume3',
+      path: '/dev/vdc',
+    },
+  ],
+};
+
+const batchSparseLoopVolume = [
+  {
+    name: 'batch-volume1',
+    node: 'expansion',
+    path: '',
+    labels: {},
+    type: 'sparseLoopDevice',
+    size: '3Gi',
+    storageClass: 'metalk8s',
+  },
+  {
+    name: 'batch-volume2',
+    node: 'expansion',
+    path: '',
+    labels: {},
+    type: 'sparseLoopDevice',
+    size: '3Gi',
+    storageClass: 'metalk8s',
+  },
+  {
+    name: 'batch-volume3',
+    node: 'expansion',
+    path: '',
+    labels: {},
+    type: 'sparseLoopDevice',
+    size: '3Gi',
+    storageClass: 'metalk8s',
+  },
+];
+
+const batchRawVolume = [
+  {
+    name: 'batch-volume1',
+    node: 'expansion',
+    path: '/dev/vda',
+    labels: {},
+    type: 'rawBlockDevice',
+    storageClass: 'metalk8s',
+  },
+  {
+    name: 'batch-volume2',
+    node: 'expansion',
+    path: '/dev/vdb',
+    labels: {},
+    type: 'rawBlockDevice',
+    storageClass: 'metalk8s',
+  },
+  {
+    name: 'batch-volume3',
+    node: 'expansion',
+    path: '/dev/vdc',
+    labels: {},
+    type: 'rawBlockDevice',
+    storageClass: 'metalk8s',
+  },
+];
+
+it('should return an array with formatted batch volume', () => {
+  const result = formatVolumeCreationData(sparseLoopVolumes);
+  expect(result).toEqual(batchSparseLoopVolume);
+});
+
+it('should return an array with formatted batch rawblock device volume', () => {
+  const result = formatVolumeCreationData(rawBlockVolumes);
+  expect(result).toEqual(batchRawVolume);
+});
+
+it('should volume01 when the index is 1', () => {
+  const result = formatBatchName('volume', 1);
+  expect(result).toEqual('volume01');
+});
+
+it('should volume09 when the index is 9', () => {
+  const result = formatBatchName('volume', 9);
+  expect(result).toEqual('volume09');
+});
+
+it('should volume09 when the index is 10', () => {
+  const result = formatBatchName('volume', 10);
+  expect(result).toEqual('volume10');
 });

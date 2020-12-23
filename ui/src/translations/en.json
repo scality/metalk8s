@@ -177,5 +177,9 @@
   "volume_usage": "Volume Usage",
   "usage": "Usage",
   "error_volume_details": "Volume details request has failed.",
-  "not_found": "not found."
+  "not_found": "not found.",
+  "device_path_explanation": "A device or partition path. Example: '/dev/sdb'",
+  "number_volume_create": "Number of volume to create",
+  "default_batch_volume_values_explanation": "Name the Volumes and provide the Device paths. You may use the defaults or override them.",
+  "create_multiple_volumes": "Create multiple volumes?"
 }

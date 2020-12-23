@@ -3,6 +3,8 @@ import {
   addMissingDataPoint,
   fromMilliSectoAge,
   useTableSortURLSync,
+  linuxDrivesNamingIncrement,
+  formatBatchName,
 } from './utils';
 import { renderHook } from '@testing-library/react-hooks';
 
@@ -271,4 +273,40 @@ describe('useTableSortURLSync hook', () => {
     renderHook(() => useTableSortURLSync('health', false, ['foo']));
     expect(mockHistoryReplace).toHaveBeenCalledWith('?');
   });
+});
+
+// the tests of the recommended device path
+it('should return next driver', () => {
+  const result = linuxDrivesNamingIncrement('/dev/vda', 1);
+  expect(result).toEqual('/dev/vdb');
+});
+
+it('should return /dev/vdaa after /dev/vdz', () => {
+  const result = linuxDrivesNamingIncrement('/dev/vdz', 1);
+  expect(result).toEqual('/dev/vdaa');
+});
+
+it('should return /dev/vdaa after /dev/vdz', () => {
+  const result = linuxDrivesNamingIncrement('/dev/vdaz', 1);
+  expect(result).toEqual('/dev/vdba');
+});
+
+it('should return the original path if the increment is 0', () => {
+  const result = linuxDrivesNamingIncrement('/dev/vdc', 0);
+  expect(result).toEqual('/dev/vdc');
+});
+
+it('should return an empty string if the driver is not virtualization-aware disk driver', () => {
+  const result = linuxDrivesNamingIncrement('/dev/sda', 2);
+  expect(result).toEqual('');
+});
+
+it('should return an empty string if the device path is empty', () => {
+  const result = linuxDrivesNamingIncrement('', 2);
+  expect(result).toEqual('');
+});
+
+it('should return an empty string if the increment is smaller than 0', () => {
+  const result = linuxDrivesNamingIncrement('/dev/vda', -1);
+  expect(result).toEqual('');
 });

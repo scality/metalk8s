@@ -432,3 +432,56 @@ export const usePrevious = (value) => {
   }, [value]); // Only re-run if value changes
   return ref.current;
 };
+
+/**
+ * This function provides the name of the next nth drive name of virtualization-aware disk driver, used by batch volume creation.
+ *
+ * Note that:
+ * the recommended device path only happens with '/dev/vda'. We maybe want to support more kinds of disk drivers depends on the users' needs.
+ *
+ * Drive # —	Name
+ * 1	        vda
+ * 26	        vdz
+ * 27	        vdaa
+ * 28	        vdab
+ * 52	        vdaz
+ * 53	        vdba
+ * 54	        vdbb
+ * 702	      vdzz
+ * 703	      vdaaa
+ * 704	      vdaab
+ * 18278	    vdzzz
+ *
+ * @param {string} devicePath - The device path of the virtualization-aware disk driver.
+ * @param {number} increment  - The number of drive to increase compare to the targe the drive.
+ *
+ * @example
+ * const devicePath = '/dev/vda'
+ *
+ * const nextDevicePath = linuxDrivesNamingIncrement(devicePath, 2)
+ */
+export const linuxDrivesNamingIncrement = (devicePath, increment) => {
+  if (devicePath.match(/^\/dev\/vd[a-z]/) && increment >= 1) {
+    while (increment--) {
+      const lastChar = devicePath.slice(-1);
+      const sub = devicePath.slice(0, -1);
+
+      if (lastChar === 'z' && devicePath.length === 8) {
+        devicePath = '/dev/vdaa';
+      } else if (lastChar === 'z' && devicePath.length === 9) {
+        // when the path is `/dev/vdaz`, `/dev/vdbz`,
+        const last2ndChar = devicePath.slice(-2);
+        const subBefore = devicePath.slice(0, -2);
+        devicePath =
+          subBefore + String.fromCharCode(last2ndChar.charCodeAt() + 1) + 'a';
+      } else {
+        devicePath = sub + String.fromCharCode(lastChar.charCodeAt() + 1);
+      }
+    }
+    return devicePath;
+  } else if (devicePath.match(/^\/dev\/vd[a-z]/) && increment === 0) {
+    return devicePath;
+  } else {
+    return '';
+  }
+};
