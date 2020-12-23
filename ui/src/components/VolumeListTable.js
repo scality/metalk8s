@@ -47,7 +47,7 @@ const VolumeListContainer = styled.div`
 
   .table {
     display: block;
-    padding-bottom: 13px;
+    padding-bottom: ${padding.smaller};
 
     .sc-select-container {
       width: 120px;
@@ -76,7 +76,7 @@ const VolumeListContainer = styled.div`
   }
 `;
 
-const TableRow = styled.div`
+const TableRowStyle = styled.div`
   &:hover,
   &:focus {
     background-color: ${(props) => props.theme.brand.backgroundBluer};
@@ -176,6 +176,66 @@ function GlobalFilter({
   );
 }
 
+const TableRow = (props) => {
+  const { row, style, rowClicked, volumeName, theme } = props;
+
+  return (
+    <TableRowStyle
+      {...row.getRowProps({
+        onClick: () => rowClicked(row),
+        // Note:
+        // We need to pass the style property to the row component.
+        // Otherwise when we scroll down, the next rows are flashing because they are re-rendered in loop.
+        style: { ...style, marginLeft: '5px' },
+      })}
+      volumeName={volumeName}
+      row={row}
+    >
+      {row.cells.map((cell) => {
+        let cellProps = cell.getCellProps({
+          style: {
+            ...cell.column.cellStyle,
+            // Vertically center the text in cells.
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+          },
+        });
+
+        if (cell.column.Header === 'Name') {
+          return (
+            <div {...cellProps} data-cy="volume_table_name_cell" className="td">
+              {cell.render('Cell')}
+            </div>
+          );
+        } else if (cell.column.Header !== 'Name' && cell.value === undefined) {
+          return (
+            <div {...cellProps} className="td">
+              <Tooltip
+                placement="top"
+                overlay={
+                  <TooltipContent>{intl.translate('unknown')}</TooltipContent>
+                }
+              >
+                <UnknownIcon
+                  className="fas fa-minus"
+                  theme={theme}
+                ></UnknownIcon>
+              </Tooltip>
+            </div>
+          );
+        } else {
+          return (
+            <div {...cellProps} className="td">
+              {cell.render('Cell')}
+            </div>
+          );
+        }
+      })}
+    </TableRowStyle>
+  );
+};
+
 function Table({
   columns,
   data,
@@ -267,73 +327,18 @@ function Table({
     ({ index, style }) => {
       const row = rows[index];
       prepareRow(row);
-
+      // Extract the TableRow component outside of Table component
       return (
         <TableRow
-          {...row.getRowProps({
-            onClick: () => rowClicked(row),
-            // Note:
-            // We need to pass the style property to the row component.
-            // Otherwise when we scroll down, the next rows are flashing because they are re-rendered in loop.
-            style: { ...style, marginLeft: '5px' },
-          })}
-          volumeName={volumeName}
           row={row}
-        >
-          {row.cells.map((cell) => {
-            let cellProps = cell.getCellProps({
-              style: {
-                ...cell.column.cellStyle,
-                // Vertically center the text in cells.
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-              },
-            });
-
-            if (cell.column.Header === 'Name') {
-              return (
-                <div
-                  {...cellProps}
-                  data-cy="volume_table_name_cell"
-                  className="td"
-                >
-                  {cell.render('Cell')}
-                </div>
-              );
-            } else if (
-              cell.column.Header !== 'Name' &&
-              cell.value === undefined
-            ) {
-              return (
-                <div {...cellProps} className="td">
-                  <Tooltip
-                    placement="top"
-                    overlay={
-                      <TooltipContent>
-                        {intl.translate('unknown')}
-                      </TooltipContent>
-                    }
-                  >
-                    <UnknownIcon
-                      className="fas fa-minus"
-                      theme={theme}
-                    ></UnknownIcon>
-                  </Tooltip>
-                </div>
-              );
-            } else {
-              return (
-                <div {...cellProps} className="td">
-                  {cell.render('Cell')}
-                </div>
-              );
-            }
-          })}
-        </TableRow>
+          style={style}
+          theme={theme}
+          rowClicked={rowClicked}
+          volumeName={volumeName}
+        ></TableRow>
       );
     },
-    [prepareRow, rowClicked, rows, volumeName, theme, data],
+    [prepareRow, rowClicked, rows, theme, volumeName],
   );
 
   return (
