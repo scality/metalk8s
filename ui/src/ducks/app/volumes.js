@@ -1,3 +1,4 @@
+//@flow
 import { takeLatest, call, put, delay, select } from 'redux-saga/effects';
 import * as VolumesApi from '../../services/k8s/volumes';
 import history from '../../history';
@@ -11,6 +12,9 @@ import {
   RAW_BLOCK_DEVICE,
   REFRESH_TIMEOUT,
 } from '../../constants';
+
+import type {Metalk8sV1Alpha1Volume, Metalk8sV1Alpha1VolumeRequest} from '../../services/k8s/api';
+import { V1PersistentVolume, V1PersistentVolumeClaim, V1PersistentVolumeClaimList, V1PersistentVolumeList, V1StorageClass, V1StorageClassList } from '@kubernetes/client-node/dist/gen/model/models';
 
 // Actions
 const FETCH_VOLUMES = 'FETCH_VOLUMES';
@@ -50,7 +54,21 @@ const defaultState = {
   },
 };
 
-export default function reducer(state = defaultState, action = {}) {
+export type VolumesState = {
+  list: Metalk8sV1Alpha1Volume[],
+  storageClass: V1StorageClass[],
+  pVList: V1PersistentVolume[],
+  isRefreshing: boolean,
+  pVCList: V1PersistentVolumeClaim[],
+  isPVRefreshing: boolean,
+  isLoading: boolean,
+  isSCLoading: boolean,
+  currentVolumeObject: {
+    data: ?Metalk8sV1Alpha1Volume,
+  },
+}
+
+export default function reducer(state: VolumesState = defaultState, action: any = {}): VolumesState {
   switch (action.type) {
     case SET_VOLUMES:
       return { ...state, list: action.payload };
@@ -82,11 +100,11 @@ export const fetchVolumesAction = () => {
   return { type: FETCH_VOLUMES };
 };
 
-export const setVolumesAction = (payload) => {
+export const setVolumesAction = (payload: Metalk8sV1Alpha1Volume[]) => {
   return { type: SET_VOLUMES, payload };
 };
 
-export const deleteVolumeAction = (payload) => {
+export const deleteVolumeAction = (payload: any) => {
   return { type: DELETE_VOLUME, payload };
 };
 
@@ -94,7 +112,7 @@ export const fetchPersistentVolumeAction = () => {
   return { type: FETCH_PERSISTENT_VOLUMES };
 };
 
-export const setPersistentVolumesAction = (payload) => {
+export const setPersistentVolumesAction = (payload: V1PersistentVolume[]) => {
   return { type: SET_PERSISTENT_VOLUMES, payload };
 };
 
@@ -102,7 +120,7 @@ export const fetchPersistentVolumeClaimAction = () => {
   return { type: FETCH_PERSISTENT_VOLUME_CLAIMS };
 };
 
-export const setPersistentVolumeClaimAction = (payload) => {
+export const setPersistentVolumeClaimAction = (payload: V1PersistentVolumeClaim[]) => {
   return { type: SET_PERSISTENT_VOLUME_CLAIMS, payload };
 };
 
@@ -110,23 +128,24 @@ export const fetchStorageClassAction = () => {
   return { type: FETCH_STORAGECLASS };
 };
 
-export const setStorageClassAction = (payload) => {
+export const setStorageClassAction = (payload: V1StorageClass[]) => {
   return { type: SET_STORAGECLASS, payload };
 };
 
-export const updateStorageClassAction = (payload) => {
+export const updateStorageClassAction = (payload: boolean) => {
   return { type: UPDATE_STORAGECLASS, payload };
 };
 
-export const createVolumesAction = (newVolumes) => {
-  return { type: CREATE_VOLUMES, payload: { newVolumes } };
+
+export const createVolumesAction = (newVolumes: { payload: { newVolumes: Volume[] }}) => {
+  return { type: CREATE_VOLUMES, payload: { newVolumes } }
 };
 
 export const refreshVolumesAction = () => {
   return { type: REFRESH_VOLUMES };
 };
 
-export const updateVolumesRefreshingAction = (payload) => {
+export const updateVolumesRefreshingAction = (payload: boolean) => {
   return { type: UPDATE_VOLUMES_REFRESHING, payload };
 };
 
@@ -138,7 +157,7 @@ export const refreshPersistentVolumesAction = () => {
   return { type: REFRESH_PERSISTENT_VOLUMES };
 };
 
-export const updatePersistentVolumesRefreshingAction = (payload) => {
+export const updatePersistentVolumesRefreshingAction = (payload: boolean) => {
   return { type: UPDATE_PERSISTENT_VOLUMES_REFRESHING, payload };
 };
 
@@ -146,34 +165,40 @@ export const stopRefreshPersistentVolumesAction = () => {
   return { type: STOP_REFRESH_PERSISTENT_VOLUMES };
 };
 
-export const updateVolumesAction = (payload) => {
+export const updateVolumesAction = (payload: any) => {
   return { type: UPDATE_VOLUMES, payload };
 };
 
-export const fetchCurrentVolumeObjectAction = (volumeName) => {
+export const fetchCurrentVolumeObjectAction = (volumeName: any) => {
   return { type: FETCH_CURRENT_VOLUME_OBJECT, volumeName };
 };
 
-export const setCurrentVolumeObjectAction = (payload) => {
+export const setCurrentVolumeObjectAction = (payload: {data: ?Metalk8sV1Alpha1Volume}) => {
   return { type: SET_CURRENT_VOLUME_OBJECT, payload };
 };
 
 // Selectors
-export const volumesRefreshingSelector = (state) =>
+export const volumesRefreshingSelector = (state: any): boolean =>
   state.app.volumes.isRefreshing;
-export const persistentVolumesRefreshingSelector = (state) =>
+export const persistentVolumesRefreshingSelector = (state: any): boolean =>
   state.app.volumes.isPVRefreshing;
 
 // Sagas
-export function* fetchVolumes() {
+export function* fetchVolumes(): Generator<{
+  body: {items: Metalk8sV1Alpha1Volume[]};
+} | {error: any, body: null}, {
+  body: {items: Metalk8sV1Alpha1Volume[]};
+} | {error: any, body: null}, {
+  body: {items: Metalk8sV1Alpha1Volume[]};
+} | {error: any, body: null}> {
   yield put(
     updateVolumesAction({
       isLoading: true,
     }),
   );
   const result = yield call(VolumesApi.getVolumes);
-  if (!result.error) {
-    yield put(setVolumesAction(result?.body?.items ?? []));
+  if (result.body) {
+    yield put(setVolumesAction(result.body.items ?? []));
   }
   yield delay(1000); // To make sure that the loader is visible for at least 1s
   yield put(
@@ -184,22 +209,42 @@ export function* fetchVolumes() {
   return result;
 }
 
-export function* fetchPersistentVolumes() {
+export function* fetchPersistentVolumes(): Generator<{
+  body: V1PersistentVolumeList;
+} | {error: any, body: null}, {
+  body: V1PersistentVolumeList;
+} | {error: any, body: null}, {
+  body: V1PersistentVolumeList;
+} | {error: any, body: null}> {
   const result = yield call(VolumesApi.getPersistentVolumes);
-  if (!result.error) {
-    yield put(setPersistentVolumesAction(result?.body?.items ?? []));
+  if (result.body) {
+    yield put(setPersistentVolumesAction(result.body.items ?? []));
   }
   return result;
 }
 
-export function* fetchStorageClass() {
+export function* fetchStorageClass(): Generator<{
+  body: V1StorageClassList;
+} | {error: any, body: null}, void, {
+  body: V1StorageClassList;
+} | {error: any, body: null}> {
   yield put(updateStorageClassAction(true));
   const result = yield call(VolumesApi.getStorageClass);
-  if (!result.error) {
-    yield put(setStorageClassAction(result?.body?.items ?? []));
+  if (result.body) {
+    yield put(setStorageClassAction(result.body.items ?? []));
   }
   yield put(updateStorageClassAction(false));
 }
+
+type Volume = {
+  name: string,
+  node: string,
+  storageClass: string,
+  type: string, // TODO we might want to constraint it to 'sparseLoopDevice' | 'rawBlockDevice'
+  size: string,
+  labels: {[key: string]: string};
+  path: string,
+};
 
 /**
  * This function construct the body that is needed to create a volume.
@@ -225,10 +270,16 @@ export function* fetchStorageClass() {
  *
  * createVolumes(action)
  */
-export function* createVolumes({ payload }) {
+export function* createVolumes({ payload }: { payload: {
+  newVolumes: Volume[]
+}}): Generator<{
+  body: Metalk8sV1Alpha1Volume;
+} | {error: any, body: null}, void, {
+  body: Metalk8sV1Alpha1Volume;
+} | {error: any, body: null}> {
   const { newVolumes } = payload;
-  for (var i = 0; i < newVolumes?.length; i++) {
-    const body = {
+  for (var i = 0; i < newVolumes.length; i++) {
+    const body: Metalk8sV1Alpha1VolumeRequest = {
       apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
       kind: 'Volume',
       metadata: {
@@ -299,7 +350,11 @@ export function* createVolumes({ payload }) {
   }
 }
 
-export function* refreshVolumes() {
+export function* refreshVolumes(): Generator<{
+  body: Metalk8sV1Alpha1Volume;
+} | {error: any, body: null}, void, {
+  body: Metalk8sV1Alpha1Volume;
+} | {error: any, body: null}> {
   yield put(updateVolumesRefreshingAction(true));
   const result = yield call(fetchVolumes);
   if (!result.error) {
@@ -311,18 +366,26 @@ export function* refreshVolumes() {
   }
 }
 
-export function* stopRefreshVolumes() {
+export function* stopRefreshVolumes(): Generator<boolean, void, boolean> {
   yield put(updateVolumesRefreshingAction(false));
 }
 
-export function* fetchPersistentVolumeClaims() {
+export function* fetchPersistentVolumeClaims(): Generator<{
+  body: V1PersistentVolumeClaimList
+} | {error: any, body: null}, void, {
+  body: V1PersistentVolumeClaimList;
+} | {error: any, body: null}> {
   const result = yield call(VolumesApi.getPersistentVolumeClaims);
   if (!result.error) {
     yield put(setPersistentVolumeClaimAction(result.body.items));
   }
 }
 
-export function* fetchCurrentVolumeObject({ volumeName }) {
+export function* fetchCurrentVolumeObject({ volumeName }: { volumeName: string }): Generator<{
+  body: Metalk8sV1Alpha1Volume
+} | {error: any, body: null}, void, {
+  body: Metalk8sV1Alpha1Volume;
+} | {error: any, body: null}> {
   const result = yield call(VolumesApi.getVolumeObject, volumeName);
   if (!result.error) {
     yield put(setCurrentVolumeObjectAction({ data: result.body }));
@@ -331,7 +394,11 @@ export function* fetchCurrentVolumeObject({ volumeName }) {
   }
 }
 
-export function* refreshPersistentVolumes() {
+export function* refreshPersistentVolumes(): Generator<{
+  body: V1PersistentVolumeList;
+} | {error: any, body: null} | boolean, void, {
+  body: V1PersistentVolumeList;
+} | {error: any, body: null} | boolean> {
   yield put(updatePersistentVolumesRefreshingAction(true));
   const result = yield call(fetchPersistentVolumes);
   if (!result.error) {
@@ -343,11 +410,15 @@ export function* refreshPersistentVolumes() {
   }
 }
 
-export function* stopRefreshPersistentVolumes() {
+export function* stopRefreshPersistentVolumes(): Generator<boolean, void, boolean> {
   yield put(updatePersistentVolumesRefreshingAction(false));
 }
 
-export function* deleteVolume({ payload }) {
+export function* deleteVolume({ payload }: { payload: string }): Generator<{
+  body: Metalk8sV1Alpha1Volume;
+} | {error: any, body: null} | boolean, void, {
+  body: Metalk8sV1Alpha1Volume;
+} | {error: any, body: null} | boolean> {
   const result = yield call(VolumesApi.deleteVolume, payload);
   if (!result.error) {
     yield put(
@@ -371,7 +442,7 @@ export function* deleteVolume({ payload }) {
   yield call(fetchVolumes);
 }
 
-export function* volumesSaga() {
+export function* volumesSaga(): Generator<void, void, void> {
   yield takeLatest(FETCH_VOLUMES, fetchVolumes);
   yield takeLatest(FETCH_STORAGECLASS, fetchStorageClass);
   yield takeLatest(CREATE_VOLUMES, createVolumes);
