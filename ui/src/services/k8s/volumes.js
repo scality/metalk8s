@@ -1,6 +1,13 @@
+//@flow
+import type {Metalk8sV1Alpha1Volume, Metalk8sV1Alpha1VolumeRequest} from './api';
 import { coreV1, customObjects, storage } from './api';
 
-export async function getVolumes() {
+export async function getVolumes(): Promise<{
+  body: {items: Metalk8sV1Alpha1Volume[]};
+} | { error: any }> {
+  if (!customObjects) {
+    return { error: 'customObject has not yet been initialized' };
+  }
   try {
     // We want to change this hardcoded data later
     return await customObjects.listClusterCustomObject(
@@ -13,7 +20,10 @@ export async function getVolumes() {
   }
 }
 
-export async function deleteVolume(deleteVolumeName) {
+export async function deleteVolume(deleteVolumeName: string) {
+  if (!customObjects) {
+    return { error: 'customObject has not yet been initialized' };
+  }
   try {
     return await customObjects.deleteClusterCustomObject(
       'storage.metalk8s.scality.com',
@@ -28,6 +38,9 @@ export async function deleteVolume(deleteVolumeName) {
 }
 
 export async function getPersistentVolumes() {
+  if (!coreV1) {
+    return { error: 'coreV1 has not yet been initialized' };
+  }
   try {
     return await coreV1.listPersistentVolume();
   } catch (error) {
@@ -36,6 +49,9 @@ export async function getPersistentVolumes() {
 }
 
 export async function getStorageClass() {
+  if (!storage) {
+    return { error: 'storage has not yet been initialized' };
+  }
   try {
     return await storage.listStorageClass();
   } catch (error) {
@@ -43,7 +59,10 @@ export async function getStorageClass() {
   }
 }
 
-export async function createVolume(body) {
+export async function createVolume(body: Metalk8sV1Alpha1VolumeRequest) {
+  if (!customObjects) {
+    return { error: 'customObject has not yet been initialized' };
+  }
   try {
     return await customObjects.createClusterCustomObject(
       'storage.metalk8s.scality.com',
@@ -57,6 +76,9 @@ export async function createVolume(body) {
 }
 
 export async function getPersistentVolumeClaims() {
+  if (!coreV1) {
+    return { error: 'coreV1 has not yet been initialized' };
+  }
   try {
     return await coreV1.listPersistentVolumeClaimForAllNamespaces();
   } catch (error) {
@@ -64,7 +86,10 @@ export async function getPersistentVolumeClaims() {
   }
 }
 
-export async function getVolumeObject(volumeName) {
+export async function getVolumeObject(volumeName: string) {
+  if (!customObjects) {
+    return { error: 'customObject has not yet been initialized' };
+  }
   try {
     return await customObjects.getClusterCustomObject(
       'storage.metalk8s.scality.com',
