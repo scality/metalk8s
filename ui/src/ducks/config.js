@@ -13,6 +13,7 @@ import * as ApiAlertmanager from '../services/alertmanager/api';
 import { EN_LANG, FR_LANG, LANGUAGE } from '../constants';
 
 import { authenticateSaltApi } from './login';
+import type { Result } from '../types';
 // Actions
 export const SET_LANG = 'SET_LANG';
 export const SET_THEME = 'SET_THEME';
@@ -56,7 +57,26 @@ const defaultState = {
   themes: {}, // include light, dark and custom
 };
 
-export default function reducer(state = defaultState, action = {}) {
+export type ConfigState = {
+  language: string,
+  theme: Theme,
+  api: ?Config,
+  userManagerConfig: {
+    client_id: string,
+    redirect_uri: string,
+    response_type: string,
+    scope: string,
+    authority: string,
+    loadUserInfo: boolean,
+    post_logout_redirect_uri: string,
+    userStore: WebStorageStateStore,
+  },
+  userManager: UserManager,
+  isUserLoaded: boolean,
+  themes: Themes,
+}
+
+export default function reducer(state: ConfigState = defaultState, action: any = {}) {
   switch (action.type) {
     case SET_LANG:
       return { ...state, language: action.payload };
@@ -141,7 +161,7 @@ export const languageSelector = (state) => state.config.language;
 export const apiConfigSelector = (state) => state.config.api;
 
 // Sagas
-export function* fetchTheme() {
+export function* fetchTheme(): Generator<Effect, void, Result<WrappedThemes>> {
   const result = yield call(Api.fetchTheme);
   if (!result.error) {
     // get the default theme from configMap
@@ -155,7 +175,7 @@ export function* fetchTheme() {
   }
 }
 
-export function* fetchConfig() {
+export function* fetchConfig(): Generator<Effect, void, Result<Config>> {
   yield call(Api.initialize, process.env.PUBLIC_URL);
   const result = yield call(Api.fetchConfig);
   if (!result.error && result.url_oidc_provider && result.url_redirect) {
