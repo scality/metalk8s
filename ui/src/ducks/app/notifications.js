@@ -1,3 +1,4 @@
+//@flow
 import uuidv1 from 'uuid/v1';
 
 // Actions
@@ -10,7 +11,27 @@ const defaultState = {
   list: []
 };
 
-export default function reducer(state = defaultState, action = {}) {
+type Notification = {
+  uid: string,
+  title: string,
+  message: string,
+  variant: 'success' | 'danger',
+  dismissAfter: number
+}
+
+export type NotificationsState = {
+  list: Notification[]
+}
+
+export type NotificationsActions = {
+  type: 'ADD_NOTIFICATION_SUCCESS'| 'ADD_NOTIFICATION_ERROR',
+  payload: Notification
+} | {
+  type: 'REMOVE_NOTIFICATION',
+  uid: string
+}
+
+export default function reducer(state: NotificationsState = defaultState, action: NotificationsActions): NotificationsState {
   switch (action.type) {
     case ADD_NOTIFICATION_SUCCESS:
     case ADD_NOTIFICATION_ERROR:
@@ -28,7 +49,7 @@ export default function reducer(state = defaultState, action = {}) {
   }
 }
 // Action Creators
-export const addNotificationSuccessAction = payload => {
+export const addNotificationSuccessAction = (payload: {title: string, message: string}) => {
   return {
     type: ADD_NOTIFICATION_SUCCESS,
     payload: {
@@ -41,7 +62,7 @@ export const addNotificationSuccessAction = payload => {
   };
 };
 
-export const addNotificationErrorAction = payload => {
+export const addNotificationErrorAction = (payload: {title: string, message?: string}) => {
   return {
     type: ADD_NOTIFICATION_ERROR,
     payload: {
@@ -53,6 +74,6 @@ export const addNotificationErrorAction = payload => {
   };
 };
 
-export const removeNotificationAction = uid => {
+export const removeNotificationAction = (uid: string) => {
   return { type: REMOVE_NOTIFICATION, uid };
 };
