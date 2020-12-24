@@ -10,7 +10,20 @@ export function initialize(apiUrl) {
   saltApiClient = new ApiClient({ apiUrl });
 }
 
-export function authenticate(user) {
+export type SaltToken = {
+  "return": [
+    {
+      "token": string,
+      "expire": number,
+      "start": number,
+      "user": string,
+      "eauth": string,
+      "perms": (string | {[key: string]: string[]})[]
+    }
+  ]
+}
+
+export function authenticate(user): Promise<SaltToken> {
   var payload = {
     eauth: 'kubernetes_rbac',
     username: user.profile.email,

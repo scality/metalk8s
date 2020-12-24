@@ -1,8 +1,12 @@
-import { call, takeEvery, put, select } from 'redux-saga/effects';
+//@flow
+import type {RootState} from './reducer';
+import { call, takeEvery, put, select, Effect } from 'redux-saga/effects';
 import * as ApiSalt from '../services/salt/api';
 
+import type { Config } from '../services/api';
 import { apiConfigSelector, logoutAction } from './config';
 import { connectSaltApiAction } from './app/salt';
+import { User } from 'oidc-client';
 
 // Actions
 const AUTHENTICATE_SALT_API = 'AUTHENTICATE_SALT_API';
@@ -14,7 +18,11 @@ const defaultState = {
   salt: null,
 };
 
-export default function reducer(state = defaultState, action = {}) {
+export type LoginState = {
+  salt: ?ApiSalt.SaltToken
+}
+
+export default function reducer(state: LoginState = defaultState, action: any = {}) {
   switch (action.type) {
     case SALT_AUTHENTICATION_SUCCESS:
       return {
@@ -28,11 +36,7 @@ export default function reducer(state = defaultState, action = {}) {
 }
 
 // Action Creators
-export const authenticateSaltApiAction = payload => {
-  return { type: AUTHENTICATE_SALT_API, payload };
-};
-
-export const setSaltAuthenticationSuccessAction = payload => {
+export const setSaltAuthenticationSuccessAction = (payload: ApiSalt.SaltToken) => {
   return {
     type: SALT_AUTHENTICATION_SUCCESS,
     payload,
@@ -40,11 +44,11 @@ export const setSaltAuthenticationSuccessAction = payload => {
 };
 
 // Sagas
-export function* authenticateSaltApi() {
-  const api = yield select(apiConfigSelector);
-  const user = yield select(state => state.oidc.user);
-  const result = yield call(ApiSalt.authenticate, user);
-  if (!result.error) {
+export function* authenticateSaltApi(): Generator<Effect, void, any> {
+  const api: ?Config = yield select(apiConfigSelector);
+  const user: User = yield select((state: RootState) => state.oidc?.user);
+  const result: { error: any } | ApiSalt.SaltToken = yield call(ApiSalt.authenticate, user);
+  if (api && result && !result.error) {
     yield call(ApiSalt.getClient().setHeaders, {
       'X-Auth-Token': result.return[0].token,
     });
@@ -60,6 +64,6 @@ export function* authenticateSaltApi() {
   }
 }
 
-export function* authenticateSaga() {
+export function* authenticateSaga(): Generator<void, void, void> {
   yield takeEvery(AUTHENTICATE_SALT_API, authenticateSaltApi);
 }
