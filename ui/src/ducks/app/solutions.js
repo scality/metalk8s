@@ -12,6 +12,7 @@ import {
 import * as CoreApi from '../../services/k8s/core';
 import * as SolutionsApi from '../../services/k8s/solutions';
 import * as SaltApi from '../../services/salt/api';
+import type {APIResult} from '../../types';
 
 import history from '../../history';
 import { REFRESH_TIMEOUT } from '../../constants';
@@ -21,6 +22,7 @@ import {
 } from './notifications';
 import { intl } from '../../translations/IntlGlobalProvider';
 import { addJobAction, JOB_COMPLETED } from './salt';
+import { V1ConfigMap } from '@kubernetes/client-node/dist/gen/model/models';
 
 const OPERATOR_ = '-operator';
 const _K8S = 'app.kubernetes.io';
@@ -43,7 +45,13 @@ const defaultState = {
   isSolutionsRefreshing: false,
 };
 
-export default function reducer(state = defaultState, action = {}) {
+export type SolutionsState = {
+  solutions: any[],
+  environments: SolutionsApi.Environment[],
+  isSolutionsRefreshing: boolean
+}
+
+export default function reducer(state: SolutionsState = defaultState, action: any = {}) {
   switch (action.type) {
     case SET_SOLUTIONS:
       return { ...state, solutions: action.payload };
@@ -65,7 +73,7 @@ export function setSolutionsRefeshingAction(payload) {
   return { type: SET_SOLUTIONS_REFRESHING, payload };
 }
 
-export const setEnvironmentsAction = (environments) => {
+export const setEnvironmentsAction = (environments: SolutionsApi.Environment[]) => {
   return { type: SET_ENVIRONMENTS, payload: environments };
 };
 
@@ -98,12 +106,12 @@ export const solutionsRefreshingSelector = (state) =>
 export const solutionServicesSelector = (state) => state.app.solutions.services;
 
 // Sagas
-export function* fetchEnvironments() {
+export function* fetchEnvironments(): Generator<any, void, any> {
   const jobs = yield select((state) => state.app.salt.jobs);
   const preparingEnvs = jobs?.filter(
     (job) => job.type === 'prepare-env/' && !job.completed,
   );
-  const environments = yield call(SolutionsApi.listEnvironments);
+  const environments: SolutionsApi.Environment[] = yield call(SolutionsApi.listEnvironments);
   const updatedEnvironments = yield call(updateEnvironments, environments);
   for (const env of updatedEnvironments) {
     env.isPreparing = preparingEnvs?.includes(env.name);
@@ -112,7 +120,7 @@ export function* fetchEnvironments() {
   return updatedEnvironments;
 }
 
-export function* createEnvironment(action) {
+export function* createEnvironment(action: {payload: {name: string}}): Generator<Effect, void, APIResult<V1ConfigMap>> {
   const { name } = action.payload;
   const resultCreateEnvironment = yield call(
     SolutionsApi.createEnvironment,
@@ -130,10 +138,10 @@ export function* createEnvironment(action) {
   yield call(fetchEnvironments);
 }
 
-export function* prepareEnvironment(action) {
+export function* prepareEnvironment(action: {payload: {envName: string, solName: string, solVersion: string }}): Generator<any, void, any> {
   const { envName, solName, solVersion } = action.payload;
 
-  const existingEnv = yield select((state) => state.app.solutions.environments);
+  const existingEnv: SolutionsApi.Environment[] = yield select((state: RootState) => state.app.solutions.environments);
 
   const preparingEnv = existingEnv.find((env) => env.name === envName);
 
@@ -187,7 +195,7 @@ export function* prepareEnvironment(action) {
   }
 }
 
-export function* updateEnvironments(environments) {
+export function* updateEnvironments(environments: SolutionsApi.Environment[]): Generator<any, SolutionsApi.Environment[], any> {
   for (const env of environments) {
     const envConfig = yield call(SolutionsApi.getEnvironmentConfigMap, env);
     if (envConfig) {
