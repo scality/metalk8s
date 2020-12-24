@@ -161,6 +161,25 @@ const defaultState = {
   currentNodeObject: null,
 };
 
+export type NodesState = {
+  clusterVersion: string,
+  isRefreshing: boolean,
+  isLoading: boolean,
+  IPsInfo: any, // TODO: define the type of this 
+  currentNodeObject: any, // TODO: define the type of this 
+  list: {
+    name: string,
+    metalk8s_version: string,
+    status: "ready" | "not_ready" | "unknown",
+    conditions: ("DiskPressure" | "MemoryPressure" | "PIDPressure" | "NetworkUnavailable" | "Unschedulable")[],
+    roles: string,
+    deploying: boolean,
+    internalIP: string,
+    creationTimestamp: string,
+    kubeletVersion: string,
+  }[]
+}
+
 export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
     case UPDATE_NODES:
