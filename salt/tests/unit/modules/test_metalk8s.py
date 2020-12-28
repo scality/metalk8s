@@ -1,9 +1,11 @@
 import os.path
+import tempfile
 from unittest import TestCase
 from unittest.mock import MagicMock, mock_open, patch
 
 from parameterized import param, parameterized
 from salt.exceptions import CommandExecutionError
+import salt.utils.files
 import yaml
 
 import metalk8s
@@ -270,10 +272,7 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
             else:
                 pillar_get_mock.assert_not_called()
 
-    @parameterized.expand(
-        param.explicit(kwargs=test_case)
-        for test_case in yaml.safe_load(open(YAML_TESTS_FILE))["format_slots"]
-    )
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["format_slots"])
     def test_format_slots(self, data, result, slots_returns=None,
                           raises=False):
         """
@@ -320,3 +319,153 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
             metalk8s.cmp_sorted(obj, **kwargs),
             result
         )
+
+    @utils.parameterized_from_cases(
+        YAML_TESTS_CASES["manage_static_pod_manifest"]
+    )
+    def test_manage_static_pod_manifest(
+        self,
+        name,
+        result=None,
+        error=None,
+        pre_cached_source=False,
+        cached_hash_mismatch=False,
+        target_hash_mismatch=False,
+        target_exists=True,
+        target_dir_exists=True,
+        target_links_to=None,
+        target_stats=None,
+        obfuscate_templates=False,
+        get_diff_error=None,
+        opts=None,
+        cache_file_ret=None,
+        atomic_copy_raises=None,
+        **kwargs,
+    ):
+        """Test the behaviour of ``manage_static_pod_manifest` function."""
+
+        isdir_mock = MagicMock(return_value=target_dir_exists)
+        isfile_mock = MagicMock(return_value=target_exists)
+        islink_mock = MagicMock(return_value=(target_links_to is not None))
+        exists_mock = MagicMock(return_value=True)  # Only used for _clean_tmp
+        remove_mock = MagicMock()  # Only used for _clean_tmp
+
+        source_filename = ""
+        if pre_cached_source:
+            source_filename = os.path.join(
+                tempfile.gettempdir(),
+                '{}some-tmp-file'.format(salt.utils.files.TEMPFILE_PREFIX),
+            )
+
+        real_name = name
+        realpath_mock = MagicMock(side_effect=lambda x: x)
+        if target_links_to is not None:
+            real_name = target_links_to
+            realpath_mock.return_value = target_links_to
+
+        if cache_file_ret is None:
+            cache_file_ret = os.path.join(
+                tempfile.gettempdir(),
+                '{}other-tmp-file'.format(salt.utils.files.TEMPFILE_PREFIX),
+            )
+        cache_file_mock = MagicMock(return_value=cache_file_ret)
+
+        def _atomic_copy(source, dest, user, group, mode, tmp_prefix):
+            if atomic_copy_raises:
+                raise OSError(atomic_copy_raises)
+
+        atomic_copy_mock = MagicMock(side_effect=_atomic_copy)
+
+        def _get_hash(filename, form="md5"):
+            if cached_hash_mismatch and filename == source_filename:
+                return 'some-different-hash'
+
+            if target_hash_mismatch and filename == real_name:
+                return 'some-outdated-hash'
+
+            return 'some-hash'
+
+        get_hash_mock = MagicMock(side_effect=_get_hash)
+
+        def _option(key):
+            if key == "obfuscate_templates":
+                return obfuscate_templates
+            raise NotImplementedError(
+                "This 'config.option' mock only handles the "
+                "'obfuscate_templates' key"
+            )
+
+        option_mock = MagicMock(side_effect=_option)
+
+        def _check_perms(name, ret, **kwargs):
+            return ret, None
+
+        check_perms_mock = MagicMock(side_effect=_check_perms)
+
+        def _get_diff(*_a, **_k):
+            if get_diff_error is not None:
+                raise CommandExecutionError(get_diff_error)
+            return "Some diff"
+
+        get_diff_mock = MagicMock(side_effect=_get_diff)
+
+        stats_mock = MagicMock(return_value=target_stats or {
+            'user': 'root', 'group': 'root', 'mode': '0600',
+        })
+
+        salt_dict = {
+            "config.option": option_mock,
+            "cp.cache_file": cache_file_mock,
+            "file.check_perms": check_perms_mock,
+            "file.get_diff": get_diff_mock,
+            "file.stats": stats_mock,
+        }
+        opts_dict = dict(
+            {
+                "test": False,
+                "hash_type": "md5",
+                "file_roots": {"base": ["/srv/salt"]},
+            },
+            **(opts or {})
+        )
+        call_kwargs = dict(
+            {
+                "source": "",
+                "source_filename": source_filename,
+                "source_sum": {"hsum": "some-hash"},
+            },
+            **kwargs
+        )
+
+        with patch.dict(metalk8s.__opts__, opts_dict), \
+                patch.dict(metalk8s.__salt__, salt_dict), \
+                patch("os.remove", remove_mock), \
+                patch("os.path.exists", exists_mock), \
+                patch("os.path.isdir", isdir_mock), \
+                patch("os.path.isfile", isfile_mock), \
+                patch("os.path.islink", islink_mock), \
+                patch("os.path.realpath", realpath_mock), \
+                patch("metalk8s.get_hash", get_hash_mock), \
+                patch("metalk8s._atomic_copy", atomic_copy_mock):
+            actual_result = metalk8s.manage_static_pod_manifest(
+                name, **call_kwargs
+            )
+
+        if error is not None:
+            self.assertIsNone(
+                result,
+                "Cannot provide both `result` and `error` in a test case"
+            )
+            self.assertFalse(actual_result["result"])
+            self.assertEqual(actual_result["comment"], error)
+        else:
+            self.assertEqual(actual_result, result)
+
+        if cached_hash_mismatch:
+            self.assertEqual(cache_file_mock.call_count, 1)
+
+        if error is not None and atomic_copy_raises is None:
+            # We should not have reached the tempfile cleanup
+            self.assertEqual(remove_mock.call_count, 0)
+        else:
+            self.assertEqual(remove_mock.call_count, 1)
