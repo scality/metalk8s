@@ -249,7 +249,7 @@ export async function getMetalk8sV1alpha1Volume(
       Metalk8sV1alpha1VolumeName,
     );
   } catch (error) {
-    return error;
+    return { error };
   }
 }
 
@@ -268,7 +268,7 @@ export async function deleteMetalk8sV1alpha1Volume(
       {},
     );
   } catch (error) {
-    return error;
+    return { error };
   }
 }
 

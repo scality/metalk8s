@@ -246,10 +246,10 @@ export async function getMetalk8sV1alpha1Volume(
       "storage.metalk8s.scality.com",
       "v1alpha1",
       "volumes",
-      Metalk8sV1alpha1VolumeName,
+      Metalk8sV1alpha1VolumeName
     );
   } catch (error) {
-    return error;
+    return { error };
   }
 }
 
@@ -268,7 +268,7 @@ export async function deleteMetalk8sV1alpha1Volume(
       {}
     );
   } catch (error) {
-    return error;
+    return { error };
   }
 }
 
