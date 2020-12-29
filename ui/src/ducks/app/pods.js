@@ -1,6 +1,6 @@
 //@flow
 import { V1ContainerStatus, V1Pod, V1PodList } from '@kubernetes/client-node/dist/gen/model/models';
-import { call, put, takeLatest, Effect } from 'redux-saga/effects';
+import { Effect, call, put, takeLatest } from 'redux-saga/effects';
 import * as CoreApi from '../../services/k8s/core';
 import type {APIResult} from '../../types';
 
@@ -76,6 +76,6 @@ export function* fetchPods(): Generator<Effect, void, APIResult<V1PodList>> {
   }
 }
 
-export function* podsSaga(): Generator<void, void, void> {
+export function* podsSaga(): Generator<Effect, void, void> {
   yield takeLatest(FETCH_PODS, fetchPods);
 }

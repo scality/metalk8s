@@ -1,4 +1,5 @@
 import {
+  Effect,
   all,
   call,
   delay,
@@ -106,7 +107,7 @@ export const solutionsRefreshingSelector = (state) =>
 export const solutionServicesSelector = (state) => state.app.solutions.services;
 
 // Sagas
-export function* fetchEnvironments(): Generator<any, void, any> {
+export function* fetchEnvironments(): Generator<Effect, void, any> {
   const jobs = yield select((state) => state.app.salt.jobs);
   const preparingEnvs = jobs?.filter(
     (job) => job.type === 'prepare-env/' && !job.completed,
@@ -138,7 +139,7 @@ export function* createEnvironment(action: {payload: {name: string}}): Generator
   yield call(fetchEnvironments);
 }
 
-export function* prepareEnvironment(action: {payload: {envName: string, solName: string, solVersion: string }}): Generator<any, void, any> {
+export function* prepareEnvironment(action: {payload: {envName: string, solName: string, solVersion: string }}): Generator<Effect, void, any> {
   const { envName, solName, solVersion } = action.payload;
 
   const existingEnv: SolutionsApi.Environment[] = yield select((state: RootState) => state.app.solutions.environments);
@@ -195,7 +196,7 @@ export function* prepareEnvironment(action: {payload: {envName: string, solName:
   }
 }
 
-export function* updateEnvironments(environments: SolutionsApi.Environment[]): Generator<any, SolutionsApi.Environment[], any> {
+export function* updateEnvironments(environments: SolutionsApi.Environment[]): Generator<Effect, SolutionsApi.Environment[], any> {
   for (const env of environments) {
     const envConfig = yield call(SolutionsApi.getEnvironmentConfigMap, env);
     if (envConfig) {

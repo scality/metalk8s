@@ -1,6 +1,6 @@
 //@flow
 import type {RootState} from './reducer';
-import { call, takeEvery, put, select, Effect } from 'redux-saga/effects';
+import { Effect, call, takeEvery, put, select } from 'redux-saga/effects';
 import * as ApiSalt from '../services/salt/api';
 
 import type { Config } from '../services/api';
@@ -64,6 +64,6 @@ export function* authenticateSaltApi(): Generator<Effect, void, any> {
   }
 }
 
-export function* authenticateSaga(): Generator<void, void, void> {
+export function* authenticateSaga(): Generator<Effect, void, void> {
   yield takeEvery(AUTHENTICATE_SALT_API, authenticateSaltApi);
 }

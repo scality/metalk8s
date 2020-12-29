@@ -1,5 +1,5 @@
 //@flow
-import { takeEvery, takeLatest, call, put, delay, select, Effect } from 'redux-saga/effects';
+import { Effect, takeEvery, takeLatest, call, put, delay, select } from 'redux-saga/effects';
 import * as ApiAlertmanager from '../../services/alertmanager/api';
 import type {RootState} from '../reducer';
 import type {Result} from '../../types';
@@ -78,12 +78,12 @@ export function* refreshAlertsAlertmanager(): Generator<Effect, void, Result<Api
   }
 }
 
-export function* stopRefreshAlertsAlertmanager(): Generator<any, void, void> {
+export function* stopRefreshAlertsAlertmanager(): Generator<Effect, void, void> {
   yield put(updateAlertsAlertmanagerAction({ isRefreshing: false }));
 }
 
 
-export function* alertsSaga(): Generator<void, void, void> {
+export function* alertsSaga(): Generator<Effect, void, void> {
   yield takeLatest(FETCH_ALERTS_ALERTMANAGER, fetchAlertsAlertmanager);
   yield takeEvery(REFRESH_ALERTS_ALERTMANAGER, refreshAlertsAlertmanager);
   yield takeEvery(STOP_REFRESH_ALERTS_ALERTMANAGER, stopRefreshAlertsAlertmanager);

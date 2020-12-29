@@ -1,7 +1,7 @@
 //@flow
 import type { RootState } from './reducer';
 import type { Config, Theme, Themes, WrappedThemes } from '../services/api';
-import { call, put, takeEvery, select, Effect } from 'redux-saga/effects';
+import { Effect, call, put, takeEvery, select } from 'redux-saga/effects';
 import { mergeTheme } from '@scality/core-ui/dist/utils';
 import * as defaultTheme from '@scality/core-ui/dist/style/theme';
 import { loadUser, createUserManager } from 'redux-oidc';
@@ -206,7 +206,7 @@ export function* fetchConfig(): Generator<Effect, void, Result<Config>> {
   }
 }
 
-export function* updateApiServerConfig({ payload }: { payload: {id_token: string, token_type: string} }): Generator<any, void, Config> {
+export function* updateApiServerConfig({ payload }: { payload: {id_token: string, token_type: string} }): Generator<Effect, void, Config> {
   const api = yield select((state: RootState) => state.config.api);
   if (api) {
     yield call(
@@ -219,7 +219,7 @@ export function* updateApiServerConfig({ payload }: { payload: {id_token: string
   }
 }
 
-export function* setInitialLanguage(): Generator<any, void, string> {
+export function* setInitialLanguage(): Generator<Effect, void, string> {
   const languageLocalStorage = localStorage.getItem(LANGUAGE);
   if (languageLocalStorage) {
     languageLocalStorage === FR_LANG
@@ -234,24 +234,24 @@ export function* setInitialLanguage(): Generator<any, void, string> {
   }
 }
 
-export function* updateLanguage(action: {payload: string}): Generator<any, void, string> {
+export function* updateLanguage(action: {payload: string}): Generator<Effect, void, string> {
   yield put(setLanguageAction(action.payload));
   const language = yield select(languageSelector);
   localStorage.setItem(LANGUAGE, language);
 }
 
-export function* logout(): Generator<any, void, UserManager> {
+export function* logout(): Generator<Effect, void, UserManager> {
   const userManager = yield select((state: RootState) => state.config.userManager);
   if (userManager) {
     userManager.removeUser(); // removes the user data from sessionStorage
   }
 }
 
-export function* userFoundHandle(payload: { payload: {id_token: string, token_type: string} }): Generator<void, void, void> {
+export function* userFoundHandle(payload: { payload: {id_token: string, token_type: string} }): Generator<Effect, void, void> {
   yield call(updateApiServerConfig, payload);
 }
 
-export function* configSaga(): Generator<void, void, void> {
+export function* configSaga(): Generator<Effect, void, void> {
   yield takeEvery(FETCH_THEME, fetchTheme);
   yield takeEvery(FETCH_CONFIG, fetchConfig);
   yield takeEvery(SET_INITIAL_LANGUAGE, setInitialLanguage);
