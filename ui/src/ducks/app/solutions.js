@@ -13,7 +13,7 @@ import {
 import * as CoreApi from '../../services/k8s/core';
 import * as SolutionsApi from '../../services/k8s/solutions';
 import * as SaltApi from '../../services/salt/api';
-import type {APIResult} from '../../types';
+import type { APIResult } from '../../types';
 
 import history from '../../history';
 import { REFRESH_TIMEOUT } from '../../constants';
@@ -49,10 +49,13 @@ const defaultState = {
 export type SolutionsState = {
   solutions: any[],
   environments: SolutionsApi.Environment[],
-  isSolutionsRefreshing: boolean
-}
+  isSolutionsRefreshing: boolean,
+};
 
-export default function reducer(state: SolutionsState = defaultState, action: any = {}) {
+export default function reducer(
+  state: SolutionsState = defaultState,
+  action: any = {},
+) {
   switch (action.type) {
     case SET_SOLUTIONS:
       return { ...state, solutions: action.payload };
@@ -74,7 +77,9 @@ export function setSolutionsRefeshingAction(payload) {
   return { type: SET_SOLUTIONS_REFRESHING, payload };
 }
 
-export const setEnvironmentsAction = (environments: SolutionsApi.Environment[]) => {
+export const setEnvironmentsAction = (
+  environments: SolutionsApi.Environment[],
+) => {
   return { type: SET_ENVIRONMENTS, payload: environments };
 };
 
@@ -112,7 +117,9 @@ export function* fetchEnvironments(): Generator<Effect, void, any> {
   const preparingEnvs = jobs?.filter(
     (job) => job.type === 'prepare-env/' && !job.completed,
   );
-  const environments: SolutionsApi.Environment[] = yield call(SolutionsApi.listEnvironments);
+  const environments: SolutionsApi.Environment[] = yield call(
+    SolutionsApi.listEnvironments,
+  );
   const updatedEnvironments = yield call(updateEnvironments, environments);
   for (const env of updatedEnvironments) {
     env.isPreparing = preparingEnvs?.includes(env.name);
@@ -121,7 +128,9 @@ export function* fetchEnvironments(): Generator<Effect, void, any> {
   return updatedEnvironments;
 }
 
-export function* createEnvironment(action: {payload: {name: string}}): Generator<Effect, void, APIResult<V1ConfigMap>> {
+export function* createEnvironment(action: {
+  payload: { name: string },
+}): Generator<Effect, void, APIResult<V1ConfigMap>> {
   const { name } = action.payload;
   const resultCreateEnvironment = yield call(
     SolutionsApi.createEnvironment,
@@ -139,10 +148,14 @@ export function* createEnvironment(action: {payload: {name: string}}): Generator
   yield call(fetchEnvironments);
 }
 
-export function* prepareEnvironment(action: {payload: {envName: string, solName: string, solVersion: string }}): Generator<Effect, void, any> {
+export function* prepareEnvironment(action: {
+  payload: { envName: string, solName: string, solVersion: string },
+}): Generator<Effect, void, any> {
   const { envName, solName, solVersion } = action.payload;
 
-  const existingEnv: SolutionsApi.Environment[] = yield select((state: RootState) => state.app.solutions.environments);
+  const existingEnv: SolutionsApi.Environment[] = yield select(
+    (state: RootState) => state.app.solutions.environments,
+  );
 
   const preparingEnv = existingEnv.find((env) => env.name === envName);
 
@@ -196,7 +209,9 @@ export function* prepareEnvironment(action: {payload: {envName: string, solName:
   }
 }
 
-export function* updateEnvironments(environments: SolutionsApi.Environment[]): Generator<Effect, SolutionsApi.Environment[], any> {
+export function* updateEnvironments(
+  environments: SolutionsApi.Environment[],
+): Generator<Effect, SolutionsApi.Environment[], any> {
   for (const env of environments) {
     const envConfig = yield call(SolutionsApi.getEnvironmentConfigMap, env);
     if (envConfig) {

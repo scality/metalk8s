@@ -27,8 +27,12 @@ export async function getSolutionsConfigMap() {
 }
 // }}}
 // Environment-scoped management {{{
-export type Environment = {name: string, description: String, namespaces: V1Namespace[]};
-export type Environments = {[name: string]: Environment};
+export type Environment = {
+  name: string,
+  description: String,
+  namespaces: V1Namespace[],
+};
+export type Environments = { [name: string]: Environment };
 
 export async function listEnvironments(): Promise<Environment[]> {
   const result: { body: V1NamespaceList[] } = await core.listNamespaces({

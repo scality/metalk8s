@@ -8,27 +8,26 @@ export function initialize(apiUrl: string) {
 }
 
 export type PrometheusAlert = {
-  "annotations": {
+  annotations: {
     [key: string]: string,
   },
-  "receivers": {
-    "name": string
+  receivers: {
+    name: string,
   }[],
-  "fingerprint": string,
-  "startsAt": string,
-  "updatedAt": string,
-  "endsAt": string,
-  "status": {
-    "state": "unprocessed" | "active" | "suppressed",
-    "silencedBy": string[],
-    "inhibitedBy": string[]
+  fingerprint: string,
+  startsAt: string,
+  updatedAt: string,
+  endsAt: string,
+  status: {
+    state: 'unprocessed' | 'active' | 'suppressed',
+    silencedBy: string[],
+    inhibitedBy: string[],
   },
-  "labels": {
+  labels: {
     [key: string]: string,
   },
-  "generatorURL": string
-}
-
+  generatorURL: string,
+};
 
 export function getAlerts(): Promise<PrometheusAlert[]> {
   if (!alertmanagerApiClient) {

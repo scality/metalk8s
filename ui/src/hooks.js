@@ -7,6 +7,6 @@ import type { RootState } from './ducks/reducer';
  * It should be used instead of useSelector to benefit from RootState typing
  */
 export const useTypedSelector: <TSelected>(
-    selector: (state: RootState) => TSelected,
-    equalityFn?: (left: TSelected, right: TSelected) => boolean
-  ) => TSelected = useSelector;
+  selector: (state: RootState) => TSelected,
+  equalityFn?: (left: TSelected, right: TSelected) => boolean,
+) => TSelected = useSelector;

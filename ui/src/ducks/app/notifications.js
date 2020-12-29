@@ -8,7 +8,7 @@ const REMOVE_NOTIFICATION = 'REMOVE_NOTIFICATION';
 
 // Reducer
 const defaultState = {
-  list: []
+  list: [],
 };
 
 type Notification = {
@@ -16,40 +16,48 @@ type Notification = {
   title: string,
   message: string,
   variant: 'success' | 'danger',
-  dismissAfter: number
-}
+  dismissAfter: number,
+};
 
 export type NotificationsState = {
-  list: Notification[]
-}
+  list: Notification[],
+};
 
-export type NotificationsActions = {
-  type: 'ADD_NOTIFICATION_SUCCESS'| 'ADD_NOTIFICATION_ERROR',
-  payload: Notification
-} | {
-  type: 'REMOVE_NOTIFICATION',
-  uid: string
-}
+export type NotificationsActions =
+  | {
+      type: 'ADD_NOTIFICATION_SUCCESS' | 'ADD_NOTIFICATION_ERROR',
+      payload: Notification,
+    }
+  | {
+      type: 'REMOVE_NOTIFICATION',
+      uid: string,
+    };
 
-export default function reducer(state: NotificationsState = defaultState, action: NotificationsActions): NotificationsState {
+export default function reducer(
+  state: NotificationsState = defaultState,
+  action: NotificationsActions,
+): NotificationsState {
   switch (action.type) {
     case ADD_NOTIFICATION_SUCCESS:
     case ADD_NOTIFICATION_ERROR:
       return {
         ...state,
-        list: [...state.list, action.payload]
+        list: [...state.list, action.payload],
       };
     case REMOVE_NOTIFICATION:
       return {
         ...state,
-        list: state.list.filter(notif => notif.uid !== action.uid)
+        list: state.list.filter((notif) => notif.uid !== action.uid),
       };
     default:
       return state;
   }
 }
 // Action Creators
-export const addNotificationSuccessAction = (payload: {title: string, message: string}) => {
+export const addNotificationSuccessAction = (payload: {
+  title: string,
+  message: string,
+}) => {
   return {
     type: ADD_NOTIFICATION_SUCCESS,
     payload: {
@@ -57,20 +65,23 @@ export const addNotificationSuccessAction = (payload: {title: string, message: s
       title: payload.title,
       message: payload.message,
       variant: 'success',
-      dismissAfter: 5000
-    }
+      dismissAfter: 5000,
+    },
   };
 };
 
-export const addNotificationErrorAction = (payload: {title: string, message?: string}) => {
+export const addNotificationErrorAction = (payload: {
+  title: string,
+  message?: string,
+}) => {
   return {
     type: ADD_NOTIFICATION_ERROR,
     payload: {
       uid: uuidv1(),
       title: payload.title,
       message: payload.message,
-      variant: 'danger'
-    }
+      variant: 'danger',
+    },
   };
 };
 

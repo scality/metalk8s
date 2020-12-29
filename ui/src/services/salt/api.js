@@ -11,17 +11,17 @@ export function initialize(apiUrl) {
 }
 
 export type SaltToken = {
-  "return": [
+  return: [
     {
-      "token": string,
-      "expire": number,
-      "start": number,
-      "user": string,
-      "eauth": string,
-      "perms": (string | {[key: string]: string[]})[]
-    }
-  ]
-}
+      token: string,
+      expire: number,
+      start: number,
+      user: string,
+      eauth: string,
+      perms: (string | { [key: string]: string[] })[],
+    },
+  ],
+};
 
 export function authenticate(user): Promise<SaltToken> {
   var payload = {

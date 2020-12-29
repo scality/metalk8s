@@ -25,11 +25,11 @@ const messages = {
 
 addLocaleData([...locale_en, ...locale_fr]);
 
-const App = props => {
+const App = (props) => {
   const { language, api, theme, userManager } = useSelector(
-    state => state.config,
+    (state) => state.config,
   );
-  const isUserLoaded = useSelector(state => state.config.isUserLoaded);
+  const isUserLoaded = useSelector((state) => state.config.isUserLoaded);
   const dispatch = useDispatch();
 
   useEffect(() => {

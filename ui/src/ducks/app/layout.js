@@ -1,5 +1,5 @@
 //@flow
-import type {RootState} from '../reducer'
+import type { RootState } from '../reducer';
 import { Effect, put, takeEvery, select } from 'redux-saga/effects';
 
 // Actions
@@ -18,10 +18,13 @@ const defaultState = {
 export type LayoutState = {
   sidebar: {
     expanded: boolean,
-  }
-}
+  },
+};
 
-export default function reducer(state: LayoutState = defaultState, action: any = {}) {
+export default function reducer(
+  state: LayoutState = defaultState,
+  action: any = {},
+) {
   switch (action.type) {
     case SET_TOGGLE_SIDEBAR:
       return {

@@ -38,8 +38,8 @@ const defaultState = {
 
 export type SaltState = {
   jobs: any[], // todo: type salt job
-  connected: boolean
-}
+  connected: boolean,
+};
 
 export default function reducer(state: SaltState = defaultState, action = {}) {
   switch (action.type) {

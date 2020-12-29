@@ -1,5 +1,5 @@
 //@flow
-import type {RootState} from './reducer';
+import type { RootState } from './reducer';
 import { Effect, call, takeEvery, put, select } from 'redux-saga/effects';
 import * as ApiSalt from '../services/salt/api';
 
@@ -19,10 +19,13 @@ const defaultState = {
 };
 
 export type LoginState = {
-  salt: ?ApiSalt.SaltToken
-}
+  salt: ?ApiSalt.SaltToken,
+};
 
-export default function reducer(state: LoginState = defaultState, action: any = {}) {
+export default function reducer(
+  state: LoginState = defaultState,
+  action: any = {},
+) {
   switch (action.type) {
     case SALT_AUTHENTICATION_SUCCESS:
       return {
@@ -36,7 +39,9 @@ export default function reducer(state: LoginState = defaultState, action: any = 
 }
 
 // Action Creators
-export const setSaltAuthenticationSuccessAction = (payload: ApiSalt.SaltToken) => {
+export const setSaltAuthenticationSuccessAction = (
+  payload: ApiSalt.SaltToken,
+) => {
   return {
     type: SALT_AUTHENTICATION_SUCCESS,
     payload,
@@ -47,7 +52,10 @@ export const setSaltAuthenticationSuccessAction = (payload: ApiSalt.SaltToken) =
 export function* authenticateSaltApi(): Generator<Effect, void, any> {
   const api: ?Config = yield select(apiConfigSelector);
   const user: User = yield select((state: RootState) => state.oidc?.user);
-  const result: { error: any } | ApiSalt.SaltToken = yield call(ApiSalt.authenticate, user);
+  const result: { error: any } | ApiSalt.SaltToken = yield call(
+    ApiSalt.authenticate,
+    user,
+  );
   if (api && result && !result.error) {
     yield call(ApiSalt.getClient().setHeaders, {
       'X-Auth-Token': result.return[0].token,

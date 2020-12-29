@@ -11,7 +11,11 @@ export let customObjects: CustomObjectsApi;
 export let storage: StorageV1Api;
 export let appsV1: AppsV1Api;
 
-export const updateApiServerConfig = (url: string, id_token: string, token_type: string) => {
+export const updateApiServerConfig = (
+  url: string,
+  id_token: string,
+  token_type: string,
+) => {
   config = new Config(url, id_token, token_type);
   coreV1 = config.makeApiClient(CoreV1Api);
   customObjects = config.makeApiClient(CustomObjectsApi);

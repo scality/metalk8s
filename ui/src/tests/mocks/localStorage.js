@@ -7,8 +7,8 @@ export class LocalStorageMock {
   setItem = (key, val) => {
     this.store[key] = val;
   };
-  getItem = key => this.store?.[key] ?? null;
-  removeItem = key => {
+  getItem = (key) => this.store?.[key] ?? null;
+  removeItem = (key) => {
     delete this.store[key];
   };
 }

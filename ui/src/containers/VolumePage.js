@@ -74,7 +74,9 @@ const VolumePage = (props) => {
   const node = useTypedSelector((state) => makeGetNodeFromUrl(state, props));
   const nodes = useTypedSelector((state) => state.app.nodes.list);
   const volumes = useTypedSelector((state) => state.app.volumes.list);
-  const volumesLoading = useTypedSelector((state) => state.app.volumes.isLoading);
+  const volumesLoading = useTypedSelector(
+    (state) => state.app.volumes.isLoading,
+  );
   const currentVolumeObject = useTypedSelector(
     (state) => state.app.volumes.currentVolumeObject,
   );

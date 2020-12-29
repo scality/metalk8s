@@ -77,9 +77,12 @@ export type ConfigState = {
   userManager: UserManager,
   isUserLoaded: boolean,
   themes: Themes,
-}
+};
 
-export default function reducer(state: ConfigState = defaultState, action: any = {}) {
+export default function reducer(
+  state: ConfigState = defaultState,
+  action: any = {},
+) {
   switch (action.type) {
     case SET_LANG:
       return { ...state, language: action.payload };
@@ -136,7 +139,10 @@ export function updateLanguageAction(language: string) {
   return { type: UPDATE_LANGUAGE, payload: language };
 }
 
-export function setUserManagerConfigAction(payload: {authority: string,  redirect_uri: string}) {
+export function setUserManagerConfigAction(payload: {
+  authority: string,
+  redirect_uri: string,
+}) {
   return { type: SET_USER_MANAGER_CONFIG, payload };
 }
 
@@ -206,7 +212,11 @@ export function* fetchConfig(): Generator<Effect, void, Result<Config>> {
   }
 }
 
-export function* updateApiServerConfig({ payload }: { payload: {id_token: string, token_type: string} }): Generator<Effect, void, Config> {
+export function* updateApiServerConfig({
+  payload,
+}: {
+  payload: { id_token: string, token_type: string },
+}): Generator<Effect, void, Config> {
   const api = yield select((state: RootState) => state.config.api);
   if (api) {
     yield call(
@@ -234,20 +244,26 @@ export function* setInitialLanguage(): Generator<Effect, void, string> {
   }
 }
 
-export function* updateLanguage(action: {payload: string}): Generator<Effect, void, string> {
+export function* updateLanguage(action: {
+  payload: string,
+}): Generator<Effect, void, string> {
   yield put(setLanguageAction(action.payload));
   const language = yield select(languageSelector);
   localStorage.setItem(LANGUAGE, language);
 }
 
 export function* logout(): Generator<Effect, void, UserManager> {
-  const userManager = yield select((state: RootState) => state.config.userManager);
+  const userManager = yield select(
+    (state: RootState) => state.config.userManager,
+  );
   if (userManager) {
     userManager.removeUser(); // removes the user data from sessionStorage
   }
 }
 
-export function* userFoundHandle(payload: { payload: {id_token: string, token_type: string} }): Generator<Effect, void, void> {
+export function* userFoundHandle(payload: {
+  payload: { id_token: string, token_type: string },
+}): Generator<Effect, void, void> {
   yield call(updateApiServerConfig, payload);
 }
 

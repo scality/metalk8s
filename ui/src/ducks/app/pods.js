@@ -1,8 +1,12 @@
 //@flow
-import { V1ContainerStatus, V1Pod, V1PodList } from '@kubernetes/client-node/dist/gen/model/models';
+import {
+  V1ContainerStatus,
+  V1Pod,
+  V1PodList,
+} from '@kubernetes/client-node/dist/gen/model/models';
 import { Effect, call, put, takeLatest } from 'redux-saga/effects';
 import * as CoreApi from '../../services/k8s/core';
-import type {APIResult} from '../../types';
+import type { APIResult } from '../../types';
 
 // Actions
 const FETCH_PODS = 'FETCH_PODS';
@@ -25,13 +29,16 @@ export type Pod = {
     persistentVolumeClaim: string,
   }[],
   containerStatuses: V1ContainerStatus[],
-}
+};
 
 export type PodsState = {
-  list: Pod[]
-}
+  list: Pod[],
+};
 
-export default function reducer(state: PodsState = defaultState, action: any = {}) {
+export default function reducer(
+  state: PodsState = defaultState,
+  action: any = {},
+) {
   switch (action.type) {
     case SET_PODS:
       return { ...state, list: action.payload };
