@@ -17,7 +17,7 @@ Conflicts: sos = 3.5
 ExclusiveArch:  x86_64
 ExclusiveOS:    Linux
 
-License:        GPL+
+License:        ASL 2.0
 Source0:        ../../common/metalk8s-sosreport/metalk8s.py
 Source1:        ../../common/metalk8s-sosreport/containerd.py
 
