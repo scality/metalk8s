@@ -24,7 +24,7 @@
   bump the version to 12.2.3.
   All the container images of this stack have also been bumped:
   - alertmanager from v0.20.0 to v0.21.0
-  - grafana from 6.7.4 to 7.2.1
+  - grafana from 6.7.4 to 7.3.5 (PR [#3006](https://github.com/scality/metalk8s/pull/3006))
   - k8s-sidecar from 0.1.20 to 1.1.0
   - kube-state-metrics from v1.9.5 to v1.9.7
   - node-exporter from v0.18.1 to v1.0.1
