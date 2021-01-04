@@ -1,7 +1,7 @@
 ---
 debug: false
 
-metrics_server_repo: 'https://kubernetes-charts.storage.googleapis.com'
+metrics_server_repo: 'https://charts.helm.sh/stable'
 metrics_server_version: '2.0.3'
 metrics_server_namespace: kube-system
 metrics_server_release_name: metrics-server

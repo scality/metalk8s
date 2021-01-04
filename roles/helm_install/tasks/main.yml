@@ -20,6 +20,6 @@
 
 - name: 'enable default repository'
   command: >-
-    {{ helm_bin_dir }}/helm init --client-only
+    {{ helm_bin_dir }}/helm init --stable-repo-url https://charts.helm.sh/stable --client-only
   args:
     creates: /root/.helm/repository/repositories.yaml

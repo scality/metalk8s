@@ -10,14 +10,14 @@ es_namespace: 'kube-ops'
 
 elasticsearch_chart: 'elasticsearch'
 elasticsearch_version: '1.7.2'
-elasticsearch_repo: 'https://kubernetes-charts-incubator.storage.googleapis.com'
+elasticsearch_repo: 'https://charts.helm.sh/incubator'
 elasticsearch_namespace: 'kube-ops'
 elasticsearch_release_name: 'elasticsearch'
 elasticsearch_external_values: []
 
 elasticsearch_curator_chart: 'elasticsearch-curator'
 elasticsearch_curator_version: '0.4.1'
-elasticsearch_curator_repo: 'https://kubernetes-charts-incubator.storage.googleapis.com'
+elasticsearch_curator_repo: 'https://charts.helm.sh/incubator'
 elasticsearch_curator_namespace: 'kube-ops'
 elasticsearch_curator_release_name: 'elasticsearch-curator'
 elasticsearch_curator_external_values: []
@@ -25,18 +25,18 @@ elasticsearch_curator_external_values: []
 fluentd_release_name: 'fluentd'
 fluentd_chart: 'fluentd'
 fluentd_version: '0.1.5'
-fluentd_repo: 'https://kubernetes-charts-incubator.storage.googleapis.com'
+fluentd_repo: 'https://charts.helm.sh/incubator'
 fluentd_namespace: 'kube-ops'
 
 fluent_bit_release_name: 'fluent-bit'
 fluent_bit_chart: 'fluent-bit'
 fluent_bit_version: '0.11.1'
-fluent_bit_repo: 'https://kubernetes-charts.storage.googleapis.com'
+fluent_bit_repo: 'https://charts.helm.sh/stable'
 fluent_bit_namespace: 'kube-ops'
 
 kibana_chart: 'kibana'
 kibana_version: '0.13.1'
-kibana_repo: 'https://kubernetes-charts.storage.googleapis.com'
+kibana_repo: 'https://charts.helm.sh/stable'
 kibana_namespace: 'kube-ops'
 kibana_release_name: 'kibana'
 kibana_addons_dir: '/etc/kubernetes/addons/kibana'
@@ -44,7 +44,7 @@ kibana_index_pattern: 'logstash-*'
 
 elasticsearch_exporter_chart: 'elasticsearch-exporter'
 elasticsearch_exporter_version: '0.2.2'
-elasticsearch_exporter_repo: 'https://kubernetes-charts.storage.googleapis.com'
+elasticsearch_exporter_repo: 'https://charts.helm.sh/stable'
 # Note: When changing this name, the 'ServiceMonitor' manifest needs to be
 # updated as well
 elasticsearch_exporter_namespace: 'kube-ops'
@@ -53,7 +53,7 @@ elasticsearch_exporter_namespace: 'kube-ops'
 elasticsearch_exporter_release_name: 'es-exporter'
 elasticsearch_exporter_external_values: []
 
-cerebro_repo: 'https://kubernetes-charts.storage.googleapis.com'
+cerebro_repo: 'https://charts.helm.sh/stable'
 cerebro_version: '0.3.1'
 cerebro_namespace: 'kube-ops'
 cerebro_release_name: 'cerebro'

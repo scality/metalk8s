@@ -5,7 +5,7 @@ heapster_version: '0.3.1'
 # For kubernetes-dashboard to find Heapster, it needs to be installed in
 # `kube-system`.
 heapster_namespace: 'kube-system'
-heapster_repo: 'https://kubernetes-charts.storage.googleapis.com'
+heapster_repo: 'https://charts.helm.sh/stable'
 heapster_release_name: 'heapster'
 
 heapster_external_values: []
