@@ -1,17 +1,21 @@
-{{- if .Values.rbac.create -}}
+{{- /*
+This if must be aligned with custom-metrics-cluster-role.yaml
+as otherwise this binding will point to not existing role.
+*/ -}}
+{{- if and .Values.rbac.create (or .Values.rules.default .Values.rules.custom) -}}
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
   labels:
     app: {{ template "k8s-prometheus-adapter.name" . }}
     chart: {{ template "k8s-prometheus-adapter.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-  name: {{ template "k8s-prometheus-adapter.name" . }}-auth-reader
+  name: {{ template "k8s-prometheus-adapter.name" . }}-hpa-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: extension-apiserver-authentication-reader
+  kind: ClusterRole
+  name: {{ template "k8s-prometheus-adapter.name" . }}-server-resources
 subjects:
 - kind: ServiceAccount
   name: {{ template "k8s-prometheus-adapter.serviceAccountName" . }}
