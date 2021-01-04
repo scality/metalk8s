@@ -59,7 +59,6 @@ CENTOS_BASE_IMAGE : str = 'docker.io/centos'
 CENTOS_BASE_IMAGE_SHA256 : str = \
     '6ae4cddb2b37f889afd576a17a5286b311dcbf10a904409670827f6f9b50065e'
 
-GRAFANA_IMAGE_VERSION : str = '7.2.1'
 NGINX_IMAGE_VERSION   : str = '1.15.8'
 NODEJS_IMAGE_VERSION  : str = '10.16.0'
 
@@ -113,6 +112,11 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
         name='etcd',
         version='3.4.3-0',
         digest='sha256:4afb99b4690b418ffc2ceb67e1a17376457e441c1f09ab55447f0aaf992fa646',
+    ),
+    Image(
+        name='grafana',
+        version='7.2.1',
+        digest='sha256:733842cca5bd9bcab1eb795da264863a8245402ff3ac8ff17e274334bb32c692',
     ),
     Image(
         name='k8s-sidecar',
@@ -190,11 +194,6 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
         digest='sha256:240b10b07e15e95c3009da938e3abb8bef2fa47ea1f719ae58f7dd116bcb2f10',
     ),
     # Local images
-    Image(
-        name='grafana',
-        version=GRAFANA_IMAGE_VERSION,
-        digest=None,
-    ),
     Image(
         name='metalk8s-ui',
         version=VERSION,
