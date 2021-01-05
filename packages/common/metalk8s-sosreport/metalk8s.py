@@ -77,19 +77,19 @@ class metalk8s(Plugin, RedHatPlugin, UbuntuPlugin):
                     for res in resources:
                         self.add_cmd_output('{0} {1}'.format(kube_namespaced_cmd, res))
 
-                    if self.get_option('describe'):
-                        # need to drop json formatting for this
-                        kube_namespaced_cmd = '{0} get {1}'.format(kube_cmd, kube_namespace)
-                        for res in resources:
-                            r = self.get_command_output(
-                                '{0} {1}'.format(kube_namespaced_cmd, res))
-                            if r['status'] == 0:
-                                kube_cmd_result = [k.split()[0] for k in
-                                          r['output'].splitlines()[1:]]
-                                for k in kube_cmd_result:
-                                    kube_namespaced_cmd = '{0} {1}'.format(kube_cmd, kube_namespace)
-                                    self.add_cmd_output(
-                                        '{0} describe {1} {2}'.format(kube_namespaced_cmd, res, k))
+                if self.get_option('describe'):
+                    # need to drop json formatting for this
+                    kube_namespaced_cmd = '{0} get {1}'.format(kube_cmd, kube_namespace)
+                    for res in resources:
+                        r = self.get_command_output(
+                            '{0} {1}'.format(kube_namespaced_cmd, res))
+                        if r['status'] == 0:
+                            kube_cmd_result = [k.split()[0] for k in
+                                      r['output'].splitlines()[1:]]
+                            for k in kube_cmd_result:
+                                kube_namespaced_cmd = '{0} {1}'.format(kube_cmd, kube_namespace)
+                                self.add_cmd_output(
+                                    '{0} describe {1} {2}'.format(kube_namespaced_cmd, res, k))
 
                 if self.get_option('podlogs'):
                     kube_namespaced_cmd = '{0} {1}'.format(kube_cmd, kube_namespace)
