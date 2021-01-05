@@ -97,12 +97,6 @@
   salt['grains.filter_by']({
     'RedHat': {
       7: {
-        'containerd': {
-          'name': 'epel'
-        },
-        'kubernetes': {
-          'name': 'kubernetes'
-        },
         'repositories': {
           'metalk8s-epel': {
             'humanname': 'EPEL',
@@ -142,12 +136,6 @@
         }
       },
       8: {
-        'containerd': {
-          'name': 'epel'
-        },
-        'kubernetes': {
-          'name': 'kubernetes'
-        },
         'repositories': {
           'metalk8s-epel': {
             'humanname': 'EPEL',
