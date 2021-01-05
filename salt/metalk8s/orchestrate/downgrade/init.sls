@@ -42,10 +42,6 @@ Wait for API server to be available on {{ node }}:
   {%- if loop.previtem is defined %}
     - salt: Deploy node {{ loop.previtem }}
   {%- endif %}
-  {#- NOTE: This can be removed in `development/2.8` #}
-  {%- if salt.pkg.version_cmp(dest_version, '2.7.0') == -1 and previous_node is defined %}
-    - salt: Deploy node {{ previous_node }}
-  {%- endif %}
 
 Set node {{ node }} version to {{ dest_version }}:
   metalk8s_kubernetes.object_updated:
@@ -82,12 +78,6 @@ Deploy node {{ node }}:
       - metalk8s_kubernetes: Set node {{ node }} version to {{ dest_version }}
     - require_in:
       - salt: Downgrade etcd cluster
-
-    {#- NOTE: This can be removed in `development/2.8` #}
-    {%- if salt.pkg.version_cmp(dest_version, '2.7.0') == -1 %}
-      {#- Ugly but needed since we have jinja2.7 (`loop.previtem` added in 2.10) #}
-      {%- set previous_node = node %}
-    {%- endif %}
 
   {%- endif %}
 
