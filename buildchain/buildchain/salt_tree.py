@@ -431,7 +431,6 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/addons/nginx-ingress/deployed/chart.sls'),
     Path('salt/metalk8s/addons/nginx-ingress/deployed/namespace.sls'),
     Path('salt/metalk8s/addons/nginx-ingress/deployed/tls-secret.sls'),
-    Path('salt/metalk8s/addons/nginx-ingress/post-upgrade-downgrade.sls'),
 
     Path('salt/metalk8s/addons/nginx-ingress-control-plane/certs/init.sls'),
     Path('salt/metalk8s/addons/nginx-ingress-control-plane/certs/server.sls'),
@@ -441,8 +440,6 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
          'tls-secret.sls'),
     Path('salt/metalk8s/addons/nginx-ingress-control-plane/',
          'control-plane-ip.sls'),
-    Path('salt/metalk8s/addons/nginx-ingress-control-plane/',
-         'post-upgrade-downgrade.sls'),
 
     Path('salt/metalk8s/beacon/certificates.sls'),
 
