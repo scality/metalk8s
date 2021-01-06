@@ -17,7 +17,7 @@ const TableRowStyle = styled.div`
   }
 
   background-color: ${(props) =>
-    props.volumeName === props.row.values.name
+    props.isSelected
       ? props.theme.brand.backgroundBluer
       : props.theme.brand.primary};
 `;
@@ -36,7 +36,7 @@ const UnknownIcon = styled.i`
 `;
 
 const TableRow = (props) => {
-  const { row, style, rowClicked, volumeName, theme } = props;
+  const { row, style, rowClicked, theme, isSelected } = props;
 
   return (
     <TableRowStyle
@@ -47,7 +47,7 @@ const TableRow = (props) => {
         // Otherwise when we scroll down, the next rows are flashing because they are re-rendered in loop.
         style: { ...style, marginLeft: '5px' },
       })}
-      volumeName={volumeName}
+      isSelected={isSelected}
       row={row}
     >
       {row.cells.map((cell) => {

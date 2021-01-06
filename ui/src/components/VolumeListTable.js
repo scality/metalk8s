@@ -257,7 +257,7 @@ function Table({
           style={style}
           theme={theme}
           rowClicked={rowClicked}
-          volumeName={volumeName}
+          isSelected={volumeName === row.values.name}
         ></TableRow>
       );
     },
