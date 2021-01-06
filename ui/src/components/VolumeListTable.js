@@ -163,7 +163,7 @@ function Table({
   columns,
   data,
   nodeName,
-  rowClicked,
+  onClickRow,
   volumeName,
   theme,
   isSearchBar,
@@ -250,18 +250,18 @@ function Table({
     ({ index, style }) => {
       const row = rows[index];
       prepareRow(row);
-      // Extract the TableRow component outside of Table component
+
       return (
         <TableRow
           row={row}
           style={style}
           theme={theme}
-          rowClicked={rowClicked}
+          onClickRow={onClickRow}
           isSelected={volumeName === row.values.name}
         ></TableRow>
       );
     },
-    [prepareRow, rowClicked, rows, theme, volumeName],
+    [prepareRow, onClickRow, rows, theme, volumeName],
   );
 
   return (
@@ -356,7 +356,7 @@ function Table({
                 }}
                 className="td"
               >
-                No Volume
+                {intl.translate('no_volume_found')}
               </div>
             </div>
           ) : null}
@@ -569,7 +569,7 @@ const VolumeListTable = (props) => {
         columns={columns}
         data={volumeListData}
         nodeName={nodeName}
-        rowClicked={onClickRow}
+        onClickRow={onClickRow}
         volumeName={volumeName}
         theme={theme}
         isSearchBar={isSearchBar}

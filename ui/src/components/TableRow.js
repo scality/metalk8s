@@ -36,12 +36,12 @@ const UnknownIcon = styled.i`
 `;
 
 const TableRow = (props) => {
-  const { row, style, rowClicked, theme, isSelected } = props;
+  const { row, style, onClickRow, theme, isSelected } = props;
 
   return (
     <TableRowStyle
       {...row.getRowProps({
-        onClick: () => rowClicked(row),
+        onClick: () => onClickRow(row),
         // Note:
         // We need to pass the style property to the row component.
         // Otherwise when we scroll down, the next rows are flashing because they are re-rendered in loop.
