@@ -36,7 +36,7 @@ export const UnknownIcon = styled.i`
 `;
 
 const TableRow = (props) => {
-  const { row, style, onClickRow, theme, isSelected } = props;
+  const { row, style, onClickRow, isSelected } = props;
 
   return (
     <TableRowStyle
@@ -76,10 +76,7 @@ const TableRow = (props) => {
                   <TooltipContent>{intl.translate('unknown')}</TooltipContent>
                 }
               >
-                <UnknownIcon
-                  className="fas fa-minus"
-                  theme={theme}
-                ></UnknownIcon>
+                <UnknownIcon className="fas fa-minus"></UnknownIcon>
               </Tooltip>
             </div>
           );

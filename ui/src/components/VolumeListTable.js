@@ -239,13 +239,12 @@ function Table({
         <TableRow
           row={row}
           style={style}
-          theme={theme}
           onClickRow={onClickRow}
           isSelected={volumeName === row.values.name}
         ></TableRow>
       );
     },
-    [prepareRow, onClickRow, rows, theme, volumeName],
+    [prepareRow, onClickRow, rows, volumeName],
   );
 
   return (
