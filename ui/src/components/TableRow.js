@@ -22,13 +22,13 @@ const TableRowStyle = styled.div`
       : props.theme.brand.primary};
 `;
 
-const TooltipContent = styled.div`
+export const TooltipContent = styled.div`
   color: ${(props) => props.theme.brand.textSecondary};
   font-weight: ${fontWeight.bold};
   min-width: 60px;
 `;
 
-const UnknownIcon = styled.i`
+export const UnknownIcon = styled.i`
   color: ${(props) => props.theme.brand.textSecondary};
   // Increase the height so that the users don't need to hover precisely on the hyphen.
   height: 30px;

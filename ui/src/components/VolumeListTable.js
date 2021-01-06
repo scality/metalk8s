@@ -14,11 +14,7 @@ import {
 import { FixedSizeList as List } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { useQuery } from '../services/utils';
-import {
-  fontSize,
-  padding,
-  fontWeight,
-} from '@scality/core-ui/dist/style/theme';
+import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
 import { Button, ProgressBar, Tooltip } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
@@ -39,6 +35,7 @@ import {
   SortIncentive,
   TableHeader,
 } from './CommonLayoutStyle';
+import { UnknownIcon, TooltipContent } from './TableRow';
 
 const VolumeListContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
@@ -92,19 +89,6 @@ const ActionContainer = styled.span`
   flex-direction: row-reverse;
   justify-content: space-between;
   padding: ${padding.large} ${padding.base} ${padding.base} 20px;
-`;
-
-const TooltipContent = styled.div`
-  color: ${(props) => props.theme.brand.textSecondary};
-  font-weight: ${fontWeight.bold};
-  min-width: 60px;
-`;
-
-const UnknownIcon = styled.i`
-  color: ${(props) => props.theme.brand.textSecondary};
-  // Increase the height so that the users don't need to hover precisely on the hyphen.
-  height: 30px;
-  padding-top: ${padding.base};
 `;
 
 function GlobalFilter({
