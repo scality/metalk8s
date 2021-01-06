@@ -19,7 +19,7 @@ ARCHIVE_PRODUCT_INFO=$ARCHIVE_MOUNTPOINT/product.txt
 SALT_DEFAULTS=$ARCHIVE_MOUNTPOINT/salt/metalk8s/defaults.yaml
 OVERRIDE_ROOT_CONF=/etc/salt/master.d/90-metalk8s-root-override.conf
 OVERRIDE_PILLAR_DEST=/etc/salt/pillar-override
-WAIT_RENEWAL=${WAIT_RENEWAL:-240}
+WAIT_RENEWAL=${WAIT_RENEWAL:-120}
 
 # shellcheck disable=SC1090
 . "$ARCHIVE_PRODUCT_INFO"
@@ -178,9 +178,16 @@ echo "Waiting ${SLEEP_TIME}s for certificates to be regenerated..."
 sleep $SLEEP_TIME
 
 echo "Checking certificates renewal..."
-check_certificates_renewal
-
-EXIT_CODE=$?
+for ((EXIT_CODE=1, max_try=3, try=1; try <= max_try; ++try)); do
+    if check_certificates_renewal; then
+        EXIT_CODE=0
+        break
+    elif [ "$try" -lt "$max_try" ]; then
+        echo "All certificates are not renewed yet, retrying in" \
+             "$SLEEP_TIME seconds..."
+        sleep $SLEEP_TIME
+    fi
+done
 
 echo "Resetting pillar configuration..."
 reset_pillar_conf
