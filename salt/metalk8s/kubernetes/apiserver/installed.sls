@@ -43,6 +43,7 @@ Create kube-apiserver Pod manifest:
         - /etc/kubernetes/pki/front-proxy-ca.crt
         - {{ certificates.client.files['front-proxy'].path }}
         - /etc/kubernetes/pki/front-proxy-client.key
+        - /etc/kubernetes/pki/sa.key
         - /etc/kubernetes/pki/sa.pub
         - /etc/metalk8s/pki/nginx-ingress/ca.crt
     - context:
@@ -77,7 +78,9 @@ Create kube-apiserver Pod manifest:
           - --requestheader-group-headers=X-Remote-Group
           - --requestheader-username-headers=X-Remote-User
           - --secure-port=6443
+          - --service-account-issuer=https://kubernetes.default.svc.cluster.local
           - --service-account-key-file=/etc/kubernetes/pki/sa.pub
+          - --service-account-signing-key-file=/etc/kubernetes/pki/sa.key
           - --service-cluster-ip-range={{ networks.service }}
           - --tls-cert-file={{ certificates.server.files.apiserver.path }}
           - --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
