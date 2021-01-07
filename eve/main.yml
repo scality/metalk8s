@@ -1761,22 +1761,6 @@ stages:
             TF_VAR_rhsm_username: "%(secret:rhel_ci_login)s"
             TF_VAR_rhsm_password: "%(secret:rhel_ci_password)s"
       # --- Wait for all pods to be running ---
-      - ShellCommand:
-          # NOTE: manually ensure all loop devices are provisioned after node
-          # startup - see https://github.com/scality/metalk8s/issues/2726
-          # This workaround can be removed in development/2.8
-          name: Ensure all loop devices are provisioned
-          command: >
-            ssh -F ssh_config bootstrap 'sudo bash -c "
-            . /srv/scality/metalk8s-%(prop:product_promoted_version)s/common.sh
-            &&
-            crictl exec \$(get_salt_container)
-            salt \\* state.sls metalk8s.volumes.provisioned
-            saltenv=metalk8s-%(prop:product_promoted_version)s
-            || echo Something went wrong, maybe a node does not have volumes
-            to provision?"'
-          workdir: build/eve/workers/openstack-terraform/terraform/
-          haltOnFailure: true
       - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand:
           # NOTE: we ignore Succeeded pods which were scheduled by Jobs, since
