@@ -30,10 +30,11 @@ Add the module br_netfilter to kernel:
 
 {%- for item, value in kubeadm_preflight.mandatory.sysctl_values.items() %}
 Set sysctl {{ item }} value to {{ value }}:
-  sysctl.present:
+  metalk8s_sysctl.present:
     - name: {{ item }}
     - value: {{ value }}
     - config: /etc/sysctl.d/60-metalk8s.conf
+    - check_priority: True
     {%- if item in ("net.bridge.bridge-nf-call-ip6tables", "net.bridge.bridge-nf-call-iptables") %}
     - require:
       - kmod: Add the module br_netfilter to kernel
