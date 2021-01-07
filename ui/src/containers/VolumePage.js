@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useRouteMatch, useHistory } from 'react-router';
+import { useRouteMatch } from 'react-router';
 import { useSelector, useDispatch } from 'react-redux';
 import VolumeContent from './VolumePageContent';
 import { fetchPodsAction } from '../ducks/app/pods';
@@ -32,7 +32,6 @@ import { getVolumeListData } from '../services/NodeVolumesUtils';
 import { Breadcrumb } from '@scality/core-ui';
 import { PageContainer } from '../components/CommonLayoutStyle';
 import { intl } from '../translations/IntlGlobalProvider';
-import { useQuery } from '../services/utils';
 
 // <VolumePage> component fetchs all the data used by volume page from redux store.
 // the data for <VolumeMetricGraphCard>: get the default metrics time span `last 24 hours`, and the component itself can change the time span base on the dropdown selection.
@@ -41,8 +40,6 @@ const VolumePage = (props) => {
   const dispatch = useDispatch();
   const match = useRouteMatch();
   const currentVolumeName = match.params.name;
-  const query = useQuery();
-  const history = useHistory();
 
   useEffect(() => {
     if (currentVolumeName)
@@ -81,7 +78,6 @@ const VolumePage = (props) => {
     (state) => state.app.volumes.currentVolumeObject,
   );
   const pVList = useSelector((state) => state.app.volumes.pVList);
-
   /*
    ** The PVCs list is used to check when the alerts will be mapped to the corresponding volumes
    ** in order to auto select the volume when all the data are there.
@@ -96,21 +92,6 @@ const VolumePage = (props) => {
   const volumeListData = useSelector((state) =>
     getVolumeListData(state, props),
   );
-
-  // If data has been retrieved and no volume is selected yet we select the first one
-  useEffect(() => {
-    if (
-      volumeListData[0]?.name &&
-      alerts.list?.length &&
-      pVCList.length &&
-      !currentVolumeName
-    ) {
-      history.replace({
-        pathname: `/volumes/${volumeListData[0]?.name}/overview`,
-        search: query.toString(),
-      });
-    }
-  }, [volumeListData, currentVolumeName, query, history, alerts.list, pVCList]);
 
   return (
     <PageContainer>
@@ -133,6 +114,7 @@ const VolumePage = (props) => {
         nodes={nodes}
         node={node}
         pVList={pVList}
+        pVCList={pVCList}
         pods={pods}
         alerts={alerts}
         volumeStats={volumeStats}

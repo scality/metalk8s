@@ -137,9 +137,10 @@ describe('Node page volumes tabs', () => {
 
   it('brings me to the loki-vol volume page', () => {
     cy.stubHistory();
+
     cy.get('[data-cy="volume_table_name_cell"]')
-      .contains('td', 'loki-vol')
-      .click();
+      .contains('div', 'loki-vol')
+      .click({ force: true });
     cy.get('@historyPush').should(
       'be.calledWith',
       '/volumes/loki-vol/overview?node=master-0',
