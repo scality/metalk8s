@@ -11,6 +11,7 @@ RUN yum install -y --setopt=skip_missing_names_on_install=False \
     && yum install -y --setopt=skip_missing_names_on_install=False \
     sudo \
     gcc \
+    curl \
     hardlink \
     make \
     python-devel \
