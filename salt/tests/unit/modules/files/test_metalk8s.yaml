@@ -328,3 +328,112 @@ format_slots:
       my_mod.my_fun: null
     raises: True
     result: "Unable to compute slot '__slot__:salt:my_mod.my_fun\\(\\)': An error has occurred"
+
+manage_static_pod_manifest:
+  # Nominal: pre-cached source
+  - name: &manifest_name /etc/kubernetes/manifests/my-pod.yaml
+    source: &manifest_source salt://my/state/files/my-pod-manifest.yaml.j2
+    pre_cached_source: True
+    result: &manifest_nominal_result_no_changes
+      name: *manifest_name
+      changes: {}
+      comment: >-
+        File /etc/kubernetes/manifests/my-pod.yaml is in the correct state
+      result: True
+  # Nominal: source not in cache
+  - name: *manifest_name
+    source: *manifest_source
+    result: *manifest_nominal_result_no_changes
+  # Nominal: cached hash mismatch
+  - name: *manifest_name
+    source: *manifest_source
+    pre_cached_source: True
+    cached_hash_mismatch: True
+    result: *manifest_nominal_result_no_changes
+  # Nominal: target is a link
+  - name: *manifest_name
+    source: *manifest_source
+    target_links_to: /some/other/path.yaml
+    result: *manifest_nominal_result_no_changes
+  # Nominal: target hash mismatch
+  - name: *manifest_name
+    source: *manifest_source
+    target_hash_mismatch: True
+    result: &manifest_nominal_result_updated
+      <<: *manifest_nominal_result_no_changes
+      changes:
+        diff: Some diff
+      comment: >-
+        File /etc/kubernetes/manifests/my-pod.yaml updated
+  # Nominal: target hash + perms/owner mismatch
+  - name: *manifest_name
+    source: *manifest_source
+    target_hash_mismatch: True
+    target_stats:
+      mode: '0644'
+      user: my-user
+      group: my-group
+    result:
+      <<: *manifest_nominal_result_updated
+      changes:
+        diff: Some diff
+        user: root
+        group: root
+        mode: '0600'
+  # Nominal: new file
+  - name: *manifest_name
+    source: *manifest_source
+    target_exists: False
+    result:
+      <<: *manifest_nominal_result_updated
+      changes:
+        diff: New file
+  # Nominal: obfuscate templates
+  - name: *manifest_name
+    source: *manifest_source
+    obfuscate_templates: True
+    target_hash_mismatch: True
+    result:
+      <<: *manifest_nominal_result_updated
+      changes:
+        diff: <Obfuscated Template>
+  # Nominal: file.get_diff failure
+  - name: *manifest_name
+    source: *manifest_source
+    get_diff_error: Failed to compute diff
+    target_hash_mismatch: True
+    result:
+      <<: *manifest_nominal_result_updated
+      changes:
+        diff: Failed to compute diff
+  # Nominal: test mode
+  - name: *manifest_name
+    source: *manifest_source
+    target_hash_mismatch: True
+    opts:
+      test: True
+    result:
+      <<: *manifest_nominal_result_updated
+      comment: >-
+        File /etc/kubernetes/manifests/my-pod.yaml would be updated
+  # Error: missing source
+  - name: *manifest_name
+    error: Must provide a source
+  # Error: target directory does not exist
+  - name: *manifest_name
+    source: *manifest_source
+    target_dir_exists: False
+    error: Target directory /etc/kubernetes/manifests does not exist
+  # Error: source could not be cached
+  - name: *manifest_name
+    source: *manifest_source
+    cache_file_ret: False
+    error: >-
+      Source file 'salt://my/state/files/my-pod-manifest.yaml.j2' not found
+  # Error: copy error
+  - name: *manifest_name
+    source: *manifest_source
+    target_exists: False
+    atomic_copy_raises: Could not copy!
+    error: >-
+      Failed to commit change: Could not copy!
