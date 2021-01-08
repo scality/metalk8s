@@ -1107,13 +1107,14 @@ stages:
               attempts=0
               until curl -Isfo /dev/null http://localhost:80/; do
                 (( attempts++ ))
-                if [ $attempts -gt 40 ]; then
-                  >&2 echo "Failed to reach application after 2 minutes"
+                if [ $attempts -gt 100 ]; then
+                  >&2 echo "Failed to reach application after 5 minutes"
                   exit 1
                 fi
                 sleep 3
               done
             '
+          haltOnFailure: true
       - ShellCommand:
           name: Run all UI integration tests
           workdir: build/ui
