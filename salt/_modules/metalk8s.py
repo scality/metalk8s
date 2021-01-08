@@ -3,17 +3,20 @@
 Module for handling MetalK8s specific calls.
 '''
 import functools
+import itertools
 import logging
 import os.path
 import re
 import six
 import socket
+import tempfile
 import time
 
 from salt.pillar import get_pillar
 from salt.exceptions import CommandExecutionError
 import salt.utils.args
 import salt.utils.files
+from salt.utils.hashutils import get_hash
 
 log = logging.getLogger(__name__)
 
@@ -355,3 +358,202 @@ def cmp_sorted(*args, **kwargs):
         kwargs['key'] = functools.cmp_to_key(kwargs.pop('cmp'))
 
     return sorted(*args, **kwargs)
+
+
+def _error(ret, err_msg):
+    ret["result"] = False
+    ret["comment"] = err_msg
+    return ret
+
+
+def _atomic_write(
+    contents, dest, user, group, mode, tmp_prefix,
+):  # pragma: no cover
+    """Minimalistic implementation of an atomic write operation.
+
+    First, we create a temporary file with the desired prefix and attributes.
+    Then, we write the contents to it, and flush it in the same directory as
+    the target.
+    Finally, we link the temporary file contents to the destination filename.
+    """
+    base_name = os.path.basename(dest)
+    dir_name = os.path.dirname(dest)
+
+    uid = __salt__['file.user_to_uid'](user)
+    gid = __salt__['file.group_to_gid'](group)
+
+    with tempfile.NamedTemporaryFile(
+        prefix=tmp_prefix, dir=dir_name, delete=False,
+    ) as tmp_file:
+        fd = tmp_file.fileno()
+        os.fchmod(fd, mode)
+        os.fchown(fd, uid, gid)
+        tmp_file.write(contents)
+        tmp_file.flush()
+        os.fsync(fd)
+
+    try:
+        os.rename(tmp_file.name, dest)
+    except OSError:
+        os.remove(tmp_file.name)
+        raise
+
+
+def _atomic_copy(
+    source, dest, user, group, mode, tmp_prefix,
+):  # pragma: no cover
+    with open(source, mode='rb') as f:
+        contents = f.read()
+
+    _atomic_write(contents, dest, user, group, mode, tmp_prefix)
+
+
+def manage_static_pod_manifest(
+    name, source_filename, source, source_sum, saltenv='base',
+):
+    """Checks a manifest file and applies changes if necessary.
+
+    Implementation derived from saltstack/salt salt.modules.file.manage_file.
+
+    name:
+        Path to the static pod manifest.
+
+    source_filename:
+        Path to the cached source file on the minion. The hash sum of this
+        file will be compared with the `source_sum` argument to determine
+        whether the source file should be fetched again using `cp.cache_file`.
+
+    source:
+        Reference for the source file (from the master).
+
+    source_sum:
+        Hash sum for the source file.
+
+    CLI Example:
+    .. code-block:: bash
+        salt '*' metalk8s.manage_static_pod_manifest /etc/kubernetes/manifests/etcd.yaml '' salt://metalk8s/kubernetes/etcd/files/manifest.yaml '{hash_type: 'md5', 'hsum': <md5sum>}' saltenv=metalk8s-2.7.0
+    """
+    ret = {"name": name, "changes": {}, "comment": "", "result": True}
+    desired_user = "root"
+    desired_group = "root"
+    desired_mode = 0o600
+    normalized_mode = salt.utils.files.normalize_mode(oct(desired_mode))
+
+    def _clean_tmp(sfn):
+        if sfn.startswith(os.path.join(
+            tempfile.gettempdir(), salt.utils.files.TEMPFILE_PREFIX
+        )):
+            # Don't remove if it exists in file_roots (any saltenv)
+            all_roots = itertools.chain.from_iterable(
+                __opts__["file_roots"].values()
+            )
+            in_roots = any(sfn.startswith(root) for root in all_roots)
+            # Only clean up files that exist
+            if os.path.exists(sfn) and not in_roots:
+                os.remove(sfn)
+
+    target_dir = os.path.dirname(name)
+    target_exists = os.path.isfile(name) or os.path.islink(name)
+    hash_type = source_sum.get("hash_type", __opts__["hash_type"])
+
+    if not source:
+        return _error(ret, "Must provide a source")
+    if not os.path.isdir(target_dir):
+        return _error(
+            ret, "Target directory {} does not exist".format(target_dir)
+        )
+
+    if source_filename:
+        # File should be already cached, verify its checksum
+        cached_hash = get_hash(source_filename, form=hash_type)
+        if source_sum.get("hsum") != cached_hash:
+            log.debug(
+                "Cached source file {} does not match expected checksum, "
+                "will fetch it again".format(source_filename)
+            )
+            source_filename = ''  # Reset source filename to fetch it again
+
+    if not source_filename:
+        # File is not present or outdated, cache it
+        source_filename = __salt__["cp.cache_file"](source, saltenv)
+        if not source_filename:
+            return _error(
+                ret, "Source file '{}' not found".format(source)
+            )
+
+        # Recalculate source sum now that file has been cached
+        source_sum = {
+            "hash_type": hash_type,
+            "hsum": get_hash(source_filename, form=hash_type)
+        }
+
+    # Check changes if the target file exists
+    if target_exists:
+        if os.path.islink(name):
+            real_name = os.path.realpath(name)
+        else:
+            real_name = name
+
+        target_hash = get_hash(real_name, hash_type)
+        source_hash = source_sum.get("hsum")
+
+        # Check if file needs to be replaced
+        if source_hash != target_hash:
+            # Print a diff equivalent to diff -u old new
+            if __salt__["config.option"]("obfuscate_templates"):
+                ret["changes"]["diff"] = "<Obfuscated Template>"
+            else:
+                try:
+                    ret["changes"]["diff"] = __salt__["file.get_diff"](
+                        real_name, source_filename, show_filenames=False
+                    )
+                except CommandExecutionError as exc:
+                    ret["changes"]["diff"] = exc.strerror
+
+            # Also check changes to permissions (because _atomic_copy will
+            # enforce them before the call to file.check_perms)
+            target_stats = __salt__["file.stats"](real_name)
+            if target_stats["user"] != desired_user:
+                ret["changes"]["user"] = desired_user
+            if target_stats["group"] != desired_group:
+                ret["changes"]["group"] = desired_group
+            if target_stats["mode"] != normalized_mode:
+                ret["changes"]["mode"] = normalized_mode
+
+    else:  # target file does not exist
+        ret["changes"]["diff"] = "New file"
+        real_name = name
+
+    if ret["changes"] and not __opts__["test"]:
+        # The file needs to be replaced
+        try:
+            _atomic_copy(
+                source_filename,
+                real_name,
+                user=desired_user,
+                group=desired_group,
+                mode=desired_mode,
+                tmp_prefix=".",
+            )
+        except OSError as io_error:
+            _clean_tmp(source_filename)
+            return _error(ret, "Failed to commit change: {}".format(io_error))
+
+    # Always enforce perms, even if no changes to contents (this module is
+    # idempotent)
+    ret, _ = __salt__["file.check_perms"](
+        name, ret, user="root", group="root", mode="0600",
+    )
+
+    if ret["changes"]:
+        if __opts__["test"]:
+            ret["comment"] = "File {} would be updated".format(name)
+        else:
+            ret["comment"] = "File {} updated".format(name)
+
+    elif not ret["changes"] and ret["result"]:
+        ret["comment"] = "File {} is in the correct state".format(name)
+
+    if source_filename:
+        _clean_tmp(source_filename)
+    return ret
