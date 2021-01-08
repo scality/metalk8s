@@ -2,17 +2,7 @@
 
 include:
   - .installed
-
-Start and enable containerd:
-  service.running:
-    - name: containerd
-    - enable: True
-    - init_delay: 2
-    - require:
-      - metalk8s_package_manager: Install containerd
-    - watch:
-      - file: Configure registry IP in containerd conf
-      - file: Create containerd service drop-in
+  - .running
 
 Inject pause image:
   # The `containerd` states require the `cri` module, which requires `crictl`
@@ -22,7 +12,7 @@ Inject pause image:
     - unless: >-
         ctr -n k8s.io image ls -q | grep k8s.gcr.io/pause | grep 3\\.1
     - require:
-      - service: Start and enable containerd
+      - sls: metalk8s.container-engine.containerd.running
   containerd.image_managed:
     - name: k8s.gcr.io/pause:3.1
     - archive_path: /tmp/pause-3.1.tar

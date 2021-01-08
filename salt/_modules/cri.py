@@ -192,3 +192,20 @@ def component_is_running(name):
         log.error('Failed to list pods')
         return False
     return len(salt.utils.json.loads(out['stdout'])['items']) != 0
+
+
+def ready(timeout=10):
+    '''Wait for container engine to be ready.
+
+    .. note::
+
+        This uses the :command:`crictl version` command, which should be
+        configured correctly on the system, e.g. in :file:`/etc/crictl.yaml`.
+
+    timeout
+        time, in seconds, to wait for container engine to respond
+    '''
+    cmd = 'crictl --timeout={0}s version'.format(timeout)
+    log.debug('Checking for container engine to be ready using: %s', cmd)
+
+    return __salt__['cmd.retcode'](cmd) == 0

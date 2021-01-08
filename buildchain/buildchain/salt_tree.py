@@ -450,7 +450,9 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/container-engine/containerd/files/50-metalk8s.conf.j2'),
     Path('salt/metalk8s/container-engine/containerd/init.sls'),
     Path('salt/metalk8s/container-engine/containerd/installed.sls'),
+    Path('salt/metalk8s/container-engine/containerd/running.sls'),
     Path('salt/metalk8s/container-engine/init.sls'),
+    Path('salt/metalk8s/container-engine/running.sls'),
 
     Path('salt/metalk8s/defaults.yaml'),
     Path('salt/metalk8s/deployed.sls'),
