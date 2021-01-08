@@ -1,6 +1,6 @@
 FROM centos:7
 
-ARG BUILDBOT_VERSION=0.9.12
+ARG BUILDBOT_VERSION=2.0.1
 ARG OPERATOR_SDK_VERSION=v0.17.0
 
 WORKDIR /home/eve/workspace
@@ -15,10 +15,11 @@ RUN yum install -y --setopt=skip_missing_names_on_install=False \
     gcc \
     hardlink \
     make \
+    python36 \
+    python36-devel \
+    python36-pip \
     genisoimage \
     golang \
-    python-devel \
-    python-pip \
     skopeo \
     yum-utils \
     docker-ce-cli-18.09.6 \
@@ -30,7 +31,7 @@ RUN yum install -y --setopt=skip_missing_names_on_install=False \
     && adduser -u 1042 --home /home/eve eve --groups docker \
     && mkdir -p /home/eve/.cache /home/eve/go \
     && chown eve:eve /home/eve/workspace /home/eve/.cache /home/eve/go \
-    && pip install buildbot-worker==${BUILDBOT_VERSION} pyyaml
+    && python3.6 -m pip install buildbot-worker==${BUILDBOT_VERSION} pyyaml
 
 # Add eve to sudoers.
 RUN echo "eve ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/eve

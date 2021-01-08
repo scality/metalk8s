@@ -1,7 +1,7 @@
 # CI lint container - Fedora for recent ShellCheck version
 FROM fedora:32
 
-ARG BUILDBOT_VERSION=0.9.12
+ARG BUILDBOT_VERSION=2.0.1
 ARG GO_VERSION=1.13.10
 ARG OPERATOR_SDK_VERSION=v0.17.0
 
@@ -21,12 +21,13 @@ RUN dnf install -y git \
   python-pip \
   python3 \
   python3-devel \
+  python3-pip \
   ShellCheck \
   && dnf clean all \
   && adduser -u 1042 --home /home/eve eve \
   && chown -R eve:eve /home/eve \
-  && pip install tox \
-  && pip install buildbot-worker==${BUILDBOT_VERSION}
+  && pip3 install tox \
+  && pip3 install buildbot-worker==${BUILDBOT_VERSION}
 
 # Add eve to sudoers.
 RUN echo "eve ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/eve
