@@ -18,11 +18,14 @@
 
 include:
   - .configured
+  - metalk8s.container-engine.running
 
 Inject nginx image:
   containerd.image_managed:
     - name: {{ image_fullname }}
     - archive_path: {{ archives[saltenv].path }}/images/{{ image_name }}-{{ image_version }}.tar
+    - require:
+      - sls: metalk8s.container-engine.running
 
 Install repositories manifest:
   metalk8s.static_pod_managed:
