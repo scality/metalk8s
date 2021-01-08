@@ -2,6 +2,10 @@
 
 ## Release 2.8.0 (in development)
 ### Enhancements
+
+- [#2164](https://github.com/scality/metalk8s/issues/2164) - Add RHEL 8 support
+  (PR [#2997](https://github.com/scality/metalk8s/pull/2997))
+
 - Bump Kubernetes version to 1.19.7 (PR [#3037](https://github.com/scality/metalk8s/pull/3037))
 
 - Bump `coredns` version to 1.7.0 (PR [#3008](https://github.com/scality/metalk8s/pull/3008))
