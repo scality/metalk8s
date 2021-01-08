@@ -24,6 +24,7 @@ import {
   setCurrentVolumeObjectAction,
 } from './volumes';
 import * as VolumesApi from '../../services/k8s/volumes';
+import * as Metalk8sVolumeClient from '../../services/k8s/Metalk8sVolumeClient.generated';
 import { SET_STORAGECLASS } from './volumes.js';
 import { REFRESH_TIMEOUT } from '../../constants';
 
@@ -36,7 +37,7 @@ it('update the volume', () => {
       }),
     ),
   );
-  expect(gen.next().value).toEqual(call(VolumesApi.getVolumes));
+  expect(gen.next().value).toEqual(call(Metalk8sVolumeClient.getMetalk8sV1alpha1VolumeList));
 
   const result = {
     body: {
@@ -90,7 +91,7 @@ it('does not update volume if there is an error', () => {
       }),
     ),
   );
-  expect(gen.next().value).toEqual(call(VolumesApi.getVolumes));
+  expect(gen.next().value).toEqual(call(Metalk8sVolumeClient.getMetalk8sV1alpha1VolumeList));
 
   const result = { error: {} };
 
@@ -116,9 +117,9 @@ it('should put a empty array if Volumes is not correct', () => {
       }),
     ),
   );
-  expect(gen.next().value).toEqual(call(VolumesApi.getVolumes));
+  expect(gen.next().value).toEqual(call(Metalk8sVolumeClient.getMetalk8sV1alpha1VolumeList));
 
-  const result = { it: 'should not work' };
+  const result = { body: {it: 'should not work' }};
   expect(gen.next(result).value).toEqual(put(setVolumesAction([])));
   expect(gen.next().value).toEqual(delay(1000));
   expect(gen.next().value).toEqual(
@@ -256,11 +257,15 @@ it('update PVs', () => {
   expect(gen.next().done).toEqual(true);
 });
 
+// TODO figure out whether this test is really helpful, 
+// it should be an API responsibility to ensure that the returned data is correct and it is enforced by the typing generated from API specification
+// also this test is highly coupled with the implementation, if one change the implementation of the reducer without changing the shape of the state
+// this test will likely fail and have to be refactored whereas no changes was performed on the state present in the redux store. 
 it('should put a empty array if PVs object is not correct', () => {
   const gen = fetchPersistentVolumes();
   expect(gen.next().value).toEqual(call(VolumesApi.getPersistentVolumes));
 
-  const result = { it: 'should not work' };
+  const result = { body: { it: 'should not work'} };
 
   expect(gen.next(result).value).toEqual(put(setPersistentVolumesAction([])));
   expect(gen.next().done).toEqual(true);
@@ -323,7 +328,7 @@ it('create volume with the type sparseloopdevice', () => {
     },
   };
 
-  expect(gen.next(body).value).toEqual(call(VolumesApi.createVolume, body));
+  expect(gen.next(body).value).toEqual(call(Metalk8sVolumeClient.createMetalk8sV1alpha1Volume, body));
   const result = {
     body: {
       apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
@@ -404,7 +409,7 @@ it('create a volume with the type rawBlockdevice', () => {
     },
   };
 
-  expect(gen.next(body).value).toEqual(call(VolumesApi.createVolume, body));
+  expect(gen.next(body).value).toEqual(call(Metalk8sVolumeClient.createMetalk8sV1alpha1Volume, body));
   const result = {
     body: {
       apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
@@ -501,7 +506,7 @@ it('does not create a volume when there is an error', () => {
       },
     },
   };
-  expect(gen.next(body).value).toEqual(call(VolumesApi.createVolume, body));
+  expect(gen.next(body).value).toEqual(call(Metalk8sVolumeClient.createMetalk8sV1alpha1Volume, body));
   const result = { error: {} };
 
   expect(gen.next(result).value.payload.action.type).toEqual(
@@ -669,7 +674,7 @@ it('should delete volume', () => {
   const payload = { payload: 'test-volume' };
   const gen = deleteVolume(payload);
   expect(gen.next().value).toEqual(
-    call(VolumesApi.deleteVolume, 'test-volume'),
+    call(Metalk8sVolumeClient.deleteMetalk8sV1alpha1Volume, 'test-volume'),
   );
   const result = {
     body: {
@@ -710,7 +715,7 @@ it('should display the error notification when there is error in delete volume',
   const payload = { payload: 'test-volume' };
   const gen = deleteVolume(payload);
   expect(gen.next().value).toEqual(
-    call(VolumesApi.deleteVolume, 'test-volume'),
+    call(Metalk8sVolumeClient.deleteMetalk8sV1alpha1Volume, 'test-volume'),
   );
   const result = { error: {} };
   expect(gen.next(result).value.payload.action.type).toEqual(
@@ -722,7 +727,7 @@ it('should display the error notification when there is error in delete volume',
 
 it('updates the current volume object on API success', () => {
   const gen = fetchCurrentVolumeObject({ volumeName: 'test' });
-  expect(gen.next().value).toEqual(call(VolumesApi.getVolumeObject, 'test'));
+  expect(gen.next().value).toEqual(call(Metalk8sVolumeClient.getMetalk8sV1alpha1Volume, 'test'));
   const result = {
     body: {
       resultTest: 'test',
@@ -738,7 +743,7 @@ it('updates the current volume object on API success', () => {
 
 it('does not update the current volume object on API error', () => {
   const gen = fetchCurrentVolumeObject({ volumeName: 'test' });
-  expect(gen.next().value).toEqual(call(VolumesApi.getVolumeObject, 'test'));
+  expect(gen.next().value).toEqual(call(Metalk8sVolumeClient.getMetalk8sV1alpha1Volume, 'test'));
   const result = {
     error: {
       errorText: 'test',

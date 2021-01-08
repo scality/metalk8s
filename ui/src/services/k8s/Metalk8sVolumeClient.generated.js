@@ -235,6 +235,24 @@ export async function getMetalk8sV1alpha1VolumeList(): Promise<
   }
 }
 
+export async function getMetalk8sV1alpha1Volume(
+  Metalk8sV1alpha1VolumeName: string
+): Promise<Result<Metalk8sV1alpha1Volume>> {
+  if (!customObjects) {
+    return { error: "customObject has not yet been initialized" };
+  }
+  try {
+    return await customObjects.getClusterCustomObject(
+      "storage.metalk8s.scality.com",
+      "v1alpha1",
+      "volumes",
+      Metalk8sV1alpha1VolumeName,
+    );
+  } catch (error) {
+    return error;
+  }
+}
+
 export async function deleteMetalk8sV1alpha1Volume(
   Metalk8sV1alpha1VolumeName: string
 ) {

@@ -1,6 +1,7 @@
 //@flow
 import { Effect, takeLatest, call, put, delay, select } from 'redux-saga/effects';
 import * as VolumesApi from '../../services/k8s/volumes';
+import * as Metalk8sVolumesApi from '../../services/k8s/Metalk8sVolumeClient.generated';
 import history from '../../history';
 import { intl } from '../../translations/IntlGlobalProvider';
 import {
@@ -13,7 +14,7 @@ import {
   REFRESH_TIMEOUT,
 } from '../../constants';
 
-import type {Metalk8sV1Alpha1Volume, Metalk8sV1Alpha1VolumeRequest} from '../../services/k8s/api';
+import type {Metalk8sV1alpha1Volume} from '../../services/k8s/Metalk8sVolumeClient.generated';
 import { V1PersistentVolume, V1PersistentVolumeClaim, V1PersistentVolumeClaimList, V1PersistentVolumeList, V1StorageClass, V1StorageClassList } from '@kubernetes/client-node/dist/gen/model/models';
 
 // Actions
@@ -55,7 +56,7 @@ const defaultState = {
 };
 
 export type VolumesState = {
-  list: Metalk8sV1Alpha1Volume[],
+  list: Metalk8sV1alpha1Volume[],
   storageClass: V1StorageClass[],
   pVList: V1PersistentVolume[],
   isRefreshing: boolean,
@@ -64,7 +65,7 @@ export type VolumesState = {
   isLoading: boolean,
   isSCLoading: boolean,
   currentVolumeObject: {
-    data: ?Metalk8sV1Alpha1Volume,
+    data: ?Metalk8sV1alpha1Volume,
   },
 }
 
@@ -100,7 +101,7 @@ export const fetchVolumesAction = () => {
   return { type: FETCH_VOLUMES };
 };
 
-export const setVolumesAction = (payload: Metalk8sV1Alpha1Volume[]) => {
+export const setVolumesAction = (payload: Metalk8sV1alpha1Volume[]) => {
   return { type: SET_VOLUMES, payload };
 };
 
@@ -173,7 +174,7 @@ export const fetchCurrentVolumeObjectAction = (volumeName: string) => {
   return { type: FETCH_CURRENT_VOLUME_OBJECT, volumeName };
 };
 
-export const setCurrentVolumeObjectAction = (payload: {data: ?Metalk8sV1Alpha1Volume}) => {
+export const setCurrentVolumeObjectAction = (payload: {data: ?Metalk8sV1alpha1Volume}) => {
   return { type: SET_CURRENT_VOLUME_OBJECT, payload };
 };
 
@@ -185,16 +186,16 @@ export const persistentVolumesRefreshingSelector = (state: any): boolean =>
 
 // Sagas
 export function* fetchVolumes(): Generator<Effect, {
-  body: {items: Metalk8sV1Alpha1Volume[]};
+  body: {items: Metalk8sV1alpha1Volume[]};
 } | {error: any, body: null}, {
-  body: {items: Metalk8sV1Alpha1Volume[]};
+  body: {items: Metalk8sV1alpha1Volume[]};
 } | {error: any, body: null}> {
   yield put(
     updateVolumesAction({
       isLoading: true,
     }),
   );
-  const result = yield call(VolumesApi.getVolumes);
+  const result = yield call(Metalk8sVolumesApi.getMetalk8sV1alpha1VolumeList);
   if (result.body) {
     yield put(setVolumesAction(result.body.items ?? []));
   }
@@ -213,7 +214,7 @@ export function* fetchPersistentVolumes(): Generator<Effect, {
   body: V1PersistentVolumeList;
 } | {error: any, body: null}> {
   const result = yield call(VolumesApi.getPersistentVolumes);
-  if (result.body) {
+  if (!result.error) {
     yield put(setPersistentVolumesAction(result.body.items ?? []));
   }
   return result;
@@ -267,11 +268,11 @@ type Volume = {
 export function* createVolumes({ payload }: { payload: {
   newVolumes: Volume[]
 }}): Generator<Effect, void, {
-  body: Metalk8sV1Alpha1Volume;
+  body: Metalk8sV1alpha1Volume;
 } | {error: any, body: null}> {
   const { newVolumes } = payload;
   for (var i = 0; i < newVolumes.length; i++) {
-    const body: Metalk8sV1Alpha1VolumeRequest = {
+    const body: Metalk8sV1alpha1Volume = {
       apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
       kind: 'Volume',
       metadata: {
@@ -301,12 +302,12 @@ export function* createVolumes({ payload }: { payload: {
 
     if (isNewVolumeValid) {
       if (newVolumes[i].type === SPARSE_LOOP_DEVICE) {
-        body.spec.sparseLoopDevice = { size: newVolumes[i].size };
+        body.spec = {...body.spec, sparseLoopDevice: { size: newVolumes[i].size }};
       } else {
-        body.spec.rawBlockDevice = { devicePath: newVolumes[i].path };
+        body.spec = {...body.spec, rawBlockDevice: { devicePath: newVolumes[i].path }};
       }
 
-      const result = yield call(VolumesApi.createVolume, body);
+      const result = yield call(Metalk8sVolumesApi.createMetalk8sV1alpha1Volume, body);
       if (!result.error) {
         yield call(
           history.push,
@@ -343,7 +344,7 @@ export function* createVolumes({ payload }: { payload: {
 }
 
 export function* refreshVolumes(): Generator<Effect, void, {
-  body: Metalk8sV1Alpha1Volume;
+  body: Metalk8sV1alpha1Volume;
 } | {error: any, body: null}> {
   yield put(updateVolumesRefreshingAction(true));
   const result = yield call(fetchVolumes);
@@ -370,9 +371,9 @@ export function* fetchPersistentVolumeClaims(): Generator<Effect, void, {
 }
 
 export function* fetchCurrentVolumeObject({ volumeName }: { volumeName: string }): Generator<Effect, void, {
-  body: Metalk8sV1Alpha1Volume;
+  body: Metalk8sV1alpha1Volume;
 } | {error: any, body: null}> {
-  const result = yield call(VolumesApi.getVolumeObject, volumeName);
+  const result = yield call(Metalk8sVolumesApi.getMetalk8sV1alpha1Volume, volumeName);
   if (!result.error) {
     yield put(setCurrentVolumeObjectAction({ data: result.body }));
   } else {
@@ -399,9 +400,9 @@ export function* stopRefreshPersistentVolumes(): Generator<Effect, void, boolean
 }
 
 export function* deleteVolume({ payload }: { payload: string }): Generator<Effect, void, {
-  body: Metalk8sV1Alpha1Volume;
+  body: Metalk8sV1alpha1Volume;
 } | {error: any, body: null} | boolean> {
-  const result = yield call(VolumesApi.deleteVolume, payload);
+  const result = yield call(Metalk8sVolumesApi.deleteMetalk8sV1alpha1Volume, payload);
   if (!result.error) {
     yield put(
       addNotificationSuccessAction({

@@ -11,48 +11,6 @@ export let customObjects: CustomObjectsApi;
 export let storage: StorageV1Api;
 export let appsV1: AppsV1Api;
 
-export type Metalk8sV1Alpha1VolumeRequest = {
-  apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
-  kind: 'Volume',
-  metadata?: V1ObjectMeta,
-  spec: {
-    nodeName: string,
-    sparseLoopDevice?: {
-      size: string
-    },
-    rawBlockDevice?: {
-      devicePath: string
-    },
-    storageClassName: string
-  }
-}
-
-export type Metalk8sV1Alpha1Volume = {
-  apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
-  kind: 'Volume',
-  metadata?: V1ObjectMeta,
-  spec: {
-    mode: 'Filesystem',
-    nodeName: string,
-    sparseLoopDevice?: {
-      size: string
-    },
-    rawBlockDevice?: {
-      devicePath: string
-    },
-    storageClassName: string
-  },
-  status: {
-    deviceName: string,
-    conditions: {
-      lastTransitionTime: string,
-      lastUpdateTime: string,
-      status: string,
-      type: string
-    }[]
-  }
-}
-
 export const updateApiServerConfig = (url: string, id_token: string, token_type: string) => {
   config = new Config(url, id_token, token_type);
   coreV1 = config.makeApiClient(CoreV1Api);
