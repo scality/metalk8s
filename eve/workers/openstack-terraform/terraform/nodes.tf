@@ -296,3 +296,11 @@ output "ips" {
     nodes     = [for node in local.nodes : node.ip]
   }
 }
+
+output "ids" {
+  value = {
+    bastion   = openstack_compute_instance_v2.bastion.id
+    bootstrap = openstack_compute_instance_v2.bootstrap.id
+    nodes     = openstack_compute_instance_v2.nodes.*.id
+  }
+}
