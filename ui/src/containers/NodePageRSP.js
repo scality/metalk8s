@@ -25,6 +25,7 @@ import NodePageAlertsTab from '../components/NodePageAlertsTab';
 import NodePageMetricsTab from './NodePageMetricsTab';
 import NodePageVolumesTab from '../components/NodePageVolumesTab';
 import NodePagePodsTab from '../components/NodePagePodsTab';
+import NodePageSystemDevicesTabs from '../components/NodePageSystemDevicesTab';
 import NodePageDetailsTab from '../components/NodeDetailsTab';
 import { TextBadge, NoInstanceSelected } from '../components/CommonLayoutStyle';
 import {
@@ -144,6 +145,9 @@ const NodePageRSP = (props) => {
   const isMetricsTabActive = location.pathname.endsWith('/metrics');
   const isVolumesTabActive = location.pathname.endsWith('/volumes');
   const isPodsTabActive = location.pathname.endsWith('/pods');
+  const isSystemDevicesTabActive = location.pathname.endsWith(
+    '/system-devices',
+  );
   const isDetailsTabActive = location.pathname.endsWith('/details');
 
   const queryString = query?.toString();
@@ -188,6 +192,15 @@ const NodePageRSP = (props) => {
       onClick: () =>
         history.push(`${url}/pods${queryString && `?${queryString}`}`),
       'data-cy': 'pods_tab_node_page',
+    },
+    {
+      selected: isSystemDevicesTabActive,
+      title: 'System Devices',
+      onClick: () =>
+        history.push(
+          `${url}/system-devices${queryString && `?${queryString}`}`,
+        ),
+      'data-cy': 'system_devices_tab_node_page',
     },
     {
       selected: isDetailsTabActive,
@@ -237,6 +250,10 @@ const NodePageRSP = (props) => {
             render={() => (
               <NodePagePodsTab pods={podsListData}></NodePagePodsTab>
             )}
+          />
+          <Route
+            path={`${path}/system-devices`}
+            component={NodePageSystemDevicesTabs}
           />
           <Route path={`${path}/details`} component={NodePageDetailsTab} />
         </Switch>
