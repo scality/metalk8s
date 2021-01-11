@@ -4,12 +4,8 @@ import { useRouteMatch } from 'react-router';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import { padding } from '@scality/core-ui/dist/style/theme';
-import { Breadcrumb, Table, Loader, Banner } from '@scality/core-ui';
-import {
-  makeGetNodeFromUrl,
-  makeGetVolumesFromUrl,
-  useRefreshEffect,
-} from '../services/utils';
+import { Table, Loader, Banner } from '@scality/core-ui';
+import { makeGetVolumesFromUrl, useRefreshEffect } from '../services/utils';
 import {
   SPARSE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
@@ -24,11 +20,6 @@ import {
   stopRefreshPersistentVolumesAction,
 } from '../ducks/app/volumes';
 import { fetchNodesAction } from '../ducks/app/nodes';
-import {
-  BreadcrumbContainer,
-  BreadcrumbLabel,
-  StyledLink,
-} from '../components/BreadcrumbStyle';
 import {
   InformationListContainer,
   InformationSpan,
@@ -91,8 +82,6 @@ const VolumeInformation = (props) => {
     dispatch(fetchStorageClassAction());
   }, [dispatch]);
 
-  const theme = useSelector((state) => state.config.theme);
-  const node = useSelector((state) => makeGetNodeFromUrl(state, props));
   const volumes = useSelector((state) => makeGetVolumesFromUrl(state, props));
   const pVList = useSelector((state) => state.app.volumes.pVList);
   const storageClasses = useSelector((state) => state.app.volumes.storageClass);
@@ -132,27 +121,6 @@ const VolumeInformation = (props) => {
     : [];
   return (
     <VolumeInformationContainer>
-      <BreadcrumbContainer>
-        <Breadcrumb
-          activeColor={theme.brand.secondary}
-          paths={[
-            <StyledLink to="/nodes">{intl.translate('nodes')}</StyledLink>,
-            <StyledLink to={`/nodes/${node.name}`} title={node.name}>
-              {node.name}
-            </StyledLink>,
-            <StyledLink
-              to={`/nodes/${node.name}/volumes`}
-              title={intl.translate('volumes')}
-            >
-              {intl.translate('volumes')}
-            </StyledLink>,
-            <BreadcrumbLabel title={match.params.volumeName}>
-              {match.params.volumeName}
-            </BreadcrumbLabel>,
-          ]}
-        />
-      </BreadcrumbContainer>
-
       {volumeStatus === STATUS_FAILED ? (
         <Banner
           variant="danger"

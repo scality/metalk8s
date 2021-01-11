@@ -4,7 +4,7 @@ import { FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import { useLocation, useHistory, useRouteMatch } from 'react-router';
 import { Switch, Route } from 'react-router-dom';
-import { Table, Breadcrumb, Tabs } from '@scality/core-ui';
+import { Table, Tabs } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import { fetchPodsAction } from '../ducks/app/pods';
@@ -21,11 +21,6 @@ import {
   useRefreshEffect,
 } from '../services/utils';
 import NodeVolumes from './NodeVolumes';
-import {
-  BreadcrumbContainer,
-  BreadcrumbLabel,
-  StyledLink,
-} from '../components/BreadcrumbStyle';
 import {
   InformationListContainer,
   InformationSpan,
@@ -219,18 +214,6 @@ const NodeInformation = (props) => {
 
   return (
     <NodeInformationContainer>
-      <BreadcrumbContainer>
-        <Breadcrumb
-          activeColor={theme.brand.secondary}
-          paths={[
-            <BreadcrumbLabel title={intl.translate('platform')}>
-              {intl.translate('platform')}
-            </BreadcrumbLabel>,
-            <StyledLink to="/nodes">{intl.translate('nodes')} </StyledLink>,
-            <BreadcrumbLabel title={node.name}>{node.name}</BreadcrumbLabel>,
-          ]}
-        />
-      </BreadcrumbContainer>
       <Tabs activeColor={theme.brand.secondary} items={items}>
         <Switch>
           <Route path={`${match.url}/pods`} component={NodePods} />

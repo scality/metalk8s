@@ -1,29 +1,19 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import styled from 'styled-components';
 import isEmpty from 'lodash.isempty';
-import { Breadcrumb, Input, Button } from '@scality/core-ui';
+import { Input, Button } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 
 import { intl } from '../translations/IntlGlobalProvider';
-import {
-  BreadcrumbContainer,
-  BreadcrumbLabel,
-  StyledLink,
-} from '../components/BreadcrumbStyle';
 import { createEnvironmentAction } from '../ducks/app/solutions';
 
 const EnvironmentCreationFormContainer = styled.div`
   display: inline-block;
   padding-left: ${padding.base};
-
-  /* FIXME we might want to change that in core-ui later */
-  .sc-breadcrumb_item {
-    max-width: 300px;
-  }
 `;
 
 const CreationFormContainer = styled.div`
@@ -59,7 +49,6 @@ const FormSection = styled.div`
 const EnvironmentCreationForm = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
-  const theme = useSelector((state) => state.config.theme);
 
   const initialValues = {
     name: '',
@@ -81,19 +70,6 @@ const EnvironmentCreationForm = (props) => {
 
   return (
     <EnvironmentCreationFormContainer>
-      <BreadcrumbContainer>
-        <Breadcrumb
-          activeColor={theme.brand.secondary}
-          paths={[
-            <StyledLink to="/environments">
-              {intl.translate('environments')}
-            </StyledLink>,
-            <BreadcrumbLabel>
-              {intl.translate('create_new_environment')}
-            </BreadcrumbLabel>,
-          ]}
-        />
-      </BreadcrumbContainer>
       <CreationFormContainer>
         <Formik
           initialValues={initialValues}

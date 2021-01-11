@@ -4,18 +4,13 @@ import styled from 'styled-components';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import { useHistory } from 'react-router';
-import { Button, Input, Checkbox, Breadcrumb } from '@scality/core-ui';
+import { Button, Input, Checkbox } from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import isEmpty from 'lodash.isempty';
 import {
   createNodeAction,
   clearCreateNodeErrorAction,
 } from '../ducks/app/nodes';
-import {
-  BreadcrumbContainer,
-  BreadcrumbLabel,
-  StyledLink,
-} from '../components/BreadcrumbStyle';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const CreateNodeContainter = styled.div`
@@ -119,7 +114,6 @@ const validationSchema = yup.object().shape({
 const NodeCreateForm = () => {
   const asyncErrors = useSelector((state) => state.app.nodes.errors);
   const clusterVersion = useSelector((state) => state.app.nodes.clusterVersion);
-  const theme = useSelector((state) => state.config.theme);
   const dispatch = useDispatch();
   const createNode = (body) => dispatch(createNodeAction(body));
   const history = useHistory();
@@ -132,18 +126,6 @@ const NodeCreateForm = () => {
 
   return (
     <CreateNodeContainter>
-      <BreadcrumbContainer>
-        <Breadcrumb
-          activeColor={theme.brand.secondary}
-          paths={[
-            <BreadcrumbLabel>{intl.translate('platform')}</BreadcrumbLabel>,
-            <StyledLink to="/nodes">{intl.translate('nodes')}</StyledLink>,
-            <BreadcrumbLabel>
-              {intl.translate('create_new_node')}
-            </BreadcrumbLabel>,
-          ]}
-        />
-      </BreadcrumbContainer>
       <CreateNodeLayout>
         <Formik
           initialValues={initialValues}

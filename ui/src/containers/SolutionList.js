@@ -4,21 +4,10 @@ import { useHistory } from 'react-router';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import styled from 'styled-components';
-import {
-  Table,
-  Button,
-  Breadcrumb,
-  Modal,
-  Input,
-  Loader,
-} from '@scality/core-ui';
+import { Table, Button, Modal, Input, Loader } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { sortSelector } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
-import {
-  BreadcrumbContainer,
-  BreadcrumbLabel,
-} from '../components/BreadcrumbStyle';
 import PageContainer from '../components/TableBasedPageStyle';
 import { FormStyle, ActionContainer } from '../components/ModalFormStyle';
 import { intl } from '../translations/IntlGlobalProvider';
@@ -90,7 +79,6 @@ const TrashButtonContainer = styled(Button)`
 `;
 
 const SolutionsList = (props) => {
-  const theme = useSelector((state) => state.config.theme);
   const solutions = useSelector((state) => state.app.solutions.solutions);
   const environments = useSelector((state) => state.app.solutions.environments);
   const history = useHistory();
@@ -258,16 +246,6 @@ const SolutionsList = (props) => {
   return (
     <>
       <PageContainer>
-        <BreadcrumbContainer>
-          <Breadcrumb
-            activeColor={theme.brand.secondary}
-            paths={[
-              <BreadcrumbLabel title={intl.translate('environments')}>
-                {intl.translate('environments')}
-              </BreadcrumbLabel>,
-            ]}
-          />
-        </BreadcrumbContainer>
         <TableContainer>
           <EnvironmentHeader>
             <PageSubtitle>{intl.translate('environments')}</PageSubtitle>
