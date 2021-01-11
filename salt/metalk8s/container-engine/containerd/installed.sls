@@ -10,6 +10,7 @@
 
 include:
   - metalk8s.repo
+  - .running
 
 {%- if grains['os_family'].lower() == 'redhat' %}
 Install container-selinux:
@@ -36,6 +37,8 @@ Install containerd:
       {%- if grains['os_family'].lower() == 'redhat' %}
       - metalk8s_package_manager: Install container-selinux
       {%- endif %}
+    - watch_in:
+      - service: Ensure containerd running
 
 Create containerd service drop-in:
   file.managed:
@@ -69,11 +72,15 @@ Create containerd service drop-in:
           HTTPS_PROXY: "{{ proxies.https }}"
           {%- endif %}
         {%- endif %}
+    - watch_in:
+      - service: Ensure containerd running
 
 Install and configure cri-tools:
   {{ pkg_installed('cri-tools') }}
     - require:
       - test: Repositories configured
+    - require_in:
+      - test: Ensure containerd is ready
   file.serialize:
     - name: /etc/crictl.yaml
     - dataset:
@@ -84,6 +91,8 @@ Install and configure cri-tools:
     - group: root
     - mode: '0644'
     - formatter: yaml
+    - require_in:
+      - test: Ensure containerd is ready
 
 Configure registry IP in containerd conf:
   file.managed:
@@ -95,3 +104,5 @@ Configure registry IP in containerd conf:
 
         [debug]
         level = "{{ 'debug' if metalk8s.debug else 'info' }}"
+    - watch_in:
+        - service: Ensure containerd running

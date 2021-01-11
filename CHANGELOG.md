@@ -60,6 +60,9 @@
   volumes are all provisioned on reboot
   (PR [#2936](https://github.com/scality/metalk8s/pull/2936))
 
+- Make sure container engine is ready before trying to import container images
+  (PR [#3020](https://github.com/scality/metalk8s/pull/3020))
+
 ## Release 2.6.1 (in development)
 
 ### Features Added
