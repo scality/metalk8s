@@ -105,7 +105,7 @@ const TableRow = styled(HeadRow)`
 const Body = styled.tbody`
   /* To display scroll bar on the table */
   display: block;
-  height: calc(100vh - 250px);
+  height: calc(100vh - 186px);
   overflow: auto;
   overflow-y: auto;
 `;
