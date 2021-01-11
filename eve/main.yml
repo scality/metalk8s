@@ -2183,6 +2183,7 @@ stages:
               ssh -F ssh_config bootstrap "sudo ./test-certificates-beacon.sh /var/tmp/metalk8s"
           workdir: build/eve/workers/openstack-terraform/terraform/
           haltOnFailure: true
+      - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand:
           <<: *multi_node_fast_tests
           name: Run fast tests on Bastion after certificates renewal
