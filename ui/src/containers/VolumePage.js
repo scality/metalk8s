@@ -24,14 +24,8 @@ import {
   refreshCurrentVolumeStatsAction,
   stopRefreshCurrentVolumeStatsAction,
 } from '../ducks/app/monitoring';
-import {
-  BreadcrumbContainer,
-  BreadcrumbLabel,
-} from '../components/BreadcrumbStyle';
 import { getVolumeListData } from '../services/NodeVolumesUtils';
-import { Breadcrumb } from '@scality/core-ui';
 import { PageContainer } from '../components/style/CommonLayoutStyle';
-import { intl } from '../translations/IntlGlobalProvider';
 import { useTypedSelector } from '../hooks';
 
 // <VolumePage> component fetchs all the data used by volume page from redux store.
@@ -69,7 +63,6 @@ const VolumePage = (props) => {
   useRefreshEffect(refreshAlertManagerAction, stopRefreshAlertManagerAction);
 
   // get all the pods for all the nodes
-  const theme = useTypedSelector((state) => state.config.theme);
   const pods = useTypedSelector((state) => state.app.pods.list);
   const node = useTypedSelector((state) => makeGetNodeFromUrl(state, props));
   const nodes = useTypedSelector((state) => state.app.nodes.list);
@@ -100,19 +93,6 @@ const VolumePage = (props) => {
 
   return (
     <PageContainer>
-      <BreadcrumbContainer>
-        <Breadcrumb
-          activeColor={theme.brand.secondary}
-          paths={[
-            <BreadcrumbLabel title={intl.translate('platform')}>
-              {intl.translate('platform')}
-            </BreadcrumbLabel>,
-            <BreadcrumbLabel title={intl.translate('volumes')}>
-              {intl.translate('volumes')}
-            </BreadcrumbLabel>,
-          ]}
-        />
-      </BreadcrumbContainer>
       <VolumeContent
         volumes={volumes}
         volumeListData={volumeListData}
