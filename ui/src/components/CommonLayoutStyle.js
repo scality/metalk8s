@@ -56,7 +56,7 @@ export const NodeTab = styled.div`
   background-color: ${(props) => props.theme.brand.primary};
   color: ${(props) => props.theme.brand.textPrimary};
   padding-bottom: ${padding.base};
-  height: calc(100vh - 172px);
+  height: calc(100vh - 111px);
   overflow: scroll;
 `;
 
@@ -72,7 +72,7 @@ export const TextBadge = styled.span`
 
 export const VolumeTab = styled.div`
   overflow: scroll;
-  height: calc(100vh - 174px);
+  height: calc(100vh - 111px);
   color: ${(props) => props.theme.brand.textPrimary};
   padding-bottom: ${padding.base};
 `;
