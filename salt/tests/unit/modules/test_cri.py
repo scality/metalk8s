@@ -191,3 +191,15 @@ class CriTestCase(TestCase, mixins.LoaderModuleMockMixin):
         mock_cmd = MagicMock(return_value=cmd)
         with patch.dict(cri.__salt__, {'cmd.run_all': mock_cmd}):
             self.assertEqual(cri.component_is_running('my_comp'), result)
+
+    @parameterized.expand([
+        (0, True),
+        (1, False)
+    ])
+    def test_ready(self, retcode, result):
+        """
+        Tests the return of `ready` function
+        """
+        mock_cmd = MagicMock(return_value=retcode)
+        with patch.dict(cri.__salt__, {'cmd.retcode': mock_cmd}):
+            self.assertEqual(cri.ready(), result)
