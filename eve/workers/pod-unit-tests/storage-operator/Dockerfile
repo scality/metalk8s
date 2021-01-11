@@ -1,6 +1,6 @@
 FROM centos:7
 
-ARG BUILDBOT_VERSION=0.9.12
+ARG BUILDBOT_VERSION=2.0.1
 ARG GO_VERSION=1.13.10
 ARG OPERATOR_SDK_VERSION=v0.17.0
 
@@ -14,13 +14,14 @@ RUN yum install -y --setopt=skip_missing_names_on_install=False \
     gcc \
     sudo \
     make \
-    python-devel \
-    python-pip \
+    python36 \
+    python36-devel \
+    python36-pip \
     hg \
     git \
     && adduser -u 1042 --home /home/eve eve \
     && chown -R eve:eve /home/eve \
-    && pip install buildbot-worker==${BUILDBOT_VERSION}
+    && python3.6 -m pip install buildbot-worker==${BUILDBOT_VERSION}
 
 # Add eve to sudoers.
 RUN echo "eve ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/eve
