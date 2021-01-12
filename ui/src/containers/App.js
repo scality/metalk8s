@@ -7,7 +7,7 @@ import locale_en from 'react-intl/locale-data/en';
 import locale_fr from 'react-intl/locale-data/fr';
 import { OidcProvider } from 'redux-oidc';
 import { Route, Switch } from 'react-router-dom';
-
+import { QueryClient, QueryClientProvider } from 'react-query';
 import translations_en from '../translations/en';
 import translations_fr from '../translations/fr';
 import Loader from '../components/Loader';
@@ -18,6 +18,7 @@ import { fetchConfigAction, setInitialLanguageAction } from '../ducks/config';
 import { initToggleSideBarAction } from '../ducks/app/layout';
 import { store } from '../index';
 
+const queryClient = new QueryClient();
 const messages = {
   EN: translations_en,
   FR: translations_fr,
@@ -41,20 +42,22 @@ const App = (props) => {
   }, []);
 
   return api && theme && userManager && isUserLoaded ? (
-    <OidcProvider store={store} userManager={userManager}>
-      <IntlProvider locale={language} messages={messages[language]}>
-        <IntlGlobalProvider>
-          <Switch>
-            <Route
-              exact
-              path="/oauth2/callback"
-              component={() => <CallbackPage />}
-            />
-            <Route component={Layout} />
-          </Switch>
-        </IntlGlobalProvider>
-      </IntlProvider>
-    </OidcProvider>
+    <QueryClientProvider client={queryClient}>
+      <OidcProvider store={store} userManager={userManager}>
+        <IntlProvider locale={language} messages={messages[language]}>
+          <IntlGlobalProvider>
+            <Switch>
+              <Route
+                exact
+                path="/oauth2/callback"
+                component={() => <CallbackPage />}
+              />
+              <Route component={Layout} />
+            </Switch>
+          </IntlGlobalProvider>
+        </IntlProvider>
+      </OidcProvider>
+    </QueryClientProvider>
   ) : (
     <Loader />
   );
