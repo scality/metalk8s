@@ -169,12 +169,21 @@ const ClusterMonitoring = (props) => {
   const alertsList = alerts.list
     .filter((alert) => alert.state !== 'pending')
     .map((alert) => {
-      return {
+      var message = "";
+      if (alert.annotations.description) {
+        message = alert.annotations.description;
+      } else if (alert.annotations.summary) {
+        message = alert.annotations.summary;
+      } else {
+        message = alert.annotations.message;
+      }
+      var alertData = {
         name: alert.labels.alertname,
         severity: alert.labels.severity,
-        message: alert.annotations.message,
-        activeAt: alert.startsAt,
+        message: message,
+        activeAt: alert.activeAt,
       };
+      return alertData;
     });
 
   const checkControlPlaneStatus = (jobCount) =>

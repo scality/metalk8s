@@ -97,12 +97,21 @@ const ActiveAlertsCard = (props) => {
 
   let activeAlertListData =
     alertlist?.map((alert) => {
-      return {
-        name: alert.labels.alertname,
-        severity: alert.labels.severity,
-        alert_description: alert.annotations.message,
-        active_since: alert.startsAt,
-      };
+     var alert_description = "";
+     if (alert.annotations.description) {
+       alert_description = alert.annotations.description;
+     } else if (alert.annotations.summary) {
+       alert_description = alert.annotations.summary;
+     } else {
+       alert_description = alert.annotations.message;
+     }
+     var alertData = {
+       name: alert.labels.alertname,
+       severity: alert.labels.severity,
+       alert_description: alert_description,
+       active_since: alert.activeAt,
+     };
+     return alertData;
     }) ?? [];
 
   if (activeAlertListData && selectedFilter)
