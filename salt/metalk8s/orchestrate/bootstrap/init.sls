@@ -39,6 +39,7 @@
                     'version': version,
                 },
             },
+            'volumes': None,
             'endpoints': {
                 'salt-master': {
                     'ip': bootstrap_control_plane_ip,

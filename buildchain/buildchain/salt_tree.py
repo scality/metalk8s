@@ -666,11 +666,11 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/utils/httpd-tools/installed.sls'),
 
     Path('salt/metalk8s/volumes/init.sls'),
-    Path('salt/metalk8s/volumes/prepared/init.sls'),
-    Path('salt/metalk8s/volumes/prepared/installed.sls'),
-    Path('salt/metalk8s/volumes/prepared/files/metalk8s-sparse-volume@.service'),
-    Path('salt/metalk8s/volumes/prepared/files/sparse_volume_cleanup.py'),
-    Path('salt/metalk8s/volumes/unprepared/init.sls'),
+    Path('salt/metalk8s/volumes/installed.sls'),
+    Path('salt/metalk8s/volumes/prepared.sls'),
+    Path('salt/metalk8s/volumes/unprepared.sls'),
+    Path('salt/metalk8s/volumes/files/metalk8s-sparse-volume@.service'),
+    Path('salt/metalk8s/volumes/files/sparse_volume_cleanup.py'),
 
     Path('salt/_auth/kubernetes_rbac.py'),
 

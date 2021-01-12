@@ -61,6 +61,7 @@ Make sure salt master container is up:
     - cri.wait_container:
       - name: salt-master
       - state: running
+      - timeout: 180
     - watch:
       - metalk8s: Install and start salt master manifest
     - require:

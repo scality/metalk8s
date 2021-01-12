@@ -1,4 +1,5 @@
 {%- set node_name = pillar.orchestrate.node_name %}
+{%- set run_drain = not pillar.orchestrate.get('skip_draining', False) %}
 {%- set version = pillar.metalk8s.nodes[node_name].version %}
 
 {%- set skip_roles = pillar.metalk8s.nodes[node_name].get('skip_roles', []) %}
@@ -70,7 +71,7 @@ Cordon the node:
   metalk8s_cordon.node_cordoned:
     - name: {{ node_name }}
 
-{%- if not pillar.orchestrate.get('skip_draining', False) %}
+{%- if run_drain %}
 
 Drain the node:
   metalk8s_drain.node_drained:
@@ -171,7 +172,7 @@ Install etcd node:
 Register the node into etcd cluster:
   salt.runner:
     - name: state.orchestrate
-    - pillar: {{ pillar | json  }}
+    - pillar: {{ pillar | json }}
     - mods:
       - metalk8s.orchestrate.register_etcd
     - require:

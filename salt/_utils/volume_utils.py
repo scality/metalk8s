@@ -48,9 +48,9 @@ blkid = ctypes.cdll.LoadLibrary(soname)
 
 class BlkidError(Exception):
     """Error from the blkid library."""
-    def __init__(self, funcname, arguments):
-        message = 'function call {}({}) failed'.format(
-            funcname, ', '.join(arguments)
+    def __init__(self, funcname, arguments, result):
+        message = 'function call {}({}) failed: returned {}'.format(
+            funcname, ', '.join(repr(arg) for arg in arguments), result
         )
         super(BlkidError, self).__init__(message)
 
@@ -58,14 +58,14 @@ class BlkidError(Exception):
 def _check_null_pointer(result, func, arguments):
     """Check for functions returning NULL to signal an error."""
     if result is None:
-        raise BlkidError(func.__name__, arguments)
+        raise BlkidError(func.__name__, arguments, 'NULL')
     return result
 
 
 def _check_error_code(result, func, arguments):
     """Check for functions returning a negative integer to signal an error."""
     if result < 0:
-        raise BlkidError(func.__name__, arguments)
+        raise BlkidError(func.__name__, arguments, result)
     return result
 
 
@@ -319,7 +319,9 @@ class _Probe(object):
                 ctypes.byref(name), ctypes.byref(data), ctypes.byref(length)
             )
             # `length`: length of `data`, including the terminating NUL byte.
-            info[name.value] = ctypes.string_at(data, length.value - 1)
+            info[name.value.decode('ascii')] = ctypes.string_at(
+                data, length.value - 1
+            ).decode('ascii')
         return DeviceInfo(fstype=info.get('TYPE'),
                           uuid=info.get('UUID'),
                           has_partition='PTTYPE' in info)
@@ -332,7 +334,7 @@ def get_blkid_probe(
     use_partitions=False, partitions_flags=0,
 ):
     """Return a probe for the specified device."""
-    c_probe = new_probe_from_filename(filepath.encode())
+    c_probe = new_probe_from_filename(filepath.encode('ascii'))
     try:
         probe = _Probe(c_probe)
         probe.configure(use_superblocks, superblocks_flags,

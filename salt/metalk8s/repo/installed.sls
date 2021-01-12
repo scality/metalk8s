@@ -77,6 +77,7 @@ Ensure repositories container is up:
     - cri.wait_container:
       - name: {{ repositories_name }}
       - state: running
+      - timeout: 180
     - watch:
       - file: Generate repositories nginx configuration
       - file: Deploy container registry nginx configuration
