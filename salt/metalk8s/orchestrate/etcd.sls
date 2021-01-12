@@ -40,7 +40,10 @@ Deploy etcd {{ node }} to {{ dest_version }}:
     - require:
       - salt: Check pillar on {{ node }}
       - module: Check etcd cluster health
-  {%- if previous_node is defined %}
+  {%- if loop.previtem is defined %}
+      - metalk8s: Check etcd cluster health for {{ loop.previtem }}
+  {%- elif previous_node is defined %}
+  {#- NOTE: This can be removed in `development/2.8` #}
       - metalk8s: Check etcd cluster health for {{ previous_node }}
   {%- endif %}
 
@@ -51,6 +54,7 @@ Check etcd cluster health for {{ node }}:
     - require:
       - salt: Deploy etcd {{ node }} to {{ dest_version }}
 
+  {#- NOTE: This can be removed in `development/2.8` #}
   {#- Ugly but needed since we have jinja2.7 (`loop.previtem` added in 2.10) #}
   {%- set previous_node = node %}
 
