@@ -1,3 +1,7 @@
+# This orchestrate is used to do a rolling upgrade or downgrade of the etcd
+# cluster, that's why this orchestrate need to be backward compatible with
+# latest MetalK8s minor version
+
 {%- set dest_version = pillar.metalk8s.cluster_version %}
 {%- set etcd_nodes = salt.metalk8s.minions_by_role('etcd') %}
 
@@ -40,7 +44,10 @@ Deploy etcd {{ node }} to {{ dest_version }}:
     - require:
       - salt: Check pillar on {{ node }}
       - module: Check etcd cluster health
-  {%- if previous_node is defined %}
+  {%- if loop.previtem is defined %}
+      - metalk8s: Check etcd cluster health for {{ loop.previtem }}
+  {%- elif previous_node is defined %}
+  {#- NOTE: This can be removed in `development/2.8` #}
       - metalk8s: Check etcd cluster health for {{ previous_node }}
   {%- endif %}
 
@@ -51,6 +58,7 @@ Check etcd cluster health for {{ node }}:
     - require:
       - salt: Deploy etcd {{ node }} to {{ dest_version }}
 
+  {#- NOTE: This can be removed in `development/2.8` #}
   {#- Ugly but needed since we have jinja2.7 (`loop.previtem` added in 2.10) #}
   {%- set previous_node = node %}
 
