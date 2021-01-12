@@ -19,7 +19,7 @@ ARCHIVE_PRODUCT_INFO=$ARCHIVE_MOUNTPOINT/product.txt
 SALT_DEFAULTS=$ARCHIVE_MOUNTPOINT/salt/metalk8s/defaults.yaml
 OVERRIDE_ROOT_CONF=/etc/salt/master.d/90-metalk8s-root-override.conf
 OVERRIDE_PILLAR_DEST=/etc/salt/pillar-override
-WAIT_RENEWAL=${WAIT_RENEWAL:-240}
+WAIT_RENEWAL=${WAIT_RENEWAL:-120}
 
 # shellcheck disable=SC1090
 . "$ARCHIVE_PRODUCT_INFO"
@@ -64,19 +64,10 @@ EOF
         --kubeconfig /etc/kubernetes/admin.conf
 }
 
-apply_new_beacon_conf() {
+run_certificates_beacon_state() {
     local salt_container
     local -ri retries=5 sleep_time=10
-    local -ra pillar=(
-        "{"
-        "    'certificates': {"
-        "        'beacon': {"
-        "            'notify_days': $BEACON_NOTIFY_DAYS,"
-        "            'interval': $BEACON_INTERVAL"
-        "        }"
-        "    }"
-        "}"
-    )
+    local -r pillar=${1:-}
 
     readarray -t minions < <(get_salt_minion_ids)
     salt_container=$(get_salt_container)
@@ -89,9 +80,25 @@ apply_new_beacon_conf() {
         retry "$retries" "$sleep_time" \
             crictl exec -i "$salt_container" \
             salt "$minion" state.apply metalk8s.beacon.certificates \
-            pillar="${pillar[*]}" \
+            ${pillar:+pillar="$pillar"} \
         || exit 1
     done
+
+}
+
+apply_new_beacon_conf() {
+    local -ra pillar=(
+        "{"
+        "    'certificates': {"
+        "        'beacon': {"
+        "            'notify_days': $BEACON_NOTIFY_DAYS,"
+        "            'interval': $BEACON_INTERVAL"
+        "        }"
+        "    }"
+        "}"
+    )
+
+    run_certificates_beacon_state "${pillar[*]}"
 }
 
 check_certificates_renewal() {
@@ -178,11 +185,20 @@ echo "Waiting ${SLEEP_TIME}s for certificates to be regenerated..."
 sleep $SLEEP_TIME
 
 echo "Checking certificates renewal..."
-check_certificates_renewal
-
-EXIT_CODE=$?
+for ((EXIT_CODE=1, max_try=3, try=1; try <= max_try; ++try)); do
+    if check_certificates_renewal; then
+        EXIT_CODE=0
+        break
+    elif [ "$try" -lt "$max_try" ]; then
+        echo "All certificates are not renewed yet, retrying in" \
+             "$SLEEP_TIME seconds..."
+        sleep $SLEEP_TIME
+    fi
+done
 
 echo "Resetting pillar configuration..."
 reset_pillar_conf
+echo "Resetting beacon configuration..."
+run_certificates_beacon_state
 
 exit $EXIT_CODE
