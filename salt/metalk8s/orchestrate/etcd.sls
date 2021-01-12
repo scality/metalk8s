@@ -1,3 +1,7 @@
+# This orchestrate is used to do a rolling upgrade or downgrade of the etcd
+# cluster, that's why this orchestrate need to be backward compatible with
+# latest MetalK8s minor version
+
 {%- set dest_version = pillar.metalk8s.cluster_version %}
 {%- set etcd_nodes = salt.metalk8s.minions_by_role('etcd') %}
 
