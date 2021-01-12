@@ -253,7 +253,7 @@ class Client(abc.ABC):
 class VolumeClient(Client):
     def __init__(self, k8s_client, ssh_config):
         super().__init__(
-            k8s_client, kind='Volume', retry_count=30, retry_delay=2
+            k8s_client, kind='Volume', retry_count=30, retry_delay=4
         )
         self._ssh_config = ssh_config
         self._group="storage.metalk8s.scality.com"
