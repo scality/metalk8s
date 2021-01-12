@@ -181,7 +181,7 @@ const ClusterMonitoring = (props) => {
         name: alert.labels.alertname,
         severity: alert.labels.severity,
         message: message,
-        activeAt: alert.activeAt,
+        activeAt: alert.startsAt,
       };
       return alertData;
     });

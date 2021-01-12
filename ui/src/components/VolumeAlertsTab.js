@@ -109,7 +109,7 @@ const ActiveAlertsCard = (props) => {
        name: alert.labels.alertname,
        severity: alert.labels.severity,
        alert_description: alert_description,
-       active_since: alert.activeAt,
+       active_since: alert.startsAt,
      };
      return alertData;
     }) ?? [];
