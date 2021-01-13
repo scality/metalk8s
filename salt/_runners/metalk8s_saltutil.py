@@ -56,11 +56,11 @@ def wait_minions(tgt='*', retry=10):
         error_message = (
             'Minion{plural} failed to respond after {retry} retries: {minions}'
         ).format(
-            plural='s' if len(minions) > 1 else '',
+            plural='s' if len(minions or {}) > 1 else '',
             retry=retry,
             minions=', '.join(
                 minion
-                for minion, status in (minions or {}).items()
+                for minion, status in (minions or {tgt: False}).items()
                 if not status
             )
         )
