@@ -2,6 +2,8 @@ interface: {{ salt_ip }}
 
 log_level: {{ 'debug' if debug else 'info' }}
 
+timeout: 10
+
 peer:
   .*:
     - x509.sign_remote_certificate
