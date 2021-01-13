@@ -66,6 +66,9 @@
 - Fix invalid return of Success when `wait_minions` runner fails
   (PR [#3031](https://github.com/scality/metalk8s/pull/3031))
 
+- Improve the robustness of salt orchestrate execution
+  (PR [#3033](https://github.com/scality/metalk8s/pull/3033))
+
 ## Release 2.6.1 (in development)
 
 ### Features Added
