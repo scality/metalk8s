@@ -2,6 +2,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 import logging
 import time
 
+from salt.exceptions import CommandExecutionError
 import salt.client
 import salt.utils.extmods
 
@@ -64,10 +65,7 @@ def wait_minions(tgt='*', retry=10):
             )
         )
         log.error(error_message)
-        return {
-            'result': False,
-            'error': error_message
-        }
+        raise CommandExecutionError(error_message)
 
     # Waiting for running states to complete
     state_running = client.cmd(tgt, 'saltutil.is_running', arg=['state.*'])
@@ -108,19 +106,10 @@ def wait_minions(tgt='*', retry=10):
             )
         )
         log.error(error_message)
-        return {
-            'result': False,
-            'error': error_message
-        }
+        raise CommandExecutionError(error_message)
 
-    return {
-        'result': True,
-        'comment':
-            'All minions matching "{}" responded and finished startup '
-            'state: {}'.format(
-                tgt, ', '.join(minions)
-            )
-    }
+    return 'All minions matching "{}" responded and finished startup ' \
+           'state: {}'.format(tgt, ', '.join(minions))
 
 
 def orchestrate_show_sls(mods,

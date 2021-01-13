@@ -55,6 +55,9 @@
 - Make sure container engine is ready before trying to import container images
   (PR [#3020](https://github.com/scality/metalk8s/pull/3020))
 
+- Fix invalid return of Success when `wait_minions` runner fails
+  (PR [#3031](https://github.com/scality/metalk8s/pull/3031))
+
 ## Release 2.6.1 (in development)
 
 ### Features Added
