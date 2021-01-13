@@ -8,6 +8,12 @@
 
 - Bump etcd version to 3.4.13-0 (PR[#3008](https://github.com/scality/metalk8s/pull/3008))
 
+- [#3026](https://github.com/scality/metalk8s/issues/3026) - Embed a checksum
+  of the data contained in the ISO image inside the ISO so its integrity can be
+  ensured after download, next to or instead of checking the `SHA256SUM` using
+  `checkisomd5` (from [isomd5sum](https://github.com/rhinstaller/isomd5sum))
+  (PR [#3032](https://github.com/scality/metalk8s/pull/3032))
+
 ## Release 2.7.0 (in development)
 ### Enhancements
 - Bump Kubernetes version to 1.18.13 (PR[#2973](https://github.com/scality/metalk8s/pull/2973))

@@ -19,6 +19,9 @@ Mandatory
 - `hardlink <https://jak-linux.org/projects/hardlink/>`_: to de-duplicate images
   layers
 - mkisofs: to create the MetalK8s ISO
+- `implantisomd5` from the
+  `isomd5sum <https://github.com/rhinstaller/isomd5sum>`_ package: to embed an
+  MD5 checksum in the generated ISO, allowing for its integrity to be checked
 
 Optional
 --------

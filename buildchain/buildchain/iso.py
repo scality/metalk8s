@@ -1,12 +1,13 @@
 # coding: utf-8
 
-
+# pylint:disable=line-too-long
 """Tasks for the ISO generation.
 
 This module handles the creation of the final ISO, which involves:
 - creating the ISO's root
 - populating the ISO's tree
 - creating the ISO
+- inject the ISO data sectors checksum using 'isomd5sum'
 - computing the ISO's checksum
 
 Overview:
@@ -16,9 +17,9 @@ Overview:
                         │       └───────────────┘        │
                         │       ┌───────────────┐        │
                 ┌────────┐ ╱───>│   packaging   │────╲   v
-┌───────┐       │        │╱     └───────────────┘    ┌─────────┐    ┌──────────┐
-│ mkdir │──────>│populate│                           │ mkisofs │───>│ checksum │
-└───────┘       │        │╲     ┌───────────────┐    └─────────┘    └──────────┘
+┌───────┐       │        │╱     └───────────────┘    ┌─────────┐    ┌───────────────┐    ┌──────────┐
+│ mkdir │──────>│populate│                           │ mkisofs │───>│ implantisomd5 │───>│ checksum │
+└───────┘       │        │╲     ┌───────────────┐    └─────────┘    └───────────────┘    └──────────┘
                 └────────┘ ╲───>│   salt_tree   │────╱   ^
                         │       └───────────────┘        │
                         │       ┌───────────────┐        │
@@ -229,12 +230,41 @@ def task__iso_build() -> types.TaskDict:
     }
 
 
+def task__iso_implantisomd5() -> types.TaskDict:
+    """Implant data segments checksum into the ISO."""
+    def implantisomd5() -> None:
+        """Implant MD5 in ISO (delete on error)."""
+        cmd : List[Union[str, Path]] = [
+            config.ExtCommand.IMPLANTISOMD5.value, ISO_FILE,
+        ]
+        try:
+            subprocess.run(cmd, check=True)
+        except:
+            utils.unlink_if_exist(ISO_FILE)
+            raise
+
+    title = lambda _: '{cmd: <{width}} {path}'.format(
+        cmd='IMPLANTISOMD5', width=constants.CMD_WIDTH,
+        path=utils.build_relpath(Path(ISO_FILE)),
+    )
+    doc = 'Implant MD5 in ISO {}.'.format(
+        utils.build_relpath(ISO_FILE),
+    )
+    return {
+        'title': title,
+        'doc': doc,
+        'file_dep': [ISO_FILE],
+        'task_dep': ['check_for:implantisomd5', '_iso_build'],
+        'actions': [implantisomd5],
+    }
+
+
 def task__iso_digest() -> types.TaskDict:
     """Compute the SHA256 digest of the ISO."""
     return helper.Sha256Sum(
         input_files=[ISO_FILE],
         output_file=config.BUILD_ROOT/'SHA256SUM',
-        task_dep=['_iso_build']
+        task_dep=['_iso_build', '_iso_implantisomd5']
     ).task
 
 
