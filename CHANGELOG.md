@@ -74,6 +74,19 @@
   when close to the expiration date (less than 45 days)
   (PR [#2914](https://github.com/scality/metalk8s/pull/2914))
 
+### Features Added
+- [#2919](https://github.com/scality/metalk8s/issues/2919) - [UI] Ability to
+  sort in Nodes list (PR [#2926](https://github.com/scality/metalk8s/pull/2926))
+
+### Enhancements
+- [UI] Upgrade React to 17.0.1
+  (PR [#2926](https://github.com/scality/metalk8s/pull/2926))
+
+### Bug Fixes
+- [#2949](https://github.com/scality/metalk8s/issues/2949) - [UI] Handle
+  terminating environments and improve SaltAPI error handling
+  (PR [#2954](https://github.com/scality/metalk8s/pull/2954))
+
 ## Release 2.6.0
 
 ### Breaking changes
