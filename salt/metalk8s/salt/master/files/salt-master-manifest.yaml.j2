@@ -118,7 +118,7 @@ spec:
     - name: run
       hostPath:
         path: '/var/run/salt'
-        type: Directory
+        type: DirectoryOrCreate
     {%- for env, archive in archives.items() | sort(attribute='0') %}
     - name: states-{{ env | replace('.', '-') }}
       hostPath:
