@@ -2,11 +2,11 @@
 
 ## Release 2.8.0 (in development)
 ### Enhancements
-- Bump Kubernetes version to 1.19.6 (PR[#3008](https://github.com/scality/metalk8s/pull/3008))
+- Bump Kubernetes version to 1.19.6 (PR [#3008](https://github.com/scality/metalk8s/pull/3008))
 
-- Bump `coredns` version to 1.7.0 (PR[#3008](https://github.com/scality/metalk8s/pull/3008))
+- Bump `coredns` version to 1.7.0 (PR [#3008](https://github.com/scality/metalk8s/pull/3008))
 
-- Bump etcd version to 3.4.13-0 (PR[#3008](https://github.com/scality/metalk8s/pull/3008))
+- Bump etcd version to 3.4.13-0 (PR [#3008](https://github.com/scality/metalk8s/pull/3008))
 
 ## Release 2.7.0 (in development)
 ### Enhancements
