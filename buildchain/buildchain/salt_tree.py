@@ -465,6 +465,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/metalk8s/sreport/init.sls'),
     Path('salt/metalk8s/sreport/installed.sls'),
 
+    Path('salt/metalk8s/kubectl/configured.sls'),
     Path('salt/metalk8s/kubectl/init.sls'),
     Path('salt/metalk8s/kubectl/installed.sls'),
 

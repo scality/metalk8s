@@ -5,7 +5,8 @@
 # ================
 #
 # * installed   -> Ensure kubectl is installed
+# * configured  -> Configure bash completion for kubectl
 #
 
 include:
-  - .installed
+  - .configured

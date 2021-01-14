@@ -8,6 +8,10 @@
 
 - Bump etcd version to 3.4.13-0 (PR[#3008](https://github.com/scality/metalk8s/pull/3008))
 
+- [#2996](https://github.com/scality/metalk8s/issues/2996) - The `bash-completion`
+  completions for the `kubectl` command are now provided when `kubectl` is installed
+  (PR [#3039](https://github.com/scality/metalk8s/pull/3039))
+
 ## Release 2.7.0 (in development)
 ### Enhancements
 - Bump Kubernetes version to 1.18.13 (PR[#2973](https://github.com/scality/metalk8s/pull/2973))
