@@ -2,7 +2,7 @@
 
 ## Release 2.8.0 (in development)
 ### Enhancements
-- Bump Kubernetes version to 1.19.6 (PR [#3008](https://github.com/scality/metalk8s/pull/3008))
+- Bump Kubernetes version to 1.19.7 (PR [#3037](https://github.com/scality/metalk8s/pull/3037))
 
 - Bump `coredns` version to 1.7.0 (PR [#3008](https://github.com/scality/metalk8s/pull/3008))
 
