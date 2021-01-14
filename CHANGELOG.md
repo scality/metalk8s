@@ -14,6 +14,10 @@
   `checkisomd5` (from [isomd5sum](https://github.com/rhinstaller/isomd5sum))
   (PR [#3032](https://github.com/scality/metalk8s/pull/3032))
 
+- [#2996](https://github.com/scality/metalk8s/issues/2996) - The `bash-completion`
+  completions for the `kubectl` command are now provided when `kubectl` is installed
+  (PR [#3039](https://github.com/scality/metalk8s/pull/3039))
+
 ## Release 2.7.0 (in development)
 ### Enhancements
 - Bump Kubernetes version to 1.18.15 (PR[#3035](https://github.com/scality/metalk8s/pull/3035))
