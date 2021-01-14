@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Release 2.7.0 (in development)
+## Release 2.7.0
 ### Features Added
 - [#2964](https://github.com/scality/metalk8s/issues/2964) - [UI] Ability to
   create Volumes in batches
