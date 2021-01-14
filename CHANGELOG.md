@@ -7,7 +7,8 @@
   (PR [#2981](https://github.com/scality/metalk8s/pull/2981))
 
 ### Enhancements
-- Bump Kubernetes version to 1.18.15 (PR[#3035](https://github.com/scality/metalk8s/pull/3035))
+- Bump Kubernetes version to 1.18.15
+  (PR [#3035](https://github.com/scality/metalk8s/pull/3035))
 
 - [#2955](https://github.com/scality/metalk8s/issues/2955) - Bump `containerd`
   version to 1.4.3 (PR [#2956](https://github.com/scality/metalk8s/pull/2956)).
@@ -38,9 +39,11 @@
   - prometheus-operator from v0.38.1 to v0.43.2
   (PR [#2948](https://github.com/scality/metalk8s/pull/2948))
 
-- Bump `prometheus-adapter` chart to 2.10.1 (PR[#3007](https://github.com/scality/metalk8s/pull/3007))
+- Bump `prometheus-adapter` chart to 2.10.1
+  (PR [#3007](https://github.com/scality/metalk8s/pull/3007))
 
-- Bump `ingress-nginx` chart to 3.13.0 (PR[#2961](https://github.com/scality/metalk8s/pull/2961))
+- Bump `ingress-nginx` chart to 3.13.0
+  (PR [#2961](https://github.com/scality/metalk8s/pull/2961))
 
 - [#2953](https://github.com/scality/metalk8s/issues/2953) - Allow customization
   of Prometheus retention (time and size based), see
