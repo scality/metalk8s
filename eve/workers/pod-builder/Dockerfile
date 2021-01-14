@@ -12,6 +12,7 @@ RUN yum install -y --setopt=skip_missing_names_on_install=False \
     sudo \
     gcc \
     hardlink \
+    isomd5sum \
     make \
     python36 \
     python36-devel \
