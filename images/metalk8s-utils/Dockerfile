@@ -95,11 +95,13 @@ RUN yum install -y epel-release && \
         rsync \
         salt-master \
         salt-minion \
+        screen \
         socat \
         strace \
         sysstat \
         tcpdump \
         telnet \
+        tmux \
         util-linux \
         vim \
         wget \
@@ -107,3 +109,5 @@ RUN yum install -y epel-release && \
         xfsprogs \
         && \
     yum clean all
+
+RUN kubectl completion bash > /etc/bash_completion.d/kubectl

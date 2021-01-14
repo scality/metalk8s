@@ -60,6 +60,14 @@
   [MetalK8s documentation](https://metal-k8s.readthedocs.io/en/2.7.0/operation/cluster_and_service_configuration.html#prometheus-configuration-customization)
   (PR [#2968](https://github.com/scality/metalk8s/pull/2968))
 
+- The `screen` and `tmux` terminal multiplexers are now installed in the
+  `metalk8s-utils` container image
+  (PR [#2995](https://github.com/scality/metalk8s/pull/2995))
+
+- The `bash-completion` completions for the `kubectl` command are now included
+  in the `metalk8s-utils` container image
+  (PR [#2995](https://github.com/scality/metalk8s/pull/2995))
+
 ### Bug fixes
 
 - [#2908](https://github.com/scality/metalk8s/issues/2908) - Make upgrade script
