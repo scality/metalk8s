@@ -18,6 +18,11 @@
   completions for the `kubectl` command are now provided when `kubectl` is installed
   (PR [#3039](https://github.com/scality/metalk8s/pull/3039))
 
+### Bug fixes
+- [#3022](https://github.com/scality/metalk8s/issues/3022) - Ensure salt-master
+  container can start at reboot even if local salt-minion is down
+  (PR [#3041](https://github.com/scality/metalk8s/pull/3041))
+
 ## Release 2.7.0 (in development)
 ### Enhancements
 - Bump Kubernetes version to 1.18.15 (PR[#3035](https://github.com/scality/metalk8s/pull/3035))
