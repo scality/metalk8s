@@ -10,10 +10,13 @@ import re
 import six
 import socket
 import tempfile
+import textwrap
 import time
 
 from salt.pillar import get_pillar
 from salt.exceptions import CommandExecutionError
+import salt.loader
+import salt.template
 import salt.utils.args
 import salt.utils.files
 from salt.utils.hashutils import get_hash
@@ -557,3 +560,58 @@ def manage_static_pod_manifest(
     if source_filename:
         _clean_tmp(source_filename)
     return ret
+
+
+def get_from_map(value, saltenv=None):
+    """Get a value from map.jinja so that we have an up to date value
+    computed from defaults.yaml and pillar.
+
+    Basically the same as a `jinja.map_load` but with support for saltenv and
+    also hardcoded path to MetalK8s map.jinja.
+
+    Also add logic to retrieve the saltenv using version in the pillar.
+
+    Arguments:
+
+        value (str): Name of the value to retrieve
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        # Retrieve `metalk8s` merge between defaults.yaml and pillar using
+        # current node version as saltenv
+        salt '*' metalk8s.get_from_map metalk8s
+
+        # Retrieve `metalk8s` from a specific saltenv
+        salt '*' metalk8s.get_from_map meltak8s saltenv=my-salt-env
+    """
+    path = "metalk8s/map.jinja"
+    if not saltenv:
+        current_version = __pillar__.get('metalk8s', {}).get('nodes', {}).get(
+            __grains__['id'], {}).get('version')
+        if not current_version:
+            log.warning(
+                'Unable to retrieve current running version, fallback on "base"'
+            )
+            saltenv = 'base'
+        else:
+            saltenv = "metalk8s-{}".format(current_version)
+
+    tmplstr = textwrap.dedent(
+        """\
+        {{% from "{path}" import {value} with context %}}
+        {{{{ {value} | tojson }}}}
+        """.format(
+            path=path, value=value
+        )
+    )
+    return salt.template.compile_template(
+        ":string:",
+        salt.loader.render(__opts__, __salt__),
+        __opts__["renderer"],
+        __opts__["renderer_blacklist"],
+        __opts__["renderer_whitelist"],
+        input_data=tmplstr,
+        saltenv=saltenv
+    )
