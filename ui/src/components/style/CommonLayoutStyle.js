@@ -125,8 +125,7 @@ export const GraphsContainer = styled.div`
   display: flex;
   flex-direction: column;
   padding: ${padding.small};
-  overflow: auto;
-  height: calc(100vh - 150px);
+
   .sc-vegachart svg {
     background-color: inherit !important;
   }
