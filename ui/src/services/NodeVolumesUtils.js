@@ -332,64 +332,64 @@ export const formatBatchName = (name: string, index: number) => {
 
 type SystemDevice = {
   partitionPath: string,
-  health: 'health' | 'critical' | 'warning',
+  health: STATUS_HEALTH | STATUS_WARNING | STATUS_CRITICAL,
   size: string,
   usage: number,
   device: string,
-  availBytes: string,
 };
 
 export const getNodePartitionsTableData = (
-  avails: Array<Object>,
+  usages: Array<Object>,
   sizes: Array<Object>,
   alerts: Array<Object>,
 ): SystemDevice[] => {
-  // initialize the partition array with `device`, `mountpoint` and `availBytes`
-  const partitions = avails.map((avail) => {
+  const partitions = usages.map((usage) => {
+    const mountpoint = usage.metric.mountpoint;
+    const health = computePartitionHealth(mountpoint, alerts);
+    const size = getPartitionSize(mountpoint, sizes);
     return {
-      partitionPath: avail.metric.mountpoint,
-      availBytes: avail.value[1],
-      device: avail.metric.device,
-      usage: 0,
-      health: 'health',
-      size: '',
+      partitionPath: mountpoint,
+      health,
+      size,
+      device: usage.metric.device,
+      usage: parseInt(usage.value[1]),
     };
   });
 
-  sizes.forEach((size) => {
-    const partition = partitions.find(
-      (partition) => partition.partitionPath === size.metric.mountpoint,
-    );
-    if (partition) {
-      partition.usage = Math.round(
-        (parseInt(partition.availBytes) / parseInt(size.value[1])) * 100,
-      );
-      partition.size = bytesToSize(size.value[1]);
-    }
-  });
+  return partitions;
+};
 
-  // filter the alerts by NODE_FILESYSTEM
+const computePartitionHealth = (partitionPath, alerts) => {
+  // filter the alerts by hardcoded alertname and mountpoint
   const alertsNodeFS = alerts.filter(
     (alert) =>
       alert.labels.alertname ===
-      (NODE_FILESYSTEM_SPACE_FILLINGUP ||
-        NODE_FILESYSTEM_ALMOST_OUTOF_SPACE ||
-        NODE_FILESYSTEM_FILES_FILLINGUP ||
-        NODE_FILESYSTEM_ALMOST_OUTOF_FILES),
+        (NODE_FILESYSTEM_SPACE_FILLINGUP ||
+          NODE_FILESYSTEM_ALMOST_OUTOF_SPACE ||
+          NODE_FILESYSTEM_FILES_FILLINGUP ||
+          NODE_FILESYSTEM_ALMOST_OUTOF_FILES) &&
+      alert.labels.mountpoint === partitionPath,
   );
 
-  partitions.forEach((partition) => {
-    const alert = alertsNodeFS.find(
-      (alert) => alert.labels.device === partition.device,
-    );
-    if (!alert) {
-      partition.health = STATUS_HEALTH;
-    } else if (alert.labels.severity === STATUS_WARNING) {
-      partition.health = STATUS_WARNING;
-    } else if (alert.labels.severity === STATUS_CRITICAL) {
-      partition.health = STATUS_CRITICAL;
-    }
-  });
+  if (!alertsNodeFS.length) {
+    return STATUS_HEALTH;
+  } else if (
+    alertsNodeFS.find((alert) => alert.labels.severity === STATUS_CRITICAL)
+  ) {
+    return STATUS_CRITICAL;
+  } else if (
+    alertsNodeFS.find((alert) => alert.labels.severity === STATUS_WARNING)
+  ) {
+    return STATUS_WARNING;
+  }
+};
 
-  return partitions;
+const getPartitionSize = (partitionPath, sizes): string => {
+  const partition = sizes.find(
+    (size) => size.metric.mountpoint === partitionPath,
+  );
+
+  if (partition) {
+    return bytesToSize(partition.value[1]);
+  } else return '';
 };
