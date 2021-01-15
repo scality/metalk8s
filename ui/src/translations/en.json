@@ -181,5 +181,7 @@
   "device_path_explanation": "A device or partition path. Example: '/dev/sdb'",
   "number_volume_create": "Number of volume to create",
   "default_batch_volume_values_explanation": "Name the Volumes and provide the Device paths. You may use the defaults or override them.",
-  "create_multiple_volumes": "Create multiple volumes?"
+  "create_multiple_volumes": "Create multiple volumes?",
+  "no_system_partition": "No System Partition",
+  "error_system_partitions": "System partitions request has failed."
 }
