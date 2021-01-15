@@ -1,3 +1,4 @@
+//@flow
 import { createSelector } from 'reselect';
 import {
   getNodeNameFromUrl,
@@ -20,13 +21,17 @@ import {
   STATUS_NONE,
   STATUS_HEALTH,
   PORT_NODE_EXPORTER,
+  NODE_FILESYSTEM_SPACE_FILLINGUP,
+  NODE_FILESYSTEM_ALMOST_OUTOF_SPACE,
+  NODE_FILESYSTEM_FILES_FILLINGUP,
+  NODE_FILESYSTEM_ALMOST_OUTOF_FILES,
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
 export const isVolumeDeletable = (
-  volumeStatus,
-  volumeName,
-  persistentVolumes,
+  volumeStatus: string,
+  volumeName: string,
+  persistentVolumes: Array<Object>,
 ) => {
   switch (volumeStatus) {
     case STATUS_UNKNOWN:
@@ -35,7 +40,7 @@ export const isVolumeDeletable = (
       return false;
     case STATUS_FAILED:
     case STATUS_READY:
-      if (persistentVolumes?.length === 0) {
+      if (persistentVolumes.length === 0) {
         return true;
       } else {
         const persistentVolume = persistentVolumes.find(
@@ -78,11 +83,11 @@ export const isVolumeDeletable = (
 //
 // Returns
 //     The computed global status of the volume.
-export const computeVolumeGlobalStatus = (name, status) => {
+export const computeVolumeGlobalStatus = (name: string, status: Object) => {
   if (!Array.isArray(status?.conditions)) {
     return STATUS_UNKNOWN;
   }
-  const condition = status?.conditions.find(
+  const condition = status.conditions.find(
     (condition) => condition.type === 'Ready',
   );
 
@@ -125,11 +130,11 @@ export const computeVolumeGlobalStatus = (name, status) => {
 //
 // Returns
 //     a tuple (error code, error message).
-export const volumeGetError = (status) => {
+export const volumeGetError = (status: Object) => {
   if (!Array.isArray(status?.conditions)) {
     return ['', ''];
   }
-  const condition = status?.conditions.find(
+  const condition = status.conditions.find(
     (condition) => condition.type === 'Ready',
   );
 
@@ -315,7 +320,7 @@ export const formatVolumeCreationData = (newVolumes) => {
  *
  * const formatedVolumeName = formatBatchName(name, 1)
  */
-export const formatBatchName = (name, index) => {
+export const formatBatchName = (name: string, index: number) => {
   if (index >= 1) {
     if (index <= 9) {
       return `${name}0${index}`;
@@ -323,4 +328,68 @@ export const formatBatchName = (name, index) => {
   } else {
     return '';
   }
+};
+
+type SystemDevice = {
+  partitionPath: string,
+  health: 'health' | 'critical' | 'warning',
+  size: string,
+  usage: number,
+  device: string,
+  availBytes: string,
+};
+
+export const getNodePartitionsTableData = (
+  avails: Array<Object>,
+  sizes: Array<Object>,
+  alerts: Array<Object>,
+): SystemDevice[] => {
+  // initialize the partition array with `device`, `mountpoint` and `availBytes`
+  const partitions = avails.map((avail) => {
+    return {
+      partitionPath: avail.metric.mountpoint,
+      availBytes: avail.value[1],
+      device: avail.metric.device,
+      usage: 0,
+      health: 'health',
+      size: '',
+    };
+  });
+
+  sizes.forEach((size) => {
+    const partition = partitions.find(
+      (partition) => partition.partitionPath === size.metric.mountpoint,
+    );
+    if (partition) {
+      partition.usage = Math.round(
+        (parseInt(partition.availBytes) / parseInt(size.value[1])) * 100,
+      );
+      partition.size = bytesToSize(size.value[1]);
+    }
+  });
+
+  // filter the alerts by NODE_FILESYSTEM
+  const alertsNodeFS = alerts.filter(
+    (alert) =>
+      alert.labels.alertname ===
+      (NODE_FILESYSTEM_SPACE_FILLINGUP ||
+        NODE_FILESYSTEM_ALMOST_OUTOF_SPACE ||
+        NODE_FILESYSTEM_FILES_FILLINGUP ||
+        NODE_FILESYSTEM_ALMOST_OUTOF_FILES),
+  );
+
+  partitions.forEach((partition) => {
+    const alert = alertsNodeFS.find(
+      (alert) => alert.labels.device === partition.device,
+    );
+    if (!alert) {
+      partition.health = STATUS_HEALTH;
+    } else if (alert.labels.severity === STATUS_WARNING) {
+      partition.health = STATUS_WARNING;
+    } else if (alert.labels.severity === STATUS_CRITICAL) {
+      partition.health = STATUS_CRITICAL;
+    }
+  });
+
+  return partitions;
 };
