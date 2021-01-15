@@ -1,0 +1,33 @@
+filesystem_tree:
+  /run/sysctl.d/10-default.conf: |-
+      net.ipv4.ip_forward=0
+  /etc/sysctl.d/99-sysctl.conf: |-
+      net.ipv4.ip_forward=1
+  /etc/sysctl.conf: ""
+
+has_precedence:
+  # 0. OK
+  - name: net.ipv4.ip_forward
+    value: 1
+    config: /etc/sysctl.d/70-metalk8s.conf
+  # 1. Value is redefined with the right value but strict is set
+  - name: net.ipv4.ip_forward
+    value: 1
+    config: /etc/sysctl.d/70-metalk8s.conf
+    strict: True
+    result: "'/etc/sysctl.d/99-sysctl.conf' redefines 'net.ipv4.ip_forward' with value '1'"
+  # 1. Value is redefined with not matching value
+  - name: net.ipv4.ip_forward
+    value: 0
+    config: /etc/sysctl.d/70-metalk8s.conf
+    result: "'/etc/sysctl.d/99-sysctl.conf' redefines 'net.ipv4.ip_forward' with value '1'"
+  # 2. File is overridden because this name already exists in a directory with higher precedence
+  - name: net.ipv4.ip_forward
+    value: 1
+    config: /etc/sysctl.d/10-default.conf
+    result: "'/run/sysctl.d/10-default.conf' has a higher precedence and overrides '/etc/sysctl.d/10-default.conf'"
+  # 3. The path to the sysctl file is not a valid one.
+  - name: net.ipv4.ip_forward
+    value: 1
+    config: /etc/wrong-sysctl-path.conf
+    result: ".* is not a correct path .*"
