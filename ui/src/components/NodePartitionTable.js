@@ -6,7 +6,7 @@ import { useQuery } from 'react-query';
 import { ProgressBar } from '@scality/core-ui';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import {
-  queryNodeFSAvail,
+  queryNodeFSUsage,
   queryNodeFSSize,
 } from '../services/prometheus/fetchMetrics';
 import CircleStatus from './CircleStatus';
@@ -97,9 +97,9 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
   const themeContext = useContext(ThemeContext);
 
   // The following queries will execute in parallel
-  const nodeFSAvailQuery = useQuery(
-    ['nodeFSAvail', instanceIP],
-    useCallback(() => queryNodeFSAvail(instanceIP), [instanceIP]),
+  const nodeFSUsage = useQuery(
+    ['nodeFSUsage', instanceIP],
+    useCallback(() => queryNodeFSUsage(instanceIP), [instanceIP]),
   );
 
   const nodeFSSizeQuery = useQuery(
@@ -110,12 +110,12 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
 
   let data = [];
   if (
-    nodeFSAvailQuery.isSuccess &&
+    nodeFSUsage.isSuccess &&
     nodeFSSizeQuery.isSuccess &&
     alertsNodeFS.isSuccess
   ) {
     data = getNodePartitionsTableData(
-      nodeFSAvailQuery.data.data.result,
+      nodeFSUsage.data.data.result,
       nodeFSSizeQuery.data.data.result,
       alertsNodeFS.data,
     );
