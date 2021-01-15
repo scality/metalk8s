@@ -63,9 +63,16 @@ FILE_TREES : Tuple[helper.FileTree, ...] = (
     helper.FileTree(
         basename='_iso_add_tree',
         files=(
-            Path('common.sh'),
             Path('iso-manager.sh'),
             Path('solutions.sh'),
+            helper.TemplateFile(
+                task_name='common.sh',
+                source=constants.ROOT/'scripts'/'common.sh.in',
+                destination=constants.ISO_ROOT/'common.sh',
+                context={'VERSION': versions.VERSION},
+                file_dep=[versions.VERSION_FILE],
+                task_dep=['_iso_mkdir_root'],
+            ),
             helper.TemplateFile(
                 task_name='downgrade.sh',
                 source=constants.ROOT/'scripts'/'downgrade.sh.in',

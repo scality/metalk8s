@@ -1,6 +1,12 @@
 # CHANGELOG
 
 ## Release 2.7.3 (in development)
+### Enhancements
+- [#2992](https://github.com/scality/metalk8s/issues/2992) - Check for conflicting
+  packages (`docker`, `docker-ce` and `containerd.io`) on target machines before
+  installation (bootstrap or expansion)
+  (PR [#3153](https://github.com/scality/metalk8s/pull/3153), backport of
+  PR [#3050](https://github.com/scality/metalk8s/pull/3050))
 
 ## Release 2.7.2
 ### Enhancements

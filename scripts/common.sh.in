@@ -349,6 +349,11 @@ configure_salt_minion_local_mode() {
         pillar="{'metalk8s': {'archives': '$BASE_DIR'}}" saltenv=base
 }
 
+check_local_node() {
+    "$SALT_CALL" --local --retcode-passthrough metalk8s_checks.node \
+        saltenv=metalk8s-@@VERSION
+}
+
 get_salt_env() {
     "$SALT_CALL" --out txt slsutil.renderer \
         string="metalk8s-{{ pillar.metalk8s.nodes[grains.id].version }}" \

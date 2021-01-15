@@ -1,3 +1,5 @@
+{%- from "metalk8s/map.jinja" import repo with context %}
+
 {%- set node_name = pillar.orchestrate.node_name %}
 {%- set run_drain = not pillar.orchestrate.get('skip_draining', False) %}
 {%- set cleanup_loop_devices = pillar.orchestrate.get('cleanup_loop_devices', False) %}
@@ -18,6 +20,23 @@ Install python36:
     - raw_shell: true
     - roster: kubernetes
 
+Check node:
+  metalk8s.saltutil_cmd:
+    - name: metalk8s_checks.node
+    - tgt: {{ node_name }}
+    - ssh: true
+    - roster: kubernetes
+    - kwarg:
+        # NOTE: We need to use the `conflicting_packages` from the salt
+        # master since in salt-ssh when running an execution module we cannot
+        # embbed additional files (especially `map.jinja` in this case)
+        # Sees: https://github.com/saltstack/salt/issues/59314
+        conflicting_packages: >-
+          {{ repo.conflicting_packages | tojson }}
+    - failhard: true
+    - require:
+      - metalk8s: Install python36
+
 Deploy salt-minion on a new node:
   salt.state:
     - ssh: true
@@ -26,6 +45,8 @@ Deploy salt-minion on a new node:
     - saltenv: metalk8s-{{ version }}
     - sls:
       - metalk8s.roles.minion
+    - require:
+      - metalk8s: Check node
 
 Accept key:
   module.run:

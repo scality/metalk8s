@@ -32,6 +32,60 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
         """
         self.assertEqual(metalk8s_checks.__virtual__(), 'metalk8s_checks')
 
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["node"])
+    def test_node(self, packages_ret, result, expect_raise=False, **kwargs):
+        """
+        Tests the return of `node` function
+        """
+        packages_mock = MagicMock(return_value=packages_ret)
+
+        salt_dict = {
+            'metalk8s_checks.packages': packages_mock
+        }
+
+        with patch.dict(metalk8s_checks.__grains__, {'id': 'my_node_1'}), \
+                patch.dict(metalk8s_checks.__salt__, salt_dict):
+            if expect_raise:
+                self.assertRaisesRegex(
+                    CheckError,
+                    result,
+                    metalk8s_checks.node,
+                    **kwargs
+                )
+            else:
+                self.assertEqual(
+                    metalk8s_checks.node(**kwargs),
+                    result
+                )
+
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["packages"])
+    def test_packages(self, result, get_map_ret=None, list_pkgs_ret=None,
+                      expect_raise=False, **kwargs):
+        """
+        Tests the return of `packages` function
+        """
+        get_map_mock = MagicMock(return_value=get_map_ret)
+        list_pkgs_mock = MagicMock(return_value=list_pkgs_ret or {})
+
+        salt_dict = {
+            'metalk8s.get_from_map': get_map_mock,
+            'pkg.list_pkgs': list_pkgs_mock
+        }
+
+        with patch.dict(metalk8s_checks.__salt__, salt_dict):
+            if expect_raise:
+                self.assertRaisesRegex(
+                    CheckError,
+                    result,
+                    metalk8s_checks.packages,
+                    **kwargs
+                )
+            else:
+                self.assertEqual(
+                    metalk8s_checks.packages(**kwargs),
+                    result
+                )
+
     @utils.parameterized_from_cases(YAML_TESTS_CASES["sysctl"])
     def test_sysctl(self, params, data, result, raises=False):
         """

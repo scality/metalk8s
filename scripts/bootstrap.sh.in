@@ -179,6 +179,7 @@ main() {
     run "Installing mandatory packages" install_packages "${PACKAGES[@]}"
     run "Configuring Salt minion to run in local mode" configure_salt_minion_local_mode
     run "Ensure archive is available" ensure_archives_mounted
+    run "Checking local node" check_local_node
 
     orchestrate_bootstrap
 
