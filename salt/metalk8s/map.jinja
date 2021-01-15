@@ -226,3 +226,29 @@
 {% set certificates = salt['grains.filter_by']({
   'default': {}
 }, merge=defaults.get('certificates')) %}
+
+{#- Compute package exclude list to be used in yum command #}
+{%- set package_exclude_list = [] %}
+{%- if repo.conflicting_packages | is_list %}
+  {#- It's already a list of package name #}
+  {%- do package_exclude_list.extend(repo.conflicting_packages) %}
+{%- elif repo.conflicting_packages is mapping %}
+  {#- It's a dict {"<package_name>": <versions> } #}
+  {%- for p_name, p_versions in repo.conflicting_packages.items() %}
+    {%- if p_versions | is_list %}
+      {#- It's a list of versions for this specific package #}
+      {%- for p_ver in p_versions %}
+        {%- do package_exclude_list.append(p_name ~ '-' ~ p_ver) %}
+      {%- endfor %}
+    {%- elif p_versions %}
+      {#- It's a single version #}
+      {%- do package_exclude_list.append(p_name ~ '-' ~ p_versions) %}
+    {%- else %}
+      {#- No versions specified #}
+      {%- do package_exclude_list.append(p_name) %}
+    {%- endif %}
+  {%- endfor %}
+{%- elif repo.conflicting_packages %}
+  {#- Consider it's a single package name #}
+  {%- do package_exclude_list.append(repo.conflicting_packages) %}
+{%- endif %}

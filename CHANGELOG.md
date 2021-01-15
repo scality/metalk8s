@@ -8,6 +8,12 @@
   (PR [#3153](https://github.com/scality/metalk8s/pull/3153), backport of
   PR [#3050](https://github.com/scality/metalk8s/pull/3050))
 
+### Bug fixes
+- Do not install `containerd.io` instead of `containerd` and `runc` when this
+  package is available in one configured repository
+  (PR [#3153](https://github.com/scality/metalk8s/pull/3153), backport of
+  PR [#3050](https://github.com/scality/metalk8s/pull/3050))
+
 ## Release 2.7.2
 ### Enhancements
 - Bump Kubernetes version to 1.18.16

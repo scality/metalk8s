@@ -1,5 +1,6 @@
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
+{%- from "metalk8s/map.jinja" import package_exclude_list with context %}
 
 {%- set repo_host = pillar.metalk8s.endpoints['repositories'].ip %}
 {%- set repo_port = pillar.metalk8s.endpoints['repositories'].ports.http %}
@@ -97,6 +98,7 @@ Check packages availability:
   module.wait:
     - metalk8s_package_manager.check_pkg_availability:
       - pkgs_info: {{ repo.packages | tojson }}
+      - exclude: {{ package_exclude_list | tojson }}
     - require_in:
       - test: Repositories configured
 
