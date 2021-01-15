@@ -100,6 +100,9 @@
   sort in Nodes list (PR [#2926](https://github.com/scality/metalk8s/pull/2926))
 
 ### Enhancements
+- Bump Kubernetes version to 1.17.17
+  (PR [#3036](https://github.com/scality/metalk8s/pull/3036))
+
 - [UI] Upgrade React to 17.0.1
   (PR [#2926](https://github.com/scality/metalk8s/pull/2926))
 
