@@ -5,6 +5,8 @@ from unittest.mock import MagicMock, mock_open, patch
 
 from parameterized import param, parameterized
 from salt.exceptions import CommandExecutionError
+import salt.renderers.jinja
+import salt.renderers.yaml
 import salt.utils.files
 import yaml
 
@@ -41,7 +43,13 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
     loader_module_globals = {
         "__grains__": {
             "id": "my_node_1"
-        }
+        },
+        "__opts__": {
+            "renderer": "jinja|yaml",
+            "renderer_blacklist": [],
+            "renderer_whitelist": []
+        },
+        "__salt__": {}
     }
 
     def test_virtual(self):
@@ -469,3 +477,44 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
             self.assertEqual(remove_mock.call_count, 0)
         else:
             self.assertEqual(remove_mock.call_count, 1)
+
+    @parameterized.expand([
+        param(),
+        param(saltenv='my-salt-env', expected_saltenv='my-salt-env'),
+        param(node_version='1.2.3', expected_saltenv='metalk8s-1.2.3'),
+        param(node_version=None, expected_saltenv='base')
+    ])
+    def test_get_from_map(self, saltenv=None, expected_saltenv="base",
+                          node_version=None):
+        """
+        Tests the return of `get_from_map` function
+        """
+        # NOTE: The goal is not to test the `compile_template` function from
+        # salt so just ignore the return of the function but check that we
+        # give the right arguments
+        expected_args = {
+            'input_data': '{% from "metalk8s/map.jinja" import my-key with context %}\n{{ my-key | tojson }}\n',
+            'saltenv': expected_saltenv
+        }
+        pillar_content = {}
+        if node_version:
+            pillar_content = {
+                'metalk8s': {
+                    'nodes': {
+                        'my_node_1': {
+                            'version': node_version
+                        }
+                    }
+                }
+            }
+
+        compile_template_mock = MagicMock()
+        with patch.dict(metalk8s.__pillar__, pillar_content), \
+                patch('salt.loader.render', MagicMock()), \
+                patch("salt.template.compile_template", compile_template_mock):
+            metalk8s.get_from_map('my-key', saltenv=saltenv)
+            compile_template_mock.assert_called_once()
+            self.assertDictContainsSubset(
+                expected_args,
+                compile_template_mock.call_args[1]
+            )
