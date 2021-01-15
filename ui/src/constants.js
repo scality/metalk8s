@@ -69,10 +69,12 @@ export const queryTimeSpansCodes = [
 ];
 
 // alert
-const NODE_FILESYSTEM_SPACE_FILLINGUP = 'NodeFilesystemSpaceFillingUp';
-const NODE_FILESYSTEM_ALMOST_OUTOF_SPACE = 'NodeFilesystemAlmostOutOfSpace';
-const NODE_FILESYSTEM_FILES_FILLINGUP = 'NodeFilesystemFilesFillingUp';
-const NODE_FILESYSTEM_ALMOST_OUTOF_FILES = 'NodeFilesystemAlmostOutOfFiles';
+export const NODE_FILESYSTEM_SPACE_FILLINGUP = 'NodeFilesystemSpaceFillingUp';
+export const NODE_FILESYSTEM_ALMOST_OUTOF_SPACE =
+  'NodeFilesystemAlmostOutOfSpace';
+export const NODE_FILESYSTEM_FILES_FILLINGUP = 'NodeFilesystemFilesFillingUp';
+export const NODE_FILESYSTEM_ALMOST_OUTOF_FILES =
+  'NodeFilesystemAlmostOutOfFiles';
 const NODE_NETWORK_RECEIVE_ERRS = 'NodeNetworkReceiveErrs';
 const NODE_NETWORK_TRANSMIT_ERRS = 'NodeNetworkTransmitErrs';
 const NODE_HIGHNUMBER_CONNTRACKENTRIES_USED =
