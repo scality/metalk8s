@@ -36,6 +36,10 @@
   container can start at reboot even if local salt-minion is down
   (PR [#3041](https://github.com/scality/metalk8s/pull/3041))
 
+- Do not install `containerd.io` instead of `containerd` and `runc` when this
+  package is available in one configured repository
+  (PR [#3050](https://github.com/scality/metalk8s/pull/3050))
+
 ## Release 2.7.0 (in development)
 ### Enhancements
 - Bump Kubernetes version to 1.18.15 (PR[#3035](https://github.com/scality/metalk8s/pull/3035))

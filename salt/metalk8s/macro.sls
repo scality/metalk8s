@@ -1,5 +1,6 @@
 {%- from "metalk8s/map.jinja" import repo with context %}
 {%- from "metalk8s/map.jinja" import packages with context %}
+{%- from "metalk8s/map.jinja" import package_exclude_list with context %}
 
 {%- macro pkg_installed(name='') -%}
   {%- set package_name = packages.get(name, name) %}
@@ -16,5 +17,9 @@
     - reload_modules: True
     {%- if grains['os_family'].lower() == 'debian' %}
     - refresh: True
+    {%- endif %}
+    {%- if package_exclude_list %}
+    - setopt:
+        - exclude={{ package_exclude_list | join(',') }}
     {%- endif %}
 {%- endmacro -%}

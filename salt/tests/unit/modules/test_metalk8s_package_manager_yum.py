@@ -137,8 +137,8 @@ class Metalk8sPackageManagerYumTestCase(TestCase, mixins.LoaderModuleMockMixin):
             )
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["check_pkg_availability"])
-    def test_check_pkg_availability(self, pkgs_info, raise_msg=None,
-                                    yum_install_retcode=0):
+    def test_check_pkg_availability(self, pkgs_info, exclude=None,
+                                    raise_msg=None, yum_install_retcode=0):
         """
         Tests the return of `check_pkg_availability` function
         """
@@ -157,8 +157,10 @@ class Metalk8sPackageManagerYumTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
             return utils.cmd_output(**out_kwargs)
 
+        cmd_run_mock = MagicMock(side_effect=_yum_install_cmd)
+
         salt_dict = {
-            'cmd.run_all': MagicMock(side_effect=_yum_install_cmd)
+            'cmd.run_all': cmd_run_mock
         }
 
         with patch.dict(metalk8s_package_manager_yum.__salt__, salt_dict):
@@ -167,10 +169,17 @@ class Metalk8sPackageManagerYumTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     CommandExecutionError,
                     raise_msg,
                     metalk8s_package_manager_yum.check_pkg_availability,
-                    pkgs_info
+                    pkgs_info, exclude
                 )
             else:
                 # This function does not return anything
                 metalk8s_package_manager_yum.check_pkg_availability(
-                    pkgs_info
+                    pkgs_info, exclude
+                )
+            if exclude:
+                if isinstance(exclude, list):
+                    exclude = ','.join(exclude)
+                self.assertIn(
+                    "exclude={}".format(exclude),
+                    cmd_run_mock.call_args[0][0]
                 )

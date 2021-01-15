@@ -141,6 +141,9 @@ check_pkg_availability:
   - pkgs_info:
       my_package:
         version: "3.11.12"
+    exclude:
+      - my-excluded-package
+      - my-second-excluded-package-1.2.3
 
   # check 3 package available
   - pkgs_info:
@@ -150,6 +153,7 @@ check_pkg_availability:
         version: null
       my_third_package:
         version: "3.10.5-0.el7"
+    exclude: "my-excluded-package,my-second-excluded-package-1.2.3"
 
   # check 1 package not available - error when retrieving it
   - pkgs_info:
