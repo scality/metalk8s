@@ -482,6 +482,7 @@ const NodeListTable = (props) => {
       location.pathname.endsWith('metrics') ||
       location.pathname.endsWith('volumes') ||
       location.pathname.endsWith('pods') ||
+      location.pathname.endsWith('partitions') ||
       location.pathname.endsWith('details');
 
     if (isTabSelected) {
