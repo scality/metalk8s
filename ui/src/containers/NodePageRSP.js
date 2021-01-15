@@ -25,7 +25,7 @@ import NodePageAlertsTab from '../components/NodePageAlertsTab';
 import NodePageMetricsTab from './NodePageMetricsTab';
 import NodePageVolumesTab from '../components/NodePageVolumesTab';
 import NodePagePodsTab from '../components/NodePagePodsTab';
-import NodePageSystemDevicesTabs from '../components/NodePageSystemDevicesTab';
+import NodePagePartitionTabs from '../components/NodePagePartitionTab';
 import NodePageDetailsTab from '../components/NodeDetailsTab';
 import { TextBadge, NoInstanceSelected } from '../components/CommonLayoutStyle';
 import {
@@ -145,9 +145,7 @@ const NodePageRSP = (props) => {
   const isMetricsTabActive = location.pathname.endsWith('/metrics');
   const isVolumesTabActive = location.pathname.endsWith('/volumes');
   const isPodsTabActive = location.pathname.endsWith('/pods');
-  const isSystemDevicesTabActive = location.pathname.endsWith(
-    '/system-devices',
-  );
+  const isSystemDevicesTabActive = location.pathname.endsWith('/partitions');
   const isDetailsTabActive = location.pathname.endsWith('/details');
 
   const queryString = query?.toString();
@@ -195,12 +193,10 @@ const NodePageRSP = (props) => {
     },
     {
       selected: isSystemDevicesTabActive,
-      title: 'System Devices',
+      title: 'Partitions',
       onClick: () =>
-        history.push(
-          `${url}/system-devices${queryString && `?${queryString}`}`,
-        ),
-      'data-cy': 'system_devices_tab_node_page',
+        history.push(`${url}/partitions${queryString && `?${queryString}`}`),
+      'data-cy': 'partition_tab_node_page',
     },
     {
       selected: isDetailsTabActive,
@@ -252,10 +248,17 @@ const NodePageRSP = (props) => {
             )}
           />
           <Route
-            path={`${path}/system-devices`}
-            component={NodePageSystemDevicesTabs}
+            path={`${path}/partitions`}
+            render={() => (
+              <NodePagePartitionTabs
+                instanceIP={instanceIP}
+              ></NodePagePartitionTabs>
+            )}
           />
-          <Route path={`${path}/details`} component={NodePageDetailsTab} />
+          <Route
+            path={`${path}/details`}
+            render={() => <NodePageDetailsTab></NodePageDetailsTab>}
+          />
         </Switch>
       </Tabs>
     </NodePageRSPContainer>
