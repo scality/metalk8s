@@ -1,3 +1,160 @@
+node:
+  - packages_ret: True
+    result: True
+  - packages_ret: "Package abcd got an error because of banana"
+    expect_raise: True
+    result: "Node my_node_1: Package abcd got an error because of banana"
+  - packages_ret: "Package toto got an error :)"
+    raises: False
+    result: "Node my_node_1: Package toto got an error :)"
+
+packages:
+  # 1. Success: No conflicting packages to check
+  - conflicting_packages: {}
+    result: True
+
+  # 2. Success: Conflicting packages not installed
+  - conflicting_packages:
+      my-not-installed-package: null
+      my-not-installed-package2: null
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    result: True
+  # 2. bis
+  - conflicting_packages: my-not-installed-package
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    result: True
+  # 2. ter
+  - conflicting_packages:
+     - my-not-installed-package
+     - my-not-installed-package2
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    result: True
+
+  # 3. Success: Conflicting packages (from map) not installed
+  - get_map_ret:
+      conflicting_packages:
+        my-not-installed-package: null
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    result: True
+
+  # 4. Success: Conflicting packages in specific version not installed
+  - conflicting_packages:
+      my-installed-package:
+        - 1.2.4
+        - 1.2.5
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    result: True
+
+  # 5. Error: Conflicting packages installed
+  - conflicting_packages:
+      my-installed-package: null
+      my-not-installed-package: null
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    expect_raise: True
+    result: |-
+      Package my-installed-package-1.2.3 conflicts with MetalK8s installation, please remove it.
+  # 5. bis
+  - conflicting_packages: my-installed-package
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    expect_raise: True
+    result: |-
+      Package my-installed-package-1.2.3 conflicts with MetalK8s installation, please remove it.
+  # 5. ter
+  - conflicting_packages:
+      - my-not-installed-package
+      - my-installed-package
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    expect_raise: True
+    result: |-
+      Package my-installed-package-1.2.3 conflicts with MetalK8s installation, please remove it.
+
+  # 6. Error: Conflicting packages in specific version installed
+  - conflicting_packages:
+      my-installed-package: 1.2.3
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    expect_raise: True
+    result: |-
+      Package my-installed-package-1.2.3 conflicts with MetalK8s installation, please remove it.
+  # 6. bis
+  - conflicting_packages:
+      my-installed-package:
+        - 0.1.3
+        - 1.2.4
+        - 1.2.3
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    expect_raise: True
+    result: |-
+      Package my-installed-package-1.2.3 conflicts with MetalK8s installation, please remove it.
+  # 6. ter (no raise)
+  - conflicting_packages:
+      my-installed-package:
+        - 0.1.3
+        - 1.2.4
+        - 1.2.3
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    raises: False
+    result: |-
+      Package my-installed-package-1.2.3 conflicts with MetalK8s installation, please remove it.
+
+  # 7. Error: Multiple conflicting package installed
+  - conflicting_packages:
+      my-installed-package1: null
+      my-installed-package2:
+        - 5.6.7
+    list_pkgs_ret:
+      my-installed-package1:
+        - version: 1.2.3
+      my-installed-package2:
+        - version: 5.6.7
+    expect_raise: True
+    result: |-
+      Package my-installed-package1-1.2.3 conflicts with MetalK8s installation, please remove it.
+      Package my-installed-package2-5.6.7 conflicts with MetalK8s installation, please remove it.
+
+  # 8. Error: Multiple package of same version installed
+  - conflicting_packages:
+      my-installed-package: null
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+        - version: 4.5.6
+    expect_raise: True
+    result: |-
+      Package my-installed-package-1.2.3 conflicts with MetalK8s installation, please remove it.
+      Package my-installed-package-4.5.6 conflicts with MetalK8s installation, please remove it.
+  # 8. bis
+  - conflicting_packages:
+      my-installed-package: 4.5.6
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+        - version: 4.5.6
+    expect_raise: True
+    result: |-
+      Package my-installed-package-4.5.6 conflicts with MetalK8s installation, please remove it.
+
 sysctl:
   - params:
       net.ipv4.ip_forward: 1

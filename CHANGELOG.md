@@ -27,6 +27,10 @@
   reducing disk space used by the ISO and in image caches
   (PR [#3047](https://github.com/scality/metalk8s/pull/3047))
 
+- [#2992](https://github.com/scality/metalk8s/issues/2992) - Check for conflicting
+  packages already installed on the machine before doing all the installation
+  (PR [#3050](https://github.com/scality/metalk8s/pull/3050))
+
 ### Bug fixes
 - [#3022](https://github.com/scality/metalk8s/issues/3022) - Ensure salt-master
   container can start at reboot even if local salt-minion is down

@@ -37,6 +37,14 @@ kubeadm_preflight:
       - coreutils             # provides touch
 
 repo:
+  conflicting_packages:
+    # List of package that conflict with MetalK8s installation
+    # <package_name>: [<version1>, <version2>]
+    # Is version list is None then we consider all versions as conflicting
+    docker: null
+    docker-ce: null
+    containerd.io: null
+
   config:
     directory: '/var/lib/metalk8s/repositories/conf.d'
     default: 'default.conf'
