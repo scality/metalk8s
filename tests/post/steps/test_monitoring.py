@@ -252,7 +252,8 @@ def check_deployed_rules(host, prometheus_api):
             # For now, we only need alerting rules
             if rule['type'] == "alerting":
                 message = rule['annotations'].get('message') or \
-                    rule['annotations'].get('summary')
+                    rule['annotations'].get('summary') or \
+                    rule['annotations'].get('description')
                 fixup_alerting_rule = {
                     'name': rule['name'],
                     'severity': rule['labels']['severity'],
