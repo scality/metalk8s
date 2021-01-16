@@ -1,6 +1,6 @@
 FROM centos:7
 
-ARG BUILDBOT_VERSION=0.9.12
+ARG BUILDBOT_VERSION=2.0.1
 
 ENV LANG=en_US.utf8
 
@@ -16,12 +16,13 @@ RUN yum install -y --setopt=skip_missing_names_on_install=False \
         libXtst* \
         libXScrnSaver* \
         nodejs \
-        python-devel \
-        python-pip \
+        python36 \
+        python36-devel \
+        python36-pip \
         sudo \
         xorg-x11-server-Xvfb
 
-RUN pip install buildbot-worker==${BUILDBOT_VERSION}
+RUN python3.6 -m pip install buildbot-worker==${BUILDBOT_VERSION}
 
 RUN adduser -u 1042 --home /home/eve eve
 RUN echo "eve ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/eve
