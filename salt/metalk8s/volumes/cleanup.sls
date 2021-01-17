@@ -14,6 +14,7 @@ Cannot proceed with volume cleanup (pillar errors):
   {%- set sparse_volumes = pillar.metalk8s.volumes.values()
                          | selectattr('spec.sparseLoopDevice', 'defined')
                          | list %}
+  {%- set target_is_2_7 = salt.pkg.version_cmp(target_version, '2.7.0') >= 0 %}
 
   {%- if not sparse_volumes %}
 
@@ -21,7 +22,6 @@ Nothing to cleanup:
   test.succeed_without_changes: []
 
   {%- else %}
-    {%- set target_is_2_7 = salt.pkg.version_cmp(target_version, '2.7.0') >= 0 %}
     {%- if target_is_2_7 %}
 
 include:
