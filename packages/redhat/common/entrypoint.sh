@@ -77,8 +77,8 @@ get_rpm_gpg_keys() {
     while read -r repo gpg_keys; do
         RPM_GPG_KEYS[$repo]=$(eval echo "$gpg_keys")
     done < <(awk -F= '
-        /^\[.+\]$/ {
-            repo = gensub(/^\[(.+)\]$/, "\\1", $0)
+        match($0, /^\[(.+)\]$/, capture) {
+            repo = capture[1]
         }
 
         $1 == "gpgkey" {
@@ -87,8 +87,8 @@ get_rpm_gpg_keys() {
                 gpg_keys = gpg_keys " " $0
             }
             print repo " " gpg_keys
-            if (/^\[.+\]$/) {
-                repo = gensub(/^\[(.+)\]$/, "\\1", $0)
+            if (match($0, /^\[(.+)\]$/, capture)) {
+                repo = capture[1]
             }
         }
     ' /etc/yum.repos.d/*)
@@ -175,7 +175,7 @@ download_packages() {
         repoquery --queryformat="$query_format" \
                   --disablerepo="*" \
                   --enablerepo="$enabled_repos_yum" \
-                  "${packages_to_download[@]}" | sort
+                  "${packages_to_download[@]}" | grep -vE '\.src$' | sort
     )
 
     chown -R "$TARGET_UID:$TARGET_GID" "/repositories"

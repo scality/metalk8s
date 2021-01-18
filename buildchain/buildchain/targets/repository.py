@@ -61,6 +61,7 @@ class Repository(base.CompositeTarget):
         name: str,
         builder: image.ContainerImage,
         repo_root: Path,
+        releasever: str,
         packages: Optional[Sequence[package.Package]]=None,
         **kwargs: Any
     ):
@@ -79,6 +80,7 @@ class Repository(base.CompositeTarget):
         self._builder = builder
         self._packages = packages or []
         self._repo_root = repo_root
+        self._releasever = releasever
         super().__init__(basename=basename, **kwargs)
 
     name     = property(operator.attrgetter('_name'))
@@ -92,7 +94,7 @@ class Repository(base.CompositeTarget):
     @property
     def rootdir(self) -> Path:
         """Repository root directory."""
-        return self._repo_root/self.fullname
+        return self._repo_root/self._releasever/self.fullname
 
     @property
     def execution_plan(self) -> List[types.TaskDict]:
@@ -138,29 +140,30 @@ class Repository(base.CompositeTarget):
 
 
 class RPMRepository(Repository):
-    """A software repository for CentOS 7 x86_64."""
+    """A software repository for CentOS x86_64."""
 
-    SUFFIX = 'el7'
     ARCH   = 'x86_64'
 
     def __init__(
         self,
         basename: str,
         name: str,
+        releasever: str,
         builder: image.ContainerImage,
         packages: Optional[Sequence[package.RPMPackage]]=None,
         **kwargs: Any
     ):
         super ().__init__(
-            basename, name, builder, constants.REPO_RPM_ROOT, packages, **kwargs
+            basename, name, builder, constants.REPO_REDHAT_ROOT,
+            releasever, packages, **kwargs
         )
 
     @property
     def fullname(self) -> str:
         """Repository full name."""
-        return '{project}-{repo}-{suffix}'.format(
+        return '{project}-{repo}-el{releasever}'.format(
             project=config.PROJECT_NAME.lower(),
-            repo=self.name, suffix=self.SUFFIX
+            repo=self.name, releasever=self._releasever
         )
 
     @property
@@ -342,8 +345,8 @@ class DEBRepository(Repository):
         """Repository where to download the packages."""
         if self.packages:
             # Built packages are not under a sub-directory.
-            return constants.PKG_DEB_ROOT
-        return constants.PKG_DEB_ROOT/self.fullname
+            return constants.PKG_DEB_ROOT/self._releasever
+        return constants.PKG_DEB_ROOT/self._releasever/self.fullname
 
     def build_packages(self) -> List[types.TaskDict]:
         # Nothing to do: packages are already built.
@@ -379,7 +382,8 @@ class DEBRepository(Repository):
         """Return the command to run `reprepro` inside a container."""
         mounts = [
             utils.bind_ro_mount(
-                source=constants.ROOT/'packages'/'debian'/'distributions',
+                source=constants.ROOT/'packages'/'debian'/'common'/
+                    'distributions',
                 target=Path('/distributions')
             ),
             utils.bind_ro_mount(source=self.pkgdir, target=Path('/packages')),

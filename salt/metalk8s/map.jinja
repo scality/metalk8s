@@ -2,38 +2,75 @@
 {% import_json 'metalk8s/versions.json' as versions with context %}
 
 {# First merge the basic defaults with versions information #}
-{% set version_defaults = salt['grains.filter_by']({
-  'CentOS': {
-    'kubernetes': versions.kubernetes,
-    'repo': {
-      'packages': versions.packages.centos,
-      'images': versions.images,
+{% set version_defaults = salt['grains.filter_by'](
+  salt['grains.filter_by']({
+    'CentOS': {
+      7: {
+        'kubernetes': versions.kubernetes,
+        'repo': {
+          'packages': versions.packages.centos['7'],
+          'images': versions.images,
+        },
+      },
+      8: {
+        'kubernetes': versions.kubernetes,
+        'repo': {
+          'packages': versions.packages.centos['8'],
+          'images': versions.images,
+        },
+      },
     },
-  },
-  'RedHat': {
-    'kubernetes': versions.kubernetes,
-    'repo': {
-      'packages': versions.packages.redhat,
-      'images': versions.images,
+    'RedHat': {
+      7: {
+        'kubernetes': versions.kubernetes,
+        'repo': {
+          'packages': versions.packages.redhat['7'],
+          'images': versions.images,
+        },
+      },
+      8: {
+        'kubernetes': versions.kubernetes,
+        'repo': {
+          'packages': versions.packages.redhat['8'],
+          'images': versions.images,
+        },
+      },
     },
-  },
-  'Ubuntu': {
-    'kubernetes': versions.kubernetes,
-    'repo': {
-      'packages': versions.packages.ubuntu,
-      'images': versions.images,
+    'Ubuntu': {
+      18: {
+        'kubernetes': versions.kubernetes,
+        'repo': {
+          'packages': versions.packages.ubuntu['18.04'],
+          'images': versions.images,
+        },
+      },
     },
-  },
-}, grain='os', merge=defaults.get('version_defaults')) %}
+  }, grain='os'),
+  grain='osmajorrelease', merge=defaults.get('version_defaults'),
+) %}
 
-{% set packages = salt['grains.filter_by']({
-  'RedHat': {},
-  'Debian': {
-    'iproute': 'iproute2',
-    'm2crypto': 'python-m2crypto',
-    'python36-pyOpenSSL': 'python3-openssl',
-  },
-}, grain='os_family') %}
+{% set packages = salt['grains.filter_by'](
+  salt['grains.filter_by']({
+    'RedHat': {
+      7: {},
+      8: {
+        'python36-pyOpenSSL': 'python3-pyOpenSSL',
+        'python36-rpm': 'python3-rpm',
+        'm2crypto': 'python3-m2crypto',
+        'ebtables': 'iptables-ebtables',
+        'yum-plugin-versionlock': 'python3-dnf-plugin-versionlock',
+      }
+    },
+    'Debian': {
+      18: {
+        'iproute': 'iproute2',
+        'm2crypto': 'python-m2crypto',
+        'python36-pyOpenSSL': 'python3-openssl',
+      },
+    },
+  }, grain='os_family'),
+  grain='osmajorrelease',
+) %}
 
 {% set defaults = salt['grains.filter_by']({
   'default': defaults,
@@ -56,111 +93,151 @@
   'default': {}
 }, merge=defaults.get('kubeadm_preflight')) %}
 
-{% set repo = salt['grains.filter_by']({
-  'RedHat': {
-    'containerd': {
-      'name': 'epel'
+{% set repo = salt['grains.filter_by'](
+  salt['grains.filter_by']({
+    'RedHat': {
+      7: {
+        'repositories': {
+          'metalk8s-epel': {
+            'humanname': 'EPEL',
+            'gpgcheck': 1,
+            'gpgkeys': [
+                'RPM-GPG-KEY-metalk8s-epel-7_1',
+            ],
+            'repo_gpg_check': 0,
+            'enabled': 1,
+          },
+          'metalk8s-kubernetes': {
+            'humanname': 'Kubernetes',
+            'gpgcheck': 1,
+            'gpgkeys': [
+                'RPM-GPG-KEY-metalk8s-kubernetes-7_1',
+                'RPM-GPG-KEY-metalk8s-kubernetes-7_2',
+            ],
+            'repo_gpg_check': 0,
+            'enabled': 1,
+          },
+          'metalk8s-saltstack': {
+            'humanname': 'SaltStack',
+            'gpgcheck': 1,
+            'gpgkeys': [
+                'RPM-GPG-KEY-metalk8s-saltstack-7_1',
+            ],
+            'repo_gpg_check': 0,
+            'enabled': 1,
+          },
+          'metalk8s-scality': {
+            'humanname': 'Scality',
+            'gpgcheck': 0,
+            'gpgkeys': [],
+            'repo_gpg_check': 0,
+            'enabled': 1,
+          },
+        }
+      },
+      8: {
+        'repositories': {
+          'metalk8s-epel': {
+            'humanname': 'EPEL',
+            'gpgcheck': 1,
+            'gpgkeys': [
+                'RPM-GPG-KEY-metalk8s-epel-8_1',
+            ],
+            'repo_gpg_check': 0,
+            'enabled': 1,
+          },
+          'metalk8s-kubernetes': {
+            'humanname': 'Kubernetes',
+            'gpgcheck': 1,
+            'gpgkeys': [
+                'RPM-GPG-KEY-metalk8s-kubernetes-8_1',
+                'RPM-GPG-KEY-metalk8s-kubernetes-8_2',
+            ],
+            'repo_gpg_check': 0,
+            'enabled': 1,
+          },
+          'metalk8s-saltstack': {
+            'humanname': 'SaltStack',
+            'gpgcheck': 1,
+            'gpgkeys': [
+                'RPM-GPG-KEY-metalk8s-saltstack-8_1',
+            ],
+            'repo_gpg_check': 0,
+            'enabled': 1,
+          },
+          'metalk8s-scality': {
+            'humanname': 'Scality',
+            'gpgcheck': 0,
+            'gpgkeys': [],
+            'repo_gpg_check': 0,
+            'enabled': 1,
+          },
+        }
+      },
     },
-    'kubernetes': {
-      'name': 'kubernetes'
-    },
-    'repositories': {
-      'metalk8s-epel': {
-        'humanname': 'EPEL',
-        'gpgcheck': 1,
-        'gpgkeys': [
-            'RPM-GPG-KEY-metalk8s-epel-7_1',
-        ],
-        'repo_gpg_check': 0,
-        'enabled': 1,
-      },
-      'metalk8s-kubernetes': {
-        'humanname': 'Kubernetes',
-        'gpgcheck': 1,
-        'gpgkeys': [
-            'RPM-GPG-KEY-metalk8s-kubernetes-7_1',
-            'RPM-GPG-KEY-metalk8s-kubernetes-7_2',
-        ],
-        'repo_gpg_check': 0,
-        'enabled': 1,
-      },
-      'metalk8s-saltstack': {
-        'humanname': 'SaltStack',
-        'gpgcheck': 1,
-        'gpgkeys': [
-            'RPM-GPG-KEY-metalk8s-saltstack-7_1',
-        ],
-        'repo_gpg_check': 0,
-        'enabled': 1,
-      },
-      'metalk8s-scality': {
-        'humanname': 'Scality',
-        'gpgcheck': 0,
-        'gpgkeys': [],
-        'repo_gpg_check': 0,
-        'enabled': 1,
-      },
-    }
-  },
-  'Debian': {
-    'repositories': {
-      'metalk8s-bionic': {
-        'type': 'deb',
-        'options': {
-          'trusted': 'yes',
-        },
-        'components': [
-          'metalk8s-bionic',
-        ],
-      },
-      'metalk8s-bionic-updates': {
-        'type': 'deb',
-        'options': {
-          'trusted': 'yes',
-        },
-        'components': [
-          'metalk8s-bionic-updates',
-        ],
-      },
-      'metalk8s-bionic-backports':{
-        'type': 'deb',
-        'options': {
-          'trusted': 'yes',
-        },
-        'components': [
-          'metalk8s-bionic-backports',
-        ],
-      },
-      'metalk8s-salt_ubuntu1804': {
-        'type': 'deb',
-        'options': {
-          'trusted': 'yes',
-        },
-        'components': [
-          'metalk8s-salt_ubuntu1804',
-        ],
-      },
-      'metalk8s-kubernetes-xenial': {
-        'type': 'deb',
-        'options': {
-          'trusted': 'yes',
-        },
-        'components': [
-          'metalk8s-kubernetes-xenial',
-        ],
-      },
-      'metalk8s-scality': {
-        'type': 'deb',
-        'options': {
-          'trusted': 'yes',
-        },
-        'components': [
-          'metalk8s-scality',
-        ],
+    'Debian': {
+      18: {
+        'repositories': {
+          'metalk8s-bionic': {
+            'type': 'deb',
+            'options': {
+              'trusted': 'yes',
+            },
+            'components': [
+              'metalk8s-bionic',
+            ],
+          },
+          'metalk8s-bionic-updates': {
+            'type': 'deb',
+            'options': {
+              'trusted': 'yes',
+            },
+            'components': [
+              'metalk8s-bionic-updates',
+            ],
+          },
+          'metalk8s-bionic-backports':{
+            'type': 'deb',
+            'options': {
+              'trusted': 'yes',
+            },
+            'components': [
+              'metalk8s-bionic-backports',
+            ],
+          },
+          'metalk8s-salt_ubuntu1804': {
+            'type': 'deb',
+            'options': {
+              'trusted': 'yes',
+            },
+            'components': [
+              'metalk8s-salt_ubuntu1804',
+            ],
+          },
+          'metalk8s-kubernetes-xenial': {
+            'type': 'deb',
+            'options': {
+              'trusted': 'yes',
+            },
+            'components': [
+              'metalk8s-kubernetes-xenial',
+            ],
+          },
+          'metalk8s-scality': {
+            'type': 'deb',
+            'options': {
+              'trusted': 'yes',
+            },
+            'components': [
+              'metalk8s-scality',
+            ],
+          }
+        }
       }
     }
-  }
-}, grain='os_family', merge=defaults.get('repo')) %}
+  }, grain='os_family'),
+  grain='osmajorrelease', merge=defaults.get('repo')
+) %}
 
 {% set networks = salt['grains.filter_by']({
   'default': {}

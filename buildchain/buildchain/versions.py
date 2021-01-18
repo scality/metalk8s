@@ -10,7 +10,7 @@ import operator
 
 from collections import namedtuple
 from pathlib import Path
-from typing import cast, Dict, Optional, Tuple
+from typing import Any, cast, Dict, Optional, Tuple
 
 
 Image = namedtuple('Image', ('name', 'version', 'digest'))
@@ -21,7 +21,10 @@ CALICO_VERSION     : str = '3.17.0'
 K8S_VERSION        : str = '1.19.7'
 SALT_VERSION       : str = '3002.2'
 CONTAINERD_VERSION : str = '1.4.3'
-CONTAINERD_RELEASE : str = '1.el7'
+
+CALICO_RELEASE     : str = '1'
+CONTAINERD_RELEASE : str = '1'
+SOSREPORT_RELEASE  : str = '2'
 
 def load_version_information() -> None:
     """Load version information from `VERSION`."""
@@ -311,7 +314,8 @@ class PackageVersion:
 #
 # Packages that we build ourselves require a version and release as part of
 # their build process.
-PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
+
+PACKAGES: Dict[str, Any] = {
     'common': (
         # Pinned packages
         PackageVersion(name='kubectl', version=K8S_VERSION),
@@ -335,48 +339,77 @@ PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
         PackageVersion(name='util-linux'),
         PackageVersion(name='xfsprogs'),
     ),
-    'redhat': (
-        PackageVersion(
-            name='calico-cni-plugin',
-            version=CALICO_VERSION,
-            release='1.el7'
+    'redhat': {
+        '7': (
+            PackageVersion(
+                name='calico-cni-plugin',
+                version=CALICO_VERSION,
+                release='{0}.el7'.format(CALICO_RELEASE),
+            ),
+            PackageVersion(
+                name='containerd',
+                version=CONTAINERD_VERSION,
+                release='{0}.el7'.format(CONTAINERD_RELEASE),
+            ),
+            PackageVersion(name='container-selinux'),  # TODO #1710
+            PackageVersion(name='httpd-tools'),
+            PackageVersion(
+                name='metalk8s-sosreport',
+                version=SHORT_VERSION,
+                release='{0}.el7'.format(SOSREPORT_RELEASE),
+            ),
+            PackageVersion(name='yum-plugin-versionlock'),
+            PackageVersion(name='yum-utils'),
         ),
-        PackageVersion(
-            name='containerd',
-            version=CONTAINERD_VERSION,
-            release=CONTAINERD_RELEASE,
+        '8': (
+            PackageVersion(
+                name='calico-cni-plugin',
+                version=CALICO_VERSION,
+                release='{0}.el8'.format(CALICO_RELEASE)
+            ),
+            PackageVersion(
+                name='containerd',
+                version=CONTAINERD_VERSION,
+                release='{0}.el8'.format(CONTAINERD_RELEASE),
+            ),
+            PackageVersion(name='container-selinux'),
+            PackageVersion(name='iptables-ebtables', override='ebtables'),
+            PackageVersion(name='httpd-tools'),
+            PackageVersion(
+                name='metalk8s-sosreport',
+                version=SHORT_VERSION,
+                release='{0}.el8'.format(SOSREPORT_RELEASE)
+            ),
+            PackageVersion(name='python3-m2crypto', override='m2crypto'),
+            PackageVersion(name='python3-dnf-plugin-versionlock'),
+            PackageVersion(name='python3-pyOpenSSL', override='python36-pyOpenSSL'),
+            PackageVersion(name='yum-utils'),
         ),
-        PackageVersion(name='container-selinux'),  # TODO #1710
-        PackageVersion(name='httpd-tools'),
-        PackageVersion(
-            name='metalk8s-sosreport',
-            version=SHORT_VERSION,
-            release='1.el7'
+    },
+    'debian': {
+        '18.04': (
+            PackageVersion(
+                name='calico-cni-plugin',
+                version=CALICO_VERSION,
+                release=CALICO_RELEASE,
+            ),
+            PackageVersion(name='iproute2', override='iproute'),
+            PackageVersion(
+                name='metalk8s-sosreport',
+                version=SHORT_VERSION,
+                release=SOSREPORT_RELEASE,
+            ),
+            PackageVersion(name='python-m2crypto', override='m2crypto'),
+            PackageVersion(name='python3-openssl', override='python36-pyOpenSSL'),
+            PackageVersion(name='sosreport', override='sos'),
         ),
-        PackageVersion(name='python36-rpm'),
-        PackageVersion(name='yum-plugin-versionlock'),
-        PackageVersion(name='yum-utils'),
-    ),
-    'debian': (
-        PackageVersion(
-            name='calico-cni-plugin',
-            version=CALICO_VERSION,
-            release='1'
-        ),
-        PackageVersion(name='iproute2', override='iproute'),
-        PackageVersion(
-            name='metalk8s-sosreport',
-            version=SHORT_VERSION,
-            release='1'
-        ),
-        PackageVersion(name='python-m2crypto', override='m2crypto'),
-        PackageVersion(name='python3-openssl', override='python36-pyOpenSSL'),
-        PackageVersion(name='sosreport', override='sos'),
-    ),
+    },
 }
 
 
-def _list_pkgs_for_os_family(os_family: str) -> Tuple[PackageVersion, ...]:
+def _list_pkgs_for_os_family(
+    os_family: str
+) -> Dict[str, Tuple[PackageVersion, ...]]:
     """List downloaded packages for a given OS family.
 
     Arguments:
@@ -384,29 +417,40 @@ def _list_pkgs_for_os_family(os_family: str) -> Tuple[PackageVersion, ...]:
     """
     common_pkgs = PACKAGES['common']
     os_family_pkgs = PACKAGES.get(os_family)
+    os_pkgs = {}
 
     if os_family_pkgs is None:
         raise Exception('No packages for OS family: {}'.format(os_family))
 
-    os_override_names = [
-        pkg.override for pkg in os_family_pkgs
-        if pkg.override is not None
-    ]
+    for version, pkgs in os_family_pkgs.items():
+        os_override_names = [
+            pkg.override for pkg in pkgs
+            if pkg.override is not None
+        ]
 
-    overridden = filter(
-        lambda item: item.name not in os_override_names,
-        common_pkgs
-    )
+        # pylint: disable=cell-var-from-loop
+        overridden = filter(
+            lambda item: item.name not in os_override_names,
+            common_pkgs
+        )
 
-    return tuple(overridden) + os_family_pkgs
+        os_pkgs[version] = tuple(overridden) + os_family_pkgs[version]
+
+    return os_pkgs
 
 
-RPM_PACKAGES = _list_pkgs_for_os_family('redhat')
+REDHAT_PACKAGES = _list_pkgs_for_os_family('redhat')
 
-RPM_PACKAGES_MAP = {pkg.name: pkg for pkg in RPM_PACKAGES}
+REDHAT_PACKAGES_MAP = {
+    version: {pkg.name: pkg for pkg in pkgs}
+    for version, pkgs in REDHAT_PACKAGES.items()
+}
 
 DEB_PACKAGES = _list_pkgs_for_os_family('debian')
 
-DEB_PACKAGES_MAP = {pkg.name: pkg for pkg in DEB_PACKAGES}
+DEB_PACKAGES_MAP = {
+    version: {pkg.name: pkg for pkg in pkgs}
+    for version, pkgs in DEB_PACKAGES.items()
+}
 
 # }}}

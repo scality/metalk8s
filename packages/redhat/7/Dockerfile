@@ -5,12 +5,13 @@ ARG BUILD_IMAGE=docker.io/centos
 FROM ${BUILD_IMAGE}@sha256:${BUILD_IMAGE_SHA256} as build
 
 ARG SALT_VERSION
-ADD yum_repositories/*.repo /etc/yum.repos.d/
+ADD common/yum_repositories/*.repo /etc/yum.repos.d/
 RUN sed -i s/@SALT_VERSION@/$SALT_VERSION/ /etc/yum.repos.d/saltstack.repo
 
-RUN yum install -y \
+RUN yum install -y --setopt=skip_missing_names_on_install=False \
         createrepo \
         epel-release \
+        python36-rpm \
         rpm-build \
         rpmdevtools \
         rpmlint \
@@ -19,7 +20,7 @@ RUN yum install -y \
     yum clean all
 
 # To build containerd
-RUN yum install -y \
+RUN yum install -y --setopt=skip_missing_names_on_install=False \
         golang \
         btrfs-progs-devel \
         go-md2man \

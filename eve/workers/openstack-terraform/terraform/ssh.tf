@@ -8,6 +8,7 @@ variable "ssh_user_map" {
   default = {
     "centos-7"  = "centos",
     "rhel-7"    = "cloud-user"
+    "rhel-8"    = "cloud-user"
   }
 }
 
