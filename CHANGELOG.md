@@ -18,6 +18,11 @@
   completions for the `kubectl` command are now provided when `kubectl` is installed
   (PR [#3039](https://github.com/scality/metalk8s/pull/3039))
 
+- Use the [Alpine Linux](https://alpinelinux.org)-based version of the
+  [nginx](https://nginx.org) [container image](https://hub.docker.com/_/nginx),
+  reducing disk space used by the ISO and in image caches
+  (PR [#3047](https://github.com/scality/metalk8s/pull/3047))
+
 ### Bug fixes
 - [#3022](https://github.com/scality/metalk8s/issues/3022) - Ensure salt-master
   container can start at reboot even if local salt-minion is down

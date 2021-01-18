@@ -59,7 +59,7 @@ CENTOS_BASE_IMAGE : str = 'docker.io/centos'
 CENTOS_BASE_IMAGE_SHA256 : str = \
     '6ae4cddb2b37f889afd576a17a5286b311dcbf10a904409670827f6f9b50065e'
 
-NGINX_IMAGE_VERSION   : str = '1.15.8'
+NGINX_IMAGE_VERSION   : str = '1.19.6-alpine'
 NODEJS_IMAGE_VERSION  : str = '10.16.0'
 
 # Current build IDs, to be augmented whenever we rebuild the corresponding
@@ -151,7 +151,7 @@ CONTAINER_IMAGES : Tuple[Image, ...] = (
     Image(
         name='nginx',
         version=NGINX_IMAGE_VERSION,
-        digest='sha256:f09fe80eb0e75e97b04b9dfb065ac3fda37a8fac0161f42fca1e6fe4d0977c80',
+        digest='sha256:629df02b47c8733258baf6663e308a86cd23f80247d35407022c35fd91a50ea3',
     ),
     Image(
         name='nginx-ingress-controller',
