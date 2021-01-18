@@ -3,6 +3,10 @@
 ## Release 2.8.0 (in development)
 ### Enhancements
 
+- [#3051](https://github.com/scality/metalk8s/issues/3051) - Prefix OIDC claims
+  to prevent naming clashes
+  (PR [#3054](https://github.com/scality/metalk8s/pull/3054))
+
 - [#2164](https://github.com/scality/metalk8s/issues/2164) - Add RHEL 8 support
   (PR [#2997](https://github.com/scality/metalk8s/pull/2997))
 

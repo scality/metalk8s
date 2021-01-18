@@ -144,7 +144,7 @@ these steps:
         name: <role-binding-name-of-your-choice>
       subjects:
         - kind: User
-          name: <email>
+          name: oidc:<email>
           apiGroup: rbac.authorization.k8s.io
       roleRef:
         kind: ClusterRole

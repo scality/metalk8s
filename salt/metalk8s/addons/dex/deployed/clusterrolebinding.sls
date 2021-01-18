@@ -6,7 +6,7 @@ metadata:
   name: dex-administrator
 subjects:
 - kind: User
-  name: "admin@metalk8s.invalid"
+  name: "oidc:admin@metalk8s.invalid"
   apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: ClusterRole

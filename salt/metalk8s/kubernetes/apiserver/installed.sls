@@ -85,7 +85,9 @@ Create kube-apiserver Pod manifest:
           - --oidc-client-id=oidc-auth-client
           - --oidc-ca-file=/etc/metalk8s/pki/nginx-ingress/ca.crt
           - --oidc-username-claim=email
+          - '"--oidc-username-prefix=oidc:"'
           - --oidc-groups-claim=groups
+          - '"--oidc-groups-prefix=oidc:"'
           - --v={{ 2 if metalk8s.debug else 0 }}
         requested_cpu: 250m
         volumes:

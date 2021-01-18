@@ -26,7 +26,7 @@ export type SaltToken = {
 export function authenticate(user): Promise<SaltToken> {
   var payload = {
     eauth: 'kubernetes_rbac',
-    username: user.profile.email,
+    username: `oidc:${user.profile.email}`,
     token: user.id_token,
   };
   return saltApiClient.post('/login', payload);
