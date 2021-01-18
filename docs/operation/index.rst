@@ -1,5 +1,5 @@
-Operational Guide
-=================
+Operation
+=========
 
 .. _MetalK8s: https://github.com/scality/metalk8s/
 
