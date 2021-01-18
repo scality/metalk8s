@@ -158,9 +158,38 @@ these steps:
       root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
                          apply -f role_binding.yaml
 
+.. _bind-group-to-role:
+
+To bind one or more groups to an existing ClusterRole in all namespaces, follow
+these steps:
+
+#. Create a ClusterRoleBinding manifest (:file:`role_binding.yaml`) from the
+   following template:
+
+   .. code-block:: yaml
+
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: <role-binding-name-of-your-choice>
+      subjects:
+        - kind: Group
+          name: <group-name>
+          apiGroup: rbac.authorization.k8s.io
+      roleRef:
+        kind: ClusterRole
+        name: <target-cluster-role>
+        apiGroup: rbac.authorization.k8s.io
+
+#. Apply the manifest:
+
+   .. code-block:: shell
+
+      root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                         apply -f role_binding.yaml
+
 .. todo::
 
-   - Describe how to bind groups
    - Describe differences between ClusterRoles and Roles, and between
      ClusterRoleBindings and RoleBindings
    - List pre-installed (Cluster)Roles matching our "high-level UI roles" once
