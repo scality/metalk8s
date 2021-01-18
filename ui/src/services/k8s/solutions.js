@@ -1,3 +1,4 @@
+import { V1Namespace } from '@kubernetes/client-node/dist/gen/model/models';
 import { coreV1 } from './api';
 import * as core from './core';
 
@@ -26,12 +27,19 @@ export async function getSolutionsConfigMap() {
 }
 // }}}
 // Environment-scoped management {{{
-export async function listEnvironments() {
-  const result = await core.listNamespaces({
+export type Environment = {
+  name: string,
+  description: String,
+  namespaces: V1Namespace[],
+};
+export type Environments = { [name: string]: Environment };
+
+export async function listEnvironments(): Promise<Environment[]> {
+  const result: { body: V1NamespaceList[] } = await core.listNamespaces({
     labelSelector: LABEL_ENVIRONMENT_NAME,
   });
   if (!result.error) {
-    const namespaces = result?.body?.items;
+    const namespaces: V1Namespace[] = result.body.items;
     const environmentMap = namespaces.reduce((environments, ns) => {
       const name = ns.metadata?.labels?.[LABEL_ENVIRONMENT_NAME];
       const description =
@@ -85,7 +93,7 @@ async function getUIServices(namespace) {
   }
 }
 
-export async function getEnvironmentAdminUIs(environment) {
+export async function getEnvironmentAdminUIs(environment: Environment) {
   const services = [];
   for (const namespace of environment.namespaces) {
     const result = await getUIServices(namespace);
@@ -102,7 +110,7 @@ export async function getEnvironmentAdminUIs(environment) {
   }));
 }
 
-export async function getEnvironmentConfigMap(environment) {
+export async function getEnvironmentConfigMap(environment: Environment) {
   // we may support multiple namespaces in one environment later
   const environmentConfigMaps = [];
   for (const namespace of environment.namespaces) {

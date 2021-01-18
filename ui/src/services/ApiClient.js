@@ -4,11 +4,11 @@ class ApiClient {
   constructor({ apiUrl, headers = {} }) {
     this.headers = headers;
     this.settings = {
-      baseURL: apiUrl
+      baseURL: apiUrl,
     };
   }
 
-  setHeaders = headers => {
+  setHeaders = (headers) => {
     this.headers = headers;
   };
 
@@ -17,7 +17,7 @@ class ApiClient {
       method: 'get',
       endpoint: endpoint,
       params: params,
-      ...opts
+      ...opts,
     });
   }
 
@@ -26,7 +26,7 @@ class ApiClient {
       method: 'post',
       endpoint: endpoint,
       payload: payload,
-      ...opts
+      ...opts,
     });
   }
 
@@ -35,7 +35,7 @@ class ApiClient {
       method: 'put',
       endpoint: endpoint,
       payload: payload,
-      ...opts
+      ...opts,
     });
   }
 
@@ -44,7 +44,7 @@ class ApiClient {
       method: 'patch',
       endpoint: endpoint,
       payload: payload,
-      ...opts
+      ...opts,
     });
   }
   async delete(endpoint, payload = {}, opts = {}) {
@@ -52,7 +52,7 @@ class ApiClient {
       method: 'delete',
       endpoint: endpoint,
       payload: payload,
-      ...opts
+      ...opts,
     });
   }
 
@@ -62,7 +62,7 @@ class ApiClient {
       endpoint,
       payload = {},
       headers = {},
-      params
+      params,
     } = request;
 
     try {
@@ -72,7 +72,7 @@ class ApiClient {
         params,
         url: endpoint,
         data: payload,
-        ...this.settings
+        ...this.settings,
       });
       return response.data;
     } catch (error) {

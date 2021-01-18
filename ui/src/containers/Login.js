@@ -48,7 +48,7 @@ const LogoContainer = styled.div`
   top: 45px;
 `;
 
-const LoginForm = props => {
+const LoginForm = (props) => {
   const {
     values,
     touched,
@@ -60,12 +60,12 @@ const LoginForm = props => {
     asyncErrors,
   } = props;
   //handleChange of the Formik props does not update 'values' when field value is empty
-  const handleChange = field => e => {
+  const handleChange = (field) => (e) => {
     const { value, checked, type } = e.target;
     setFieldValue(field, type === 'checkbox' ? checked : value, true);
   };
   //touched is not "always" correctly set
-  const handleOnBlur = e => setFieldTouched(e.target.name, true);
+  const handleOnBlur = (e) => setFieldTouched(e.target.name, true);
 
   return (
     <Form autoComplete="off">
@@ -115,10 +115,10 @@ const validationSchema = yup.object().shape({
   password: yup.string().required(),
 });
 
-const Login = props => {
-  const asyncErrors = useSelector(state => state.login.errors);
+const Login = (props) => {
+  const asyncErrors = useSelector((state) => state.login.errors);
   const dispatch = useDispatch();
-  const authenticate = values => dispatch(authenticateAction(values));
+  const authenticate = (values) => dispatch(authenticateAction(values));
 
   return (
     <LoginFormContainer>
@@ -126,7 +126,7 @@ const Login = props => {
         initialValues={initialValues}
         validationSchema={validationSchema}
         onSubmit={authenticate}
-        render={renderProps => {
+        render={(renderProps) => {
           const formikProps = {
             ...renderProps,
             ...props,

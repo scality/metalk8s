@@ -23,13 +23,13 @@ const NodeDeploymentContainer = styled.div`
 `;
 
 const InfoMessage = styled.div`
-  color: ${props => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.base};
   padding: ${padding.base};
 `;
 
 const NodeDeploymentTitle = styled.div`
-  color: ${props => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.brand.textPrimary};
   font-weight: ${fontWeight.bold};
   font-size: ${fontSize.large};
   margin: ${padding.base};
@@ -37,7 +37,7 @@ const NodeDeploymentTitle = styled.div`
 
 const NodeDeploymentEvent = styled.div`
   background-color: ${grayLighter};
-  color: ${props => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.brand.textPrimary};
   padding: ${padding.base};
   margin: ${padding.base};
   border-radius: 5px;
@@ -59,7 +59,7 @@ const NodeDeploymentStatus = styled.div`
 `;
 
 const ErrorLabel = styled.span`
-  color: ${props => props.theme.brand.danger};
+  color: ${(props) => props.theme.brand.danger};
 `;
 
 const NodeDeployment = () => {
@@ -67,13 +67,13 @@ const NodeDeployment = () => {
   const match = useRouteMatch();
   const nodeName = match?.params?.id;
 
-  const jobs = useSelector(state =>
+  const jobs = useSelector((state) =>
     state.app.salt.jobs.filter(
-      job => job.type === 'deploy-node' && job.node === nodeName,
+      (job) => job.type === 'deploy-node' && job.node === nodeName,
     ),
   );
 
-  let activeJob = jobs.find(job => !job.completed);
+  let activeJob = jobs.find((job) => !job.completed);
   if (activeJob === undefined) {
     // Pick most recent one
     const sortedJobs = jobs.sort(
@@ -85,7 +85,7 @@ const NodeDeployment = () => {
   let steps = [{ title: intl.translate('node_registered') }];
   let success = false;
   if (activeJob) {
-    if (activeJob.events.find(event => event.tag.includes('/new'))) {
+    if (activeJob.events.find((event) => event.tag.includes('/new'))) {
       steps.push({ title: intl.translate('deployment_started') });
     }
 

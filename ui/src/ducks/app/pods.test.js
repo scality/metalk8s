@@ -47,6 +47,7 @@ it('update the pods state when fetchPods', () => {
           ready: true,
         },
       ],
+      volumes: []
     },
   ];
 

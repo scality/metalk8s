@@ -1,4 +1,6 @@
-import { put, takeEvery, select } from 'redux-saga/effects';
+//@flow
+import type { RootState } from '../reducer';
+import { Effect, put, takeEvery, select } from 'redux-saga/effects';
 
 // Actions
 const TOGGLE_SIDEBAR = 'TOGGLE_SIDEBAR';
@@ -13,7 +15,16 @@ const defaultState = {
   },
 };
 
-export default function reducer(state = defaultState, action = {}) {
+export type LayoutState = {
+  sidebar: {
+    expanded: boolean,
+  },
+};
+
+export default function reducer(
+  state: LayoutState = defaultState,
+  action: any = {},
+) {
   switch (action.type) {
     case SET_TOGGLE_SIDEBAR:
       return {
@@ -42,26 +53,27 @@ export const initToggleSideBarAction = () => {
 };
 
 // Selectors
-export const isSidebarExpandedSelector = (state) =>
+export const isSidebarExpandedSelector = (state: RootState) =>
   state.app.layout.sidebar.expanded;
 
 // Sagas
-export function* toggleSideBar() {
+export function* toggleSideBar(): Generator<Effect, void, boolean> {
   yield put(setToggleSidebarAction());
   const expanded = yield select(isSidebarExpandedSelector);
-  localStorage.setItem(SIDEBAR_EXPANDED, expanded);
+  localStorage.setItem(SIDEBAR_EXPANDED, JSON.stringify(expanded));
 }
 
-export function* initToggleSideBar() {
-  if (localStorage.getItem(SIDEBAR_EXPANDED)) {
+export function* initToggleSideBar(): Generator<Effect, void, void> {
+  const storedSidebarState = localStorage.getItem(SIDEBAR_EXPANDED);
+  if (storedSidebarState) {
     const expanded = yield select(isSidebarExpandedSelector);
-    if (expanded !== JSON.parse(localStorage.getItem(SIDEBAR_EXPANDED))) {
+    if (expanded !== JSON.parse(storedSidebarState)) {
       yield put(setToggleSidebarAction());
     }
   }
 }
 
-export function* layoutSaga() {
+export function* layoutSaga(): Generator<Effect, void, void> {
   yield takeEvery(TOGGLE_SIDEBAR, toggleSideBar);
   yield takeEvery(INIT_TOGGLE_SIDEBAR, initToggleSideBar);
 }

@@ -16,7 +16,7 @@ const IntlGlobalProvider = (props, context) => {
 };
 
 IntlGlobalProvider.contextTypes = {
-  intl: intlShape.isRequired
+  intl: intlShape.isRequired,
 };
 
 // ======================================================
@@ -41,8 +41,8 @@ class IntlTranslator {
     }
     const description = defineMessages({
       message: {
-        id: key
-      }
+        id: key,
+      },
     });
     return INTL.formatMessage(description.message, values);
   }

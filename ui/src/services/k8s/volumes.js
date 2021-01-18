@@ -1,33 +1,10 @@
-import { coreV1, customObjects, storage } from './api';
-
-export async function getVolumes() {
-  try {
-    // We want to change this hardcoded data later
-    return await customObjects.listClusterCustomObject(
-      'storage.metalk8s.scality.com',
-      'v1alpha1',
-      'volumes',
-    );
-  } catch (error) {
-    return { error };
-  }
-}
-
-export async function deleteVolume(deleteVolumeName) {
-  try {
-    return await customObjects.deleteClusterCustomObject(
-      'storage.metalk8s.scality.com',
-      'v1alpha1',
-      'volumes',
-      deleteVolumeName,
-      {},
-    );
-  } catch (error) {
-    return error;
-  }
-}
+//@flow
+import { coreV1, storage } from './api';
 
 export async function getPersistentVolumes() {
+  if (!coreV1) {
+    return { error: 'coreV1 has not yet been initialized' };
+  }
   try {
     return await coreV1.listPersistentVolume();
   } catch (error) {
@@ -36,6 +13,9 @@ export async function getPersistentVolumes() {
 }
 
 export async function getStorageClass() {
+  if (!storage) {
+    return { error: 'storage has not yet been initialized' };
+  }
   try {
     return await storage.listStorageClass();
   } catch (error) {
@@ -43,35 +23,12 @@ export async function getStorageClass() {
   }
 }
 
-export async function createVolume(body) {
-  try {
-    return await customObjects.createClusterCustomObject(
-      'storage.metalk8s.scality.com',
-      'v1alpha1',
-      'volumes',
-      body,
-    );
-  } catch (error) {
-    return { error };
-  }
-}
-
 export async function getPersistentVolumeClaims() {
+  if (!coreV1) {
+    return { error: 'coreV1 has not yet been initialized' };
+  }
   try {
     return await coreV1.listPersistentVolumeClaimForAllNamespaces();
-  } catch (error) {
-    return { error };
-  }
-}
-
-export async function getVolumeObject(volumeName) {
-  try {
-    return await customObjects.getClusterCustomObject(
-      'storage.metalk8s.scality.com',
-      'v1alpha1',
-      'volumes',
-      volumeName,
-    );
   } catch (error) {
     return { error };
   }

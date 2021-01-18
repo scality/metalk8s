@@ -1,3 +1,4 @@
+//@flow
 import uuidv1 from 'uuid/v1';
 
 // Actions
@@ -7,28 +8,56 @@ const REMOVE_NOTIFICATION = 'REMOVE_NOTIFICATION';
 
 // Reducer
 const defaultState = {
-  list: []
+  list: [],
 };
 
-export default function reducer(state = defaultState, action = {}) {
+type Notification = {
+  uid: string,
+  title: string,
+  message: string,
+  variant: 'success' | 'danger',
+  dismissAfter: number,
+};
+
+export type NotificationsState = {
+  list: Notification[],
+};
+
+export type NotificationsActions =
+  | {
+      type: 'ADD_NOTIFICATION_SUCCESS' | 'ADD_NOTIFICATION_ERROR',
+      payload: Notification,
+    }
+  | {
+      type: 'REMOVE_NOTIFICATION',
+      uid: string,
+    };
+
+export default function reducer(
+  state: NotificationsState = defaultState,
+  action: NotificationsActions,
+): NotificationsState {
   switch (action.type) {
     case ADD_NOTIFICATION_SUCCESS:
     case ADD_NOTIFICATION_ERROR:
       return {
         ...state,
-        list: [...state.list, action.payload]
+        list: [...state.list, action.payload],
       };
     case REMOVE_NOTIFICATION:
       return {
         ...state,
-        list: state.list.filter(notif => notif.uid !== action.uid)
+        list: state.list.filter((notif) => notif.uid !== action.uid),
       };
     default:
       return state;
   }
 }
 // Action Creators
-export const addNotificationSuccessAction = payload => {
+export const addNotificationSuccessAction = (payload: {
+  title: string,
+  message: string,
+}) => {
   return {
     type: ADD_NOTIFICATION_SUCCESS,
     payload: {
@@ -36,23 +65,26 @@ export const addNotificationSuccessAction = payload => {
       title: payload.title,
       message: payload.message,
       variant: 'success',
-      dismissAfter: 5000
-    }
+      dismissAfter: 5000,
+    },
   };
 };
 
-export const addNotificationErrorAction = payload => {
+export const addNotificationErrorAction = (payload: {
+  title: string,
+  message?: string,
+}) => {
   return {
     type: ADD_NOTIFICATION_ERROR,
     payload: {
       uid: uuidv1(),
       title: payload.title,
       message: payload.message,
-      variant: 'danger'
-    }
+      variant: 'danger',
+    },
   };
 };
 
-export const removeNotificationAction = uid => {
+export const removeNotificationAction = (uid: string) => {
   return { type: REMOVE_NOTIFICATION, uid };
 };

@@ -127,6 +127,65 @@ const defaultState = {
   unameInfo: [],
 };
 
+export type MonitoringState = {
+  alert: {
+    list: any[], // todo, type alert
+    error: ?any,
+    isLoading: boolean,
+    isRefreshing: boolean,
+  },
+  cluster: {
+    apiServerStatus: number,
+    kubeSchedulerStatus: number,
+    kubeControllerManagerStatus: number,
+    error: ?any,
+    isLoading: boolean,
+    isRefreshing: boolean,
+    isPrometheusVolumeProvisioned: boolean,
+  },
+  isPrometheusApiUp: boolean,
+  volumeStats: {
+    metricsTimeSpan: string,
+    metrics: {
+      volumeUsed: any[], // todo, identify this type
+      volumeThroughputWrite: any[], // todo, identify this type
+      volumeThroughputRead: any[], // todo, identify this type
+      volumeLatency: any[], // todo, identify this type
+      volumeIOPSRead: any[], // todo, identify this type
+      volumeIOPSWrite: any[], // todo, identify this type
+    },
+    isRefreshing: boolean,
+  },
+  volumeCurrentStats: {
+    metrics: {
+      volumeUsedCurrent: [], // todo, identify this type
+      volumeCapacityCurrent: [], // todo, identify this type
+      volumeLatencyCurrent: [], // todo, identify this type
+    },
+    isRefreshing: boolean,
+  },
+  nodeStats: {
+    metricsTimeSpan: string,
+    instanceIP: string,
+    controlPlaneInterface: string,
+    workloadPlaneInterface: string,
+    metrics: {
+      cpuUsage: any[], // todo, identify this type
+      systemLoad: any[], // todo, identify this type
+      memory: any[], // todo, identify this type
+      iopsRead: any[], // todo, identify this type
+      iopsWrite: any[], // todo, identify this type
+      controlPlaneNetworkBandwidthIn: any[], // todo, identify this type
+      controlPlaneNetworkBandwidthOut: any[], // todo, identify this type
+      workloadPlaneNetworkBandwidthIn: any[], // todo, identify this type
+      workloadPlaneNetworkBandwidthOut: any[], // todo, identify this type
+      queryStartingTime: number,
+    },
+    isRefreshing: boolean,
+  },
+  unameInfo: any[], // todo, identify this type
+};
+
 export default function reducer(state = defaultState, action = {}) {
   switch (action.type) {
     case SET_PROMETHEUS_API_AVAILABLE:

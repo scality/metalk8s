@@ -1,9 +1,12 @@
-import { call, put, takeEvery, select } from 'redux-saga/effects';
+//@flow
+import type { RootState } from './reducer';
+import type { Config, Theme, Themes, WrappedThemes } from '../services/api';
+import { Effect, call, put, takeEvery, select } from 'redux-saga/effects';
 import { mergeTheme } from '@scality/core-ui/dist/utils';
 import * as defaultTheme from '@scality/core-ui/dist/style/theme';
 import { loadUser, createUserManager } from 'redux-oidc';
 import { USER_FOUND } from 'redux-oidc';
-import { WebStorageStateStore } from 'oidc-client';
+import { UserManager, WebStorageStateStore } from 'oidc-client';
 import { store } from '../index';
 import * as Api from '../services/api';
 import * as ApiK8s from '../services/k8s/api';
@@ -13,6 +16,7 @@ import * as ApiAlertmanager from '../services/alertmanager/api';
 import { EN_LANG, FR_LANG, LANGUAGE } from '../constants';
 
 import { authenticateSaltApi } from './login';
+import type { Result } from '../types';
 // Actions
 export const SET_LANG = 'SET_LANG';
 export const SET_THEME = 'SET_THEME';
@@ -56,7 +60,29 @@ const defaultState = {
   themes: {}, // include light, dark and custom
 };
 
-export default function reducer(state = defaultState, action = {}) {
+export type ConfigState = {
+  language: string,
+  theme: Theme,
+  api: ?Config,
+  userManagerConfig: {
+    client_id: string,
+    redirect_uri: string,
+    response_type: string,
+    scope: string,
+    authority: string,
+    loadUserInfo: boolean,
+    post_logout_redirect_uri: string,
+    userStore: WebStorageStateStore,
+  },
+  userManager: UserManager,
+  isUserLoaded: boolean,
+  themes: Themes,
+};
+
+export default function reducer(
+  state: ConfigState = defaultState,
+  action: any = {},
+) {
   switch (action.type) {
     case SET_LANG:
       return { ...state, language: action.payload };
@@ -84,11 +110,11 @@ export default function reducer(state = defaultState, action = {}) {
 }
 
 // Action Creators
-export function setLanguageAction(newLang) {
+export function setLanguageAction(newLang: string) {
   return { type: SET_LANG, payload: newLang };
 }
 
-export function setThemeAction(theme) {
+export function setThemeAction(theme: Theme) {
   return { type: SET_THEME, payload: theme };
 }
 
@@ -100,7 +126,7 @@ export function fetchConfigAction() {
   return { type: FETCH_CONFIG };
 }
 
-export function setApiConfigAction(conf) {
+export function setApiConfigAction(conf: Config) {
   return { type: SET_API_CONFIG, payload: conf };
 }
 
@@ -108,23 +134,28 @@ export function setInitialLanguageAction() {
   return { type: SET_INITIAL_LANGUAGE };
 }
 
-export function updateLanguageAction(language) {
+// Todo : this actually seems to be never used and duplicate of setLanguageAction
+export function updateLanguageAction(language: string) {
   return { type: UPDATE_LANGUAGE, payload: language };
 }
 
-export function setUserManagerConfigAction(payload) {
+export function setUserManagerConfigAction(payload: {
+  authority: string,
+  redirect_uri: string,
+}) {
   return { type: SET_USER_MANAGER_CONFIG, payload };
 }
 
-export function setUserManagerAction(conf) {
+export function setUserManagerAction(conf: UserManager) {
   return { type: SET_USER_MANAGER, payload: conf };
 }
 
-export function setUserLoadedAction(isLoaded) {
+export function setUserLoadedAction(isLoaded: boolean) {
   return { type: SET_USER_LOADED, payload: isLoaded };
 }
 
-export function updateAPIConfigAction(payload) {
+// Todo : this actually seems to be never used and duplicate of setApiConfigAction
+export function updateAPIConfigAction(payload: Config) {
   return { type: UPDATE_API_CONFIG, payload };
 }
 
@@ -132,16 +163,16 @@ export function logoutAction() {
   return { type: LOGOUT };
 }
 
-export function setThemesAction(themes) {
+export function setThemesAction(themes: Themes) {
   return { type: SET_THEMES, payload: themes };
 }
 
 // Selectors
-export const languageSelector = (state) => state.config.language;
-export const apiConfigSelector = (state) => state.config.api;
+export const languageSelector = (state: RootState) => state.config.language;
+export const apiConfigSelector = (state: RootState) => state.config.api;
 
 // Sagas
-export function* fetchTheme() {
+export function* fetchTheme(): Generator<Effect, void, Result<WrappedThemes>> {
   const result = yield call(Api.fetchTheme);
   if (!result.error) {
     // get the default theme from configMap
@@ -155,7 +186,7 @@ export function* fetchTheme() {
   }
 }
 
-export function* fetchConfig() {
+export function* fetchConfig(): Generator<Effect, void, Result<Config>> {
   yield call(Api.initialize, process.env.PUBLIC_URL);
   const result = yield call(Api.fetchConfig);
   if (!result.error && result.url_oidc_provider && result.url_redirect) {
@@ -172,7 +203,7 @@ export function* fetchConfig() {
       }),
     );
     const userManagerConfig = yield select(
-      (state) => state.config.userManagerConfig,
+      (state: RootState) => state.config.userManagerConfig,
     );
     yield put(setUserManagerAction(createUserManager(userManagerConfig)));
     const userManager = yield select((state) => state.config.userManager);
@@ -181,8 +212,12 @@ export function* fetchConfig() {
   }
 }
 
-export function* updateApiServerConfig({ payload }) {
-  const api = yield select((state) => state.config.api);
+export function* updateApiServerConfig({
+  payload,
+}: {
+  payload: { id_token: string, token_type: string },
+}): Generator<Effect, void, Config> {
+  const api = yield select((state: RootState) => state.config.api);
   if (api) {
     yield call(
       ApiK8s.updateApiServerConfig,
@@ -194,7 +229,7 @@ export function* updateApiServerConfig({ payload }) {
   }
 }
 
-export function* setInitialLanguage() {
+export function* setInitialLanguage(): Generator<Effect, void, string> {
   const languageLocalStorage = localStorage.getItem(LANGUAGE);
   if (languageLocalStorage) {
     languageLocalStorage === FR_LANG
@@ -209,24 +244,30 @@ export function* setInitialLanguage() {
   }
 }
 
-export function* updateLanguage(action) {
+export function* updateLanguage(action: {
+  payload: string,
+}): Generator<Effect, void, string> {
   yield put(setLanguageAction(action.payload));
   const language = yield select(languageSelector);
   localStorage.setItem(LANGUAGE, language);
 }
 
-export function* logout() {
-  const userManager = yield select((state) => state.config.userManager);
+export function* logout(): Generator<Effect, void, UserManager> {
+  const userManager = yield select(
+    (state: RootState) => state.config.userManager,
+  );
   if (userManager) {
     userManager.removeUser(); // removes the user data from sessionStorage
   }
 }
 
-export function* userFoundHandle(payload) {
+export function* userFoundHandle(payload: {
+  payload: { id_token: string, token_type: string },
+}): Generator<Effect, void, void> {
   yield call(updateApiServerConfig, payload);
 }
 
-export function* configSaga() {
+export function* configSaga(): Generator<Effect, void, void> {
   yield takeEvery(FETCH_THEME, fetchTheme);
   yield takeEvery(FETCH_CONFIG, fetchConfig);
   yield takeEvery(SET_INITIAL_LANGUAGE, setInitialLanguage);
