@@ -100,7 +100,10 @@ const ActiveAlertsCard = (props) => {
       return {
         name: alert.labels.alertname,
         severity: alert.labels.severity,
-        alert_description: alert.annotations.description || alert.annotations.summary || alert.annotations.message,
+        alert_description:
+          alert.annotations.description ||
+          alert.annotations.message ||
+          alert.annotations.summary,
         active_since: alert.startsAt,
       };
     }) ?? [];
