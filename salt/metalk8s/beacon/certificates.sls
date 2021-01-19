@@ -63,7 +63,7 @@ Add beacon for kubeconfig expiration:
 Write beacons configuration:
   file.managed:
     - name: /etc/salt/minion.d/beacons.conf
-    - contents: {{ salt['beacons.list']() | json }}
+    - contents: __slot__:salt:beacons.list()
 {%- else %}
 No certificate or kubeconfig to watch for this node:
   test.nop
