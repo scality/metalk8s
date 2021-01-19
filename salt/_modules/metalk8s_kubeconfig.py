@@ -15,7 +15,7 @@ def __virtual__():
 
 
 def validate(filename,
-             expected_ca_data,
+             expected_ca_data=None,
              expected_api_server=None,
              expected_cn=None,
              days_remaining=90):
@@ -52,7 +52,7 @@ def validate(filename,
     except (KeyError, IndexError):
         return False
 
-    if current_ca_data != expected_ca_data:
+    if expected_ca_data and current_ca_data != expected_ca_data:
         return False
 
     if expected_api_server and current_api_server != expected_api_server:
