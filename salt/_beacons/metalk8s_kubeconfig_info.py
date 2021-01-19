@@ -68,8 +68,6 @@ def beacon(config):
     _config = _flatten_config(config)
 
     ca_minion = __pillar__['metalk8s']['ca']['minion']
-    control_plane_ip = __grains__['metalk8s']['control_plane_ip']
-    apiserver = "https://{0}:6443".format(control_plane_ip)
     b64_ca_cert = __salt__['mine.get'](
         ca_minion, 'kubernetes_root_ca_b64'
     )[ca_minion]
@@ -87,8 +85,7 @@ def beacon(config):
             days_remaining = notify_days
 
         if not __salt__['metalk8s_kubeconfig.validate'](
-                cert_path, b64_ca_cert, apiserver,
-                days_remaining=days_remaining):
+                cert_path, b64_ca_cert, days_remaining=days_remaining):
             log.info(
                 "kubeconfig %s needs to be regenerated", cert_path
             )
