@@ -91,9 +91,13 @@ const columns = [
   },
 ];
 
+const LoaderContainer = styled.div`
+  display: flex;
+  justify-content: center;
+`;
 const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
   const theme = useTheme();
-  const { data: partitions, status } = useQuery(
+  let { data: partitions, status } = useQuery(
     ['nodeDevices', instanceIP],
     useCallback(
       () =>
@@ -119,12 +123,6 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
     ),
   );
 
-  // prepare the `data` which pass to the useTable
-  let data = [];
-  if (status === 'success') {
-    data = partitions;
-  }
-
   const {
     getTableProps,
     getTableBodyProps,
@@ -133,7 +131,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
     prepareRow,
   } = useTable({
     columns,
-    data,
+    data: partitions || [],
   });
 
   return (
@@ -156,7 +154,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
           })}
         </thead>
         <Body {...getTableBodyProps()}>
-          {status === 'success' && data.length === 0 && (
+          {status === 'success' && partitions.length === 0 && (
             <HeadRow
               style={{
                 width: '100%',
@@ -187,7 +185,27 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
                   textAlign: 'center',
                 }}
               >
-                <Loader size="large" />
+                <LoaderContainer>
+                  <Loader size="large" />
+                </LoaderContainer>
+              </td>
+            </HeadRow>
+          )}
+          {status === 'error' && (
+            <HeadRow
+              style={{
+                width: '100%',
+                paddingTop: padding.base,
+                height: '60px',
+              }}
+            >
+              <td
+                style={{
+                  width: '100%',
+                  textAlign: 'center',
+                }}
+              >
+                {intl.translate('error_loading_partitions')}
               </td>
             </HeadRow>
           )}
