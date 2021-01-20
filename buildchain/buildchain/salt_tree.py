@@ -698,6 +698,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/_modules/metalk8s_service_configuration.py'),
     Path('salt/_modules/metalk8s_solutions.py'),
     Path('salt/_modules/metalk8s_solutions_k8s.py'),
+    Path('salt/_modules/metalk8s_sysctl.py'),
     Path('salt/_modules/metalk8s_volumes.py'),
 
     Path('salt/_pillar/metalk8s.py'),
@@ -722,6 +723,7 @@ SALT_FILES : Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path('salt/_states/metalk8s_etcd.py'),
     Path('salt/_states/metalk8s_kubernetes.py'),
     Path('salt/_states/metalk8s_package_manager.py'),
+    Path('salt/_states/metalk8s_sysctl.py'),
     Path('salt/_states/metalk8s_volumes.py'),
 
     Path('salt/_utils/metalk8s_utils.py'),

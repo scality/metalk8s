@@ -30,29 +30,16 @@ Add the module br_netfilter to kernel:
 
 {%- for item, value in kubeadm_preflight.mandatory.sysctl_values.items() %}
 Set sysctl {{ item }} value to {{ value }}:
-  sysctl.present:
+  metalk8s_sysctl.present:
     - name: {{ item }}
     - value: {{ value }}
     - config: /etc/sysctl.d/60-metalk8s.conf
+    - check_priority: True
     {%- if item in ("net.bridge.bridge-nf-call-ip6tables", "net.bridge.bridge-nf-call-iptables") %}
     - require:
       - kmod: Add the module br_netfilter to kernel
     {%- endif %}
-    - require_in:
-      - cmd: Apply sysctl configuration files
 {%- endfor %}
-
-# This is needed to ensure values loaded from files match in-memory ones
-Apply sysctl configuration files:
-  cmd.run:
-    - name: sysctl --system
-
-Check sysctl are well configured:
-  metalk8s_checks.run:
-    - name: metalk8s_checks.sysctl
-    - params: {{ kubeadm_preflight.mandatory.sysctl_values | json }}
-    - require:
-      - cmd: Apply sysctl configuration files
 
 {%- for swap_device in salt.mount.swaps().keys() %}
 Disable swap device {{ swap_device }}:
