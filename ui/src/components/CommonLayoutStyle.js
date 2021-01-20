@@ -60,6 +60,33 @@ export const NodeTab = styled.div`
   overflow: scroll;
 `;
 
+export const TabsItemsStyle = styled.div`
+  .sc-tabs {
+    margin: 0;
+  }
+  .sc-tabs-bar {
+    height: 40px;
+  }
+  .sc-tabs-item {
+    margin-right: ${padding.smaller};
+    background-color: ${(props) => props.theme.brand.border};
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    height: 40px;
+
+    .sc-tabs-item-title {
+      height: 40px;
+      font-size: ${fontSize.base};
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+      padding: 13px;
+    }
+  }
+  .sc-tabs-item-content {
+    padding: 0;
+  }
+`;
+
 export const TextBadge = styled.span`
   background-color: ${(props) => props.theme.brand.info};
   color: ${(props) => props.theme.brand.textPrimary};
