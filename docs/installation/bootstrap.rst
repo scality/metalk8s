@@ -4,7 +4,8 @@ Deployment of the :term:`Bootstrap node`
 Preparation
 -----------
 
-#. Build the ISO using :ref:`this procedure <How to build an ISO>`.
+#. Retrieve a MetalK8s ISO (you may build one yourself by following our
+   developer guide).
    Scality customers can retrieve validated builds as part of their license
    from the Scality repositories.
 

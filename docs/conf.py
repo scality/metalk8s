@@ -98,15 +98,20 @@ if ON_RTD:
 templates_path = ['_templates']
 
 # The master toctree document.
-master_doc = 'index'
+if RELEASE_BUILD and not ON_RTD:
+    master_doc = 'index-release'
+else:
+    master_doc = 'index'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
-if RELEASE_BUILD:
-    exclude_patterns.append('developer/*')
+if RELEASE_BUILD and not ON_RTD:
+    exclude_patterns.extend(['index.rst', 'index-latex.rst', 'developer/*'])
+else:
+    exclude_patterns.append('index-release*')
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -209,7 +214,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index-latex', 'MetalK8s.tex', 'MetalK8s Documentation',
+    ('{}-latex'.format(master_doc), 'MetalK8s.tex', 'MetalK8s Documentation',
      'Scality', 'manual', True),
 ]
 
