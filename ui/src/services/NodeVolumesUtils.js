@@ -1,4 +1,4 @@
-//@flow
+// @flow
 import { createSelector } from 'reselect';
 import {
   getNodeNameFromUrl,
@@ -27,12 +27,23 @@ import {
   NODE_FILESYSTEM_ALMOST_OUTOF_FILES,
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
+import type { PrometheusAlert } from './alertmanager/api';
+import type { InstantVectorResult } from './prometheus/api';
+import { V1PersistentVolume } from '@kubernetes/client-node/dist/gen/model/models';
+import type { Metalk8sV1alpha1Volume } from '../services/k8s/Metalk8sVolumeClient.generated';
+
+export type VolumeStatus =
+  | 'Unknown'
+  | 'Ready'
+  | 'Failed'
+  | 'Pending'
+  | 'Terminating';
 
 export const isVolumeDeletable = (
-  volumeStatus: string,
+  volumeStatus: VolumeStatus,
   volumeName: string,
-  persistentVolumes: Array<Object>,
-) => {
+  persistentVolumes: Array<V1PersistentVolume>,
+): boolean => {
   switch (volumeStatus) {
     case STATUS_UNKNOWN:
     case STATUS_PENDING:
@@ -83,44 +94,50 @@ export const isVolumeDeletable = (
 //
 // Returns
 //     The computed global status of the volume.
-export const computeVolumeGlobalStatus = (name: string, status: Object) => {
-  if (!Array.isArray(status?.conditions)) {
-    return STATUS_UNKNOWN;
-  }
-  const condition = status.conditions.find(
-    (condition) => condition.type === 'Ready',
-  );
-
-  if (condition === undefined) {
-    return STATUS_UNKNOWN;
-  }
-
-  const condStatus = condition?.status;
-  const condReason = condition?.reason;
-
-  switch (condStatus) {
-    case 'True':
-      return STATUS_READY;
-    case 'False':
-      return STATUS_FAILED;
-    case 'Unknown':
-      switch (condReason) {
-        case 'Pending':
-          return STATUS_PENDING;
-        case 'Terminating':
-          return STATUS_TERMINATING;
-        default:
-          console.error(
-            `Unexpected Ready reason for Volume ${name}: ${condReason}`,
-          );
-          return STATUS_UNKNOWN;
-      }
-    default:
-      console.error(
-        `Unexpected Ready status for Volume ${name}: ${condStatus}`,
-      );
+export const computeVolumeGlobalStatus = (
+  name: string,
+  status: $PropertyType<Metalk8sV1alpha1Volume, 'status'>,
+): VolumeStatus => {
+  if (status && status.conditions) {
+    if (!Array.isArray(status.conditions)) {
       return STATUS_UNKNOWN;
+    }
+    const condition = status.conditions.find(
+      (condition) => condition.type === 'Ready',
+    );
+
+    if (condition === undefined) {
+      return STATUS_UNKNOWN;
+    }
+
+    const condStatus = condition.status;
+    const condReason = condition.reason || '';
+
+    switch (condStatus) {
+      case 'True':
+        return STATUS_READY;
+      case 'False':
+        return STATUS_FAILED;
+      case 'Unknown':
+        switch (condReason) {
+          case 'Pending':
+            return STATUS_PENDING;
+          case 'Terminating':
+            return STATUS_TERMINATING;
+          default:
+            console.error(
+              `Unexpected Ready reason for Volume ${name}: ${condReason}`,
+            );
+            return STATUS_UNKNOWN;
+        }
+      default:
+        console.error(
+          `Unexpected Ready status for Volume ${name}: ${condStatus}`,
+        );
+        return STATUS_UNKNOWN;
+    }
   }
+  return STATUS_UNKNOWN;
 };
 
 // Extract the error code and message from the conditions.
@@ -130,8 +147,10 @@ export const computeVolumeGlobalStatus = (name: string, status: Object) => {
 //
 // Returns
 //     a tuple (error code, error message).
-export const volumeGetError = (status: Object) => {
-  if (!Array.isArray(status?.conditions)) {
+export const volumeGetError = (
+  status: $PropertyType<Metalk8sV1alpha1Volume, 'status'>,
+): [string, string] => {
+  if (!Array.isArray(status.conditions)) {
     return ['', ''];
   }
   const condition = status.conditions.find(
@@ -320,28 +339,29 @@ export const formatVolumeCreationData = (newVolumes) => {
  *
  * const formatedVolumeName = formatBatchName(name, 1)
  */
-export const formatBatchName = (name: string, index: number) => {
+export const formatBatchName = (name: string, index: number): string => {
   if (index >= 1) {
     if (index <= 9) {
       return `${name}0${index}`;
     } else if (index >= 10) return `${name}${index}`;
-  } else {
-    return '';
   }
+  return '';
 };
 
+// can be a global type be used by all the health status
+type Health = 'health' | 'warning' | 'critical' | 'none';
 type SystemDevice = {
   partitionPath: string,
-  health: STATUS_HEALTH | STATUS_WARNING | STATUS_CRITICAL,
+  health: Health,
   size: string,
   usage: number,
   device: string,
 };
 
 export const getNodePartitionsTableData = (
-  usages: Array<Object>,
-  sizes: Array<Object>,
-  alerts: Array<Object>,
+  usages: $PropertyType<InstantVectorResult, 'result'>,
+  sizes: $PropertyType<InstantVectorResult, 'result'>,
+  alerts: Array<PrometheusAlert>,
 ): SystemDevice[] => {
   const partitions = usages.map((usage) => {
     const mountpoint = usage.metric.mountpoint;
@@ -359,15 +379,17 @@ export const getNodePartitionsTableData = (
   return partitions;
 };
 
-const computePartitionHealth = (partitionPath, alerts) => {
+const computePartitionHealth = (
+  partitionPath: string,
+  alerts: Array<PrometheusAlert>,
+): Health => {
   // filter the alerts by hardcoded alertname and mountpoint
   const alertsNodeFS = alerts.filter(
     (alert) =>
-      alert.labels.alertname ===
-        (NODE_FILESYSTEM_SPACE_FILLINGUP ||
-          NODE_FILESYSTEM_ALMOST_OUTOF_SPACE ||
-          NODE_FILESYSTEM_FILES_FILLINGUP ||
-          NODE_FILESYSTEM_ALMOST_OUTOF_FILES) &&
+      (alert.labels.alertname === NODE_FILESYSTEM_SPACE_FILLINGUP ||
+        NODE_FILESYSTEM_ALMOST_OUTOF_SPACE ||
+        NODE_FILESYSTEM_FILES_FILLINGUP ||
+        NODE_FILESYSTEM_ALMOST_OUTOF_FILES) &&
       alert.labels.mountpoint === partitionPath,
   );
 
@@ -382,9 +404,13 @@ const computePartitionHealth = (partitionPath, alerts) => {
   ) {
     return STATUS_WARNING;
   }
+  return STATUS_NONE;
 };
 
-const getPartitionSize = (partitionPath, sizes): string => {
+const getPartitionSize = (
+  partitionPath: string,
+  sizes: $PropertyType<InstantVectorResult, 'result'>,
+): string => {
   const partition = sizes.find(
     (size) => size.metric.mountpoint === partitionPath,
   );
