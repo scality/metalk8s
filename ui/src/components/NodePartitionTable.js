@@ -1,9 +1,9 @@
 //@flow
-import React, { useCallback, useContext } from 'react';
-import styled, { ThemeContext } from 'styled-components';
+import React, { useCallback } from 'react';
+import styled, { useTheme } from 'styled-components';
 import { useTable } from 'react-table';
 import { useQuery } from 'react-query';
-import { ProgressBar } from '@scality/core-ui';
+import { ProgressBar, Loader } from '@scality/core-ui';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import {
   queryNodeFSUsage,
@@ -92,32 +92,37 @@ const columns = [
 ];
 
 const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
-  // Access the current theme outside of styled components when working with React Hooks.
-  const themeContext = useContext(ThemeContext);
-
-  // The following queries will execute in parallel
-  const nodeFSUsage = useQuery(
-    ['nodeFSUsage', instanceIP],
-    useCallback(() => queryNodeFSUsage(instanceIP), [instanceIP]),
+  const theme = useTheme();
+  const { data: partitions, status } = useQuery(
+    ['nodeDevices', instanceIP],
+    useCallback(
+      () =>
+        Promise.all([
+          queryNodeFSUsage(instanceIP),
+          queryNodeFSSize(instanceIP),
+          getAlerts(),
+        ]).then(([nodeFSUsageResult, nodeFSSizeResult, alerts]) => {
+          if (
+            nodeFSUsageResult.status === 'success' &&
+            nodeFSSizeResult.status === 'success' &&
+            nodeFSUsageResult.data.resultType === 'vector' &&
+            nodeFSSizeResult.data.resultType === 'vector'
+          ) {
+            return getNodePartitionsTableData(
+              nodeFSUsageResult.data.result,
+              nodeFSSizeResult.data.result,
+              alerts,
+            );
+          }
+        }),
+      [instanceIP],
+    ),
   );
 
-  const nodeFSSizeQuery = useQuery(
-    ['nodeFSSize', instanceIP],
-    useCallback(() => queryNodeFSSize(instanceIP), [instanceIP]),
-  );
-  const alertsNodeFS = useQuery(['alertsNodeFS', instanceIP], getAlerts);
-
+  // prepare the `data` which pass to the useTable
   let data = [];
-  if (
-    nodeFSUsage.isSuccess &&
-    nodeFSSizeQuery.isSuccess &&
-    alertsNodeFS.isSuccess
-  ) {
-    data = getNodePartitionsTableData(
-      nodeFSUsage.data.data.result,
-      nodeFSSizeQuery.data.data.result,
-      alertsNodeFS.data,
-    );
+  if (status === 'success') {
+    data = partitions;
   }
 
   const {
@@ -151,7 +156,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
           })}
         </thead>
         <Body {...getTableBodyProps()}>
-          {data.length === 0 && (
+          {status === 'success' && data.length === 0 && (
             <HeadRow
               style={{
                 width: '100%',
@@ -165,6 +170,24 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
                 }}
               >
                 {intl.translate('no_system_partition')}
+              </td>
+            </HeadRow>
+          )}
+          {status === 'loading' && (
+            <HeadRow
+              style={{
+                width: '100%',
+                paddingTop: padding.base,
+                height: '60px',
+              }}
+            >
+              <td
+                style={{
+                  width: '100%',
+                  textAlign: 'center',
+                }}
+              >
+                <Loader size="large" />
               </td>
             </HeadRow>
           )}
@@ -183,7 +206,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
                           size="large"
                           percentage={cell.value}
                           buildinLabel={`${cell.value}%`}
-                          backgroundColor={themeContext.brand.primaryDark1}
+                          backgroundColor={theme.brand.primaryDark1}
                         />
                       </Cell>
                     );
