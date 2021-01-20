@@ -213,7 +213,7 @@ const NodePageAlertsTab = (props) => {
       {
         Header: 'Name',
         accessor: 'name',
-        cellStyle: { width: '200px' },
+        cellStyle: { width: '230px' },
       },
       {
         Header: 'Severity',
@@ -224,7 +224,7 @@ const NodePageAlertsTab = (props) => {
       {
         Header: 'Active since',
         accessor: 'activeSince',
-        cellStyle: { textAlign: 'center', width: '150px' },
+        cellStyle: { textAlign: 'center', width: '120px' },
       },
     ],
     [],
