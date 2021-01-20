@@ -53,6 +53,9 @@ Prepare backing storage for {{ volume_name }}:
       - metalk8s_package_manager: Install xfsprogs
       - metalk8s_package_manager: Install gdisk
       - metalk8s_volumes: Create backing storage for {{ volume_name }}
+    - onchanges_in:
+      - module: Update pillar after volume provisioning
+
     {%- if 'sparseLoopDevice' in volume.spec %}
 
 Provision backing storage for {{ volume_name }}:
@@ -63,10 +66,10 @@ Provision backing storage for {{ volume_name }}:
       - metalk8s_volumes: Prepare backing storage for {{ volume_name }}
       - file: Set up systemd template unit for sparse loop device provisioning
       - test: Ensure Python 3 is available
-    {%- endif %}
-    - require_in:
+    - onchanges_in:
       - module: Update pillar after volume provisioning
 
+    {%- endif %}
   {%- endfor %}
 
   {%- if volumes_to_create %}
