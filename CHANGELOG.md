@@ -40,9 +40,17 @@
   package is available in one configured repository
   (PR [#3050](https://github.com/scality/metalk8s/pull/3050))
 
-## Release 2.7.0 (in development)
+## Release 2.7.1 (in development)
+
+## Release 2.7.0
+### Features Added
+- [#2964](https://github.com/scality/metalk8s/issues/2964) - [UI] Ability to
+  create Volumes in batches
+  (PR [#2981](https://github.com/scality/metalk8s/pull/2981))
+
 ### Enhancements
-- Bump Kubernetes version to 1.18.15 (PR[#3035](https://github.com/scality/metalk8s/pull/3035))
+- Bump Kubernetes version to 1.18.15
+  (PR [#3035](https://github.com/scality/metalk8s/pull/3035))
 
 - [#2955](https://github.com/scality/metalk8s/issues/2955) - Bump `containerd`
   version to 1.4.3 (PR [#2956](https://github.com/scality/metalk8s/pull/2956)).
@@ -73,9 +81,11 @@
   - prometheus-operator from v0.38.1 to v0.43.2
   (PR [#2948](https://github.com/scality/metalk8s/pull/2948))
 
-- Bump `prometheus-adapter` chart to 2.10.1 (PR[#3007](https://github.com/scality/metalk8s/pull/3007))
+- Bump `prometheus-adapter` chart to 2.10.1
+  (PR [#3007](https://github.com/scality/metalk8s/pull/3007))
 
-- Bump `ingress-nginx` chart to 3.13.0 (PR[#2961](https://github.com/scality/metalk8s/pull/2961))
+- Bump `ingress-nginx` chart to 3.13.0
+  (PR [#2961](https://github.com/scality/metalk8s/pull/2961))
 
 - [#2953](https://github.com/scality/metalk8s/issues/2953) - Allow customization
   of Prometheus retention (time and size based), see
@@ -90,7 +100,11 @@
   in the `metalk8s-utils` container image
   (PR [#2995](https://github.com/scality/metalk8s/pull/2995))
 
-### Bug fixes
+- [#2931](https://github.com/scality/metalk8s/issues/2931) - [UI] Improve
+  Volumes list performance using a virtualized table
+  (PR [#2938](https://github.com/scality/metalk8s/pull/2938))
+
+### Bug Fixes
 
 - [#2908](https://github.com/scality/metalk8s/issues/2908) - Make upgrade script
   more robust about static pod restart and improve user experience
@@ -109,6 +123,17 @@
 - Improve the robustness of salt orchestrate execution
   (PR [#3033](https://github.com/scality/metalk8s/pull/3033))
 
+- [UI] Fix memory leak in chart component
+  (PR [#2988](https://github.com/scality/metalk8s/pull/2988))
+
+- [#2840](https://github.com/scality/metalk8s/issues/2840) - Prevent duplicate
+  static Pods from being created when updating their manifests
+  (PR [#3003](https://github.com/scality/metalk8s/pull/3003))
+
+- [#3014](https://github.com/scality/metalk8s/issues/3014) - Fix sosreport
+  `metalk8s` plugin's `describe` option
+  (PR [#3013](https://github.com/scality/metalk8s/pull/3013))
+
 ## Release 2.6.1 (in development)
 
 ### Features Added
@@ -117,7 +142,6 @@
   when close to the expiration date (less than 45 days)
   (PR [#2914](https://github.com/scality/metalk8s/pull/2914))
 
-### Features Added
 - [#2919](https://github.com/scality/metalk8s/issues/2919) - [UI] Ability to
   sort in Nodes list (PR [#2926](https://github.com/scality/metalk8s/pull/2926))
 
