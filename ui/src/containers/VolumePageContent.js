@@ -24,43 +24,16 @@ import {
   NoInstanceSelected,
   TextBadge,
   RightSidePanel,
+  TabsItemsStyle,
 } from '../components/CommonLayoutStyle';
 import { intl } from '../translations/IntlGlobalProvider';
 import { usePrevious } from '../services/utils';
 
 const VolumePageContentContainer = styled.div`
-display: flex;
-flex-direction: row;
-height: 100%;
-width: 100%;
-
-.sc-tabs {
-  margin: 0;
-}
-
-.sc-tabs-bar {
-  height: 40px;
-}
-
-.sc-tabs-item {
-  background-color: ${(props) => props.theme.brand.border};
-  margin-right: ${padding.smaller}
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
-
-  .sc-tabs-item-title {
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    height: 40px;
-    padding: ${padding.small}
-    font-size: ${fontSize.base};
-  }
-}
-
-.sc-tabs-item-content {
-  background-color: ${(props) => props.theme.brand.primary};
-  padding: 0;
-}
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
 `;
 
 // <VolumePageContent> component extracts volume name from URL and holds the volume-specific data.
@@ -269,85 +242,89 @@ const VolumePageContent = (props) => {
 
           {currentVolumeName && volume ? (
             <RightSidePanel>
-              <Tabs activeColor={theme.brand.primary} items={tabsItems}>
-                <Switch>
-                  <Route
-                    path={`${match.url}/overview`}
-                    render={() => (
-                      <VolumeOverviewTab
-                        name={currentVolumeName}
-                        nodeName={volume?.spec?.nodeName}
-                        storage={
-                          pV?.spec?.capacity?.storage ??
-                          intl.translate('unknown')
-                        }
-                        status={volumeStatus ?? intl.translate('unknown')}
-                        storageClassName={volume?.spec?.storageClassName}
-                        creationTimestamp={volume?.metadata?.creationTimestamp}
-                        volumeType={
-                          volume?.spec?.rawBlockDevice
-                            ? RAW_BLOCK_DEVICE
-                            : SPARSE_LOOP_DEVICE
-                        }
-                        usedPodName={
-                          UsedPod ? UsedPod?.name : intl.translate('not_used')
-                        }
-                        devicePath={
-                          volume?.spec?.rawBlockDevice?.devicePath ??
-                          intl.translate('not_applicable')
-                        }
-                        volumeUsagePercentage={currentVolume?.usage}
-                        volumeUsageBytes={currentVolume?.usageRawData ?? 0}
-                        storageCapacity={
-                          volumeListData?.find(
-                            (vol) => vol.name === currentVolumeName,
-                          ).storageCapacity
-                        }
-                        health={
-                          volumeListData?.find(
-                            (vol) => vol.name === currentVolumeName,
-                          ).health
-                        }
-                        condition={currentVolume.status}
-                        // the delete button inside the volume detail card should know that which volume is the first one
-                        volumeListData={volumeListData}
-                        pVList={pVList}
-                        alertlist={alertlist}
-                      />
-                    )}
-                  />
-                  <Route
-                    path={`${match.url}/alerts`}
-                    render={() => (
-                      <VolumeAlertsTab
-                        alertlist={alertlist}
-                        PVCName={PVCName}
-                      />
-                    )}
-                  />
-                  <Route
-                    path={`${match.url}/metrics`}
-                    render={() => (
-                      <VolumeMetricsTab
-                        volumeName={currentVolumeName}
-                        volumeMetricGraphData={volumeMetricGraphData}
-                        // the volume condition compute base on the `status` and `bound/unbound`
-                        volumeCondition={currentVolume.status}
-                        volumePVCName={PVCName}
-                        volumeNamespace={PVCNamespace}
-                      />
-                    )}
-                  />
-                  <Route
-                    path={`${match.url}/details`}
-                    render={() => (
-                      <VolumeDetailsTab
-                        currentVolumeObject={currentVolumeObject}
-                      />
-                    )}
-                  />
-                </Switch>
-              </Tabs>
+              <TabsItemsStyle>
+                <Tabs activeColor={theme.brand.primary} items={tabsItems}>
+                  <Switch>
+                    <Route
+                      path={`${match.url}/overview`}
+                      render={() => (
+                        <VolumeOverviewTab
+                          name={currentVolumeName}
+                          nodeName={volume?.spec?.nodeName}
+                          storage={
+                            pV?.spec?.capacity?.storage ??
+                            intl.translate('unknown')
+                          }
+                          status={volumeStatus ?? intl.translate('unknown')}
+                          storageClassName={volume?.spec?.storageClassName}
+                          creationTimestamp={
+                            volume?.metadata?.creationTimestamp
+                          }
+                          volumeType={
+                            volume?.spec?.rawBlockDevice
+                              ? RAW_BLOCK_DEVICE
+                              : SPARSE_LOOP_DEVICE
+                          }
+                          usedPodName={
+                            UsedPod ? UsedPod?.name : intl.translate('not_used')
+                          }
+                          devicePath={
+                            volume?.spec?.rawBlockDevice?.devicePath ??
+                            intl.translate('not_applicable')
+                          }
+                          volumeUsagePercentage={currentVolume?.usage}
+                          volumeUsageBytes={currentVolume?.usageRawData ?? 0}
+                          storageCapacity={
+                            volumeListData?.find(
+                              (vol) => vol.name === currentVolumeName,
+                            ).storageCapacity
+                          }
+                          health={
+                            volumeListData?.find(
+                              (vol) => vol.name === currentVolumeName,
+                            ).health
+                          }
+                          condition={currentVolume.status}
+                          // the delete button inside the volume detail card should know that which volume is the first one
+                          volumeListData={volumeListData}
+                          pVList={pVList}
+                          alertlist={alertlist}
+                        />
+                      )}
+                    />
+                    <Route
+                      path={`${match.url}/alerts`}
+                      render={() => (
+                        <VolumeAlertsTab
+                          alertlist={alertlist}
+                          PVCName={PVCName}
+                        />
+                      )}
+                    />
+                    <Route
+                      path={`${match.url}/metrics`}
+                      render={() => (
+                        <VolumeMetricsTab
+                          volumeName={currentVolumeName}
+                          volumeMetricGraphData={volumeMetricGraphData}
+                          // the volume condition compute base on the `status` and `bound/unbound`
+                          volumeCondition={currentVolume.status}
+                          volumePVCName={PVCName}
+                          volumeNamespace={PVCNamespace}
+                        />
+                      )}
+                    />
+                    <Route
+                      path={`${match.url}/details`}
+                      render={() => (
+                        <VolumeDetailsTab
+                          currentVolumeObject={currentVolumeObject}
+                        />
+                      )}
+                    />
+                  </Switch>
+                </Tabs>
+              </TabsItemsStyle>
             </RightSidePanel>
           ) : (
             <NoInstanceSelectedContainer>

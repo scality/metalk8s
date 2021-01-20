@@ -3,9 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Switch, Route } from 'react-router-dom';
 import { useHistory, useLocation, useRouteMatch } from 'react-router';
-import styled from 'styled-components';
 import { Tabs } from '@scality/core-ui';
-import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { getPodsListData } from '../services/PodUtils';
 import { useQuery, useRefreshEffect } from '../services/utils';
@@ -27,40 +25,17 @@ import NodePageVolumesTab from '../components/NodePageVolumesTab';
 import NodePagePodsTab from '../components/NodePagePodsTab';
 import NodePagePartitionTabs from '../components/NodePagePartitionTab';
 import NodePageDetailsTab from '../components/NodeDetailsTab';
-import { TextBadge, NoInstanceSelected } from '../components/CommonLayoutStyle';
+import {
+  TextBadge,
+  NoInstanceSelected,
+  TabsItemsStyle,
+} from '../components/CommonLayoutStyle';
 import {
   queryTimeSpansCodes,
   NODE_ALERTS_GROUP,
   PORT_NODE_EXPORTER,
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
-
-const NodePageRSPContainer = styled.div`
-  .sc-tabs {
-    margin: 0;
-  }
-  .sc-tabs-bar {
-    height: 40px;
-  }
-  .sc-tabs-item {
-    margin-right: ${padding.smaller};
-    background-color: ${(props) => props.theme.brand.border};
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    height: 40px;
-
-    .sc-tabs-item-title {
-      height: 40px;
-      font-size: ${fontSize.base};
-      padding: ${padding.small}
-      border-top-left-radius: 4px;
-      border-top-right-radius: 4px;
-    }
-  }
-  .sc-tabs-item-content {
-    padding: 0;
-  }
-`;
 
 // <NodePageRSP> fetches the data for all the tabs given the current selected Node
 // handles the refresh for the metrics tab
@@ -208,7 +183,7 @@ const NodePageRSP = (props) => {
   ];
 
   return name && currentNode ? (
-    <NodePageRSPContainer>
+    <TabsItemsStyle>
       <Tabs items={items}>
         <Switch>
           <Route
@@ -261,7 +236,7 @@ const NodePageRSP = (props) => {
           />
         </Switch>
       </Tabs>
-    </NodePageRSPContainer>
+    </TabsItemsStyle>
   ) : (
     <NoInstanceSelected>
       {name
