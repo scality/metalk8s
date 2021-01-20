@@ -1,9 +1,10 @@
-Downgrade Guide
-***************
-Downgrading a MetalK8s cluster is handled via utility scripts which are
+MetalK8s Cluster Downgrade
+==========================
+
+The MetalK8s Cluster Downgrade is handled via utility scripts which are
 packaged with your current installation.
-This section describes a reliable downgrade procedure for **MetalK8s**
-including all the components that are included in the stack.
+This section describes how to downgrade MetalK8s with all the components
+that are included in the stack.
 
 Supported Versions
 ******************
@@ -13,10 +14,10 @@ Supported Versions
     MetalK8 supports downgrade of **at most** one minor version at a time.
     For example:
 
-    - from 2.4.4 to 2.4.1
-    - from 2.5.1 to 2.4.0
+    - from 2.4.4 to 2.4.1,
+    - from 2.5.1 to 2.4.0.
 
-    Please refer to the
+    Refer to the
     `release notes <https://github.com/scality/metalk8s/releases>`_ for more
     information.
 
@@ -26,47 +27,53 @@ Supported Versions
 
       Version |release| only supports downgrade of patch version.
 
-Downgrade Pre-requisites
-************************
-Before proceeding with the downgrade procedure, make sure to complete the
-pre-requisites listed in :doc:`/operation/preparation`.
+Prerequisites
+*************
 
-Run pre-checks
---------------
+ISO Preparation
+---------------
+
+Provision a new **MetalK8s** ISO by running the utility script shipped
+with the current installation.
+
+.. code::
+
+   /srv/scality/metalk8s-X.X.X/iso-manager.sh -a <path_to_iso>
+
+Pre-checks
+----------
+
 You can test if your environment will successfully downgrade with the following
 command.
+
+.. code::
+
+   /srv/scality/metalk8s-X.Y.Z/downgrade.sh --destination-version \
+     <destination_version> --dry-run --verbose
+
 This will simulate the downgrade pre-checks and provide an overview of the
 changes to be carried out in your MetalK8s cluster.
 
 .. important::
 
-    The version prefix metalk8s-**X.Y.Z** as used below during a MetalK8s
-    downgrade must be the currently installed MetalK8s version.
+    The version prefix metalk8s-**X.Y.Z** must be the *current* installed
+    MetalK8s version.
+
+Downgrade
+*********
+
+#. Ensure that the prerequisites have been met.
+
+#. Run the utility script shipped with the *current* installation
+   providing it with the destination version.
+
+#. From the :term:`Bootstrap node`, launch the downgrade.
 
    .. code::
 
-     /srv/scality/metalk8s-X.Y.Z/downgrade.sh --destination-version \
-       <destination_version> --dry-run --verbose
-
-Downgrade Steps
-***************
-Ensure that the downgrade pre-requisites above have been met before you make
-any step further.
-
-MetalK8s downgrade
-------------------
-
-To downgrade a MetalK8s cluster, run the utility script shipped
-with the **current** installation providing it with the destination version:
+      /srv/scality/metalk8s-X.Y.Z/downgrade.sh --destination-version <version>
 
 .. important::
 
-    The version prefix metalk8s-**X.Y.Z** as used below during a MetalK8s
-    downgrade must be the currently installed MetalK8s version.
-
-- From the :term:`Bootstrap node`, launch the downgrade.
-
-   .. code::
-
-     /srv/scality/metalk8s-X.Y.Z/downgrade.sh --destination-version <version>
-
+    The version prefix metalk8s-**X.Y.Z** must be the *current* installed
+    MetalK8s version.
