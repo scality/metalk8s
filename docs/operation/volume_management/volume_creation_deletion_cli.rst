@@ -1,17 +1,20 @@
 Volume Management using the CLI
 ===============================
 
-To use persistent storage in a MetalK8s cluster, one needs to create **Volume**
-objects.
-In order to create Volumes you need to have **StorageClass** objects registered
-in your cluster. See :doc:`/operation/volume_management/storageclass_creation`
+This section describes how to create and delete a MetalK8s **Volume**
+using the **CLI**.
+To use persistent storage in a MetalK8s cluster, you need to create
+**Volume** objects.
 
-Volume Creation
----------------
+.. important::
 
-This section describes how to create a **Volume** from the **CLI**.
+   **StorageClass** objects must be registered in your cluster to create
+   volumes. For more information refer to :doc:`/operation/volume_management/storageclass_creation`.
 
-#. Create a **Volume** manifest
+Creating a Volume
+-----------------
+
+#. Create a **Volume** manifest.
 
    You can define a new **Volume** using the following template:
 
@@ -30,21 +33,21 @@ This section describes how to create a **Volume** from the **CLI**.
 
    Set the following fields:
 
-   - **name**: the name of your volume, must be unique
+   - **name**: the name of your volume, must be unique.
    - **nodeName**: the name of the node where the volume will be located.
-   - **storageClassName**: the **StorageClass** to use
+   - **storageClassName**: the **StorageClass** to use.
    - **mode**: describes how the volume is intended to be consumed, either
      Block or Filesystem (default to Filesystem if not specified).
-   - **devicePath**: path to the block device (for example, `/dev/sda1`).
+   - **devicePath**: path to the block device (for example: `/dev/sda1`).
 
-#. Create the **Volume**
+#. Create the **Volume**.
 
    .. code-block:: shell
 
       root@bootstrap $ kubectl apply -f volume.yml
 
 
-#. Verify that the **Volume** was created
+#. Check that the **Volume** has been created.
 
    .. code-block:: shell
 
@@ -52,32 +55,28 @@ This section describes how to create a **Volume** from the **CLI**.
        NAME             NODE        STORAGECLASS
        <volume_name>   bootstrap   metalk8s-demo-storageclass
 
-Volume Deletion
----------------
+Deleting a Volume
+-----------------
 
-This section highlights how to delete a **Volume** in a MetalK8s cluster
-using the **CLI**
+.. note::
 
-  .. note:
+   A **Volume** object can only be deleted if there is no backing storage,
+   or if the volume is not in use. Otherwise, the volume will simply be
+   marked for deletion and remain available until one of the conditions
+   is met.
 
-     A **Volume** object can only be deleted if:
-     - There is no backing storage.
-     - The volume is not in use.
-
-     Otherwise, the volume will simply be marked for deletion and remain
-     available until one of the above condition is met.
-
-#. Delete a **Volume**
+#. Delete a **Volume**.
 
    .. code-block:: shell
 
-     root@bootstrap $ kubectl delete volume <volume_name>
-     volume.storage.metalk8s.scality.com <volume_name> deleted
+      root@bootstrap $ kubectl delete volume <volume_name>
+      volume.storage.metalk8s.scality.com <volume_name> deleted
 
 
-#. Check that the **Volume** has been deleted
+#. Check that the **Volume** has been deleted.
 
    .. note::
+
       The command below returns a list of all volumes.
       The deleted volume entry should not be found in the list.
 

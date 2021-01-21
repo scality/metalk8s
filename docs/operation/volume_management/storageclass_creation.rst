@@ -1,9 +1,9 @@
 StorageClass Creation
 =====================
 
-**MetalK8s** uses **StorageClass** objects to describe how **Volumes** are
+MetalK8s uses **StorageClass** objects to describe how volumes are
 formatted and mounted.
-This section hightlights how to create a Storageclass using the **CLI**.
+This procedure explains how to create a Storageclass using the **CLI**.
 
 #. Create a **StorageClass** manifest.
 
@@ -27,7 +27,7 @@ This section hightlights how to create a Storageclass using the **CLI**.
    Set the following fields:
 
       - **mountOptions**: specifies how the volume should be mounted. For
-        example **rw** (read/write), **ro** (read-only).
+        example: **rw** (read/write), or **ro** (read-only).
       - **fsType**: specifies the filesystem to use on the volume.
         **xfs** and **ext4** are the only currently supported file system types.
       - **mkfsOptions**: specifies how the volume should be formatted.
