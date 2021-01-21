@@ -37,9 +37,9 @@ Configure kubelet service:
     - template: jinja
     - user: root
     - group : root
-    - mode: 644
+    - mode: '0644'
     - makedirs: True
-    - dir_mode: 755
+    - dir_mode: '0755'
     - context:
         env_file: "/var/lib/kubelet/kubeadm-flags.env"
         config_file: "/var/lib/kubelet/config.yaml"

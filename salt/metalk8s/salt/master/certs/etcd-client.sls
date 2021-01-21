@@ -13,9 +13,9 @@ Create salt master etcd client private key:
     - verbose: False
     - user: root
     - group: root
-    - mode: 600
+    - mode: '0600'
     - makedirs: True
-    - dir_mode: 755
+    - dir_mode: '0755'
     - require:
       - metalk8s_package_manager: Install m2crypto
     - unless:
@@ -36,8 +36,8 @@ Generate salt master etcd client certificate:
         default(certificates.client.days_remaining) }}
     - user: root
     - group: root
-    - mode: 644
+    - mode: '0644'
     - makedirs: True
-    - dir_mode: 755
+    - dir_mode: '0755'
     - require:
       - x509: Create salt master etcd client private key

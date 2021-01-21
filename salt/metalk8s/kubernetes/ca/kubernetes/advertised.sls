@@ -10,9 +10,9 @@ Ensure kubernetes CA cert is present:
     - name: /etc/kubernetes/pki/ca.crt
     - user: root
     - group : root
-    - mode: 644
+    - mode: '0644'
     - makedirs: True
-    - dir_mode: 755
+    - dir_mode: '0755'
     - contents: {{ ca_cert.splitlines() | tojson }}
 
 {%- else %}

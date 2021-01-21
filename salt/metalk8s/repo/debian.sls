@@ -27,7 +27,7 @@ Configure {{ repo_name }} repository:
     - template: jinja
     - user: root
     - group: root
-    - mode: 644
+    - mode: '0644'
     - context:
         type: {{ repo_config.type }}
         options: {{ options }}

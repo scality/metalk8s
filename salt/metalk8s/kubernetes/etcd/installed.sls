@@ -40,7 +40,7 @@ include:
 Create etcd database directory:
   file.directory:
     - name: /var/lib/etcd
-    - dir_mode: 750
+    - dir_mode: '0750'
     - user: root
     - group: root
     - makedirs: True

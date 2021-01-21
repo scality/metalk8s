@@ -10,9 +10,9 @@ Ensure SA pub key is present:
     - name: /etc/kubernetes/pki/sa.pub
     - user: root
     - group : root
-    - mode: 644
+    - mode: '0644'
     - makedirs: True
-    - dir_mode: 755
+    - dir_mode: '0755'
     - contents: {{ sa_pub_key.splitlines() | tojson }}
 
 {%- else %}
@@ -36,9 +36,9 @@ Ensure SA private key is present:
     - name: /etc/kubernetes/pki/sa.key
     - user: root
     - group: root
-    - mode: 600
+    - mode: '0600'
     - makedirs: True
-    - dir_mode: 755
+    - dir_mode: '0755'
     - contents: {{ sa_priv_key.splitlines() | tojson }}
 
 {%- else %}

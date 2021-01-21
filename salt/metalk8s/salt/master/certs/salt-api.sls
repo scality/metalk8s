@@ -13,9 +13,9 @@ Create Salt API private key:
     - verbose: False
     - user: root
     - group: root
-    - mode: 600
+    - mode: '0600'
     - makedirs: True
-    - dir_mode: 755
+    - dir_mode: '0755'
     - require:
       - metalk8s_package_manager: Install m2crypto
     - unless:
@@ -49,8 +49,8 @@ Generate Salt API certificate:
         default(certificates.server.days_remaining) }}
     - user: root
     - group: root
-    - mode: 644
+    - mode: '0644'
     - makedirs: True
-    - dir_mode: 755
+    - dir_mode: '0755'
     - require:
       - x509: Create Salt API private key

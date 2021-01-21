@@ -47,9 +47,9 @@ Create containerd service drop-in:
     - template: jinja
     - user: root
     - group: root
-    - mode: 0644
+    - mode: '0644'
     - makedirs: true
-    - dir_mode: 0755
+    - dir_mode: '0755'
     - context:
         containerd_args:
           - --log-level
