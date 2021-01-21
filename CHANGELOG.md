@@ -42,6 +42,10 @@
 
 ## Release 2.7.1 (in development)
 
+### Bug fixes
+- Fix a bug where salt-minion process not get properly restarted
+  (PR [#3059](https://github.com/scality/metalk8s/pull/3059))
+
 ## Release 2.7.0
 ### Features Added
 - [#2964](https://github.com/scality/metalk8s/issues/2964) - [UI] Ability to
