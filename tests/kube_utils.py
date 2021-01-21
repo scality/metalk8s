@@ -100,8 +100,6 @@ def get_pods(
         field_selector.append('status.phase={}'.format(state))
 
     if node:
-        assert ssh_config is not None, \
-            'Must provide an `ssh_config` if searching per Node'
         nodename = utils.get_node_name(node, ssh_config)
         field_selector.append('spec.nodeName={}'.format(nodename))
 
