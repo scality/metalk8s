@@ -25,7 +25,7 @@ import {
   TextBadge,
   RightSidePanel,
   TabsItemsStyle,
-} from '../components/CommonLayoutStyle';
+} from '../components/style/CommonLayoutStyle';
 import { intl } from '../translations/IntlGlobalProvider';
 import { usePrevious } from '../services/utils';
 

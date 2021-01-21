@@ -29,7 +29,7 @@ import {
   TextBadge,
   NoInstanceSelected,
   TabsItemsStyle,
-} from '../components/CommonLayoutStyle';
+} from '../components/style/CommonLayoutStyle';
 import {
   queryTimeSpansCodes,
   NODE_ALERTS_GROUP,

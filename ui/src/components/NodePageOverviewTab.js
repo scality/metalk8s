@@ -12,7 +12,7 @@ import ActiveAlertsCounter from './ActiveAlertsCounter';
 import { Button, Steppers, Loader } from '@scality/core-ui';
 import isEmpty from 'lodash.isempty';
 import { deployNodeAction } from '../ducks/app/nodes';
-import { NodeTab } from './CommonLayoutStyle';
+import { NodeTab } from './style/CommonLayoutStyle';
 import CircleStatus from './CircleStatus';
 import { API_STATUS_UNKNOWN } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';

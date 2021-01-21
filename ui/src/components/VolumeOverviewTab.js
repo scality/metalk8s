@@ -20,7 +20,7 @@ import {
 } from '../constants';
 import { Button, Modal, ProgressBar, Loader } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
-import { VolumeTab } from './CommonLayoutStyle';
+import { VolumeTab } from './style/CommonLayoutStyle';
 import { formatSizeForDisplay } from '../services/utils';
 
 const VolumeDetailCardContainer = styled.div`

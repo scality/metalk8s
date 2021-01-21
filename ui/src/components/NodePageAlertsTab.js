@@ -11,7 +11,7 @@ import {
 import { useTable } from 'react-table';
 import ActiveAlertsFilter from './ActiveAlertsFilters';
 import { useQuery } from '../services/utils';
-import { NodeTab } from './CommonLayoutStyle';
+import { NodeTab } from './style/CommonLayoutStyle';
 import { STATUS_WARNING, STATUS_CRITICAL } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 

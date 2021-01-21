@@ -8,7 +8,7 @@ import {
   BreadcrumbLabel,
 } from '../components/BreadcrumbStyle';
 import NodePageContent from './NodePageContent';
-import { PageContainer } from '../components/CommonLayoutStyle';
+import { PageContainer } from '../components/style/CommonLayoutStyle';
 import { fetchNodesIPsInterfaceAction } from '../ducks/app/nodes';
 import { fetchAlertsAlertmanagerAction } from '../ducks/app/alerts';
 import { getNodeListData } from '../services/NodeUtils';

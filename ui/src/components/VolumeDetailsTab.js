@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { intl } from '../translations/IntlGlobalProvider';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
-import { VolumeTab } from './CommonLayoutStyle';
+import { VolumeTab } from './style/CommonLayoutStyle';
 
 const VolumeObjectContent = styled.div`
   white-space: pre-wrap;

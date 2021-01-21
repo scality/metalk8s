@@ -97,7 +97,7 @@ const LoaderContainer = styled.div`
 `;
 const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
   const theme = useTheme();
-  let { data: partitions, status } = useQuery(
+  const { data: partitions, status } = useQuery(
     ['nodeDevices', instanceIP],
     useCallback(
       () =>
