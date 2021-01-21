@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
-import { NodeTab } from './CommonLayoutStyle';
+import { NodeTab } from './style/CommonLayoutStyle';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const NodeObjectContent = styled.div`

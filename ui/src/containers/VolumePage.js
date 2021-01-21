@@ -30,7 +30,7 @@ import {
 } from '../components/BreadcrumbStyle';
 import { getVolumeListData } from '../services/NodeVolumesUtils';
 import { Breadcrumb } from '@scality/core-ui';
-import { PageContainer } from '../components/CommonLayoutStyle';
+import { PageContainer } from '../components/style/CommonLayoutStyle';
 import { intl } from '../translations/IntlGlobalProvider';
 import { useTypedSelector } from '../hooks';
 

@@ -2,7 +2,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Button } from '@scality/core-ui';
-import { NodeTab } from './CommonLayoutStyle';
+import { NodeTab } from './style/CommonLayoutStyle';
 import { intl } from '../translations/IntlGlobalProvider';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import NodePartitionTable from './NodePartitionTable';

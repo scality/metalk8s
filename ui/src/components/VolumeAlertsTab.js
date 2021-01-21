@@ -12,7 +12,7 @@ import ActiveAlertsFilters from './ActiveAlertsFilters';
 import { Chips } from '@scality/core-ui';
 import { useTable } from 'react-table';
 import { intl } from '../translations/IntlGlobalProvider';
-import { VolumeTab } from './CommonLayoutStyle';
+import { VolumeTab } from './style/CommonLayoutStyle';
 
 // Overriding overflow for the Tab since the table components has inner scroll
 const VolumeAlertTab = styled(VolumeTab)`

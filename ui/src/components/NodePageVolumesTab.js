@@ -20,7 +20,7 @@ import VolumeListTable from '../components/VolumeListTable';
 import { getVolumeListData } from '../services/NodeVolumesUtils';
 import { useRefreshEffect } from '../services/utils';
 import { fontSize } from '@scality/core-ui/dist/style/theme';
-import { NodeTab } from './CommonLayoutStyle';
+import { NodeTab } from './style/CommonLayoutStyle';
 
 // Overriding overflow for the Tab since the table components has inner scroll
 export const NodesVolumesTab = styled(NodeTab)`

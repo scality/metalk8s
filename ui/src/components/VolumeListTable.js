@@ -34,7 +34,7 @@ import {
   SortCaretWrapper,
   SortIncentive,
   TableHeader,
-} from './CommonLayoutStyle';
+} from './style/CommonLayoutStyle';
 import { UnknownIcon, TooltipContent } from './TableRow';
 
 const VolumeListContainer = styled.div`

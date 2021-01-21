@@ -35,7 +35,7 @@ import {
   RowGraphContainer,
   GraphTitle,
   GraphWrapper,
-} from './CommonLayoutStyle';
+} from './style/CommonLayoutStyle';
 
 const MetricGraphCardContainer = styled.div`
   min-height: 270px;

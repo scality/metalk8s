@@ -13,7 +13,7 @@ import {
   LeftSideInstanceList,
   PageContentContainer,
   RightSidePanel,
-} from '../components/CommonLayoutStyle';
+} from '../components/style/CommonLayoutStyle';
 import { usePrevious } from '../services/utils';
 
 // <NodePageContent> get the current selected node and pass it to <NodeListTable> and <NodePageRSP>

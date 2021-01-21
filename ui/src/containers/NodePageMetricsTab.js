@@ -18,7 +18,7 @@ import {
   RowGraphContainer,
   GraphTitle,
   GraphWrapper,
-} from '../components/CommonLayoutStyle';
+} from '../components/style/CommonLayoutStyle';
 import {
   addMissingDataPoint,
   fromUnixTimestampToDate,
