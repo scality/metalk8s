@@ -44,23 +44,6 @@ const LoaderContainer = styled(Loader)`
   padding-left: ${padding.larger};
 `;
 
-const DropdownContainer = styled.div`
-  // TODO: Make the changes in core-ui
-  .sc-dropdown {
-    padding-left: 25px;
-  }
-  
-  .sc-dropdown > div {
-    background-color: ${(props) => props.theme.brand.primary};
-    border: 1px solid ${(props) => props.theme.brand.borderLight}
-    border-radius: 3px;
-  }
-  
-  .sc-button {
-    background-color: ${(props) => props.theme.brand.info};
-  }
-`;
-
 const NodePageMetricsTab = (props) => {
   const { nodeStats, instanceIP } = props;
   const dispatch = useDispatch();
@@ -273,14 +256,12 @@ const NodePageMetricsTab = (props) => {
           rel="noopener noreferrer"
           data-cy="advanced_metrics_node_detailed"
         />
-        <DropdownContainer>
-          <Dropdown
-            items={metricsTimeSpanDropdownItems}
-            text={metricsTimeSpan}
-            size="small"
-            data-cy="metrics_timespan_selection"
-          />
-        </DropdownContainer>
+        <Dropdown
+          items={metricsTimeSpanDropdownItems}
+          text={metricsTimeSpan}
+          size="small"
+          data-cy="metrics_timespan_selection"
+        />
       </MetricsActionContainer>
       <GraphsContainer id="graph_container">
         <RowGraphContainer>
