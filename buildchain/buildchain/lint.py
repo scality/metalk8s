@@ -11,17 +11,20 @@ linting tools in parallel).
 
 Overview:
                 ┌──────────────┐
-           ╱───>│ lint:python  │
-          ╱     └──────────────┘
-         ╱      ┌──────────────┐
-        ╱   ───>│ lint:yaml    │
-┌────────┐╱     └──────────────┘
+        ┌──────>│ lint:python  │
+        │       └──────────────┘
+        │       ┌──────────────┐
+        │──────>│ lint:yaml    │
+┌────────┐      └──────────────┘
 │  lint  │
-└────────┘╲     ┌──────────────┐
-        ╲   ───>│ lint:shell   │
-         ╲      └──────────────┘
-          ╲     ┌──────────────┐
-           ╲───>│ lint:go      │
+└────────┘      ┌──────────────┐
+        │──────>│ lint:shell   │
+        │       └──────────────┘
+        │       ┌──────────────┐
+        │──────>│ lint:go      │
+        │       └──────────────┘
+        │       ┌──────────────┐
+        └──────>│ lint:sls     │
                 └──────────────┘
 """
 
@@ -98,6 +101,22 @@ def lint_yaml() -> types.TaskDict:
     }
 
 # }}}
+# SLS {{{
+
+def lint_sls() -> types.TaskDict:
+    """Run Salt SLS linting."""
+    sls_files = [
+        filepath for filepath in utils.git_ls() if '.sls' in filepath.suffixes
+    ]
+    return {
+        'name': 'sls',
+        'title': utils.title_with_subtask_name('LINT'),
+        'doc': lint_sls.__doc__,
+        'actions': [['tox', '-e', 'lint-sls']],
+        'file_dep': sls_files
+    }
+
+# }}}
 # Go {{{
 
 def check_go_fmt() -> Optional[doit.exceptions.TaskError]:
@@ -153,6 +172,7 @@ LINTERS : Tuple[Callable[[], types.TaskDict], ...] = (
     lint_python,
     lint_shell,
     lint_yaml,
+    lint_sls,
     lint_go,
 )
 
