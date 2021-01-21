@@ -102,6 +102,7 @@ export const VolumeTab = styled.div`
   height: calc(100vh - 174px);
   color: ${(props) => props.theme.brand.textPrimary};
   padding-bottom: ${padding.base};
+  background-color: ${(props) => props.theme.brand.primary};
 `;
 
 export const SortCaretWrapper = styled.span`
@@ -139,7 +140,7 @@ export const MetricsActionContainer = styled.div`
 
   .sc-dropdown > div {
     background-color: ${(props) => props.theme.brand.primary};
-    border: 1px solid ${(props) => props.theme.brand.borderLight}
+    border: 1px solid ${(props) => props.theme.brand.borderLight};
     border-radius: 3px;
   }
 
