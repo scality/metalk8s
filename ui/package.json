@@ -6,7 +6,7 @@
     "@fortawesome/fontawesome-free": "^5.7.2",
     "@kubernetes/client-node": "github:scality/kubernetes-client-javascript.git#browser-0.10.2-62-g61d8543",
     "@scality/core-ui": "github:scality/core-ui.git#v0.7.0",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "formik": "2.2.5",
     "lodash.isempty": "^4.4.0",
     "lodash.sortby": "^4.7.0",
