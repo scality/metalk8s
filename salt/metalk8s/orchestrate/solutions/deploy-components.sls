@@ -131,7 +131,7 @@ Cannot proceed with deployment of Solution cluster-wide components:
       {%- do updated_version.update({
         'active': version.version == desired_version
       }) %}
-      {%- do updated_versions.append(updated_version)%}
+      {%- do updated_versions.append(updated_version) %}
     {%- endfor %}
 
 Update metalk8s-solutions ConfigMap for Solution {{ name }}:
