@@ -74,7 +74,7 @@ Unable to compare version for node {{ node }}, version_cmp {{ dest_version }} {{
 
   {#- Check Kubernetes node object status (should be Ready) #}
   {%- set node_obj = salt.metalk8s_kubernetes.get_object(kind='Node', apiVersion='v1', name=node) %}
-  {%- set condition = node_obj['status']['conditions'] | selectattr('type', 'equalto', 'Ready') | first %} 
+  {%- set condition = node_obj['status']['conditions'] | selectattr('type', 'equalto', 'Ready') | first %}
 
   {%- if condition['status'] != 'True' %}
 
