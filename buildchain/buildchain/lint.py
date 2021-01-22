@@ -57,6 +57,17 @@ def lint_python() -> types.TaskDict:
         buildchain/'dodo.py',
         *buildchain.glob('buildchain/*.py'),
         *buildchain.glob('buildchain/targets/*.py'),
+        constants.ROOT/'packages/debian/common/download_packages.py',
+        constants.ROOT/'salt/metalk8s/volumes/files/sparse_volume_cleanup.py',
+        *constants.ROOT.glob('salt/_modules/*.py'),
+        *constants.ROOT.glob('salt/_states/*.py'),
+        *constants.ROOT.glob('salt/_utils/*.py'),
+        *constants.ROOT.glob('salt/_pillar/*.py'),
+        *constants.ROOT.glob('salt/_runners/*.py'),
+        *constants.ROOT.glob('salt/_auth/*.py'),
+        *constants.ROOT.glob('salt/_beacons/*.py'),
+        *constants.ROOT.glob('salt/_renderers/*.py'),
+        *constants.ROOT.glob('salt/_roster/*.py')
     ]
     cmd = ' '.join(map(shlex.quote, ['tox', '-e', 'lint-python']))
     env = {'PATH': os.environ['PATH'], 'OSTYPE': os.uname().sysname}

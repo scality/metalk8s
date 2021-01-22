@@ -1,3 +1,4 @@
 mypy == 0.740
 pylint ~= 2.4
 pyenchant ~= 2.0
+saltpylint == 2020.9.28
