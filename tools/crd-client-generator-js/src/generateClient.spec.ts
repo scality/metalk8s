@@ -22,4 +22,21 @@ describe('client generator', () => {
       expect(result).toBe(fs.readFileSync(expectedFile, {encoding:'utf8'}));
   })
 
+  it('should generate expected namespaced scoped client given v1 namespaced scoped CRD file', () => {
+    const crdFile = path.join(__dirname, './__TESTS__/v1.namespaced.crd.yaml');
+    const destFile = path.join(__dirname, './__TESTS__/expected.js');
+    const expectedFile = path.join(__dirname, './__TESTS__/expected.v1.namespaced.crd.client.js');
+
+    const result = generateClient(crdFile, destFile);
+    expect(result).toBe(fs.readFileSync(expectedFile, {encoding:'utf8'}));
+  })
+
+  it('should generate expected namespaced scoped client given multi version v1 namespaced scoped CRD file', () => {
+    const crdFile = path.join(__dirname, './__TESTS__/v1.multiversion.namespaced.crd.yaml');
+    const destFile = path.join(__dirname, './__TESTS__/expected.js');
+    const expectedFile = path.join(__dirname, './__TESTS__/expected.v1.multiversion.namespaced.crd.client.js');
+
+    const result = generateClient(crdFile, destFile);
+    expect(result).toBe(fs.readFileSync(expectedFile, {encoding:'utf8'}));
+  })
 })
