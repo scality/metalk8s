@@ -14,6 +14,11 @@
   (PR [#3153](https://github.com/scality/metalk8s/pull/3153), backport of
   PR [#3069](https://github.com/scality/metalk8s/pull/3069))
 
+- Improve error handling when providing invalid CA minion in Bootstrap
+  configuration file
+  (PR [#3153](https://github.com/scality/metalk8s/pull/3153), backport of
+  PR [#3065](https://github.com/scality/metalk8s/pull/3065))
+
 ### Bug fixes
 - Do not install `containerd.io` instead of `containerd` and `runc` when this
   package is available in one configured repository
