@@ -3,8 +3,12 @@
 ## Release 2.7.1 (in development)
 
 ### Bug fixes
-- Fix a bug where salt-minion process not get properly restarted
+- Fix a bug where salt-minion process does not get properly restarted
   (PR [#3059](https://github.com/scality/metalk8s/pull/3059))
+- [#3064](https://github.com/scality/metalk8s/issues/3064) - Fix upgrade from
+  2.6.x (PR [#3048](https://github.com/scality/metalk8s/pull/3048))
+- Prevent unneeded log warning about kubeconfig regeneration
+  (PR [#3053](https://github.com/scality/metalk8s/pull/3053))
 
 ## Release 2.7.0
 ### Features Added
