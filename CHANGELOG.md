@@ -39,6 +39,10 @@
   MetalK8s UI node page
   (PR [#3045](https://github.com/scality/metalk8s/pull/3045))
 
+- Improve error handling when providing invalid CA minion in Bootstrap
+  configuration file
+  (PR [#3065](https://github.com/scality/metalk8s/pull/3065))
+
 ### Bug fixes
 - [#3022](https://github.com/scality/metalk8s/issues/3022) - Ensure salt-master
   container can start at reboot even if local salt-minion is down
