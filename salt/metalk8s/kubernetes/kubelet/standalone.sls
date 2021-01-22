@@ -13,9 +13,9 @@ Create kubelet service environment file:
     - template: jinja
     - user: root
     - group: root
-    - mode: 644
+    - mode: '0644'
     - makedirs: True
-    - dir_mode: 750
+    - dir_mode: '0750'
     - context:
     - context:
         options:
@@ -35,9 +35,9 @@ Create kubelet config file:
     - name: "/var/lib/kubelet/config.yaml"
     - user: root
     - group: root
-    - mode: 644
+    - mode: '0644'
     - makedirs: True
-    - dir_mode: 750
+    - dir_mode: '0750'
     - formatter: yaml
     - dataset:
         address: {{ grains['metalk8s']['control_plane_ip'] }}
@@ -127,9 +127,9 @@ Configure kubelet service as standalone:
     - template: jinja
     - user: root
     - group: root
-    - mode: 644
+    - mode: '0644'
     - makedirs: True
-    - dir_mode: 755
+    - dir_mode: '0755'
     - context:
         env_file: "/var/lib/kubelet/kubeadm-flags.env"
         manifest_path: "/etc/kubernetes/manifests"

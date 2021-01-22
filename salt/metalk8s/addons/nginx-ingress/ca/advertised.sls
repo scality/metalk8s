@@ -12,9 +12,9 @@ Ensure Ingress CA cert is present:
     - name: /etc/metalk8s/pki/nginx-ingress/ca.crt
     - user: root
     - group : root
-    - mode: 644
+    - mode: '0644'
     - makedirs: True
-    - dir_mode: 755
+    - dir_mode: '0755'
     - contents: {{ ingress_ca_cert.splitlines() | tojson }}
 
 {%- else %}

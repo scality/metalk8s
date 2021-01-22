@@ -10,9 +10,9 @@ Create SA private key:
     - verbose: False
     - user: root
     - group: root
-    - mode: 600
+    - mode: '0600'
     - makedirs: True
-    - dir_mode: 755
+    - dir_mode: '0755'
     - require:
       - metalk8s_package_manager: Install m2crypto
     - unless:
@@ -24,9 +24,9 @@ Store SA public key:
     - contents: __slot__:salt:x509.get_public_key("{{ private_key_path }}")
     - user: root
     - group: root
-    - mode: 644
+    - mode: '0644'
     - makedirs: True
-    - dir_mode: 755
+    - dir_mode: '0755'
     - require:
       - x509: Create SA private key
 

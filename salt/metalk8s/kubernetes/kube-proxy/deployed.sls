@@ -180,7 +180,7 @@ Deploy kube-proxy (Role):
   metalk8s_kubernetes.object_present:
     - manifest:
         apiVersion: rbac.authorization.k8s.io/v1
-        kind: Role 
+        kind: Role
         metadata:
           name: kube-proxy
           namespace: kube-system

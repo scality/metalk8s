@@ -22,7 +22,7 @@ Add beacon for certificates expiration:
   beacon.present:
     - name: metalk8s_watch_certificates_expiry
     - beacon_module: cert_info
-    - interval: {{ certificates.beacon.interval }}
+    - interval: {{ certificates.beacon.interval }}
     - disable_during_state_run: True
     - notify_days: {{ certificates.beacon.notify_days }}
     - files: {{ certs | json }}
@@ -41,7 +41,7 @@ Add beacon for kubeconfig expiration:
   beacon.present:
     - name: metalk8s_watch_kubeconfig_expiry
     - beacon_module: metalk8s_kubeconfig_info
-    - interval: {{ certificates.beacon.interval }}
+    - interval: {{ certificates.beacon.interval }}
     - disable_during_state_run: True
     - notify_days: {{ certificates.beacon.notify_days }}
     - files: {{ kubeconfigs | json }}

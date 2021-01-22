@@ -39,9 +39,9 @@ Create CNI calico configuration file:
     - name: /etc/cni/net.d/10-calico.conflist
     - user: root
     - group: root
-    - mode: 644
+    - mode: '0644'
     - makedirs: True
-    - dir_mode: 755
+    - dir_mode: '0755'
     - formatter: json
     - dataset:
         name: k8s-pod-network

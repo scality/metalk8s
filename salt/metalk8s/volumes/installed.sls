@@ -35,7 +35,7 @@ Set up systemd template unit for sparse loop device provisioning:
     - source: salt://{{ slspath }}/files/metalk8s-sparse-volume@.service
     - user: root
     - group : root
-    - mode: 644
+    - mode: '0644'
 
 Install clean-up script:
   file.managed:
@@ -43,4 +43,4 @@ Install clean-up script:
     - source: salt://{{ slspath }}/files/sparse_volume_cleanup.py
     - user: root
     - group : root
-    - mode: 755
+    - mode: '0755'

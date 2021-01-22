@@ -68,7 +68,6 @@ Convert old Dex ServiceConfiguration to new format:
                 {{ config_data.spec.connectors | yaml(False) | indent(16) }}
             {%- endif %}
 
-          
           {# We backup the previous config, in case of issues #}
           previous-config.yaml: |-
             {{ config_data | yaml(False) | indent(12) }}

@@ -10,8 +10,8 @@ Archive {{ archive.iso }} available:
   - changes: false
   - result: false
   - comment: >
-      Unable to retrieve archive version from given archive file 
-      {{ archive.iso }}, assumed to be an ISO archive containing a 
+      Unable to retrieve archive version from given archive file
+      {{ archive.iso }}, assumed to be an ISO archive containing a
       "product.txt" file.
 
     {%- else %}

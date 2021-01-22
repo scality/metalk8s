@@ -18,7 +18,7 @@ include:
 Create encryption configuration from scratch:
   file.managed:
     - name: {{ encryption_source_path }}
-    - mode: 0600
+    - mode: '0600'
     - makedirs: True
     - contents: {{ encryption_key }}
 
@@ -31,7 +31,7 @@ Create encryption configuration from scratch:
 Recreate encryption configuration from pillar:
   file.serialize:
     - name: {{ encryption_k8s_path }}
-    - mode: 0600
+    - mode: '0600'
     - dataset:
         apiVersion: apiserver.config.k8s.io/v1
         kind: EncryptionConfiguration

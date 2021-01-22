@@ -1,7 +1,7 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
-{%- set prometheus_defaults = salt.slsutil.renderer( 
+{%- set prometheus_defaults = salt.slsutil.renderer(
         'salt://metalk8s/addons/prometheus-operator/config/prometheus.yaml',
         saltenv=saltenv
     )

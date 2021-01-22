@@ -1,0 +1,3 @@
+skip_list:
+ - 204 # Line too long
+ - 206 # https://github.com/warpnet/salt-lint/issues/201
