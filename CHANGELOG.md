@@ -35,6 +35,10 @@
   packages already installed on the machine before doing all the installation
   (PR [#3050](https://github.com/scality/metalk8s/pull/3050))
 
+- Improve error handling when providing invalid CA minion in Bootstrap
+  configuration file
+  (PR [#3065](https://github.com/scality/metalk8s/pull/3065))
+
 ### Bug fixes
 - [#3022](https://github.com/scality/metalk8s/issues/3022) - Ensure salt-master
   container can start at reboot even if local salt-minion is down
