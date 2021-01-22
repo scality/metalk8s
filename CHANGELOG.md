@@ -1,7 +1,6 @@
 # CHANGELOG
 
-## Release 2.7.1 (in development)
-
+## Release 2.7.1
 ### Bug fixes
 - Fix a bug where salt-minion process does not get properly restarted
   (PR [#3059](https://github.com/scality/metalk8s/pull/3059))
