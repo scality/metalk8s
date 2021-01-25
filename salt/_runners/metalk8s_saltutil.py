@@ -2,7 +2,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 import logging
 import time
 
-from salt.exceptions import CommandExecutionError
+from salt.exceptions import CommandExecutionError, SaltInvocationError
 import salt.client
 import salt.utils.extmods
 
