@@ -1,6 +1,7 @@
 import errno
 import logging
 
+import salt.utils.files
 
 SA_PRIVATE_KEY_PATH = "/etc/kubernetes/pki/sa.key"
 APISERVER_KEY_PATH = "/etc/metalk8s/crypt/apiserver.key"
@@ -16,7 +17,7 @@ def __virtual__():
 
 def _read_private_key(key_name, key_path):
     try:
-        with open(key_path, "r") as key_file:
+        with salt.utils.files.fopen(key_path, "r") as key_file:
             key_data = key_file.read()
     except IOError as exn:
         if exn.errno == errno.ENOENT:
