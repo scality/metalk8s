@@ -277,8 +277,10 @@ def _get_flags(klass, kind, default, *args):
     for arg in args:
         flag = getattr(klass, arg)
         if flag is None:
-            raise ValueError('{} is not a valid flag for the {} prober'\
-                             .format(arg, kind))
+            raise ValueError(
+                '{} is not a valid flag for the {} prober'
+                .format(arg, kind)
+            )
         flags.append(flag)
     return functools.reduce(lambda x, y: x | y, flags, 0)
 
