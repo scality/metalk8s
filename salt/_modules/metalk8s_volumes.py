@@ -247,8 +247,10 @@ class Volume():
                 'backing device `{}` already formatted'.format(self.path)
             )
         if device_info.has_partition:
-            raise Exception('backing device `{}` contains a partition table'\
-                            .format(self.path))
+            raise Exception(
+                'backing device `{}` contains a partition table'
+                .format(self.path)
+            )
         storage_class = self.get('spec.storageClass')
         # If we got a string that means the name wasn't replaced by the object.
         if isinstance(storage_class, six.string_types):
