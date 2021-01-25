@@ -100,8 +100,8 @@ def minions_by_role(role, nodes=None):
             nodes = __pillar__['metalk8s']['nodes']
         except Exception as exc:
             raise CommandExecutionError(
-                "Can't retrieve 'metalk8s:nodes' pillar: {}".format(exc)
-            )
+                "Can't retrieve 'metalk8s:nodes' pillar"
+            ) from exc
 
     pillar_errors = nodes.pop('_errors', None)
     if pillar_errors:
@@ -346,8 +346,8 @@ def format_slots(data):
             return slots_callers[fmt[1]][fun](*args, **kwargs)
         except Exception as exc:
             raise CommandExecutionError(
-                "Unable to compute slot '{}': {}".format(data, exc)
-            )
+                "Unable to compute slot '{}'".format(data)
+            ) from exc
 
     return data
 
