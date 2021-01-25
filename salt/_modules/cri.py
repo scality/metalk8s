@@ -171,9 +171,9 @@ def wait_container(name, state, timeout=60, delay=5):
         if out['retcode'] == 0 and out['stdout']:
             return True
         time.sleep(delay)
-    else:
-        log.error('Failed to find container "%s" in state "%s"', name, state)
-        return False
+
+    log.error('Failed to find container "%s" in state "%s"', name, state)
+    return False
 
 
 def component_is_running(name):
