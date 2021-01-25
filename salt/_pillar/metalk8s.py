@@ -184,7 +184,7 @@ def ext_pillar(minion_id, pillar, bootstrap_config):
         if not isinstance(metal_data['archives'], list):
             # Special case for archives in pillar
             __utils__['pillar_utils.promote_errors'](metal_data, 'archives')
-        for key in ['ca',]:
+        for key in ['ca']:
             __utils__['pillar_utils.promote_errors'](metal_data, key)
         for key in ['networks', 'metalk8s']:
             __utils__['pillar_utils.promote_errors'](result, key)
