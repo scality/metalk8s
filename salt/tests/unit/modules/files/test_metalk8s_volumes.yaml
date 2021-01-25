@@ -413,7 +413,7 @@ create:
   - name: my-sparse-volume
     pillar_volumes: *volumes_details
     ftruncate: False
-    raise_msg: "cannot create sparse file at .*: An error has occurred"
+    raise_msg: "cannot create sparse file at .*"
 
   ## SPARSE block volume
   # create a simple sparse volume
@@ -424,7 +424,7 @@ create:
   - name: my-sparse-block-volume
     pillar_volumes: *volumes_details
     ftruncate: False
-    raise_msg: "cannot create sparse file at .*: An error has occurred"
+    raise_msg: "cannot create sparse file at .*"
 
   ## RAW BLOCK DEVICE volume
   # create on raw block device (nothing to create)
