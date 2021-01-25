@@ -11,7 +11,7 @@ common_tests:
       a: b
     info_scope: null
     raises: True
-    result: "Invalid manifest: An error has occurred"
+    result: "Invalid manifest"
 
   # Error giving manifest and name (manifest file path)
   - name: /path/to/my/manifest.yaml
@@ -27,13 +27,13 @@ common_tests:
   - name: /invalid/path/manifest.yaml
     manifest_file_content: null
     raises: True
-    result: 'Failed to read file "/invalid/path/manifest.yaml": An error has occurred'
+    result: 'Failed to read file "/invalid/path/manifest.yaml"'
 
   # Invalid YAML manifest file
   - name: /path/to/my/invalid-manifest.yaml
     manifest_file_content: False
     raises: True
-    result: 'Invalid YAML in file "/path/to/my/invalid-manifest.yaml": An error has occurred'
+    result: 'Invalid YAML in file "/path/to/my/invalid-manifest.yaml"'
 
 create_object:
   # Simple manifest without labels
@@ -116,9 +116,7 @@ create_object:
         name: my_node
     api_status_code: 0
     raises: True
-    result: |
-      Failed to create object: \(0\)
-      Reason: An error has occurred
+    result: Failed to create object
 
 delete_object:
   # Simple Pod deletion (using manifest) - No namespace
@@ -179,9 +177,7 @@ delete_object:
     name: my_pod
     api_status_code: 0
     raises: True
-    result: |
-      Failed to delete object: \(0\)
-      Reason: An error has occurred
+    result: Failed to delete object
 
 replace_object:
   # Simple replace object (same behavior as create)
@@ -323,9 +319,7 @@ replace_object:
         name: my_node
     api_status_code: 0
     raises: True
-    result: |
-      Failed to replace object: \(0\)
-      Reason: An error has occurred
+    result: Failed to replace object
 
 get_object:
   # Simple Get Pod (using manifest) - No namespace
@@ -386,9 +380,7 @@ get_object:
     name: my_pod
     api_status_code: 0
     raises: True
-    result: |
-      Failed to retrieve object: \(0\)
-      Reason: An error has occurred
+    result: Failed to retrieve object
 
 update_object:
   # Simple Node update (using manifest)
@@ -450,9 +442,7 @@ update_object:
         labels:
           my.new.label: my-new-label
     raises: True
-    result: |
-      Failed to update object: \(0\)
-      Reason: An error has occurred
+    result: Failed to update object
 
 list_objects:
   # Simple list Pod
@@ -521,16 +511,14 @@ list_objects:
     kind: MyInvalidKind
     info_scope: null
     raises: True
-    result: 'Unsupported resource "v1/MyInvalidKind": An error has occurred'
+    result: 'Unsupported resource "v1/MyInvalidKind"'
 
   # Error when listing namespaced resource (default namespace)
   - apiVersion: v1
     kind: Pod
     api_status_code: 0
     raises: True
-    result: |-
-      Failed to list resources "v1/Pod" in namespace "default": \(0\)
-      Reason: An error has occurred
+    result: 'Failed to list resources "v1/Pod" in namespace "default"'
 
   # Error when listing namespaced resource (specified namespace)
   - apiVersion: v1
@@ -538,9 +526,7 @@ list_objects:
     namespace: my-custom-namespace
     api_status_code: 0
     raises: True
-    result: |-
-      Failed to list resources "v1/Pod" in namespace "my-custom-namespace": \(0\)
-      Reason: An error has occurred
+    result: 'Failed to list resources "v1/Pod" in namespace "my-custom-namespace"'
 
   # Error when listing cluster resource
   - apiVersion: v1
@@ -548,9 +534,7 @@ list_objects:
     info_scope: cluster
     api_status_code: 0
     raises: True
-    result: |-
-      Failed to list resources "v1/Node": \(0\)
-      Reason: An error has occurred
+    result: 'Failed to list resources "v1/Node"'
 
 get_object_digest:
   # Simple full object digest

@@ -53,7 +53,7 @@ def _extract_obj_and_kind_info(manifest, force_custom_object=False):
             manifest, force_custom_object=force_custom_object
         )
     except ValueError as exc:
-        raise CommandExecutionError('Invalid manifest: {!s}'.format(exc))
+        raise CommandExecutionError('Invalid manifest') from exc
 
     return obj, kind_info
 
@@ -64,13 +64,13 @@ def _handle_error(exception, action):
     Note that 'retrieve' and 'delete' will not re-raise if the error is just
     a "404 NOT FOUND", and instead return `None`.
     """
-    base_msg = 'Failed to {} object: '.format(action)
+    base_msg = 'Failed to {} object'.format(action)
 
     if action in ['delete', 'retrieve'] and \
             isinstance(exception, ApiException) and exception.status == 404:
         return None
     else:
-        raise CommandExecutionError(base_msg + str(exception))
+        raise CommandExecutionError(base_msg) from exception
 
 
 def _object_manipulation_function(action):
@@ -108,14 +108,12 @@ def _object_manipulation_function(action):
                     )
                 except IOError as exc:
                     raise CommandExecutionError(
-                        'Failed to read file "{}": {}'
-                        .format(name, str(exc))
-                    )
+                        'Failed to read file "{}"'.format(name)
+                    ) from exc
                 except yaml.YAMLError as exc:
                     raise CommandExecutionError(
-                        'Invalid YAML in file "{}": {}'
-                        ''.format(name, str(exc))
-                    )
+                        'Invalid YAML in file "{}"'.format(name)
+                    ) from exc
         elif name is not None:
             raise CommandExecutionError(
                 'Cannot use both "manifest" and "name".'
@@ -343,10 +341,10 @@ def list_objects(kind, apiVersion, namespace='default', all_namespaces=False,
         })
     except ValueError as exc:
         raise CommandExecutionError(
-            'Unsupported resource "{}/{}": {!s}'.format(
-                apiVersion, kind, exc
+            'Unsupported resource "{}/{}"'.format(
+                apiVersion, kind
             )
-        )
+        ) from exc
 
     call_kwargs = {}
     if all_namespaces:
@@ -371,7 +369,7 @@ def list_objects(kind, apiVersion, namespace='default', all_namespaces=False,
         base_msg = 'Failed to list resources "{}/{}"'.format(apiVersion, kind)
         if 'namespace' in call_kwargs:
             base_msg += ' in namespace "{}"'.format(namespace)
-        raise CommandExecutionError('{}: {!s}'.format(base_msg, exc))
+        raise CommandExecutionError(base_msg) from exc
 
     return [obj.to_dict() for obj in result.items]
 
