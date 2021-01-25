@@ -195,7 +195,7 @@ def get_etcd_member_list(
                 cert_key=cert_key,
                 cert_cert=cert_cert
             )
-        except:
+        except Exception:  # pylint: disable=broad-except
             return []
 
     with etcd3.client(host=endpoint,
