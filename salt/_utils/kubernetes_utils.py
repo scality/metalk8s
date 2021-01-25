@@ -156,10 +156,10 @@ class ApiClient(object):
     def _method_name(self, verb):
         return '{}_{}'.format(verb, self.name)
 
-    def _method(self, method):
+    def _method(self, verb):
         # Inject the API instance as the first argument, since those methods
         # are not classmethods, yet stored unbound
-        return partial(self._api_methods[method], self.api)
+        return partial(self._api_methods[verb], self.api)
 
 
 class KindInfo(object):
