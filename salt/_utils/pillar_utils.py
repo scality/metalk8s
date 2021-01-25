@@ -5,6 +5,7 @@ The utilities contained in this module have no external dependencies, so
 they may be imported as is in external pillar modules.
 """
 
+
 def assert_equals(source_dict, expected_dict):
     """
     Check equality with expected values in dictionary keys.
