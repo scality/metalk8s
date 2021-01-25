@@ -39,7 +39,6 @@ def image_managed(name, archive_path=None):
         'comment': '',
     }
 
-
     if __salt__['cri.available'](name):
         ret['comment'] = 'Image already available'
         ret['result'] = True
