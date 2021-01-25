@@ -47,7 +47,7 @@ class Metalk8sSolutionsTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 errno.ENOENT, "No such file or directory"
             )
 
-        with patch("metalk8s_solutions.open", open_mock), \
+        with patch("salt.utils.files.fopen", open_mock), \
                 patch("metalk8s_solutions._write_config_file", MagicMock()):
             if raises:
                 self.assertRaisesRegex(
@@ -119,7 +119,7 @@ class Metalk8sSolutionsTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
         with patch("metalk8s_solutions.list_available", list_available_mock), \
                 patch("metalk8s_solutions.read_config", read_config_mock), \
-                patch("metalk8s_solutions.open", mock_open()), \
+                patch("salt.utils.files.fopen", mock_open()), \
                 patch("yaml.safe_dump", yaml_safe_dump_mock):
             if raises:
                 self.assertRaisesRegex(
@@ -161,7 +161,7 @@ class Metalk8sSolutionsTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
         with patch("metalk8s_solutions.read_config", read_config_mock), \
                 patch("yaml.safe_dump", yaml_safe_dump_mock), \
-                patch("metalk8s_solutions.open", mock_open()):
+                patch("salt.utils.files.fopen", mock_open()):
             if raises:
                 self.assertRaisesRegex(
                     CommandExecutionError,

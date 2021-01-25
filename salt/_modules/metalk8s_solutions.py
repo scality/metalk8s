@@ -37,7 +37,7 @@ def __virtual__():
 
 def _load_config_file(create=False):
     try:
-        with open(CONFIG_FILE, 'r') as fd:
+        with salt.utils.files.fopen(CONFIG_FILE, 'r') as fd:
             return yaml.safe_load(fd)
     except IOError as exc:
         if create and exc.errno == errno.ENOENT:
@@ -48,7 +48,7 @@ def _load_config_file(create=False):
 
 def _write_config_file(data):
     try:
-        with open(CONFIG_FILE, 'w') as fd:
+        with salt.utils.files.fopen(CONFIG_FILE, 'w') as fd:
             yaml.safe_dump(data, fd)
     except Exception as exc:
         msg = 'Failed to write Solutions config file at "{}": {}'.format(
