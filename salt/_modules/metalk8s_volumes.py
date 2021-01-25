@@ -297,9 +297,9 @@ class SparseLoopDevice(Volume):
                     os.unlink(self.path)
                     raise
         except OSError as exn:
-            raise Exception('cannot create sparse file at {}: {}'.format(
-                self.path, exn
-            ))
+            raise Exception('cannot create sparse file at {}'.format(
+                self.path
+            )) from exn
 
     def prepare(self, force=False):
         # We format a "normal" file, not a block device: we need force=True.
@@ -588,7 +588,7 @@ def _mkfs(path, fs_type, uuid, force=False, options=None):
     try:
         return globals()[funcname](path, uuid, force, options)
     except KeyError:
-        raise ValueError('unsupported filesystem: {}'.format(fs_type))
+        raise ValueError('unsupported filesystem: {}'.format(fs_type))  # pylint: disable=raise-missing-from
 
 
 def _mkfs_ext4(path, uuid, force=False, options=None):
