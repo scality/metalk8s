@@ -40,7 +40,7 @@ def present(name):
     # Let's go for real.
     try:
         __salt__['metalk8s_volumes.create'](name)
-    except Exception as exn:
+    except Exception as exn:  # pylint: disable=broad-except
         ret['result'] = False
         ret['comment'] = 'Cannot create storage for volume {}: {}.'\
             .format(name, exn)
@@ -75,7 +75,7 @@ def prepared(name):
     # Let's go for real.
     try:
         __salt__['metalk8s_volumes.prepare'](name)
-    except Exception as exn:
+    except Exception as exn:  # pylint: disable=broad-except
         ret['result'] = False
         ret['comment'] = 'Failed to prepare volume {}: {}.'.format(name, exn)
     else:
@@ -109,7 +109,7 @@ def removed(name):
     # Let's go for real.
     try:
         __salt__['metalk8s_volumes.clean_up'](name)
-    except Exception as exn:
+    except Exception as exn:  # pylint: disable=broad-except
         ret['result'] = False
         ret['comment'] = 'Failed to clean up volume {}: {}.'.format(name, exn)
     else:
