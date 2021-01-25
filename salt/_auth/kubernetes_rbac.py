@@ -21,6 +21,7 @@ log = logging.getLogger(__name__)
 
 __virtualname__ = 'kubernetes_rbac'
 
+
 def __virtual__():
     if MISSING_DEPS:
         return False, 'Missing Python dependencies: {}'.format(
