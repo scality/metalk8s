@@ -41,6 +41,8 @@ recommended to change the default password after the first login.
 For information on how to access the MetalK8s UI and Grafana service, refer to
 :ref:`Accessing Cluster Services <installation-services-admin-ui>`.
 
+.. _add-dex-static-user:
+
 Adding a Static User
 --------------------
 
@@ -104,6 +106,8 @@ following steps from the Bootstrap node.
 
 #. Check that the user has been successfully added. If so, log into the
    MetalK8s UI using the new email and password.
+
+.. _change-dex-static-user-password:
 
 Changing Static User Password
 -----------------------------
