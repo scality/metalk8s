@@ -363,7 +363,7 @@ class RawBlockDevice(Volume):
 
     @property
     def is_cleaned_up(self):
-        return True # Nothing to do so it's always True.
+        return True  # Nothing to do so it's always True.
 
     def clean_up(self):
         return  # Nothing to do
@@ -401,7 +401,7 @@ class RawBlockDeviceBlock(RawBlockDevice):
             return True
         device = os.path.basename(self.path)
         if self._kind == DeviceType.DISK:
-            device += '1' # In DISK case we always have a single partition.
+            device += '1'  # In DISK case we always have a single partition.
         try:
             return _device_name(self.persistent_path) == device
         # Expected exception if the symlink doesn't exist.
