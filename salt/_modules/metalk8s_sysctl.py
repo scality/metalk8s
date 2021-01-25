@@ -75,13 +75,13 @@ def has_precedence(name, value, config, strict=False):
         for sysctl_file in sysctl_files:
             sysctl_name = pathlib.PurePath(sysctl_file).name
             if sysctl_name == config_name:
-                raise CommandExecutionError(
+                raise CommandExecutionError(  # pylint: disable=raise-missing-from
                     "'{0}' has a higher precedence and overrides '{1}'"
                     .format(sysctl_file, config)
                 )
 
         # The target file is not in a directory checked by the system
-        raise CommandExecutionError(
+        raise CommandExecutionError(  # pylint: disable=raise-missing-from
             "{0} is not a correct path for a sysctl configuration "
             "file, please use one of the following:\n- {1}"
             .format(config, "\n- ".join(SYSCTL_CFG_DIRECTORIES))
