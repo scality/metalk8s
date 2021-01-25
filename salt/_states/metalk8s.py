@@ -5,6 +5,7 @@ import time
 import traceback
 import re
 
+from salt.exceptions import CommandExecutionError
 from salt.ext import six
 
 
