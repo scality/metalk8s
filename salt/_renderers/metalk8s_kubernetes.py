@@ -38,7 +38,7 @@ def _step_name(manifest, absent=False):
     try:
         name = manifest['metadata']['name']
     except KeyError:
-        raise SaltRenderError('Object `metadata.name` must be set.')
+        raise SaltRenderError('Object `metadata.name` must be set.')  # pylint: disable=raise-missing-from
 
     namespace = manifest['metadata'].get('namespace', None)
     if namespace is not None:
