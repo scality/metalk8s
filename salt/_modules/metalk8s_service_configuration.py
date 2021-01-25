@@ -65,9 +65,8 @@ def get_service_conf(
         )
     except ValueError as exc:
         raise CommandExecutionError(
-            'Failed to read ConfigMap object {}: {!s}'
-            .format(configmap_name, exc)
-        )
+            'Failed to read ConfigMap object {}'.format(configmap_name)
+        ) from exc
 
     if manifest is None:
         raise CommandExecutionError(
@@ -79,16 +78,14 @@ def get_service_conf(
         config = yaml.safe_load(conf_section) or {}
     except yaml.YAMLError as exc:
         raise CommandExecutionError(
-            'Invalid YAML format in ConfigMap {}: {!s}'.format(
-                configmap_name, exc
-            )
-        )
+            'Invalid YAML format in ConfigMap {}'.format(configmap_name)
+        ) from exc
     except Exception as exc:
         raise CommandExecutionError(
-            'Failed loading `config.yaml` from ConfigMap {}: {!s}'.format(
-                configmap_name, exc
+            'Failed loading `config.yaml` from ConfigMap {}'.format(
+                configmap_name
             )
-        )
+        ) from exc
     if not config:
         raise CommandExecutionError(
             'Expected `config.yaml` as yaml in the ConfigMap {} but got {}'
