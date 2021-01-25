@@ -56,7 +56,6 @@ class DrainException(Exception):
 
 class DrainTimeoutException(DrainException):
     '''Timeout-specific drain exception.'''
-    pass
 
 
 def _mirrorpod_filter(pod):
