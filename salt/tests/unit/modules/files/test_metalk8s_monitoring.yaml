@@ -33,8 +33,7 @@ alertmanager_api_helper:
     request_raises: 'some request error'
     raises: True
     result: >-
-      Unable to query Alertmanager API on http://10.0.0.1:1234/api/v1/alerts:
-      some request error
+      Unable to query Alertmanager API on http://10.0.0.1:1234/api/v1/alerts
 
   - _id: response-error
     endpoint: *alertmanager_endpoint
