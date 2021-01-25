@@ -25,7 +25,7 @@ def _load_config(path):
     try:
         with salt.utils.files.fopen(path, 'rb') as fd:
             config = salt.utils.yaml.safe_load(fd) or {}
-    except Exception as exc:
+    except Exception as exc:  # pylint: disable=broad-except
         return __utils__['pillar_utils.errors_to_dict']([
             "Failed to load {}: {}".format(path, exc)
         ])
