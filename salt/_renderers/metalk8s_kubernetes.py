@@ -37,8 +37,8 @@ def __virtual__():
 def _step_name(manifest, absent=False):
     try:
         name = manifest['metadata']['name']
-    except KeyError:
-        raise SaltRenderError('Object `metadata.name` must be set.')
+    except KeyError as exc:
+        raise SaltRenderError('Object `metadata.name` must be set.') from exc
 
     namespace = manifest['metadata'].get('namespace', None)
     if namespace is not None:
