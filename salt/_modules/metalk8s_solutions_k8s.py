@@ -6,8 +6,6 @@ for the rest of the operations in the virtual `metalk8s_solutions` module.
 import json
 import logging
 
-from salt.exceptions import CommandExecutionError
-
 log = logging.getLogger(__name__)
 
 __virtualname__ = 'metalk8s_solutions'
