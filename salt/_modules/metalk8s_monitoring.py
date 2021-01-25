@@ -187,8 +187,8 @@ def _requests_alertmanager_api(route, method='GET', **kwargs):
         response = session.request(method, url, **kwargs)
     except Exception as exc:
         raise CommandExecutionError(
-            "Unable to query Alertmanager API on {}: {!s}".format(url, exc)
-        )
+            "Unable to query Alertmanager API on {}".format(url)
+        ) from exc
 
     try:
         json = response.json()
@@ -203,7 +203,7 @@ def _requests_alertmanager_api(route, method='GET', **kwargs):
                 "Malformed response returned from Alertmanager API: {!s}: {}"
                 .format(exc, response.text)
             )
-        raise CommandExecutionError(error)
+        raise CommandExecutionError(error) from exc
 
     if json['status'] == 'error':
         raise CommandExecutionError(
