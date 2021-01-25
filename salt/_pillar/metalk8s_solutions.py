@@ -40,14 +40,14 @@ def _load_solutions(bootstrap_id):
             ))
 
         result['available'] = available_ret['ret']
-    except Exception as exc:
+    except Exception as exc:  # pylint: disable=broad-except
         errors.append(
             "Error when listing available Solutions: {}".format(exc)
         )
 
     try:
         active = __salt__['metalk8s_solutions.list_active']()
-    except Exception as exc:
+    except Exception as exc:  # pylint: disable=broad-except
         errors.append(
             "Error when listing active Solution versions: {}".format(exc)
         )
@@ -67,7 +67,7 @@ def _load_solutions(bootstrap_id):
     try:
         result['environments'] = \
             __salt__['metalk8s_solutions.list_environments']()
-    except Exception as exc:
+    except Exception as exc:  # pylint: disable=broad-except
         result['environments'] = __utils__['pillar_utils.errors_to_dict']([
             "Error when listing Solution Environments: {}".format(exc)
         ])
