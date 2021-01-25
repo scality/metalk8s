@@ -1,4 +1,3 @@
-import base64
 from functools import wraps
 import logging
 
@@ -7,12 +6,11 @@ MISSING_DEPS = []
 try:
     import kubernetes.client
     import kubernetes.config
-    from kubernetes.client.rest import ApiException
 except ImportError:
     MISSING_DEPS.append('kubernetes')
 
 try:
-    import requests
+    import requests  # pylint: disable=unused-import
 except ImportError:
     MISSING_DEPS.append('requests')
 
