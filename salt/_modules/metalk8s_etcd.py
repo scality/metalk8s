@@ -3,8 +3,8 @@
 Module for handling etcd client specific calls.
 '''
 import logging
-from six.moves.urllib.parse import urlparse
 
+from salt.ext.six.moves.urllib.parse import urlparse
 from salt.exceptions import CommandExecutionError
 
 PYTHON_ETCD_PRESENT = False
