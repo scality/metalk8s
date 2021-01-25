@@ -42,8 +42,8 @@ def _load_config_file(create=False):
     except IOError as exc:
         if create and exc.errno == errno.ENOENT:
             return _create_config_file()
-        msg = 'Failed to load "{}": {}'.format(CONFIG_FILE, str(exc))
-        raise CommandExecutionError(message=msg)
+        msg = 'Failed to load "{}"'.format(CONFIG_FILE)
+        raise CommandExecutionError(message=msg) from exc
 
 
 def _write_config_file(data):
@@ -51,10 +51,10 @@ def _write_config_file(data):
         with salt.utils.files.fopen(CONFIG_FILE, 'w') as fd:
             yaml.safe_dump(data, fd)
     except Exception as exc:
-        msg = 'Failed to write Solutions config file at "{}": {}'.format(
-            CONFIG_FILE, exc
+        msg = 'Failed to write Solutions config file at "{}"'.format(
+            CONFIG_FILE
         )
-        raise CommandExecutionError(message=msg)
+        raise CommandExecutionError(message=msg) from exc
 
 
 def _create_config_file():
@@ -326,10 +326,10 @@ def manifest_from_iso(path):
         manifest = yaml.safe_load(result['stdout'])
     except yaml.YAMLError as exc:
         raise CommandExecutionError(
-            "Failed to load YAML from Solution manifest {}: {!s}".format(
-                path, exc
+            "Failed to load YAML from Solution manifest {}".format(
+                path
             )
-        )
+        ) from exc
 
     return _archive_info_from_manifest(manifest)
 
