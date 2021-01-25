@@ -176,12 +176,12 @@ get_service_endpoints:
   # 2. Error when getting the Endpoint object
   - obj: False
     raises: True
-    result: "Unable to get kubernetes endpoints for my_service in namespace my_namespace:\nAn error has occurred"
+    result: "Unable to get kubernetes endpoints for my_service in namespace my_namespace"
 
   # 3. Endpoint object does not exists
   - obj: null
     raises: True
-    result: "Unable to get kubernetes endpoints for my_service in namespace my_namespace:\nEndpoint not found"
+    result: "Unable to get kubernetes endpoints for my_service in namespace my_namespace"
 
   # 4. Endpoint do not have any addresses
   - obj:
@@ -208,4 +208,4 @@ get_service_endpoints:
         uid: fad86410-00d9-43c2-b91c-8288b18b0337
       subsets: null
     raises: True
-    result: "Unable to get kubernetes endpoints for my_service in namespace my_namespace:\n'NoneType' object is not subscriptable"
+    result: "Unable to get kubernetes endpoints for my_service in namespace my_namespace"

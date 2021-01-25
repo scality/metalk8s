@@ -95,9 +95,7 @@ def get_version_info(**kwargs):
     try:
         version_info = api_instance.get_code()
     except (ApiException, HTTPError) as exc:
-        raise CommandExecutionError(
-            'Failed to get version info: {}'.format(str(exc))
-        )
+        raise CommandExecutionError('Failed to get version info') from exc
 
     return version_info.to_dict()
 
@@ -164,7 +162,7 @@ def read_and_render_yaml_file(source, template, context=None, saltenv='base'):
 
 def get_service_endpoints(service, namespace, kubeconfig):
     error_tpl = \
-        'Unable to get kubernetes endpoints for {} in namespace {}:\n{!s}'
+        'Unable to get kubernetes endpoints for {} in namespace {}'
 
     try:
         endpoint = __salt__['metalk8s_kubernetes.get_object'](
@@ -174,15 +172,12 @@ def get_service_endpoints(service, namespace, kubeconfig):
             namespace=namespace,
             kubeconfig=kubeconfig,
         )
+        if not endpoint:
+            raise CommandExecutionError('Endpoint not found')
     except CommandExecutionError as exc:
         raise CommandExecutionError(
-            error_tpl.format(service, namespace, exc)
-        )
-
-    if not endpoint:
-        raise CommandExecutionError(
-            error_tpl.format(service, namespace, 'Endpoint not found')
-        )
+            error_tpl.format(service, namespace)
+        ) from exc
 
     try:
         # Extract hostname, ip and node_name
@@ -199,7 +194,7 @@ def get_service_endpoints(service, namespace, kubeconfig):
         }
     except (AttributeError, IndexError, KeyError, TypeError) as exc:
         raise CommandExecutionError(
-            error_tpl.format(service, namespace, exc)
-        )
+            error_tpl.format(service, namespace)
+        ) from exc
 
     return result
