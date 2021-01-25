@@ -405,7 +405,7 @@ def _atomic_write(
 def _atomic_copy(
     source, dest, user, group, mode, tmp_prefix,
 ):  # pragma: no cover
-    with open(source, mode='rb') as f:
+    with salt.utils.files.fopen(source, mode='rb') as f:
         contents = f.read()
 
     _atomic_write(contents, dest, user, group, mode, tmp_prefix)
