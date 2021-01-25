@@ -80,7 +80,6 @@ def uncordon_node(node_name, **kwargs):
         ]
         patch_dict['spec']['taints'] = new_taints
 
-
     return __salt__['metalk8s_kubernetes.update_object'](
         name=node_name,
         kind='Node',
