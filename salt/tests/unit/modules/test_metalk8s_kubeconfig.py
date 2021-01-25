@@ -69,7 +69,7 @@ class Metalk8sKubeconfigTestCase(TestCase, mixins.LoaderModuleMockMixin):
         with patch("os.path.isfile", os_isfile_mock), \
                 patch("os.stat", MagicMock()), \
                 patch("stat.S_IMODE", stat_s_imode_mock), \
-                patch("metalk8s_kubeconfig.open", open_mock), \
+                patch("metalk8s_kubeconfig.fopen", open_mock), \
                 patch.dict(metalk8s_kubeconfig.__salt__, patch_salt_dict):
             cluster_info = KUBECONFIG['clusters'][0]['cluster']
             self.assertEqual(

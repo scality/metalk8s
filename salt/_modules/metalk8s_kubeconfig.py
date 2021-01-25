@@ -7,6 +7,8 @@ import os
 import stat
 import yaml
 
+from salt.utils.files import fopen
+
 __virtualname__ = 'metalk8s_kubeconfig'
 
 
@@ -38,7 +40,7 @@ def validate(filename,
         return False
 
     try:
-        with open(filename, 'r') as fd:
+        with fopen(filename, 'r') as fd:
             kubeconfig = yaml.safe_load(fd)
     except Exception:  # pylint: disable=broad-except
         return False
