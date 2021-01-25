@@ -368,6 +368,7 @@ class RawBlockDevice(Volume):
     def clean_up(self):
         return  # Nothing to do
 
+
 class RawBlockDeviceBlock(RawBlockDevice):
     def __init__(self, volume):
         super(RawBlockDeviceBlock, self).__init__(volume)
@@ -607,6 +608,7 @@ def _mkfs_xfs(path, uuid, force=False, options=None):
     command.extend(options or [])
     command.append(path)
     return command
+
 
 def prepare_block(path, name, uuid):
     """Prepare a "Block" volume.
