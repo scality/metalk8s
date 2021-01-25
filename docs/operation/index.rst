@@ -17,7 +17,7 @@ do not have a working MetalK8s_ setup.
    downgrade
    changing_node_hostname
    volume_management/index
-   account_administration
+   account_administration/index
    cluster_and_service_configuration
    cluster_monitoring
    metalk8s-utils
