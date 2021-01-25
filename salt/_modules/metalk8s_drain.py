@@ -365,7 +365,7 @@ class Drain(object):
                 ).format(
                     exc.message
                 )
-            )
+            ) from exc
 
         if pods:
             pods_to_evict = ", ".join([
@@ -385,13 +385,13 @@ class Drain(object):
             self.evict_pods(pods)
         except DrainTimeoutException as exc:
             remaining_pods = self.get_pods_for_eviction()
-            raise CommandExecutionError(
+            raise CommandExecutionError(  # pylint: disable=raise-missing-from
                 "{0} List of remaining pods to follow".format(exc.message),
                 [pod['metadata']['name'] for pod in remaining_pods]
             )
         except CommandExecutionError as exc:
             remaining_pods = self.get_pods_for_eviction()
-            raise CommandExecutionError(
+            raise CommandExecutionError(  # pylint: disable=raise-missing-from
                 "{0} List of remaining pods to follow".format(
                     exc.message
                 ),
@@ -545,10 +545,10 @@ def evict_pod(name, namespace='default', grace_period=1,
                 return False
 
         raise CommandExecutionError(
-            'Failed to evict pod "{}" in namespace "{}": {!s}'.format(
-                name, namespace, exc
+            'Failed to evict pod "{}" in namespace "{}"'.format(
+                name, namespace
             )
-        )
+        ) from exc
 
     return True
 
