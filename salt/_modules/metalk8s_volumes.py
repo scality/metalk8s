@@ -4,7 +4,6 @@
 import abc
 import contextlib
 import errno
-import fcntl
 import functools
 import glob
 import json
