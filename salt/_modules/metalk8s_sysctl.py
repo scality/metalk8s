@@ -4,7 +4,6 @@ Execution module to handle MetalK8s sysctl.
 """
 
 import configparser
-import itertools
 import pathlib
 
 from salt.exceptions import CommandExecutionError
