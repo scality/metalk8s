@@ -107,7 +107,7 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
         ({'node1': {}, 'node2': {}}, 'master', []),
         ({'node1': {'roles': ['node']}, 'node2': {'roles': ['node']}}, 'master', []),
         (None, 'master', ['node1'], False, {'node1': {'roles': ['master']}}),
-        (None, 'master', "Can't retrieve 'metalk8s:nodes' pillar: 'nodes'", True),
+        (None, 'master', "Can't retrieve 'metalk8s:nodes' pillar", True),
         (None, 'master', "Can't retrieve minions by role because of errors in pillar 'metalk8s:nodes': Error in pillar", True, {'_errors': ['Error in pillar']})
     ])
     def test_minions_by_role(self, nodes, role, result,

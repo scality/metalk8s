@@ -327,7 +327,7 @@ format_slots:
     slots_returns:
       my_mod.my_fun: null
     raises: True
-    result: "Unable to compute slot '__slot__:salt:my_mod.my_fun\\(\\)': An error has occurred"
+    result: "Unable to compute slot '__slot__:salt:my_mod.my_fun\\(\\)'"
 
 manage_static_pod_manifest:
   # Nominal: pre-cached source
