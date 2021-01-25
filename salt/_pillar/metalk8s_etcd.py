@@ -15,7 +15,7 @@ def _load_members(pillar):
         members = __salt__['metalk8s_etcd.get_etcd_member_list'](
             nodes=pillar['metalk8s']['nodes']
         )
-    except Exception as exc:
+    except Exception as exc:  # pylint: disable=broad-except
         members = []
         errors.append(
             'Error while retrieving etcd cluster members: {}'.format(
