@@ -4,7 +4,6 @@ so that we can support downgrade in metalk8s
 '''
 import logging
 
-from contextlib import contextmanager
 from salt.exceptions import CommandExecutionError
 
 log = logging.getLogger(__name__)
