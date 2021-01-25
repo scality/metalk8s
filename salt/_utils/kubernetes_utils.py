@@ -561,7 +561,7 @@ class _DictWrapper(object):
             for key in self._fields:
                 if _convert_attribute_name(key) == name:
                     return self.from_value(self._fields[key])
-            raise AttributeError(
+            raise AttributeError(  # pylint: disable=raise-missing-from
                 "Custom object has no attribute '{}'".format(name)
             )
 
@@ -619,7 +619,7 @@ def get_kind_info(manifest):
         api_version = manifest['apiVersion']
         kind = manifest['kind']
     except KeyError:
-        raise ValueError(
+        raise ValueError(  # pylint: disable=raise-missing-from
             'Make sure to provide a valid Kubernetes manifest, including'
             ' `kind` and `apiVersion` fields.'
         )
@@ -692,10 +692,10 @@ def _build_standard_object(model, manifest):
             value = _cast_value(src_value, type_str)
         except TypeError as exc:
             raise ValueError(
-                'Invalid value for attribute {} of a "{}" object: {}.'.format(
-                    src_key, model.__name__, str(exc)
+                'Invalid value for attribute {} of a "{}" object'.format(
+                    src_key, model.__name__
                 )
-            )
+            ) from exc
 
         kwargs[key] = value
 
@@ -751,7 +751,7 @@ def _cast_value(value, type_string):
         try:
             return datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%SZ')
         except (TypeError, ValueError):
-            raise _type_error(value, expected='a date-time string')
+            raise _type_error(value, expected='a date-time string')  # pylint: disable=raise-missing-from
 
     dict_match = DICT_PATTERN.match(type_string)
     if dict_match is not None:
@@ -780,7 +780,7 @@ def _cast_value(value, type_string):
         model = getattr(k8s_client.models, type_string)
     except AttributeError:
         # This should never happen, otherwise this function should get updated
-        raise ValueError(
+        raise ValueError(  # pylint: disable=raise-missing-from
             'Unknown type string provided: {}.'.format(type_string)
         )
 
