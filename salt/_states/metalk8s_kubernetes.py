@@ -7,8 +7,6 @@ execution module, only managing simple dicts in this state module.
 """
 import time
 
-from salt.utils import yaml
-
 __virtualname__ = 'metalk8s_kubernetes'
 
 
