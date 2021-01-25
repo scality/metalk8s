@@ -23,7 +23,7 @@ read_config:
         my-solution: 1.0.0
   # Nok - no solutions configuration file, create left to default (False)
   - raises: True
-    result: 'Failed to load ".*": .*'
+    result: 'Failed to load ".*"'
   # Nok - no solutions configuration kind
   - raises: True
     config: |-
@@ -335,7 +335,7 @@ manifest_from_iso:
     raises: True
   # Nok - invalid YAML
   - manifest: '{'
-    result: Failed to load YAML from Solution manifest .*
+    result: Failed to load YAML from Solution manifest
     raises: True
 
 list_available:
