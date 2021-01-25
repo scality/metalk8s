@@ -7,6 +7,7 @@ import configparser
 import pathlib
 
 from salt.exceptions import CommandExecutionError
+import salt.utils.files
 
 __virtualname__ = 'metalk8s_sysctl'
 
@@ -91,7 +92,7 @@ def has_precedence(name, value, config, strict=False):
     epured_value = " ".join(str(value).split())
 
     for sysctl_file in sysctl_files:
-        with open(sysctl_file, 'r') as sysctl_fd:
+        with salt.utils.files.fopen(sysctl_file, 'r') as sysctl_fd:
             parser.read_file(['[global]', *sysctl_fd], source=sysctl_file)
         sysctl = dict(parser.items('global'))
         parser.remove_section('global')
