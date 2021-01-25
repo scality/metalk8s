@@ -1,6 +1,8 @@
 from functools import wraps
 import logging
 
+from salt.exceptions import CommandExecutionError
+
 MISSING_DEPS = []
 
 try:
