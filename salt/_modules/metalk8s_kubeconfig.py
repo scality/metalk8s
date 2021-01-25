@@ -40,7 +40,7 @@ def validate(filename,
     try:
         with open(filename, 'r') as fd:
             kubeconfig = yaml.safe_load(fd)
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         return False
 
     # Verify that the current CA cert on disk matches the expected CA cert
