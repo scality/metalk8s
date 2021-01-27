@@ -10,11 +10,11 @@ do not have a working MetalK8s_ setup.
 
 .. toctree::
 
-   bootstrap_backup_restore
    enable_ip_ip
    solutions
    upgrade
    downgrade
+   disaster_recovery/index
    changing_node_hostname
    volume_management/index
    account_administration/index
