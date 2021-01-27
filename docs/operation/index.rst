@@ -19,7 +19,7 @@ do not have a working MetalK8s_ setup.
    volume_management/index
    account_administration/index
    cluster_and_service_configuration
-   cluster_monitoring
+   cluster_monitoring/index
    metalk8s-utils
    troubleshooting
    listening_processes
