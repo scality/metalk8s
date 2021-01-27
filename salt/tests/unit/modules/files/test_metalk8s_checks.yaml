@@ -1,12 +1,33 @@
 node:
+  # 1. Everything fine
   - packages_ret: True
+    services_ret: True
     result: True
+
+  # 2. Error with packages
   - packages_ret: "Package abcd got an error because of banana"
+    services_ret: True
     expect_raise: True
     result: "Node my_node_1: Package abcd got an error because of banana"
+  # 2. bis (no raises)
   - packages_ret: "Package toto got an error :)"
+    services_ret: True
     raises: False
     result: "Node my_node_1: Package toto got an error :)"
+
+  # 3. Error with services
+  - packages_ret: True
+    services_ret: "Service abcd got an error because of penguin"
+    expect_raise: True
+    result: "Node my_node_1: Service abcd got an error because of penguin"
+
+  # 4. Error with services and packages
+  - packages_ret: "Package abcd got an error because of banana"
+    services_ret: "Service abcd got an error because of penguin"
+    expect_raise: True
+    result: |-
+      Node my_node_1: Package abcd got an error because of banana
+      Service abcd got an error because of penguin
 
 packages:
   # 1. Success: No conflicting packages to check
@@ -154,6 +175,82 @@ packages:
     expect_raise: True
     result: |-
       Package my-installed-package-4.5.6 conflicts with MetalK8s installation, please remove it.
+
+services:
+  # 1. Success: No conflicting services to check
+  - conflicting_services: []
+    result: True
+
+  # 2. Success: Conflicting services not installed
+  - conflicting_services:
+      - my-not-started-service
+      - my-not-started-service2
+    service_status_ret:
+      my-not-started-service: False
+      my-not-started-service2: False
+    service_disabled_ret:
+      my-not-started-service: True
+      my-not-started-service2: True
+    result: True
+  # 2. bis
+  - conflicting_services: my-not-started-service
+    service_status_ret:
+      my-not-started-service: False
+    service_disabled_ret:
+      my-not-started-service: True
+    result: True
+
+  # 3. Success: Conflicting service (from map) not started
+  - get_map_ret:
+      conflicting_services:
+        - my-not-started-service
+    service_status_ret:
+      my-not-started-service: False
+    service_disabled_ret:
+      my-not-started-service: True
+    result: True
+
+  # 4. Error: Conflicting service started
+  - conflicting_services:
+      - my-started-service
+      - my-not-started-service
+    service_status_ret:
+      my-started-service: True
+      my-not-started-service: False
+    service_disabled_ret:
+      my-started-service: False
+      my-not-started-service: True
+    expect_raise: True
+    result: |-
+      Service my-started-service conflicts with MetalK8s installation, please stop and disable it.
+  # 4. bis
+  - conflicting_services: my-started-service
+    service_status_ret:
+      my-started-service: True
+    service_disabled_ret:
+      my-started-service: True
+    expect_raise: True
+    result: |-
+      Service my-started-service conflicts with MetalK8s installation, please stop and disable it.
+  # 4. ter (no raise)
+  - conflicting_services: my-started-service
+    raises: False
+    service_status_ret:
+      my-started-service: True
+    service_disabled_ret:
+      my-started-service: True
+    result: |-
+      Service my-started-service conflicts with MetalK8s installation, please stop and disable it.
+
+  # 5. Service stopped but still enabled
+  - conflicting_services: my-enabled-service
+    service_status_ret:
+      my-enabled-service: False
+    service_disabled_ret:
+      my-enabled-service: False
+    expect_raise: True
+    result: |-
+      Service my-enabled-service conflicts with MetalK8s installation, please stop and disable it.
 
 sysctl:
   - params:

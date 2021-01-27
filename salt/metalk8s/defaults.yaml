@@ -36,6 +36,10 @@ kubeadm_preflight:
       - iproute               # provides tc
       - coreutils             # provides touch
 
+# List of services that conflict with MetalK8s installation
+conflicting_services:
+  - firewalld
+
 repo:
   conflicting_packages:
     # List of package that conflict with MetalK8s installation

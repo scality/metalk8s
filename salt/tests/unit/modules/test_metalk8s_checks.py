@@ -33,14 +33,17 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
         self.assertEqual(metalk8s_checks.__virtual__(), 'metalk8s_checks')
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["node"])
-    def test_node(self, packages_ret, result, expect_raise=False, **kwargs):
+    def test_node(self, packages_ret, services_ret, result,
+                  expect_raise=False, **kwargs):
         """
         Tests the return of `node` function
         """
         packages_mock = MagicMock(return_value=packages_ret)
+        services_mock = MagicMock(return_value=services_ret)
 
         salt_dict = {
-            'metalk8s_checks.packages': packages_mock
+            'metalk8s_checks.packages': packages_mock,
+            'metalk8s_checks.services': services_mock
         }
 
         with patch.dict(metalk8s_checks.__grains__, {'id': 'my_node_1'}), \
@@ -83,6 +86,36 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
             else:
                 self.assertEqual(
                     metalk8s_checks.packages(**kwargs),
+                    result
+                )
+
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["services"])
+    def test_services(self, result, get_map_ret=None, service_status_ret=None,
+                      service_disabled_ret=None, expect_raise=False, **kwargs):
+        """
+        Tests the return of `services` function
+        """
+        get_map_mock = MagicMock(return_value=get_map_ret)
+        service_status_mock = MagicMock(side_effect=(service_status_ret or {}).get)
+        service_disabled_mock = MagicMock(side_effect=(service_disabled_ret or {}).get)
+
+        salt_dict = {
+            'metalk8s.get_from_map': get_map_mock,
+            'service.status': service_status_mock,
+            'service.disabled': service_disabled_mock
+        }
+
+        with patch.dict(metalk8s_checks.__salt__, salt_dict):
+            if expect_raise:
+                self.assertRaisesRegex(
+                    CheckError,
+                    result,
+                    metalk8s_checks.services,
+                    **kwargs
+                )
+            else:
+                self.assertEqual(
+                    metalk8s_checks.services(**kwargs),
                     result
                 )
 
