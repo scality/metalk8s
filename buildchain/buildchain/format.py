@@ -39,9 +39,24 @@ def format_go() -> types.TaskDict:
     }
 
 
+def format_python() -> types.TaskDict:
+    """Format Python code using black."""
+    python_files = [
+        filepath for filepath in utils.git_ls() if '.py' in filepath.suffixes
+    ]
+    return {
+        'name': 'python',
+        'title': utils.title_with_subtask_name('FORMAT'),
+        'doc': format_python.__doc__,
+        'actions': [['tox', '-e', 'format-python']],
+        'file_dep': python_files,
+    }
+
+
 # List of available formatting tasks.
 FORMATTERS: Tuple[Callable[[], types.TaskDict], ...] = (
     format_go,
+    format_python
 )
 
 
