@@ -26,6 +26,11 @@ def node(raises=True, **kwargs):
     if pkg_ret is not True:
         errors.append(pkg_ret)
 
+    # Run `services` check
+    svc_ret = __salt__['metalk8s_checks.services'](raises=False, **kwargs)
+    if svc_ret is not True:
+        errors.append(svc_ret)
+
     # Compute return of the function
     if errors:
         error_msg = 'Node {}: {}'.format(__grains__['id'], '\n'.join(errors))
@@ -91,6 +96,51 @@ def packages(conflicting_packages=None, raises=True, **kwargs):
                         "Package {}-{} conflicts with MetalK8s installation, "
                         "please remove it.".format(package, ver)
                     )
+
+    error_msg = '\n'.join(errors)
+    if error_msg and raises:
+        raise CheckError(error_msg)
+
+    return error_msg or True
+
+
+def services(conflicting_services=None, raises=True, **kwargs):
+    """Check if some conflicting service are started on the machine,
+    return a string (or raise if `raises` is set to `True`) with the list of
+    conflicting services.
+
+    Arguments:
+        conflicting_services (list): override the list of service that conflict with
+            MetalK8s installation.
+        raises (bool): the method will raise if there is any conflicting service
+            started.
+
+    Note: We have some logic in this function, so `conflicting_services` could be:
+    - a single string `<service_name>` which is the name of the conflicting service
+    - a list `[<service_name1>, <service_name2>]` with all conflicting service name
+    """
+    if conflicting_services is None:
+        conflicting_services = __salt__['metalk8s.get_from_map'](
+            'defaults', saltenv=kwargs.get('saltenv')
+        )['conflicting_services']
+
+    if isinstance(conflicting_services, str):
+        conflicting_services = [conflicting_services]
+    errors = []
+
+    for service_name in conflicting_services:
+        # `service.status`:
+        #   True = service started
+        #   False = service not available or stopped
+        # `service.disabled`:
+        #   True = service disabled or not available
+        #   False = service not disabled
+        if __salt__['service.status'](service_name) or \
+                not __salt__['service.disabled'](service_name):
+            errors.append(
+                "Service {} conflicts with MetalK8s installation, "
+                "please stop and disable it.".format(service_name)
+            )
 
     error_msg = '\n'.join(errors)
     if error_msg and raises:

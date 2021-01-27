@@ -1,3 +1,4 @@
+{%- from "metalk8s/map.jinja" import defaults with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
 
 {%- set node_name = pillar.orchestrate.node_name %}
@@ -27,12 +28,14 @@ Check node:
     - ssh: true
     - roster: kubernetes
     - kwarg:
-        # NOTE: We need to use the `conflicting_packages` from the salt
-        # master since in salt-ssh when running an execution module we cannot
-        # embbed additional files (especially `map.jinja` in this case)
+        # NOTE: We need to use the `conflicting_packages` and `conflicting_services`
+        # from the salt master since in salt-ssh when running an execution module
+        # we cannot embbed additional files (especially `map.jinja` in this case)
         # Sees: https://github.com/saltstack/salt/issues/59314
         conflicting_packages: >-
           {{ repo.conflicting_packages | tojson }}
+        conflicting_services: >-
+          {{ defaults.conflicting_services | tojson }}
     - failhard: true
     - require:
       - metalk8s: Install python36

@@ -8,6 +8,12 @@
   (PR [#3153](https://github.com/scality/metalk8s/pull/3153), backport of
   PR [#3050](https://github.com/scality/metalk8s/pull/3050))
 
+- [#3067](https://github.com/scality/metalk8s/issues/3067) - Check for conflicting
+  services (`firewalld`) already started or enabled on target machines before
+  installation (bootstrap or expansion)
+  (PR [#3153](https://github.com/scality/metalk8s/pull/3153), backport of
+  PR [#3069](https://github.com/scality/metalk8s/pull/3069))
+
 ### Bug fixes
 - Do not install `containerd.io` instead of `containerd` and `runc` when this
   package is available in one configured repository
