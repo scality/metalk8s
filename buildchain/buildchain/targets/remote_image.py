@@ -16,8 +16,8 @@ import operator
 from pathlib import Path
 from typing import Any, Optional, List, Sequence
 
+from buildchain import constants
 from buildchain import docker_command
-from buildchain import config
 from buildchain import types
 
 from . import image
@@ -120,15 +120,7 @@ class SaveAsLayers(ImageSaveFormat):
     def save(self, img: RemoteImage) -> List[types.Action]:
         # Use Skopeo to directly copy the remote image into a directory
         # of image layers
-        skopeo_copy = [
-            config.ExtCommand.SKOPEO.value,
-            "--override-os",
-            "linux",
-            "--insecure-policy",
-            "copy",
-            "--format",
-            "v2s2",
-        ]
+        skopeo_copy = list(constants.SKOPEO_COPY_DEFAULT_ARGS)
         skopeo_copy.append("docker://{}".format(img.remote_fullname))
         skopeo_copy.append("dir:{}".format(img.dirname))
         return [img.mkdirs, skopeo_copy]

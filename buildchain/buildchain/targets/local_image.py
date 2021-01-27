@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Match, Optional, Union
 
 from doit.exceptions import TaskError  # type: ignore
 
-from buildchain import config
+from buildchain import constants
 from buildchain import coreutils
 from buildchain import docker_command
 from buildchain import types
@@ -197,16 +197,8 @@ class LocalImage(image.ContainerImage):
     def _do_save(self) -> List[types.Action]:
         """Return the actions used to save the image."""
         # If a destination is defined, let's save the image there.
-        cmd = [
-            config.ExtCommand.SKOPEO.value,
-            "--override-os",
-            "linux",
-            "--insecure-policy",
-            "copy",
-            "--format",
-            "v2s2",
-            "--dest-compress",
-        ]
+        cmd = list(constants.SKOPEO_COPY_DEFAULT_ARGS)
+        cmd.append("--dest-compress")
         docker_host = os.getenv("DOCKER_HOST")
         if docker_host is not None:
             cmd.extend(["--src-daemon-host", "http://{}".format(docker_host)])
