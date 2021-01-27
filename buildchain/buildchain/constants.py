@@ -102,7 +102,19 @@ def git_ref() -> Optional[str]:
 GIT_REF = git_ref()
 
 # }}}
+# Skopeo default arguments {{{
 
+SKOPEO_COPY_DEFAULT_ARGS: List[str] = [
+    config.ExtCommand.SKOPEO.value,
+    "--override-os",
+    "linux",
+    "--insecure-policy",
+    "copy",
+    "--format",
+    "v2s2",
+]
+
+# }}}
 # Only keep directories and top-level Go source files.
 STORAGE_OPERATOR_FMT_ARGS: FrozenSet[str] = frozenset(
     [
