@@ -19,7 +19,7 @@ import re
 from pathlib import Path
 from typing import Any, Dict, List, Match, Optional, Union
 
-from doit.exceptions import TaskError # type: ignore
+from doit.exceptions import TaskError  # type: ignore
 
 from buildchain import config
 from buildchain import coreutils
@@ -37,7 +37,7 @@ class DockerFileDep:
         line_no: int,
         line_contents: str,
         line_match: Match[str],
-        dockerfile_path: Path
+        dockerfile_path: Path,
     ):
         self.line_no = line_no
         self.line_contents = line_contents
@@ -46,8 +46,8 @@ class DockerFileDep:
 
     def expand_dep(self) -> List[Path]:
         """Expand the Dockerfile path dependency to regular files."""
-        source = self.match.group('src')
-        path = self.dockerfile_path.parent/Path(source)
+        source = self.match.group("src")
+        path = self.dockerfile_path.parent / Path(source)
         # Simple file
         if path.is_file():
             return [path]
@@ -56,9 +56,7 @@ class DockerFileDep:
             return list(coreutils.ls_files_rec(path))
         # Globs - `*` or specific e.g. `*.py`, `*.repo`
         return [
-            sub_path
-            for sub_path in path.parent.glob(path.name)
-            if sub_path.is_file()
+            sub_path for sub_path in path.parent.glob(path.name) if sub_path.is_file()
         ]
 
     def format_errors(self, error_paths: List[Path]) -> List[str]:
@@ -80,6 +78,7 @@ class DockerFileDep:
 
 class LocalImage(image.ContainerImage):
     """A locally built container image."""
+
     def __init__(
         self,
         name: str,
@@ -87,8 +86,8 @@ class LocalImage(image.ContainerImage):
         dockerfile: Path,
         destination: Path,
         save_on_disk: bool,
-        build_context: Optional[Path]=None,
-        build_args: Optional[Dict[str, Any]]=None,
+        build_context: Optional[Path] = None,
+        build_args: Optional[Dict[str, Any]] = None,
         **kwargs: Any
     ):
         """Initialize a local container image.
@@ -110,25 +109,21 @@ class LocalImage(image.ContainerImage):
         self._save = save_on_disk
         self._build_context = build_context or self.dockerfile.parent
         self._build_args = build_args or {}
-        kwargs.setdefault('file_dep', []).append(self.dockerfile)
-        kwargs.setdefault('task_dep', []).append('check_for:skopeo')
-        super().__init__(
-            name=name, version=version, destination=destination, **kwargs
-        )
+        kwargs.setdefault("file_dep", []).append(self.dockerfile)
+        kwargs.setdefault("task_dep", []).append("check_for:skopeo")
+        super().__init__(name=name, version=version, destination=destination, **kwargs)
 
-    dockerfile    = property(operator.attrgetter('_dockerfile'))
-    save_on_disk  = property(operator.attrgetter('_save'))
-    build_context = property(operator.attrgetter('_build_context'))
-    build_args    = property(operator.attrgetter('_build_args'))
-    dep_re = re.compile(
-        r'^\s*(COPY|ADD)( --[^ ]+)* (?P<src>[^ ]+) (?P<dst>[^ ]+)\s*$'
-    )
+    dockerfile = property(operator.attrgetter("_dockerfile"))
+    save_on_disk = property(operator.attrgetter("_save"))
+    build_context = property(operator.attrgetter("_build_context"))
+    build_args = property(operator.attrgetter("_build_args"))
+    dep_re = re.compile(r"^\s*(COPY|ADD)( --[^ ]+)* (?P<src>[^ ]+) (?P<dst>[^ ]+)\s*$")
 
     def load_deps_from_dockerfile(self) -> List[DockerFileDep]:
         """Compute file dependencies from Dockerfile."""
-        dep_keywords = ('COPY', 'ADD')
+        dep_keywords = ("COPY", "ADD")
 
-        with self.dockerfile.open('r', encoding='utf8') as dockerfile:
+        with self.dockerfile.open("r", encoding="utf8") as dockerfile:
             docker_lines = dockerfile.readlines()
 
         dep_lines = [
@@ -145,7 +140,7 @@ class LocalImage(image.ContainerImage):
                     line_no=pos,
                     line_contents=line,
                     line_match=match,
-                    dockerfile_path=self.dockerfile
+                    dockerfile_path=self.dockerfile,
                 )
             )
         return deps
@@ -153,8 +148,8 @@ class LocalImage(image.ContainerImage):
     def check_dockerfile_dependencies(self) -> Union[TaskError, bool]:
         """Verify task file dependencies against computed file dependencies."""
         error_tplt = (
-            'Missing Dockerfile file dependencies in'
-            ' build target: \n{dockerfile}:\n\t{errors}'
+            "Missing Dockerfile file dependencies in"
+            " build target: \n{dockerfile}:\n\t{errors}"
         )
         deps = self.load_deps_from_dockerfile()
         errors: List[str] = []
@@ -162,8 +157,7 @@ class LocalImage(image.ContainerImage):
             errors.extend(dep.verify(self.file_dep))
         if errors:
             error_message = error_tplt.format(
-                dockerfile=self.dockerfile,
-                errors='\n\t'.join(errors)
+                dockerfile=self.dockerfile, errors="\n\t".join(errors)
             )
             return TaskError(msg=error_message)
         return None
@@ -171,17 +165,21 @@ class LocalImage(image.ContainerImage):
     @property
     def task(self) -> types.TaskDict:
         task = self.basic_task
-        task.update({
-            'title': lambda _: self.show('IMG BUILD'),
-            'doc': 'Build {} container image.'.format(self.name),
-            'actions': self._build_actions(),
-            'uptodate': [(docker_command.docker_image_exists, [self.tag], {})],
-        })
+        task.update(
+            {
+                "title": lambda _: self.show("IMG BUILD"),
+                "doc": "Build {} container image.".format(self.name),
+                "actions": self._build_actions(),
+                "uptodate": [(docker_command.docker_image_exists, [self.tag], {})],
+            }
+        )
         if self.save_on_disk:
-            task.update({
-                'targets': [self.dirname/'manifest.json'],
-                'clean': [self.clean],
-            })
+            task.update(
+                {
+                    "targets": [self.dirname / "manifest.json"],
+                    "clean": [self.clean],
+                }
+            )
         return task
 
     def _build_actions(self) -> List[types.Action]:
@@ -200,15 +198,18 @@ class LocalImage(image.ContainerImage):
         """Return the actions used to save the image."""
         # If a destination is defined, let's save the image there.
         cmd = [
-            config.ExtCommand.SKOPEO.value, '--override-os', 'linux',
-            '--insecure-policy', 'copy', '--format', 'v2s2',
-            '--dest-compress',
+            config.ExtCommand.SKOPEO.value,
+            "--override-os",
+            "linux",
+            "--insecure-policy",
+            "copy",
+            "--format",
+            "v2s2",
+            "--dest-compress",
         ]
-        docker_host = os.getenv('DOCKER_HOST')
+        docker_host = os.getenv("DOCKER_HOST")
         if docker_host is not None:
-            cmd.extend([
-                '--src-daemon-host', 'http://{}'.format(docker_host)
-            ])
-        cmd.append('docker-daemon:{}'.format(self.tag))
-        cmd.append('dir:{}'.format(str(self.dirname)))
+            cmd.extend(["--src-daemon-host", "http://{}".format(docker_host)])
+        cmd.append("docker-daemon:{}".format(self.tag))
+        cmd.append("dir:{}".format(str(self.dirname)))
         return [self.mkdirs, cmd]

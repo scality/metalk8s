@@ -17,8 +17,8 @@ class ResourceFilter:
     """Helper object for filtering a list of resource instances."""
 
     NAMED_FILTERS = {
-        'name': lambda i, v: i['metadata']['name'] == v,
-        'namespace': lambda i, v: i['metadata']['namespace'] == v,
+        "name": lambda i, v: i["metadata"]["name"] == v,
+        "namespace": lambda i, v: i["metadata"]["namespace"] == v,
     }
 
     def __init__(self, instances):
@@ -27,17 +27,15 @@ class ResourceFilter:
     def filter(self, name, value):
         if name in ResourceFilter.NAMED_FILTERS:
             return [
-                i for i in self.instances
+                i
+                for i in self.instances
                 if ResourceFilter.NAMED_FILTERS[name](i, value)
             ]
 
         if callable(value):
             return [i for i in self.instances if value(i)]
 
-        return [
-            i for i in self.instances
-            if utils.get_dict_element(i, name) == value
-        ]
+        return [i for i in self.instances if utils.get_dict_element(i, name) == value]
 
     def filter_update(self, name, value):
         self.instances = self.filter(name, value)
@@ -64,39 +62,36 @@ class APIMock:
     def retrieve(self, resource, **filters):
         instances = self.database.get(resource, None)
 
-        assert instances is not None, \
-            "Resource '{}' unknown (available: {})".format(
-                resource, ', '.join(self.api_resources)
-            )
+        assert instances is not None, "Resource '{}' unknown (available: {})".format(
+            resource, ", ".join(self.api_resources)
+        )
 
         return self.filter(instances, filters)
 
     def get_instance(self, resource, instance):
         filters = {
-            'name': instance['metadata']['name'],
+            "name": instance["metadata"]["name"],
         }
-        namespace = instance['metadata'].get('namespace')
+        namespace = instance["metadata"].get("namespace")
         if namespace is not None:
-            filters['namespace'] = namespace
+            filters["namespace"] = namespace
 
         candidates = self.retrieve(resource, **filters)
         return candidates[0] if candidates else None
 
     def create(self, resource, instance):
         existing = self.get_instance(resource, instance)
-        assert existing is None, \
-            "Cannot create '{}/{}': already exists.".format(
-                resource, instance['metadata']['name']
-            )
+        assert existing is None, "Cannot create '{}/{}': already exists.".format(
+            resource, instance["metadata"]["name"]
+        )
 
         self.database.setdefault(resource, []).append(instance)
 
     def update(self, resource, instance):
         existing = self.get_instance(resource, instance)
-        assert existing is not None, \
-            "Cannot update '{}/{}': not found.".format(
-                resource, instance['metadata']['name']
-            )
+        assert existing is not None, "Cannot update '{}/{}': not found.".format(
+            resource, instance["metadata"]["name"]
+        )
 
         self.database[resource].remove(existing)
         self.database[resource].append(instance)
@@ -107,10 +102,9 @@ class APIMock:
 
     def patch(self, resource, name, patch, **filters):
         candidates = self.retrieve(resource, name=name, **filters)
-        assert len(candidates) == 1, \
-            "Found more than one instance of '{}/{}' to patch".format(
-                resource, name
-            )
+        assert (
+            len(candidates) == 1
+        ), "Found more than one instance of '{}/{}' to patch".format(resource, name)
 
         updated = dictupdate.update(candidates[0], patch)
         self.update(resource, updated)
@@ -145,45 +139,48 @@ class KubernetesAPIMock:
 
     def get_resource(self, kind, apiVersion):
         resource = self.resources.get((apiVersion, kind), None)
-        assert resource is not None, \
-            "'{}/{}' is not a known resource ({})".format(
-                apiVersion, kind,
-                ', '.join(
-                    '{vk[0]}/{vk[1]}: {r}'.format(r=resource, vk=versionkind)
-                    for versionkind, resource in self.resources.items()
-                )
-            )
+        assert resource is not None, "'{}/{}' is not a known resource ({})".format(
+            apiVersion,
+            kind,
+            ", ".join(
+                "{vk[0]}/{vk[1]}: {r}".format(r=resource, vk=versionkind)
+                for versionkind, resource in self.resources.items()
+            ),
+        )
         return resource
 
     def get_object(self, name, kind, apiVersion, **kwargs):
         resource = self.get_resource(kind, apiVersion)
         objects = self.api.retrieve(resource, name=name, **kwargs)
         res = objects[0] if objects else None
-        print("Called get_object %s/%s name=%s kwargs=%r - %r" % (
-            apiVersion, kind, name, kwargs, res
-        ))
+        print(
+            "Called get_object %s/%s name=%s kwargs=%r - %r"
+            % (apiVersion, kind, name, kwargs, res)
+        )
         return res
 
-    def list_objects(self, kind, apiVersion, all_namespaces=False,
-                     field_selector=None, **kwargs):
+    def list_objects(
+        self, kind, apiVersion, all_namespaces=False, field_selector=None, **kwargs
+    ):
         resource = self.get_resource(kind, apiVersion)
 
         # If namespace isn't in kwargs, then all members of the matching
         # resource (after other filters were applied) will get returned
-        assert all_namespaces or 'namespace' in kwargs, \
-            "Must either enable `all_namespaces` or pass a `namespace` kwarg"
+        assert (
+            all_namespaces or "namespace" in kwargs
+        ), "Must either enable `all_namespaces` or pass a `namespace` kwarg"
 
         if field_selector is not None:
             # Naive re-implem
-            key, _, value = field_selector.partition('=')
+            key, _, value = field_selector.partition("=")
             if value is None:
-                value = ''
+                value = ""
             kwargs[key] = value
 
         res = self.api.retrieve(resource, **kwargs)
-        print("Called get_object %s/%s kwargs=%r - %r" % (
-            apiVersion, kind, kwargs, res
-        ))
+        print(
+            "Called get_object %s/%s kwargs=%r - %r" % (apiVersion, kind, kwargs, res)
+        )
         return res
 
 
@@ -229,8 +226,8 @@ class TimedEventsMock:
     def handle_event(self, event):
         print("Processing event %r" % event)
         kwargs = copy.deepcopy(event)
-        resource = kwargs.pop('resource')
-        verb = kwargs.pop('verb')
+        resource = kwargs.pop("resource")
+        verb = kwargs.pop("verb")
 
         method = getattr(self.api, verb)
         method(resource, **kwargs)
@@ -238,5 +235,5 @@ class TimedEventsMock:
 
     @contextlib.contextmanager
     def patch(self):
-        with patch('time.time', self.time), patch('time.sleep', self.sleep):
+        with patch("time.time", self.time), patch("time.sleep", self.sleep):
             yield

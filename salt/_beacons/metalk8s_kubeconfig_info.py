@@ -4,12 +4,10 @@ import logging
 
 from salt.ext import six
 
-__virtualname__ = 'metalk8s_kubeconfig_info'
+__virtualname__ = "metalk8s_kubeconfig_info"
 
 DEFAULT_NOTIFY_DAYS = 45
-BASE_ERROR_MSG = "Configuration for {0} beacon is invalid".format(
-    __virtualname__
-)
+BASE_ERROR_MSG = "Configuration for {0} beacon is invalid".format(__virtualname__)
 
 log = logging.getLogger(__name__)
 
@@ -52,9 +50,7 @@ def validate(config):
         elif isinstance(element, six.string_types):
             continue
         else:
-            return _config_error(
-                "elements in 'files' can only be dicts and/or strings"
-            )
+            return _config_error("elements in 'files' can only be dicts and/or strings")
 
     return True, "Valid beacon configuration"
 
@@ -68,33 +64,28 @@ def beacon(config):
 
     _config = _flatten_config(config)
 
-    ca_minion = __pillar__['metalk8s']['ca']['minion']
-    b64_ca_cert = __salt__['mine.get'](
-        ca_minion, 'kubernetes_root_ca_b64'
-    )[ca_minion]
+    ca_minion = __pillar__["metalk8s"]["ca"]["minion"]
+    b64_ca_cert = __salt__["mine.get"](ca_minion, "kubernetes_root_ca_b64")[ca_minion]
 
-    notify_days = _config.get('notify_days', DEFAULT_NOTIFY_DAYS)
+    notify_days = _config.get("notify_days", DEFAULT_NOTIFY_DAYS)
 
-    for kubeconfig in _config['files']:
+    for kubeconfig in _config["files"]:
         if isinstance(kubeconfig, dict):
             cert_path = next(iter(kubeconfig))
-            days_remaining = kubeconfig[cert_path].get(
-                'notify_days', notify_days
-            )
+            days_remaining = kubeconfig[cert_path].get("notify_days", notify_days)
         else:
             cert_path = kubeconfig
             days_remaining = notify_days
 
-        if not __salt__['metalk8s_kubeconfig.validate'](
-                cert_path, b64_ca_cert, days_remaining=days_remaining):
-            log.info(
-                "kubeconfig %s needs to be regenerated", cert_path
-            )
-            certificates.append({'cert_path': cert_path})
+        if not __salt__["metalk8s_kubeconfig.validate"](
+            cert_path, b64_ca_cert, days_remaining=days_remaining
+        ):
+            log.info("kubeconfig %s needs to be regenerated", cert_path)
+            certificates.append({"cert_path": cert_path})
         else:
             log.debug("kubeconfig %s is up to date", cert_path)
 
     if certificates:
-        ret.append({'certificates': certificates})
+        ret.append({"certificates": certificates})
 
     return ret

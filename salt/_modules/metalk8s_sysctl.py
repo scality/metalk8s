@@ -9,18 +9,18 @@ import pathlib
 from salt.exceptions import CommandExecutionError
 import salt.utils.files
 
-__virtualname__ = 'metalk8s_sysctl'
+__virtualname__ = "metalk8s_sysctl"
 
 # Order in this list defines the precedence
 SYSCTL_CFG_DIRECTORIES = [
-    '/run/sysctl.d',
-    '/etc/sysctl.d',
-    '/usr/local/lib/sysctl.d',
-    '/usr/lib/sysctl.d',
-    '/lib/sysctl.d',
+    "/run/sysctl.d",
+    "/etc/sysctl.d",
+    "/usr/local/lib/sysctl.d",
+    "/usr/lib/sysctl.d",
+    "/lib/sysctl.d",
 ]
 # This file is applied last no matter what
-SYSCTL_DEFAULT_CFG = '/etc/sysctl.conf'
+SYSCTL_DEFAULT_CFG = "/etc/sysctl.conf"
 
 
 def __virtual__():
@@ -46,7 +46,7 @@ def _get_sysctl_files(config):
         if path == config_path.parent:
             files.setdefault(config_path.name, str(config_path))
 
-        for cfg in path.glob('*.conf'):
+        for cfg in path.glob("*.conf"):
             files.setdefault(cfg.name, str(cfg))
 
     sorted_files = [files[name] for name in sorted(files)]
@@ -68,7 +68,7 @@ def has_precedence(name, value, config, strict=False):
 
     # Ignore files before the `config` one.
     try:
-        sysctl_files = sysctl_files[sysctl_files.index(config) + 1:]
+        sysctl_files = sysctl_files[sysctl_files.index(config) + 1 :]
     except ValueError:
         # If the file is not in the list, it means it's overwritten by an
         # other sysctl configuration file with higher precedence.
@@ -77,28 +77,32 @@ def has_precedence(name, value, config, strict=False):
             sysctl_name = pathlib.PurePath(sysctl_file).name
             if sysctl_name == config_name:
                 raise CommandExecutionError(  # pylint: disable=raise-missing-from
-                    "'{0}' has a higher precedence and overrides '{1}'"
-                    .format(sysctl_file, config)
+                    "'{0}' has a higher precedence and overrides '{1}'".format(
+                        sysctl_file, config
+                    )
                 )
 
         # The target file is not in a directory checked by the system
         raise CommandExecutionError(  # pylint: disable=raise-missing-from
             "{0} is not a correct path for a sysctl configuration "
-            "file, please use one of the following:\n- {1}"
-            .format(config, "\n- ".join(SYSCTL_CFG_DIRECTORIES))
+            "file, please use one of the following:\n- {1}".format(
+                config, "\n- ".join(SYSCTL_CFG_DIRECTORIES)
+            )
         )
 
     parser = configparser.ConfigParser()
     epured_value = " ".join(str(value).split())
 
     for sysctl_file in sysctl_files:
-        with salt.utils.files.fopen(sysctl_file, 'r') as sysctl_fd:
-            parser.read_file(['[global]', *sysctl_fd], source=sysctl_file)
-        sysctl = dict(parser.items('global'))
-        parser.remove_section('global')
+        with salt.utils.files.fopen(sysctl_file, "r") as sysctl_fd:
+            parser.read_file(["[global]", *sysctl_fd], source=sysctl_file)
+        sysctl = dict(parser.items("global"))
+        parser.remove_section("global")
         if name in sysctl and (
-                strict or " ".join(sysctl[name].split()) != epured_value):
+            strict or " ".join(sysctl[name].split()) != epured_value
+        ):
             raise CommandExecutionError(
-                "'{0}' redefines '{1}' with value '{2}'"
-                .format(sysctl_file, name, sysctl[name])
+                "'{0}' redefines '{1}' with value '{2}'".format(
+                    sysctl_file, name, sysctl[name]
+                )
             )

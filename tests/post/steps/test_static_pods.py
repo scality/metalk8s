@@ -47,9 +47,7 @@ def test_static_pods_restart(host, transient_files):
 
 
 @given("I have set up a static pod", target_fixture="static_pod_id")
-def set_up_static_pod(
-    host, nodename, k8s_client, utils_image, transient_files
-):
+def set_up_static_pod(host, nodename, k8s_client, utils_image, transient_files):
     manifest_path = str(MANIFESTS_PATH / "{}.yaml".format(DEFAULT_POD_NAME))
 
     with host.sudo():
@@ -79,9 +77,7 @@ def set_up_static_pod(
     with host.sudo():
         host.run_test("mkdir -p %s", str(TEMPLATES_PATH))
 
-        template_path = str(
-            TEMPLATES_PATH / "{}.yaml.j2".format(DEFAULT_POD_NAME)
-        )
+        template_path = str(TEMPLATES_PATH / "{}.yaml.j2".format(DEFAULT_POD_NAME))
         write_template = utils.write_string(host, template_path, manifest)
         assert write_template.rc == 0, (
             "Failed to create static Pod manifest template '{}': {}"
@@ -93,8 +89,7 @@ def set_up_static_pod(
     _manage_static_pod(host, manifest_path, template_path, config_path)
 
     assert host.file(manifest_path).exists, (
-        "Something went wrong: "
-        "static Pod manifest could not be found after set-up"
+        "Something went wrong: " "static Pod manifest could not be found after set-up"
     )
 
     # We want to remove the manifest before the config file, since kubelet
@@ -120,12 +115,10 @@ def edit_static_pod_config(host):
     config_path = "/tmp/{}.conf".format(DEFAULT_POD_NAME)
 
     with host.sudo():
-        edit_config = utils.write_string(
-            host, config_path, '{"goodbye": "world"}'
+        edit_config = utils.write_string(host, config_path, '{"goodbye": "world"}')
+        assert edit_config.rc == 0, ("Failed to edit config file at '{}': {}").format(
+            config_path, edit_config.stderr
         )
-        assert edit_config.rc == 0, (
-            "Failed to edit config file at '{}': {}"
-        ).format(config_path, edit_config.stderr)
 
 
 @when("I use Salt to manage the static pod")

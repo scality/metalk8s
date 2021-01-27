@@ -8,140 +8,143 @@ from tests import utils
 
 # Fixtures {{{
 
+
 @pytest.fixture
 def apps_client(k8s_apiclient):
     return AppsV1Api(api_client=k8s_apiclient)
 
+
 # }}}
 # Scenarios {{{
 
-@scenario('../features/sanity.feature', 'List Pods')
+
+@scenario("../features/sanity.feature", "List Pods")
 def test_list_pods(host):
     pass
 
 
-@scenario('../features/sanity.feature', 'Exec in Pods')
+@scenario("../features/sanity.feature", "Exec in Pods")
 def test_exec_in_pods(host):
     pass
 
 
-@scenario('../features/sanity.feature', 'Read Pod logs')
+@scenario("../features/sanity.feature", "Read Pod logs")
 def test_read_pod_logs(host):
     pass
 
+
 @scenario(
-    '../features/sanity.feature',
-    'Static Pod runs where expected',
-    example_converters={'namespace': str, 'name': str, 'role': str},
+    "../features/sanity.feature",
+    "Static Pod runs where expected",
+    example_converters={"namespace": str, "name": str, "role": str},
 )
 def test_static_pod_running(host):
     pass
 
+
 @scenario(
-    '../features/sanity.feature',
-    'Deployment has available replicas',
-    example_converters={'namespace': str, 'name': str},
+    "../features/sanity.feature",
+    "Deployment has available replicas",
+    example_converters={"namespace": str, "name": str},
 )
 def test_deployment_running(host):
     pass
 
+
 @scenario(
-    '../features/sanity.feature',
-    'DaemonSet has desired Pods ready',
-    example_converters={'namespace': str, 'name': str},
+    "../features/sanity.feature",
+    "DaemonSet has desired Pods ready",
+    example_converters={"namespace": str, "name": str},
 )
 def test_daemonset_running(host):
     pass
 
+
 @scenario(
-    '../features/sanity.feature',
-    'StatefulSet has available replicas',
-    example_converters={'namespace': str, 'name': str},
+    "../features/sanity.feature",
+    "StatefulSet has available replicas",
+    example_converters={"namespace": str, "name": str},
 )
 def test_statefulset_running(host):
     pass
 
+
 # }}}
 # Then {{{
 
-@then(parsers.parse(
-    "we can exec '{command}' in a pod labeled '{label}' "
-    "in the '{namespace}' namespace"))
+
+@then(
+    parsers.parse(
+        "we can exec '{command}' in a pod labeled '{label}' "
+        "in the '{namespace}' namespace"
+    )
+)
 def check_exec(host, k8s_client, command, label, namespace):
     def _wait_for_pod():
-        pods = kube_utils.get_pods(
-            k8s_client, label=label, namespace=namespace
-        )
+        pods = kube_utils.get_pods(k8s_client, label=label, namespace=namespace)
         assert len(pods) > 0
         return pods[0]
 
     pod = utils.retry(
-        _wait_for_pod,
-        times=10,
-        wait=3,
-        name="wait for pod labeled '{}'".format(label)
+        _wait_for_pod, times=10, wait=3, name="wait for pod labeled '{}'".format(label)
     )
 
     with host.sudo():
         host.check_output(
-            'kubectl --kubeconfig=/etc/kubernetes/admin.conf '
-            'exec --namespace %s %s %s',
+            "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
+            "exec --namespace %s %s %s",
             namespace,
             pod.metadata.name,
             command,
         )
 
-@then(parsers.parse(
-    "we can read logs from all containers in a pod labeled '{label}' "
-    "in the '{namespace}' namespace"))
+
+@then(
+    parsers.parse(
+        "we can read logs from all containers in a pod labeled '{label}' "
+        "in the '{namespace}' namespace"
+    )
+)
 def read_pod_logs(k8s_client, label, namespace):
     def _wait_for_pod():
-        pods = kube_utils.get_pods(
-            k8s_client, label=label, namespace=namespace
-        )
+        pods = kube_utils.get_pods(k8s_client, label=label, namespace=namespace)
         assert len(pods) > 0
         return pods[0]
 
     pod = utils.retry(
-        _wait_for_pod,
-        times=10,
-        wait=3,
-        name="wait for pod labeled '{}'".format(label)
+        _wait_for_pod, times=10, wait=3, name="wait for pod labeled '{}'".format(label)
     )
 
     for container in pod.spec.containers:
         logs = k8s_client.read_namespaced_pod_log(
-            pod.metadata.name,
-            namespace,
-            container=container.name
+            pod.metadata.name, namespace, container=container.name
         )
 
         assert logs.strip(), (
             "Couldn't find logs for container '{}' in Pod '{}' (status {})"
         ).format(container.name, pod.metadata.name, pod.status.phase)
 
-@then(
-    "the static Pod <name> in the <namespace> namespace runs on <role> nodes"
-)
+
+@then("the static Pod <name> in the <namespace> namespace runs on <role> nodes")
 def check_static_pod(k8s_client, name, namespace, role):
-    if role == 'all':
+    if role == "all":
         nodes = k8s_client.list_node()
     else:
-        role_label = 'node-role.kubernetes.io/{}='.format(role)
+        role_label = "node-role.kubernetes.io/{}=".format(role)
         nodes = k8s_client.list_node(label_selector=role_label)
 
-    pod_names = [
-        '{}-{}'.format(name, node.metadata.name)
-        for node in nodes.items
-    ]
+    pod_names = ["{}-{}".format(name, node.metadata.name) for node in nodes.items]
     for pod_name in pod_names:
         utils.retry(
             kube_utils.check_pod_status(
-                k8s_client, pod_name, namespace=namespace, state='Running',
+                k8s_client,
+                pod_name,
+                namespace=namespace,
+                state="Running",
             ),
             times=10,
             wait=3,
-            name="wait for static Pod '{}/{}'".format(namespace, pod_name)
+            name="wait for static Pod '{}/{}'".format(namespace, pod_name),
         )
 
 
@@ -157,9 +160,7 @@ def check_deployment(apps_client, name, namespace):
             )
         except ApiException as exc:
             if exc.status == 404:
-                pytest.fail("Deployment '{}/{}' does not exist".format(
-                    namespace, name
-                ))
+                pytest.fail("Deployment '{}/{}' does not exist".format(namespace, name))
             raise
 
         assert deploy.spec.replicas == deploy.status.available_replicas, (
@@ -172,13 +173,11 @@ def check_deployment(apps_client, name, namespace):
         _wait_for_deployment,
         times=10,
         wait=3,
-        name="wait for Deployment '{}/{}'".format(namespace, name)
+        name="wait for Deployment '{}/{}'".format(namespace, name),
     )
 
-@then(
-    "the DaemonSet <name> in the <namespace> namespace has all desired "
-    "Pods ready"
-)
+
+@then("the DaemonSet <name> in the <namespace> namespace has all desired " "Pods ready")
 def check_daemonset(apps_client, name, namespace):
     def _wait_for_daemon_set():
         try:
@@ -187,9 +186,7 @@ def check_daemonset(apps_client, name, namespace):
             )
         except ApiException as exc:
             if exc.status == 404:
-                pytest.fail("DaemonSet '{}/{}' does not exist".format(
-                    namespace, name
-                ))
+                pytest.fail("DaemonSet '{}/{}' does not exist".format(namespace, name))
             raise
 
         desired = daemon_set.status.desired_number_scheduled
@@ -206,8 +203,9 @@ def check_daemonset(apps_client, name, namespace):
         _wait_for_daemon_set,
         times=10,
         wait=3,
-        name="wait for DaemonSet '{}/{}'".format(namespace, name)
+        name="wait for DaemonSet '{}/{}'".format(namespace, name),
     )
+
 
 @then(
     "the StatefulSet <name> in the <namespace> namespace has all desired "
@@ -221,9 +219,9 @@ def check_statefulset(apps_client, name, namespace):
             )
         except ApiException as exc:
             if exc.status == 404:
-                pytest.fail("StatefulSet '{}/{}' does not exist".format(
-                    namespace, name
-                ))
+                pytest.fail(
+                    "StatefulSet '{}/{}' does not exist".format(namespace, name)
+                )
             raise
 
         desired = stateful_set.spec.replicas
@@ -236,7 +234,8 @@ def check_statefulset(apps_client, name, namespace):
         _wait_for_stateful_set,
         times=10,
         wait=3,
-        name="wait for StatefulSet '{}/{}'".format(namespace, name)
+        name="wait for StatefulSet '{}/{}'".format(namespace, name),
     )
+
 
 # }}}

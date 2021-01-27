@@ -20,9 +20,7 @@ def task__build_builder() -> Iterator[types.TaskDict]:
         yield builder.task
 
 
-def _builder_image(
-    name: str, dockerfile: Path, **kwargs: Any
-) -> LocalImage:
+def _builder_image(name: str, dockerfile: Path, **kwargs: Any) -> LocalImage:
     """Create a builder image.
 
     Arguments:
@@ -32,12 +30,12 @@ def _builder_image(
     Keyword Arguments:
         They are passed to `LocalImage` init method.
     """
-    img_name = '{}-{}-builder'.format(config.PROJECT_NAME.lower(), name)
-    kwargs.setdefault('task_dep', []).append('_build_root')
+    img_name = "{}-{}-builder".format(config.PROJECT_NAME.lower(), name)
+    kwargs.setdefault("task_dep", []).append("_build_root")
 
     return LocalImage(
         name=img_name,
-        version='latest',
+        version="latest",
         dockerfile=dockerfile,
         destination=config.BUILD_ROOT,
         save_on_disk=False,
@@ -45,83 +43,100 @@ def _builder_image(
     )
 
 
-RPM_BUILDER : Dict[str, LocalImage] = {
-    '7': _builder_image(
-        name='redhat-7-rpm',
-        dockerfile=constants.ROOT/'packages/redhat/7/Dockerfile',
-        build_context=constants.ROOT/'packages/redhat',
+RPM_BUILDER: Dict[str, LocalImage] = {
+    "7": _builder_image(
+        name="redhat-7-rpm",
+        dockerfile=constants.ROOT / "packages/redhat/7/Dockerfile",
+        build_context=constants.ROOT / "packages/redhat",
         file_dep=[
-            constants.ROOT/'packages'/'redhat'/'common'/
-                'yum_repositories'/'kubernetes.repo',
-            constants.ROOT/'packages'/'redhat'/'common'/
-                'yum_repositories'/'saltstack.repo',
+            constants.ROOT
+            / "packages"
+            / "redhat"
+            / "common"
+            / "yum_repositories"
+            / "kubernetes.repo",
+            constants.ROOT
+            / "packages"
+            / "redhat"
+            / "common"
+            / "yum_repositories"
+            / "saltstack.repo",
         ],
         build_args={
             # Used to template the SaltStack repository definition
-            'SALT_VERSION': versions.SALT_VERSION,
+            "SALT_VERSION": versions.SALT_VERSION,
         },
     ),
-    '8': _builder_image(
-        name='redhat-8-rpm',
-        dockerfile=constants.ROOT/'packages/redhat/8/Dockerfile',
-        build_context=constants.ROOT/'packages/redhat',
+    "8": _builder_image(
+        name="redhat-8-rpm",
+        dockerfile=constants.ROOT / "packages/redhat/8/Dockerfile",
+        build_context=constants.ROOT / "packages/redhat",
         file_dep=[
-            constants.ROOT/'packages'/'redhat'/'common'/
-                'yum_repositories'/'kubernetes.repo',
-            constants.ROOT/'packages'/'redhat'/'common'/
-                'yum_repositories'/'saltstack.repo',
+            constants.ROOT
+            / "packages"
+            / "redhat"
+            / "common"
+            / "yum_repositories"
+            / "kubernetes.repo",
+            constants.ROOT
+            / "packages"
+            / "redhat"
+            / "common"
+            / "yum_repositories"
+            / "saltstack.repo",
         ],
         build_args={
             # Used to template the SaltStack repository definition
-            'SALT_VERSION': versions.SALT_VERSION,
+            "SALT_VERSION": versions.SALT_VERSION,
         },
     ),
 }
 
-DEB_BUILDER : Dict[str, LocalImage] = {
-    '18.04': _builder_image(
-        name='ubuntu-18.04-deb',
-        dockerfile=constants.ROOT/'packages/debian/18.04/Dockerfile',
-        build_context=constants.ROOT/'packages/debian',
+DEB_BUILDER: Dict[str, LocalImage] = {
+    "18.04": _builder_image(
+        name="ubuntu-18.04-deb",
+        dockerfile=constants.ROOT / "packages/debian/18.04/Dockerfile",
+        build_context=constants.ROOT / "packages/debian",
     ),
 }
 
-DOC_BUILDER : LocalImage = _builder_image(
-    name='doc',
-    dockerfile=constants.ROOT/'docs/Dockerfile',
+DOC_BUILDER: LocalImage = _builder_image(
+    name="doc",
+    dockerfile=constants.ROOT / "docs/Dockerfile",
     build_context=constants.ROOT,
-    file_dep=[
-        constants.ROOT/'tox.ini', constants.ROOT/'docs/requirements.txt'
-    ]
+    file_dep=[constants.ROOT / "tox.ini", constants.ROOT / "docs/requirements.txt"],
 )
 
-GO_BUILDER : LocalImage = _builder_image(
-    name='go',
-    dockerfile=constants.STORAGE_OPERATOR_ROOT/'Dockerfile',
+GO_BUILDER: LocalImage = _builder_image(
+    name="go",
+    dockerfile=constants.STORAGE_OPERATOR_ROOT / "Dockerfile",
     file_dep=[
-        constants.STORAGE_OPERATOR_ROOT/'go.mod',
-        constants.STORAGE_OPERATOR_ROOT/'go.sum',
-    ]
+        constants.STORAGE_OPERATOR_ROOT / "go.mod",
+        constants.STORAGE_OPERATOR_ROOT / "go.sum",
+    ],
 )
 
-UI_BUILDER : LocalImage = _builder_image(
-    name='ui',
-    dockerfile=constants.ROOT/'ui'/'Dockerfile',
-    build_args={'NODE_IMAGE_VERSION': versions.NODEJS_IMAGE_VERSION},
+UI_BUILDER: LocalImage = _builder_image(
+    name="ui",
+    dockerfile=constants.ROOT / "ui" / "Dockerfile",
+    build_args={"NODE_IMAGE_VERSION": versions.NODEJS_IMAGE_VERSION},
     file_dep=[
-        constants.ROOT/'ui'/'package.json',
-        constants.ROOT/'ui'/'package-lock.json',
-        constants.ROOT/'ui'/'entrypoint.sh',
-    ]
+        constants.ROOT / "ui" / "package.json",
+        constants.ROOT / "ui" / "package-lock.json",
+        constants.ROOT / "ui" / "entrypoint.sh",
+    ],
 )
 
 
-_BUILDERS : Tuple[LocalImage, ...] = (
-    DOC_BUILDER,
-    GO_BUILDER,
-    UI_BUILDER,
-) + tuple(RPM_BUILDER.values()) \
-  + tuple(DEB_BUILDER.values())
+_BUILDERS: Tuple[LocalImage, ...] = (
+    (
+        DOC_BUILDER,
+        GO_BUILDER,
+        UI_BUILDER,
+    )
+    + tuple(RPM_BUILDER.values())
+    + tuple(DEB_BUILDER.values())
+)
 
 
 __all__ = utils.export_only_tasks(__name__)

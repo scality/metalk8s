@@ -13,18 +13,18 @@ from tests.unit import mixins
 
 YAML_TESTS_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
-    "files", "test_metalk8s_service_configuration.yaml"
+    "files",
+    "test_metalk8s_service_configuration.yaml",
 )
 with open(YAML_TESTS_FILE) as fd:
     YAML_TESTS_CASES = yaml.safe_load(fd)
 
 
-class Metalk8sServiceConfigurationTestCase(
-    TestCase, mixins.LoaderModuleMockMixin
-):
+class Metalk8sServiceConfigurationTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
     TestCase for `metalk8s_service_configuration` module
     """
+
     loader_module = metalk8s_service_configuration
 
     def test_virtual(self):
@@ -33,13 +33,15 @@ class Metalk8sServiceConfigurationTestCase(
         """
         self.assertEqual(
             metalk8s_service_configuration.__virtual__(),
-            'metalk8s_service_configuration'
+            "metalk8s_service_configuration",
         )
 
-    @parameterized.expand([
-        param.explicit(kwargs=test_case)
-        for test_case in YAML_TESTS_CASES["get_service_config"]
-    ])
+    @parameterized.expand(
+        [
+            param.explicit(kwargs=test_case)
+            for test_case in YAML_TESTS_CASES["get_service_config"]
+        ]
+    )
     def test_get_service_conf(
         self,
         configmap_name,
@@ -62,12 +64,10 @@ class Metalk8sServiceConfigurationTestCase(
             get_configmap_mock.return_value = configmap_obj
         else:
             get_configmap_mock.side_effect = ValueError(
-                'Failed to read ConfigMap object my_configmap'
+                "Failed to read ConfigMap object my_configmap"
             )
 
-        salt_dict = {
-            'metalk8s_kubernetes.get_object': get_configmap_mock
-        }
+        salt_dict = {"metalk8s_kubernetes.get_object": get_configmap_mock}
 
         with patch.dict(metalk8s_service_configuration.__salt__, salt_dict):
             if raises:
@@ -86,6 +86,7 @@ class Metalk8sServiceConfigurationTestCase(
                         namespace="my_namespace",
                         configmap_name=configmap_name,
                         default_csc=default_csc,
-                    ), result
+                    ),
+                    result,
                 )
                 get_configmap_mock.assert_called_once()

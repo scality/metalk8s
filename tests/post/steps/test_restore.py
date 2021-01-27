@@ -7,23 +7,21 @@ from tests import utils
 
 
 # Scenarios
-@scenario('../features/restore.feature', 'Restore the bootstrap node')
+@scenario("../features/restore.feature", "Restore the bootstrap node")
 def test_restore(host):
     pass
 
 
 # When
-@when('we run the restore')
+@when("we run the restore")
 def run_restore(request, host, ssh_config):
     iso_root = request.config.getoption("--iso-root")
 
-    backup_archive = os.environ.get('BOOTSTRAP_BACKUP_ARCHIVE')
-    assert backup_archive, \
-        "No BOOTSTRAP_BACKUP_ARCHIVE environment variable defined"
+    backup_archive = os.environ.get("BOOTSTRAP_BACKUP_ARCHIVE")
+    assert backup_archive, "No BOOTSTRAP_BACKUP_ARCHIVE environment variable defined"
 
     apiserver_node_ip = utils.get_grain(
-        testinfra.get_host('node-1', ssh_config=ssh_config),
-        'metalk8s:control_plane_ip'
+        testinfra.get_host("node-1", ssh_config=ssh_config), "metalk8s:control_plane_ip"
     )
 
     with host.sudo():

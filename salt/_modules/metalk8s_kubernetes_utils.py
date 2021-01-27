@@ -15,27 +15,25 @@ try:
     import kubernetes.client
     from kubernetes.client.rest import ApiException
 except ImportError:
-    MISSING_DEPS.append('kubernetes.client')
+    MISSING_DEPS.append("kubernetes.client")
 
 try:
     import kubernetes.config
 except ImportError:
-    MISSING_DEPS.append('kubernetes.config')
+    MISSING_DEPS.append("kubernetes.config")
 
 try:
     from urllib3.exceptions import HTTPError
 except ImportError:
-    MISSING_DEPS.append('urllib3')
+    MISSING_DEPS.append("urllib3")
 
 
-__virtualname__ = 'metalk8s_kubernetes'
+__virtualname__ = "metalk8s_kubernetes"
 
 
 def __virtual__():
     if MISSING_DEPS:
-        return False, 'Missing dependencies: {}'.format(
-            ', '.join(MISSING_DEPS)
-        )
+        return False, "Missing dependencies: {}".format(", ".join(MISSING_DEPS))
 
     return __virtualname__
 
@@ -63,14 +61,19 @@ def get_kubeconfig(**kwargs):
 
         kubeconfig, context = __salt__['metalk8s_kubernetes.get_kubeconfig'](**kwargs)
     """
-    pillar_dict = __pillar__.get('metalk8s', {}).get('api_server', {})
+    pillar_dict = __pillar__.get("metalk8s", {}).get("api_server", {})
 
-    kubeconfig = kwargs.get('kubeconfig') or \
-        pillar_dict.get('kubeconfig') or \
-        __salt__['config.option']('kubernetes.kubeconfig')
-    context = kwargs.get('context') or \
-        pillar_dict.get('context') or \
-        __salt__['config.option']('kubernetes.context') or None
+    kubeconfig = (
+        kwargs.get("kubeconfig")
+        or pillar_dict.get("kubeconfig")
+        or __salt__["config.option"]("kubernetes.kubeconfig")
+    )
+    context = (
+        kwargs.get("context")
+        or pillar_dict.get("context")
+        or __salt__["config.option"]("kubernetes.context")
+        or None
+    )
 
     return kubeconfig, context
 
@@ -95,7 +98,7 @@ def get_version_info(**kwargs):
     try:
         version_info = api_instance.get_code()
     except (ApiException, HTTPError) as exc:
-        raise CommandExecutionError('Failed to get version info') from exc
+        raise CommandExecutionError("Failed to get version info") from exc
 
     return version_info.to_dict()
 
@@ -115,20 +118,19 @@ def ping(**kwargs):
     return True
 
 
-def read_and_render_yaml_file(source, template, context=None, saltenv='base'):
-    '''
+def read_and_render_yaml_file(source, template, context=None, saltenv="base"):
+    """
     Read a yaml file and, if needed, renders that using the specifieds
     templating. Returns the python objects defined inside of the file.
-    '''
-    sfn = __salt__['cp.cache_file'](source, saltenv)
+    """
+    sfn = __salt__["cp.cache_file"](source, saltenv)
     if not sfn:
-        raise CommandExecutionError(
-            'Source file \'{0}\' not found'.format(source))
+        raise CommandExecutionError("Source file '{0}' not found".format(source))
 
     if not context:
         context = {}
 
-    with salt.utils.files.fopen(sfn, 'r') as src:
+    with salt.utils.files.fopen(sfn, "r") as src:
         contents = src.read()
 
         if template:
@@ -142,59 +144,54 @@ def read_and_render_yaml_file(source, template, context=None, saltenv='base'):
                     grains=__grains__,
                     pillar=__pillar__,
                     salt=__salt__,
-                    opts=__opts__)
+                    opts=__opts__,
+                )
 
-                if not data['result']:
+                if not data["result"]:
                     # Failed to render the template
                     raise CommandExecutionError(
-                        'Failed to render file path with error: '
-                        '{0}'.format(data['data'])
+                        "Failed to render file path with error: "
+                        "{0}".format(data["data"])
                     )
 
-                contents = data['data'].encode('utf-8')
+                contents = data["data"].encode("utf-8")
             else:
                 raise CommandExecutionError(
-                    'Unknown template specified: {0}'.format(
-                        template))
+                    "Unknown template specified: {0}".format(template)
+                )
 
         return salt.utils.yaml.safe_load(contents)
 
 
 def get_service_endpoints(service, namespace, kubeconfig):
-    error_tpl = \
-        'Unable to get kubernetes endpoints for {} in namespace {}'
+    error_tpl = "Unable to get kubernetes endpoints for {} in namespace {}"
 
     try:
-        endpoint = __salt__['metalk8s_kubernetes.get_object'](
+        endpoint = __salt__["metalk8s_kubernetes.get_object"](
             name=service,
-            kind='Endpoints',
-            apiVersion='v1',
+            kind="Endpoints",
+            apiVersion="v1",
             namespace=namespace,
             kubeconfig=kubeconfig,
         )
         if not endpoint:
-            raise CommandExecutionError('Endpoint not found')
+            raise CommandExecutionError("Endpoint not found")
     except CommandExecutionError as exc:
-        raise CommandExecutionError(
-            error_tpl.format(service, namespace)
-        ) from exc
+        raise CommandExecutionError(error_tpl.format(service, namespace)) from exc
 
     try:
         # Extract hostname, ip and node_name
         result = {
             k: v
-            for k, v in endpoint['subsets'][0]['addresses'][0].items()
-            if k in ['hostname', 'ip', 'node_name']
+            for k, v in endpoint["subsets"][0]["addresses"][0].items()
+            if k in ["hostname", "ip", "node_name"]
         }
 
         # Add ports info to result dict
-        result['ports'] = {
-            port['name']: port['port']
-            for port in endpoint['subsets'][0]['ports']
+        result["ports"] = {
+            port["name"]: port["port"] for port in endpoint["subsets"][0]["ports"]
         }
     except (AttributeError, IndexError, KeyError, TypeError) as exc:
-        raise CommandExecutionError(
-            error_tpl.format(service, namespace)
-        ) from exc
+        raise CommandExecutionError(error_tpl.format(service, namespace)) from exc
 
     return result

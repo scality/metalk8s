@@ -50,21 +50,19 @@ def ext_pillar(minion_id, pillar):
     nodes_info = pillar.get("metalk8s", {}).get("nodes", {})
 
     if minion_id not in nodes_info:
-        log.debug(
-            "No information about minion '%s' in K8s API, skipping.", minion_id
-        )
+        log.debug("No information about minion '%s' in K8s API, skipping.", minion_id)
         return {}
 
     node_info = nodes_info[minion_id]
 
-    private_data = {'private': None}
+    private_data = {"private": None}
 
     if "master" in node_info["roles"]:
         data = {}
         data.update(_read_sa_private_key())
         data.update(_read_apiserver_key())
-        private_data['private'] = data
-        __utils__['pillar_utils.promote_errors'](private_data, 'private')
+        private_data["private"] = data
+        __utils__["pillar_utils.promote_errors"](private_data, "private")
 
     result = {"metalk8s": private_data}
 

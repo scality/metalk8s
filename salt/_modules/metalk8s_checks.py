@@ -5,7 +5,7 @@ Execution module for handling MetalK8s checks.
 
 from salt.exceptions import CheckError
 
-__virtualname__ = 'metalk8s_checks'
+__virtualname__ = "metalk8s_checks"
 
 
 def __virtual__():
@@ -22,13 +22,13 @@ def node(raises=True, **kwargs):
     errors = []
 
     # Run `packages` check
-    pkg_ret = __salt__['metalk8s_checks.packages'](raises=False, **kwargs)
+    pkg_ret = __salt__["metalk8s_checks.packages"](raises=False, **kwargs)
     if pkg_ret is not True:
         errors.append(pkg_ret)
 
     # Compute return of the function
     if errors:
-        error_msg = 'Node {}: {}'.format(__grains__['id'], '\n'.join(errors))
+        error_msg = "Node {}: {}".format(__grains__["id"], "\n".join(errors))
         if raises:
             raise CheckError(error_msg)
         return error_msg
@@ -60,27 +60,23 @@ def packages(conflicting_packages=None, raises=True, **kwargs):
       - A list of string for multiple conflicting versions of this package
     """
     if conflicting_packages is None:
-        conflicting_packages = __salt__['metalk8s.get_from_map'](
-            'repo', saltenv=kwargs.get('saltenv')
-        )['conflicting_packages']
+        conflicting_packages = __salt__["metalk8s.get_from_map"](
+            "repo", saltenv=kwargs.get("saltenv")
+        )["conflicting_packages"]
 
     if isinstance(conflicting_packages, str):
         conflicting_packages = {conflicting_packages: None}
     elif isinstance(conflicting_packages, list):
-        conflicting_packages = {
-            package: None
-            for package in conflicting_packages
-        }
+        conflicting_packages = {package: None for package in conflicting_packages}
     errors = []
 
-    installed_packages = __salt__['pkg.list_pkgs'](attr="version")
+    installed_packages = __salt__["pkg.list_pkgs"](attr="version")
     for package, version in conflicting_packages.items():
         if isinstance(version, str):
             version = [version]
         if package in installed_packages:
             conflicting_versions = set(
-                pkg_info['version']
-                for pkg_info in installed_packages[package]
+                pkg_info["version"] for pkg_info in installed_packages[package]
             )
             if version:
                 conflicting_versions.intersection_update(version)
@@ -92,7 +88,7 @@ def packages(conflicting_packages=None, raises=True, **kwargs):
                         "please remove it.".format(package, ver)
                     )
 
-    error_msg = '\n'.join(errors)
+    error_msg = "\n".join(errors)
     if error_msg and raises:
         raise CheckError(error_msg)
 

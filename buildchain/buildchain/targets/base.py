@@ -17,12 +17,12 @@ class Target:
 
     def __init__(
         self,
-        targets: Optional[Sequence[Path]]=None,
-        file_dep: Optional[Sequence[Path]]=None,
-        task_dep: Optional[Sequence[str]]=None,
-        basename: Optional[str]=None,
-        task_name: Optional[str]=None,
-        uptodate: Optional[Sequence[types.UpToDateCheck]]=None,
+        targets: Optional[Sequence[Path]] = None,
+        file_dep: Optional[Sequence[Path]] = None,
+        task_dep: Optional[Sequence[str]] = None,
+        basename: Optional[str] = None,
+        task_name: Optional[str] = None,
+        uptodate: Optional[Sequence[types.UpToDateCheck]] = None,
     ):
         """Initialize the input/output of the target.
 
@@ -34,20 +34,20 @@ class Target:
             task_name: name of the sub-task
             uptodate:  extra up-to-date checks
         """
-        self._actions  = []  # type: List[types.Action]
-        self._targets  = targets or []
+        self._actions = []  # type: List[types.Action]
+        self._targets = targets or []
         self._file_dep = file_dep or []
         self._task_dep = task_dep or []
         self._basename = basename
         self._task_name = task_name
         self._uptodate = uptodate or []
 
-    actions   = property(operator.attrgetter('_actions'))
-    targets   = property(operator.attrgetter('_targets'))
-    file_dep  = property(operator.attrgetter('_file_dep'))
-    task_dep  = property(operator.attrgetter('_task_dep'))
-    task_name = property(operator.attrgetter('_task_name'))
-    uptodate  = property(operator.attrgetter('_uptodate'))
+    actions = property(operator.attrgetter("_actions"))
+    targets = property(operator.attrgetter("_targets"))
+    file_dep = property(operator.attrgetter("_file_dep"))
+    task_dep = property(operator.attrgetter("_task_dep"))
+    task_name = property(operator.attrgetter("_task_name"))
+    uptodate = property(operator.attrgetter("_uptodate"))
 
     @property
     def basename(self) -> Optional[str]:
@@ -58,19 +58,18 @@ class Target:
     def basic_task(self) -> types.TaskDict:
         """Minimal default task that can be build upon."""
         task = {
-            'actions': self.actions.copy(),
-            'targets': self.targets.copy(),
-            'file_dep': self.file_dep.copy(),
-            'task_dep': self.task_dep.copy(),
-            'uptodate': self.uptodate.copy(),
-            'clean': True
+            "actions": self.actions.copy(),
+            "targets": self.targets.copy(),
+            "file_dep": self.file_dep.copy(),
+            "task_dep": self.task_dep.copy(),
+            "uptodate": self.uptodate.copy(),
+            "clean": True,
         }
         if self.basename:
-            task['basename'] = self.basename
+            task["basename"] = self.basename
         if self.task_name:
-            task['name'] = self.task_name
+            task["name"] = self.task_name
         return task
-
 
 
 class AtomicTarget(Target, abc.ABC):

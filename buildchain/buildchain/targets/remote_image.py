@@ -33,8 +33,8 @@ class RemoteImage(image.ContainerImage):
         version: str,
         digest: str,
         destination: Path,
-        save_as: Optional[Sequence['ImageSaveFormat']]=None,
-        remote_name: Optional[str]=None,
+        save_as: Optional[Sequence["ImageSaveFormat"]] = None,
+        remote_name: Optional[str] = None,
         **kwargs: Any
     ):
         """Initialize a remote container image.
@@ -55,24 +55,18 @@ class RemoteImage(image.ContainerImage):
         self._digest = digest
         self._remote_name = remote_name or name
         self._save_as = save_as or [SaveAsLayers()]
-        kwargs.setdefault('task_dep', []).append('check_for:skopeo')
-        super().__init__(
-            name=name, version=version,
-            destination=destination,
-            **kwargs
-        )
+        kwargs.setdefault("task_dep", []).append("check_for:skopeo")
+        super().__init__(name=name, version=version, destination=destination, **kwargs)
         self._targets = self.filepaths
 
-    repository  = property(operator.attrgetter('_repository'))
-    digest      = property(operator.attrgetter('_digest'))
-    remote_name = property(operator.attrgetter('_remote_name'))
+    repository = property(operator.attrgetter("_repository"))
+    digest = property(operator.attrgetter("_digest"))
+    remote_name = property(operator.attrgetter("_remote_name"))
 
     @property
     def remote_fullname(self) -> str:
         """Complete image name retrieved from the remote repository."""
-        return (
-            "{img.repository}/{img._remote_name}:{img.version}"
-        ).format(img=self)
+        return ("{img.repository}/{img._remote_name}:{img.version}").format(img=self)
 
     @property
     def fullname(self) -> str:
@@ -87,15 +81,17 @@ class RemoteImage(image.ContainerImage):
     @property
     def task(self) -> types.TaskDict:
         task = self.basic_task
-        task.update({
-            'title': lambda _: self.show('PULL IMG'),
-            'doc': 'Download {} container image.'.format(self.name),
-            'uptodate': [True],
-            'actions': list(
-                itertools.chain(*[fmt.save(self) for fmt in self._save_as])
-            ),
-            'clean': [fmt.clean(self) for fmt in self._save_as],
-        })
+        task.update(
+            {
+                "title": lambda _: self.show("PULL IMG"),
+                "doc": "Download {} container image.".format(self.name),
+                "uptodate": [True],
+                "actions": list(
+                    itertools.chain(*[fmt.save(self) for fmt in self._save_as])
+                ),
+                "clean": [fmt.clean(self) for fmt in self._save_as],
+            }
+        )
         return task
 
 
@@ -117,18 +113,24 @@ class ImageSaveFormat(abc.ABC):
 
 class SaveAsLayers(ImageSaveFormat):
     """Save an image as layers in a directory."""
+
     def filepath(self, img: RemoteImage) -> Path:
-        return img.dirname/'manifest.json'
+        return img.dirname / "manifest.json"
 
     def save(self, img: RemoteImage) -> List[types.Action]:
         # Use Skopeo to directly copy the remote image into a directory
         # of image layers
         skopeo_copy = [
-            config.ExtCommand.SKOPEO.value, '--override-os', 'linux',
-            '--insecure-policy', 'copy', '--format', 'v2s2'
+            config.ExtCommand.SKOPEO.value,
+            "--override-os",
+            "linux",
+            "--insecure-policy",
+            "copy",
+            "--format",
+            "v2s2",
         ]
-        skopeo_copy.append('docker://{}'.format(img.remote_fullname))
-        skopeo_copy.append('dir:{}'.format(img.dirname))
+        skopeo_copy.append("docker://{}".format(img.remote_fullname))
+        skopeo_copy.append("dir:{}".format(img.dirname))
         return [img.mkdirs, skopeo_copy]
 
     def clean(self, img: RemoteImage) -> types.Action:
@@ -138,23 +140,27 @@ class SaveAsLayers(ImageSaveFormat):
 
 class SaveAsTar(ImageSaveFormat):
     """Save an image as a tarball."""
+
     def filepath(self, img: RemoteImage) -> Path:
-        filename = '{img.name}-{img.version}.tar'.format(img=img)
-        return img.dest_dir/filename
+        filename = "{img.name}-{img.version}.tar".format(img=img)
+        return img.dest_dir / filename
 
     def save(self, img: RemoteImage) -> List[types.Action]:
-        qualname = '{img.repository}/{img.name}'.format(img=img)
+        qualname = "{img.repository}/{img.name}".format(img=img)
         # Use Docker to pull, tag, then save the image
-        return [(
-            docker_command.docker_pull,
-            [img.repository, img.remote_name, img.version, img.digest], {}
-        ), (
-            docker_command.docker_tag,
-            [qualname, img.remote_fullname, img.version], {}
-        ), (
-            docker_command.docker_save,
-            [img.fullname, self.filepath(img)], {}
-        )]
+        return [
+            (
+                docker_command.docker_pull,
+                [img.repository, img.remote_name, img.version, img.digest],
+                {},
+            ),
+            (
+                docker_command.docker_tag,
+                [qualname, img.remote_fullname, img.version],
+                {},
+            ),
+            (docker_command.docker_save, [img.fullname, self.filepath(img)], {}),
+        ]
 
     def clean(self, img: RemoteImage) -> types.Action:
         """Return the action to delete the image."""

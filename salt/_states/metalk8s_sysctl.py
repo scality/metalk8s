@@ -5,7 +5,7 @@ Custom state to handle MetalK8s sysctl.
 
 from salt.exceptions import CommandExecutionError
 
-__virtualname__ = 'metalk8s_sysctl'
+__virtualname__ = "metalk8s_sysctl"
 
 
 def __virtual__():
@@ -26,15 +26,13 @@ def present(name, value, config=None, check_priority=True, strict=False):
 
     if check_priority:
         try:
-            __salt__['metalk8s_sysctl.has_precedence'](
-                name, value, config, strict
-            )
+            __salt__["metalk8s_sysctl.has_precedence"](name, value, config, strict)
         except CommandExecutionError as exc:
             return {
                 "name": name,
                 "result": False,
                 "changes": {},
-                "comment": "Unable to set sysctl value: {0}".format(exc)
+                "comment": "Unable to set sysctl value: {0}".format(exc),
             }
 
-    return __states__['sysctl.present'](name, value, config)
+    return __states__["sysctl.present"](name, value, config)

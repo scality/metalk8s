@@ -5,17 +5,16 @@ from tests import versions
 
 
 # Scenarios
-@scenario('../features/versions.feature',
-          "Check the cluster's Kubernetes version")
+@scenario("../features/versions.feature", "Check the cluster's Kubernetes version")
 def test_cluster_version(host):
     pass
 
 
 # Then
-@then('the Kubernetes version deployed is the same as the configured one')
+@then("the Kubernetes version deployed is the same as the configured one")
 def check_kubernetes_version(k8s_apiclient):
     # NOTE: the `vX.Y.Z` format is used by Kubernetes, not our buildchain
-    configured_version = 'v{}'.format(versions.K8S_VERSION)
+    configured_version = "v{}".format(versions.K8S_VERSION)
 
     k8s_client = VersionApi(api_client=k8s_apiclient)
     observed_version = k8s_client.get_code().git_version

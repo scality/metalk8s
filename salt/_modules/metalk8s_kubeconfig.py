@@ -9,18 +9,20 @@ import yaml
 
 from salt.utils.files import fopen
 
-__virtualname__ = 'metalk8s_kubeconfig'
+__virtualname__ = "metalk8s_kubeconfig"
 
 
 def __virtual__():
     return __virtualname__
 
 
-def validate(filename,
-             expected_ca_data=None,
-             expected_api_server=None,
-             expected_cn=None,
-             days_remaining=90):
+def validate(
+    filename,
+    expected_ca_data=None,
+    expected_api_server=None,
+    expected_cn=None,
+    days_remaining=90,
+):
     """Validate a kubeconfig filename.
 
     Validate that the kubeconfig provided by filename
@@ -40,7 +42,7 @@ def validate(filename,
         return False
 
     try:
-        with fopen(filename, 'r') as fd:
+        with fopen(filename, "r") as fd:
             kubeconfig = yaml.safe_load(fd)
     except Exception:  # pylint: disable=broad-except
         return False
@@ -48,9 +50,9 @@ def validate(filename,
     # Verify that the current CA cert on disk matches the expected CA cert
     # and the API Server on the existing file match with the expected
     try:
-        cluster_info = kubeconfig['clusters'][0]['cluster']
-        current_ca_data = cluster_info['certificate-authority-data']
-        current_api_server = cluster_info['server']
+        cluster_info = kubeconfig["clusters"][0]["cluster"]
+        current_ca_data = cluster_info["certificate-authority-data"]
+        current_api_server = cluster_info["server"]
     except (KeyError, IndexError):
         return False
 
@@ -62,9 +64,8 @@ def validate(filename,
 
     # Client Key and certificate verification
     try:
-        b64_client_key = kubeconfig['users'][0]['user']['client-key-data']
-        b64_client_cert = kubeconfig['users'][0][
-            'user']['client-certificate-data']
+        b64_client_key = kubeconfig["users"][0]["user"]["client-key-data"]
+        b64_client_cert = kubeconfig["users"][0]["user"]["client-certificate-data"]
     except (KeyError, IndexError):
         return False
 
@@ -76,12 +77,12 @@ def validate(filename,
 
     ca_pem_cert = b64decode(current_ca_data).decode()
 
-    client_cert_detail = __salt__['x509.read_certificate'](client_cert)
+    client_cert_detail = __salt__["x509.read_certificate"](client_cert)
 
     # Verify client cn
     if expected_cn is not None:
         try:
-            current_cn = client_cert_detail['Subject']['CN']
+            current_cn = client_cert_detail["Subject"]["CN"]
         except KeyError:
             return False
         else:
@@ -90,20 +91,21 @@ def validate(filename,
 
     # Verify client client cert expiration date is > 30days
     try:
-        expiration_date = client_cert_detail['Not After']
+        expiration_date = client_cert_detail["Not After"]
     except KeyError:
         return False
     else:
-        if datetime.strptime(expiration_date, "%Y-%m-%d %H:%M:%S") \
-                - timedelta(days=days_remaining) < datetime.now():
+        if (
+            datetime.strptime(expiration_date, "%Y-%m-%d %H:%M:%S")
+            - timedelta(days=days_remaining)
+            < datetime.now()
+        ):
             return False
 
-    if __salt__['x509.verify_signature'](
-            client_cert, ca_pem_cert) is not True:
+    if __salt__["x509.verify_signature"](client_cert, ca_pem_cert) is not True:
         return False
 
-    if __salt__['x509.verify_private_key'](
-            client_key, client_cert) is not True:
+    if __salt__["x509.verify_private_key"](client_key, client_cert) is not True:
         return False
 
     return True

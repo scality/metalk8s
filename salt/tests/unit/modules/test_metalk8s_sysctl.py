@@ -13,8 +13,7 @@ from pyfakefs.fake_filesystem_unittest import TestCase
 import metalk8s_sysctl
 
 YAML_TESTS_FILE = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    "files", "test_metalk8s_sysctl.yaml"
+    os.path.dirname(os.path.abspath(__file__)), "files", "test_metalk8s_sysctl.yaml"
 )
 with open(YAML_TESTS_FILE) as fd:
     YAML_TESTS_CASES = yaml.safe_load(fd)
@@ -26,6 +25,7 @@ class Metalk8sSysctlTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
     TestCase for `metalk8s_sysctl` module
     """
+
     loader_module = metalk8s_sysctl
 
     def setUp(self):
@@ -41,8 +41,7 @@ class Metalk8sSysctlTestCase(TestCase, mixins.LoaderModuleMockMixin):
         self.assertEqual(metalk8s_sysctl.__virtual__(), "metalk8s_sysctl")
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["has_precedence"])
-    def test_has_precedence(
-            self, name, value, config, result=None, strict=False):
+    def test_has_precedence(self, name, value, config, result=None, strict=False):
         """
         Tests the return of `has_precedence` function
         """

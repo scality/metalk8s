@@ -17,19 +17,19 @@ import sys
 def parse_args(args=None):
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
-        prog='metalk8s-sparse-volume-cleanup',
-        description='Cleanup MetalK8s sparse loop volumes',
+        prog="metalk8s-sparse-volume-cleanup",
+        description="Cleanup MetalK8s sparse loop volumes",
     )
 
     parser.add_argument(
-        'volume_id',
-        help='UUID of the MetalK8s Volume object',
+        "volume_id",
+        help="UUID of the MetalK8s Volume object",
     )
 
     return parser.parse_args(args=args)
 
 
-SPARSE_FILES_DIR = '/var/lib/metalk8s/storage/sparse'
+SPARSE_FILES_DIR = "/var/lib/metalk8s/storage/sparse"
 
 
 def check_sparse_file(volume_id):
@@ -40,7 +40,7 @@ def check_sparse_file(volume_id):
             "Sparse file {} does not exist for volume '{}'".format(
                 sparse_file_path, volume_id
             ),
-            exit_code=errno.ENOENT
+            exit_code=errno.ENOENT,
         )
 
 
@@ -85,9 +85,7 @@ def cleanup(volume_id):
     """
     device_path = find_device(volume_id)
 
-    print("Detaching loop device '{}' for volume '{}'".format(
-        device_path, volume_id
-    ))
+    print("Detaching loop device '{}' for volume '{}'".format(device_path, volume_id))
 
     device_handle = os.open(device_path, os.O_RDONLY)
     try:
@@ -104,9 +102,7 @@ def cleanup(volume_id):
     finally:
         os.close(device_handle)
 
-    print("Loop device for volume '{}' was successfully detached".format(
-        volume_id
-    ))
+    print("Loop device for volume '{}' was successfully detached".format(volume_id))
 
 
 def main():
@@ -120,6 +116,7 @@ def main():
 # Helpers {{{
 # Error handling {{{
 
+
 def die(message, exit_code=1):
     """Print a message to the standard error stream, and exit."""
     print(message, file=sys.stderr)
@@ -129,6 +126,7 @@ def die(message, exit_code=1):
 
 class Error(Exception):
     """Base-class for errors raised by methods from this module."""
+
     def __init__(self, message, *args, exit_code=1):
         super().__init__(self, message, *args)
         self.message = message
@@ -137,6 +135,7 @@ class Error(Exception):
 
 # }}}
 # Loop device discovery {{{
+
 
 def device_by_uuid(volume_id):
     """Find a device by file-system UUID."""
@@ -168,16 +167,17 @@ LOOP_MAJOR = 7
 def is_loop_device(path):
     """Check if the provided path is a real loop device."""
     device_stat = os.stat(path)
-    return stat.S_ISBLK(device_stat.st_mode) \
-        and (os.major(device_stat.st_rdev) == LOOP_MAJOR)
+    return stat.S_ISBLK(device_stat.st_mode) and (
+        os.major(device_stat.st_rdev) == LOOP_MAJOR
+    )
 
 
 # }}}
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         main()
     except Error as exc:
         die(exc.message, exit_code=exc.exit_code)
     except Exception as exc:  # pylint: disable=broad-except
-        die('Unhandled exception when cleaning up volume: {!s}'.format(exc))
+        die("Unhandled exception when cleaning up volume: {!s}".format(exc))

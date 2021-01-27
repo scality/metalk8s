@@ -23,11 +23,9 @@ def _error(ret, err_msg):
     return ret
 
 
-def static_pod_managed(name,
-                       source,
-                       config_files=None,
-                       config_files_opt=None,
-                       context=None):
+def static_pod_managed(
+    name, source, config_files=None, config_files_opt=None, context=None
+):
     """Simple helper to edit a static Pod manifest if configuration changes.
 
     Expects the template to use:
@@ -69,35 +67,29 @@ def static_pod_managed(name,
             config_files.append(config_file)
         else:
             log.debug(
-                "Ignoring optional config file %s: file does not exist",
-                config_file
+                "Ignoring optional config file %s: file does not exist", config_file
             )
 
     config_file_digests = []
     for config_file in config_files:
         try:
-            digest = __salt__["hashutil.digest_file"](
-                config_file, checksum="sha256"
-            )
+            digest = __salt__["hashutil.digest_file"](config_file, checksum="sha256")
         except CommandExecutionError as exc:
             return _error(
                 ret,
                 "Unable to compute digest of config file {}: {}".format(
                     config_file, exc
-                )
+                ),
             )
         config_file_digests.append(digest)
 
-    config_digest = __salt__["hashutil.md5_digest"](
-        "-".join(config_file_digests)
-    )
+    config_digest = __salt__["hashutil.md5_digest"]("-".join(config_file_digests))
 
-    match = re.search(r'metalk8s-(?P<version>.+)$', __env__)
-    metalk8s_version = match.group('version') if match else "unknown"
+    match = re.search(r"metalk8s-(?P<version>.+)$", __env__)
+    metalk8s_version = match.group("version") if match else "unknown"
 
     context_ = dict(
-        context or {},
-        config_digest=config_digest, metalk8s_version=metalk8s_version
+        context or {}, config_digest=config_digest, metalk8s_version=metalk8s_version
     )
 
     if __opts__["test"]:
@@ -148,21 +140,15 @@ def module_run(name, attemps=1, sleep_time=10, **kwargs):
     https://github.com/saltstack/salt/issues/44639
     """
     retry = attemps
-    ret = {'name': name,
-           'changes': {},
-           'result': False,
-           'comment': ''}
-    while retry > 0 and not ret['result']:
+    ret = {"name": name, "changes": {}, "result": False, "comment": ""}
+    while retry > 0 and not ret["result"]:
         try:
-            ret = __states__["module.run"](
-                name,
-                **kwargs
-            )
+            ret = __states__["module.run"](name, **kwargs)
         except Exception as exc:  # pylint: disable=broad-except
-            ret['comment'] = str(exc)
+            ret["comment"] = str(exc)
 
         retry = retry - 1
-        if retry and not ret['result']:
+        if retry and not ret["result"]:
             time.sleep(sleep_time)
 
     return ret
@@ -171,22 +157,17 @@ def module_run(name, attemps=1, sleep_time=10, **kwargs):
 def saltutil_cmd(name, **kwargs):
     """Simple `saltutil.cmd` state as `salt.function` do not support roster and
     raw ssh, https://github.com/saltstack/salt/issues/58662"""
-    ret = {
-        'name': name,
-        'changes': {},
-        'result': True,
-        'comment': ''
-    }
+    ret = {"name": name, "changes": {}, "result": True, "comment": ""}
 
     try:
-        cmd_ret = __salt__['saltutil.cmd'](fun=name, **kwargs)
+        cmd_ret = __salt__["saltutil.cmd"](fun=name, **kwargs)
     except Exception as exc:  # pylint: disable=broad-except
-        ret['result'] = False
-        ret['comment'] = str(exc)
+        ret["result"] = False
+        ret["comment"] = str(exc)
         return ret
 
     try:
-        ret['__jid__'] = cmd_ret[next(iter(cmd_ret))]['jid']
+        ret["__jid__"] = cmd_ret[next(iter(cmd_ret))]["jid"]
     except (StopIteration, KeyError):
         pass
 
@@ -194,37 +175,37 @@ def saltutil_cmd(name, **kwargs):
 
     for minion, mdata in cmd_ret.items():
         m_ret = False
-        if mdata.get('retcode'):
-            ret['result'] = False
+        if mdata.get("retcode"):
+            ret["result"] = False
             fail.add(minion)
-        if mdata.get('failed', False):
+        if mdata.get("failed", False):
             fail.add(minion)
         else:
-            if 'return' in mdata and 'ret' not in mdata:
-                mdata['ret'] = mdata.pop('return')
-            if 'ret' in mdata:
-                m_ret = mdata['ret']
-            if 'stderr' in mdata or 'stdout' in mdata:
+            if "return" in mdata and "ret" not in mdata:
+                mdata["ret"] = mdata.pop("return")
+            if "ret" in mdata:
+                m_ret = mdata["ret"]
+            if "stderr" in mdata or "stdout" in mdata:
                 m_ret = {
-                    'retcode': mdata.get('retcode'),
-                    'stderr': mdata.get('stderr'),
-                    'stdout': mdata.get('stdout')
+                    "retcode": mdata.get("retcode"),
+                    "stderr": mdata.get("stderr"),
+                    "stdout": mdata.get("stdout"),
                 }
             if m_ret is False:
                 fail.add(minion)
 
-        ret['changes'][minion] = m_ret
+        ret["changes"][minion] = m_ret
 
     if not cmd_ret:
-        ret['result'] = False
-        ret['comment'] = 'No minions responded'
+        ret["result"] = False
+        ret["comment"] = "No minions responded"
     else:
         if fail:
-            ret['result'] = False
-            ret['comment'] = 'Running function {} failed on minions: {}'.format(
-                name, ', '.join(fail)
+            ret["result"] = False
+            ret["comment"] = "Running function {} failed on minions: {}".format(
+                name, ", ".join(fail)
             )
         else:
-            ret['comment'] = 'Function ran successfully'
+            ret["comment"] = "Function ran successfully"
 
     return ret

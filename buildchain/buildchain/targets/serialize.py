@@ -19,54 +19,53 @@ from . import base
 
 def render_json(obj: Any, filepath: Path) -> None:
     """Serialize an object as JSON to a given file path."""
-    with filepath.open('w', encoding='utf-8') as file_obj:
+    with filepath.open("w", encoding="utf-8") as file_obj:
         json.dump(obj, file_obj, sort_keys=True, indent=2)
 
 
 def render_envfile(variables: Mapping[str, str], filepath: Path) -> None:
     """Serialize a dict as an env file to the given file path."""
-    with filepath.open('w', encoding='utf-8') as fp:
-        data = '\n'.join(
-            '{}={}'.format(key, value) for key, value in variables.items()
-        )
+    with filepath.open("w", encoding="utf-8") as fp:
+        data = "\n".join("{}={}".format(key, value) for key, value in variables.items())
         fp.write(data)
-        fp.write('\n')
+        fp.write("\n")
 
 
 def render_yaml(data: Sequence[Any], filepath: Path) -> None:
     """Serialize an object as YAML to a given file path."""
-    with filepath.open('w', encoding='utf-8') as fp:
+    with filepath.open("w", encoding="utf-8") as fp:
         _yaml_dump(data, fp)
 
 
-def render_sls(sls: 'SaltState', filepath: Path) -> None:
+def render_sls(sls: "SaltState", filepath: Path) -> None:
     """Serialize a Salt state to a given file path."""
-    with filepath.open('w', encoding='utf-8') as fp:
+    with filepath.open("w", encoding="utf-8") as fp:
         if sls.shebang:
             fp.write(sls.shebang)
-            fp.write('\n'*2)
+            fp.write("\n" * 2)
         if sls.imports:
-            fp.write('\n'.join(sls.imports))
-            fp.write('\n'*2)
+            fp.write("\n".join(sls.imports))
+            fp.write("\n" * 2)
         _yaml_dump(sls.content, fp)
 
 
 class Renderer(enum.Enum):
     """Supported rendering methods for `SerializedData` targets."""
-    JSON = 'JSON'
-    ENV  = 'ENV'
-    SLS  = 'SLS'
-    YAML = 'YAML'
+
+    JSON = "JSON"
+    ENV = "ENV"
+    SLS = "SLS"
+    YAML = "YAML"
 
 
 class SerializedData(base.AtomicTarget):
     """Serialize an object into a file with a specific renderer."""
 
-    RENDERERS : Dict[Renderer, Callable[[Any, Path], None]] = {
+    RENDERERS: Dict[Renderer, Callable[[Any, Path], None]] = {
         Renderer.JSON: render_json,
-        Renderer.ENV:  render_envfile,
+        Renderer.ENV: render_envfile,
         Renderer.YAML: render_yaml,
-        Renderer.SLS:  render_sls,
+        Renderer.SLS: render_sls,
     }
 
     def __init__(
@@ -85,7 +84,7 @@ class SerializedData(base.AtomicTarget):
         Keyword Arguments:
             They are passed to `Target` init method
         """
-        kwargs['targets'] = [destination]
+        kwargs["targets"] = [destination]
         super().__init__(**kwargs)
 
         self._data = data
@@ -93,8 +92,8 @@ class SerializedData(base.AtomicTarget):
 
         if not isinstance(renderer, Renderer):
             raise ValueError(
-                'Invalid `renderer`: {!r}. Must be one of: {}'.format(
-                    renderer, ', '.join(map(repr, Renderer))
+                "Invalid `renderer`: {!r}. Must be one of: {}".format(
+                    renderer, ", ".join(map(repr, Renderer))
                 )
             )
 
@@ -103,15 +102,15 @@ class SerializedData(base.AtomicTarget):
     @property
     def task(self) -> types.TaskDict:
         task = self.basic_task
-        task.update({
-            'title': utils.title_with_target1(
-                'RENDER {}'.format(self._renderer.value)
-            ),
-            'doc': 'Render file "{}" with "{}"'.format(
-                self._dest, self._renderer
-            ),
-            'actions': [self._run],
-        })
+        task.update(
+            {
+                "title": utils.title_with_target1(
+                    "RENDER {}".format(self._renderer.value)
+                ),
+                "doc": 'Render file "{}" with "{}"'.format(self._dest, self._renderer),
+                "actions": [self._run],
+            }
+        )
         return task
 
     @property
@@ -126,8 +125,9 @@ class SerializedData(base.AtomicTarget):
 # YAML {{{
 
 
-class YAMLDocument():
+class YAMLDocument:
     """A YAML document, with an optional preamble (like a shebang)."""
+
     class Literal(str):
         """A large block of text, to be rendered as a block scalar."""
 
@@ -135,50 +135,44 @@ class YAMLDocument():
         """A binary string, to be rendered as a base64-encoded literal."""
 
     @classmethod
-    def text(cls, value: str) -> 'YAMLDocument.Literal':
+    def text(cls, value: str) -> "YAMLDocument.Literal":
         """Cast the value to a Literal."""
         return cls.Literal(value)
 
     @classmethod
-    def bytestring(cls, value: bytes) -> 'YAMLDocument.ByteString':
+    def bytestring(cls, value: bytes) -> "YAMLDocument.ByteString":
         """Cast the value to a ByteString."""
         return cls.ByteString(value)
 
 
-SaltState = collections.namedtuple(
-    'SaltState', ['content', 'shebang', 'imports']
-)
+SaltState = collections.namedtuple("SaltState", ["content", "shebang", "imports"])
 
 
 def _literal_representer(dumper: yaml.BaseDumper, data: Any) -> Any:
-    scalar = yaml.representer.SafeRepresenter.represent_str( # type: ignore
+    scalar = yaml.representer.SafeRepresenter.represent_str(  # type: ignore
         dumper, data
     )
-    scalar.style = '|'
+    scalar.style = "|"
     return scalar
 
 
 def _bytestring_representer(dumper: yaml.BaseDumper, data: Any) -> Any:
-    return _literal_representer(
-        dumper, base64.encodebytes(data).decode('utf-8')
-    )
+    return _literal_representer(dumper, base64.encodebytes(data).decode("utf-8"))
 
 
 def _yaml_dump(data: Sequence[Any], fp: IO[Any]) -> None:
-    dumper = yaml.SafeDumper(fp, sort_keys=False) # type: ignore
-    dumper.add_representer( # type: ignore
-        YAMLDocument.Literal, _literal_representer
-    )
-    dumper.add_representer( # type: ignore
+    dumper = yaml.SafeDumper(fp, sort_keys=False)  # type: ignore
+    dumper.add_representer(YAMLDocument.Literal, _literal_representer)  # type: ignore
+    dumper.add_representer(  # type: ignore
         YAMLDocument.ByteString, _bytestring_representer
     )
     try:
-        dumper.open() # type: ignore
+        dumper.open()  # type: ignore
         for document in data:
-            dumper.represent(document) # type: ignore
-        dumper.close() # type: ignore
+            dumper.represent(document)  # type: ignore
+        dumper.close()  # type: ignore
     finally:
-        dumper.dispose() # type: ignore
+        dumper.dispose()  # type: ignore
 
 
 # }}}

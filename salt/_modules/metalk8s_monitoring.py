@@ -10,22 +10,31 @@ MISSING_DEPS = []
 try:
     import requests
 except ImportError:
-    MISSING_DEPS.append('requests')
+    MISSING_DEPS.append("requests")
 
-__virtualname__ = 'metalk8s_monitoring'
+__virtualname__ = "metalk8s_monitoring"
 
 
 def __virtual__():
     if MISSING_DEPS:
-        error_msg = 'Missing dependencies: {}'.format(', '.join(MISSING_DEPS))
+        error_msg = "Missing dependencies: {}".format(", ".join(MISSING_DEPS))
         return False, error_msg
 
     return __virtualname__
 
 
-def add_silence(value, name='alertname', is_regex=False, starts_at=None,
-                duration=3600, ends_at=None, time_format='%Y-%m-%dT%H:%M:%S',
-                author='', comment='', **kwargs):
+def add_silence(
+    value,
+    name="alertname",
+    is_regex=False,
+    starts_at=None,
+    duration=3600,
+    ends_at=None,
+    time_format="%Y-%m-%dT%H:%M:%S",
+    author="",
+    comment="",
+    **kwargs
+):
     """Add a new silence in Alertmanager.
 
     Arguments:
@@ -62,26 +71,25 @@ def add_silence(value, name='alertname', is_regex=False, starts_at=None,
         ends_at = datetime.strptime(ends_at, time_format)
 
     body = {
-        "matchers": [{
-            "name": name,
-            "isRegex": is_regex,
-            "value": value,
-        }],
-        "startsAt": starts_at.strftime('%Y-%m-%dT%H:%M:%SZ'),
-        "endsAt": ends_at.strftime('%Y-%m-%dT%H:%M:%SZ'),
+        "matchers": [
+            {
+                "name": name,
+                "isRegex": is_regex,
+                "value": value,
+            }
+        ],
+        "startsAt": starts_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "endsAt": ends_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "createdBy": author,
         "comment": comment,
         "status": {"state": "active"},
     }
 
     response = _requests_alertmanager_api(
-        'api/v1/silences',
-        'POST',
-        json=body,
-        **kwargs
+        "api/v1/silences", "POST", json=body, **kwargs
     )
 
-    return response['silenceId']
+    return response["silenceId"]
 
 
 def delete_silence(silence_id, **kwargs):
@@ -99,9 +107,7 @@ def delete_silence(silence_id, **kwargs):
             64d84a9e-cc6e-41ce-83ff-e84771ff6872
     """
     _requests_alertmanager_api(
-        'api/v1/silence/{}'.format(silence_id),
-        'DELETE',
-        **kwargs
+        "api/v1/silence/{}".format(silence_id), "DELETE", **kwargs
     )
 
 
@@ -120,16 +126,11 @@ def get_silences(state=None, **kwargs):
         salt-call metalk8s_monitoring.get_silences
         salt-call metalk8s_monitoring.get_silences state=active
     """
-    response = _requests_alertmanager_api(
-        'api/v1/silences',
-        'GET',
-        **kwargs
-    )
+    response = _requests_alertmanager_api("api/v1/silences", "GET", **kwargs)
 
     if state is not None:
         silences = [
-            silence for silence in response
-            if silence['status']['state'] == state
+            silence for silence in response if silence["status"]["state"] == state
         ]
     else:
         silences = response
@@ -152,38 +153,31 @@ def get_alerts(state=None, **kwargs):
         salt-call metalk8s_monitoring.get_alerts
         salt-call metalk8s_monitoring.get_alerts state=suppressed
     """
-    response = _requests_alertmanager_api(
-        'api/v1/alerts',
-        'GET',
-        **kwargs
-    )
+    response = _requests_alertmanager_api("api/v1/alerts", "GET", **kwargs)
 
     if state is not None:
-        alerts = [
-            alert for alert in response
-            if alert['status']['state'] == state
-        ]
+        alerts = [alert for alert in response if alert["status"]["state"] == state]
     else:
         alerts = response
 
     return alerts
 
 
-def _requests_alertmanager_api(route, method='GET', **kwargs):
-    endpoint = __salt__['metalk8s_kubernetes.get_service_endpoints'](
-        'prometheus-operator-alertmanager',
-        'metalk8s-monitoring',
-        kwargs.pop('kubeconfig', None),
+def _requests_alertmanager_api(route, method="GET", **kwargs):
+    endpoint = __salt__["metalk8s_kubernetes.get_service_endpoints"](
+        "prometheus-operator-alertmanager",
+        "metalk8s-monitoring",
+        kwargs.pop("kubeconfig", None),
     )
 
-    url = 'http://{}:{}/{}'.format(
-        endpoint['ip'],
-        endpoint['ports']['web'],
+    url = "http://{}:{}/{}".format(
+        endpoint["ip"],
+        endpoint["ports"]["web"],
         route,
     )
 
     try:
-        session = __utils__['metalk8s.requests_retry_session']()
+        session = __utils__["metalk8s.requests_retry_session"]()
         response = session.request(method, url, **kwargs)
     except Exception as exc:
         raise CommandExecutionError(
@@ -194,20 +188,18 @@ def _requests_alertmanager_api(route, method='GET', **kwargs):
         json = response.json()
     except ValueError as exc:
         if response.status_code != requests.codes.ok:
-            error = (
-                "Received HTTP code {} when querying Alertmanager API on {}"
-                .format(response.status_code, url)
+            error = "Received HTTP code {} when querying Alertmanager API on {}".format(
+                response.status_code, url
             )
         else:
             error = (
-                "Malformed response returned from Alertmanager API: {!s}: {}"
-                .format(exc, response.text)
+                "Malformed response returned from Alertmanager API: {!s}: {}".format(
+                    exc, response.text
+                )
             )
         raise CommandExecutionError(error) from exc
 
-    if json['status'] == 'error':
-        raise CommandExecutionError(
-            "{}: {}".format(json['errorType'], json['error'])
-        )
+    if json["status"] == "error":
+        raise CommandExecutionError("{}: {}".format(json["errorType"], json["error"]))
 
-    return json.get('data')
+    return json.get("data")
