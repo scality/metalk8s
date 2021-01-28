@@ -53,3 +53,8 @@ repos:
           )$
         args:
           - --strict
+
+  - repo: https://github.com/warpnet/salt-lint
+    rev: v0.5.1
+    hooks:
+      - id: salt-lint

@@ -129,7 +129,7 @@ def lint_sls() -> types.TaskDict:
         "name": "sls",
         "title": utils.title_with_subtask_name("LINT"),
         "doc": lint_sls.__doc__,
-        "actions": [["tox", "-e", "lint-sls"]],
+        "actions": [["tox", "-e", "lint", "salt-lint"]],
         "file_dep": sls_files,
     }
 
