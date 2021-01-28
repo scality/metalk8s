@@ -313,11 +313,7 @@ def _download_deb_packages(releasever: str) -> types.TaskDict:
 
     mounts = [
         utils.bind_ro_mount(
-            source=constants.ROOT
-            / "packages"
-            / "debian"
-            / "common"
-            / "download_packages.py",
+            source=constants.SRC_DEB_ROOT / "common" / "download_packages.py",
             target=Path("/download_packages.py"),
         ),
         utils.bind_mount(

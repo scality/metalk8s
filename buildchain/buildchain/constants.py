@@ -60,6 +60,8 @@ STATIC_CONTAINER_REGISTRY: Path = Path(ROOT, "buildchain/static-container-regist
 STORAGE_OPERATOR_ROOT: Path = ROOT / "storage-operator"
 # Path to the UI build root directory.
 UI_BUILD_ROOT: Path = config.BUILD_ROOT / "ui"
+# Root for the source Debian package
+SRC_DEB_ROOT: Path = ROOT / "packages" / "debian"
 
 # Docker entrypoints.
 DEBIAN_ENTRYPOINT: Path = ROOT / "packages/debian/common/entrypoint.sh"
