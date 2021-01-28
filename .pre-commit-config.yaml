@@ -7,3 +7,31 @@ repos:
     hooks:
       - id: black
         name: Formatting Python
+
+  - repo: https://github.com/pycqa/pylint
+    rev: pylint-2.6.0
+    hooks:
+      - id: pylint
+        name: Lint Python (non-salt)
+        # Linting for non-salt files (buildchain and python not executed
+        # by salt directly)
+        additional_dependencies:
+          - 'pyenchant~=2.0'
+          - 'doit~=0.32.0'
+          - 'docker~=4.1.0'
+          - 'PyYAML~=5.3.1'
+        files: >
+          (?x)^(
+              buildchain/dodo.py|
+              buildchain/buildchain|
+              packages/debian/common/download_packages.py|
+              salt/metalk8s/volumes/files/sparse_volume_cleanup.py
+          )$
+      - id: pylint
+        name: Lint Salt
+        # Linting for salt files only in directory "salt/_<module>/<module_name>.py"
+        files: salt/_.*/.*\.py
+        additional_dependencies: ['saltpylint==2020.9.28']
+        args:
+          - --rcfile=salt/.pylintrc
+          - --ignore=metalk8s_package_manager_apt.py
