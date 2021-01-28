@@ -375,11 +375,7 @@ class DEBRepository(Repository):
         """Return the command to run `reprepro` inside a container."""
         mounts = [
             utils.bind_ro_mount(
-                source=constants.ROOT
-                / "packages"
-                / "debian"
-                / "common"
-                / "distributions",
+                source=constants.SRC_DEB_ROOT / "common" / "distributions",
                 target=Path("/distributions"),
             ),
             utils.bind_ro_mount(source=self.pkgdir, target=Path("/packages")),
