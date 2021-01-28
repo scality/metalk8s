@@ -10,7 +10,6 @@ do not have a working MetalK8s_ setup.
 
 .. toctree::
 
-   enable_ip_ip
    solutions
    upgrade
    downgrade

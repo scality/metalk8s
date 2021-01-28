@@ -14,6 +14,7 @@ and shows how to access various services after completing the setup.
    introduction
    setup
    bootstrap
+   enable_ip_ip
    expansion
    post-install
    services
