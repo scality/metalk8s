@@ -1,7 +1,8 @@
-import { IntlProvider, addLocaleData } from 'react-intl';
+import { IntlProvider } from 'react-intl';
 import IntlGlobalProvider from './translations/IntlGlobalProvider';
 import translations_en from './translations/en';
 import { setupMock as setupLocalStorageMock } from './tests/mocks/localStorage';
+import '@testing-library/jest-dom/extend-expect';
 
 const intlProvider = new IntlProvider({
   locale: 'en',
