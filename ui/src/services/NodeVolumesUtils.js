@@ -148,9 +148,9 @@ export const computeVolumeGlobalStatus = (
 // Returns
 //     a tuple (error code, error message).
 export const volumeGetError = (
-  status: $PropertyType<Metalk8sV1alpha1Volume, 'status'>,
+  status?: $PropertyType<Metalk8sV1alpha1Volume, 'status'>,
 ): [string, string] => {
-  if (!Array.isArray(status.conditions)) {
+  if (!status || !Array.isArray(status.conditions)) {
     return ['', ''];
   }
   const condition = status.conditions.find(
