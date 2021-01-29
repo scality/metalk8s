@@ -95,6 +95,7 @@ const LoaderContainer = styled.div`
   display: flex;
   justify-content: center;
 `;
+
 const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
   const theme = useTheme();
   const { data: partitions, status } = useQuery(
@@ -186,7 +187,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
                 }}
               >
                 <LoaderContainer>
-                  <Loader size="large" />
+                  <Loader size="large" aria-label="loading" />
                 </LoaderContainer>
               </td>
             </HeadRow>
@@ -205,7 +206,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
                   textAlign: 'center',
                 }}
               >
-                {intl.translate('error_loading_partitions')}
+                {intl.translate('error_system_partitions')}
               </td>
             </HeadRow>
           )}
@@ -225,6 +226,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
                           percentage={cell.value}
                           buildinLabel={`${cell.value}%`}
                           backgroundColor={theme.brand.primaryDark1}
+                          aria-label={'percentage'}
                         />
                       </Cell>
                     );
