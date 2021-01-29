@@ -44,15 +44,39 @@ class CircleStatus extends React.Component {
     const { status, size } = this.props;
     if (size === undefined || size === CIRCLE_BASE_SIZE) {
       if (status === STATUS_NONE) {
-        return <Circle className="far fa-circle" status={status} />;
+        return (
+          <Circle
+            className="far fa-circle"
+            status={status}
+            aria-label={`status ${status}`}
+          />
+        );
       } else {
-        return <Circle className="fas fa-circle" status={status} />;
+        return (
+          <Circle
+            className="fas fa-circle"
+            status={status}
+            aria-label={`status ${status}`}
+          />
+        );
       }
     } else if (size === CIRCLE_DOUBLE_SIZE) {
       if (status === STATUS_NONE) {
-        return <Circle className="far fa-circle fa-2x" status={status} />;
+        return (
+          <Circle
+            className="far fa-circle fa-2x"
+            status={status}
+            aria-label={`status ${status}`}
+          />
+        );
       } else {
-        return <Circle className="fas fa-circle fa-2x" status={status} />;
+        return (
+          <Circle
+            className="fas fa-circle fa-2x"
+            status={status}
+            aria-label={`status ${status}`}
+          />
+        );
       }
     }
   }
