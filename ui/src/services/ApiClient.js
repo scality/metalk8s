@@ -76,6 +76,9 @@ class ApiClient {
       });
       return response.data;
     } catch (error) {
+      // TODO: We should throw the error directly from here.
+      // throw new error();
+      // However, by doing this may change the behavior of the error handling of APIs using this ApiClient.
       return { error };
     }
   }
