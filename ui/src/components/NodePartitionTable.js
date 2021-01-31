@@ -118,12 +118,17 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
               nodeFSSizeResult.data.result,
               alerts,
             );
+          } else if (
+            nodeFSUsageResult.error ||
+            nodeFSSizeResult.error ||
+            alerts.error
+          ) {
+            throw new Error();
           }
         }),
       [instanceIP],
     ),
   );
-
   const {
     getTableProps,
     getTableBodyProps,
