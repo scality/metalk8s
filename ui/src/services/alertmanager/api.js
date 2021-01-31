@@ -6,7 +6,6 @@ let alertmanagerApiClient: ?ApiClient = null;
 export function initialize(apiUrl: string) {
   alertmanagerApiClient = new ApiClient({ apiUrl });
 }
-
 export type PrometheusAlert = {
   annotations: {
     [key: string]: string,
@@ -29,7 +28,7 @@ export type PrometheusAlert = {
   generatorURL: string,
 };
 
-export function getAlerts(): Promise<PrometheusAlert[]> {
+export function getAlerts() {
   if (!alertmanagerApiClient) {
     throw new Error('alertmanagerApiClient should be defined');
   }
