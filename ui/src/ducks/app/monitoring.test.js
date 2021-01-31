@@ -10,38 +10,8 @@ import {
   refreshClusterStatus,
 } from './monitoring';
 import { REFRESH_TIMEOUT } from '../../constants';
-import { queryPrometheus, getAlerts } from '../../services/prometheus/api';
+import { queryPrometheus } from '../../services/prometheus/api';
 import * as CoreApi from '../../services/k8s/core';
-
-const alertsResult = {
-  data: {
-    alerts: [
-      {
-        labels: {
-          alertname: 'KubeNodeNotReady',
-          condition: 'Ready',
-          endpoint: 'https-main',
-          instance: '10.233.132.80:8443',
-          job: 'kube-state-metrics',
-          namespace: 'metalk8s-monitoring',
-          node: 'node1',
-          pod: 'kube-state-metrics-6f76945b5b-g9mtf',
-          service: 'kube-state-metrics',
-          severity: 'warning',
-          status: 'true',
-        },
-        annotations: {
-          message: 'node1 has been unready for more than an hour.',
-          runbook_url:
-            'https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubenodenotready',
-        },
-        state: 'firing',
-        activeAt: '2019-06-27T06:10:17.588420806Z',
-        value: 0,
-      },
-    ],
-  },
-};
 
 it('should set cluster status as UP', () => {
   const gen = fetchClusterStatus();
