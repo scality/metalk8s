@@ -18,6 +18,11 @@ def node(raises=True, **kwargs):
 
     Arguments:
         raises (bool): the method will raise if there is any problem.
+
+    Optional arguments:
+        service_cidr (str): the network CIDR for Service Cluster IPs (for
+            which to check the presence of a route) - if not given nor set in
+            `pillar.networks.service`, this check will be skipped.
     """
     errors = []
 
@@ -30,6 +35,23 @@ def node(raises=True, **kwargs):
     svc_ret = __salt__['metalk8s_checks.services'](raises=False, **kwargs)
     if svc_ret is not True:
         errors.append(svc_ret)
+
+    # Run `route_exists` check for the Service Cluster IPs
+    service_cidr = kwargs.pop(
+        'service_cidr',
+        __pillar__.get('networks', {}).get('service', None)
+    )
+    if service_cidr is not None:
+        service_route_ret = route_exists(
+            destination=service_cidr, raises=False
+        )
+        if service_route_ret is not True:
+            errors.append((
+                'Invalid networks:service CIDR - {}. Please make sure to '
+                'have either a default route or a dummy interface and route '
+                'for this range (for details, see '
+                'https://github.com/kubernetes/kubernetes/issues/57534#issuecomment-527653412).'
+            ).format(service_route_ret))
 
     # Compute return of the function
     if errors:
@@ -176,3 +198,26 @@ def sysctl(params, raises=True):
         raise CheckError(error_msg)
 
     return error_msg
+
+
+def route_exists(destination, raises=True):
+    """Check if a route exists for the destination (IP or CIDR).
+
+    Arguments:
+        destination (string): the destination IP or CIDR to check.
+        raises (bool): the method will raise if there is no route for this
+            destination.
+    """
+    error = None
+
+    try:
+        __salt__["network.get_route"](destination)
+    except Exception as exc:
+        # NOTE: if no route exists, this module may fail with an
+        # AttributeError. To be on the safe side, we catch any Exception.
+        error = "No route exists for {}".format(destination)
+
+    if error and raises:
+        raise CheckError(error)
+
+    return error or True

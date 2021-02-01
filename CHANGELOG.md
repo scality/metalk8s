@@ -47,6 +47,10 @@
   services already started on the machine before doing all the installation
   (PR [#3069](https://github.com/scality/metalk8s/pull/3069))
 
+- [kubernetes/kubernetes#57534](https://github.com/kubernetes/kubernetes/issues/57534) -
+  Check if a route exists for the Service IPs CIDR
+  (PR [#3076](https://github.com/scality/metalk8s/pull/3076))
+
 ### Bug fixes
 - [#3022](https://github.com/scality/metalk8s/issues/3022) - Ensure salt-master
   container can start at reboot even if local salt-minion is down

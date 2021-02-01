@@ -33,13 +33,22 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
         self.assertEqual(metalk8s_checks.__virtual__(), 'metalk8s_checks')
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["node"])
-    def test_node(self, packages_ret, services_ret, result,
-                  expect_raise=False, **kwargs):
+    def test_node(
+        self,
+        result,
+        expect_raise=False,
+        packages_ret=True,
+        services_ret=True,
+        route_exists_ret=True,
+        pillar=None,
+        **kwargs
+    ):
         """
         Tests the return of `node` function
         """
         packages_mock = MagicMock(return_value=packages_ret)
         services_mock = MagicMock(return_value=services_ret)
+        route_exists_mock = MagicMock(return_value=route_exists_ret)
 
         salt_dict = {
             'metalk8s_checks.packages': packages_mock,
@@ -47,7 +56,11 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
         }
 
         with patch.dict(metalk8s_checks.__grains__, {'id': 'my_node_1'}), \
-                patch.dict(metalk8s_checks.__salt__, salt_dict):
+                patch.dict(metalk8s_checks.__pillar__, pillar or {}), \
+                patch.dict(metalk8s_checks.__salt__, salt_dict), \
+                patch.object(
+                    metalk8s_checks, 'route_exists', route_exists_mock
+                ):
             if expect_raise:
                 self.assertRaisesRegex(
                     CheckError,
@@ -143,3 +156,40 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     metalk8s_checks.sysctl(params, raises=False),
                     result
                 )
+
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["route_exists"])
+    def test_route_exists(self, destination, error=None):
+        """
+        Tests the return of `route_exists` function
+        """
+        def _network_get_route(dest):
+            if error is None:
+                return
+            raise AttributeError('Could not find a route')
+
+        network_get_route_mock = MagicMock(side_effect=_network_get_route)
+
+        patch_dict = {
+            'network.get_route': network_get_route_mock
+        }
+
+        with patch.dict(metalk8s_checks.__salt__, patch_dict):
+            if error is not None:
+                # Should raise an exception if `raises` left unspecified
+                self.assertRaisesRegex(
+                    CheckError,
+                    error,
+                    metalk8s_checks.route_exists,
+                    destination
+                )
+                # Should return the error if `raises` set to False
+                self.assertEqual(
+                    metalk8s_checks.route_exists(destination, raises=False),
+                    error
+                )
+            else:
+                for raises in [True, False]:
+                    result = metalk8s_checks.route_exists(
+                        destination, raises=raises
+                    )
+                    self.assertEqual(result, True)
