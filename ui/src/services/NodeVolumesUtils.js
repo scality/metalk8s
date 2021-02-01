@@ -354,7 +354,7 @@ type SystemDevice = {
   partitionPath: string,
   health: Health,
   size: string,
-  usage: number,
+  usage: string,
   device: string,
 };
 
@@ -372,7 +372,7 @@ export const getNodePartitionsTableData = (
       health,
       size,
       device: usage.metric.device,
-      usage: parseInt(usage.value[1]),
+      usage: parseFloat(usage.value[1]).toFixed(0),
     };
   });
 
