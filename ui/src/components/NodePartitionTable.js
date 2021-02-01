@@ -231,7 +231,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
                           percentage={cell.value}
                           buildinLabel={`${cell.value}%`}
                           backgroundColor={theme.brand.primaryDark1}
-                          aria-label={'percentage'}
+                          aria-label={`${cell.value}%`}
                         />
                       </Cell>
                     );

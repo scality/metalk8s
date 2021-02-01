@@ -90,61 +90,68 @@ const server = setupServer(
   ),
 );
 
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
+describe('the system partition table', () => {
+  beforeAll(() => server.listen());
 
-test('the partition table', async () => {
-  // Setup
+  test('displays the table', async () => {
+    // Setup
 
-  // use fake timers to let react query retry immediately after promise failure
-  jest.useFakeTimers();
-  initializeProm('http://192.168.1.18:8443/api/prometheus');
-  initializeAM('http://192.168.1.18:8443/api/alertmanager');
+    // use fake timers to let react query retry immediately after promise failure
+    jest.useFakeTimers();
+    initializeProm('http://192.168.1.18:8443/api/prometheus');
+    initializeAM('http://192.168.1.18:8443/api/alertmanager');
 
-  const { getByLabelText } = render(
-    <NodePartitionTable instanceIP={'192.168.1.29'} />,
-  );
-  expect(getByLabelText('loading')).toBeInTheDocument();
+    const { getByLabelText } = render(
+      <NodePartitionTable instanceIP={'192.168.1.29'} />,
+    );
+    expect(getByLabelText('loading')).toBeInTheDocument();
 
-  // Exercise
-  await waitForLoadingToFinish();
+    // Exercise
+    await waitForLoadingToFinish();
 
-  // Verify
-  expect(screen.getByLabelText('status warning')).toBeInTheDocument();
-  expect(screen.getByLabelText('percentage')).toBeInTheDocument();
-});
+    // Verify
+    expect(screen.getByLabelText('status warning')).toBeInTheDocument();
+    expect(screen.getByLabelText('97%')).toBeInTheDocument();
+    expect(screen.getByText('/mnt/testpart')).toBeInTheDocument();
+    // since we use the same query, so the number of global size is the same as usage
+    expect(screen.getByText('97Bytes')).toBeInTheDocument();
+  });
 
-test('handles server error', async () => {
-  // S
-  jest.useFakeTimers();
-  initializeProm('http://192.168.1.18:8443/api/prometheus');
-  initializeAM('http://192.168.1.18:8443/api/alertmanager');
-  // override the default route with error status
-  server.use(
-    rest.get(
-      'http://192.168.1.18:8443/api/prometheus/api/v1/query',
-      (req, res, ctx) => {
-        return res(ctx.status(500));
-      },
-    ),
-    rest.get(
-      'http://192.168.1.18:8443/api/alertmanager/api/v2/alerts',
-      (req, res, ctx) => {
-        return res(ctx.status(500));
-      },
-    ),
-  );
-  const { getByLabelText } = render(
-    <NodePartitionTable instanceIP={'192.168.1.29'} />,
-  );
-  expect(getByLabelText('loading')).toBeInTheDocument();
+  afterEach(() => server.resetHandlers());
 
-  // E
-  await waitForLoadingToFinish();
+  test('handles server error', async () => {
+    // S
+    jest.useFakeTimers();
+    initializeProm('http://192.168.1.18:8443/api/prometheus');
+    initializeAM('http://192.168.1.18:8443/api/alertmanager');
+    // override the default route with error status
+    server.use(
+      rest.get(
+        'http://192.168.1.18:8443/api/prometheus/api/v1/query',
+        (req, res, ctx) => {
+          return res(ctx.status(500));
+        },
+      ),
+      rest.get(
+        'http://192.168.1.18:8443/api/alertmanager/api/v2/alerts',
+        (req, res, ctx) => {
+          return res(ctx.status(500));
+        },
+      ),
+    );
+    const { getByLabelText } = render(
+      <NodePartitionTable instanceIP={'192.168.1.29'} />,
+    );
+    expect(getByLabelText('loading')).toBeInTheDocument();
 
-  // V
-  expect(
-    screen.getByText('System partitions request has failed.'),
-  ).toBeInTheDocument();
+    // E
+    await waitForLoadingToFinish();
+
+    // V
+    expect(
+      screen.getByText('System partitions request has failed.'),
+    ).toBeInTheDocument();
+  });
+
+  afterAll(() => server.close());
 });
