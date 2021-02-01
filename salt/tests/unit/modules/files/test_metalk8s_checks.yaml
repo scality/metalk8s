@@ -1,33 +1,67 @@
 node:
-  # 1. Everything fine
-  - packages_ret: True
+  # 1. Success: Nominal
+  - &node_nominal
+    packages_ret: True
     services_ret: True
+    route_exists_ret: True
+    pillar:
+      networks:
+        service: 10.96.0.0/16
     result: True
 
-  # 2. Error with packages
-  - packages_ret: "Package abcd got an error because of banana"
-    services_ret: True
+  # 2. Success: Service CIDR from command-line
+  - <<: *node_nominal
+    pillar: {}
+    service_cidr: 10.96.0.0/16
+
+  # 3. Error: Packages
+  - &node_packages_error
+    <<: *node_nominal
+    packages_ret: "Package abcd got an error because of banana"
     expect_raise: True
     result: "Node my_node_1: Package abcd got an error because of banana"
-  # 2. bis (no raises)
-  - packages_ret: "Package toto got an error :)"
-    services_ret: True
+  - <<: *node_packages_error
     raises: False
-    result: "Node my_node_1: Package toto got an error :)"
+    expect_raise: False
 
-  # 3. Error with services
+  # 4. Error: Services
   - packages_ret: True
     services_ret: "Service abcd got an error because of penguin"
     expect_raise: True
     result: "Node my_node_1: Service abcd got an error because of penguin"
 
-  # 4. Error with services and packages
-  - packages_ret: "Package abcd got an error because of banana"
+  # 5. Error: Route for Service CIDR
+  - <<: *node_nominal
+    route_exists_ret: No route exists for banana
+    expect_raise: True
+    # NOTE: We shorten the exception message for ease of use as a regex.
+    result: >-
+      Node my_node_1: Invalid networks:service CIDR - No route exists for
+      banana.
+  - <<: *node_nominal
+    raises: False
+    route_exists_ret: No route exists for banana
+    result: >-
+      Node my_node_1: Invalid networks:service CIDR - No route exists for
+      banana. Please make sure to have either a default route or a dummy
+      interface and route for this range (for details, see
+      https://github.com/kubernetes/kubernetes/issues/57534#issuecomment-527653412).
+
+  # 6. Error: Combined errors
+  - <<: *node_nominal
+    packages_ret: "Package abcd got an error because of banana"
     services_ret: "Service abcd got an error because of penguin"
     expect_raise: True
     result: |-
       Node my_node_1: Package abcd got an error because of banana
       Service abcd got an error because of penguin
+  - <<: *node_nominal
+    packages_ret: "Package abcd got an error because of banana"
+    route_exists_ret: "No route exists for penguin"
+    expect_raise: True
+    result: |-
+      Node my_node_1: Package abcd got an error because of banana
+      Invalid networks:service CIDR - No route exists for penguin
 
 packages:
   # 1. Success: No conflicting packages to check
@@ -271,3 +305,8 @@ sysctl:
       net.ipv4.ip_forward: '0'
     result: 'Incorrect value for .*'
     raises: True
+
+route_exists:
+  - destination: 10.96.0.0/16
+  - destination: 10.96.0.0/16
+    error: No route exists for 10.96.0.0/16

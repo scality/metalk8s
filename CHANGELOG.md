@@ -19,6 +19,11 @@
   (PR [#3153](https://github.com/scality/metalk8s/pull/3153), backport of
   PR [#3065](https://github.com/scality/metalk8s/pull/3065))
 
+- [kubernetes/kubernetes#57534](https://github.com/kubernetes/kubernetes/issues/57534) -
+  Check if a route exists for the Service IPs CIDR
+  (PR [#3153](https://github.com/scality/metalk8s/pull/3153), backport of
+  PR [#3076](https://github.com/scality/metalk8s/pull/3076))
+
 ### Bug fixes
 - Do not install `containerd.io` instead of `containerd` and `runc` when this
   package is available in one configured repository
