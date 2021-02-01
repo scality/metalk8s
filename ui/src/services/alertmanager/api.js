@@ -32,5 +32,11 @@ export function getAlerts() {
   if (!alertmanagerApiClient) {
     throw new Error('alertmanagerApiClient should be defined');
   }
-  return alertmanagerApiClient.get('/api/v2/alerts');
+
+  return alertmanagerApiClient.get('/api/v2/alerts').then((resolve) => {
+    if (resolve.error) {
+      throw resolve.error;
+    }
+    return resolve;
+  });
 }
