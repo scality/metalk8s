@@ -3,6 +3,8 @@
 Execution module for handling MetalK8s checks.
 """
 
+import ipaddress
+
 from salt.exceptions import CheckError
 
 __virtualname__ = 'metalk8s_checks'
@@ -203,21 +205,62 @@ def sysctl(params, raises=True):
 def route_exists(destination, raises=True):
     """Check if a route exists for the destination (IP or CIDR).
 
+    NOTE: only supports IPv4 routes.
+
     Arguments:
         destination (string): the destination IP or CIDR to check.
         raises (bool): the method will raise if there is no route for this
             destination.
     """
-    error = None
+    network = ipaddress.IPv4Network(destination)
 
+    error = None
+    route_info = None
     try:
-        __salt__["network.get_route"](destination)
+        route_info = __salt__["network.get_route"](network.network_address)
     except Exception as exc:
         # NOTE: if no route exists, this module may fail with an
         # AttributeError. To be on the safe side, we catch any Exception.
         error = "No route exists for {}".format(destination)
 
+    if route_info is not None:
+        # We found a route for the first network address in the provided
+        # `destination`. Let's verify that the whole network can be routed.
+        all_routes = __salt__["network.routes"](family="inet")
+
+        for route in all_routes:
+            if route["gateway"] == route_info["gateway"] \
+                    and route["interface"] == route_info["interface"]:
+                # The route matches the one we found, let's check if our
+                # destination is fully included in this route.
+                route_net = ipaddress.IPv4Network(
+                    "{r[destination]}/{r[netmask]}".format(r=route)
+                )
+                if _is_subnet_of(network, route_net):
+                    break
+        else:
+            error = (
+                "A route was found for {n.network_address}, but it does not "
+                "match the full destination network {n.compressed}"
+            ).format(n=network)
+
     if error and raises:
         raise CheckError(error)
 
     return error or True
+
+
+# Helpers {{{
+def _is_subnet_of(left, right):
+    """Implementation of `subnet_of` method in Python 3.7+ for networks.
+
+    Naively assumes both arguments are `ipaddress.IPNetwork` objects of the
+    same IP version.
+    """
+    return (
+        right.network_address <= left.network_address
+        and right.broadcast_address >= left.broadcast_address
+    )
+
+
+# }}}
