@@ -212,37 +212,29 @@ def route_exists(destination, raises=True):
         raises (bool): the method will raise if there is no route for this
             destination.
     """
-    network = ipaddress.IPv4Network(destination)
-
+    dest_net = ipaddress.IPv4Network(destination)
     error = None
-    route_info = None
-    try:
-        route_info = __salt__["network.get_route"](network.network_address)
-    except Exception as exc:
-        # NOTE: if no route exists, this module may fail with an
-        # AttributeError. To be on the safe side, we catch any Exception.
-        error = "No route exists for {}".format(destination)
+    route_exists = False
 
-    if route_info is not None:
-        # We found a route for the first network address in the provided
-        # `destination`. Let's verify that the whole network can be routed.
-        all_routes = __salt__["network.routes"](family="inet")
+    all_routes = __salt__["network.routes"](family="inet")
 
-        for route in all_routes:
-            if route["gateway"] == route_info["gateway"] \
-                    and route["interface"] == route_info["interface"]:
-                # The route matches the one we found, let's check if our
-                # destination is fully included in this route.
-                route_net = ipaddress.IPv4Network(
-                    "{r[destination]}/{r[netmask]}".format(r=route)
-                )
-                if _is_subnet_of(network, route_net):
-                    break
+    for route in all_routes:
+        # Check if our destination network is fully included in this route.
+        route_net = ipaddress.IPv4Network(
+            "{r[destination]}/{r[netmask]}".format(r=route)
+        )
+        if _is_subnet_of(dest_net, route_net):
+            break
         else:
+            route_exists |= dest_net.network_address in route_net
+    else:
+        if route_exists:
             error = (
                 "A route was found for {n.network_address}, but it does not "
                 "match the full destination network {n.compressed}"
-            ).format(n=network)
+            ).format(n=dest_net)
+        else:
+            error = "No route exists for {}".format(dest_net.compressed)
 
     if error and raises:
         raise CheckError(error)

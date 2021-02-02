@@ -162,22 +162,14 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
         self,
         destination,
         error=None,
-        get_route_ret=None,
         routes_ret=None,
     ):
         """
         Tests the return of `route_exists` function
         """
-        def _network_get_route(dest):
-            if isinstance(get_route_ret, dict):
-                return get_route_ret
-            raise AttributeError(get_route_ret)
-
-        network_get_route_mock = MagicMock(side_effect=_network_get_route)
         network_routes_mock = MagicMock(return_value=routes_ret)
 
         patch_dict = {
-            'network.get_route': network_get_route_mock,
             'network.routes': network_routes_mock,
         }
 
