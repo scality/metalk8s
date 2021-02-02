@@ -158,19 +158,27 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 )
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["route_exists"])
-    def test_route_exists(self, destination, error=None):
+    def test_route_exists(
+        self,
+        destination,
+        error=None,
+        get_route_ret=None,
+        routes_ret=None,
+    ):
         """
         Tests the return of `route_exists` function
         """
         def _network_get_route(dest):
-            if error is None:
-                return
-            raise AttributeError('Could not find a route')
+            if isinstance(get_route_ret, dict):
+                return get_route_ret
+            raise AttributeError(get_route_ret)
 
         network_get_route_mock = MagicMock(side_effect=_network_get_route)
+        network_routes_mock = MagicMock(return_value=routes_ret)
 
         patch_dict = {
-            'network.get_route': network_get_route_mock
+            'network.get_route': network_get_route_mock,
+            'network.routes': network_routes_mock,
         }
 
         with patch.dict(metalk8s_checks.__salt__, patch_dict):
