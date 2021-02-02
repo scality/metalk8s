@@ -310,36 +310,26 @@ route_exists:
   # 1. Success: Nominal (default route)
   - &route_exists_nominal
     destination: 10.96.0.0/12
-    get_route_ret:
-      gateway: &default_gw "10.10.0.1"
-      interface: &default_iface eth0
-      destination: 10.96.0.0/32
-      source: "10.10.1.2"
     routes_ret:
       - &default_route
         addr_family: inet
         destination: "0.0.0.0"
         flags: UG
-        gateway: *default_gw
-        interface: *default_iface
+        gateway: "10.10.0.1"
+        interface: eth0
         netmask: "0.0.0.0"
 
   # 2. Success: Nominal (dedicated dummy route)
   - <<: *route_exists_nominal
-    get_route_ret:
-      gateway: *default_gw
-      interface: dummy0
-      destination: 10.96.0.0/32
-      source: "10.10.1.2"
     routes_ret:
       - <<: *default_route
         interface: dummy0
         destination: "10.96.0.0"
         netmask: "255.240.0.0"
 
-  # 3. Error: Failure to get route
+  # 3. Error: No route exists
   - <<: *route_exists_nominal
-    get_route_ret: Some error when getting route
+    routes_ret: []
     error: No route exists for 10.96.0.0/12
 
   # 4. Error: Route found is too small
