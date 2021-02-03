@@ -25,7 +25,7 @@ ARCHIVES=()
 while (( "$#" )); do
   case "$1" in
     -a|--archive)
-      ARCHIVES+=("$2")
+      ARCHIVES+=("$(readlink -f "$2")")
       shift 2
       ;;
     -d|--dry-run)
