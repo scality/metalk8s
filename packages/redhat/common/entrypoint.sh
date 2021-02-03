@@ -114,14 +114,17 @@ resolve_dependencies() {
     local -a dependencies=("$@")
 
     for package in "${packages[@]}"; do
-        while read -r dependency repo; do
+        while read -r dependency repo relpath; do
             if [[ $repo =~ $ENABLED_REPOS_RE ]] && \
+               # We exclude all package from "base" directory of Saltstack since those
+               # packages are available in "base" CentOS/RHEL 7 repositories
+               { [[ $repo != "saltstack" ]] || [[ $relpath != base/* ]]; } && \
                ! in_dependencies "$dependency" "${dependencies[@]}"; then
                 dependencies+=("$dependency")
             fi
         done < <(
             repoquery --requires --resolve --recursive \
-                      --queryformat='%{name} %{repoid}' "$package"
+                      --queryformat='%{name} %{repoid} %{relativepath}' "$package"
         )
     done
 
