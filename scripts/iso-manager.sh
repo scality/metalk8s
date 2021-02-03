@@ -3,7 +3,6 @@ set -e
 set -u
 set -o pipefail
 
-BOOTSTRAP_CONFIG="/etc/metalk8s/bootstrap.yaml"
 VERBOSE=${VERBOSE:-0}
 LOGFILE="/var/log/metalk8s/iso-manager.log"
 SALT_CALL=${SALT_CALL:-salt-call}
@@ -79,48 +78,10 @@ _set_env() {
     fi
 }
 
-# helper function to check for element in array
-containsElement () {
-  local element match="$1"
-  shift
-  for element in "$@"; do
-      [[ "$element" == "$match" ]] && return 0;
-  done
-  return 1
-}
-
 _add_archives() {
-    # Skip adding archive if None passed
-    [ $# -lt 1 ] && return 0
-    # Use salt file.serialize merge require having full list
-    # salt-call output example:
-    # local: ["/srv/scality/metalk8s-2.0.0/", "/tmp/metalk8s-2.1.0.iso"]
-    # parsed archives:
-    # ("/srv/scality/metalk8s-2.0.0/" "/tmp/metalk8s-2.1.0.iso")
-    IFS=" " read -r -a \
-        archives <<< "$(salt-call pillar.get metalk8s:archives \
-        --out txt | cut -d' ' -f2- | tr -d '[],')"
-    for archive in "$@"; do
-        if ! containsElement "'$archive'" "${archives[@]}"; then
-            archives+=("'$archive'")
-        fi
+    for archive; do
+        $SALT_CALL metalk8s.configure_archive "$archive"
     done
-    echo "Collecting archives..."
-    echo "${archives[@]}"
-    # build archive list
-    archive_list=${archives[0]}
-    for i in "${archives[@]:1}"; do
-        archive_list+=,$i
-    done
-    echo "Updating bootstrap.yaml"
-    $SALT_CALL state.single file.serialize "$BOOTSTRAP_CONFIG" \
-        dataset="{'archives': [$archive_list]}" \
-        merge_if_exists=True \
-        formatter=yaml \
-        show_changes=True \
-        test="$DRY_RUN" \
-        --retcode-passthrough
-    return $?
 }
 
 _configure_archives() {
@@ -161,5 +122,7 @@ _configure_archives() {
 _set_env
 [ -z "$SALTENV" ] && die "saltenv not set"
 
-run "Add archives" _add_archives ${ARCHIVES[@]+"${ARCHIVES[@]}"}
+if (( ${#ARCHIVES[@]} )); then
+    run "Add archives" _add_archives "${ARCHIVES[@]}"
+fi
 run "Configure archives" _configure_archives
