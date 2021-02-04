@@ -525,6 +525,10 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
         ), patch("salt.template.compile_template", compile_template_mock):
             metalk8s.get_from_map("my-key", saltenv=saltenv)
             compile_template_mock.assert_called_once()
-            self.assertDictContainsSubset(
-                expected_args, compile_template_mock.call_args[1]
+            self.assertEqual(
+                dict(
+                    compile_template_mock.call_args[1],
+                    **expected_args,
+                ),
+                compile_template_mock.call_args[1]
             )
