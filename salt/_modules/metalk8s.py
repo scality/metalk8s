@@ -237,11 +237,20 @@ def get_archives(archives=None):
         info = archive_info_from_product_txt(archive)
         env_name = 'metalk8s-{0}'.format(info['version'])
 
-        # Warn if we have 2 archives with the same version
+        # Raise if we have 2 archives with the same version
         if env_name in res:
-            archive = res[env_name]
-            log.warning(
-                "Archives have the same version: %s is overridden by %s.", archive, info
+            error_msg = []
+            for dup_version in (res[env_name], info):
+                if dup_version['iso']:
+                    path = dup_version['iso']
+                    kind = 'ISO'
+                else:
+                    path = dup_version['path']
+                    kind = 'directory'
+                error_msg.append("{0} ({1})".format(path, kind))
+            raise CommandExecutionError(
+                'Two archives have the same version "{0}":\n- {1}'
+                .format(info['version'], "\n- ".join(error_msg))
             )
 
         res.update({env_name: info})
