@@ -802,6 +802,7 @@ stages:
     worker:
       type: local
     steps:
+      - ShellCommand: *add_final_status_artifact_failed
       - GetArtifactsFromStage:
           name: Get pre-merge artifacts_name
           stage: pre-merge
