@@ -117,11 +117,18 @@ _configure_archives() {
         --retcode-passthrough
 }
 
+_check_config() {
+    # This call will fail if there is any invalid archive
+    # configured in the bootstrap configuration file.
+    $SALT_CALL metalk8s.get_archives
+}
+
 # Main
 
 _set_env
 [ -z "$SALTENV" ] && die "saltenv not set"
 
+run "Check bootstrap configuration file" _check_config
 if (( ${#ARCHIVES[@]} )); then
     run "Add archives" _add_archives "${ARCHIVES[@]}"
 fi
