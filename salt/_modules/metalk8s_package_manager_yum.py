@@ -47,8 +47,8 @@ def _list_dependents(
 
     if ret['retcode'] != 0:
         log.error(
-            'Failed to list packages requiring "%s": %s',
-            '{}-{}'.format(name, version),
+            'Failed to list packages requiring "%s-%s": %s',
+            name, version,
             ret['stderr'] or ret['stdout']
         )
         return None
