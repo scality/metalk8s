@@ -177,7 +177,7 @@ def _load_kubeconfig(opts):
 
 
 @_check_auth_args
-def auth(username, token=None, **kwargs):
+def auth(username, token=None, **_kwargs):
     log.info('Authentication request for "%s"', username)
 
     kubeconfig = _load_kubeconfig(__opts__)
@@ -195,7 +195,7 @@ def auth(username, token=None, **kwargs):
 
 
 @_check_auth_args
-def groups(username, password=None, token=None, **kwargs):
+def groups(username, password=None, token=None, **_kwargs):  # pylint: disable=unused-argument
     log.info('Groups request for "%s"', username)
 
     kubeconfig = _load_kubeconfig(__opts__)
