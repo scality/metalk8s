@@ -3,6 +3,5 @@ Development
 
 .. toctree::
 
-   ci
-   commit
-   python
+   testing/index
+   best_practices/index
