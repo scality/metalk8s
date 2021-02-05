@@ -78,7 +78,7 @@ def _load_solutions(bootstrap_id):
     return result
 
 
-def ext_pillar(minion_id, pillar):
+def ext_pillar(minion_id, pillar):  # pylint: disable=unused-argument
     # NOTE: this ext_pillar relies on the `metalk8s_nodes` ext_pillar to find
     # the Bootstrap minion ID, for the remote execution of
     # `metalk8s_solutions.list_available`.
