@@ -470,8 +470,9 @@ def manage_static_pod_manifest(
         cached_hash = get_hash(source_filename, form=hash_type)
         if source_sum.get("hsum") != cached_hash:
             log.debug(
-                "Cached source file {} does not match expected checksum, "
-                "will fetch it again".format(source_filename)
+                "Cached source file %s does not match expected checksum, "
+                "will fetch it again",
+                source_filename
             )
             source_filename = ''  # Reset source filename to fetch it again
 
