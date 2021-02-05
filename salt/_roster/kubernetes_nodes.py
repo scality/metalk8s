@@ -11,7 +11,7 @@ def __virtual__():
     return __virtualname__
 
 
-def targets(tgt, tgt_type='glob', **kwargs):
+def targets(tgt, tgt_type='glob', **_kwargs):
     if tgt_type not in ['glob', 'list']:
         log.error('Only "glob" and "list" lookups are supported for now')
         return {}
