@@ -70,7 +70,7 @@ def _step(manifest, kubeconfig=None, context=None, absent=False):
     return step_name, {state_func: state_args}
 
 
-def render(source, saltenv='', sls='', argline='', **kwargs):
+def render(source, saltenv='', sls='', argline='', **_kwargs):  # pylint: disable=unused-argument
     args = six.moves.urllib.parse.parse_qs(argline)
 
     kubeconfig = args.get('kubeconfig', [None])[0]
