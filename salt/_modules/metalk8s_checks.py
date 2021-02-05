@@ -3,6 +3,8 @@
 Execution module for handling MetalK8s checks.
 """
 
+import ipaddress
+
 from salt.exceptions import CheckError
 
 __virtualname__ = 'metalk8s_checks'
@@ -18,6 +20,11 @@ def node(raises=True, **kwargs):
 
     Arguments:
         raises (bool): the method will raise if there is any problem.
+
+    Optional arguments:
+        service_cidr (str): the network CIDR for Service Cluster IPs (for
+            which to check the presence of a route) - if not given nor set in
+            `pillar.networks.service`, this check will be skipped.
     """
     errors = []
 
@@ -30,6 +37,23 @@ def node(raises=True, **kwargs):
     svc_ret = __salt__['metalk8s_checks.services'](raises=False, **kwargs)
     if svc_ret is not True:
         errors.append(svc_ret)
+
+    # Run `route_exists` check for the Service Cluster IPs
+    service_cidr = kwargs.pop(
+        'service_cidr',
+        __pillar__.get('networks', {}).get('service', None)
+    )
+    if service_cidr is not None:
+        service_route_ret = route_exists(
+            destination=service_cidr, raises=False
+        )
+        if service_route_ret is not True:
+            errors.append((
+                'Invalid networks:service CIDR - {}. Please make sure to '
+                'have either a default route or a dummy interface and route '
+                'for this range (for details, see '
+                'https://github.com/kubernetes/kubernetes/issues/57534#issuecomment-527653412).'
+            ).format(service_route_ret))
 
     # Compute return of the function
     if errors:
@@ -176,3 +200,59 @@ def sysctl(params, raises=True):
         raise CheckError(error_msg)
 
     return error_msg
+
+
+def route_exists(destination, raises=True):
+    """Check if a route exists for the destination (IP or CIDR).
+
+    NOTE: only supports IPv4 routes.
+
+    Arguments:
+        destination (string): the destination IP or CIDR to check.
+        raises (bool): the method will raise if there is no route for this
+            destination.
+    """
+    dest_net = ipaddress.IPv4Network(destination)
+    error = None
+    route_exists = False
+
+    all_routes = __salt__["network.routes"](family="inet")
+
+    for route in all_routes:
+        # Check if our destination network is fully included in this route.
+        route_net = ipaddress.IPv4Network(
+            "{r[destination]}/{r[netmask]}".format(r=route)
+        )
+        if _is_subnet_of(dest_net, route_net):
+            break
+        else:
+            route_exists |= dest_net.network_address in route_net
+    else:
+        if route_exists:
+            error = (
+                "A route was found for {n.network_address}, but it does not "
+                "match the full destination network {n.compressed}"
+            ).format(n=dest_net)
+        else:
+            error = "No route exists for {}".format(dest_net.compressed)
+
+    if error and raises:
+        raise CheckError(error)
+
+    return error or True
+
+
+# Helpers {{{
+def _is_subnet_of(left, right):
+    """Implementation of `subnet_of` method in Python 3.7+ for networks.
+
+    Naively assumes both arguments are `ipaddress.IPNetwork` objects of the
+    same IP version.
+    """
+    return (
+        right.network_address <= left.network_address
+        and right.broadcast_address >= left.broadcast_address
+    )
+
+
+# }}}
