@@ -16,8 +16,7 @@ def managed(name,
             apiserver,
             cluster,
             days_valid=365,
-            days_remaining=90,
-            **kwargs):
+            days_remaining=90):
     """Generate kubeconfig file with identities for control plane components"""
     ret = {
         'name': name,
