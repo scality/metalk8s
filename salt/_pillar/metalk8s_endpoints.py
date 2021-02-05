@@ -17,7 +17,7 @@ def __virtual__():
         return __virtualname__
 
 
-def ext_pillar(minion_id, pillar, kubeconfig):
+def ext_pillar(minion_id, pillar, kubeconfig):  # pylint: disable=unused-argument
     services = {
         "kube-system": ['salt-master', 'repositories'],
     }
