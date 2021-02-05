@@ -52,6 +52,11 @@
   (PR [#3076](https://github.com/scality/metalk8s/pull/3076))
 
 ### Bug fixes
+
+- [#3079](https://github.com/scality/metalk8s/issues/3079) - Ensure configured
+  archives are valid in the iso-manager script
+  (PR [#3081](https://github.com/scality/metalk8s/pull/3081))
+
 - [#3022](https://github.com/scality/metalk8s/issues/3022) - Ensure salt-master
   container can start at reboot even if local salt-minion is down
   (PR [#3041](https://github.com/scality/metalk8s/pull/3041))
