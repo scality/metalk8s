@@ -153,7 +153,7 @@ def _load_iso_path(config_data):
     return res
 
 
-def ext_pillar(minion_id, pillar, bootstrap_config):
+def ext_pillar(minion_id, pillar, bootstrap_config):  # pylint: disable=unused-argument
     config = _load_config(bootstrap_config)
     if config.get('_errors'):
         metal_data = __utils__['pillar_utils.errors_to_dict'](
