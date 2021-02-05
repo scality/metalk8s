@@ -513,7 +513,7 @@ def evict_pod(name, namespace='default', grace_period=1,
     client.configure(config_file=kubeconfig, context=context)
 
     try:
-        result = client.create(
+        client.create(
             name=name,
             namespace=namespace,
             body=V1beta1Eviction(
