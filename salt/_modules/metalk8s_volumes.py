@@ -315,7 +315,7 @@ class SparseLoopDevice(Volume):
         except OSError as exn:
             if exn.errno != errno.ENOENT:
                 raise
-            log.warning('{} already removed'.format(exn.filename))
+            log.warning('%s already removed', exn.filename)
 
 
 class SparseLoopDeviceBlock(SparseLoopDevice):
