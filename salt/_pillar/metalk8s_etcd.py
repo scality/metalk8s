@@ -29,5 +29,5 @@ def _load_members(pillar):
     return result
 
 
-def ext_pillar(minion_id, pillar):
+def ext_pillar(minion_id, pillar):  # pylint: disable=unused-argument
     return {"metalk8s": {'etcd': _load_members(pillar)}}
