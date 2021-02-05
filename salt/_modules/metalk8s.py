@@ -379,7 +379,6 @@ def _atomic_write(
     the target.
     Finally, we link the temporary file contents to the destination filename.
     """
-    base_name = os.path.basename(dest)
     dir_name = os.path.dirname(dest)
 
     uid = __salt__['file.user_to_uid'](user)
