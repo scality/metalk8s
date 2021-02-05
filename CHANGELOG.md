@@ -56,6 +56,10 @@
   package is available in one configured repository
   (PR [#3050](https://github.com/scality/metalk8s/pull/3050))
 
+- [#3075](https://github.com/scality/metalk8s/issues/3075) - Properly install "base"
+  Salt dependencies from "base" RHEL 7 repository
+  (PR [#3083](https://github.com/scality/metalk8s/pull/3083))
+
 ## Release 2.7.1 (in development)
 
 ### Bug fixes
