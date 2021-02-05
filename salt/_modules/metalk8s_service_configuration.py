@@ -21,8 +21,7 @@ def get_service_conf(
     configmap_name,
     default_csc,
     apiVersion=None,
-    kind=None,
-    **kwargs
+    kind=None
 ):
     """Reads a ConfigMap from the name specified
 
