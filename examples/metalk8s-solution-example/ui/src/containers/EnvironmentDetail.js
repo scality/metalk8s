@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import { useRouteMatch } from 'react-router';
-import { Breadcrumb, Button, Input } from '@scality/core-ui';
+import { Button, Input } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { Formik, Form } from 'formik';
 import semver from 'semver';
@@ -11,16 +11,11 @@ import * as yup from 'yup';
 import { isEmpty } from 'lodash';
 
 import {
-  BreadcrumbContainer,
-  BreadcrumbLabel,
-  StyledLink
-} from '../components/BreadcrumbStyle';
-import {
   InformationListContainer,
   InformationSpan,
   InformationLabel,
   InformationValue,
-  InformationMainValue
+  InformationMainValue,
 } from '../components/InformationList';
 import ComponentsList from './ComponentLists';
 import { upgradeEnvironmentAction } from '../ducks/app/environment';
@@ -39,9 +34,9 @@ const ComponentContainer = styled.div`
 
 const EditIcon = styled.span`
 padding: 0 ${padding.base}
-  color: ${props => props.theme.brand.primary};
+  color: ${(props) => props.theme.brand.primary};
   &:hover {
-    color: ${props => props.theme.brand.secondary};
+    color: ${(props) => props.theme.brand.secondary};
     cursor: pointer;
   }
 `;
@@ -54,25 +49,25 @@ const EnvironmentEditFormContainer = styled.div`
   }
 `;
 
-const EnvironmentEditForm = props => {
+const EnvironmentEditForm = (props) => {
   const {
     intl,
     currentVersion,
     onCancel,
     onSubmit,
     environment,
-    versions
+    versions,
   } = props;
   const initialValues = {
-    version: currentVersion
+    version: currentVersion,
   };
   const validationSchema = yup.object().shape({
     version: yup
       .string()
       .required()
-      .test('is-version-valid', intl.messages.not_valid_version, value =>
+      .test('is-version-valid', intl.messages.not_valid_version, (value) =>
         semver.valid(value)
-      )
+      ),
   });
 
   return (
@@ -80,33 +75,33 @@ const EnvironmentEditForm = props => {
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
-        onSubmit={values =>
+        onSubmit={(values) =>
           onSubmit({ name: environment, version: values.version })
         }
       >
-        {formProps => {
+        {(formProps) => {
           const {
             values,
             touched,
             errors,
             dirty,
             setFieldTouched,
-            setFieldValue
+            setFieldValue,
           } = formProps;
 
           //touched is not "always" correctly set
-          const handleOnBlur = e => setFieldTouched(e.target.name, true);
-          const handleSelectChange = field => selectedObj => {
+          const handleOnBlur = (e) => setFieldTouched(e.target.name, true);
+          const handleSelectChange = (field) => (selectedObj) => {
             setFieldValue(field, selectedObj.value);
           };
           //get the select item from the object array
           const getSelectedObjectItem = (items, selectedValue) => {
-            return items.find(item => item.value === selectedValue);
+            return items.find((item) => item.value === selectedValue);
           };
-          const availableVersions = versions.map(item => {
+          const availableVersions = versions.map((item) => {
             return {
               label: item.version,
-              value: item.version
+              value: item.version,
             };
           });
           return (
@@ -144,31 +139,18 @@ const EnvironmentEditForm = props => {
   );
 };
 const EnvironmentDetail = ({ intl }) => {
-  const config = useSelector(state => state.config);
-  const environments = useSelector(state => state.app.environment.list);
+  const config = useSelector((state) => state.config);
+  const environments = useSelector((state) => state.app.environment.list);
   const dispatch = useDispatch();
-  const upgradeEnvironment = body => dispatch(upgradeEnvironmentAction(body));
+  const upgradeEnvironment = (body) => dispatch(upgradeEnvironmentAction(body));
   const match = useRouteMatch();
   const [environmentEditing, setEnvironmentEditing] = useState(false);
   const environmentName = match.params.name;
   const environment = environments.find(
-    environment => environment.name === environmentName
+    (environment) => environment.name === environmentName
   );
   return environment ? (
     <EnvironmentDetailContainer>
-      <BreadcrumbContainer>
-        <Breadcrumb
-          activeColor={config.theme.brand.secondary}
-          paths={[
-            <StyledLink to="/environments">
-              {intl.messages.environments}{' '}
-            </StyledLink>,
-            <BreadcrumbLabel title={environment.name}>
-              {environment.name}
-            </BreadcrumbLabel>
-          ]}
-        />
-      </BreadcrumbContainer>
       <InformationListContainer>
         <h3>{intl.messages.information}</h3>
         <InformationSpan>
@@ -188,7 +170,7 @@ const EnvironmentDetail = ({ intl }) => {
               <EnvironmentEditForm
                 intl={intl}
                 onCancel={() => setEnvironmentEditing(false)}
-                onSubmit={payload => {
+                onSubmit={(payload) => {
                   upgradeEnvironment(payload);
                   setEnvironmentEditing(false);
                 }}

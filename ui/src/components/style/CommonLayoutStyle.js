@@ -10,7 +10,7 @@ export const PageContainer = styled.div`
   box-sizing: border-box;
   height: 100%;
   flex-wrap: wrap;
-  padding: ${padding.small};
+  padding: 0;
 `;
 
 export const LeftSideInstanceList = styled.div`
@@ -56,7 +56,7 @@ export const NodeTab = styled.div`
   background-color: ${(props) => props.theme.brand.primary};
   color: ${(props) => props.theme.brand.textPrimary};
   padding-bottom: ${padding.base};
-  height: calc(100vh - 172px);
+  height: calc(100vh - 97px);
   overflow: auto;
 `;
 
@@ -99,7 +99,7 @@ export const TextBadge = styled.span`
 
 export const VolumeTab = styled.div`
   overflow: auto;
-  height: calc(100vh - 174px);
+  height: calc(100vh - 97px);
   color: ${(props) => props.theme.brand.textPrimary};
   padding-bottom: ${padding.base};
   background-color: ${(props) => props.theme.brand.primary};

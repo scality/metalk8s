@@ -4,21 +4,9 @@ import { useRouteMatch } from 'react-router';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import styled from 'styled-components';
-import {
-  Table,
-  Button,
-  Breadcrumb,
-  Modal,
-  Input,
-  Loader,
-} from '@scality/core-ui';
+import { Table, Button, Modal, Input, Loader } from '@scality/core-ui';
 import { sortSelector } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
-import {
-  BreadcrumbContainer,
-  BreadcrumbLabel,
-  StyledLink,
-} from '../components/BreadcrumbStyle';
 import PageContainer from '../components/TableBasedPageStyle';
 import { FormStyle, ActionContainer } from '../components/ModalFormStyle';
 import { intl } from '../translations/IntlGlobalProvider';
@@ -38,7 +26,6 @@ const SelectContainer = styled.div`
 
 const SolutionDetail = () => {
   const match = useRouteMatch();
-  const theme = useSelector((state) => state.config.theme);
   const environments = useSelector((state) => state.app.solutions.environments);
   const environment = environments.find((env) => env.name === match.params.id);
   const deployedSolutions = environment?.solutions;
@@ -168,19 +155,6 @@ const SolutionDetail = () => {
   return environment ? (
     <>
       <PageContainer>
-        <BreadcrumbContainer>
-          <Breadcrumb
-            activeColor={theme.brand.secondary}
-            paths={[
-              <StyledLink to="/environments">
-                {intl.translate('environments')}
-              </StyledLink>,
-              <BreadcrumbLabel title={environment.name}>
-                {environment.name}
-              </BreadcrumbLabel>,
-            ]}
-          />
-        </BreadcrumbContainer>
         <Table
           list={sortedSolutions}
           columns={solutionDetailColumn}

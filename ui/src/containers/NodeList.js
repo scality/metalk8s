@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
-import { Table, Button, Loader, Breadcrumb } from '@scality/core-ui';
+import { Table, Button, Loader } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import {
   deployNodeAction,
@@ -14,10 +14,6 @@ import {
 import { sortSelector, useRefreshEffect } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import { API_STATUS_NOT_READY, API_STATUS_UNKNOWN } from '../constants.js';
-import {
-  BreadcrumbContainer,
-  BreadcrumbLabel,
-} from '../components/BreadcrumbStyle';
 import PageContainer from '../components/TableBasedPageStyle';
 import { intl } from '../translations/IntlGlobalProvider';
 
@@ -60,7 +56,6 @@ const TableContainer = styled.div`
 
 const NodeList = () => {
   const nodes = useSelector((state) => state.app.nodes);
-  const theme = useSelector((state) => state.config.theme);
   const dispatch = useDispatch();
   const deployNode = (payload) => dispatch(deployNodeAction(payload));
 
@@ -145,17 +140,6 @@ const NodeList = () => {
 
   return (
     <PageContainer>
-      <BreadcrumbContainer>
-        <Breadcrumb
-          activeColor={theme.brand.secondary}
-          paths={[
-            <BreadcrumbLabel title={intl.translate('platform')}>
-              {intl.translate('platform')}
-            </BreadcrumbLabel>,
-            <BreadcrumbLabel>{intl.translate('nodes')}</BreadcrumbLabel>,
-          ]}
-        />
-      </BreadcrumbContainer>
       <ActionContainer>
         <Button
           text={intl.translate('create_new_node')}
