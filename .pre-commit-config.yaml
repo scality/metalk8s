@@ -58,3 +58,13 @@ repos:
     rev: v0.5.1
     hooks:
       - id: salt-lint
+
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.15.0
+    hooks:
+      - id: yamllint
+        files: >
+          (?x)^(
+              eve/main.yml|
+              salt/metalk8s/defaults.yaml
+          )$

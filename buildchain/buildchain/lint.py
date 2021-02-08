@@ -110,7 +110,7 @@ def lint_yaml() -> types.TaskDict:
         "name": "yaml",
         "title": utils.title_with_subtask_name("LINT"),
         "doc": lint_yaml.__doc__,
-        "actions": [["tox", "-e", "lint-yaml"]],
+        "actions": [["tox", "-e", "lint", "yamllint"]],
         "file_dep": [
             constants.ROOT / "eve/main.yml",
             constants.ROOT / "salt/metalk8s/defaults.yaml",
