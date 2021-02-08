@@ -13,30 +13,28 @@ class ContainerdTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
     TestCase for `containerd` module
     """
+
     loader_module = containerd
 
     def test_virtual(self):
         """
         Tests the return of `__virtual__` function
         """
-        self.assertEqual(containerd.__virtual__(), 'containerd')
+        self.assertEqual(containerd.__virtual__(), "containerd")
 
-    @parameterized.expand([
-        '/tmp/pause-3.1.tar',
-        '/root/toto.tar'
-    ])
+    @parameterized.expand(["/tmp/pause-3.1.tar", "/root/toto.tar"])
     def test_load_cri_image(self, path):
         """
         Tests the return of `load_cri_image` function
         """
         cmd = utils.cmd_output(
             stderr='time="2020-07-02T08:02:46Z" '
-                   'level=debug msg="unpacking 1 images"',
-            stdout='unpacking k8s.gcr.io/my-image:3.1 (sha256:3efe4ff64c93123e'
-                   '1217b0ad6d23b4c87a1fc2109afeff55d2f27d70c55d8f73)...done'
+            'level=debug msg="unpacking 1 images"',
+            stdout="unpacking k8s.gcr.io/my-image:3.1 (sha256:3efe4ff64c93123e"
+            "1217b0ad6d23b4c87a1fc2109afeff55d2f27d70c55d8f73)...done",
         )
         mock_cmd = MagicMock(return_value=cmd)
-        with patch.dict(containerd.__salt__, {'cmd.run_all': mock_cmd}):
+        with patch.dict(containerd.__salt__, {"cmd.run_all": mock_cmd}):
             self.assertEqual(containerd.load_cri_image(path), cmd)
             mock_cmd.assert_called_once_with(
                 'ctr --debug -n k8s.io image import "{}"'.format(path)

@@ -1,13 +1,13 @@
-'''
+"""
 Various functions to interact with :program:`containerd` using :command:`ctr`.
-'''
+"""
 
 import logging
 
 log = logging.getLogger(__name__)
 
 
-__virtualname__ = 'containerd'
+__virtualname__ = "containerd"
 
 
 def __virtual__():
@@ -15,7 +15,7 @@ def __virtual__():
 
 
 def load_cri_image(path):
-    '''
+    """
     Load a Docker image archive into the :program:`containerd` CRI image cache.
 
     .. note::
@@ -24,8 +24,8 @@ def load_cri_image(path):
 
     path
         Path of the Docker image archive to load
-    '''
+    """
     log.info('Importing image from "%s" into CRI cache', path)
-    return __salt__['cmd.run_all'](
+    return __salt__["cmd.run_all"](
         'ctr --debug -n k8s.io image import "{0}"'.format(path)
     )

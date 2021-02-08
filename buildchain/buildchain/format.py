@@ -23,41 +23,45 @@ def task_format() -> Iterator[types.TaskDict]:
 
 def format_go() -> types.TaskDict:
     """Format Go code using gofmt."""
-    cwd  = constants.STORAGE_OPERATOR_ROOT
-    cmd = ' '.join(map(shlex.quote, [
-        config.ExtCommand.GOFMT.value, '-s', '-w',
-        *tuple(constants.STORAGE_OPERATOR_FMT_ARGS)
-    ]))
+    cwd = constants.STORAGE_OPERATOR_ROOT
+    cmd = " ".join(
+        map(
+            shlex.quote,
+            [
+                config.ExtCommand.GOFMT.value,
+                "-s",
+                "-w",
+                *tuple(constants.STORAGE_OPERATOR_FMT_ARGS),
+            ],
+        )
+    )
 
     return {
-        'name': 'go',
-        'title': utils.title_with_subtask_name('FORMAT'),
-        'doc': format_go.__doc__,
-        'actions': [doit.action.CmdAction(cmd, cwd=cwd)],
-        'task_dep': ['check_for:gofmt'],
-        'file_dep': list(constants.STORAGE_OPERATOR_SOURCES),
+        "name": "go",
+        "title": utils.title_with_subtask_name("FORMAT"),
+        "doc": format_go.__doc__,
+        "actions": [doit.action.CmdAction(cmd, cwd=cwd)],
+        "task_dep": ["check_for:gofmt"],
+        "file_dep": list(constants.STORAGE_OPERATOR_SOURCES),
     }
 
 
 def format_python() -> types.TaskDict:
     """Format Python code using black."""
     python_files = [
-        filepath for filepath in utils.git_ls() if '.py' in filepath.suffixes
+        filepath for filepath in utils.git_ls() if ".py" in filepath.suffixes
     ]
     return {
-        'name': 'python',
-        'title': utils.title_with_subtask_name('FORMAT'),
-        'doc': format_python.__doc__,
-        'actions': [['tox', '-e', 'format-python']],
-        'file_dep': python_files,
+        "name": "python",
+        "title": utils.title_with_subtask_name("FORMAT"),
+        "doc": format_python.__doc__,
+        "actions": [["tox", "-e", "format-python"]],
+        "file_dep": python_files,
     }
 
 
 # List of available formatting tasks.
-FORMATTERS: Tuple[Callable[[], types.TaskDict], ...] = (
-    format_go,
-    format_python
-)
+FORMATTERS: Tuple[Callable[[], types.TaskDict], ...] = (format_go, format_python)
 
 
 __all__ = utils.export_only_tasks(__name__)

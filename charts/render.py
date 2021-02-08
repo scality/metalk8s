@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'''
+"""
 This script takes a Helm release name, a namespace name, a Helm chart
 `values` file and a chart, and turns it into a YAML document that can be
 deployed in a Kubernetes cluster as part of MetalK8s.
@@ -24,7 +24,7 @@ It performs the following tasks:
       "{{ build_image_name("<imgname>", False) }}"
     - "__full_image__(<imgname>)", to replace with
       "{{ build_image_name("<imgname>") }}"
-'''
+"""
 
 import argparse
 import copy
@@ -54,12 +54,13 @@ END_BLOCK = """
 
 
 def fixup_metadata(namespace, doc):
-    if 'metadata' in doc and 'namespace' not in doc['metadata']:
-        doc['metadata']['namespace'] = namespace
+    if "metadata" in doc and "namespace" not in doc["metadata"]:
+        doc["metadata"]["namespace"] = namespace
 
-    if doc.get('kind', None) == 'ConfigMapList':
-        doc['items'] = [fixup_metadata(namespace, configmap)
-                        for configmap in doc['items']]
+    if doc.get("kind", None) == "ConfigMapList":
+        doc["items"] = [
+            fixup_metadata(namespace, configmap) for configmap in doc["items"]
+        ]
 
     return doc
 
@@ -72,36 +73,44 @@ def maybe_copy(doc, src, dest):
 
 
 def fixup_dict(doc):
-    if doc.get('heritage') == 'Helm' or \
-            doc.get('app.kubernetes.io/managed-by') == 'Helm':
-        maybe_copy(doc, 'app', 'app.kubernetes.io/name')
-        maybe_copy(doc, 'component', 'app.kubernetes.io/component')
+    if (
+        doc.get("heritage") == "Helm"
+        or doc.get("app.kubernetes.io/managed-by") == "Helm"
+    ):
+        maybe_copy(doc, "app", "app.kubernetes.io/name")
+        maybe_copy(doc, "component", "app.kubernetes.io/component")
 
-        doc['heritage'] = 'metalk8s'
-        doc['app.kubernetes.io/part-of'] = 'metalk8s'
-        doc['app.kubernetes.io/managed-by'] = 'salt'
+        doc["heritage"] = "metalk8s"
+        doc["app.kubernetes.io/part-of"] = "metalk8s"
+        doc["app.kubernetes.io/managed-by"] = "salt"
 
     return dict((key, fixup_doc(value)) for (key, value) in doc.items())
 
+
 # Represent multiline strings as literal blocks {{{
-class multiline_str(str): pass
+class multiline_str(str):
+    pass
+
 
 def representer_multiline_str(dumper, data):
     scalar = SafeRepresenter.represent_str(dumper, data)
-    scalar.style = '|'
+    scalar.style = "|"
     return scalar
+
 
 SafeDumper.add_representer(multiline_str, representer_multiline_str)
 
+
 def fixup_string(value):
-    if '\n' in value:
+    if "\n" in value:
         # Remove empty lines
-        value = '\n'.join(
-            line for line in value.splitlines()
-            if not re.match('^\s*$', line)
+        value = "\n".join(
+            line for line in value.splitlines() if not re.match("^\s*$", line)
         )
         return multiline_str(value)
     return value
+
+
 # }}}
 
 
@@ -118,8 +127,10 @@ def fixup_doc(doc):
 
 def remove_doc(doc, remove_manifests):
     for to_remove in remove_manifests or []:
-        if doc.get('kind') == to_remove[0] and \
-                doc.get('metadata').get('name') == to_remove[1]:
+        if (
+            doc.get("kind") == to_remove[0]
+            and doc.get("metadata").get("name") == to_remove[1]
+        ):
             return True
 
     return False
@@ -129,9 +140,9 @@ def keep_doc(doc):
     if not doc:
         return False
 
-    if ((doc.get('metadata') or {})
-            .get('annotations') or {}) \
-            .get('helm.sh/hook') == 'test-success':
+    if ((doc.get("metadata") or {}).get("annotations") or {}).get(
+        "helm.sh/hook"
+    ) == "test-success":
         return False
 
     return True
@@ -140,35 +151,35 @@ def keep_doc(doc):
 def replace_magic_strings(rendered_yaml):
     # Handle __var__
     result = re.sub(
-        r'__var__\((?P<varname>[\w\-_]+(?:\.[\w\-_()]+)*)\)',
-        r'{% endraw -%}{{ \g<varname> }}{%- raw %}',
+        r"__var__\((?P<varname>[\w\-_]+(?:\.[\w\-_()]+)*)\)",
+        r"{% endraw -%}{{ \g<varname> }}{%- raw %}",
         rendered_yaml,
     )
 
     # Handle __var_tojson__
     result = re.sub(
-        r'__var_tojson__\((?P<varname>[\w\-_]+(?:\.[\w\-_()|]+)*)\)',
-        r'  {% endraw -%}{{ \g<varname> | tojson }}{%- raw %}',
+        r"__var_tojson__\((?P<varname>[\w\-_]+(?:\.[\w\-_()|]+)*)\)",
+        r"  {% endraw -%}{{ \g<varname> | tojson }}{%- raw %}",
         result,
     )
 
     # Handle __escape__
     result = re.sub(
-        r'__escape__\((?P<varname>.*)\)',
+        r"__escape__\((?P<varname>.*)\)",
         r'"{% endraw -%}\g<varname>{%- raw %}"',
         result,
     )
 
     # Handle __image__
     result = re.sub(
-        r'__image__\((?P<imgname>[\w\-]+)\)',
+        r"__image__\((?P<imgname>[\w\-]+)\)",
         r'{% endraw -%}{{ build_image_name("\g<imgname>", False) }}{%- raw %}',
         result,
     )
 
     # Handle __full_image__ (include version tag in the rendered name)
     result = re.sub(
-        r'__full_image__\((?P<imgname>[\w\-]+)\)',
+        r"__full_image__\((?P<imgname>[\w\-]+)\)",
         r'{% endraw -%}{{ build_image_name("\g<imgname>") }}{%- raw %}',
         result,
     )
@@ -180,69 +191,60 @@ def remove_prometheus_rules(template, drop_rules):
     updated_template = None
     groups = []
 
-    existing_groups = template.get('spec', {}).get('groups', [])
+    existing_groups = template.get("spec", {}).get("groups", [])
     for group in existing_groups:
-        group_rules = group.get('rules', [])
+        group_rules = group.get("rules", [])
         new_rules = group_rules[:]
-        to_drop = drop_rules.get(group.get('name'), [])
+        to_drop = drop_rules.get(group.get("name"), [])
         if to_drop:
             for rule in group_rules:
-                if any(rule.get(key) in to_drop
-                        for key in ['alert', 'record']):
+                if any(rule.get(key) in to_drop for key in ["alert", "record"]):
                     new_rules.remove(rule)
         if new_rules:
             groups.append(dict(group, rules=new_rules))
 
     if groups:
         updated_template = copy.deepcopy(template)
-        updated_template['spec']['groups'] = groups
+        updated_template["spec"]["groups"] = groups
 
     return updated_template
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('name', help="Denotes the name of the chart")
+    parser.add_argument("name", help="Denotes the name of the chart")
     parser.add_argument(
-        '-n',
-        '--namespace',
-        default="default",
-        help="Namespace to deploy this chart in"
+        "-n", "--namespace", default="default", help="Namespace to deploy this chart in"
     )
-    parser.add_argument('values', help="Our custom chart values")
+    parser.add_argument("values", help="Our custom chart values")
 
     class ActionServiceConfigArgs(argparse.Action):
         def __call__(self, parser, args, values, option_string=None):
             if len(values) > 4:
                 raise argparse.ArgumentTypeError(
-                    'Argument "{0}" requires between 1 and 4 arguments'
-                    .format(option_string)
+                    'Argument "{0}" requires between 1 and 4 arguments'.format(
+                        option_string
+                    )
                 )
 
             name = values.pop(0)
             try:
                 configmap = values.pop(0)
             except IndexError:
-                configmap = 'metalk8s-{0}-config'.format(name)
+                configmap = "metalk8s-{0}-config".format(name)
             try:
                 path = values.pop(0)
             except IndexError:
-                path = 'metalk8s/addons/{0}/config/{1}.yaml'.format(
-                    args.name, name
-                )
+                path = "metalk8s/addons/{0}/config/{1}.yaml".format(args.name, name)
             service_namespace = values.pop(0)
 
             option = getattr(args, self.dest)
             if option is None:
-                setattr(
-                    args,
-                    self.dest,
-                    [[name, configmap, path, service_namespace]]
-                )
+                setattr(args, self.dest, [[name, configmap, path, service_namespace]])
             else:
                 option.append([name, configmap, path, service_namespace])
 
-    '''
+    """
     To use this argument, follow the format below:
         --service-config service_name service_configmap_name service_namespace
     where service_name is actually the jinja variable which will hold
@@ -250,41 +252,47 @@ def main():
     Note that you can specify multiple service config arguments using:
         --service-config grafana metalk8s-grafana-config metalk8s-monitoring
         --service-config dex metalk8s-dex-config metalk8s-auth
-    '''
+    """
     # Todo: Add kind & apiVersion to the service-config nargs
     parser.add_argument(
-        '--service-config',
+        "--service-config",
         action=ActionServiceConfigArgs,
-        nargs='+',
+        nargs="+",
         required=False,
         dest="service_configs",
         help="Example: --service-config grafana metalk8s-grafana-config "
-             "metalk8s/addons/prometheus-operator/config/grafana.yaml "
-             "metalk8s-monitoring"
+        "metalk8s/addons/prometheus-operator/config/grafana.yaml "
+        "metalk8s-monitoring",
     )
     parser.add_argument(
-        '--drop-prometheus-rules',
-        help="YAML formatted file to drop some pre-defined Prometheus rules"
+        "--drop-prometheus-rules",
+        help="YAML formatted file to drop some pre-defined Prometheus rules",
     )
     parser.add_argument(
-        '--remove-manifest',
-        action='append',
+        "--remove-manifest",
+        action="append",
         nargs=2,
         dest="remove_manifests",
-        metavar=('KIND', 'NAME'),
+        metavar=("KIND", "NAME"),
         help="Remove a given manifest from the resulting chart",
     )
 
-    parser.add_argument('path', help="Path to the chart directory")
+    parser.add_argument("path", help="Path to the chart directory")
     args = parser.parse_args()
 
-    template = subprocess.check_output([
-        'helm', 'template', args.name,
-        '--namespace', args.namespace,
-        '--values', args.values,
-        '--include-crds',
-        args.path,
-    ])
+    template = subprocess.check_output(
+        [
+            "helm",
+            "template",
+            args.name,
+            "--namespace",
+            args.namespace,
+            "--values",
+            args.values,
+            "--include-crds",
+            args.path,
+        ]
+    )
 
     drop_prometheus_rules = {}
     if args.drop_prometheus_rules:
@@ -292,16 +300,18 @@ def main():
             drop_prometheus_rules = yaml.safe_load(fd)
 
     def fixup(doc):
-        if drop_prometheus_rules and isinstance(doc, dict) \
-               and doc.get('kind') == 'PrometheusRule':
+        if (
+            drop_prometheus_rules
+            and isinstance(doc, dict)
+            and doc.get("kind") == "PrometheusRule"
+        ):
             doc = remove_prometheus_rules(doc, drop_prometheus_rules)
 
-        return fixup_metadata(
-            namespace=args.namespace,
-            doc=fixup_doc(
-                doc=doc
-            )
-        ) if doc else None
+        return (
+            fixup_metadata(namespace=args.namespace, doc=fixup_doc(doc=doc))
+            if doc
+            else None
+        )
 
     import_csc_yaml = []
     config = []
@@ -309,7 +319,8 @@ def main():
         import_csc_yaml.append(
             "{{% set {0}_defaults = "
             "salt.slsutil.renderer('salt://{1}', saltenv=saltenv) %}}".format(
-                name, path,
+                name,
+                path,
             )
         )
         config.append(
@@ -319,12 +330,12 @@ def main():
             )
         )
 
-    sys.stdout.write(START_BLOCK.format(
-            csc_defaults='\n'.join(import_csc_yaml),
-            configlines='\n'.join(config)
+    sys.stdout.write(
+        START_BLOCK.format(
+            csc_defaults="\n".join(import_csc_yaml), configlines="\n".join(config)
         ).lstrip()
     )
-    sys.stdout.write('\n')
+    sys.stdout.write("\n")
 
     manifests = []
     for doc in yaml.safe_load_all(template):
@@ -346,5 +357,5 @@ def main():
     sys.stdout.write(END_BLOCK)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -14,7 +14,7 @@ from typing import Iterator, Sequence
 
 
 # Buffer size (8 Mio).
-BUFSIZE : int = 8 * (1024 * 1024)
+BUFSIZE: int = 8 * (1024 * 1024)
 
 
 def sha256sum(input_files: Sequence[Path], output_file: Path) -> None:
@@ -31,16 +31,16 @@ def sha256sum(input_files: Sequence[Path], output_file: Path) -> None:
     digests = []
     for filepath in input_files:
         hasher = hashlib.sha256()
-        with filepath.open('rb', buffering=BUFSIZE) as fp_in:
-            for chunk in iter(functools.partial(fp_in.read, BUFSIZE), b''):
+        with filepath.open("rb", buffering=BUFSIZE) as fp_in:
+            for chunk in iter(functools.partial(fp_in.read, BUFSIZE), b""):
                 hasher.update(chunk)
         digests.append(hasher.hexdigest())
-    with output_file.open('w', encoding='utf-8') as fp_out:
+    with output_file.open("w", encoding="utf-8") as fp_out:
         for filepath, digest in zip(input_files, digests):
-            fp_out.write('{}  {}\n'.format(digest, filepath.name))
+            fp_out.write("{}  {}\n".format(digest, filepath.name))
 
 
-def gzip(input_file: Path, keep_input: bool=False, level: int=6) -> None:
+def gzip(input_file: Path, keep_input: bool = False, level: int = 6) -> None:
     """Compress the input file using LZ77 coding.
 
     Arguments:
@@ -48,10 +48,10 @@ def gzip(input_file: Path, keep_input: bool=False, level: int=6) -> None:
         keep_input: if False, the original file is deleted after compression
         level:      compression level
     """
-    filename = input_file.with_suffix(input_file.suffix + '.gz')
-    with input_file.open('rb', buffering=BUFSIZE) as fp:
-        with gzip_module.open(filename, 'wb', compresslevel=level) as out:
-            for chunk in iter(functools.partial(fp.read, BUFSIZE), b''):
+    filename = input_file.with_suffix(input_file.suffix + ".gz")
+    with input_file.open("rb", buffering=BUFSIZE) as fp:
+        with gzip_module.open(filename, "wb", compresslevel=level) as out:
+            for chunk in iter(functools.partial(fp.read, BUFSIZE), b""):
                 out.write(chunk)
     if not keep_input:
         os.unlink(input_file)
@@ -98,4 +98,4 @@ def ls_files_rec(root: Path) -> Iterator[Path]:
     Returns:
         an iterator over the file paths
     """
-    return (path for path in root.rglob('*') if path.is_file())
+    return (path for path in root.rglob("*") if path.is_file())

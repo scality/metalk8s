@@ -15,46 +15,50 @@ def _negation(value):
     elif value in [" not", "not"]:
         return True
     else:
-        raise ValueError(
-            "Cannot parse '{}' as an optional negation".format(value)
-        )
+        raise ValueError("Cannot parse '{}' as an optional negation".format(value))
+
 
 # Scenario {{{
 
 
-@scenario('../features/salt_api.feature', 'Login to SaltAPI using Basic auth')
+@scenario("../features/salt_api.feature", "Login to SaltAPI using Basic auth")
 def test_login_basic_auth_to_salt_api(host):
     pass
 
 
-@scenario('../features/salt_api.feature',
-          'Login to SaltAPI using an admin ServiceAccount')
+@scenario(
+    "../features/salt_api.feature", "Login to SaltAPI using an admin ServiceAccount"
+)
 def test_login_salt_api_admin_sa(host):
     pass
 
-@scenario('../features/salt_api.feature',
-          'Login to SaltAPI using the storage-operator ServiceAccount')
+
+@scenario(
+    "../features/salt_api.feature",
+    "Login to SaltAPI using the storage-operator ServiceAccount",
+)
 def test_login_salt_api_storage_operator(host):
     pass
 
 
-@scenario('../features/salt_api.feature',
-          'Login to SaltAPI using any ServiceAccount')
+@scenario("../features/salt_api.feature", "Login to SaltAPI using any ServiceAccount")
 def test_login_salt_api_service_account(host):
     pass
 
-@scenario('../features/salt_api.feature',
-          'SaltAPI impersonation using a ServiceAccount')
+
+@scenario(
+    "../features/salt_api.feature", "SaltAPI impersonation using a ServiceAccount"
+)
 def test_salt_api_impersonation_with_bearer_auth(host):
     pass
 
 
 @pytest.fixture
 def salt_api_address(control_plane_ip):
-    return '{}:{}'.format(control_plane_ip, 4507)
+    return "{}:{}".format(control_plane_ip, 4507)
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def context():
     return {}
 
@@ -63,104 +67,117 @@ def context():
 # When {{{
 
 
-@when(parsers.parse(
-    "we login to SaltAPI as '{username}' using password '{password}'"))
+@when(parsers.parse("we login to SaltAPI as '{username}' using password '{password}'"))
 def login_salt_api_basic(host, username, password, salt_api_address, context):
-    context['salt-api'] = _salt_api_login(
+    context["salt-api"] = _salt_api_login(
         salt_api_address, username=username, password=password
     )
 
 
 @when("we login to SaltAPI with an admin ServiceAccount")
-def login_salt_api_admin_sa(
-    host, k8s_client, admin_sa, salt_api_address, context
-):
+def login_salt_api_admin_sa(host, k8s_client, admin_sa, salt_api_address, context):
     sa_name, sa_namespace = admin_sa
 
-    context['salt-api'] = _login_salt_api_sa(
-        salt_api_address, k8s_client,
-        sa_name, sa_namespace
+    context["salt-api"] = _login_salt_api_sa(
+        salt_api_address, k8s_client, sa_name, sa_namespace
     )
 
 
-@when(parsers.parse(
-    "we login to SaltAPI with the ServiceAccount '{namespace}/{account_name}'"))
+@when(
+    parsers.parse(
+        "we login to SaltAPI with the ServiceAccount '{namespace}/{account_name}'"
+    )
+)
 def login_salt_api_system_sa(
     host, k8s_client, namespace, account_name, salt_api_address, context
 ):
-    context['salt-api'] = _login_salt_api_sa(
-        salt_api_address, k8s_client, account_name, namespace,
+    context["salt-api"] = _login_salt_api_sa(
+        salt_api_address,
+        k8s_client,
+        account_name,
+        namespace,
     )
 
 
-@when(parsers.parse(
-    "we impersonate user '{username}' against SaltAPI "
-    "using the ServiceAccount '{namespace}/{account_name}'"
-))
+@when(
+    parsers.parse(
+        "we impersonate user '{username}' against SaltAPI "
+        "using the ServiceAccount '{namespace}/{account_name}'"
+    )
+)
 def login_salt_api_token_override_username(
-    host, k8s_client, namespace, account_name, username, salt_api_address,
-    context
+    host, k8s_client, namespace, account_name, username, salt_api_address, context
 ):
-    context['salt-api'] = _login_salt_api_sa(
-        salt_api_address, k8s_client, account_name, namespace,
+    context["salt-api"] = _login_salt_api_sa(
+        salt_api_address,
+        k8s_client,
+        account_name,
+        namespace,
         username=username,
     )
+
 
 # }}}
 # Then {{{
 
 
-@then(parsers.cfparse(
-    'we can{negated:Negation?} ping all minions',
-    extra_types={'Negation': _negation}
-))
+@then(
+    parsers.cfparse(
+        "we can{negated:Negation?} ping all minions",
+        extra_types={"Negation": _negation},
+    )
+)
 def ping_all_minions(host, context, negated):
-    result = _salt_call(context, 'test.ping', tgt='*')
+    result = _salt_call(context, "test.ping", tgt="*")
 
     if negated:
         assert result.status_code == 401
-        assert 'No permission' in result.text
+        assert "No permission" in result.text
     else:
         result_data = result.json()
-        assert result_data['return'][0] != []
+        assert result_data["return"][0] != []
 
 
-@then(parsers.cfparse(
-    "we can{negated:Negation?} run state '{module}' on '{targets}'",
-    extra_types={'Negation': _negation}
-))
+@then(
+    parsers.cfparse(
+        "we can{negated:Negation?} run state '{module}' on '{targets}'",
+        extra_types={"Negation": _negation},
+    )
+)
 def run_state_on_targets(host, context, negated, module, targets):
-    result = _salt_call(context, 'state.sls', tgt=targets,
-                        kwarg={'mods': module})
+    result = _salt_call(context, "state.sls", tgt=targets, kwarg={"mods": module})
 
     if negated:
         assert result.status_code == 401
-        assert 'No permission' in result.text
+        assert "No permission" in result.text
     else:
         assert result.status_code == 200
 
 
-@then('authentication fails')
+@then("authentication fails")
 def authentication_fails(host, context):
-    assert context['salt-api']['login-status-code'] == 401
+    assert context["salt-api"]["login-status-code"] == 401
 
 
-@then('authentication succeeds')
+@then("authentication succeeds")
 def authentication_succeeds(host, context):
-    assert context['salt-api']['login-status-code'] == 200
+    assert context["salt-api"]["login-status-code"] == 200
 
 
 @then(parsers.parse("we can invoke '{modules}' on '{targets}'"))
 def invoke_module_on_target(host, context, modules, targets):
-    assert {targets: ast.literal_eval(modules)} in context['salt-api']['perms']
+    assert {targets: ast.literal_eval(modules)} in context["salt-api"]["perms"]
+
 
 @then(parsers.parse("we have '{perms}' perms"))
 def have_perms(host, context, perms):
-    assert perms in context['salt-api']['perms']
+    assert perms in context["salt-api"]["perms"]
+
 
 @then(parsers.parse("we have no permissions"))
 def have_no_perms(host, context):
-    assert context['salt-api']['perms'] == {}
+    assert context["salt-api"]["perms"] == {}
+
 
 # }}}
 # Helpers {{{
@@ -173,60 +190,58 @@ def _login_salt_api_sa(address, k8s_client, name, namespace, username=None):
     secret = k8s_client.read_namespaced_secret(
         name=service_account.secrets[0].name, namespace=namespace
     )
-    token = base64.decodebytes(secret.data['token'].encode('utf-8'))
+    token = base64.decodebytes(secret.data["token"].encode("utf-8"))
 
     if username is None:
-        username = 'system:serviceaccount:{}:{}'.format(namespace, name)
+        username = "system:serviceaccount:{}:{}".format(namespace, name)
 
     return _salt_api_login(address, username=username, token=token)
 
 
 def _salt_api_login(address, username=None, password=None, token=None):
-    data = {
-        'eauth': 'kubernetes_rbac'
-    }
+    data = {"eauth": "kubernetes_rbac"}
 
     if username:
-        data['username'] = username
+        data["username"] = username
     if password:
-        data['password'] = password
+        data["password"] = password
     if token:
-        data['token'] = token
+        data["token"] = token
 
     response = requests.post(
-        'https://{}/login'.format(address),
+        "https://{}/login".format(address),
         data=data,
         verify=False,
     )
     result = {
-        'url': 'https://{}'.format(address),
-        'token': None,
-        'perms': [],
-        'login-status-code': response.status_code,
+        "url": "https://{}".format(address),
+        "token": None,
+        "perms": [],
+        "login-status-code": response.status_code,
     }
     if response.status_code == 200:
         json_data = response.json()
-        result['token'] = json_data['return'][0]['token']
-        result['perms'] = json_data['return'][0]['perms']
+        result["token"] = json_data["return"][0]["token"]
+        result["perms"] = json_data["return"][0]["perms"]
     return result
 
 
-def _salt_call(context, fun, tgt='*', arg=None, kwarg=None):
+def _salt_call(context, fun, tgt="*", arg=None, kwarg=None):
     action = {
-        'client': 'local',
-        'tgt': tgt,
-        'fun': fun,
+        "client": "local",
+        "tgt": tgt,
+        "fun": fun,
     }
     if arg is not None:
-        action['arg'] = arg
+        action["arg"] = arg
     if kwarg is not None:
-        action['kwarg'] = kwarg
+        action["kwarg"] = kwarg
 
     return requests.post(
-        context['salt-api']['url'],
+        context["salt-api"]["url"],
         json=[action],
         headers={
-            'X-Auth-Token': context['salt-api']['token'],
+            "X-Auth-Token": context["salt-api"]["token"],
         },
         verify=False,
     )

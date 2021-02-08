@@ -15,6 +15,7 @@ from buildchain import utils
 
 def task_check_for() -> Iterator[types.TaskDict]:
     """Check the existence of the external commands."""
+
     def get_command_location(
         command_name: str, binary_path: Optional[str]
     ) -> Optional[TaskError]:
@@ -31,10 +32,11 @@ def task_check_for() -> Iterator[types.TaskDict]:
         else:
             cmd_path = shutil.which(command_name)
         if cmd_path is None:
-            return TaskError(msg='command {} not found in {}'.format(
-                command_name, Path(binary_path).parent
-                if binary_path else '$PATH'
-            ))
+            return TaskError(
+                msg="command {} not found in {}".format(
+                    command_name, Path(binary_path).parent if binary_path else "$PATH"
+                )
+            )
         return None
 
     for ext_cmd in config.ExtCommand:
@@ -42,18 +44,18 @@ def task_check_for() -> Iterator[types.TaskDict]:
         cmd_path = ext_cmd.value if ext_cmd.value != cmd_name else None
 
         def show(name: str) -> str:
-            return '{cmd: <{width}} {name}'.format(
-                cmd='CHECK CMD', width=constants.CMD_WIDTH, name=name
+            return "{cmd: <{width}} {name}".format(
+                cmd="CHECK CMD", width=constants.CMD_WIDTH, name=name
             )
 
         yield {
-            'name': cmd_name,
-            'title': lambda _, name=cmd_name: show(name),
-            'doc': 'Check the presence of the {} command.'.format(cmd_name),
-            'actions': [(get_command_location, [cmd_name, cmd_path], {})],
-            'file_dep': [],
-            'task_dep': [],
-            'uptodate': [False],
+            "name": cmd_name,
+            "title": lambda _, name=cmd_name: show(name),
+            "doc": "Check the presence of the {} command.".format(cmd_name),
+            "actions": [(get_command_location, [cmd_name, cmd_path], {})],
+            "file_dep": [],
+            "task_dep": [],
+            "uptodate": [False],
         }
 
 

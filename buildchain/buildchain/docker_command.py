@@ -12,10 +12,10 @@ import os
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Type, TYPE_CHECKING
 
-import docker                                         # type: ignore
+import docker  # type: ignore
 from docker.errors import BuildError, ContainerError  # type: ignore
-from docker.types import Mount                        # type: ignore
-from doit.exceptions import TaskError                 # type: ignore
+from docker.types import Mount  # type: ignore
+from doit.exceptions import TaskError  # type: ignore
 
 from buildchain import constants
 from buildchain import utils
@@ -29,29 +29,24 @@ if TYPE_CHECKING:
 # pylint: enable=cyclic-import,useless-suppression
 
 
-DOCKER_CLIENT : docker.DockerClient = docker.from_env()
+DOCKER_CLIENT: docker.DockerClient = docker.from_env()
 
-RPMLINTRC_MOUNT : Mount = utils.bind_ro_mount(
-    target=Path('/rpmbuild/rpmlintrc'),
-    source=constants.ROOT/'packages'/'redhat'/'common'/'rpmlintrc',
+RPMLINTRC_MOUNT: Mount = utils.bind_ro_mount(
+    target=Path("/rpmbuild/rpmlintrc"),
+    source=constants.ROOT / "packages" / "redhat" / "common" / "rpmlintrc",
 )
 
 
 def default_run_config(entrypoint: Path) -> Dict[str, Any]:
     """Return a default run configuration."""
     return {
-        'hostname': 'build',
-        'mounts': [
-            utils.bind_ro_mount(
-                target=Path('/entrypoint.sh'), source=entrypoint
-            )
+        "hostname": "build",
+        "mounts": [
+            utils.bind_ro_mount(target=Path("/entrypoint.sh"), source=entrypoint)
         ],
-        'environment': {
-            'TARGET_UID': os.geteuid(),
-            'TARGET_GID': os.getegid()
-        },
-        'tmpfs': {'/tmp': ''},
-        'remove': True
+        "environment": {"TARGET_UID": os.geteuid(), "TARGET_GID": os.getegid()},
+        "tmpfs": {"/tmp": ""},
+        "remove": True,
     }
 
 
@@ -64,27 +59,27 @@ def build_error_handler(build_error: BuildError) -> str:
     """String formatting exception handler for Docker API BuildError."""
     output_lines = []
     for item in build_error.build_log:
-        if 'stream' in item:
-            line = item['stream']
-        elif 'status' in item:
-            line = '{}: {}/{}'.format(
-                item['status'],
-                item['progressDetail']['current'],
-                item['progressDetail']['total']
+        if "stream" in item:
+            line = item["stream"]
+        elif "status" in item:
+            line = "{}: {}/{}".format(
+                item["status"],
+                item["progressDetail"]["current"],
+                item["progressDetail"]["total"],
             )
-        elif 'error' in item:
-            line = item['error']
+        elif "error" in item:
+            line = item["error"]
         else:
-            line = 'buildchain: Unknown build log entry {}'.format(str(item))
+            line = "buildchain: Unknown build log entry {}".format(str(item))
         output_lines.append(line)
 
-    log = ''.join(output_lines)
-    return '{}:\n{}'.format(str(build_error), log)
+    log = "".join(output_lines)
+    return "{}:\n{}".format(str(build_error), log)
 
 
 def container_error_handler(container_error: ContainerError) -> str:
     """String formatting exception handler for Docker API ContainerError."""
-    return '{}:\n{}'.format(str(container_error), container_error.stderr)
+    return "{}:\n{}".format(str(container_error), container_error.stderr)
 
 
 def task_error(
@@ -99,6 +94,7 @@ def task_error(
      - None in case of successful task run
      - a TaskError instance in case of error
     """
+
     def wrapped_task(task_func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(task_func)
         def decorated_task(*args: Any, **kwargs: Any) -> Optional[TaskError]:
@@ -112,15 +108,19 @@ def task_error(
                     raise
                 return TaskError(handler(err))
             return None
+
         return decorated_task
+
     return wrapped_task
 
 
-@task_error({
-    docker.errors.BuildError: build_error_handler,
-    docker.errors.APIError: default_error_handler,
-})
-def docker_build(image: 'LocalImage') -> None:
+@task_error(
+    {
+        docker.errors.BuildError: build_error_handler,
+        docker.errors.APIError: default_error_handler,
+    }
+)
+def docker_build(image: "LocalImage") -> None:
     """Build a Docker image using Docker API."""
     DOCKER_CLIENT.images.build(
         tag=image.tag,
@@ -136,13 +136,13 @@ class DockerRun:
 
     def __init__(
         self,
-        command:     List[str],
-        builder:     'ContainerImage',
-        run_config:  Dict[str, Any],
-        environment: Optional[Dict[str, Any]]=None,
-        mounts:      Optional[List[Mount]]=None,
-        tmpfs:       Optional[Dict[str, str]]=None,
-        read_only:   bool=False
+        command: List[str],
+        builder: "ContainerImage",
+        run_config: Dict[str, Any],
+        environment: Optional[Dict[str, Any]] = None,
+        mounts: Optional[List[Mount]] = None,
+        tmpfs: Optional[Dict[str, str]] = None,
+        read_only: bool = False,
     ):
         """Initialize a `docker run` callable object.
 
@@ -203,40 +203,42 @@ class DockerRun:
         }
         """
         run_config = copy.deepcopy(self.run_config)
-        config_list_keys = ['mounts']
+        config_list_keys = ["mounts"]
         for key in config_list_keys:
             run_config.setdefault(key, [])
             run_config[key].extend(getattr(self, key))
 
-        config_dict_keys = ['environment', 'tmpfs']
+        config_dict_keys = ["environment", "tmpfs"]
         for key in config_dict_keys:
             run_config.setdefault(key, {})
             run_config[key].update(getattr(self, key))
 
-        simple_keys = ['read_only']
+        simple_keys = ["read_only"]
         for key in simple_keys:
             run_config[key] = getattr(self, key)
 
         return run_config
 
-    @task_error({
-        docker.errors.ContainerError: container_error_handler,
-        docker.errors.ImageNotFound: default_error_handler,
-        docker.errors.APIError: default_error_handler,
-    })
+    @task_error(
+        {
+            docker.errors.ContainerError: container_error_handler,
+            docker.errors.ImageNotFound: default_error_handler,
+            docker.errors.APIError: default_error_handler,
+        }
+    )
     def __call__(self) -> None:
         run_config = self.expand_config()
         DOCKER_CLIENT.containers.run(
-            image=self.builder.tag,
-            command=self.command,
-            **run_config
+            image=self.builder.tag, command=self.command, **run_config
         )
 
 
-@task_error({
-    docker.errors.BuildError: build_error_handler,
-    docker.errors.APIError: default_error_handler,
-})
+@task_error(
+    {
+        docker.errors.BuildError: build_error_handler,
+        docker.errors.APIError: default_error_handler,
+    }
+)
 def docker_tag(repository: str, full_name: str, version: str) -> None:
     """Tag an image using the Docker API.
 
@@ -249,11 +251,13 @@ def docker_tag(repository: str, full_name: str, version: str) -> None:
     image_to_tag.tag(repository, tag=version)
 
 
-@task_error({
-    docker.errors.BuildError: build_error_handler,
-    docker.errors.APIError: default_error_handler,
-    ValueError: default_error_handler,
-})
+@task_error(
+    {
+        docker.errors.BuildError: build_error_handler,
+        docker.errors.APIError: default_error_handler,
+        ValueError: default_error_handler,
+    }
+)
 def docker_pull(repository: str, name: str, version: str, digest: str) -> None:
     """Pull a Docker image using Docker API.
 
@@ -265,7 +269,7 @@ def docker_pull(repository: str, name: str, version: str, digest: str) -> None:
     """
     pulled = DOCKER_CLIENT.images.pull(
         # For some reason, the repository must include the image name…
-        '{}/{}'.format(repository, name),
+        "{}/{}".format(repository, name),
         tag=version,
     )
     if pulled.id != digest:
@@ -273,16 +277,21 @@ def docker_pull(repository: str, name: str, version: str, digest: str) -> None:
             "Image {name}:{version} pulled from {repository} "
             "doesn't match expected digest: "
             "expected {digest}, got {observed_digest}".format(
-                name=name, version=version, repository=repository,
-                digest=digest, observed_digest=pulled.id
+                name=name,
+                version=version,
+                repository=repository,
+                digest=digest,
+                observed_digest=pulled.id,
             )
         )
 
 
-@task_error({
-    docker.errors.APIError: default_error_handler,
-    OSError: default_error_handler,
-})
+@task_error(
+    {
+        docker.errors.APIError: default_error_handler,
+        OSError: default_error_handler,
+    }
+)
 def docker_save(tag: str, save_path: Path) -> None:
     """Save a Docker image using Docker API.
 
@@ -293,7 +302,7 @@ def docker_save(tag: str, save_path: Path) -> None:
     to_save = DOCKER_CLIENT.images.get(tag)
     image_stream = to_save.save(named=True)
 
-    with save_path.open('wb') as image_file:
+    with save_path.open("wb") as image_file:
         for chunk in image_stream:
             image_file.write(chunk)
 

@@ -1,5 +1,5 @@
 # coding: utf-8
-'''Metalk8s volumes module.'''
+"""Metalk8s volumes module."""
 
 import abc
 import contextlib
@@ -21,7 +21,7 @@ from salt.ext import six
 log = logging.getLogger(__name__)
 
 
-__virtualname__ = 'metalk8s_volumes'
+__virtualname__ = "metalk8s_volumes"
 
 
 def __virtual__():
@@ -148,9 +148,9 @@ def device_name(path):
         # TOCTTOU, but `realpath` doesn't return error on non-existing path…
         if os.path.exists(path):
             realpath = os.path.realpath(path)
-            return {'success': True, 'result': os.path.basename(realpath)}
+            return {"success": True, "result": os.path.basename(realpath)}
         time.sleep(0.1)
-    return {'success': False, 'result': 'device `{}` not found'.format(path)}
+    return {"success": False, "result": "device `{}` not found".format(path)}
 
 
 def device_info(name):
@@ -174,7 +174,7 @@ def device_info(name):
     # Unlikely, but could happen if we crash/restart between the refresh from
     # the `volumes.prepared` state and the call to this module.
     except KeyError:
-        __salt__['saltutil.refresh_pillar'](wait=True)
+        __salt__["saltutil.refresh_pillar"](wait=True)
         volume = _get_volume(name)
     return volume.device_info()
 
@@ -183,7 +183,7 @@ def device_info(name):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class Volume():
+class Volume:
     """Volume interface."""
 
     def __init__(self, volume):
@@ -211,8 +211,8 @@ class Volume():
 
     def device_info(self):
         """Return size and path of the underlying block device"""
-        size = __salt__['disk.dump'](self.persistent_path)['getsize64']
-        return {'size': size, 'path': self.persistent_path}
+        size = __salt__["disk.dump"](self.persistent_path)["getsize64"]
+        return {"size": size, "path": self.persistent_path}
 
     @abc.abstractproperty
     def path(self):  # pragma: no cover
@@ -221,12 +221,12 @@ class Volume():
 
     @property
     def uuid(self):
-        return self.get('metadata.uid').lower()
+        return self.get("metadata.uid").lower()
 
     @property
     def persistent_path(self):
         """Return a persistent path to the backing device."""
-        return '/dev/disk/by-uuid/{}'.format(self.uuid)
+        return "/dev/disk/by-uuid/{}".format(self.uuid)
 
     @property
     def is_prepared(self):
@@ -242,28 +242,25 @@ class Volume():
         # Bail out if it is: we don't want data loss because of a typo…
         device_info = _get_from_blkid(self.path)
         if device_info.fstype:
-            raise Exception(
-                'backing device `{}` already formatted'.format(self.path)
-            )
+            raise Exception("backing device `{}` already formatted".format(self.path))
         if device_info.has_partition:
             raise Exception(
-                'backing device `{}` contains a partition table'
-                .format(self.path)
+                "backing device `{}` contains a partition table".format(self.path)
             )
-        storage_class = self.get('spec.storageClass')
+        storage_class = self.get("spec.storageClass")
         # If we got a string that means the name wasn't replaced by the object.
         if isinstance(storage_class, six.string_types):
-            raise Exception('StorageClass {} not found'.format(storage_class))
-        params = storage_class['parameters']
+            raise Exception("StorageClass {} not found".format(storage_class))
+        params = storage_class["parameters"]
         # mkfs options, if any, are stored as JSON-encoded list.
-        options = json.loads(params.get('mkfsOptions', '[]'))
-        fs_type = params['fsType']
+        options = json.loads(params.get("mkfsOptions", "[]"))
+        fs_type = params["fsType"]
         command = _mkfs(self.path, fs_type, self.uuid, force, options)
-        _run_cmd(' '.join(command))
+        _run_cmd(" ".join(command))
 
     def get(self, path):
         """Return the Volume attribute `path` from the Volume dict."""
-        return functools.reduce(operator.getitem, path.split('.'), self._volume)
+        return functools.reduce(operator.getitem, path.split("."), self._volume)
 
 
 # }}}
@@ -273,18 +270,15 @@ class Volume():
 class SparseLoopDevice(Volume):
     @property
     def path(self):
-        return '/var/lib/metalk8s/storage/sparse/{}'.format(self.uuid)
+        return "/var/lib/metalk8s/storage/sparse/{}".format(self.uuid)
 
     @property
     def size(self):
-        return _quantity_to_bytes(self.get('spec.sparseLoopDevice.size'))
+        return _quantity_to_bytes(self.get("spec.sparseLoopDevice.size"))
 
     @property
     def exists(self):
-        return (
-            os.path.isfile(self.path) and
-            os.path.getsize(self.path) == self.size
-        )
+        return os.path.isfile(self.path) and os.path.getsize(self.path) == self.size
 
     def create(self):
         # Try to create a sparse file, don't clobber existing one!
@@ -297,9 +291,9 @@ class SparseLoopDevice(Volume):
                     os.unlink(self.path)
                     raise
         except OSError as exn:
-            raise Exception('cannot create sparse file at {}'.format(
-                self.path
-            )) from exn
+            raise Exception(
+                "cannot create sparse file at {}".format(self.path)
+            ) from exn
 
     def prepare(self, force=False):
         # We format a "normal" file, not a block device: we need force=True.
@@ -315,19 +309,19 @@ class SparseLoopDevice(Volume):
         except OSError as exn:
             if exn.errno != errno.ENOENT:
                 raise
-            log.warning('%s already removed', exn.filename)
+            log.warning("%s already removed", exn.filename)
 
 
 class SparseLoopDeviceBlock(SparseLoopDevice):
     @property
     def persistent_path(self):
-        return '/dev/disk/by-partuuid/{}'.format(self.uuid)
+        return "/dev/disk/by-partuuid/{}".format(self.uuid)
 
     @property
     def is_prepared(self):
         """Check if the volume is already prepared."""
         # Partition 1 should be identified with the volume UUID.
-        device = os.path.basename(self.path) + '1'
+        device = os.path.basename(self.path) + "1"
         try:
             return _device_name(self.persistent_path) == device
         # Expected exception if the symlink doesn't exist.
@@ -335,7 +329,7 @@ class SparseLoopDeviceBlock(SparseLoopDevice):
             return False
 
     def prepare(self, force=False):
-        prepare_block(self.path, self.get('metadata.name'), self.uuid)
+        prepare_block(self.path, self.get("metadata.name"), self.uuid)
 
 
 # }}}
@@ -346,17 +340,15 @@ class RawBlockDevice(Volume):
     @property
     def exists(self):
         """Does the backing storage device exists?"""
-        return __salt__['file.is_blkdev'](self.path)
+        return __salt__["file.is_blkdev"](self.path)
 
     def create(self):
         # Nothing to do, if it's missing we bail out.
-        raise Exception('block device {} does not exists'.format(
-            self.path
-        ))
+        raise Exception("block device {} does not exists".format(self.path))
 
     @property
     def path(self):
-        return self.get('spec.rawBlockDevice.devicePath')
+        return self.get("spec.rawBlockDevice.devicePath")
 
     def prepare(self, force=False):
         # We format an entire device, not just a partition: we need force=True.
@@ -387,7 +379,7 @@ class RawBlockDeviceBlock(RawBlockDevice):
     def persistent_path(self):
         if self._kind == DeviceType.LVM:
             return self._get_lvm_path()
-        return '/dev/disk/by-partuuid/{}'.format(self.uuid)
+        return "/dev/disk/by-partuuid/{}".format(self.uuid)
 
     @property
     def device_path(self):
@@ -403,7 +395,7 @@ class RawBlockDeviceBlock(RawBlockDevice):
             return True
         device = os.path.basename(self.path)
         if self._kind == DeviceType.DISK:
-            device += '1'  # In DISK case we always have a single partition.
+            device += "1"  # In DISK case we always have a single partition.
         try:
             return _device_name(self.persistent_path) == device
         # Expected exception if the symlink doesn't exist.
@@ -414,15 +406,21 @@ class RawBlockDeviceBlock(RawBlockDevice):
         # Nothing to do in LVM case.
         if self._kind == DeviceType.LVM:
             return
-        name = self.get('metadata.name')
+        name = self.get("metadata.name")
         # For partition, set the partition's label & UID to the volume's ones.
         if self._kind == DeviceType.PARTITION:
-            _run_cmd(' '.join([
-                'sgdisk',
-                '--partition-guid', '{}:{}'.format(self._partition, self.uuid),
-                '--change-name', '{}:{}'.format(self._partition, name),
-                self.device_path,
-            ]))
+            _run_cmd(
+                " ".join(
+                    [
+                        "sgdisk",
+                        "--partition-guid",
+                        "{}:{}".format(self._partition, self.uuid),
+                        "--change-name",
+                        "{}:{}".format(self._partition, name),
+                        self.device_path,
+                    ]
+                )
+            )
         # Otherwise, create a GPT table and a unique partition.
         else:
             prepare_block(self.path, name, self.uuid)
@@ -433,7 +431,7 @@ class RawBlockDeviceBlock(RawBlockDevice):
         If the backing storage device is not an LVM volume, return None.
         """
         name = _device_name(self.path)
-        for symlink in glob.glob('/dev/disk/by-id/dm-uuid-LVM-*'):
+        for symlink in glob.glob("/dev/disk/by-id/dm-uuid-LVM-*"):
             realpath = os.path.realpath(symlink)
             if os.path.basename(realpath) == name:
                 return symlink
@@ -441,15 +439,16 @@ class RawBlockDeviceBlock(RawBlockDevice):
 
     @staticmethod
     def _get_partition(device_name):
-        part_re = r'(?:(?:h|s|v|xv)d[a-z]|nvme\d+n\d+p)(?P<partition>\d+)$'
+        part_re = r"(?:(?:h|s|v|xv)d[a-z]|nvme\d+n\d+p)(?P<partition>\d+)$"
         match = re.search(part_re, device_name)
-        return match.groupdict()['partition'] if match else None
+        return match.groupdict()["partition"] if match else None
 
 
 class DeviceType:
-    DISK      = 1
+    DISK = 1
     PARTITION = 2
-    LVM       = 3
+    LVM = 3
+
 
 # }}}
 # Helpers {{{
@@ -457,30 +456,30 @@ class DeviceType:
 
 def _get_volume(name):
     """Get a Volume object from the pillar."""
-    volume = __pillar__['metalk8s']['volumes'].get(name)
+    volume = __pillar__["metalk8s"]["volumes"].get(name)
     if volume is None:
-        raise ValueError('volume {} not found in pillar'.format(name))
-    mode = volume['spec'].get('mode', 'Filesystem')
-    if 'rawBlockDevice' in volume['spec']:
-        if mode == 'Filesystem':
+        raise ValueError("volume {} not found in pillar".format(name))
+    mode = volume["spec"].get("mode", "Filesystem")
+    if "rawBlockDevice" in volume["spec"]:
+        if mode == "Filesystem":
             return RawBlockDevice(volume)
         else:
             return RawBlockDeviceBlock(volume)
-    elif 'sparseLoopDevice' in volume['spec']:
-        if mode == 'Filesystem':
+    elif "sparseLoopDevice" in volume["spec"]:
+        if mode == "Filesystem":
             return SparseLoopDevice(volume)
         else:
             return SparseLoopDeviceBlock(volume)
     else:
-        raise ValueError('unsupported Volume type for Volume {}'.format(name))
+        raise ValueError("unsupported Volume type for Volume {}".format(name))
 
 
 def _device_name(path):
     """Return the device name from the path, raise on error."""
     res = device_name(path)
-    if res['success']:
-        return res['result']
-    raise CommandExecutionError(message=res['result'])
+    if res["success"]:
+        return res["result"]
+    raise CommandExecutionError(message=res["result"])
 
 
 def _run_cmd(cmd):
@@ -494,10 +493,10 @@ def _run_cmd(cmd):
     Returns:
         dict: the command result (stderr, stdout, retcode, …)
     """
-    ret = __salt__['cmd.run_all'](cmd)
-    if ret.get('retcode', 0) != 0:
+    ret = __salt__["cmd.run_all"](cmd)
+    if ret.get("retcode", 0) != 0:
         raise CommandExecutionError(
-            'error while trying to run `{0}`: {1}' .format(cmd, ret['stderr'])
+            "error while trying to run `{0}`: {1}".format(cmd, ret["stderr"])
         )
     return ret
 
@@ -520,23 +519,23 @@ def _quantity_to_bytes(quantity):
         int: the capacity (in bytes)
     """
     UNIT_FACTOR = {
-      None:  1,
-      'Ki':  2 ** 10,
-      'Mi':  2 ** 20,
-      'Gi':  2 ** 30,
-      'Ti':  2 ** 40,
-      'Pi':  2 ** 50,
-      'k':  10 ** 3,
-      'M':  10 ** 6,
-      'G':  10 ** 9,
-      'T':  10 ** 12,
-      'P':  10 ** 15,
+        None: 1,
+        "Ki": 2 ** 10,
+        "Mi": 2 ** 20,
+        "Gi": 2 ** 30,
+        "Ti": 2 ** 40,
+        "Pi": 2 ** 50,
+        "k": 10 ** 3,
+        "M": 10 ** 6,
+        "G": 10 ** 9,
+        "T": 10 ** 12,
+        "P": 10 ** 15,
     }
-    size_regex = r'^(?P<size>[1-9][0-9]*)(?P<unit>[kKMGTP]i?)?$'
+    size_regex = r"^(?P<size>[1-9][0-9]*)(?P<unit>[kKMGTP]i?)?$"
     match = re.match(size_regex, quantity)
-    assert match is not None, 'invalid resource.Quantity value'
-    size = int(match.groupdict()['size'])
-    unit = match.groupdict().get('unit')
+    assert match is not None, "invalid resource.Quantity value"
+    size = int(match.groupdict()["size"])
+    unit = match.groupdict().get("unit")
     return size * UNIT_FACTOR[unit]
 
 
@@ -562,12 +561,13 @@ def _open_fd(*args, **kwargs):
 #
 # So yeah, let's not rely on this…
 def _get_from_blkid(path):
-    flags = __utils__['metalk8s_volumes.get_superblock_flags']('UUID', 'TYPE')
+    flags = __utils__["metalk8s_volumes.get_superblock_flags"]("UUID", "TYPE")
     kwargs = {
-        'use_superblocks': True, 'superblocks_flags': flags,
-        'use_partitions': True,
+        "use_superblocks": True,
+        "superblocks_flags": flags,
+        "use_partitions": True,
     }
-    with __utils__['metalk8s_volumes.get_blkid_probe'](path, **kwargs) as probe:
+    with __utils__["metalk8s_volumes.get_blkid_probe"](path, **kwargs) as probe:
         return probe.probe()
 
 
@@ -584,28 +584,29 @@ def _mkfs(path, fs_type, uuid, force=False, options=None):
     Returns:
         list: the command line to use
     """
-    funcname =  '_mkfs_{}'.format(fs_type)
+    funcname = "_mkfs_{}".format(fs_type)
     try:
         return globals()[funcname](path, uuid, force, options)
     except KeyError:
-        raise ValueError('unsupported filesystem: {}'.format(fs_type))  # pylint: disable=raise-missing-from
+        # pylint: disable=raise-missing-from
+        raise ValueError("unsupported filesystem: {}".format(fs_type))
 
 
 def _mkfs_ext4(path, uuid, force=False, options=None):
-    command = ['mkfs.ext4']
+    command = ["mkfs.ext4"]
     if force:
-        command.append('-F')
-    command.extend(['-U', uuid])
+        command.append("-F")
+    command.extend(["-U", uuid])
     command.extend(options or [])
     command.append(path)
     return command
 
 
 def _mkfs_xfs(path, uuid, force=False, options=None):
-    command = ['mkfs.xfs']
+    command = ["mkfs.xfs"]
     if force:
-        command.append('-f')
-    command.extend(['-m', 'uuid={}'.format(uuid)])
+        command.append("-f")
+    command.extend(["-m", "uuid={}".format(uuid)])
     command.extend(options or [])
     command.append(path)
     return command
@@ -617,12 +618,20 @@ def prepare_block(path, name, uuid):
     We use a GPT table and a single partition to have a link between the volume
     name/uuid and the partition label/GUID.
     """
-    _run_cmd(' '.join([
-        'sgdisk',
-        '--largest-new', '1',
-        '--partition-guid', '1:{}'.format(uuid),
-        '--change-name', '1:{}'.format(name),
-        path,
-    ]))
+    _run_cmd(
+        " ".join(
+            [
+                "sgdisk",
+                "--largest-new",
+                "1",
+                "--partition-guid",
+                "1:{}".format(uuid),
+                "--change-name",
+                "1:{}".format(name),
+                path,
+            ]
+        )
+    )
+
 
 # }}}

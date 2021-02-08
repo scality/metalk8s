@@ -7,7 +7,7 @@
 from typing import Any, Callable, Dict, List, Tuple, Union
 
 import docker  # type: ignore
-import doit    # type: ignore
+import doit  # type: ignore
 
 
 # A doit action.

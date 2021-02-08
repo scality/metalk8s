@@ -1,4 +1,4 @@
-'''
+"""
 Module for draining a Kubernetes node.
 
 This implementation is based on the go code of `kubectl`, for more details see
@@ -6,7 +6,7 @@ https://github.com/kubernetes/kubernetes/blob/v1.11.10/pkg/kubectl/cmd/drain.go
 
 This module's functions are merged into the `metalk8s_kubernetes`
 module when called by salt by virtue of its `__virtualname__` attribute.
-'''
+"""
 
 import json
 import logging
@@ -30,65 +30,65 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-__virtualname__ = 'metalk8s_kubernetes'
+__virtualname__ = "metalk8s_kubernetes"
 
 
 def __virtual__():
-    '''
+    """
     Check dependencies
-    '''
+    """
     if HAS_LIBS:
         return __virtualname__
 
-    return False, 'python kubernetes library not found'
+    return False, "python kubernetes library not found"
 
 
 class DrainException(Exception):
-    '''General purpose drain exception.'''
+    """General purpose drain exception."""
 
     def __init__(self, message):
         super(DrainException, self).__init__()
         self.message = message
 
     def __str__(self):
-        return '<{0}> {1}'.format(str(self.__class__), self.message)
+        return "<{0}> {1}".format(str(self.__class__), self.message)
 
 
 class DrainTimeoutException(DrainException):
-    '''Timeout-specific drain exception.'''
+    """Timeout-specific drain exception."""
 
 
 def _mirrorpod_filter(pod):
-    '''Check if a pod contains the mirror K8s annotation.
+    """Check if a pod contains the mirror K8s annotation.
 
     Args:
       - pod: kubernetes pod object
     Returns: (False, "") if the pod has the mirror annotation,
              (True, "") if not
-    '''
+    """
     mirror_annotation = "kubernetes.io/config.mirror"
 
-    annotations = pod['metadata']['annotations']
+    annotations = pod["metadata"]["annotations"]
     if annotations and mirror_annotation in annotations:
         return False, ""
     return True, ""
 
 
 def _has_local_storage(pod):
-    '''Check if a pod has local storage.
+    """Check if a pod has local storage.
 
     Args:
       - pod: kubernetes pod object
     Returns: True if the pod uses local storage, False if not
-    '''
-    for volume in pod['spec']['volumes']:
-        if volume['empty_dir'] is not None:
+    """
+    for volume in pod["spec"]["volumes"]:
+        if volume["empty_dir"] is not None:
             return True
     return False
 
 
 def _get_controller_of(pod):
-    '''Get a pod's controller's reference.
+    """Get a pod's controller's reference.
 
     This uses the pod's metadata, so there is no guarantee that
     the controller object reference returned actually corresponds to a
@@ -97,25 +97,24 @@ def _get_controller_of(pod):
     Args:
       - pod: kubernetes pod object
     Returns: the reference to a controller object
-    '''
-    if pod['metadata']['owner_references']:
-        for owner_ref in pod['metadata']['owner_references']:
-            if owner_ref['controller']:
+    """
+    if pod["metadata"]["owner_references"]:
+        for owner_ref in pod["metadata"]["owner_references"]:
+            if owner_ref["controller"]:
                 return owner_ref
     return None
 
 
 def _message_from_pods_dict(errors_dict):
-    '''Form a message string from a 'pod kind': [pod name...] dict.
+    """Form a message string from a 'pod kind': [pod name...] dict.
 
     Args:
       - errors_dict: a dict with keys pod kinds as string and values
                      names of pods of that kind
     Returns: a string message
-    '''
+    """
     msg_list = [
-        "{0}: {1}".format(key, ", ".join(msg))
-        for key, msg in errors_dict.items()
+        "{0}: {1}".format(key, ", ".join(msg)) for key, msg in errors_dict.items()
     ]
     return "; ".join(msg_list)
 
@@ -126,11 +125,11 @@ POD_STATUS_FAILED = "Failed"
 
 
 class Drain(object):
-    '''The drain object class.
+    """The drain object class.
 
     This object contains the options associated to a drain request on a
     given node, as well as the methods used to execute the drain.
-    '''
+    """
 
     # According to `kubectl` code, this value should be 1 second by default
     KUBECTL_INTERVAL = 1
@@ -139,7 +138,8 @@ class Drain(object):
         "localStorage": "Deleting pods with local storage",
         "unmanaged": (
             "Deleting pods not managed by ReplicationController, "
-            "ReplicaSet, Job, DaemonSet or StatefulSet")
+            "ReplicaSet, Job, DaemonSet or StatefulSet"
+        ),
     }
 
     FATAL_MSG = {
@@ -147,17 +147,20 @@ class Drain(object):
         "localStorage": "pods with local storage",
         "unmanaged": (
             "pods not managed by ReplicationController, "
-            "ReplicaSet, Job, DaemonSet or StatefulSet")
+            "ReplicaSet, Job, DaemonSet or StatefulSet"
+        ),
     }
 
-    def __init__(self,
-                 node_name,
-                 force=False,
-                 grace_period=1,
-                 ignore_daemonset=False,
-                 timeout=0,
-                 delete_local_data=False,
-                 **kwargs):
+    def __init__(
+        self,
+        node_name,
+        force=False,
+        grace_period=1,
+        ignore_daemonset=False,
+        timeout=0,
+        delete_local_data=False,
+        **kwargs
+    ):
         self._node_name = node_name
         self._force = force
         self._grace_period = grace_period
@@ -166,21 +169,21 @@ class Drain(object):
         self._delete_local_data = delete_local_data
         self._kwargs = kwargs
 
-    node_name = property(operator.attrgetter('_node_name'))
-    force = property(operator.attrgetter('_force'))
-    grace_period = property(operator.attrgetter('_grace_period'))
-    ignore_daemonset = property(operator.attrgetter('_ignore_daemonset'))
-    timeout = property(operator.attrgetter('_timeout'))
-    delete_local_data = property(operator.attrgetter('_delete_local_data'))
+    node_name = property(operator.attrgetter("_node_name"))
+    force = property(operator.attrgetter("_force"))
+    grace_period = property(operator.attrgetter("_grace_period"))
+    ignore_daemonset = property(operator.attrgetter("_ignore_daemonset"))
+    timeout = property(operator.attrgetter("_timeout"))
+    delete_local_data = property(operator.attrgetter("_delete_local_data"))
 
     def localstorage_filter(self, pod):
-        '''Compute eviction status for the pod according to local storage.
+        """Compute eviction status for the pod according to local storage.
 
         Args:
           - pod: the pod for which eviction is computed
         Return: (is_deletable: bool, warning: str)
         Raises: DrainException if deleting local data is not possible
-        '''
+        """
         if not _has_local_storage(pod):
             return True, ""
         if not self.delete_local_data:
@@ -188,16 +191,16 @@ class Drain(object):
         return True, self.WARNING_MSG["localStorage"]
 
     def unreplicated_filter(self, pod):
-        '''Compute eviction status for the pod according to replication.
+        """Compute eviction status for the pod according to replication.
 
         Args:
           - pod: the pod for which eviction is computed
         Returns: (is_deletable: bool, warning: str)
         Raises: DrainException if the pod has no controller and the `force`
                 option was not provided.
-        '''
+        """
         # finished pods can be removed
-        if pod['status']['phase'] in (POD_STATUS_SUCCEEDED, POD_STATUS_FAILED):
+        if pod["status"]["phase"] in (POD_STATUS_SUCCEEDED, POD_STATUS_FAILED):
             return True, ""
 
         try:
@@ -214,7 +217,7 @@ class Drain(object):
         return True, self.WARNING_MSG["unmanaged"]
 
     def get_controller(self, namespace, controller_ref):
-        '''Get the controller object from a reference to it
+        """Get the controller object from a reference to it
 
         Args:
           - namespace: the queried controller's namespace
@@ -223,41 +226,39 @@ class Drain(object):
           - the controller object if found
           - None if not found
         Raises: CommandExecutionError if API fails
-        '''
-        return __salt__['metalk8s_kubernetes.get_object'](
-            name=controller_ref['name'],
-            kind=controller_ref['kind'],
-            apiVersion=controller_ref['api_version'],
+        """
+        return __salt__["metalk8s_kubernetes.get_object"](
+            name=controller_ref["name"],
+            kind=controller_ref["kind"],
+            apiVersion=controller_ref["api_version"],
             namespace=namespace,
             **self._kwargs
         )
 
     def get_pod_controller(self, pod):
-        '''Get a pod's controller object reference
+        """Get a pod's controller object reference
 
         Args:
           - pod: the pod for which we want the controller
         Returns: the pod's controller reference if the controller exists
         Raises: DrainException if the controller matching the referenct is
                 not found
-        '''
+        """
         controller_ref = _get_controller_of(pod)
         if controller_ref is None:
             return None
-        response = self.get_controller(
-            pod['metadata']['namespace'], controller_ref
-        )
+        response = self.get_controller(pod["metadata"]["namespace"], controller_ref)
         if not response:
-            meta = pod['metadata']
+            meta = pod["metadata"]
             raise DrainException(
                 "Missing controller for pod '{}/{}'".format(
-                    meta['namespace'], meta['name']
+                    meta["namespace"], meta["name"]
                 )
             )
         return controller_ref
 
     def daemonset_filter(self, pod):
-        '''Compute eviction status for the pod according to DaemonSet kind.
+        """Compute eviction status for the pod according to DaemonSet kind.
 
         A daemonset will generally not be deleted, regardless of flags, but we
         can determine if their presence constitutes an error.
@@ -268,27 +269,22 @@ class Drain(object):
         Returns: (is_deletable: bool, warning: str)
         Raises: DrainException if the DaemonSet is in unexpected state and the
                 `ignore_daemonset` option was not set
-        '''
+        """
         controller_ref = _get_controller_of(pod)
 
-        if controller_ref is None or controller_ref['kind'] != "DaemonSet":
+        if controller_ref is None or controller_ref["kind"] != "DaemonSet":
             return True, ""
 
-        controller = self.get_controller(
-            pod['metadata']['namespace'], controller_ref
-        )
+        controller = self.get_controller(pod["metadata"]["namespace"], controller_ref)
 
         if not controller:
             if self.force:
                 # Not found and forcing: remove orphan pods with warning
-                return (
-                    True,
-                    "Default to deletable on pod with no controller found"
-                )
+                return (True, "Default to deletable on pod with no controller found")
 
             raise DrainException(
                 "Missing controller for pod '{}/{}'".format(
-                    pod['metadata']['namespace'], pod['metadata']['name']
+                    pod["metadata"]["namespace"], pod["metadata"]["name"]
                 )
             )
 
@@ -298,36 +294,34 @@ class Drain(object):
         return False, self.WARNING_MSG["daemonset"]
 
     def get_pods_for_eviction(self):
-        '''Compute node drain status according to deletable pods.'''
+        """Compute node drain status according to deletable pods."""
         warnings = {}
         failures = {}
         pods = []
 
-        all_pods = __salt__['metalk8s_kubernetes.list_objects'](
-            kind='Pod',
-            apiVersion='v1',
+        all_pods = __salt__["metalk8s_kubernetes.list_objects"](
+            kind="Pod",
+            apiVersion="v1",
             all_namespaces=True,
-            field_selector='spec.nodeName={0}'.format(self.node_name),
+            field_selector="spec.nodeName={0}".format(self.node_name),
             **self._kwargs
         )
 
         for pod in all_pods:
             is_deletable = True
             for pod_filter in (
-                    _mirrorpod_filter,
-                    self.localstorage_filter,
-                    self.unreplicated_filter,
-                    self.daemonset_filter
+                _mirrorpod_filter,
+                self.localstorage_filter,
+                self.unreplicated_filter,
+                self.daemonset_filter,
             ):
                 try:
                     filter_deletable, warning = pod_filter(pod)
                 except DrainException as exc:
-                    failures.setdefault(
-                        exc.message, []).append(pod['metadata']['name'])
+                    failures.setdefault(exc.message, []).append(pod["metadata"]["name"])
 
                 if warning:
-                    warnings.setdefault(
-                        warning, []).append(pod['metadata']['name'])
+                    warnings.setdefault(warning, []).append(pod["metadata"]["name"])
                 is_deletable &= filter_deletable
 
             if is_deletable:
@@ -340,7 +334,7 @@ class Drain(object):
         return pods
 
     def run_drain(self, dry_run=False):
-        '''Drain the targeted node.
+        """Drain the targeted node.
 
         In practice, we check the node for unevictable pods according to
         the passed options, and evict the pod if and only if all pods on
@@ -351,7 +345,7 @@ class Drain(object):
                      but no eviction will be triggered.
         Returns: string message
         Raises: CommandExecutionError in case of timeout or eviction failure
-        '''
+        """
         log.debug("Beginning drain of Node %s", self.node_name)
         try:
             pods = self.get_pods_for_eviction()
@@ -361,15 +355,11 @@ class Drain(object):
                     "The following are not deletable: {0}. "
                     "You can ignore DaemonSet pods with the "
                     "ignore_daemonset flag."
-                ).format(
-                    exc.message
-                )
+                ).format(exc.message)
             ) from exc
 
         if pods:
-            pods_to_evict = ", ".join([
-                pod['metadata']['name'] for pod in pods
-            ])
+            pods_to_evict = ", ".join([pod["metadata"]["name"] for pod in pods])
         else:
             pods_to_evict = "no pods to evict."
 
@@ -386,33 +376,31 @@ class Drain(object):
             remaining_pods = self.get_pods_for_eviction()
             raise CommandExecutionError(  # pylint: disable=raise-missing-from
                 "{0} List of remaining pods to follow".format(exc.message),
-                [pod['metadata']['name'] for pod in remaining_pods]
+                [pod["metadata"]["name"] for pod in remaining_pods],
             )
         except CommandExecutionError as exc:
             remaining_pods = self.get_pods_for_eviction()
             raise CommandExecutionError(  # pylint: disable=raise-missing-from
-                "{0} List of remaining pods to follow".format(
-                    exc.message
-                ),
-                [pod['metadata']['name'] for pod in remaining_pods]
+                "{0} List of remaining pods to follow".format(exc.message),
+                [pod["metadata"]["name"] for pod in remaining_pods],
             )
         return "Eviction complete."
 
     def evict_pods(self, pods):
-        '''Trigger the eviction process for all pods passed.
+        """Trigger the eviction process for all pods passed.
 
         Args:
           - pods: list of Kubernetes API pods to evict
         Returns: None
         Raises: DrainTimeoutException if the eviction process is not complete
                 after the specified timeout value
-        '''
+        """
         self.start_timer()
         for pod in pods:
             while self.check_timer():
                 evicted = evict_pod(
-                    name=pod['metadata']['name'],
-                    namespace=pod['metadata']['namespace'],
+                    name=pod["metadata"]["name"],
+                    namespace=pod["metadata"]["namespace"],
                     grace_period=self.grace_period,
                     **self._kwargs
                 )
@@ -423,7 +411,7 @@ class Drain(object):
         self.wait_for_eviction(pods)
 
     def wait_for_eviction(self, pods):
-        '''Wait for pods deletion.
+        """Wait for pods deletion.
 
         Args:
           - pods: the list of pods on which eviction was triggered, for which
@@ -431,26 +419,28 @@ class Drain(object):
         Returns: None
         Raises: DrainTimeoutException if the eviction process is not complete
                 after the specified timeout value
-        '''
+        """
         while self.check_timer():
             self.tick(self.KUBECTL_INTERVAL)
             pending = []
             for pod in pods:
-                response = __salt__['metalk8s_kubernetes.get_object'](
-                    kind='Pod',
-                    apiVersion='v1',
-                    name=pod['metadata']['name'],
-                    namespace=pod['metadata']['namespace'],
+                response = __salt__["metalk8s_kubernetes.get_object"](
+                    kind="Pod",
+                    apiVersion="v1",
+                    name=pod["metadata"]["name"],
+                    namespace=pod["metadata"]["namespace"],
                     **self._kwargs
                 )
-                if not response or \
-                        response['metadata']['uid'] != pod['metadata']['uid']:
-                    log.info("%s evicted", pod['metadata']['name'])
+                if (
+                    not response
+                    or response["metadata"]["uid"] != pod["metadata"]["uid"]
+                ):
+                    log.info("%s evicted", pod["metadata"]["name"])
                 else:
                     log.debug(
                         "Waiting for eviction of Pod %s (current status: %s)",
-                        pod['metadata']['name'],
-                        pod.get('status', {}).get('phase'),
+                        pod["metadata"]["name"],
+                        pod.get("status", {}).get("phase"),
                     )
                     pending.append(pod)
 
@@ -465,14 +455,12 @@ class Drain(object):
     def check_timer(self):
         if time.time() - self._start > self.timeout:
             raise DrainTimeoutException(
-                'Drain did not complete within {0} seconds'.format(
-                    self.timeout
-                )
+                "Drain did not complete within {0} seconds".format(self.timeout)
             )
         return True
 
     def tick(self, interval):
-        last_tick = getattr(self, '_tick', None)
+        last_tick = getattr(self, "_tick", None)
         if last_tick is not None:
             remaining = interval - (time.time() - last_tick)
             if remaining > 0:
@@ -480,9 +468,8 @@ class Drain(object):
         self._tick = time.time()
 
 
-def evict_pod(name, namespace='default', grace_period=1,
-              **kwargs):
-    '''Trigger the eviction process for a single pod.
+def evict_pod(name, namespace="default", grace_period=1, **kwargs):
+    """Trigger the eviction process for a single pod.
 
     Args:
         - name          : the name of the pod to evict
@@ -490,24 +477,18 @@ def evict_pod(name, namespace='default', grace_period=1,
         - grace_period  : the time to wait before killing the pod
     Returns: whether the eviction was successfully created or not
     Raises: CommandExecutionError in case of API error
-    '''
-    kind_info = __utils__['metalk8s_kubernetes.get_kind_info']({
-        'kind': 'PodEviction',
-        'apiVersion': 'v1'
-    })
+    """
+    kind_info = __utils__["metalk8s_kubernetes.get_kind_info"](
+        {"kind": "PodEviction", "apiVersion": "v1"}
+    )
 
     delete_options = V1DeleteOptions()
     if grace_period >= 0:
         delete_options.grace_period = grace_period
 
-    object_meta = V1ObjectMeta(
-        name=name,
-        namespace=namespace
-    )
+    object_meta = V1ObjectMeta(name=name, namespace=namespace)
 
-    kubeconfig, context = __salt__[
-        'metalk8s_kubernetes.get_kubeconfig'
-    ](**kwargs)
+    kubeconfig, context = __salt__["metalk8s_kubernetes.get_kubeconfig"](**kwargs)
 
     client = kind_info.client
     client.configure(config_file=kubeconfig, context=context)
@@ -516,10 +497,7 @@ def evict_pod(name, namespace='default', grace_period=1,
         client.create(
             name=name,
             namespace=namespace,
-            body=V1beta1Eviction(
-                delete_options=delete_options,
-                metadata=object_meta
-            )
+            body=V1beta1Eviction(delete_options=delete_options, metadata=object_meta),
         )
     except (ApiException, HTTPError) as exc:
         if isinstance(exc, ApiException):
@@ -538,29 +516,29 @@ def evict_pod(name, namespace='default', grace_period=1,
                 log.info(
                     "Cannot evict %s at the moment: %s",
                     name,
-                    status['message'],
+                    status["message"],
                 )
                 # When implemented by Kubernetes, read the `Retry-After` advice
                 return False
 
         raise CommandExecutionError(
-            'Failed to evict pod "{}" in namespace "{}"'.format(
-                name, namespace
-            )
+            'Failed to evict pod "{}" in namespace "{}"'.format(name, namespace)
         ) from exc
 
     return True
 
 
-def node_drain(node_name,
-               force=False,
-               grace_period=1,
-               ignore_daemonset=False,
-               timeout=0,
-               delete_local_data=False,
-               dry_run=False,
-               **kwargs):
-    '''Trigger the drain process for a node.
+def node_drain(
+    node_name,
+    force=False,
+    grace_period=1,
+    ignore_daemonset=False,
+    timeout=0,
+    delete_local_data=False,
+    dry_run=False,
+    **kwargs
+):
+    """Trigger the drain process for a node.
 
     Args:
       - force             : ignore unreplicated pods (i.e. StaticPod pods)
@@ -574,7 +552,7 @@ def node_drain(node_name,
                   module.
     Returns: None
     Raises: CommandExecutionError if the drain process was unsuccessful/
-    '''
+    """
 
     drainer = Drain(
         node_name,
@@ -585,6 +563,6 @@ def node_drain(node_name,
         delete_local_data=delete_local_data,
         **kwargs
     )
-    __salt__['metalk8s_kubernetes.cordon_node'](node_name, **kwargs)
+    __salt__["metalk8s_kubernetes.cordon_node"](node_name, **kwargs)
 
     return drainer.run_drain(dry_run=dry_run)

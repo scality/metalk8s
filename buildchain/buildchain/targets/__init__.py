@@ -12,27 +12,43 @@ from buildchain.targets.local_image import LocalImage
 from buildchain.targets.operator_image import OperatorImage
 from buildchain.targets.package import Package, RPMPackage, DEBPackage
 from buildchain.targets.remote_image import (
-    ImageSaveFormat, RemoteImage, SaveAsLayers, SaveAsTar
+    ImageSaveFormat,
+    RemoteImage,
+    SaveAsLayers,
+    SaveAsTar,
 )
-from buildchain.targets.repository import (
-    Repository, RPMRepository, DEBRepository
-)
+from buildchain.targets.repository import Repository, RPMRepository, DEBRepository
 from buildchain.targets.serialize import (
-    Renderer, SerializedData, SaltState, YAMLDocument
+    Renderer,
+    SerializedData,
+    SaltState,
+    YAMLDocument,
 )
 from buildchain.targets.template import TemplateFile
 
 # For mypy, see `--no-implicit-reexport` documentation.
 __all__ = [
-    'Target', 'AtomicTarget', 'CompositeTarget',
-    'Sha256Sum',
-    'Mkdir',
-    'FileTree',
-    'LocalImage',
-    'OperatorImage',
-    'Package', 'RPMPackage', 'DEBPackage',
-    'ImageSaveFormat', 'RemoteImage', 'SaveAsLayers', 'SaveAsTar',
-    'Repository', 'RPMRepository', 'DEBRepository',
-    'Renderer', 'SerializedData', 'SaltState', 'YAMLDocument',
-    'TemplateFile',
+    "Target",
+    "AtomicTarget",
+    "CompositeTarget",
+    "Sha256Sum",
+    "Mkdir",
+    "FileTree",
+    "LocalImage",
+    "OperatorImage",
+    "Package",
+    "RPMPackage",
+    "DEBPackage",
+    "ImageSaveFormat",
+    "RemoteImage",
+    "SaveAsLayers",
+    "SaveAsTar",
+    "Repository",
+    "RPMRepository",
+    "DEBRepository",
+    "Renderer",
+    "SerializedData",
+    "SaltState",
+    "YAMLDocument",
+    "TemplateFile",
 ]

@@ -28,9 +28,8 @@ def export_only_tasks(module_name: str) -> List[str]:
     """
     return [
         name
-        for name, _
-        in inspect.getmembers(sys.modules[module_name], inspect.isfunction)
-        if name.startswith('task_')
+        for name, _ in inspect.getmembers(sys.modules[module_name], inspect.isfunction)
+        if name.startswith("task_")
     ]
 
 
@@ -60,11 +59,14 @@ def title_with_target1(command: str) -> Callable[[types.Task], str]:
     Returns:
         A function that returns the title
     """
+
     def title(task: types.Task) -> str:
-        return '{cmd: <{width}} {path}'.format(
-            cmd=command, width=constants.CMD_WIDTH,
+        return "{cmd: <{width}} {path}".format(
+            cmd=command,
+            width=constants.CMD_WIDTH,
             path=build_relpath(Path(task.targets[0])),
         )
+
     return title
 
 
@@ -78,11 +80,13 @@ def title_with_subtask_name(command: str) -> Callable[[types.Task], str]:
     Returns:
         A function that returns the title
     """
+
     def title(task: types.Task) -> str:
         # Extract the sub-task name (the part after `:`) from the task name.
-        return '{cmd: <{width}} {name}'.format(
-            cmd=command, width=constants.CMD_WIDTH, name=task.name.split(':')[1]
+        return "{cmd: <{width}} {name}".format(
+            cmd=command, width=constants.CMD_WIDTH, name=task.name.split(":")[1]
         )
+
     return title
 
 
@@ -97,7 +101,7 @@ def bind_mount(source: Path, target: Path, **kwargs: Any) -> Mount:
         Passed through to the underlying docker.services.Mount object
         initialization
     """
-    return Mount(source=str(source), target=str(target), type='bind', **kwargs)
+    return Mount(source=str(source), target=str(target), type="bind", **kwargs)
 
 
 def bind_ro_mount(source: Path, target: Path) -> Mount:
@@ -110,7 +114,7 @@ def bind_ro_mount(source: Path, target: Path) -> Mount:
     return bind_mount(source=source, target=target, read_only=True)
 
 
-def git_ls(directory: Optional[str]=None) -> Iterator[Path]:
+def git_ls(directory: Optional[str] = None) -> Iterator[Path]:
     """Return the list of files tracked by Git under `root` (recursively).
 
     Arguments:
@@ -119,11 +123,14 @@ def git_ls(directory: Optional[str]=None) -> Iterator[Path]:
     Returns:
         A list of files tracked by Git.
     """
-    root = constants.ROOT if directory is None else constants.ROOT/directory
+    root = constants.ROOT if directory is None else constants.ROOT / directory
     assert root.is_dir()
-    return map(Path, subprocess.check_output(
-        ['git', 'ls-files', '-z', root], encoding='utf-8'
-    ).split('\x00')[:-1])  # `:-1` to skip the last element (empty string).
+    return map(
+        Path,
+        subprocess.check_output(
+            ["git", "ls-files", "-z", root], encoding="utf-8"
+        ).split("\x00")[:-1],
+    )  # `:-1` to skip the last element (empty string).
 
 
 def unlink_if_exist(filepath: Path) -> None:

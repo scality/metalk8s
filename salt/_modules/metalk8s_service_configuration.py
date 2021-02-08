@@ -1,4 +1,4 @@
-'''Metalk8s cluster and service configuration utility.'''
+"""Metalk8s cluster and service configuration utility."""
 
 import logging
 import yaml
@@ -9,7 +9,7 @@ from salt.exceptions import CommandExecutionError
 
 log = logging.getLogger(__name__)
 
-__virtualname__ = 'metalk8s_service_configuration'
+__virtualname__ = "metalk8s_service_configuration"
 
 
 def __virtual__():
@@ -17,11 +17,7 @@ def __virtual__():
 
 
 def get_service_conf(
-    namespace,
-    configmap_name,
-    default_csc,
-    apiVersion=None,
-    kind=None
+    namespace, configmap_name, default_csc, apiVersion=None, kind=None
 ):
     """Reads a ConfigMap from the name specified
 
@@ -44,67 +40,58 @@ def get_service_conf(
 
     if not configmap_name:
         raise CommandExecutionError(
-            'Expected a ConfigMap name but got {}'.format(configmap_name)
+            "Expected a ConfigMap name but got {}".format(configmap_name)
         )
     if not isinstance(default_csc, dict):
         raise CommandExecutionError(
-            'Expected default CSC for ConfigMap {} but got {}'.format(
+            "Expected default CSC for ConfigMap {} but got {}".format(
                 configmap_name, default_csc
             )
         )
 
     try:
-        manifest = __salt__[
-            'metalk8s_kubernetes.get_object'
-        ](
-            kind='ConfigMap',
-            apiVersion='v1',
-            namespace=namespace,
-            name=configmap_name
+        manifest = __salt__["metalk8s_kubernetes.get_object"](
+            kind="ConfigMap", apiVersion="v1", namespace=namespace, name=configmap_name
         )
     except ValueError as exc:
         raise CommandExecutionError(
-            'Failed to read ConfigMap object {}'.format(configmap_name)
+            "Failed to read ConfigMap object {}".format(configmap_name)
         ) from exc
 
     if manifest is None:
         raise CommandExecutionError(
-            'Expected ConfigMap object but got {}'.format(manifest)
+            "Expected ConfigMap object but got {}".format(manifest)
         )
 
     try:
-        conf_section = manifest.get('data', {}).get('config.yaml', {})
+        conf_section = manifest.get("data", {}).get("config.yaml", {})
         config = yaml.safe_load(conf_section) or {}
     except yaml.YAMLError as exc:
         raise CommandExecutionError(
-            'Invalid YAML format in ConfigMap {}'.format(configmap_name)
+            "Invalid YAML format in ConfigMap {}".format(configmap_name)
         ) from exc
     except Exception as exc:
         raise CommandExecutionError(
-            'Failed loading `config.yaml` from ConfigMap {}'.format(
-                configmap_name
-            )
+            "Failed loading `config.yaml` from ConfigMap {}".format(configmap_name)
         ) from exc
     if not config:
         raise CommandExecutionError(
-            'Expected `config.yaml` as yaml in the ConfigMap {} but got {}'
-            .format(configmap_name, config)
-        )
-    if apiVersion and config['apiVersion'] != apiVersion:
-        raise CommandExecutionError(
-            'Expected value {} for key apiVersion, got {}'.format(
-                apiVersion, config['apiVersion']
+            "Expected `config.yaml` as yaml in the ConfigMap {} but got {}".format(
+                configmap_name, config
             )
         )
-    if kind and config['kind'] != kind:
+    if apiVersion and config["apiVersion"] != apiVersion:
         raise CommandExecutionError(
-            'Expected value {} for key kind, got {}'.format(
-                kind, config['kind']
+            "Expected value {} for key apiVersion, got {}".format(
+                apiVersion, config["apiVersion"]
             )
+        )
+    if kind and config["kind"] != kind:
+        raise CommandExecutionError(
+            "Expected value {} for key kind, got {}".format(kind, config["kind"])
         )
     merged_config = salt.utils.dictupdate.merge(
-        default_csc, config, strategy='recurse',
-        merge_lists=True
+        default_csc, config, strategy="recurse", merge_lists=True
     )
 
     return merged_config

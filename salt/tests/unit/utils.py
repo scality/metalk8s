@@ -13,10 +13,10 @@ def cmd_output(retcode=0, stdout=None, stderr=None, pid=12345):
     Simple helper to return a dict representing a salt `cmd.run_all` output
     """
     return {
-        'pid': pid,
-        'retcode': retcode,
-        'stdout': stdout or '',
-        'stderr': stderr or ''
+        "pid": pid,
+        "retcode": retcode,
+        "stdout": stdout or "",
+        "stderr": stderr or "",
     }
 
 
@@ -27,22 +27,18 @@ def parameterized_from_cases(test_cases):
 
 
 def split_path(path, delimiter="."):
-    return (
-        int(key) if key.isdigit() else key for key in path.split(delimiter)
-    )
+    return (int(key) if key.isdigit() else key for key in path.split(delimiter))
 
 
 def get_dict_element(data, path, delimiter="."):
     """Traverse a nested dict with a compound path."""
-    return functools.reduce(
-        operator.getitem, split_path(path, delimiter), data
-    )
+    return functools.reduce(operator.getitem, split_path(path, delimiter), data)
 
 
 # Copied from
 # https://github.com/saltstack/salt-testing/blob/develop/salttesting/helpers.py
 class ForceImportErrorOn(object):
-    '''
+    """
     This class is meant to be used in mock'ed test cases which require an
     ``ImportError`` to be raised.
     >>> import os.path
@@ -78,7 +74,8 @@ class ForceImportErrorOn(object):
         'Forced ImportError raised for {0!r}'.format(name)
     ImportError: Forced ImportError raised for 'os.path'
     >>>
-    '''
+    """
+
     def __init__(self, *module_names):
         self.__module_names = {}
         for entry in module_names:
@@ -99,16 +96,12 @@ class ForceImportErrorOn(object):
         if name in self.__module_names:
             importerror_fromlist = self.__module_names.get(name)
             if importerror_fromlist is None:
-                raise ImportError(
-                    'Forced ImportError raised for {0!r}'.format(name)
-                )
+                raise ImportError("Forced ImportError raised for {0!r}".format(name))
 
             if importerror_fromlist.intersection(set(fromlist)):
                 raise ImportError(
-                    'Forced ImportError raised for {0!r}'.format(
-                        'from {0} import {1}'.format(
-                            name, ', '.join(fromlist)
-                        )
+                    "Forced ImportError raised for {0!r}".format(
+                        "from {0} import {1}".format(name, ", ".join(fromlist))
                     )
                 )
 

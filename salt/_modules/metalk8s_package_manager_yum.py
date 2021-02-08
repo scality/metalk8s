@@ -1,7 +1,7 @@
-'''
+"""
 Describes our custom way to deal with yum packages
 so that we can support downgrade in metalk8s
-'''
+"""
 import logging
 
 from salt.exceptions import CommandExecutionError
@@ -9,52 +9,53 @@ from salt.exceptions import CommandExecutionError
 log = logging.getLogger(__name__)
 
 
-__virtualname__ = 'metalk8s_package_manager'
+__virtualname__ = "metalk8s_package_manager"
 
 
 def __virtual__():
-    if __grains__['os_family'] == 'RedHat':
+    if __grains__["os_family"] == "RedHat":
         return __virtualname__
     return False
 
 
-def _list_dependents(
-    name, version, fromrepo=None, allowed_versions=None
-):
-    '''List and filter all packages requiring package `{name}-{version}`.
+def _list_dependents(name, version, fromrepo=None, allowed_versions=None):
+    """List and filter all packages requiring package `{name}-{version}`.
 
     Filter based on the `allowed_versions` provided, within the provided
     `fromrepo` repositories.
-    '''
+    """
     log.info(
-        'Listing packages depending on "%s" with version "%s"',
-        str(name),
-        str(version)
+        'Listing packages depending on "%s" with version "%s"', str(name), str(version)
     )
 
     allowed_versions = allowed_versions or {}
 
     command = [
-        'repoquery', '--recursive', '--quiet',
-        '--qf', '%{NAME} %{VERSION}-%{RELEASE}',
-        '--whatrequires', '{}-{}'.format(name, version)
+        "repoquery",
+        "--recursive",
+        "--quiet",
+        "--qf",
+        "%{NAME} %{VERSION}-%{RELEASE}",
+        "--whatrequires",
+        "{}-{}".format(name, version),
     ]
 
     if fromrepo:
-        command.extend(['--disablerepo', '*', '--enablerepo', fromrepo])
+        command.extend(["--disablerepo", "*", "--enablerepo", fromrepo])
 
-    ret = __salt__['cmd.run_all'](command)
+    ret = __salt__["cmd.run_all"](command)
 
-    if ret['retcode'] != 0:
+    if ret["retcode"] != 0:
         log.error(
             'Failed to list packages requiring "%s-%s": %s',
-            name, version,
-            ret['stderr'] or ret['stdout']
+            name,
+            version,
+            ret["stderr"] or ret["stdout"],
         )
         return None
 
     dependents = {}
-    for line in ret['stdout'].splitlines():
+    for line in ret["stdout"].splitlines():
         req_name, req_version = line.strip().split()
 
         # NOTE: The following test filters out unknown packages and versions
@@ -65,10 +66,8 @@ def _list_dependents(
     return dependents
 
 
-def list_pkg_dependents(
-    name, version=None, fromrepo=None, pkgs_info=None
-):
-    '''
+def list_pkg_dependents(name, version=None, fromrepo=None, pkgs_info=None):
+    """
     Check dependents of the package `name`-`version` to install, to add in a
     later `pkg.installed` state along with the original package.
 
@@ -87,11 +86,10 @@ def list_pkg_dependents(
 
     Usage :
         salt '*' metalk8s_package_manager.list_pkg_dependents kubelet 1.11.10
-    '''
+    """
     if pkgs_info:
         versions_dict = {
-            p_name: p_info['version']
-            for p_name, p_info in pkgs_info.items()
+            p_name: p_info["version"] for p_name, p_info in pkgs_info.items()
         }
     else:
         versions_dict = {}
@@ -99,8 +97,8 @@ def list_pkg_dependents(
     if pkgs_info and name not in versions_dict:
         log.error(
             'Trying to list dependents for "%s", which is not referenced in '
-            'the packages information provided',
-            name
+            "the packages information provided",
+            name,
         )
         return None
 
@@ -115,7 +113,7 @@ def list_pkg_dependents(
             'while version configured is "%s"',
             name,
             version,
-            versions_dict[name]
+            versions_dict[name],
         )
         return None
 
@@ -123,8 +121,8 @@ def list_pkg_dependents(
     # purpose, only add a special case for `salt` as it's one known issue
     # during downgrade
     # https://github.com/scality/metalk8s/issues/2523
-    if name.startswith('salt-'):
-        all_pkgs['salt'] = version
+    if name.startswith("salt-"):
+        all_pkgs["salt"] = version
 
     dependents = _list_dependents(
         name,
@@ -136,17 +134,17 @@ def list_pkg_dependents(
     all_pkgs.update(dependents)
 
     for pkg_name in list(all_pkgs):
-        ret = __salt__['cmd.run_all'](['rpm', '-qa', pkg_name])
+        ret = __salt__["cmd.run_all"](["rpm", "-qa", pkg_name])
 
-        if ret['retcode'] != 0:
+        if ret["retcode"] != 0:
             log.error(
                 'Failed to check if package "%s" is installed: %s',
                 pkg_name,
-                ret['stderr'] or ret['stdout']
+                ret["stderr"] or ret["stdout"],
             )
             return None
 
-        is_installed = bool(ret['stdout'].strip())
+        is_installed = bool(ret["stdout"].strip())
         if not is_installed and pkg_name != name:
             # Any package requiring the target `name` that is not yet installed
             # should not be installed
@@ -156,7 +154,7 @@ def list_pkg_dependents(
 
 
 def check_pkg_availability(pkgs_info, exclude=None):
-    '''
+    """
     Check that provided packages and their dependencies are available
 
     pkgs_info
@@ -164,28 +162,31 @@ def check_pkg_availability(pkgs_info, exclude=None):
         packages to check (format {"<name>": {"version": "<version>"}, ...})
     exclude
         List of package to exclude (e.g.: containerd.io)
-    '''
+    """
     for name, info in pkgs_info.items():
         pkg_name = name
-        if info.get('version'):
-            pkg_name += '-' + str(info['version'])
+        if info.get("version"):
+            pkg_name += "-" + str(info["version"])
 
         cmd = [
-            'yum', 'install', pkg_name,
-            '--setopt', 'tsflags=test', '--assumeyes',
-            '--disableplugin=versionlock'
+            "yum",
+            "install",
+            pkg_name,
+            "--setopt",
+            "tsflags=test",
+            "--assumeyes",
+            "--disableplugin=versionlock",
         ]
         if exclude:
             if isinstance(exclude, list):
-                exclude = ','.join(exclude)
-            cmd.extend(['--setopt', 'exclude={}'.format(exclude)])
+                exclude = ",".join(exclude)
+            cmd.extend(["--setopt", "exclude={}".format(exclude)])
 
-        ret = __salt__['cmd.run_all'](cmd)
+        ret = __salt__["cmd.run_all"](cmd)
 
-        if ret['retcode'] != 0:
+        if ret["retcode"] != 0:
             raise CommandExecutionError(
-                'Check availability of package {} failed: {}'.format(
-                    pkg_name,
-                    ret['stdout']
+                "Check availability of package {} failed: {}".format(
+                    pkg_name, ret["stdout"]
                 )
             )

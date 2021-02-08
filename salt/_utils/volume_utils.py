@@ -8,7 +8,7 @@ import ctypes.util
 import functools
 
 
-__virtualname__ = 'metalk8s_volumes'
+__virtualname__ = "metalk8s_volumes"
 
 
 def __virtual__():
@@ -36,9 +36,9 @@ def __virtual__():
 
 # Low level wrapper {{{
 
-soname = ctypes.util.find_library('blkid')
+soname = ctypes.util.find_library("blkid")
 if soname is None:
-    raise ImportError('cannot find blkid library')
+    raise ImportError("cannot find blkid library")
 blkid = ctypes.cdll.LoadLibrary(soname)
 
 # See `/usr/include/blkid/blkid.h` & co for more details.
@@ -48,9 +48,10 @@ blkid = ctypes.cdll.LoadLibrary(soname)
 
 class BlkidError(Exception):
     """Error from the blkid library."""
+
     def __init__(self, funcname, arguments, result):
-        message = 'function call {}({}) failed: returned {}'.format(
-            funcname, ', '.join(repr(arg) for arg in arguments), result
+        message = "function call {}({}) failed: returned {}".format(
+            funcname, ", ".join(repr(arg) for arg in arguments), result
         )
         super(BlkidError, self).__init__(message)
 
@@ -58,7 +59,7 @@ class BlkidError(Exception):
 def _check_null_pointer(result, func, arguments):
     """Check for functions returning NULL to signal an error."""
     if result is None:
-        raise BlkidError(func.__name__, arguments, 'NULL')
+        raise BlkidError(func.__name__, arguments, "NULL")
     return result
 
 
@@ -81,7 +82,7 @@ def _check_error_code(result, func, arguments):
 # Returns:
 #     a pointer to the newly allocated probe struct or NULL in case of error.
 new_probe_from_filename = blkid.blkid_new_probe_from_filename
-new_probe_from_filename.restype  = ctypes.c_void_p
+new_probe_from_filename.restype = ctypes.c_void_p
 new_probe_from_filename.argtypes = [ctypes.c_char_p]
 new_probe_from_filename.errcheck = _check_null_pointer
 
@@ -93,7 +94,7 @@ new_probe_from_filename.errcheck = _check_null_pointer
 # Returns:
 #     None
 free_probe = blkid.blkid_free_probe
-free_probe.restype  = None
+free_probe.restype = None
 free_probe.argtypes = [ctypes.c_void_p]
 
 # int blkid_do_safeprobe(blkid_probe pr)
@@ -105,7 +106,7 @@ free_probe.argtypes = [ctypes.c_void_p]
 #     0 on success, 1 if nothing is detected, -2 if ambivalent result is
 #     detected and -1 on case of error.
 do_safeprobe = blkid.blkid_do_safeprobe
-do_safeprobe.restype  = ctypes.c_int
+do_safeprobe.restype = ctypes.c_int
 do_safeprobe.argtypes = [ctypes.c_void_p]
 do_safeprobe.errcheck = _check_error_code
 
@@ -117,7 +118,7 @@ do_safeprobe.errcheck = _check_error_code
 # Returns:
 #     number of values in probing result or -1 in case of error.
 probe_numof_values = blkid.blkid_probe_numof_values
-probe_numof_values.restype  = ctypes.c_int
+probe_numof_values.restype = ctypes.c_int
 probe_numof_values.argtypes = [ctypes.c_void_p]
 probe_numof_values.errcheck = _check_error_code
 
@@ -137,13 +138,13 @@ probe_numof_values.errcheck = _check_error_code
 # Returns:
 #     0 on success, or -1 in case of error.
 probe_get_value = blkid.blkid_probe_get_value
-probe_get_value.restype  = ctypes.c_int
+probe_get_value.restype = ctypes.c_int
 probe_get_value.argtypes = [
     ctypes.c_void_p,
     ctypes.c_int,
     ctypes.POINTER(ctypes.c_char_p),
     ctypes.POINTER(ctypes.c_char_p),
-    ctypes.POINTER(ctypes.c_size_t)
+    ctypes.POINTER(ctypes.c_size_t),
 ]
 probe_get_value.errcheck = _check_error_code
 
@@ -161,7 +162,7 @@ probe_get_value.errcheck = _check_error_code
 # Returns:
 #     0 on success, or -1 in case of error.
 probe_enable_partitions = blkid.blkid_probe_enable_partitions
-probe_enable_partitions.restype  = ctypes.c_int
+probe_enable_partitions.restype = ctypes.c_int
 probe_enable_partitions.argtypes = [ctypes.c_void_p, ctypes.c_int]
 probe_enable_partitions.errcheck = _check_error_code
 
@@ -174,15 +175,15 @@ probe_enable_partitions.errcheck = _check_error_code
 # Returns:
 #     0 on success, or -1 in case of error.
 probe_set_partitions_flags = blkid.blkid_probe_set_partitions_flags
-probe_set_partitions_flags.restype  = ctypes.c_int
+probe_set_partitions_flags.restype = ctypes.c_int
 probe_set_partitions_flags.argtypes = [ctypes.c_void_p, ctypes.c_int]
 probe_set_partitions_flags.errcheck = _check_error_code
 
 
 # Probing flags for the partitioning prober.
-PARTS_FORCE_GPT     = 1 << 1
+PARTS_FORCE_GPT = 1 << 1
 PARTS_ENTRY_DETAILS = 1 << 2
-PARTS_MAGIC         = 1 << 3
+PARTS_MAGIC = 1 << 3
 
 
 # }}}
@@ -198,7 +199,7 @@ PARTS_MAGIC         = 1 << 3
 # Returns:
 #     0 on success, or -1 in case of error.
 probe_enable_superblocks = blkid.blkid_probe_enable_superblocks
-probe_enable_superblocks.restype  = ctypes.c_int
+probe_enable_superblocks.restype = ctypes.c_int
 probe_enable_superblocks.argtypes = [ctypes.c_void_p, ctypes.c_int]
 probe_enable_superblocks.errcheck = _check_error_code
 
@@ -211,23 +212,23 @@ probe_enable_superblocks.errcheck = _check_error_code
 # Returns:
 #     0 on success, or -1 in case of error.
 probe_set_superblocks_flags = blkid.blkid_probe_set_superblocks_flags
-probe_set_superblocks_flags.restype  = ctypes.c_int
+probe_set_superblocks_flags.restype = ctypes.c_int
 probe_set_superblocks_flags.argtypes = [ctypes.c_void_p, ctypes.c_int]
 probe_set_superblocks_flags.errcheck = _check_error_code
 
 
 # Probing flags for the superblocks prober.
-SUBLKS_LABEL    = 1 <<  1  # Read LABEL from superblock.
-SUBLKS_LABELRAW = 1 <<  2  # Read and define LABEL_RAW result value.
-SUBLKS_UUID     = 1 <<  3  # Read UUID from superblock.
-SUBLKS_UUIDRAW  = 1 <<  4  # Read and define UUID_RAW result value.
-SUBLKS_TYPE     = 1 <<  5  # Define TYPE result value.
-SUBLKS_SECTYPE  = 1 <<  6  # Define compatible fs type (second type).
-SUBLKS_USAGE    = 1 <<  7  # Define USAGE result value.
-SUBLKS_VERSION  = 1 <<  8  # Read FS type from superblock.
-SUBLKS_MAGIC    = 1 <<  9  # Define SBMAGIC and SBMAGIC_OFFSET.
-SUBLKS_BADCSUM  = 1 << 10  # Allow a bad checksum.
-SUBLKS_DEFAULT  = (SUBLKS_LABEL | SUBLKS_UUID | SUBLKS_TYPE | SUBLKS_SECTYPE)
+SUBLKS_LABEL = 1 << 1  # Read LABEL from superblock.
+SUBLKS_LABELRAW = 1 << 2  # Read and define LABEL_RAW result value.
+SUBLKS_UUID = 1 << 3  # Read UUID from superblock.
+SUBLKS_UUIDRAW = 1 << 4  # Read and define UUID_RAW result value.
+SUBLKS_TYPE = 1 << 5  # Define TYPE result value.
+SUBLKS_SECTYPE = 1 << 6  # Define compatible fs type (second type).
+SUBLKS_USAGE = 1 << 7  # Define USAGE result value.
+SUBLKS_VERSION = 1 << 8  # Read FS type from superblock.
+SUBLKS_MAGIC = 1 << 9  # Define SBMAGIC and SBMAGIC_OFFSET.
+SUBLKS_BADCSUM = 1 << 10  # Allow a bad checksum.
+SUBLKS_DEFAULT = SUBLKS_LABEL | SUBLKS_UUID | SUBLKS_TYPE | SUBLKS_SECTYPE
 
 
 # }}}
@@ -238,34 +239,38 @@ SUBLKS_DEFAULT  = (SUBLKS_LABEL | SUBLKS_UUID | SUBLKS_TYPE | SUBLKS_SECTYPE)
 # No enum in Python 2 :-(
 class SuperblockFlags(object):
     """Probing flags for the superblocks prober."""
-    LABEL    = SUBLKS_LABEL
+
+    LABEL = SUBLKS_LABEL
     LABELRAW = SUBLKS_LABELRAW
-    UUID     = SUBLKS_UUID
-    UUIDRAW  = SUBLKS_UUIDRAW
-    TYPE     = SUBLKS_TYPE
-    SECTYPE  = SUBLKS_SECTYPE
-    USAGE    = SUBLKS_USAGE
-    VERSION  = SUBLKS_VERSION
-    MAGIC    = SUBLKS_MAGIC
-    BADCSUM  = SUBLKS_BADCSUM
-    DEFAULT  = SUBLKS_DEFAULT
+    UUID = SUBLKS_UUID
+    UUIDRAW = SUBLKS_UUIDRAW
+    TYPE = SUBLKS_TYPE
+    SECTYPE = SUBLKS_SECTYPE
+    USAGE = SUBLKS_USAGE
+    VERSION = SUBLKS_VERSION
+    MAGIC = SUBLKS_MAGIC
+    BADCSUM = SUBLKS_BADCSUM
+    DEFAULT = SUBLKS_DEFAULT
 
 
 class PartitionFlags(object):
     """Probing flags for the partitions prober."""
-    FORCE_GPT     = PARTS_FORCE_GPT
+
+    FORCE_GPT = PARTS_FORCE_GPT
     ENTRY_DETAILS = PARTS_ENTRY_DETAILS
-    MAGIC         = PARTS_MAGIC
+    MAGIC = PARTS_MAGIC
 
 
-DeviceInfo = collections.namedtuple(
-    'DeviceInfo', ['fstype', 'uuid', 'has_partition']
-)
+DeviceInfo = collections.namedtuple("DeviceInfo", ["fstype", "uuid", "has_partition"])
 
 ProbeConfig = collections.namedtuple(
-    'ProbeConfig',
-    ['enable_superblocks', 'superblocks_flags',
-     'enable_partitions',  'partitions_flags']
+    "ProbeConfig",
+    [
+        "enable_superblocks",
+        "superblocks_flags",
+        "enable_partitions",
+        "partitions_flags",
+    ],
 )
 
 
@@ -278,8 +283,7 @@ def _get_flags(klass, kind, default, *args):
         flag = getattr(klass, arg)
         if flag is None:
             raise ValueError(
-                '{} is not a valid flag for the {} prober'
-                .format(arg, kind)
+                "{} is not a valid flag for the {} prober".format(arg, kind)
             )
         flags.append(flag)
     return functools.reduce(lambda x, y: x | y, flags, 0)
@@ -291,7 +295,10 @@ class _Probe(object):
 
     def configure(
         self,
-        use_superblocks, superblocks_flags, use_partitions, partitions_flags,
+        use_superblocks,
+        superblocks_flags,
+        use_partitions,
+        partitions_flags,
     ):
         """Configure the probe."""
         if use_superblocks:
@@ -311,49 +318,55 @@ class _Probe(object):
         """Probe a device and return the information gathered."""
         if do_safeprobe(self._probe) == 1:  # Nothing was detected.
             return DeviceInfo(fstype=None, uuid=None, has_partition=False)
-        name   = ctypes.c_char_p()
-        data   = ctypes.c_char_p()
+        name = ctypes.c_char_p()
+        data = ctypes.c_char_p()
         length = ctypes.c_size_t(0)
         info = {}
         for i in range(0, probe_numof_values(self._probe)):
             probe_get_value(
-                self._probe, i,
-                ctypes.byref(name), ctypes.byref(data), ctypes.byref(length)
+                self._probe,
+                i,
+                ctypes.byref(name),
+                ctypes.byref(data),
+                ctypes.byref(length),
             )
             # `length`: length of `data`, including the terminating NUL byte.
-            info[name.value.decode('ascii')] = ctypes.string_at(
+            info[name.value.decode("ascii")] = ctypes.string_at(
                 data, length.value - 1
-            ).decode('ascii')
-        return DeviceInfo(fstype=info.get('TYPE'),
-                          uuid=info.get('UUID'),
-                          has_partition='PTTYPE' in info)
+            ).decode("ascii")
+        return DeviceInfo(
+            fstype=info.get("TYPE"),
+            uuid=info.get("UUID"),
+            has_partition="PTTYPE" in info,
+        )
 
 
 @contextlib.contextmanager
 def get_blkid_probe(
     filepath,
-    use_superblocks=True, superblocks_flags=SuperblockFlags.DEFAULT,
-    use_partitions=False, partitions_flags=0,
+    use_superblocks=True,
+    superblocks_flags=SuperblockFlags.DEFAULT,
+    use_partitions=False,
+    partitions_flags=0,
 ):
     """Return a probe for the specified device."""
-    c_probe = new_probe_from_filename(filepath.encode('ascii'))
+    c_probe = new_probe_from_filename(filepath.encode("ascii"))
     try:
         probe = _Probe(c_probe)
-        probe.configure(use_superblocks, superblocks_flags,
-                        use_partitions, partitions_flags)
+        probe.configure(
+            use_superblocks, superblocks_flags, use_partitions, partitions_flags
+        )
         yield probe
     finally:
         free_probe(c_probe)
 
 
 def get_superblock_flags(*args):
-    return _get_flags(
-        SuperblockFlags, 'superblocks', SuperblockFlags.DEFAULT, *args
-    )
+    return _get_flags(SuperblockFlags, "superblocks", SuperblockFlags.DEFAULT, *args)
 
 
 def get_partition_flags(*args):
-    return _get_flags(PartitionFlags, 'partitions', 0, *args)
+    return _get_flags(PartitionFlags, "partitions", 0, *args)
 
 
 # }}}

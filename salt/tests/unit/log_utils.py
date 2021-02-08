@@ -5,9 +5,7 @@ from io import StringIO
 import logging
 
 
-LoggingWatcher = collections.namedtuple(
-    "LoggingWatcher", ["records", "output"]
-)
+LoggingWatcher = collections.namedtuple("LoggingWatcher", ["records", "output"])
 
 
 class CapturingHandler(logging.Handler):
@@ -50,24 +48,26 @@ def capture_logs(logger, level=logging.DEBUG, fmt=LOGGING_FORMAT):
 
 def check_captured_logs(watcher, expected_records):
     if not expected_records:
-        assert watcher.records == [], \
-            "Expected no logs, got:\n{}".format(
-                '\n'.join(msg for msg in watcher.output)
-            )
+        assert watcher.records == [], "Expected no logs, got:\n{}".format(
+            "\n".join(msg for msg in watcher.output)
+        )
     else:
-        assert len(watcher.records) == len(expected_records), \
-            "Expected {} log lines, got {}. Received:\n{}".format(
-                len(expected_records),
-                len(watcher.records),
-                '\n'.join(msg for msg in watcher.output)
-            )
+        assert len(watcher.records) == len(
+            expected_records
+        ), "Expected {} log lines, got {}. Received:\n{}".format(
+            len(expected_records),
+            len(watcher.records),
+            "\n".join(msg for msg in watcher.output),
+        )
 
         for expected, actual in zip(expected_records, watcher.records):
-            assert expected['level'] == actual.levelname, \
-                "Invalid log level, got '{}', expected '{}'\n{}".format(
-                    actual.levelname, expected['level'], actual.message
-                )
-            assert expected['contains'] in actual.message, \
-                "Log message '{}' does not contain '{}'".format(
-                    actual.message, expected['contains']
-                )
+            assert (
+                expected["level"] == actual.levelname
+            ), "Invalid log level, got '{}', expected '{}'\n{}".format(
+                actual.levelname, expected["level"], actual.message
+            )
+            assert (
+                expected["contains"] in actual.message
+            ), "Log message '{}' does not contain '{}'".format(
+                actual.message, expected["contains"]
+            )

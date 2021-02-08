@@ -8,14 +8,14 @@ try:
     from requests.adapters import HTTPAdapter
     from requests.packages.urllib3.util.retry import Retry
 except ImportError:
-    MISSING_DEPS.append('requests')
+    MISSING_DEPS.append("requests")
 
-__virtualname__ = 'metalk8s'
+__virtualname__ = "metalk8s"
 
 
 def __virtual__():
     if MISSING_DEPS:
-        error_msg = 'Missing dependencies: {}'.format(', '.join(MISSING_DEPS))
+        error_msg = "Missing dependencies: {}".format(", ".join(MISSING_DEPS))
         return False, error_msg
 
     return __virtualname__
@@ -23,10 +23,7 @@ def __virtual__():
 
 # Source: https://www.peterbe.com/plog/best-practice-with-retries-with-requests
 def requests_retry_session(
-        retries=3,
-        backoff_factor=0.3,
-        status_forcelist=(500, 503),
-        session=None
+    retries=3, backoff_factor=0.3, status_forcelist=(500, 503), session=None
 ):
     """Configure a `requests.session` for retry on error.
 

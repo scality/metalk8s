@@ -20,18 +20,15 @@ from . import base
 # files.
 class CustomTemplate(string.Template):
     """Template class using § as delimiter."""
-    delimiter = '@@'
+
+    delimiter = "@@"
 
 
 class TemplateFile(base.AtomicTarget):
     """Create a new file from a template file."""
 
     def __init__(
-        self,
-        source: Path,
-        destination: Path,
-        context: Dict[str, Any],
-        **kwargs: Any
+        self, source: Path, destination: Path, context: Dict[str, Any], **kwargs: Any
     ):
         """Configure a template rendering task.
 
@@ -43,9 +40,9 @@ class TemplateFile(base.AtomicTarget):
         Keyword Arguments:
             They are passed to `Target` init method.
         """
-        kwargs['targets'] = [destination]
+        kwargs["targets"] = [destination]
         # Insert in front, to have an informative title.
-        kwargs.setdefault('file_dep', []).insert(0, source)
+        kwargs.setdefault("file_dep", []).insert(0, source)
         super().__init__(**kwargs)
         self._src = source
         self._dst = destination
@@ -54,17 +51,19 @@ class TemplateFile(base.AtomicTarget):
     @property
     def task(self) -> types.TaskDict:
         task = self.basic_task
-        task.update({
-            'title': utils.title_with_target1('RENDER'),
-            'doc': 'Render template {}.'.format(self._src.name),
-            'actions': [self._run],
-        })
+        task.update(
+            {
+                "title": utils.title_with_target1("RENDER"),
+                "doc": "Render template {}.".format(self._src.name),
+                "actions": [self._run],
+            }
+        )
         return task
 
     def _run(self) -> None:
         """Render the template."""
-        template = self._src.read_text(encoding='utf-8')
+        template = self._src.read_text(encoding="utf-8")
         rendered = CustomTemplate(template).substitute(**self._ctx)
-        self._dst.write_text(rendered, encoding='utf-8')
+        self._dst.write_text(rendered, encoding="utf-8")
         # Preserve the permission bits.
         shutil.copymode(self._src, self._dst)

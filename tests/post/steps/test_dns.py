@@ -13,11 +13,9 @@ from tests import utils
 def utils_pod(k8s_client, utils_image):
     # Create the Pod
     manifest_file = os.path.join(
-        os.path.realpath(os.path.dirname(__file__)),
-        "files",
-        "utils.yaml"
+        os.path.realpath(os.path.dirname(__file__)), "files", "utils.yaml"
     )
-    with open(manifest_file, encoding='utf-8') as fd:
+    with open(manifest_file, encoding="utf-8") as fd:
         manifest = yaml.safe_load(fd)
 
     manifest["spec"]["containers"][0]["image"] = utils_image
@@ -48,7 +46,7 @@ def utils_pod(k8s_client, utils_image):
 
 
 # Scenarios
-@scenario('../features/dns_resolution.feature', 'check DNS')
+@scenario("../features/dns_resolution.feature", "check DNS")
 def test_dns(host):
     pass
 
@@ -58,8 +56,7 @@ def resolve_hostname(utils_pod, host, hostname):
     with host.sudo():
         # test dns resolve
         result = host.run(
-            "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
-            "exec %s nslookup %s",
+            "kubectl --kubeconfig=/etc/kubernetes/admin.conf " "exec %s nslookup %s",
             utils_pod,
             hostname,
         )

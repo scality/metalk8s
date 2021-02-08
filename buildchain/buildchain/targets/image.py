@@ -16,13 +16,8 @@ from . import base
 
 class ContainerImage(base.AtomicTarget):
     """A container image."""
-    def __init__(
-        self,
-        name: str,
-        version: str,
-        destination: Path,
-        **kwargs: Any
-    ):
+
+    def __init__(self, name: str, version: str, destination: Path, **kwargs: Any):
         """Initialize a container image.
 
         Arguments:
@@ -38,8 +33,8 @@ class ContainerImage(base.AtomicTarget):
         self._dest = destination
         super().__init__(task_name=name, **kwargs)
 
-    name     = property(operator.attrgetter('_name'))
-    version  = property(operator.attrgetter('_version'))
+    name = property(operator.attrgetter("_name"))
+    version = property(operator.attrgetter("_version"))
 
     @property
     def dest_dir(self) -> Path:
@@ -54,11 +49,11 @@ class ContainerImage(base.AtomicTarget):
     @property
     def tag(self) -> str:
         """Image tag."""
-        return '{img.name}:{img.version}'.format(img=self)
+        return "{img.name}:{img.version}".format(img=self)
 
     def show(self, command: str) -> str:
         """Return a description of the task."""
-        return '{cmd: <{width}} {tag}'.format(
+        return "{cmd: <{width}} {tag}".format(
             cmd=command, width=constants.CMD_WIDTH, tag=self.tag
         )
 
@@ -68,4 +63,4 @@ class ContainerImage(base.AtomicTarget):
 
     def clean(self) -> None:
         """Delete the image directory and its contents."""
-        coreutils.rm_rf(self.dest_dir/self.name)
+        coreutils.rm_rf(self.dest_dir / self.name)

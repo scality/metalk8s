@@ -25,9 +25,7 @@ def retry(operation, times=1, wait=1, error_msg=None, name="default"):
             res = operation()
         except AssertionError as exc:
             last_assert = str(exc)
-            LOGGER.info(
-                "[%s] Attempt %d/%d failed: %s", name, idx, times, str(exc)
-            )
+            LOGGER.info("[%s] Attempt %d/%d failed: %s", name, idx, times, str(exc))
             time.sleep(wait)
         else:
             LOGGER.info("[%s] Attempt %d/%d succeeded", name, idx, times)
@@ -40,7 +38,7 @@ def retry(operation, times=1, wait=1, error_msg=None, name="default"):
             ).format(name=name, attempts=times, total=times * wait)
 
         if last_assert:
-            error_msg = error_msg + ': ' + last_assert
+            error_msg = error_msg + ": " + last_assert
 
         pytest.fail(error_msg)
 
@@ -54,11 +52,9 @@ def get_ip_from_cidr(host, cidr):
     with host.sudo():
         ip_info = host.check_output("ip a | grep 'inet '")
     for line in ip_info.splitlines():
-        match = re.match(
-            r'inet (?P<ip>[0-9]+(?:\.[0-9]+){3})/[0-9]+ ', line.strip()
-        )
-        assert match is not None, 'Unexpected format: {}'.format(line.strip())
-        candidate = match.group('ip')
+        match = re.match(r"inet (?P<ip>[0-9]+(?:\.[0-9]+){3})/[0-9]+ ", line.strip())
+        assert match is not None, "Unexpected format: {}".format(line.strip())
+        candidate = match.group("ip")
         if ipaddress.IPv4Address(candidate) in network:
             return candidate
     return None
@@ -68,7 +64,7 @@ def get_node_name(nodename, ssh_config=None):
     """Get a node name (from SSH config)."""
     if ssh_config is not None:
         node = testinfra.get_host(nodename, ssh_config=ssh_config)
-        return get_grain(node, 'id')
+        return get_grain(node, "id")
     return nodename
 
 
@@ -77,8 +73,8 @@ def requests_retry_session(
     retries=3,
     backoff_factor=0.3,
     status_forcelist=(500, 503),
-    method_whitelist=frozenset(['GET', 'POST']),
-    session=None
+    method_whitelist=frozenset(["GET", "POST"]),
+    session=None,
 ):
     """Configure a `requests.session` for retry on error.
 
@@ -111,30 +107,20 @@ def requests_retry_session(
     return session
 
 
-def kubectl_exec(
-    host,
-    command,
-    pod,
-    kubeconfig='/etc/kubernetes/admin.conf',
-    **kwargs
-):
+def kubectl_exec(host, command, pod, kubeconfig="/etc/kubernetes/admin.conf", **kwargs):
     """Grab the return code from a `kubectl exec`"""
-    kube_args = ['--kubeconfig', kubeconfig]
+    kube_args = ["--kubeconfig", kubeconfig]
 
-    if kwargs.get('container'):
-        kube_args.extend(['-c', kwargs.get('container')])
-    if kwargs.get('namespace'):
-        kube_args.extend(['-n', kwargs.get('namespace')])
+    if kwargs.get("container"):
+        kube_args.extend(["-c", kwargs.get("container")])
+    if kwargs.get("namespace"):
+        kube_args.extend(["-n", kwargs.get("namespace")])
 
-    kubectl_cmd_tplt = 'kubectl exec {} {} -- {}'
+    kubectl_cmd_tplt = "kubectl exec {} {} -- {}"
 
     with host.sudo():
         output = host.run(
-            kubectl_cmd_tplt.format(
-                pod,
-                ' '.join(kube_args),
-                ' '.join(command)
-            )
+            kubectl_cmd_tplt.format(pod, " ".join(kube_args), " ".join(command))
         )
         return output
 
@@ -142,29 +128,20 @@ def kubectl_exec(
 def run_salt_command(host, command, ssh_config):
     """Run a command inside the salt-master container."""
 
-    pod = 'salt-master-{}'.format(
-        get_node_name('bootstrap', ssh_config)
-    )
+    pod = "salt-master-{}".format(get_node_name("bootstrap", ssh_config))
 
     output = kubectl_exec(
-        host,
-        command,
-        pod,
-        container='salt-master',
-        namespace='kube-system'
+        host, command, pod, container="salt-master", namespace="kube-system"
     )
 
-    assert output.exit_status == 0, \
-        'command {} failed with: \nout: {}\nerr: {}'.format(
-            command,
-            output.stdout,
-            output.stderr
-        )
+    assert output.exit_status == 0, "command {} failed with: \nout: {}\nerr: {}".format(
+        command, output.stdout, output.stderr
+    )
 
     return output
 
 
-def get_dict_element(data, path, delimiter='.'):
+def get_dict_element(data, path, delimiter="."):
     """
     Traverse a dict using a 'delimiter' on a target string.
     getitem(a, b) returns the value of a at index b
@@ -172,11 +149,11 @@ def get_dict_element(data, path, delimiter='.'):
     return functools.reduce(
         operator.getitem,
         (int(k) if k.isdigit() else k for k in path.split(delimiter)),
-        data
+        data,
     )
 
 
-def set_dict_element(data, path, value, delimiter='.'):
+def set_dict_element(data, path, value, delimiter="."):
     """
     Traverse a nested dict using a delimiter on a target string
     and replace the value of a key
@@ -196,7 +173,7 @@ def get_grain(host, key):
         output = host.check_output(
             'salt-call --local --out=json grains.get "{}"'.format(key)
         )
-        grain = json.loads(output)['local']
+        grain = json.loads(output)["local"]
 
     return grain
 
@@ -205,11 +182,10 @@ def get_pillar(host, key, local=False):
     with host.sudo():
         output = host.check_output(
             'salt-call {} --out=json pillar.get "{}"'.format(
-                '--local' if local else '',
-                key
+                "--local" if local else "", key
             )
         )
-        return json.loads(output)['local']
+        return json.loads(output)["local"]
 
 
 class PrometheusApiError(Exception):
@@ -224,7 +200,7 @@ class PrometheusApi:
 
     def request(self, method, route, **kwargs):
         try:
-            kwargs.setdefault('verify', False)
+            kwargs.setdefault("verify", False)
             response = self.session.request(
                 method,
                 "https://{}:{}/api/prometheus/api/v1/{}".format(
@@ -243,18 +219,16 @@ class PrometheusApi:
 
     def query(self, metric_name, **query_matchers):
         matchers = [
-            '{}="{}"'.format(key, value)
-            for key, value in query_matchers.items()
+            '{}="{}"'.format(key, value) for key, value in query_matchers.items()
         ]
-        query_string = metric_name + "{" + ','.join(matchers) + "}"
-        return self.request('GET', 'query', params={'query': query_string})
-
+        query_string = metric_name + "{" + ",".join(matchers) + "}"
+        return self.request("GET", "query", params={"query": query_string})
 
     def get_alerts(self, **kwargs):
-        return self.request('GET', 'alerts', **kwargs)
+        return self.request("GET", "alerts", **kwargs)
 
     def get_rules(self, **kwargs):
-        return self.request('GET', 'rules', **kwargs)
+        return self.request("GET", "rules", **kwargs)
 
     def find_rules(self, name=None, group=None, labels=None, **kwargs):
         if not labels:
@@ -263,16 +237,16 @@ class PrometheusApi:
 
         response = self.get_rules(**kwargs)
 
-        for rule_group in response.get('data', {}).get('groups', []):
-            group_name = rule_group.get('name')
+        for rule_group in response.get("data", {}).get("groups", []):
+            group_name = rule_group.get("name")
             if group in (group_name, None):
-                for rule in rule_group.get('rules', []):
-                    if name in (rule.get('name'), None):
-                        if labels.items() <= rule.get('labels', {}).items():
-                            rule['group'] = group_name
+                for rule in rule_group.get("rules", []):
+                    if name in (rule.get("name"), None):
+                        if labels.items() <= rule.get("labels", {}).items():
+                            rule["group"] = group_name
                             rules.append(rule)
 
         return rules
 
     def get_targets(self, **kwargs):
-        return self.request('GET', 'targets', **kwargs)
+        return self.request("GET", "targets", **kwargs)

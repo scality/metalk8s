@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Module for handling MetalK8s specific calls.
-'''
+"""
 import functools
 import itertools
 import logging
@@ -23,7 +23,7 @@ from salt.utils.hashutils import get_hash
 
 log = logging.getLogger(__name__)
 
-__virtualname__ = 'metalk8s'
+__virtualname__ = "metalk8s"
 
 
 def __virtual__():
@@ -35,85 +35,85 @@ def wait_apiserver(retry=10, interval=1, **kwargs):
 
     Simple "retry" wrapper around the kubernetes.ping Salt execution function.
     """
-    status = __salt__['metalk8s_kubernetes.ping'](**kwargs)
+    status = __salt__["metalk8s_kubernetes.ping"](**kwargs)
     attempts = 1
 
     while not status and attempts < retry:
         time.sleep(interval)
-        status = __salt__['metalk8s_kubernetes.ping'](**kwargs)
+        status = __salt__["metalk8s_kubernetes.ping"](**kwargs)
         attempts += 1
 
     if not status:
-        log.error('Kubernetes apiserver failed to respond after %d attempts',
-                  retry)
+        log.error("Kubernetes apiserver failed to respond after %d attempts", retry)
 
     return status
 
 
 def format_san(names):
-    '''Format a `subjectAlternativeName` section of a certificate.
+    """Format a `subjectAlternativeName` section of a certificate.
 
     Arguments:
         names ([str]): List if SANs, either IP addresses or DNS names
-    '''
+    """
+
     def format_name(name):
         # First, try to parse as an IPv4/IPv6 address
-        for af_name in ['AF_INET', 'AF_INET6']:
+        for af_name in ["AF_INET", "AF_INET6"]:
             try:
                 af = getattr(socket, af_name)
             except AttributeError:  # pragma: no cover
-                log.info('Unkown address family: %s', af_name)
+                log.info("Unkown address family: %s", af_name)
                 continue
 
             try:
                 # Parse
-                log.debug('Trying to parse %r as %s', name, af_name)
+                log.debug("Trying to parse %r as %s", name, af_name)
                 packed = socket.inet_pton(af, name)
                 # Unparse
-                log.debug('Trying to unparse %r as %s', packed, af_name)
+                log.debug("Trying to unparse %r as %s", packed, af_name)
                 unpacked = socket.inet_ntop(af, packed)
 
-                result = 'IP:{}'.format(unpacked)
+                result = "IP:{}".format(unpacked)
                 log.debug('SAN field for %r is "%s"', name, result)
                 return result
             except socket.error as exc:
-                log.debug('Failed to parse %r as %s: %s', name, af_name, exc)
+                log.debug("Failed to parse %r as %s: %s", name, af_name, exc)
 
         # Fallback to assume it's a DNS name
-        result = 'DNS:{}'.format(name)
+        result = "DNS:{}".format(name)
         log.debug('SAN field for %r is "%s"', name, result)
         return result
 
-    return ', '.join(sorted(format_name(name) for name in names))
+    return ", ".join(sorted(format_name(name) for name in names))
 
 
 def minions_by_role(role, nodes=None):
-    '''Return a list of minion IDs in a specific role from Pillar data.
+    """Return a list of minion IDs in a specific role from Pillar data.
 
     Arguments:
         role (str): Role to match on
         nodes (dict(str, dict)): Nodes to inspect
             Defaults to `pillar.metalk8s.nodes`.
-    '''
+    """
     if nodes is None:
         try:
-            nodes = __pillar__['metalk8s']['nodes']
+            nodes = __pillar__["metalk8s"]["nodes"]
         except Exception as exc:
             raise CommandExecutionError(
                 "Can't retrieve 'metalk8s:nodes' pillar"
             ) from exc
 
-    pillar_errors = nodes.pop('_errors', None)
+    pillar_errors = nodes.pop("_errors", None)
     if pillar_errors:
         raise CommandExecutionError(
             "Can't retrieve minions by role because of errors in pillar "
-            "'metalk8s:nodes': {}".format(', '.join(pillar_errors))
+            "'metalk8s:nodes': {}".format(", ".join(pillar_errors))
         )
 
     return [
         node
         for (node, node_info) in nodes.items()
-        if role in node_info.get('roles', [])
+        if role in node_info.get("roles", [])
     ]
 
 
@@ -123,8 +123,8 @@ def _get_archive_version(info):
     Arguments:
         info (str): content of metalk8s product.txt file
     """
-    match = re.search(r'^VERSION=(?P<version>.+)$', info, re.MULTILINE)
-    return match.group('version') if match else None
+    match = re.search(r"^VERSION=(?P<version>.+)$", info, re.MULTILINE)
+    return match.group("version") if match else None
 
 
 def _get_archive_name(info):
@@ -133,8 +133,8 @@ def _get_archive_name(info):
     Arguments:
         info (str): content of metalk8s product.txt file
     """
-    match = re.search(r'^NAME=(?P<name>.+)$', info, re.MULTILINE)
-    return match.group('name') if match else None
+    match = re.search(r"^NAME=(?P<name>.+)$", info, re.MULTILINE)
+    return match.group("name") if match else None
 
 
 def _get_archive_info(info):
@@ -143,10 +143,7 @@ def _get_archive_info(info):
     Arguments:
         info (str): content of metalk8s product.txt file
     """
-    return {
-        'version': _get_archive_version(info),
-        'name': _get_archive_name(info)
-    }
+    return {"version": _get_archive_version(info), "name": _get_archive_name(info)}
 
 
 def archive_info_from_tree(path):
@@ -155,13 +152,12 @@ def archive_info_from_tree(path):
     Arguments:
         path (str): path to a directory
     """
-    log.debug('Reading archive version from %r', path)
+    log.debug("Reading archive version from %r", path)
 
-    product_txt = os.path.join(path, 'product.txt')
+    product_txt = os.path.join(path, "product.txt")
 
     if not os.path.isfile(product_txt):
-        raise CommandExecutionError(
-            'Path {} has no "product.txt"'.format(path))
+        raise CommandExecutionError('Path {} has no "product.txt"'.format(path))
 
     with salt.utils.files.fopen(product_txt) as fd:
         return _get_archive_info(fd.read())
@@ -173,24 +169,26 @@ def archive_info_from_iso(path):
     Arguments:
         path (str): path to an iso
     """
-    log.debug('Reading archive version from %r', path)
+    log.debug("Reading archive version from %r", path)
 
-    cmd = ' '.join([
-        'isoinfo',
-        '-x', r'/PRODUCT.TXT\;1',
-        '-i', '"{}"'.format(path),
-    ])
-    result = __salt__['cmd.run_all'](cmd=cmd)
-    log.debug('Result: %r', result)
+    cmd = " ".join(
+        [
+            "isoinfo",
+            "-x",
+            r"/PRODUCT.TXT\;1",
+            "-i",
+            '"{}"'.format(path),
+        ]
+    )
+    result = __salt__["cmd.run_all"](cmd=cmd)
+    log.debug("Result: %r", result)
 
-    if result['retcode'] != 0:
+    if result["retcode"] != 0:
         raise CommandExecutionError(
-            'Failed to run isoinfo: {}'.format(
-                result.get('stderr', result['stdout'])
-            )
+            "Failed to run isoinfo: {}".format(result.get("stderr", result["stdout"]))
         )
 
-    return _get_archive_info(result['stdout'])
+    return _get_archive_info(result["stdout"])
 
 
 def get_archives(archives=None):
@@ -201,15 +199,13 @@ def get_archives(archives=None):
         archives (list): list of path to directory or iso
     """
     if not archives:
-        archives = __pillar__.get('metalk8s', {}).get('archives', [])
+        archives = __pillar__.get("metalk8s", {}).get("archives", [])
 
     if isinstance(archives, six.string_types):
         archives = [str(archives)]
     elif not isinstance(archives, list):
         raise CommandExecutionError(
-            'Invalid archives: list or string expected, got {0}'.format(
-                archives
-            )
+            "Invalid archives: list or string expected, got {0}".format(archives)
         )
 
     res = {}
@@ -218,29 +214,27 @@ def get_archives(archives=None):
             iso = None
             info = archive_info_from_tree(archive)
             path = archive
-            version = info['version']
+            version = info["version"]
         elif os.path.isfile(archive):
             iso = archive
             info = archive_info_from_iso(archive)
-            version = info['version']
-            path = '/srv/scality/metalk8s-{0}'.format(version)
+            version = info["version"]
+            path = "/srv/scality/metalk8s-{0}".format(version)
         else:
             log.warning(
-                'Skip, invalid archive path %s, should be an iso or a '
-                'directory.',
-                archive
+                "Skip, invalid archive path %s, should be an iso or a " "directory.",
+                archive,
             )
             continue
 
-        info.update({'path': path, 'iso': iso})
-        env_name = 'metalk8s-{0}'.format(version)
+        info.update({"path": path, "iso": iso})
+        env_name = "metalk8s-{0}".format(version)
 
         # Warn if we have 2 archives with the same version
         if env_name in res:
             archive = res[env_name]
             log.warning(
-                'Archives have the same version: %s is overridden by %s.',
-                archive, info
+                "Archives have the same version: %s is overridden by %s.", archive, info
             )
 
         res.update({env_name: info})
@@ -263,9 +257,9 @@ def check_pillar_keys(keys, refresh=True, pillar=None, raise_error=True):
         pillar = get_pillar(
             __opts__,
             __grains__,
-            __grains__['id'],
-            saltenv=__opts__.get('saltenv'),
-            pillarenv=__opts__.get('pillarenv')
+            __grains__["id"],
+            saltenv=__opts__.get("saltenv"),
+            pillarenv=__opts__.get("pillarenv"),
         ).compile_pillar()
 
     if not pillar:
@@ -279,28 +273,27 @@ def check_pillar_keys(keys, refresh=True, pillar=None, raise_error=True):
     for key_list in keys:
         value = pillar
         if not isinstance(key_list, list):
-            key_list = key_list.split('.')
+            key_list = key_list.split(".")
 
         for key in key_list:
-            error = value.get('_errors')
+            error = value.get("_errors")
             value = value.get(key)
             if not value:
                 if not error:
                     error = ["Empty value for {}".format(key)]
 
                 errors.append(
-                    'Unable to get {}:\n\t{}'.format(
-                        '.'.join(key_list),
-                        '\n\t'.join(error)
+                    "Unable to get {}:\n\t{}".format(
+                        ".".join(key_list), "\n\t".join(error)
                     )
                 )
                 break
 
     if errors:
         if raise_error:
-            raise CommandExecutionError('\n'.join(errors))
+            raise CommandExecutionError("\n".join(errors))
         else:
-            log.error('\n'.join(errors))
+            log.error("\n".join(errors))
             return False
 
     return True
@@ -314,9 +307,7 @@ def format_slots(data):
     Arguments:
         data: Data structure to format
     """
-    slots_callers = {
-        "salt": __salt__
-    }
+    slots_callers = {"salt": __salt__}
 
     if isinstance(data, list):
         return [format_slots(elt) for elt in data]
@@ -324,19 +315,20 @@ def format_slots(data):
     if isinstance(data, dict):
         return {key: format_slots(value) for key, value in data.items()}
 
-    if isinstance(data, six.string_types) and data.startswith('__slot__:'):
+    if isinstance(data, six.string_types) and data.startswith("__slot__:"):
         fmt = data.split(":", 2)
         if len(fmt) != 3:
             log.warning(
                 "Malformed slot %s: expecting "
                 "'__slot__:<caller>:<module>.<function>(...)'",
-                data
+                data,
             )
             return data
         if fmt[1] not in slots_callers:
             log.warning(
                 "Malformed slot '%s': invalid caller, must use one of '%s'",
-                data, "', '".join(slots_callers.keys())
+                data,
+                "', '".join(slots_callers.keys()),
             )
             return data
 
@@ -357,8 +349,8 @@ def cmp_sorted(*args, **kwargs):
 
     Useful when we want to sort a list in Jinja
     """
-    if 'cmp' in kwargs:
-        kwargs['key'] = functools.cmp_to_key(kwargs.pop('cmp'))
+    if "cmp" in kwargs:
+        kwargs["key"] = functools.cmp_to_key(kwargs.pop("cmp"))
 
     return sorted(*args, **kwargs)
 
@@ -370,7 +362,12 @@ def _error(ret, err_msg):
 
 
 def _atomic_write(
-    contents, dest, user, group, mode, tmp_prefix,
+    contents,
+    dest,
+    user,
+    group,
+    mode,
+    tmp_prefix,
 ):  # pragma: no cover
     """Minimalistic implementation of an atomic write operation.
 
@@ -381,11 +378,13 @@ def _atomic_write(
     """
     dir_name = os.path.dirname(dest)
 
-    uid = __salt__['file.user_to_uid'](user)
-    gid = __salt__['file.group_to_gid'](group)
+    uid = __salt__["file.user_to_uid"](user)
+    gid = __salt__["file.group_to_gid"](group)
 
     with tempfile.NamedTemporaryFile(
-        prefix=tmp_prefix, dir=dir_name, delete=False,
+        prefix=tmp_prefix,
+        dir=dir_name,
+        delete=False,
     ) as tmp_file:
         fd = tmp_file.fileno()
         os.fchmod(fd, mode)
@@ -402,16 +401,25 @@ def _atomic_write(
 
 
 def _atomic_copy(
-    source, dest, user, group, mode, tmp_prefix,
+    source,
+    dest,
+    user,
+    group,
+    mode,
+    tmp_prefix,
 ):  # pragma: no cover
-    with salt.utils.files.fopen(source, mode='rb') as f:
+    with salt.utils.files.fopen(source, mode="rb") as f:
         contents = f.read()
 
     _atomic_write(contents, dest, user, group, mode, tmp_prefix)
 
 
 def manage_static_pod_manifest(
-    name, source_filename, source, source_sum, saltenv='base',
+    name,
+    source_filename,
+    source,
+    source_sum,
+    saltenv="base",
 ):
     """Checks a manifest file and applies changes if necessary.
 
@@ -442,13 +450,11 @@ def manage_static_pod_manifest(
     normalized_mode = salt.utils.files.normalize_mode(oct(desired_mode))
 
     def _clean_tmp(sfn):
-        if sfn.startswith(os.path.join(
-            tempfile.gettempdir(), salt.utils.files.TEMPFILE_PREFIX
-        )):
+        if sfn.startswith(
+            os.path.join(tempfile.gettempdir(), salt.utils.files.TEMPFILE_PREFIX)
+        ):
             # Don't remove if it exists in file_roots (any saltenv)
-            all_roots = itertools.chain.from_iterable(
-                __opts__["file_roots"].values()
-            )
+            all_roots = itertools.chain.from_iterable(__opts__["file_roots"].values())
             in_roots = any(sfn.startswith(root) for root in all_roots)
             # Only clean up files that exist
             if os.path.exists(sfn) and not in_roots:
@@ -461,9 +467,7 @@ def manage_static_pod_manifest(
     if not source:
         return _error(ret, "Must provide a source")
     if not os.path.isdir(target_dir):
-        return _error(
-            ret, "Target directory {} does not exist".format(target_dir)
-        )
+        return _error(ret, "Target directory {} does not exist".format(target_dir))
 
     if source_filename:
         # File should be already cached, verify its checksum
@@ -472,22 +476,20 @@ def manage_static_pod_manifest(
             log.debug(
                 "Cached source file %s does not match expected checksum, "
                 "will fetch it again",
-                source_filename
+                source_filename,
             )
-            source_filename = ''  # Reset source filename to fetch it again
+            source_filename = ""  # Reset source filename to fetch it again
 
     if not source_filename:
         # File is not present or outdated, cache it
         source_filename = __salt__["cp.cache_file"](source, saltenv)
         if not source_filename:
-            return _error(
-                ret, "Source file '{}' not found".format(source)
-            )
+            return _error(ret, "Source file '{}' not found".format(source))
 
         # Recalculate source sum now that file has been cached
         source_sum = {
             "hash_type": hash_type,
-            "hsum": get_hash(source_filename, form=hash_type)
+            "hsum": get_hash(source_filename, form=hash_type),
         }
 
     # Check changes if the target file exists
@@ -545,7 +547,11 @@ def manage_static_pod_manifest(
     # Always enforce perms, even if no changes to contents (this module is
     # idempotent)
     ret, _ = __salt__["file.check_perms"](
-        name, ret, user="root", group="root", mode="0600",
+        name,
+        ret,
+        user="root",
+        group="root",
+        mode="0600",
     )
 
     if ret["changes"]:
@@ -588,13 +594,17 @@ def get_from_map(value, saltenv=None):
     """
     path = "metalk8s/map.jinja"
     if not saltenv:
-        current_version = __pillar__.get('metalk8s', {}).get('nodes', {}).get(
-            __grains__['id'], {}).get('version')
+        current_version = (
+            __pillar__.get("metalk8s", {})
+            .get("nodes", {})
+            .get(__grains__["id"], {})
+            .get("version")
+        )
         if not current_version:
             log.warning(
                 'Unable to retrieve current running version, fallback on "base"'
             )
-            saltenv = 'base'
+            saltenv = "base"
         else:
             saltenv = "metalk8s-{}".format(current_version)
 
@@ -613,5 +623,5 @@ def get_from_map(value, saltenv=None):
         __opts__["renderer_blacklist"],
         __opts__["renderer_whitelist"],
         input_data=tmplstr,
-        saltenv=saltenv
+        saltenv=saltenv,
     )

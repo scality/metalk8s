@@ -63,7 +63,7 @@ def promote_errors(source, key):
     Returns: None
     """
     patch = source[key]
-    if patch.get('_errors'):
+    if patch.get("_errors"):
         source.setdefault("_errors", []).extend(patch.get("_errors"))
 
 
@@ -77,4 +77,4 @@ def errors_to_dict(error_list):
     Returns:
      dict: a dict with `_errors` key and error list value
     """
-    return {'_errors': error_list}
+    return {"_errors": error_list}

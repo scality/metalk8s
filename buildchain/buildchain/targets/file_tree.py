@@ -40,7 +40,7 @@ from buildchain import utils
 from . import base
 
 
-MAKE_TASK_NAME : str = 'make_tree'
+MAKE_TASK_NAME: str = "make_tree"
 
 
 class FileTree(base.CompositeTarget):
@@ -51,7 +51,7 @@ class FileTree(base.CompositeTarget):
         basename: str,
         files: Sequence[Union[Path, base.AtomicTarget]],
         destination_directory: Path,
-        source_prefix: Optional[Path]=None,
+        source_prefix: Optional[Path] = None,
         **kwargs: Any
     ):
         """Initialize the file hierarchy.
@@ -67,11 +67,9 @@ class FileTree(base.CompositeTarget):
         """
         self._files = files
         self._dest = destination_directory
-        self._src_prefix = source_prefix or Path('.')
+        self._src_prefix = source_prefix or Path(".")
         self._dirs = [
-            self._dest/directory
-            for directory
-            in self._compute_dir_tree(self.files)
+            self._dest / directory for directory in self._compute_dir_tree(self.files)
         ]
         if not self.directories:
             self._root = self.source_prefix
@@ -79,9 +77,9 @@ class FileTree(base.CompositeTarget):
             self._root = self.directories[0].relative_to(self.destination)
         super().__init__(basename=basename, **kwargs)
 
-    directories   = property(operator.attrgetter('_dirs'))
-    destination   = property(operator.attrgetter('_dest'))
-    source_prefix = property(operator.attrgetter('_src_prefix'))
+    directories = property(operator.attrgetter("_dirs"))
+    destination = property(operator.attrgetter("_dest"))
+    source_prefix = property(operator.attrgetter("_src_prefix"))
 
     @property
     def files(self) -> List[Path]:
@@ -102,80 +100,86 @@ class FileTree(base.CompositeTarget):
             if not isinstance(target, base.AtomicTarget):
                 continue
             task = target.task
-            task['basename'] = self.basename
-            task['name'] = '{}/{}'.format(self._root, task['name'])
-            task['task_dep'].extend(self._get_task_dep_for_copy())
+            task["basename"] = self.basename
+            task["name"] = "{}/{}".format(self._root, task["name"])
+            task["task_dep"].extend(self._get_task_dep_for_copy())
             tasks.append(task)
         return tasks
 
     def make_directories(self) -> types.TaskDict:
         """Return a task that create a directory hierarchy."""
+
         def mkdirs(targets: Sequence[str]) -> None:
             for directory in targets:
                 Path(directory).mkdir(exist_ok=True)
 
         task = self.basic_task
-        task.update({
-            'name': '{}/{}'.format(self._root, MAKE_TASK_NAME),
-            'doc': 'Create directory hierarchy for {}.'.format(self._root),
-            'title': utils.title_with_target1('MKTREE'),
-            'actions': [mkdirs],
-            'targets': self.directories,
-            'uptodate': [True],
-        })
+        task.update(
+            {
+                "name": "{}/{}".format(self._root, MAKE_TASK_NAME),
+                "doc": "Create directory hierarchy for {}.".format(self._root),
+                "title": utils.title_with_target1("MKTREE"),
+                "actions": [mkdirs],
+                "targets": self.directories,
+                "uptodate": [True],
+            }
+        )
         return task
 
     def copy_files(self) -> types.TaskDict:
         """Copy a list of files to their destination."""
+
         def show(_task: types.Task) -> str:
-            return '{cmd: <{width}} {path}'.format(
-                cmd='CPTREE', width=constants.CMD_WIDTH, path=self._root
+            return "{cmd: <{width}} {path}".format(
+                cmd="CPTREE", width=constants.CMD_WIDTH, path=self._root
             )
 
         task = self.basic_task
-        task.update({
-            'name': '{}/copy_tree'.format(self._root),
-            'doc': 'Copy files tree to {}.'.format(self._root),
-            'title': show
-        })
-        task['task_dep'].extend(self._get_task_dep_for_copy())
+        task.update(
+            {
+                "name": "{}/copy_tree".format(self._root),
+                "doc": "Copy files tree to {}.".format(self._root),
+                "title": show,
+            }
+        )
+        task["task_dep"].extend(self._get_task_dep_for_copy())
         # Copy "plain" files (file paths, not targets).
         for path in self._files:
             if isinstance(path, base.AtomicTarget):
                 continue
-            source = constants.ROOT/self.source_prefix/path
-            destination = self.destination/path
-            task['actions'].append(
-                (coreutils.cp_file, [source, destination])
-            )
-            task['targets'].append(destination)
-            task['file_dep'].append(source)
+            source = constants.ROOT / self.source_prefix / path
+            destination = self.destination / path
+            task["actions"].append((coreutils.cp_file, [source, destination]))
+            task["targets"].append(destination)
+            task["file_dep"].append(source)
         return task
 
     @staticmethod
     def _compute_dir_tree(files: Sequence[Path]) -> List[Path]:
         """Compute the directory hierarchy to be created."""
-        dirs : Set[Path] = set()
+        dirs: Set[Path] = set()
         for path in files:
             dirs.update(path.parents)
-        dirs.discard(Path('.'))
+        dirs.discard(Path("."))
         # Sort by depth, from the leaves to the root.
-        return sorted(dirs, key=lambda path: str(path).count('/'))
+        return sorted(dirs, key=lambda path: str(path).count("/"))
 
     def _get_task_dep_for_copy(self) -> List[str]:
         """Return the list of tasks to execute before copying the files."""
         # If we have no directory hierarchy to create, then no task dependency!
         if not self.directories:
             return []
-        return ['{base}:{name}/{task}'.format(
-            base=self.basename, name=self._root, task=MAKE_TASK_NAME
-        )]
+        return [
+            "{base}:{name}/{task}".format(
+                base=self.basename, name=self._root, task=MAKE_TASK_NAME
+            )
+        ]
 
 
 def _get_destination(target: base.AtomicTarget) -> Path:
     """Return the path of the file generated by a task."""
     if len(target.targets) != 1:
         raise AssertionError(
-            'cannot use target {} in `FileTree`'.format(target.task_name)
+            "cannot use target {} in `FileTree`".format(target.task_name)
         )
     return Path(target.targets[0])

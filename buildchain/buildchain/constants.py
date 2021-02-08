@@ -14,68 +14,66 @@ from buildchain import config
 
 # Max length of a "command".
 # (used in task display, for a nice aligned output).
-CMD_WIDTH : int = 14
+CMD_WIDTH: int = 14
 
 # URLs of the main container repositories.
-CALICO_REPOSITORY               : str = 'docker.io/calico'
-COREOS_REPOSITORY               : str = 'quay.io/coreos'
-DEX_REPOSITORY                  : str = 'docker.io/dexidp'
-DOCKER_REPOSITORY               : str = 'docker.io/library'
-GOOGLE_REPOSITORY               : str = 'k8s.gcr.io'
-GRAFANA_REPOSITORY              : str = 'docker.io/grafana'
-INGRESS_REPOSITORY              : str = 'k8s.gcr.io/ingress-nginx'
-JIMMIDYSON_REPOSITORY           : str = 'docker.io/jimmidyson'
-KIWIGRID_REPOSITORY             : str = 'docker.io/kiwigrid'
-PROMETHEUS_ADAPTER_REPOSITORY   : str = 'docker.io/directxman12'
-PROMETHEUS_OPERATOR_REPOSITORY  : str = 'quay.io/prometheus-operator'
-PROMETHEUS_REPOSITORY           : str = 'quay.io/prometheus'
+CALICO_REPOSITORY: str = "docker.io/calico"
+COREOS_REPOSITORY: str = "quay.io/coreos"
+DEX_REPOSITORY: str = "docker.io/dexidp"
+DOCKER_REPOSITORY: str = "docker.io/library"
+GOOGLE_REPOSITORY: str = "k8s.gcr.io"
+GRAFANA_REPOSITORY: str = "docker.io/grafana"
+INGRESS_REPOSITORY: str = "k8s.gcr.io/ingress-nginx"
+JIMMIDYSON_REPOSITORY: str = "docker.io/jimmidyson"
+KIWIGRID_REPOSITORY: str = "docker.io/kiwigrid"
+PROMETHEUS_ADAPTER_REPOSITORY: str = "docker.io/directxman12"
+PROMETHEUS_OPERATOR_REPOSITORY: str = "quay.io/prometheus-operator"
+PROMETHEUS_REPOSITORY: str = "quay.io/prometheus"
 
 # Paths {{{
 
 # Root of the generated ISO.
-ISO_ROOT : Path = config.BUILD_ROOT/'root'
+ISO_ROOT: Path = config.BUILD_ROOT / "root"
 # Root of the repositories on the ISO.
-REPO_ROOT : Path = ISO_ROOT/'packages'
+REPO_ROOT: Path = ISO_ROOT / "packages"
 # Root of the RedHat repositories on the ISO.
-REPO_REDHAT_ROOT : Path = REPO_ROOT/'redhat'
+REPO_REDHAT_ROOT: Path = REPO_ROOT / "redhat"
 # Root of the Debian repositories on the ISO.
-REPO_DEB_ROOT : Path = REPO_ROOT/'debian'
+REPO_DEB_ROOT: Path = REPO_ROOT / "debian"
 # Root for the images on the ISO.
-ISO_IMAGE_ROOT : Path = ISO_ROOT/'images'
+ISO_IMAGE_ROOT: Path = ISO_ROOT / "images"
 # Root for the documentation on the ISO.
-ISO_DOCS_ROOT : Path = ISO_ROOT/'documentation'
+ISO_DOCS_ROOT: Path = ISO_ROOT / "documentation"
 # Root for the documentation build.
-DOCS_BUILD_ROOT : Path = config.BUILD_ROOT/'docs'
+DOCS_BUILD_ROOT: Path = config.BUILD_ROOT / "docs"
 # Root for the packages that we build ourselves.
-PKG_ROOT : Path = config.BUILD_ROOT/'packages'
+PKG_ROOT: Path = config.BUILD_ROOT / "packages"
 # Root for the RedHat packages that we build ourselves.
-PKG_REDHAT_ROOT : Path = PKG_ROOT/'redhat'
+PKG_REDHAT_ROOT: Path = PKG_ROOT / "redhat"
 # Root for the Debian packages that we build ourselves.
-PKG_DEB_ROOT : Path = PKG_ROOT/'debian'
+PKG_DEB_ROOT: Path = PKG_ROOT / "debian"
 # Root of the Vagrant environment folder.
-VAGRANT_ROOT : Path = ROOT/'.vagrant'
+VAGRANT_ROOT: Path = ROOT / ".vagrant"
 # Path to the static-container-registry module.
-STATIC_CONTAINER_REGISTRY : Path = Path(
-    ROOT, 'buildchain/static-container-registry'
-)
+STATIC_CONTAINER_REGISTRY: Path = Path(ROOT, "buildchain/static-container-registry")
 # Path to the storage-operator source directory.
-STORAGE_OPERATOR_ROOT : Path = ROOT/'storage-operator'
+STORAGE_OPERATOR_ROOT: Path = ROOT / "storage-operator"
 # Path to the UI build root directory.
-UI_BUILD_ROOT : Path = config.BUILD_ROOT/'ui'
+UI_BUILD_ROOT: Path = config.BUILD_ROOT / "ui"
 
 # Docker entrypoints.
-DEBIAN_ENTRYPOINT : Path = ROOT/'packages/debian/common/entrypoint.sh'
-REDHAT_ENTRYPOINT : Path = ROOT/'packages/redhat/common/entrypoint.sh'
+DEBIAN_ENTRYPOINT: Path = ROOT / "packages/debian/common/entrypoint.sh"
+REDHAT_ENTRYPOINT: Path = ROOT / "packages/redhat/common/entrypoint.sh"
 
 # Path to UI static files.
-UI_PUBLIC   : Path = ROOT/'ui/public'
-UI_BRANDING : Path = UI_PUBLIC/'brand'
-UI_ASSETS   : Path = UI_BRANDING/'assets'
+UI_PUBLIC: Path = ROOT / "ui/public"
+UI_BRANDING: Path = UI_PUBLIC / "brand"
+UI_ASSETS: Path = UI_BRANDING / "assets"
 
 # }}}
 # Vagrant parameters {{{
 
-VAGRANT_SSH_KEY_PAIR : Path = VAGRANT_ROOT/'preshared_key_for_k8s_nodes'
+VAGRANT_SSH_KEY_PAIR: Path = VAGRANT_ROOT / "preshared_key_for_k8s_nodes"
 
 # }}}
 # Git project information {{{
@@ -85,12 +83,18 @@ def git_ref() -> Optional[str]:
     """Load version information from Git."""
 
     try:
-        ref : bytes = subprocess.check_output([
-            config.ExtCommand.GIT.value, 'describe', '--always', '--long',
-            '--tags', '--dirty',
-        ])
+        ref: bytes = subprocess.check_output(
+            [
+                config.ExtCommand.GIT.value,
+                "describe",
+                "--always",
+                "--long",
+                "--tags",
+                "--dirty",
+            ]
+        )
 
-        return ref.decode('utf-8').rstrip()
+        return ref.decode("utf-8").rstrip()
     except subprocess.CalledProcessError:
         return None
 
@@ -100,13 +104,16 @@ GIT_REF = git_ref()
 # }}}
 
 # Only keep directories and top-level Go source files.
-STORAGE_OPERATOR_FMT_ARGS : FrozenSet[str] = frozenset([
-    path.name for path in STORAGE_OPERATOR_ROOT.glob('*')
-    if path.is_dir() or path.suffix == '.go'
-])
-STORAGE_OPERATOR_SOURCES : FrozenSet[Path] = frozenset(
-    filepath for filepath in STORAGE_OPERATOR_ROOT.rglob('*.go')
+STORAGE_OPERATOR_FMT_ARGS: FrozenSet[str] = frozenset(
+    [
+        path.name
+        for path in STORAGE_OPERATOR_ROOT.glob("*")
+        if path.is_dir() or path.suffix == ".go"
+    ]
+)
+STORAGE_OPERATOR_SOURCES: FrozenSet[Path] = frozenset(
+    filepath for filepath in STORAGE_OPERATOR_ROOT.rglob("*.go")
 )
 
 # For mypy, see `--no-implicit-reexport` documentation.
-__all__ = ['ROOT']
+__all__ = ["ROOT"]

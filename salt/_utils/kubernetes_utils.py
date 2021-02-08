@@ -23,11 +23,12 @@ try:
         self._conditions = conditions
 
     setattr(
-        k8s_client.V1beta1CustomResourceDefinitionStatus, 'conditions',
+        k8s_client.V1beta1CustomResourceDefinitionStatus,
+        "conditions",
         property(
             fget=k8s_client.V1beta1CustomResourceDefinitionStatus.conditions.fget,
-            fset=set_conditions
-        )
+            fset=set_conditions,
+        ),
     )
     # End of workaround
 except ImportError:
@@ -39,28 +40,26 @@ else:
     )
 
 
-__virtualname__ = 'metalk8s_kubernetes'
+__virtualname__ = "metalk8s_kubernetes"
 
 
 def __virtual__():
     if not HAS_LIBS:
-        return False, 'Missing dependencies: kubernetes'
+        return False, "Missing dependencies: kubernetes"
 
     return __virtualname__
 
 
 # Roughly equivalent to an Enum, for Python 2
 class ObjectScope(object):
-    NAMESPACE = 'namespaced'
-    CLUSTER = 'cluster'
+    NAMESPACE = "namespaced"
+    CLUSTER = "cluster"
 
     ALL_VALUES = (NAMESPACE, CLUSTER)
 
     def __init__(self, value):
         if value not in self.ALL_VALUES:
-            raise ValueError(
-                'Value must be one of {}.'.format(self.ALL_VALUES)
-            )
+            raise ValueError("Value must be one of {}.".format(self.ALL_VALUES))
         self.value = value
 
     def __eq__(self, other):
@@ -71,32 +70,28 @@ class ObjectScope(object):
         return NotImplemented
 
     def __repr__(self):
-        return 'ObjectScope({})'.format(self.value)
+        return "ObjectScope({})".format(self.value)
 
 
 class ApiClient(object):
     CRUD_METHODS = {
-        'create': 'create',
-        'retrieve': 'read',
-        'update': 'patch',
-        'delete': 'delete',
-        'replace': 'replace',
-        'list': 'list',
+        "create": "create",
+        "retrieve": "read",
+        "update": "patch",
+        "delete": "delete",
+        "replace": "replace",
+        "list": "list",
     }
 
-    def __init__(self, api_cls, name,
-                 method_names=None, all_namespaces_name=None):
+    def __init__(self, api_cls, name, method_names=None, all_namespaces_name=None):
         if api_cls not in ALL_APIS:
-            raise ValueError(
-                '`api_cls` must be an API from `kubernetes.client.api`'
-            )
+            raise ValueError("`api_cls` must be an API from `kubernetes.client.api`")
         methods = self.CRUD_METHODS
         if isinstance(method_names, six.string_types):
             method_names = [method_names]
         if isinstance(method_names, list):
             methods = {
-                func_name: self.CRUD_METHODS[func_name]
-                for func_name in method_names
+                func_name: self.CRUD_METHODS[func_name] for func_name in method_names
             }
         if isinstance(method_names, dict):
             methods = method_names
@@ -114,28 +109,29 @@ class ApiClient(object):
             for method, verb in methods.items()
         }
 
-        if self._all_namespaces_name and 'list' in methods:
-            self._api_methods['list_all_namespaces'] = \
-                getattr(api_cls, self._all_namespaces_name)
+        if self._all_namespaces_name and "list" in methods:
+            self._api_methods["list_all_namespaces"] = getattr(
+                api_cls, self._all_namespaces_name
+            )
 
-    api_cls = property(operator.attrgetter('_api_cls'))
-    name = property(operator.attrgetter('_name'))
+    api_cls = property(operator.attrgetter("_api_cls"))
+    name = property(operator.attrgetter("_name"))
 
-    create = property(lambda self: self._method('create'))
-    retrieve = property(lambda self: self._method('retrieve'))
-    update = property(lambda self: self._method('update'))
-    delete = property(lambda self: self._method('delete'))
-    replace = property(lambda self: self._method('replace'))
+    create = property(lambda self: self._method("create"))
+    retrieve = property(lambda self: self._method("retrieve"))
+    update = property(lambda self: self._method("update"))
+    delete = property(lambda self: self._method("delete"))
+    replace = property(lambda self: self._method("replace"))
 
     @property
     def list(self):
         def _list(all_namespaces=False, *args, **kwargs):
             if all_namespaces:
-                assert self._all_namespaces_name, (
-                    'Cannot use "all_namespaces" for this client'
-                )
-                return self._method('list_all_namespaces')(*args, **kwargs)
-            return self._method('list')(*args, **kwargs)
+                assert (
+                    self._all_namespaces_name
+                ), 'Cannot use "all_namespaces" for this client'
+                return self._method("list_all_namespaces")(*args, **kwargs)
+            return self._method("list")(*args, **kwargs)
 
         return _list
 
@@ -147,14 +143,14 @@ class ApiClient(object):
     @property
     def api(self):
         if self._api is None:
-            assert self._client is not None, (
-                'Cannot use API without configuring the client first'
-            )
+            assert (
+                self._client is not None
+            ), "Cannot use API without configuring the client first"
             self._api = self.api_cls(api_client=self._client)
         return self._api
 
     def _method_name(self, verb):
-        return '{}_{}'.format(verb, self.name)
+        return "{}_{}".format(verb, self.name)
 
     def _method(self, verb):
         # Inject the API instance as the first argument, since those methods
@@ -170,217 +166,211 @@ class KindInfo(object):
     CRUD methods can be filtered using `method_names` argument usefull for
     object that may not have all CRUD methods.
     """
+
     def __init__(self, model, api_cls, name, method_names=None):
         self._model = model
-        if name.startswith('namespaced_'):
-            self._scope = ObjectScope('namespaced')
-            all_ns_method = 'list_{}_for_all_namespaces'.format(
-                name[len('namespaced_'):]
+        if name.startswith("namespaced_"):
+            self._scope = ObjectScope("namespaced")
+            all_ns_method = "list_{}_for_all_namespaces".format(
+                name[len("namespaced_") :]
             )
         else:
-            self._scope = ObjectScope('cluster')
+            self._scope = ObjectScope("cluster")
             all_ns_method = None
         self._client = ApiClient(
-            api_cls,
-            name,
-            method_names=method_names,
-            all_namespaces_name=all_ns_method
+            api_cls, name, method_names=method_names, all_namespaces_name=all_ns_method
         )
 
-    model = property(operator.attrgetter('_model'))
-    client = property(operator.attrgetter('_client'))
-    scope = property(operator.attrgetter('_scope'))
+    model = property(operator.attrgetter("_model"))
+    client = property(operator.attrgetter("_client"))
+    scope = property(operator.attrgetter("_scope"))
 
 
 if HAS_LIBS:
     KNOWN_STD_KINDS = {
         # /api/v1/ {{{
-        ('v1', 'ConfigMap'): KindInfo(
+        ("v1", "ConfigMap"): KindInfo(
             model=k8s_client.V1ConfigMap,
             api_cls=k8s_client.CoreV1Api,
-            name='namespaced_config_map',
+            name="namespaced_config_map",
         ),
-        ('v1', 'Endpoints'): KindInfo(
+        ("v1", "Endpoints"): KindInfo(
             model=k8s_client.V1Endpoints,
             api_cls=k8s_client.CoreV1Api,
-            name='namespaced_endpoints',
+            name="namespaced_endpoints",
         ),
-        ('v1', 'Namespace'): KindInfo(
+        ("v1", "Namespace"): KindInfo(
             model=k8s_client.V1Namespace,
             api_cls=k8s_client.CoreV1Api,
-            name='namespace',
+            name="namespace",
         ),
-        ('v1', 'Node'): KindInfo(
+        ("v1", "Node"): KindInfo(
             model=k8s_client.V1Node,
             api_cls=k8s_client.CoreV1Api,
-            name='node',
+            name="node",
         ),
-        ('v1', 'Pod'): KindInfo(
-            model=k8s_client.V1Pod,
-            api_cls=k8s_client.CoreV1Api,
-            name='namespaced_pod'
+        ("v1", "Pod"): KindInfo(
+            model=k8s_client.V1Pod, api_cls=k8s_client.CoreV1Api, name="namespaced_pod"
         ),
-        ('v1', 'PodEviction'): KindInfo(
+        ("v1", "PodEviction"): KindInfo(
             model=k8s_client.V1beta1Eviction,
             api_cls=k8s_client.CoreV1Api,
-            name='namespaced_pod_eviction',
-            method_names='create'
+            name="namespaced_pod_eviction",
+            method_names="create",
         ),
-        ('v1', 'Secret'): KindInfo(
+        ("v1", "Secret"): KindInfo(
             model=k8s_client.V1Secret,
             api_cls=k8s_client.CoreV1Api,
-            name='namespaced_secret',
+            name="namespaced_secret",
         ),
-        ('v1', 'Service'): KindInfo(
+        ("v1", "Service"): KindInfo(
             model=k8s_client.V1Service,
             api_cls=k8s_client.CoreV1Api,
-            name='namespaced_service',
+            name="namespaced_service",
         ),
-        ('v1', 'ServiceAccount'): KindInfo(
+        ("v1", "ServiceAccount"): KindInfo(
             model=k8s_client.V1ServiceAccount,
             api_cls=k8s_client.CoreV1Api,
-            name='namespaced_service_account',
+            name="namespaced_service_account",
         ),
-        ('v1', 'ReplicationController'): KindInfo(
+        ("v1", "ReplicationController"): KindInfo(
             model=k8s_client.V1ReplicationController,
             api_cls=k8s_client.CoreV1Api,
-            name='namespaced_replication_controller',
+            name="namespaced_replication_controller",
         ),
         # }}}
         # /apis/apps/v1/ {{{
-        ('apps/v1', 'DaemonSet'): KindInfo(
+        ("apps/v1", "DaemonSet"): KindInfo(
             model=k8s_client.V1DaemonSet,
             api_cls=k8s_client.AppsV1Api,
-            name='namespaced_daemon_set',
+            name="namespaced_daemon_set",
         ),
-        ('apps/v1', 'Deployment'): KindInfo(
+        ("apps/v1", "Deployment"): KindInfo(
             model=k8s_client.V1Deployment,
             api_cls=k8s_client.AppsV1Api,
-            name='namespaced_deployment',
+            name="namespaced_deployment",
         ),
-        ('apps/v1', 'ReplicaSet'): KindInfo(
+        ("apps/v1", "ReplicaSet"): KindInfo(
             model=k8s_client.V1ReplicaSet,
             api_cls=k8s_client.AppsV1Api,
-            name='namespaced_replica_set',
+            name="namespaced_replica_set",
         ),
-        ('apps/v1', 'StatefulSet'): KindInfo(
+        ("apps/v1", "StatefulSet"): KindInfo(
             model=k8s_client.V1StatefulSet,
             api_cls=k8s_client.AppsV1Api,
-            name='namespaced_stateful_set',
+            name="namespaced_stateful_set",
         ),
         # }}}
         # /apis/extensions/v1beta1/ {{{
-        ('extensions/v1beta1', 'Ingress'): KindInfo(
+        ("extensions/v1beta1", "Ingress"): KindInfo(
             model=k8s_client.ExtensionsV1beta1Ingress,
             api_cls=k8s_client.ExtensionsV1beta1Api,
-            name='namespaced_ingress'
+            name="namespaced_ingress",
         ),
         # }}}
         # /apis/apiextensions.k8s.io/v1/ {{{
-        ('apiextensions.k8s.io/v1', 'CustomResourceDefinition'): \
-        KindInfo(
+        ("apiextensions.k8s.io/v1", "CustomResourceDefinition"): KindInfo(
             model=k8s_client.V1CustomResourceDefinition,
             api_cls=k8s_client.ApiextensionsV1Api,
-            name='custom_resource_definition',
+            name="custom_resource_definition",
         ),
         # }}}
         # /apis/apiextensions.k8s.io/v1beta1/ {{{
-        ('apiextensions.k8s.io/v1beta1', 'CustomResourceDefinition'): \
-        KindInfo(
+        ("apiextensions.k8s.io/v1beta1", "CustomResourceDefinition"): KindInfo(
             model=k8s_client.V1beta1CustomResourceDefinition,
             api_cls=k8s_client.ApiextensionsV1beta1Api,
-            name='custom_resource_definition',
+            name="custom_resource_definition",
         ),
         # }}}
         # /apis/apiregistration.k8s.io/v1/ {{{
-        ('apiregistration.k8s.io/v1', 'APIService'): KindInfo(
+        ("apiregistration.k8s.io/v1", "APIService"): KindInfo(
             model=k8s_client.V1APIService,
             api_cls=k8s_client.ApiregistrationV1Api,
-            name='api_service',
+            name="api_service",
         ),
         # }}}
         # /apis/apiregistration.k8s.io/v1beta1/ {{{
-        ('apiregistration.k8s.io/v1beta1', 'APIService'): KindInfo(
+        ("apiregistration.k8s.io/v1beta1", "APIService"): KindInfo(
             model=k8s_client.V1beta1APIService,
             api_cls=k8s_client.ApiregistrationV1beta1Api,
-            name='api_service',
+            name="api_service",
         ),
         # }}}
         # /apis/batch/v1beta1/ {{{
-        ('batch/v1beta1', 'CronJob'): KindInfo(
+        ("batch/v1beta1", "CronJob"): KindInfo(
             model=k8s_client.V1beta1CronJob,
             api_cls=k8s_client.BatchV1beta1Api,
-            name='namespaced_cron_job',
+            name="namespaced_cron_job",
         ),
         # }}}
         # /apis/networking.k8s.io/v1beta1/ {{{
-        ('networking.k8s.io/v1beta1', 'Ingress'): KindInfo(
+        ("networking.k8s.io/v1beta1", "Ingress"): KindInfo(
             model=k8s_client.NetworkingV1beta1Ingress,
             api_cls=k8s_client.NetworkingV1beta1Api,
-            name='namespaced_ingress'
+            name="namespaced_ingress",
         ),
         # }}}
         # /apis/policy/v1beta1/ {{{
-        ('policy/v1beta1', 'PodDisruptionBudget'): KindInfo(
+        ("policy/v1beta1", "PodDisruptionBudget"): KindInfo(
             model=k8s_client.V1beta1PodDisruptionBudget,
             api_cls=k8s_client.PolicyV1beta1Api,
-            name='namespaced_pod_disruption_budget',
+            name="namespaced_pod_disruption_budget",
         ),
-        ('policy/v1beta1', 'PodSecurityPolicy'): KindInfo(
+        ("policy/v1beta1", "PodSecurityPolicy"): KindInfo(
             model=k8s_client.PolicyV1beta1PodSecurityPolicy,
             api_cls=k8s_client.PolicyV1beta1Api,
-            name='pod_security_policy',
+            name="pod_security_policy",
         ),
         # }}}
         # /apis/rbac.authorization.k8s.io/v1/ {{{
-        ('rbac.authorization.k8s.io/v1', 'ClusterRole'): KindInfo(
+        ("rbac.authorization.k8s.io/v1", "ClusterRole"): KindInfo(
             model=k8s_client.V1ClusterRole,
             api_cls=k8s_client.RbacAuthorizationV1Api,
-            name='cluster_role',
+            name="cluster_role",
         ),
-        ('rbac.authorization.k8s.io/v1', 'ClusterRoleBinding'): KindInfo(
+        ("rbac.authorization.k8s.io/v1", "ClusterRoleBinding"): KindInfo(
             model=k8s_client.V1ClusterRoleBinding,
             api_cls=k8s_client.RbacAuthorizationV1Api,
-            name='cluster_role_binding',
+            name="cluster_role_binding",
         ),
-        ('rbac.authorization.k8s.io/v1', 'Role'): KindInfo(
+        ("rbac.authorization.k8s.io/v1", "Role"): KindInfo(
             model=k8s_client.V1Role,
             api_cls=k8s_client.RbacAuthorizationV1Api,
-            name='namespaced_role',
+            name="namespaced_role",
         ),
-        ('rbac.authorization.k8s.io/v1', 'RoleBinding'): KindInfo(
+        ("rbac.authorization.k8s.io/v1", "RoleBinding"): KindInfo(
             model=k8s_client.V1RoleBinding,
             api_cls=k8s_client.RbacAuthorizationV1Api,
-            name='namespaced_role_binding',
+            name="namespaced_role_binding",
         ),
         # }}}
         # /apis/rbac.authorization.k8s.io/v1beta1/ {{{
-        ('rbac.authorization.k8s.io/v1beta1', 'ClusterRole'): KindInfo(
+        ("rbac.authorization.k8s.io/v1beta1", "ClusterRole"): KindInfo(
             model=k8s_client.V1beta1ClusterRole,
             api_cls=k8s_client.RbacAuthorizationV1beta1Api,
-            name='cluster_role',
+            name="cluster_role",
         ),
-        ('rbac.authorization.k8s.io/v1beta1', 'ClusterRoleBinding'): KindInfo(
+        ("rbac.authorization.k8s.io/v1beta1", "ClusterRoleBinding"): KindInfo(
             model=k8s_client.V1beta1ClusterRoleBinding,
             api_cls=k8s_client.RbacAuthorizationV1beta1Api,
-            name='cluster_role_binding',
+            name="cluster_role_binding",
         ),
-        ('rbac.authorization.k8s.io/v1beta1', 'Role'): KindInfo(
+        ("rbac.authorization.k8s.io/v1beta1", "Role"): KindInfo(
             model=k8s_client.V1beta1Role,
             api_cls=k8s_client.RbacAuthorizationV1beta1Api,
-            name='namespaced_role',
+            name="namespaced_role",
         ),
-        ('rbac.authorization.k8s.io/v1beta1', 'RoleBinding'): KindInfo(
+        ("rbac.authorization.k8s.io/v1beta1", "RoleBinding"): KindInfo(
             model=k8s_client.V1beta1RoleBinding,
             api_cls=k8s_client.RbacAuthorizationV1beta1Api,
-            name='namespaced_role_binding',
+            name="namespaced_role_binding",
         ),
         # }}}
         # /apis/storage.k8s.io/v1/ {{{
-        ('storage.k8s.io/v1', 'StorageClass'): KindInfo(
+        ("storage.k8s.io/v1", "StorageClass"): KindInfo(
             model=k8s_client.V1StorageClass,
             api_cls=k8s_client.StorageV1Api,
-            name='storage_class',
+            name="storage_class",
         ),
         # }}}
     }
@@ -389,8 +379,9 @@ if HAS_LIBS:
 # CustomResources cannot rely on statically declared models, which is why their
 # management is treated differently from "standard" objects.
 
+
 class CustomApiClient(ApiClient):
-    CRUD_METHODS = dict(ApiClient.CRUD_METHODS, retrieve='get')
+    CRUD_METHODS = dict(ApiClient.CRUD_METHODS, retrieve="get")
 
     def __init__(self, group, version, kind, plural, scope):
         self._group = group
@@ -401,14 +392,14 @@ class CustomApiClient(ApiClient):
 
         super(CustomApiClient, self).__init__(
             api_cls=k8s_apis.CustomObjectsApi,
-            name='{}_custom_object'.format(self.scope.value)
+            name="{}_custom_object".format(self.scope.value),
         )
 
-    group = property(operator.attrgetter('_group'))
-    version = property(operator.attrgetter('_version'))
-    scope = property(operator.attrgetter('_scope'))
-    kind = property(operator.attrgetter('_kind'))
-    plural = property(operator.attrgetter('_plural'))
+    group = property(operator.attrgetter("_group"))
+    version = property(operator.attrgetter("_version"))
+    scope = property(operator.attrgetter("_scope"))
+    kind = property(operator.attrgetter("_kind"))
+    plural = property(operator.attrgetter("_plural"))
 
     def _method(self, verb):
         """Return a CRUD method for this CustomApiClient.
@@ -420,27 +411,29 @@ class CustomApiClient(ApiClient):
         base_method = super(CustomApiClient, self)._method(verb)
 
         def method(*args, **kwargs):
-            kwargs.update({
-                'group': self.group,
-                'version': self.version,
-                'plural': self.plural,
-            })
+            kwargs.update(
+                {
+                    "group": self.group,
+                    "version": self.version,
+                    "plural": self.plural,
+                }
+            )
 
             # Convert body to_dict if it's a CustomObject as
             # `python-kubernetes` want a dict or a specific objects with
             # some attributes like `openapi_types`, `attributes_map`, ...
-            if isinstance(kwargs.get('body'), CustomObject):
-                kwargs['body'] = kwargs['body'].to_dict()
+            if isinstance(kwargs.get("body"), CustomObject):
+                kwargs["body"] = kwargs["body"].to_dict()
 
             result = base_method(*args, **kwargs)
 
             # TODO: do we have a result for `delete` methods?
             return CustomObject(result)
 
-        method.__doc__ = '{verb} a {kind} {scope} object.'.format(
+        method.__doc__ = "{verb} a {kind} {scope} object.".format(
             verb=verb.capitalize(),
-            kind='{s.group}/{s.version}/{s.kind}'.format(s=self),
-            scope=self.scope.value
+            kind="{s.group}/{s.version}/{s.kind}".format(s=self),
+            scope=self.scope.value,
         )
 
         return method
@@ -465,8 +458,9 @@ class CRKindInfo(object):
     methods used to manipulate custom objects, using details from the
     statically provided information in `KNOWN_CUSTOM_KINDS`.
     """
+
     def __init__(self, api_version, kind, scope, plural):
-        group, _, version = api_version.rpartition('/')
+        group, _, version = api_version.rpartition("/")
         if not (group and version):
             raise ValueError(
                 "Malformed 'apiVersion': {} "
@@ -476,18 +470,14 @@ class CRKindInfo(object):
         self._api_version = api_version
         self._scope = scope
         self._client = CustomApiClient(
-            group=group,
-            version=version,
-            kind=kind,
-            plural=plural,
-            scope=scope
+            group=group, version=version, kind=kind, plural=plural, scope=scope
         )
         self._kind = kind
 
-    api_version = property(operator.attrgetter('_api_version'))
-    kind = property(operator.attrgetter('_kind'))
-    scope = property(operator.attrgetter('_scope'))
-    client = property(operator.attrgetter('_client'))
+    api_version = property(operator.attrgetter("_api_version"))
+    kind = property(operator.attrgetter("_kind"))
+    scope = property(operator.attrgetter("_scope"))
+    client = property(operator.attrgetter("_client"))
 
     @property
     def key(self):
@@ -497,16 +487,36 @@ class CRKindInfo(object):
 
 if HAS_LIBS:
     _CUSTOM_KINDS = [
-        CRKindInfo('monitoring.coreos.com/v1', 'Alertmanager',
-                   scope='namespaced', plural='alertmanagers'),
-        CRKindInfo('monitoring.coreos.com/v1', 'Prometheus',
-                   scope='namespaced', plural='prometheuses'),
-        CRKindInfo('monitoring.coreos.com/v1', 'PrometheusRule',
-                   scope='namespaced', plural='prometheusrules'),
-        CRKindInfo('monitoring.coreos.com/v1', 'ServiceMonitor',
-                   scope='namespaced', plural='servicemonitors'),
-        CRKindInfo('storage.metalk8s.scality.com/v1alpha1', 'Volume',
-                   scope='cluster', plural='volumes'),
+        CRKindInfo(
+            "monitoring.coreos.com/v1",
+            "Alertmanager",
+            scope="namespaced",
+            plural="alertmanagers",
+        ),
+        CRKindInfo(
+            "monitoring.coreos.com/v1",
+            "Prometheus",
+            scope="namespaced",
+            plural="prometheuses",
+        ),
+        CRKindInfo(
+            "monitoring.coreos.com/v1",
+            "PrometheusRule",
+            scope="namespaced",
+            plural="prometheusrules",
+        ),
+        CRKindInfo(
+            "monitoring.coreos.com/v1",
+            "ServiceMonitor",
+            scope="namespaced",
+            plural="servicemonitors",
+        ),
+        CRKindInfo(
+            "storage.metalk8s.scality.com/v1alpha1",
+            "Volume",
+            scope="cluster",
+            plural="volumes",
+        ),
     ]
 
     KNOWN_CUSTOM_KINDS = {kind.key: kind for kind in _CUSTOM_KINDS}
@@ -535,6 +545,7 @@ class _DictWrapper(object):
         ...
     AttributeError: Custom object has no attribute 'unknown'
     """
+
     def __init__(self, fields):
         self._fields = fields
 
@@ -567,7 +578,7 @@ class _DictWrapper(object):
 
     def __setattr__(self, name, value):
         # First check for class values then retrieve from dict
-        if name in ['_fields']:
+        if name in ["_fields"]:
             super(_DictWrapper, self).__setattr__(name, value)
         else:
             self._fields[name] = value
@@ -582,6 +593,7 @@ class CustomObject(object):
     This fake "model" also uses a `_DictWrapper` internally to provide dynamic
     attribute access on the instance's manifest.
     """
+
     def __init__(self, manifest):
         self._attr_dict = _DictWrapper(manifest)
 
@@ -608,7 +620,7 @@ class CustomObject(object):
 
     def __setattr__(self, name, value):
         # First check for class values then retrieve from dict
-        if name in ['_attr_dict']:
+        if name in ["_attr_dict"]:
             super(CustomObject, self).__setattr__(name, value)
         else:
             setattr(self._attr_dict, name, value)
@@ -616,24 +628,23 @@ class CustomObject(object):
 
 def get_kind_info(manifest):
     try:
-        api_version = manifest['apiVersion']
-        kind = manifest['kind']
+        api_version = manifest["apiVersion"]
+        kind = manifest["kind"]
     except KeyError:
         raise ValueError(  # pylint: disable=raise-missing-from
-            'Make sure to provide a valid Kubernetes manifest, including'
-            ' `kind` and `apiVersion` fields.'
+            "Make sure to provide a valid Kubernetes manifest, including"
+            " `kind` and `apiVersion` fields."
         )
 
     # Check for custom Kinds first and then standard Kinds
     kind_info = KNOWN_CUSTOM_KINDS.get(
-        (api_version, kind),
-        KNOWN_STD_KINDS.get((api_version, kind))
+        (api_version, kind), KNOWN_STD_KINDS.get((api_version, kind))
     )
 
     if kind_info is None:
         raise ValueError(
-            'Unknown object type provided: {}/{}. Make sure it is'
-            ' registered properly.'.format(api_version, kind)
+            "Unknown object type provided: {}/{}. Make sure it is"
+            " registered properly.".format(api_version, kind)
         )
 
     return kind_info
@@ -672,9 +683,7 @@ def _build_standard_object(model, manifest):
     #   'status': 'status', 'kind': 'kind', 'spec': 'spec',
     #   'api_version': 'apiVersion', 'metadata': 'metadata'
     # }
-    reverse_attr_map = {
-        value: key for key, value in model.attribute_map.items()
-    }
+    reverse_attr_map = {value: key for key, value in model.attribute_map.items()}
 
     kwargs = {}
     for src_key, src_value in manifest.items():
@@ -702,8 +711,8 @@ def _build_standard_object(model, manifest):
     return model(**kwargs)
 
 
-DICT_PATTERN = re.compile(r'^dict\(str,\s?(?P<value_type>\S+)\)$')
-LIST_PATTERN = re.compile(r'^list\[(?P<value_type>\S+)\]$')
+DICT_PATTERN = re.compile(r"^dict\(str,\s?(?P<value_type>\S+)\)$")
+LIST_PATTERN = re.compile(r"^list\[(?P<value_type>\S+)\]$")
 
 
 def _cast_value(value, type_string):
@@ -716,64 +725,61 @@ def _cast_value(value, type_string):
     if value is None:
         return value
 
-    if type_string == 'str':
+    if type_string == "str":
         if not isinstance(value, six.string_types):
-            raise _type_error(value, expected='a string')
+            raise _type_error(value, expected="a string")
         return value
 
-    if type_string == 'bool':
+    if type_string == "bool":
         if not isinstance(value, bool):
-            raise _type_error(value, expected='a boolean')
+            raise _type_error(value, expected="a boolean")
         return value
 
-    if type_string == 'int':
+    if type_string == "int":
         if not isinstance(value, six.integer_types):
-            raise _type_error(value, expected='an integer')
+            raise _type_error(value, expected="an integer")
         return value
 
-    if type_string == 'float':
+    if type_string == "float":
         if not isinstance(value, six.integer_types + (float,)):
-            raise _type_error(value, expected='a float')
+            raise _type_error(value, expected="a float")
         return float(value)
 
-    if type_string == 'object':
+    if type_string == "object":
         # NOTE: this corresponds to fields accepting different types, such as
         # either string or integer (e.g. for ports or thresholds). As such, we
         # don't attempt validation. Note however that some cases may require
         # casting into specific objects, which we don't handle yet.
         return value
 
-    if type_string == 'datetime':
+    if type_string == "datetime":
         # YAML only supports dates as strings, though we don't know in advance
         # what format would be used in source manifests (most likely, there
         # wouldn't be any date). We thus pick the Swagger `date-time` string
         # format (see swagger.io/docs/specification/data-models/data-types/).
         try:
-            return datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%SZ')
+            return datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
         except (TypeError, ValueError):
-            raise _type_error(value, expected='a date-time string')  # pylint: disable=raise-missing-from
+            # pylint: disable=raise-missing-from
+            raise _type_error(value, expected="a date-time string")
 
     dict_match = DICT_PATTERN.match(type_string)
     if dict_match is not None:
         if not isinstance(value, dict):
-            raise _type_error(value, expected='a dictionary')
+            raise _type_error(value, expected="a dictionary")
 
         if not all(isinstance(key, six.string_types) for key in value.keys()):
-            raise _type_error(value,
-                              expected='a dictionary with string keys only')
+            raise _type_error(value, expected="a dictionary with string keys only")
 
-        value_type_str = dict_match.group('value_type')
-        return {
-            key: _cast_value(val, value_type_str)
-            for key, val in value.items()
-        }
+        value_type_str = dict_match.group("value_type")
+        return {key: _cast_value(val, value_type_str) for key, val in value.items()}
 
     list_match = LIST_PATTERN.match(type_string)
     if list_match is not None:
         if not isinstance(value, list):
-            raise _type_error(value, expected='a list')
+            raise _type_error(value, expected="a list")
 
-        value_type_str = list_match.group('value_type')
+        value_type_str = list_match.group("value_type")
         return [_cast_value(val, value_type_str) for val in value]
 
     try:
@@ -781,13 +787,12 @@ def _cast_value(value, type_string):
     except AttributeError:
         # This should never happen, otherwise this function should get updated
         raise ValueError(  # pylint: disable=raise-missing-from
-            'Unknown type string provided: {}.'.format(type_string)
+            "Unknown type string provided: {}.".format(type_string)
         )
 
     if not isinstance(value, dict):
         raise _type_error(
-            value,
-            expected='a dict to cast as a "{}"'.format(model.__name__)
+            value, expected='a dict to cast as a "{}"'.format(model.__name__)
         )
 
     return _build_standard_object(model, value)
@@ -795,9 +800,7 @@ def _cast_value(value, type_string):
 
 def _type_error(value, expected):
     return TypeError(
-        'Expected {}, received: {} (type: {})'.format(
-            expected, value, type(value)
-        )
+        "Expected {}, received: {} (type: {})".format(expected, value, type(value))
     )
 
 
@@ -881,16 +884,15 @@ def _convert_attribute_name(key):
     'external_i_ps'
     """
     if keyword.iskeyword(key):
-        return '_{}'.format(key)
-    if key.startswith('$'):
+        return "_{}".format(key)
+    if key.startswith("$"):
         # Only two supported values, '$ref' and '$schema'
         return key[1:]
-    for pattern in ['([a-z])([A-Z0-9])', '([A-Z0-9])([A-Z0-9][a-z])']:
-        key = re.sub(pattern, r'\1_\2', key)
+    for pattern in ["([a-z])([A-Z0-9])", "([A-Z0-9])([A-Z0-9][a-z])"]:
+        key = re.sub(pattern, r"\1_\2", key)
     return key.lower()
 
 
 def camel_to_snake(source):
-    """Translation of attribute names from K8s YAML style to Python snake case.
-    """
+    """Translation of attribute names from K8s YAML style to Python snake case."""
     return _cast_dict_keys(source, _convert_attribute_name)

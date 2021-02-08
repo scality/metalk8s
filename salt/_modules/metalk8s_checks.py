@@ -7,7 +7,7 @@ import ipaddress
 
 from salt.exceptions import CheckError
 
-__virtualname__ = 'metalk8s_checks'
+__virtualname__ = "metalk8s_checks"
 
 
 def __virtual__():
@@ -29,35 +29,34 @@ def node(raises=True, **kwargs):
     errors = []
 
     # Run `packages` check
-    pkg_ret = __salt__['metalk8s_checks.packages'](raises=False, **kwargs)
+    pkg_ret = __salt__["metalk8s_checks.packages"](raises=False, **kwargs)
     if pkg_ret is not True:
         errors.append(pkg_ret)
 
     # Run `services` check
-    svc_ret = __salt__['metalk8s_checks.services'](raises=False, **kwargs)
+    svc_ret = __salt__["metalk8s_checks.services"](raises=False, **kwargs)
     if svc_ret is not True:
         errors.append(svc_ret)
 
     # Run `route_exists` check for the Service Cluster IPs
     service_cidr = kwargs.pop(
-        'service_cidr',
-        __pillar__.get('networks', {}).get('service', None)
+        "service_cidr", __pillar__.get("networks", {}).get("service", None)
     )
     if service_cidr is not None:
-        service_route_ret = route_exists(
-            destination=service_cidr, raises=False
-        )
+        service_route_ret = route_exists(destination=service_cidr, raises=False)
         if service_route_ret is not True:
-            errors.append((
-                'Invalid networks:service CIDR - {}. Please make sure to '
-                'have either a default route or a dummy interface and route '
-                'for this range (for details, see '
-                'https://github.com/kubernetes/kubernetes/issues/57534#issuecomment-527653412).'
-            ).format(service_route_ret))
+            errors.append(
+                (
+                    "Invalid networks:service CIDR - {}. Please make sure to "
+                    "have either a default route or a dummy interface and route "
+                    "for this range (for details, see "
+                    "https://github.com/kubernetes/kubernetes/issues/57534#issuecomment-527653412)."
+                ).format(service_route_ret)
+            )
 
     # Compute return of the function
     if errors:
-        error_msg = 'Node {}: {}'.format(__grains__['id'], '\n'.join(errors))
+        error_msg = "Node {}: {}".format(__grains__["id"], "\n".join(errors))
         if raises:
             raise CheckError(error_msg)
         return error_msg
@@ -89,27 +88,23 @@ def packages(conflicting_packages=None, raises=True, **kwargs):
       - A list of string for multiple conflicting versions of this package
     """
     if conflicting_packages is None:
-        conflicting_packages = __salt__['metalk8s.get_from_map'](
-            'repo', saltenv=kwargs.get('saltenv')
-        )['conflicting_packages']
+        conflicting_packages = __salt__["metalk8s.get_from_map"](
+            "repo", saltenv=kwargs.get("saltenv")
+        )["conflicting_packages"]
 
     if isinstance(conflicting_packages, str):
         conflicting_packages = {conflicting_packages: None}
     elif isinstance(conflicting_packages, list):
-        conflicting_packages = {
-            package: None
-            for package in conflicting_packages
-        }
+        conflicting_packages = {package: None for package in conflicting_packages}
     errors = []
 
-    installed_packages = __salt__['pkg.list_pkgs'](attr="version")
+    installed_packages = __salt__["pkg.list_pkgs"](attr="version")
     for package, version in conflicting_packages.items():
         if isinstance(version, str):
             version = [version]
         if package in installed_packages:
             conflicting_versions = set(
-                pkg_info['version']
-                for pkg_info in installed_packages[package]
+                pkg_info["version"] for pkg_info in installed_packages[package]
             )
             if version:
                 conflicting_versions.intersection_update(version)
@@ -121,7 +116,7 @@ def packages(conflicting_packages=None, raises=True, **kwargs):
                         "please remove it.".format(package, ver)
                     )
 
-    error_msg = '\n'.join(errors)
+    error_msg = "\n".join(errors)
     if error_msg and raises:
         raise CheckError(error_msg)
 
@@ -144,9 +139,9 @@ def services(conflicting_services=None, raises=True, **kwargs):
     - a list `[<service_name1>, <service_name2>]` with all conflicting service name
     """
     if conflicting_services is None:
-        conflicting_services = __salt__['metalk8s.get_from_map'](
-            'defaults', saltenv=kwargs.get('saltenv')
-        )['conflicting_services']
+        conflicting_services = __salt__["metalk8s.get_from_map"](
+            "defaults", saltenv=kwargs.get("saltenv")
+        )["conflicting_services"]
 
     if isinstance(conflicting_services, str):
         conflicting_services = [conflicting_services]
@@ -159,14 +154,15 @@ def services(conflicting_services=None, raises=True, **kwargs):
         # `service.disabled`:
         #   True = service disabled or not available
         #   False = service not disabled
-        if __salt__['service.status'](service_name) or \
-                not __salt__['service.disabled'](service_name):
+        if __salt__["service.status"](service_name) or not __salt__["service.disabled"](
+            service_name
+        ):
             errors.append(
                 "Service {} conflicts with MetalK8s installation, "
                 "please stop and disable it.".format(service_name)
             )
 
-    error_msg = '\n'.join(errors)
+    error_msg = "\n".join(errors)
     if error_msg and raises:
         raise CheckError(error_msg)
 
