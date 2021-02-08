@@ -55,7 +55,7 @@ repos:
           - --strict
 
   - repo: https://github.com/warpnet/salt-lint
-    rev: v0.5.1
+    rev: v0.5.2
     hooks:
       - id: salt-lint
 
