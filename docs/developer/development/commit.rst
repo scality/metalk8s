@@ -1,6 +1,35 @@
 Commit Best Practices
 ---------------------
 
+Pre-commit hooks
+~~~~~~~~~~~~~~~~
+
+Some pre-commit hooks are defined to do some linting checks and also to format
+all Python code automatically.
+
+Those checks are also run in the CI pre-merge test suite to enforce code
+linting.
+
+To enable pre-commit hook to run automatically when committing, install it as
+follows:
+
+.. code-block:: shell
+
+   pip install pre-commit
+   pre-commit install
+
+You can skip this pre-commit hook on a specific commit
+``git commit --no-verify``.
+
+To run pre-commit manually, use tox:
+
+.. code-block:: shell
+
+   tox -e pre-commit
+
+It is also possible to run only a specific hook (e.g. for pylint
+``tox -e pre-commit pylint``).
+
 How to split a change into commits
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
