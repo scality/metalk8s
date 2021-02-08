@@ -43,24 +43,16 @@ def _builder_image(name: str, dockerfile: Path, **kwargs: Any) -> LocalImage:
     )
 
 
+REDHAT_REPOS_ROOT: Path = constants.ROOT / "packages/redhat/common/yum_repositories"
+
 RPM_BUILDER: Dict[str, LocalImage] = {
     "7": _builder_image(
         name="redhat-7-rpm",
         dockerfile=constants.ROOT / "packages/redhat/7/Dockerfile",
         build_context=constants.ROOT / "packages/redhat",
         file_dep=[
-            constants.ROOT
-            / "packages"
-            / "redhat"
-            / "common"
-            / "yum_repositories"
-            / "kubernetes.repo",
-            constants.ROOT
-            / "packages"
-            / "redhat"
-            / "common"
-            / "yum_repositories"
-            / "saltstack.repo",
+            REDHAT_REPOS_ROOT / "kubernetes.repo",
+            REDHAT_REPOS_ROOT / "saltstack.repo",
         ],
         build_args={
             # Used to template the SaltStack repository definition
@@ -72,18 +64,8 @@ RPM_BUILDER: Dict[str, LocalImage] = {
         dockerfile=constants.ROOT / "packages/redhat/8/Dockerfile",
         build_context=constants.ROOT / "packages/redhat",
         file_dep=[
-            constants.ROOT
-            / "packages"
-            / "redhat"
-            / "common"
-            / "yum_repositories"
-            / "kubernetes.repo",
-            constants.ROOT
-            / "packages"
-            / "redhat"
-            / "common"
-            / "yum_repositories"
-            / "saltstack.repo",
+            REDHAT_REPOS_ROOT / "kubernetes.repo",
+            REDHAT_REPOS_ROOT / "saltstack.repo",
         ],
         build_args={
             # Used to template the SaltStack repository definition
