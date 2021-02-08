@@ -499,7 +499,6 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/kubernetes/etcd/prepared.sls"),
     Path("salt/metalk8s/kubernetes/kubelet/configured.sls"),
     Path("salt/metalk8s/kubernetes/kubelet/files/kubeadm.env"),
-    # pylint:disable=line-too-long
     Path("salt/metalk8s/kubernetes/kubelet/files/service-standalone-systemd.conf"),
     Path("salt/metalk8s/kubernetes/kubelet/files/service-systemd.conf"),
     Path("salt/metalk8s/kubernetes/kubelet/init.sls"),
@@ -686,7 +685,6 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
         digest=versions.CONTAINER_IMAGES_MAP["pause"].digest,
         repository=constants.GOOGLE_REPOSITORY,
         save_as=[targets.SaveAsTar()],
-        # pylint:disable=line-too-long
         destination=constants.ISO_ROOT
         / "salt/metalk8s/container-engine/containerd/files",
     ),
