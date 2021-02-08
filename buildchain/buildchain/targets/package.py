@@ -155,7 +155,7 @@ class RPMPackage(Package):
     @property
     def srpm(self) -> Path:
         """SRPM path."""
-        fmt = "{pkg.name}-{pkg.version}-{pkg.build_id}" ".el{pkg._releasever}.src.rpm"
+        fmt = "{pkg.name}-{pkg.version}-{pkg.build_id}.el{pkg._releasever}.src.rpm"
         return constants.PKG_REDHAT_ROOT / self._releasever / fmt.format(pkg=self)
 
     @property
