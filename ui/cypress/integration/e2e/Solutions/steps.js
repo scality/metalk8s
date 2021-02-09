@@ -16,7 +16,7 @@ When(
       '/api/kubernetes/api/v1/namespaces?labelSelector=solutions.metalk8s.scality.com/environment',
     ).as('getEnvironmentsList');
 
-    cy.get('.sc-sidebar-item').eq(2).click(); // go to solutions list
+    cy.get('[data-cy="sidebar_item_environments"]').click(); // go to solutions list
 
     const timeOut = {
       requestTimeout: 60000,
