@@ -579,7 +579,7 @@ models:
       doStepIf: "%(prop:generate_snapshot:-false)s"
       env:
         <<: *_env_terraform
-        SNAPSHOT_NAME: "%(prop:metalk8s_version)s-%(prop:os:-centos-7)s-%(prop:environment_type)s-%(prop:environment_name)s"
+        SNAPSHOT_NAME: "metalk8s-%(prop:metalk8s_version)s-%(prop:os:-centos-7)s-%(prop:environment_type)s-%(prop:environment_name)s"
       command: ./generate_snapshot.sh
       workdir: build/eve/workers/openstack-terraform/terraform/
       haltOnFailure: true
