@@ -2335,7 +2335,8 @@ stages:
             --cert /etc/kubernetes/pki/etcd/server.crt
             --key /etc/kubernetes/pki/etcd/server.key
             --cacert /etc/kubernetes/pki/etcd/ca.crt
-            member remove %(prop:bootstrap_etcd_member_id)s\"
+            member remove %(prop:bootstrap_etcd_member_id)s\" &&
+            sleep 10
           workdir: build/eve/workers/openstack-terraform/terraform/
           haltOnFailure: true
       - ShellCommand:
