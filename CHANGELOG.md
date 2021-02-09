@@ -51,6 +51,9 @@
   Check if a route exists for the Service IPs CIDR
   (PR [#3076](https://github.com/scality/metalk8s/pull/3076))
 
+- Improve the upgrade robustness when the platform is a bit slow
+  (PR [#3105](https://github.com/scality/metalk8s/pull/3105))
+
 ### Bug fixes
 - [#3022](https://github.com/scality/metalk8s/issues/3022) - Ensure salt-master
   container can start at reboot even if local salt-minion is down
