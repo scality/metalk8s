@@ -135,12 +135,24 @@ upgrade_local_engines () {
     repo_endpoint="$($SALT_CALL pillar.get \
         metalk8s:endpoints:repositories --out txt | cut -d' ' -f2- )"
 
-    # NOTE: Sleep a bit at the end so that salt-master container properly stop
-    #       before going to the next step
+    # NOTE: Sleep a bit at the end so that container properly stop before
+    #       going to the next step
     "${SALT_CALL}" --local --retcode-passthrough state.sls sync_mods="all" \
         metalk8s.kubernetes.kubelet.standalone saltenv="$SALTENV" \
         pillar="{'metalk8s': {'endpoints': {'salt-master': $saltmaster_endpoint, \
         'repositories': $repo_endpoint}}}" && sleep 20
+
+    # List of containers that need to be running to continue the upgrade
+    local -a containers_to_check=(
+        'repositories'
+        'salt-master'
+        'kube-apiserver'
+        'etcd'
+    )
+    for container in "${containers_to_check[@]}"; do
+        "${SALT_CALL}" --local --retcode-passthrough cri.wait_container \
+            name="$container" state=running || return 1
+    done
 }
 
 upgrade_nodes () {

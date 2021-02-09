@@ -6,6 +6,7 @@ import re
 import logging
 import time
 
+from salt.exceptions import CommandExecutionError
 import salt.utils.json
 
 
@@ -164,15 +165,25 @@ def wait_container(name, state, timeout=60, delay=5):
     if state is not None:
         opts += " --state {0}".format(state)
 
+    last_error = None
     for _ in range(0, timeout, delay):
         out = __salt__["cmd.run_all"]("crictl ps -q {0}".format(opts))
 
-        if out["retcode"] == 0 and out["stdout"]:
-            return True
+        if out["retcode"] == 0:
+            if out["stdout"]:
+                return True
+            last_error = "No container found"
+        else:
+            last_error = out["stderr"] or out["stdout"]
+
         time.sleep(delay)
 
-    log.error('Failed to find container "%s" in state "%s"', name, state)
-    return False
+    error_msg = 'Failed to find container "{}"'.format(name)
+    if state is not None:
+        error_msg += ' in state "{}"'.format(state)
+    error_msg += ": {}".format(last_error)
+
+    raise CommandExecutionError(error_msg)
 
 
 def component_is_running(name):
