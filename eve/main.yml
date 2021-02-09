@@ -690,6 +690,20 @@ models:
         --solution "$SOLUTION_NAME" --version "$SOLUTION_VERSION"
       workdir: build/eve/workers/openstack-terraform/terraform/
       haltOnFailure: true
+  - ShellCommand: &wait_for_solution_operator
+      doStepIf: "%(prop:install_solution:-false)s"
+      name: Wait for Solution Operator to become ready
+      env:
+        ENVIRONMENT_NAME: "%(prop:solution_env_name:-example-environment)s"
+        SOLUTION_NAME: "%(prop:solution_name:-example-solution)s"
+      command: >
+        ssh -F ssh_config bootstrap
+        sudo kubectl --kubeconfig /etc/kubernetes/admin.conf
+        wait pods --namespace "$ENVIRONMENT_NAME"
+        --selector "app.kubernetes.io/name=$SOLUTION_NAME-operator"
+        --for condition=Ready
+      workdir: build/eve/workers/openstack-terraform/terraform/
+      haltOnFailure: true
 
   # --- Previous version (for Upgrade/Downgrade) ---
   - Git: &git_pull_prev
@@ -1609,6 +1623,7 @@ stages:
       - ShellCommand: *create_solution_env
       - ShellCommand: *untaint_bootstrap
       - ShellCommand: *deploy_solution
+      - ShellCommand: *wait_for_solution_operator
     # }}}
       - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand: *git_pull_ssh
@@ -2127,6 +2142,7 @@ stages:
       - ShellCommand: *create_solution_env
       - ShellCommand: *untaint_bootstrap
       - ShellCommand: *deploy_solution
+      - ShellCommand: *wait_for_solution_operator
     # }}}
       - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand: &multi_node_fast_tests
