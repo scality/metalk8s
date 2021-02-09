@@ -663,6 +663,18 @@ models:
         create-env --name "$ENVIRONMENT_NAME"
       workdir: build/eve/workers/openstack-terraform/terraform/
       haltOnFailure: true
+  - ShellCommand: &untaint_bootstrap
+      doStepIf: "%(prop:install_solution:-false)s"
+      name: Untaint Bootstrap before deploying a Solution
+      env:
+        NODE_NAME: "bootstrap"
+      command: |
+        ssh -F ssh_config bootstrap <<ENDSSH
+        sudo kubectl --kubeconfig /etc/kubernetes/admin.conf \
+        patch node "$NODE_NAME" --patch '{"spec": {"taints": []}}'
+        ENDSSH
+      workdir: build/eve/workers/openstack-terraform/terraform/
+      haltOnFailure: true
   - ShellCommand: &deploy_solution
       doStepIf: "%(prop:install_solution:-false)s"
       name: Deploy Solution
@@ -1595,6 +1607,7 @@ stages:
       - ShellCommand: *import_solution
       - ShellCommand: *activate_solution
       - ShellCommand: *create_solution_env
+      - ShellCommand: *untaint_bootstrap
       - ShellCommand: *deploy_solution
     # }}}
       - ShellCommand: *wait_pods_stable_ssh
@@ -2112,6 +2125,7 @@ stages:
       - ShellCommand: *import_solution
       - ShellCommand: *activate_solution
       - ShellCommand: *create_solution_env
+      - ShellCommand: *untaint_bootstrap
       - ShellCommand: *deploy_solution
     # }}}
       - ShellCommand: *wait_pods_stable_ssh
