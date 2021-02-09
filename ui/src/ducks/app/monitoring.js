@@ -333,7 +333,9 @@ function getClusterQueryStatus(result) {
 }
 
 export function* handlePrometheusError(clusterHealth, result) {
-  if (result.error.response) {
+  // TODO:
+  // Type result argument to something similar to {error: {response?: AxiosResponse} } to simplify optional chaining use here.
+  if (result?.error?.response?.status < 500) {
     yield put(setPrometheusApiAvailable(true));
     clusterHealth.error = `Prometheus - ${result.error.response.statusText}`;
   } else {
