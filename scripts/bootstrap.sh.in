@@ -167,6 +167,19 @@ bootstrap_file_is_present() {
     fi
 }
 
+check_ca_minion() {
+    # NOTE: Today using bootstrap script, bootstrap node is also the CA
+    # minion, so check for minion id equal to CA minion
+    minion_id="$("$SALT_CALL" --out txt --local grains.get id | cut -c 8-)"
+    ca_minion="$("$SALT_CALL" --out txt --local pillar.get metalk8s:ca:minion | cut -c 8-)"
+    if [ "$minion_id" != "$ca_minion" ]; then
+        echo "CA minion \"$ca_minion\" from bootstrap configuration is not equal" \
+             "to the local minion ID \"$minion_id\", you need to change" \
+             "the local minion ID, or update the bootstrap configuration." >&2
+        return 1
+    fi
+}
+
 
 main() {
     run "Determine the OS" determine_os
@@ -179,6 +192,7 @@ main() {
     run "Installing mandatory packages" install_packages "${PACKAGES[@]}"
     run "Configuring Salt minion to run in local mode" configure_salt_minion_local_mode
     run "Ensure archive is available" ensure_archives_mounted
+    run "Checking CA minion" check_ca_minion
     run "Checking local node" check_local_node
 
     orchestrate_bootstrap

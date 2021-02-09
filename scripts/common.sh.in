@@ -350,17 +350,6 @@ configure_salt_minion_local_mode() {
 }
 
 check_local_node() {
-    # NOTE: Today using bootstrap script, bootstrap node is also the CA
-    # minion, so check for minion id equal to CA minion
-    minion_id="$("$SALT_CALL" --out txt --local grains.get id | cut -c 8-)"
-    ca_minion="$("$SALT_CALL" --out txt --local pillar.get metalk8s:ca:minion | cut -c 8-)"
-    if [ "$minion_id" != "$ca_minion" ]; then
-        echo "CA minion \"$ca_minion\" from bootstrap configuration is not equal" \
-            "to the local minion ID \"$minion_id\", you need to change" \
-            "the local minion ID, or update the bootstrap configuration." 1>&2
-        return 1
-    fi
-
     "$SALT_CALL" --local --retcode-passthrough metalk8s_checks.node \
         saltenv=metalk8s-@@VERSION
 }
