@@ -251,7 +251,16 @@ models:
           if [ $(( $i % 10 )) -eq 1 ]; then
             echo "Attempt $i out of ${MAX_ATTEMPTS}"
           fi
-          curl -L -s -XGET -o "${out_path}" "${in_url}" && exit
+          status_code=$(curl -L -s -XGET -o "${out_path}" "${in_url}" --write-out "%{http_code}")
+          case "$status_code" in
+              200)
+                  exit
+                  ;;
+              404)
+                  echo "Could not retrieve $FILE_SOURCE: $status_code" >&2
+                  exit 1
+                  ;;
+          esac
           sleep 2
         done
         echo "Could not retrieve $FILE_SOURCE after $MAX_ATTEMPTS attempts" >&2
