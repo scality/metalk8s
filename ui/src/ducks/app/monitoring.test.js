@@ -346,7 +346,9 @@ it('should set cluster error if a query failed', () => {
 });
 
 it('should handlePrometheusError when prometheus is up', () => {
-  const result = { error: { response: { statusText: 'Bad Request' } } };
+  const result = {
+    error: { response: { statusText: 'Bad Request', status: 400 } },
+  };
   const gen = handlePrometheusError({}, result);
   expect(gen.next().value).toEqual(
     put({
