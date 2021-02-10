@@ -204,27 +204,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     targets.SerializedData(
         task_name="versions.json",
         destination=constants.ISO_ROOT / "salt" / "metalk8s" / "versions.json",
-        data={
-            "kubernetes": {"version": versions.K8S_VERSION},
-            "packages": {
-                "centos": {
-                    version: {pkg.name: {"version": pkg.full_version} for pkg in pkgs}
-                    for version, pkgs in versions.REDHAT_PACKAGES.items()
-                },
-                "redhat": {
-                    version: {pkg.name: {"version": pkg.full_version} for pkg in pkgs}
-                    for version, pkgs in versions.REDHAT_PACKAGES.items()
-                },
-                "ubuntu": {
-                    version: {pkg.name: {"version": pkg.full_version} for pkg in pkgs}
-                    for version, pkgs in versions.DEB_PACKAGES.items()
-                },
-            },
-            "images": {
-                img.name: {"version": img.version} for img in versions.CONTAINER_IMAGES
-            },
-            "metalk8s": {"version": versions.VERSION},
-        },
+        data=versions.SALT_VERSIONS_JSON,
         renderer=targets.Renderer.JSON,
     ),
     Path("salt/metalk8s/addons/dex/ca/init.sls"),

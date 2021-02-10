@@ -464,3 +464,25 @@ DEB_PACKAGES_MAP = {
 }
 
 # }}}
+
+# This variables holds the contents of the rendered
+# "salt/metalk8s/versions.json" file (useful in tests)
+SALT_VERSIONS_JSON = {
+    "kubernetes": {"version": K8S_VERSION},
+    "packages": {
+        "centos": {
+            version: {pkg.name: {"version": pkg.full_version} for pkg in pkgs}
+            for version, pkgs in REDHAT_PACKAGES.items()
+        },
+        "redhat": {
+            version: {pkg.name: {"version": pkg.full_version} for pkg in pkgs}
+            for version, pkgs in REDHAT_PACKAGES.items()
+        },
+        "ubuntu": {
+            version: {pkg.name: {"version": pkg.full_version} for pkg in pkgs}
+            for version, pkgs in DEB_PACKAGES.items()
+        },
+    },
+    "images": {img.name: {"version": img.version} for img in CONTAINER_IMAGES},
+    "metalk8s": {"version": VERSION},
+}
