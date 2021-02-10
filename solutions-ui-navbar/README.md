@@ -36,7 +36,7 @@ $ npm run build
  - client-id : string, required  
  
  - redirect-url : string, customized redirect uri
- - options : {[url: string]: {en: string, fr: string}} -- eg : {"/": {en: "Overview", fr: "Vue generale"}, "/platform": {en: "Platform", fr: "Infrastructure"}, ...} - by default we display the full navbar in static mode, this attribute can be used if we want to extends the menu in a specific context
+ - options : {[url: string]: {en: string, fr: string, roles: string[]}} -- eg : {"/": {en: "Overview", fr: "Vue generale", roles: ["admin"]}, "/platform": {en: "Platform", fr: "Infrastructure"}, ...} - by default we display the full navbar in static mode, this attribute can be used if we want to extends the menu in a specific context
 
 ## Methods 
 

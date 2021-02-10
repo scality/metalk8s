@@ -19,6 +19,10 @@ module.exports = {
       }
     ],
   },
+  devServer: {
+        port: process.env.PORT || 8082,
+        historyApiFallback: true
+      },
   plugins: [
     new HtmlWebPackPlugin({
       template: "./index-template.html",
