@@ -33,7 +33,7 @@ Create kubeconfig file for kubelet:
 Configure kubelet service:
   file.managed:
     - name: /etc/systemd/system/kubelet.service.d/10-metalk8s.conf
-    - source: salt://{{ slspath }}/files/service-{{ grains['init'] }}.conf
+    - source: salt://{{ slspath }}/files/service-{{ grains['init'] }}.conf.j2
     - template: jinja
     - user: root
     - group : root

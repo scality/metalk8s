@@ -7,7 +7,7 @@ include:
 
 Create metalk8s-ui deployment:
   metalk8s_kubernetes.object_present:
-    - name: salt://{{ slspath }}/files/metalk8s-ui-deployment.yaml
+    - name: salt://{{ slspath }}/files/metalk8s-ui-deployment.yaml.j2
     - template: jinja
 
 Create metalk8s-ui service:

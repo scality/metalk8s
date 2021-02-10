@@ -9,7 +9,7 @@ include:
 Create kubelet service environment file:
   file.managed:
     - name: "/var/lib/kubelet/kubeadm-flags.env"
-    - source: salt://{{ slspath }}/files/kubeadm.env
+    - source: salt://{{ slspath }}/files/kubeadm.env.j2
     - template: jinja
     - user: root
     - group: root
@@ -123,7 +123,7 @@ Create kubelet config file:
 Configure kubelet service as standalone:
   file.managed:
     - name: /etc/systemd/system/kubelet.service.d/09-standalone.conf
-    - source: salt://{{ slspath }}/files/service-standalone-{{ grains['init'] }}.conf
+    - source: salt://{{ slspath }}/files/service-standalone-{{ grains['init'] }}.conf.j2
     - template: jinja
     - user: root
     - group: root
