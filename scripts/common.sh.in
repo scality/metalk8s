@@ -349,6 +349,12 @@ configure_salt_minion_local_mode() {
         pillar="{'metalk8s': {'archives': '$BASE_DIR'}}" saltenv=base
 }
 
+ensure_archives_mounted() {
+    "${SALT_CALL}" --local --state-output=mixed --retcode-passthrough \
+        state.sls metalk8s.archives.mounted \
+        saltenv=metalk8s-@@VERSION
+}
+
 check_local_node() {
     "$SALT_CALL" --local --retcode-passthrough metalk8s_checks.node \
         saltenv=metalk8s-@@VERSION

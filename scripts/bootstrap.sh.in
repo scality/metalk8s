@@ -64,12 +64,6 @@ declare -a PACKAGES=(
 # shellcheck disable=SC1090
 . "$BASE_DIR"/common.sh
 
-ensure_archives_mounted() {
-    "${SALT_CALL}" --local --state-output=mixed --retcode-passthrough \
-        state.sls metalk8s.archives.mounted \
-        saltenv=metalk8s-@@VERSION pillarenv=metalk8s-@@VERSION
-}
-
 orchestrate_bootstrap() {
     # Grains must be set (in `/etc/salt/grains`) *before* invoking `salt-call`,
     # otherwise grains set during execution won't be taken into account
