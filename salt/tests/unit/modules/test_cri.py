@@ -180,15 +180,51 @@ class CriTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
     @parameterized.expand(
         [
+            # Success: Found one container
             (None, 6, 0, "292c3b07b", True),
-            (None, 6, 0, "", False),
-            (None, 6, 1, "Error occurred", False),
+            # Failure: Container does not exist
+            (
+                None,
+                6,
+                0,
+                "",
+                'Failed to find container "my_cont": No container found',
+                True,
+            ),
+            # Failure: Error occurred when executing crictl command
+            (
+                None,
+                6,
+                1,
+                "Error occurred",
+                'Failed to find container "my_cont": Error occurred',
+                True,
+            ),
+            # Success: Found one running container
             ("running", 6, 0, "292c3b07b", True),
-            ("running", 6, 0, "", False),
-            ("running", 6, 1, "Error occurred", False),
+            # Failure: Container does not exist or is not running
+            (
+                "running",
+                6,
+                0,
+                "",
+                'Failed to find container "my_cont" in state "running": No container found',
+                True,
+            ),
+            # Failure: Error occurred when executing crictl command
+            (
+                "running",
+                6,
+                1,
+                "Error occurred",
+                'Failed to find container "my_cont" in state "running": Error occurred',
+                True,
+            ),
         ]
     )
-    def test_wait_container(self, state, timeout, retcode, stdout, result):
+    def test_wait_container(
+        self, state, timeout, retcode, stdout, result, raises=False
+    ):
         """
         Tests the return of `wait_container` function
         """
@@ -197,9 +233,19 @@ class CriTestCase(TestCase, mixins.LoaderModuleMockMixin):
         with patch.dict(cri.__salt__, {"cmd.run_all": mock_cmd}), patch(
             "time.sleep", MagicMock()
         ):
-            self.assertEqual(
-                cri.wait_container("my_cont", state=state, timeout=timeout), result
-            )
+            if raises:
+                self.assertRaisesRegex(
+                    Exception,
+                    result,
+                    cri.wait_container,
+                    "my_cont",
+                    state=state,
+                    timeout=timeout,
+                )
+            else:
+                self.assertEqual(
+                    cri.wait_container("my_cont", state=state, timeout=timeout), result
+                )
             cmd_call = 'crictl ps -q --label io.kubernetes.container.name="my_cont"'
             if state:
                 cmd_call += " --state {}".format(state)
