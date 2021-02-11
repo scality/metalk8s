@@ -149,11 +149,11 @@ const NodePagePodsTab = (props) => {
       {
         Header: 'Name',
         accessor: 'name',
-        cellStyle: { width: '250px' },
       },
       {
         Header: 'Status',
         accessor: 'status',
+        cellStyle: { width: '100px' },
         Cell: (cellProps) => {
           const { status, numContainer, numContainerRunning } = cellProps.value;
           return status === STATUS_RUNNING ? (
@@ -172,16 +172,16 @@ const NodePagePodsTab = (props) => {
       {
         Header: 'Age',
         accessor: 'age',
+        cellStyle: { width: '60px' },
       },
       {
         Header: 'Namespace',
         accessor: 'namespace',
-        cellStyle: { width: '150px' },
       },
       {
         Header: 'Logs',
         accessor: 'log',
-        cellStyle: { textAlign: 'center' },
+        cellStyle: { textAlign: 'center', width: '40px' },
         Cell: ({ value }) => {
           return (
             <ExternalLink
