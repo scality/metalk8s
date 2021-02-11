@@ -1,11 +1,12 @@
 const path = require("path");
+const {name, version} = require("./package.json");
 module.exports = {
   mode: "production",
   devtool: false,
   entry: "./src/index.js",
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "[name].js",
+    filename: `${name}.${version}.js`,
   },
   module: {
     // ...
