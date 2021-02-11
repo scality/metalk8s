@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Tooltip } from '@scality/core-ui';
+import { Tooltip, ConstrainedText } from '@scality/core-ui';
 import { fontWeight, padding } from '@scality/core-ui/dist/style/theme';
 import { intl } from '../translations/IntlGlobalProvider';
 
@@ -45,7 +45,7 @@ const TableRow = (props) => {
         // Note:
         // We need to pass the style property to the row component.
         // Otherwise when we scroll down, the next rows are flashing because they are re-rendered in loop.
-        style: { ...style, marginLeft: '5px' },
+        style: { ...style },
       })}
       isSelected={isSelected}
       row={row}
@@ -61,10 +61,13 @@ const TableRow = (props) => {
           },
         });
 
-        if (cell.column.Header === 'Name') {
+        if (cell.column.Header === 'Name' || cell.column.Header === 'Node') {
           return (
             <div {...cellProps} data-cy="volume_table_name_cell" className="td">
-              {cell.render('Cell')}
+              <ConstrainedText
+                text={cell.value}
+                tooltipStyle={{ width: '150px' }}
+              ></ConstrainedText>
             </div>
           );
         } else if (cell.column.Header !== 'Name' && cell.value === undefined) {
