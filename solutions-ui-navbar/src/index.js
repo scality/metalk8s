@@ -9,6 +9,7 @@ import { AuthProvider, AuthProviderProps, UserManager } from 'oidc-react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { Navbar } from './NavBar';
 import { UserDataListener } from './UserDataListener';
+import { logOut } from './auth/logout';
 
 const EVENTS_PREFIX = 'solutions-navbar--';
 export const AUTHENTICATED_EVENT: string = EVENTS_PREFIX + 'authenticated';
@@ -21,6 +22,8 @@ export type SolutionsNavbarProps = {
   'redirect-url'?: string,
   options?: { [path: string]: { en: string, fr: string, roles?: string[] } },
   onAuthenticated?: (evt: CustomEvent) => void,
+  logOut?: () => void,
+  setUserManager?: (userManager: UserManager) =>void;
 };
 
 const SolutionsNavbar = ({
@@ -31,7 +34,30 @@ const SolutionsNavbar = ({
   'response-type': responseType,
   options,
   onAuthenticated,
+  logOut,
+  setUserManager
 }: SolutionsNavbarProps) => {
+
+  const userManager = new UserManager({
+    authority: oidcProviderUrl,
+    client_id: clientId,
+    redirect_uri: redirectUrl || window.location.href,
+    silent_redirect_uri: redirectUrl || window.location.href,
+    post_logout_redirect_uri: redirectUrl || window.location.href,
+    response_type: responseType || 'code',
+    scope: scopes,
+    loadUserInfo: true,
+    automaticSilentRenew: true,
+    monitorSession: false,
+    userStore: new WebStorageStateStore({ store: localStorage }),
+  });
+
+  useEffect(() => {
+    if (setUserManager) {
+      setUserManager(userManager);
+    }
+  }, [!setUserManager]);
+  
   const oidcConfig: AuthProviderProps = {
     onBeforeSignIn: () => {
       localStorage.setItem('redirectUrl', window.location.href);
@@ -49,19 +75,7 @@ const SolutionsNavbar = ({
         location.hash = '';
       }
     },
-    userManager: new UserManager({
-      authority: oidcProviderUrl,
-      client_id: clientId,
-      redirect_uri: redirectUrl || window.location.href,
-      silent_redirect_uri: redirectUrl || window.location.href,
-      post_logout_redirect_uri: redirectUrl || window.location.href,
-      response_type: responseType || 'code',
-      scope: scopes,
-      loadUserInfo: true,
-      automaticSilentRenew: true,
-      monitorSession: false,
-      userStore: new WebStorageStateStore({ store: localStorage }),
-    }),
+    userManager,
   };
 
   return (
@@ -130,9 +144,15 @@ class SolutionsNavbarWebComponent extends reactToWebComponent(
 ) {
   constructor() {
     super();
+    this.setUserManager = (userManager: UserManager) => {
+      this.userManager = userManager;
+    }
     this.onAuthenticated = (evt: CustomEvent) => {
       this.dispatchEvent(evt);
     };
+    this.logOut = () => {
+      logOut(this.userManager);
+    }
   }
 }
 

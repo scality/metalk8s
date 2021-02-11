@@ -20,6 +20,7 @@ inexact-spread =off
 [options]
 esproposal.optional_chaining=enable
 module.name_mapper='@scality/core-ui' -> '@scality/core-ui/src/lib'
+suppress_comment= \\(.\\|\n\\)*\\$flow-disable-line
 
 [strict]
 

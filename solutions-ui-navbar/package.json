@@ -37,7 +37,7 @@
     "react": "^17.0.1",
     "react-debounce-input": "^3.2.3",
     "react-dom": "^17.0.1",
-    "react-query": "^3.8.2",
+    "react-query": "^3.9.7",
     "react-select": "^3.1.1",
     "react-to-webcomponent": "^1.5.1",
     "react-virtualized": "^9.22.3",
