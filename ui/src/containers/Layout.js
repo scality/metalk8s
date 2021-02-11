@@ -22,31 +22,24 @@ import DashboardPage from './DashboardPage';
 import { toggleSideBarAction } from '../ducks/app/layout';
 
 import { removeNotificationAction } from '../ducks/app/notifications';
-import { updateLanguageAction, logoutAction } from '../ducks/config';
-import { FR_LANG, EN_LANG } from '../constants';
 import CreateVolume from './CreateVolume';
 import { fetchClusterVersionAction } from '../ducks/app/nodes';
 import { useTypedSelector } from '../hooks';
+import { Navbar } from '../components/Navbar';
 
 const Layout = () => {
-  const user = useTypedSelector((state) => state.oidc.user);
   const sidebar = useTypedSelector((state) => state.app.layout.sidebar);
-  const { theme, language } = useTypedSelector((state) => state.config);
+  const { theme } = useTypedSelector((state) => state.config);
   const notifications = useTypedSelector(
     (state) => state.app.notifications.list,
   );
   const solutions = useTypedSelector((state) => state.app.solutions.solutions);
-  const isUserLoaded = useTypedSelector((state) => !!state.oidc.user);
+  const isUserLoaded = useTypedSelector((state) => !!state.oidc?.user);
   const api = useTypedSelector((state) => state.config.api);
+
   const dispatch = useDispatch();
 
-  const logout = (event) => {
-    event.preventDefault();
-    dispatch(logoutAction());
-  };
-
   const removeNotification = (uid) => dispatch(removeNotificationAction(uid));
-  const updateLanguage = (language) => dispatch(updateLanguageAction(language));
   const toggleSidebar = () => dispatch(toggleSideBarAction());
   const history = useHistory();
 
@@ -137,109 +130,9 @@ const Layout = () => {
     sidebarConfig.actions.shift();
   }
 
-  let applications = null;
-  if (solutions?.length) {
-    applications = solutions.reduce((prev, solution) => {
-      let solutionDeployedVersions = solution.versions.filter(
-        (version) => version?.deployed && version?.ui_url,
-      );
-      let app = solutionDeployedVersions.map((version) => ({
-        label: solution.name,
-        // TO BE IMPROVED in core-ui to allow display Link or <a></a>
-        onClick: () => window.open(version.ui_url, '_self'),
-      }));
-      return [...prev, ...app];
-    }, []);
-  }
-
-  // In this particular case, the label should not be translated
-  const languages = [
-    {
-      label: 'Français',
-      name: FR_LANG,
-      onClick: () => {
-        updateLanguage(FR_LANG);
-      },
-      selected: language === FR_LANG,
-      'data-cy': FR_LANG,
-    },
-    {
-      label: 'English',
-      name: EN_LANG,
-      onClick: () => {
-        updateLanguage(EN_LANG);
-      },
-      selected: language === EN_LANG,
-      'data-cy': EN_LANG,
-    },
-  ];
-
-  const filterLanguage = languages.filter((lang) => lang.name !== language);
-
-  const rightActions = [
-    {
-      type: 'dropdown',
-      text: language,
-      icon: <i className="fas fa-globe" />,
-      items: filterLanguage,
-    },
-    {
-      type: 'dropdown',
-      icon: <i className="fas fa-question-circle" />,
-      items: [
-        {
-          label: intl.translate('about'),
-          onClick: () => {
-            history.push('/about');
-          },
-        },
-        {
-          label: intl.translate('documentation'),
-          onClick: () => {
-            api && api.url_doc && window.open(`${api.url_doc}/index.html`);
-          },
-          'data-cy': 'documentation',
-        },
-      ],
-    },
-    {
-      type: 'dropdown',
-      text: user?.profile?.name,
-      icon: <i className="fas fa-user" />,
-      'data-cy': 'user_dropdown',
-      items: [
-        {
-          label: intl.translate('log_out'),
-          onClick: (event) => logout(event),
-          'data-cy': 'logout_button',
-        },
-      ],
-    },
-  ];
-
-  const applicationsAction = {
-    type: 'dropdown',
-    icon: <i className="fas fa-th" />,
-    items: applications,
-  };
-
-  if (applications && applications.length) {
-    rightActions.splice(1, 0, applicationsAction);
-  }
-
-  const navbar = {
-    productName: intl.translate('product_name'),
-    logo: <img alt="logo" src={process.env.PUBLIC_URL + theme.logo_path} />,
-    rightActions: [],
-  };
-  // display the sidebar and rightAction if the user is loaded
-  if (isUserLoaded) {
-    navbar['rightActions'] = rightActions;
-  }
-
   return (
     <ThemeProvider theme={theme}>
-      <CoreUILayout sidebar={isUserLoaded && sidebarConfig} navbar={navbar}>
+      <CoreUILayout sidebar={isUserLoaded && sidebarConfig} navbarElement={<Navbar />}>
         <Notifications
           notifications={notifications}
           onDismiss={removeNotification}
