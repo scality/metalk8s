@@ -19,30 +19,24 @@ import DashboardPage from './DashboardPage';
 import { toggleSideBarAction } from '../ducks/app/layout';
 
 import { removeNotificationAction } from '../ducks/app/notifications';
-import { updateLanguageAction, logoutAction } from '../ducks/config';
-import { FR_LANG, EN_LANG } from '../constants';
 import CreateVolume from './CreateVolume';
 import { fetchClusterVersionAction } from '../ducks/app/nodes';
 import { useTypedSelector } from '../hooks';
+import { Navbar } from '../components/Navbar';
 
 const Layout = () => {
-  const user = useTypedSelector((state) => state.oidc.user);
   const sidebar = useTypedSelector((state) => state.app.layout.sidebar);
-  const { theme, language } = useTypedSelector((state) => state.config);
+  const { theme } = useTypedSelector((state) => state.config);
   const notifications = useTypedSelector(
     (state) => state.app.notifications.list,
   );
-  const isUserLoaded = useTypedSelector((state) => !!state.oidc.user);
+  
+  const isUserLoaded = useTypedSelector((state) => !!state.oidc?.user);
   const api = useTypedSelector((state) => state.config.api);
+
   const dispatch = useDispatch();
 
-  const logout = (event) => {
-    event.preventDefault();
-    dispatch(logoutAction());
-  };
-
   const removeNotification = (uid) => dispatch(removeNotificationAction(uid));
-  const updateLanguage = (language) => dispatch(updateLanguageAction(language));
   const toggleSidebar = () => dispatch(toggleSideBarAction());
   const history = useHistory();
 
@@ -120,6 +114,7 @@ const Layout = () => {
     sidebarConfig.actions.shift();
   }
 
+<<<<<<< HEAD
   // In this particular case, the label should not be translated
   const languages = [
     {
@@ -195,9 +190,11 @@ const Layout = () => {
     navbar['rightActions'] = rightActions;
   }
 
+=======
+>>>>>>> cc911464d... ui: Replace navbar and authentication mechanism with solution-ui-navbar
   return (
     <ThemeProvider theme={theme}>
-      <CoreUILayout sidebar={isUserLoaded && sidebarConfig} navbar={navbar}>
+      <CoreUILayout sidebar={isUserLoaded && sidebarConfig} navbarElement={<Navbar />}>
         <Notifications
           notifications={notifications}
           onDismiss={removeNotification}

@@ -4,6 +4,7 @@ import { useAuth } from 'oidc-react';
 import { useLayoutEffect, useState } from 'react';
 import type { SolutionsNavbarProps } from './index';
 import type { Node } from 'react';
+import { logOut } from './auth/logout';
 
 export const Navbar = ({
   options,
@@ -60,9 +61,7 @@ export const Navbar = ({
         {
           label: 'Log out',
           onClick: () => {
-            auth.userManager.revokeAccessToken();
-            auth.userManager.removeUser();
-            location.reload();
+            logOut(auth.userManager);
           },
         },
       ],

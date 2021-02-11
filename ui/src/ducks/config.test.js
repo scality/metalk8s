@@ -6,8 +6,6 @@ jest.mock('../index.js', () => {
   };
 });
 
-import { loadUser } from 'redux-oidc';
-
 import { call, put, select } from 'redux-saga/effects';
 import {
   fetchTheme,
@@ -17,9 +15,7 @@ import {
   updateLanguage,
   SET_LANG,
   setInitialLanguage,
-  SET_USER_MANAGER_CONFIG,
   setUserManagerAction,
-  SET_USER_MANAGER,
   SET_USER_LOADED,
   SET_THEMES,
 } from './config.js';
@@ -90,25 +86,6 @@ it('update the config state when fetchConfig', () => {
     call(ApiAlertmanager.initialize, 'http://172.21.254.46:8443'),
   );
 
-  expect(gen.next().value).toEqual(
-    put({
-      type: SET_USER_MANAGER_CONFIG,
-      payload: {
-        authority: result.url_oidc_provider,
-        redirect_uri: result.url_redirect,
-      },
-    }),
-  );
-  expect(gen.next().value.type).toEqual('SELECT');
-  expect(gen.next().value.payload.action.type).toEqual(SET_USER_MANAGER);
-  expect(gen.next().value.type).toEqual('SELECT');
-  expect(gen.next().value).toEqual(call(loadUser, 'store', undefined));
-  expect(gen.next().value).toEqual(
-    put({
-      type: SET_USER_LOADED,
-      payload: true,
-    }),
-  );
   expect(gen.next().done).toEqual(true);
 });
 

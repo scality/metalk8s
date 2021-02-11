@@ -1,6 +1,5 @@
 //@flow
 import { combineReducers } from 'redux';
-import { reducer as oidcReducer, UserState } from 'redux-oidc';
 
 import config from './config';
 import type { ConfigState } from './config';
@@ -19,6 +18,8 @@ import salt, { SaltState } from './app/salt';
 import monitoring, { MonitoringState } from './app/monitoring';
 import alerts from './app/alerts';
 import type { AlertsState } from './app/alerts';
+import { oidcReducer, type UserState } from './oidc';
+
 const rootReducer = combineReducers({
   config,
   login,
