@@ -77,7 +77,7 @@ const VolumeListContainer = styled.div`
 // * table body
 const Body = styled.div`
   display: block;
-  height: calc(100vh - 176px);
+  height: calc(100vh - 162px);
 `;
 
 const CreateVolumeButton = styled(Button)`
@@ -88,7 +88,7 @@ const ActionContainer = styled.span`
   display: flex;
   flex-direction: row-reverse;
   justify-content: space-between;
-  padding: ${padding.large} ${padding.base} ${padding.base} 20px;
+  padding: ${padding.large} ${padding.base} 26px 20px;
 `;
 
 function GlobalFilter({
@@ -289,7 +289,7 @@ function Table({
                 {...headerGroup.getHeaderGroupProps()}
                 style={{
                   display: 'flex',
-                  marginLeft: '5px',
+                  marginLeft: '3px',
                 }}
               >
                 {headerGroup.headers.map((column) => {
@@ -383,7 +383,7 @@ const VolumeListTable = (props) => {
         accessor: 'health',
         cellStyle: {
           textAlign: 'center',
-          width: '80px',
+          width: '75px',
         },
         Cell: (cellProps) => {
           return (
@@ -396,10 +396,9 @@ const VolumeListTable = (props) => {
         Header: 'Name',
         accessor: 'name',
         cellStyle: {
+          textAlign: 'left',
           flex: 1,
-          wordWrap: 'break-word',
-          wordBreak: 'break-all',
-          paddingRight: '3px',
+          minWidth: '95px',
         },
       },
       {
@@ -407,7 +406,7 @@ const VolumeListTable = (props) => {
         accessor: 'usage',
         cellStyle: {
           textAlign: 'center',
-          width: isNodeColumn ? '110px' : '150px',
+          width: isNodeColumn ? '70px' : '150px',
         },
         Cell: ({ value }) => {
           return (
@@ -424,8 +423,9 @@ const VolumeListTable = (props) => {
         Header: 'Size',
         accessor: 'storageCapacity',
         cellStyle: {
-          textAlign: 'center',
-          width: isNodeColumn ? '70px' : '110px',
+          textAlign: 'right',
+          width: isNodeColumn ? '55px' : '110px',
+          paddingRight: '5px',
         },
         sortType: 'size',
         Cell: ({ value }) => formatSizeForDisplay(value),
@@ -435,7 +435,7 @@ const VolumeListTable = (props) => {
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
-          width: isNodeColumn ? '50px' : '110px',
+          width: isNodeColumn ? '60px' : '120px',
         },
         Cell: (cellProps) => {
           const volume = volumeListData?.find(
@@ -493,8 +493,9 @@ const VolumeListTable = (props) => {
         Header: 'Latency',
         accessor: 'latency',
         cellStyle: {
-          textAlign: 'center',
-          width: isNodeColumn ? '75px' : '110px',
+          textAlign: 'right',
+          width: isNodeColumn ? '70px' : '110px',
+          paddingRight: '6px',
         },
         Cell: (cellProps) => {
           return cellProps.value !== undefined ? cellProps.value + ' µs' : null;
@@ -507,9 +508,10 @@ const VolumeListTable = (props) => {
     Header: 'Node',
     accessor: 'node',
     cellStyle: {
-      width: '100px',
-      wordWrap: 'break-word',
-      wordBreak: 'break-all',
+      textAlign: 'left',
+      flex: 1,
+      paddingLeft: '12px',
+      minWidth: '80px',
     },
   };
   if (isNodeColumn) {
