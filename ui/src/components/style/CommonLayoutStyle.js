@@ -17,14 +17,15 @@ export const LeftSideInstanceList = styled.div`
   flex-direction: column;
   min-height: 696px;
   width: 49%;
+  margin-bottom: 20px;
+  min-width: 450px;
 `;
 
 export const RightSidePanel = styled.div`
   flex-direction: column;
   width: 51%;
-  /* Make it scrollable for the small laptop screen */
   overflow-y: auto;
-  margin: 0 ${padding.small} 0 8px;
+  margin: 0 ${padding.small} ${padding.small} 8px;
 `;
 
 export const NoInstanceSelectedContainer = styled.div`
@@ -48,65 +49,66 @@ export const PageContentContainer = styled.div`
   height: 100%;
   width: 100%;
   background-color: ${(props) => props.theme.brand.background};
-  overflow: hidden;
-`;
-
-// Common styles for the tabs in NodePageRSP
-export const NodeTab = styled.div`
-  background-color: ${(props) => props.theme.brand.primary};
-  color: ${(props) => props.theme.brand.textPrimary};
-  padding-bottom: ${padding.base};
-  height: calc(100vh - 97px);
-  overflow: auto;
 `;
 
 export const TabsItemsStyle = styled.div`
+  height: 100%;
   .sc-tabs {
     margin: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
   }
   .sc-tabs-bar {
-    height: 40px;
+    height: 2.8rem;
   }
   .sc-tabs-item {
-    margin-right: ${padding.smaller};
+    margin-right: 0.3rem;
     background-color: ${(props) => props.theme.brand.border};
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
-    height: 40px;
-
+    height: 2.8rem;
     .sc-tabs-item-title {
-      height: 40px;
-      font-size: ${fontSize.base};
+      height: 2.8rem;
+      font-size: 1rem;
       border-top-left-radius: 4px;
       border-top-right-radius: 4px;
-      padding: 13px;
+      padding: 0.7rem 0 0 0.2rem;
     }
   }
   .sc-tabs-item-content {
     padding: 0;
+    flex: 1;
   }
 `;
 
 export const TextBadge = styled.span`
   background-color: ${(props) => props.theme.brand.info};
   color: ${(props) => props.theme.brand.textPrimary};
-  padding: 2px ${padding.small};
+  padding: 2px 0.6rem;
   border-radius: 4px;
-  font-size: ${fontSize.small};
+  font-size: 0.9rem;
   font-weight: ${fontWeight.bold};
   margin-left: ${padding.smaller};
 `;
 
 export const VolumeTab = styled.div`
+  height: 100%;
   overflow: auto;
-  height: calc(100vh - 97px);
   color: ${(props) => props.theme.brand.textPrimary};
-  padding-bottom: ${padding.base};
   background-color: ${(props) => props.theme.brand.primary};
 `;
 
+// Common styles for the tabs in NodePageRSP
+export const NodeTab = styled.div`
+  height: 100%;
+  background-color: ${(props) => props.theme.brand.primary};
+  color: ${(props) => props.theme.brand.textPrimary};
+  overflow: auto;
+`;
+
 export const SortCaretWrapper = styled.span`
-  padding-left: ${padding.smaller};
+  padding-left: 1px;
   position: absolute;
 `;
 
@@ -115,8 +117,8 @@ export const SortIncentive = styled.span`
   display: none;
 `;
 
-export const TableHeader = styled.span`
-  padding: ${padding.base};
+export const TableHeader = styled.div`
+  padding-bottom: ${padding.base};
   &:hover {
     ${SortIncentive} {
       display: block;
@@ -154,7 +156,6 @@ export const GraphsContainer = styled.div`
   flex-direction: column;
   padding: ${padding.small};
   overflow: auto;
-  height: calc(100vh - 150px);
   .sc-vegachart svg {
     background-color: inherit !important;
   }
