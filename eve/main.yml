@@ -21,11 +21,12 @@ models:
         git clone "https://github.com/scality/metalk8s" --branch "%(prop:branch)s"
       workdir: build/eve/workers/openstack-terraform/terraform/
       haltOnFailure: true
-  - ShellCommand: &setup_cache
-      name: Setup proxy cache
-      command: >
-          curl -s http://proxy-cache/setup.sh | sudo sh &&
-          . /usr/local/bin/use_scality_proxy_cache
+  - ShellCommand: &yum_clean_all
+      # Eve cache the workers, so time to time yum repositories definition are
+      # really outdated, to avoid this, just do a `yum clean all` when starting a
+      # worker
+      name: Clean local yum cache
+      command: sudo yum clean all && sudo rm -rf /var/cache/yum
       haltOnFailure: true
   - SetProperty: &set_premerge_url
       name: Set premerge artifacts private_url as Property
@@ -999,7 +1000,7 @@ stages:
             <<: *_env_final_status_artifact_failed
             <<: *_build_metalk8s_junit_info
             STEP_NAME: build
-      - ShellCommand: *setup_cache
+      - ShellCommand: *yum_clean_all
       - ShellCommand: *build_all
       - ShellCommand:
           <<: *copy_artifacts
@@ -1034,7 +1035,7 @@ stages:
     worker: *build_worker
     steps:
       - ShellCommand: *wait_for_docker
-      - ShellCommand: *setup_cache
+      - ShellCommand: *yum_clean_all
       - Git: *git_pull
       - ShellCommand:
           <<: *add_final_status_artifact_failed
@@ -1081,7 +1082,6 @@ stages:
             <<: *_env_final_status_artifact_failed
             <<: *_build_docs_junit_info
             STEP_NAME: docs
-      - ShellCommand: *setup_cache
       - ShellCommand:
           name: Build documentation for ReadTheDocs
           env:
@@ -1147,7 +1147,7 @@ stages:
             <<: *_env_final_status_artifact_failed
             <<: *_lint_junit_info
             STEP_NAME: lint
-      - ShellCommand: *setup_cache
+      - ShellCommand: *yum_clean_all
       - ShellCommand:
           name: Run all linting targets
           command: source /etc/profile && ./doit.sh lint
@@ -1184,7 +1184,7 @@ stages:
             <<: *_env_final_status_artifact_failed
             <<: *_integration_tests_ui_junit_info
             STEP_NAME: integration_tests_ui
-      - ShellCommand: *setup_cache
+      - ShellCommand: *yum_clean_all
       - ShellCommand:
           name: Install Cypress and its dependencies
           workdir: build/ui
@@ -1276,7 +1276,7 @@ stages:
             <<: *_env_final_status_artifact_failed
             <<: *_unit-test_ui_junit_info
             STEP_NAME: unit_tests_ui
-      - ShellCommand: *setup_cache
+      - ShellCommand: *yum_clean_all
       - ShellCommand:
           name: Install UI dependencies
           workdir: build/ui
@@ -1332,7 +1332,7 @@ stages:
             <<: *_env_final_status_artifact_failed
             <<: *_unit-test_storage_operator_junit_info
             STEP_NAME: unit_tests_storage_operator
-      - ShellCommand: *setup_cache
+      - ShellCommand: *yum_clean_all
       - ShellCommand:
           name: Run all storage-operator unit tests
           workdir: build/storage-operator
@@ -1368,7 +1368,7 @@ stages:
             <<: *_env_final_status_artifact_failed
             <<: *_unit-test_salt_junit_info
             STEP_NAME: unit_tests_salt
-      - ShellCommand: *setup_cache
+      - ShellCommand: *yum_clean_all
       - ShellCommand:
           name: Run all salt unit tests
           command: tox -e unit-tests
@@ -1401,7 +1401,7 @@ stages:
             <<: *_env_final_status_artifact_failed
             <<: *_downgrade_minor_single-node_junit_info
             STEP_NAME: single-node-downgrade-centos
-      - ShellCommand: *setup_cache
+      - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
       # --- Get ISO for version N ---
       - ShellCommand: *retrieve_iso_checksum
@@ -1515,7 +1515,7 @@ stages:
             <<: *_env_final_status_artifact_failed
             <<: *_upgrade_minor_single-node_junit_info
             STEP_NAME: single-node-upgrade-centos
-      - ShellCommand: *setup_cache
+      - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
       # --- Get ISO for version N ---
       - ShellCommand: *retrieve_iso_checksum
@@ -1622,7 +1622,7 @@ stages:
             <<: *_env_final_status_artifact_failed
             <<: *_install_single-node_junit_info
             STEP_NAME: "single-node-install-%(prop:os:-centos-7)s"
-      - ShellCommand: *setup_cache
+      - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
@@ -1847,7 +1847,7 @@ stages:
             <<: *_env_final_status_artifact_failed
             <<: *_snapshot_upgrade_junit_info
             STEP_NAME: "%(prop:environment_type)s-%(prop:environment_name)s-upgrade-%(prop:promoted_version_type:-unknown)s-%(prop:os:-centos-7)s"
-      - ShellCommand: *setup_cache
+      - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
       # --- Get ISO for version N ---
       - ShellCommand: *retrieve_iso
@@ -1952,7 +1952,7 @@ stages:
             <<: *_env_final_status_artifact_failed
             <<: *_downgrade_promoted_single-node_junit_info
             STEP_NAME: "single-node-downgrade-%(prop:promoted_version_type)s-centos"
-      - ShellCommand: *setup_cache
+      - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
       # --- Get ISO for version N ---
       - ShellCommand: *retrieve_iso
@@ -2051,7 +2051,7 @@ stages:
             <<: *_env_final_status_artifact_failed
             <<: *_install_multi-node_junit_info
             STEP_NAME: "multiple-nodes-%(prop:os:-centos-7)s"
-      - ShellCommand: *setup_cache
+      - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
@@ -2226,7 +2226,7 @@ stages:
             <<: *_env_final_status_artifact_failed
             <<: *_bootstrap_restore_junit_info
             STEP_NAME: bootstrap-restore
-      - ShellCommand: *setup_cache
+      - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
@@ -2402,7 +2402,7 @@ stages:
             <<: *_env_final_status_artifact_failed
             <<: *_solutions_single-node_junit_info
             STEP_NAME: single-node-solutions
-      - ShellCommand: *setup_cache
+      - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
