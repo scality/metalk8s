@@ -183,5 +183,7 @@
   "default_batch_volume_values_explanation": "Nommez les volumes et fournissez les chemins des disques. Vouz pouvez utiliser les valeurs par défaut ou les modifier.",
   "create_multiple_volumes": "Créer plusieurs volumes?",
   "no_system_partition": "Aucune partition système",
-  "error_system_partitions": "Échec de la récupération de la partition système."
+  "error_system_partitions": "Échec de la récupération de la partition système.",
+  "show_cluster_avg": "Montrer la moyenne du Cluster",
+  "cluster_avg": "Cluster moy"
 }

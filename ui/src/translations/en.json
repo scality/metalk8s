@@ -183,5 +183,7 @@
   "default_batch_volume_values_explanation": "Name the Volumes and provide the Device paths. You may use the defaults or override them.",
   "create_multiple_volumes": "Create multiple volumes?",
   "no_system_partition": "No System Partition",
-  "error_system_partitions": "System partitions request has failed."
+  "error_system_partitions": "System partitions request has failed.",
+  "show_cluster_avg": "Show Cluster Average",
+  "cluster_avg": "Cluster avg"
 }
