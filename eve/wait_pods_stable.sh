@@ -50,7 +50,7 @@ check_pods_stabilization() {
     [ -z "$(
         timeout "$STABILIZATION_TIME" kubectl get pods --all-namespaces \
             --kubeconfig="$KUBECONFIG" \
-            --watch-only
+            --watch-only 2>&1
     )" ]
 }
 

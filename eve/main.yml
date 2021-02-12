@@ -1873,7 +1873,8 @@ stages:
             ssh -F ssh_config bootstrap 'sudo bash -c "
             kubectl --kubeconfig=/etc/kubernetes/admin.conf
             wait pods --for=condition=Ready --all --all-namespaces
-            --field-selector=status.phase!=Succeeded"'
+            --field-selector=status.phase!=Succeeded"
+            --timeout=120s'
           workdir: build/eve/workers/openstack-terraform/terraform/
           haltOnFailure: true
       # --- We do not need to Test promoted version ---
@@ -2312,16 +2313,19 @@ stages:
             --cert /etc/kubernetes/pki/etcd/server.crt
             --key /etc/kubernetes/pki/etcd/server.key
             --cacert /etc/kubernetes/pki/etcd/ca.crt
-            member remove %(prop:bootstrap_etcd_member_id)s\" &&
-            sleep 10
+            member remove %(prop:bootstrap_etcd_member_id)s\"
           workdir: build/eve/workers/openstack-terraform/terraform/
           haltOnFailure: true
       - ShellCommand:
           name: Remove bootstrap node object
-          command: >
-            ssh -F ssh_config node-1
-            sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf delete
-            node --selector="node-role.kubernetes.io/bootstrap"
+          command: |-
+            for _ in $(seq 5); do
+                ssh -F ssh_config node-1 \
+                sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf delete \
+                node --selector="node-role.kubernetes.io/bootstrap" && exit 0
+                sleep 5
+            done
+            exit 1
           workdir: build/eve/workers/openstack-terraform/terraform/
           haltOnFailure: true
       - ShellCommand:
