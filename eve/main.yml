@@ -2317,10 +2317,14 @@ stages:
           haltOnFailure: true
       - ShellCommand:
           name: Remove bootstrap node object
-          command: >
-            ssh -F ssh_config node-1
-            sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf delete
-            node --selector="node-role.kubernetes.io/bootstrap"
+          command: |-
+            for _ in $(seq 5); do
+                ssh -F ssh_config node-1 \
+                sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf delete \
+                node --selector="node-role.kubernetes.io/bootstrap" && exit 0
+                sleep 5
+            done
+            exit 1
           workdir: build/eve/workers/openstack-terraform/terraform/
           haltOnFailure: true
       - ShellCommand:
