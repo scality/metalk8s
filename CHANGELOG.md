@@ -42,6 +42,9 @@
 - Improve error handling when providing invalid CA minion in Bootstrap
   configuration file
   (PR [#3065](https://github.com/scality/metalk8s/pull/3065))
+  
+- [#2925](https://github.com/scality/metalk8s/issues/2925) - Compare node metrics with average from MetalK8s UI
+  (PR [#3078](https://github.com/scality/metalk8s/pull/3078))
 
 - [#3067](https://github.com/scality/metalk8s/issues/3067) - Check for conflicting
   services already started on the machine before doing all the installation
