@@ -1,15 +1,18 @@
+//@flow
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
-import { padding } from '@scality/core-ui/dist/style/theme';
-import { LineChart, Loader, Dropdown, Button } from '@scality/core-ui';
-import { updateNodeStatsFetchArgumentAction } from '../ducks/app/monitoring';
+import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
+import { LineChart, Loader, Dropdown, Button, Toggle } from '@scality/core-ui';
+import {
+  updateNodeStatsFetchArgumentAction,
+  MonitoringMetrics,
+} from '../ducks/app/monitoring';
 import {
   yAxisUsage,
   yAxis,
-  yAxisWriteRead,
-  yAxisInOut,
+  getTooltipConfig,
 } from '../components/LinechartSpec';
 import {
   NodeTab,
@@ -39,25 +42,61 @@ import {
   PORT_NODE_EXPORTER,
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
+import { useTypedSelector } from '../hooks';
 
 const LoaderContainer = styled(Loader)`
   padding-left: ${padding.larger};
 `;
 
-const NodePageMetricsTab = (props) => {
-  const { nodeStats, instanceIP } = props;
+const ToggleContainer = styled.div`
+  margin-right: auto;
+  padding: ${padding.smaller};
+
+  .text {
+    font-size: ${fontSize.base};
+  }
+  label {
+    width: 25px;
+    input:checked + .sc-slider:before {
+      transform: translateX(15px);
+    }
+    .sc-slider:before {
+      height: 12px;
+      width: 12px;
+      top: -4px;
+    }
+  }
+`;
+
+const NodePageMetricsTab = ({
+  nodeName,
+  nodeStats,
+  instanceIP,
+  avgStats,
+}: {
+  nodeName: string,
+  nodeStats: MonitoringMetrics,
+  instanceIP: string,
+  avgStats: MonitoringMetrics,
+}) => {
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.config.theme);
   const history = useHistory();
   const query = useQuery();
   const config = useSelector((state) => state.config);
-  const metricsTimeSpan = useSelector(
+  const metricsTimeSpan = useTypedSelector(
     (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
   );
+  const showAvg = useTypedSelector(
+    (state) => state.app.monitoring.nodeStats.showAvg,
+  );
+
   const [graphWidth, graphHeight] = useDynamicChartSize('graph_container');
 
   // To redirect to the right Node(Detailed) dashboard in Grafana
-  const unameInfos = useSelector((state) => state.app.monitoring.unameInfo);
+  const unameInfos = useTypedSelector(
+    (state) => state.app.monitoring.unameInfo,
+  );
   const hostnameLabel = unameInfos?.find(
     (unameInfo) =>
       unameInfo?.metric?.instance === `${instanceIP}:${PORT_NODE_EXPORTER}`,
@@ -92,15 +131,27 @@ const NodePageMetricsTab = (props) => {
     );
 
   const typedMetrics = {
-    cpuUsage: 'y',
-    systemLoad: 'y',
-    memory: 'y',
-    iopsRead: 'read',
-    iopsWrite: 'write',
-    controlPlaneNetworkBandwidthIn: 'in',
-    controlPlaneNetworkBandwidthOut: 'out',
-    workloadPlaneNetworkBandwidthIn: 'in',
-    workloadPlaneNetworkBandwidthOut: 'out',
+    cpuUsage: 'CPU Usage',
+    systemLoad: 'System Load',
+    memory: 'Memory',
+    iopsRead: 'Read',
+    iopsWrite: 'Write',
+    controlPlaneNetworkBandwidthIn: 'In',
+    controlPlaneNetworkBandwidthOut: 'Out',
+    workloadPlaneNetworkBandwidthIn: 'In',
+    workloadPlaneNetworkBandwidthOut: 'Out',
+  };
+
+  const typedAvgMetrics = {
+    cpuUsage: 'cluster avg',
+    systemLoad: 'cluster avg',
+    memory: 'cluster avg',
+    iopsRead: 'read avg',
+    iopsWrite: 'write avg',
+    controlPlaneNetworkBandwidthIn: 'in avg',
+    controlPlaneNetworkBandwidthOut: 'out avg',
+    workloadPlaneNetworkBandwidthIn: 'in avg',
+    workloadPlaneNetworkBandwidthOut: 'out avg',
   };
 
   const nodeStatsData = Object.keys(nodeStats).reduce((acc, metricName) => {
@@ -110,24 +161,162 @@ const NodePageMetricsTab = (props) => {
     const metricType = typedMetrics[metricName];
     if (metricType !== undefined) extra.type = metricType;
 
+    /*
+     ** Using 'symbol': 'A' because vega-lite internally assign the plain line
+     ** to the first alphabetical item when strokeDash is used
+     */
     acc[metricName] = data.map((slot) => ({
       date: fromUnixTimestampToDate(slot[0]),
-      [metricType]: slot[1],
+      y: slot[1],
+      symbol: 'A',
       ...extra,
     }));
     return acc;
   }, {});
 
+  const avgStatsData = Object.keys(avgStats).reduce((acc, metricName) => {
+    const data = operateMetricRawData(avgStats[metricName][0]?.values);
+
+    let extra = {};
+    const metricType = typedAvgMetrics[metricName];
+    if (metricType !== undefined) extra.type = metricType;
+
+    acc[metricName] = data.map((slot) => ({
+      date: fromUnixTimestampToDate(slot[0]),
+      y: slot[1],
+      symbol: 'Cluster avg',
+      ...extra,
+    }));
+    return acc;
+  }, {});
+
+  let cpuData = nodeStatsData['cpuUsage'];
+  if (showAvg) cpuData = cpuData.concat(avgStatsData['cpuUsage']);
+  const tooltipConfigCPU = getTooltipConfig([
+    {
+      field: 'CPU Usage',
+      type: 'quantitative',
+      title: `CPU Usage - ${nodeName}`,
+      format: '.1f',
+    },
+    showAvg && {
+      field: 'cluster avg',
+      type: 'quantitative',
+      title: `CPU Usage - ${intl.translate('cluster_avg')}`,
+      format: '.1f',
+    },
+  ]);
+
+  let systemLoadData = nodeStatsData['systemLoad'];
+  if (showAvg)
+    systemLoadData = systemLoadData.concat(avgStatsData['systemLoad']);
+  const tooltipConfigSystemLoad = getTooltipConfig([
+    {
+      field: 'System Load',
+      type: 'quantitative',
+      title: `System Load - ${nodeName}`,
+      format: '.1f',
+    },
+    showAvg && {
+      field: 'cluster avg',
+      type: 'quantitative',
+      title: `System Load - ${intl.translate('cluster_avg')}`,
+      format: '.1f',
+    },
+  ]);
+
+  let memoryData = nodeStatsData['memory'];
+  if (showAvg) memoryData = memoryData.concat(avgStatsData['memory']);
+  const tooltipConfigMemory = getTooltipConfig([
+    {
+      field: 'Memory',
+      type: 'quantitative',
+      title: `Memory - ${nodeName}`,
+      format: '.1f',
+    },
+    showAvg && {
+      field: 'cluster avg',
+      type: 'quantitative',
+      title: `Memory - ${intl.translate('cluster_avg')}`,
+      format: '.1f',
+    },
+  ]);
+
+  const tooltipConfigIops = getTooltipConfig([
+    {
+      field: `Read`,
+      type: 'quantitative',
+      title: `Read - ${nodeName}`,
+      format: '.1f',
+    },
+    {
+      field: 'Write',
+      type: 'quantitative',
+      title: `Write - ${nodeName}`,
+      format: '.1f',
+    },
+    showAvg && {
+      field: 'read avg',
+      type: 'quantitative',
+      title: `Read - ${intl.translate('cluster_avg')}`,
+      format: '.1f',
+    },
+    showAvg && {
+      field: 'write avg',
+      type: 'quantitative',
+      title: `Write - ${intl.translate('cluster_avg')}`,
+      format: '.1f',
+    },
+  ]);
   // Combine the read/write, in/out into one dataset
-  const iopsData = nodeStatsData['iopsRead']?.concat(
-    nodeStatsData['iopsWrite'],
-  );
-  const controlPlaneNetworkBandwidthData = nodeStatsData[
+  let iopsData = nodeStatsData['iopsRead'].concat(nodeStatsData['iopsWrite']);
+  if (showAvg)
+    iopsData = iopsData
+      .concat(avgStatsData['iopsRead'])
+      .concat(avgStatsData['iopsWrite']);
+
+  const tooltipConfigInOut = getTooltipConfig([
+    {
+      field: 'In',
+      type: 'quantitative',
+      title: `In - ${nodeName}`,
+      format: '.1f',
+    },
+    {
+      field: 'Out',
+      type: 'quantitative',
+      title: `Out - ${nodeName}`,
+      format: '.1f',
+    },
+    showAvg && {
+      field: 'in avg',
+      type: 'quantitative',
+      title: `In - ${intl.translate('cluster_avg')}`,
+      format: '.1f',
+    },
+    showAvg && {
+      field: 'out avg',
+      type: 'quantitative',
+      title: `Out - ${intl.translate('cluster_avg')}`,
+      format: '.1f',
+    },
+  ]);
+
+  let controlPlaneNetworkBandwidthData = nodeStatsData[
     'controlPlaneNetworkBandwidthIn'
-  ]?.concat(nodeStatsData['controlPlaneNetworkBandwidthOut']);
-  const workloadPlaneNetworkBandwidthData = nodeStatsData[
+  ].concat(nodeStatsData['controlPlaneNetworkBandwidthOut']);
+  if (showAvg)
+    controlPlaneNetworkBandwidthData = controlPlaneNetworkBandwidthData
+      .concat(avgStatsData['controlPlaneNetworkBandwidthIn'])
+      .concat(avgStatsData['controlPlaneNetworkBandwidthOut']);
+
+  let workloadPlaneNetworkBandwidthData = nodeStatsData[
     'workloadPlaneNetworkBandwidthIn'
-  ]?.concat(nodeStatsData['workloadPlaneNetworkBandwidthOut']);
+  ].concat(nodeStatsData['workloadPlaneNetworkBandwidthOut']);
+  if (showAvg)
+    workloadPlaneNetworkBandwidthData = workloadPlaneNetworkBandwidthData
+      .concat(avgStatsData['workloadPlaneNetworkBandwidthIn'])
+      .concat(avgStatsData['workloadPlaneNetworkBandwidthOut']);
 
   const xAxis = {
     field: 'date',
@@ -147,36 +336,72 @@ const NodePageMetricsTab = (props) => {
     title: null,
   };
 
-  const colorUsage = {
-    field: 'type',
+  const strokeDashConfig = {
+    field: 'symbol',
     type: 'nominal',
-    legend: null,
-    domain: ['y'],
-    scale: {
-      range: ['#4BE4E2'],
+    legend: {
+      direction: 'horizontal',
+      orient: 'bottom',
+      title: null,
+      values: [`${intl.translate('cluster_avg')}.`],
+      symbolSize: 300,
+      labelFontSize: 14,
     },
   };
-  const colorSystemLoad = {
-    field: 'type',
-    type: 'nominal',
-    legend: null,
-    domain: ['y'],
-    scale: {
-      range: ['#A6B561'],
+
+  const opacityConfig = {
+    condition: {
+      test: 'datum.symbol == "Cluster avg"',
+      value: 0.5,
     },
-  };
-  const colorMemory = {
-    field: 'type',
-    type: 'nominal',
-    legend: null,
-    domain: ['y'],
-    scale: {
-      range: ['#1F78C1'],
-    },
+    value: 1,
   };
 
   // the `read` and `out` should be the same color
   // the `write` and `in` should be the same color
+
+  const colorCPU = {
+    field: 'type',
+    type: 'nominal',
+    scale: { range: ['#9645c2'] },
+    legend: {
+      direction: 'horizontal',
+      orient: 'bottom',
+      title: null,
+      values: showAvg ? ['CPU Usage'] : [''],
+      labelFontSize: 14,
+      symbolSize: 300,
+    },
+  };
+
+  const colorSystemLoad = {
+    field: 'type',
+    type: 'nominal',
+    scale: { range: ['#9645c2'] },
+    legend: {
+      direction: 'horizontal',
+      orient: 'bottom',
+      title: null,
+      values: showAvg ? ['System Load'] : [''],
+      labelFontSize: 14,
+      symbolSize: 300,
+    },
+  };
+
+  const colorMemory = {
+    field: 'type',
+    type: 'nominal',
+    scale: { range: ['#9645c2'] },
+    legend: {
+      direction: 'horizontal',
+      orient: 'bottom',
+      title: null,
+      values: showAvg ? ['Memory'] : [''],
+      labelFontSize: 14,
+      symbolSize: 300,
+    },
+  };
+
   const colorsWriteRead = {
     field: 'type',
     type: 'nominal',
@@ -185,15 +410,20 @@ const NodePageMetricsTab = (props) => {
       orient: 'bottom',
       title: null,
       symbolType: 'stroke',
-      labelFontSize: 15,
-      columnPadding: 50,
+      symbolSize: 300,
+      labelFontSize: 14,
+      columnPadding: 15,
       symbolStrokeWidth: 2,
+      values: ['Read', 'Write'],
     },
-    domain: ['read', 'write'],
+    domain: ['Read', 'Write'],
     scale: {
-      range: ['#968BFF', '#F6B187'],
+      range: showAvg
+        ? ['#9645c2', '#bfaa7f', '#9645c2', '#bfaa7f']
+        : ['#9645c2', '#bfaa7f'],
     },
   };
+
   const colorsInOut = {
     field: 'type',
     type: 'nominal',
@@ -202,13 +432,17 @@ const NodePageMetricsTab = (props) => {
       orient: 'bottom',
       title: null,
       symbolType: 'stroke',
-      labelFontSize: 15,
-      columnPadding: 50,
+      symbolSize: 300,
+      labelFontSize: 14,
+      columnPadding: 15,
       symbolStrokeWidth: 2,
+      values: ['In', 'Out'],
     },
-    domain: ['in', 'out'],
+    domain: ['In', 'Out'],
     scale: {
-      range: ['#F6B187', '#968BFF'],
+      range: showAvg
+        ? ['#bfaa7f', '#9645c2', '#bfaa7f', '#9645c2']
+        : ['#bfaa7f', '#9645c2'],
     },
   };
   const lineConfig = { strokeWidth: 1.5 };
@@ -221,6 +455,12 @@ const NodePageMetricsTab = (props) => {
       query.set('from', formatted.label);
       history.push({ search: query.toString() });
     }
+  };
+
+  // write show avg value in URL
+  const writeShowAvg = (showAvgValue) => {
+    query.set('avg', showAvgValue);
+    history.push({ search: query.toString() });
   };
 
   // Dropdown items
@@ -238,13 +478,29 @@ const NodePageMetricsTab = (props) => {
     selected: metricsTimeSpan === option,
   }));
 
-  const metricsTimeSpanDropdownItems = metricsTimeSpanItems?.filter(
+  const metricsTimeSpanDropdownItems = metricsTimeSpanItems.filter(
     (mTS) => mTS.label !== metricsTimeSpan,
   );
 
   return (
     <NodeTab>
       <MetricsActionContainer>
+        <ToggleContainer>
+          <Toggle
+            name="showAvg"
+            label={intl.translate('show_cluster_avg')}
+            toggle={showAvg}
+            value={showAvg}
+            onChange={(e: SyntheticEvent<HTMLInputElement>) => {
+              writeShowAvg(e.currentTarget.checked);
+              dispatch(
+                updateNodeStatsFetchArgumentAction({
+                  showAvg: e.currentTarget.checked,
+                }),
+              );
+            }}
+          />
+        </ToggleContainer>
         <Button
           text={intl.translate('advanced_metrics')}
           variant={'base'}
@@ -266,36 +522,44 @@ const NodePageMetricsTab = (props) => {
       <GraphsContainer id="graph_container">
         <RowGraphContainer>
           <GraphWrapper>
-            <GraphTitle>CPU USAGE (%)</GraphTitle>
+            <GraphTitle>CPU Usage (%)</GraphTitle>
             {nodeStatsData['cpuUsage'].length !== 0 && graphWidth ? (
               <LineChart
                 id={'node_cpu_usage_id'}
-                data={nodeStatsData['cpuUsage']}
+                data={cpuData}
                 xAxis={xAxis}
                 yAxis={yAxisUsage}
-                color={colorUsage}
+                color={colorCPU}
                 width={graphWidth}
                 height={graphHeight}
-                tooltip={false}
+                tooltip={true}
+                tooltipConfig={tooltipConfigCPU}
                 lineConfig={lineConfig}
+                strokeDashEncodingConfig={showAvg && strokeDashConfig}
+                opacityEncodingConfig={opacityConfig}
+                tooltipTheme={'dark'}
               />
             ) : (
               <LoaderContainer size="small"></LoaderContainer>
             )}
           </GraphWrapper>
           <GraphWrapper>
-            <GraphTitle>CPU SYSTEM LOAD (%)</GraphTitle>
+            <GraphTitle>CPU System Load (%)</GraphTitle>
             {nodeStatsData['systemLoad'].length !== 0 && graphWidth ? (
               <LineChart
                 id={'node_system_load_id'}
-                data={nodeStatsData['systemLoad']}
+                data={systemLoadData}
                 xAxis={xAxis}
                 yAxis={yAxis}
                 color={colorSystemLoad}
                 width={graphWidth}
                 height={graphHeight}
-                tooltip={false}
+                tooltip={true}
+                tooltipConfig={tooltipConfigSystemLoad}
                 lineConfig={lineConfig}
+                strokeDashEncodingConfig={showAvg && strokeDashConfig}
+                opacityEncodingConfig={opacityConfig}
+                tooltipTheme={'dark'}
               />
             ) : (
               <LoaderContainer size="small"></LoaderContainer>
@@ -304,18 +568,22 @@ const NodePageMetricsTab = (props) => {
         </RowGraphContainer>
         <RowGraphContainer>
           <GraphWrapper>
-            <GraphTitle>MEMORY (%)</GraphTitle>
+            <GraphTitle>Memory (%)</GraphTitle>
             {nodeStatsData['memory'].length !== 0 && graphWidth ? (
               <LineChart
                 id={'node_memory_id'}
-                data={nodeStatsData['memory']}
+                data={memoryData}
                 xAxis={xAxis}
                 yAxis={yAxisUsage}
                 color={colorMemory}
                 width={graphWidth}
                 height={graphHeight}
-                tooltip={false}
+                tooltip={true}
+                tooltipConfig={tooltipConfigMemory}
                 lineConfig={lineConfig}
+                strokeDashEncodingConfig={showAvg && strokeDashConfig}
+                opacityEncodingConfig={opacityConfig}
+                tooltipTheme={'dark'}
               />
             ) : (
               <LoaderContainer size="small"></LoaderContainer>
@@ -328,12 +596,16 @@ const NodePageMetricsTab = (props) => {
                 id={'node_IOPS_id'}
                 data={iopsData}
                 xAxis={xAxis}
-                yAxis={yAxisWriteRead}
+                yAxis={yAxis}
                 color={colorsWriteRead}
                 width={graphWidth}
                 height={graphHeight}
-                tooltip={false}
+                tooltip={true}
+                tooltipConfig={tooltipConfigIops}
                 lineConfig={lineConfig}
+                strokeDashEncodingConfig={showAvg && strokeDashConfig}
+                opacityEncodingConfig={opacityConfig}
+                tooltipTheme={'dark'}
               />
             ) : (
               <LoaderContainer size="small"></LoaderContainer>
@@ -343,36 +615,44 @@ const NodePageMetricsTab = (props) => {
 
         <RowGraphContainer>
           <GraphWrapper>
-            <GraphTitle>CONTROL PLANE BANDWIDTH (MB)</GraphTitle>
+            <GraphTitle>Control Plane Bandwidth (MB/s)</GraphTitle>
             {controlPlaneNetworkBandwidthData.length !== 0 && graphWidth ? (
               <LineChart
                 id={'node_control_plane_bandwidth_id'}
                 data={controlPlaneNetworkBandwidthData}
                 xAxis={xAxis}
-                yAxis={yAxisInOut}
+                yAxis={yAxis}
                 color={colorsInOut}
                 width={graphWidth}
                 height={graphHeight}
-                tooltip={false}
+                tooltip={true}
+                tooltipConfig={tooltipConfigInOut}
                 lineConfig={lineConfig}
+                strokeDashEncodingConfig={showAvg && strokeDashConfig}
+                opacityEncodingConfig={opacityConfig}
+                tooltipTheme={'dark'}
               />
             ) : (
               <LoaderContainer size="small"></LoaderContainer>
             )}
           </GraphWrapper>
           <GraphWrapper>
-            <GraphTitle>WORKLOAD PLANE BANDWIDTH (MB)</GraphTitle>
+            <GraphTitle>Workload Plane Bandwidth (MB/s)</GraphTitle>
             {workloadPlaneNetworkBandwidthData.length !== 0 && graphWidth ? (
               <LineChart
                 id={'node_workload_plane_bandwidth_id'}
                 data={workloadPlaneNetworkBandwidthData}
                 xAxis={xAxis}
-                yAxis={yAxisInOut}
+                yAxis={yAxis}
                 color={colorsInOut}
                 width={graphWidth}
                 height={graphHeight}
-                tooltip={false}
+                tooltip={true}
+                tooltipConfig={tooltipConfigInOut}
                 lineConfig={lineConfig}
+                strokeDashEncodingConfig={showAvg && strokeDashConfig}
+                opacityEncodingConfig={opacityConfig}
+                tooltipTheme={'dark'}
               />
             ) : (
               <LoaderContainer size="small"></LoaderContainer>

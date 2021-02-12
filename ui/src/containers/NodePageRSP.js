@@ -36,6 +36,7 @@ import {
   PORT_NODE_EXPORTER,
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
+import { useTypedSelector } from '../hooks';
 
 // <NodePageRSP> fetches the data for all the tabs given the current selected Node
 // handles the refresh for the metrics tab
@@ -54,9 +55,13 @@ const NodePageRSP = (props) => {
   const nodeMetricsTimeSpan = useSelector(
     (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
   );
+  const nodeMetricsShowAvg = useSelector(
+    (state) => state.app.monitoring.nodeStats.showAvg,
+  );
 
   let metricsTimeSpan;
   const queryTimespan = query.get('from');
+  const queryShowAvg = query.get('avg');
 
   if (queryTimespan) {
     // If timespan query specified in query string
@@ -67,6 +72,8 @@ const NodePageRSP = (props) => {
     metricsTimeSpan = nodeMetricsTimeSpan;
   }
 
+  const showAvg = queryShowAvg === 'true' ? true : nodeMetricsShowAvg;
+
   useRefreshEffect(refreshNodeStatsAction, stopRefreshNodeStatsAction);
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
 
@@ -75,9 +82,13 @@ const NodePageRSP = (props) => {
   const podsListData = getPodsListData(name, pods);
   const nodes = useSelector((state) => state.app.nodes.list);
   const volumes = useSelector((state) => state.app.volumes.list);
-  const nodeStats = useSelector(
+  const nodeStats = useTypedSelector(
     (state) => state.app.monitoring.nodeStats.metrics,
   );
+  const avgStats = useTypedSelector(
+    (state) => state.app.monitoring.nodeStats.metricsAvg,
+  );
+
   const nodesIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
   const instanceIP =
     nodes?.find((node) => node.name === name)?.internalIP ?? '';
@@ -92,6 +103,7 @@ const NodePageRSP = (props) => {
         instanceIP,
         controlPlaneInterface,
         workloadPlaneInterface,
+        showAvg,
       }),
     );
     dispatch(fetchPodsAction());
@@ -104,6 +116,7 @@ const NodePageRSP = (props) => {
     controlPlaneInterface,
     workloadPlaneInterface,
     name,
+    showAvg,
   ]);
 
   // Filter alerts for the specific node, base on the InstaceIP and Alert Name
@@ -207,7 +220,9 @@ const NodePageRSP = (props) => {
             path={`${path}/metrics`}
             render={() => (
               <NodePageMetricsTab
+                nodeName={name}
                 nodeStats={nodeStats}
+                avgStats={avgStats}
                 instanceIP={instanceIP}
               />
             )}

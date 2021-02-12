@@ -38,3 +38,46 @@ export const yAxisInOut = [
     axis: { title: null },
   },
 ];
+
+export const getTooltipConfig = (fields) => {
+  const tooltipConfigBase = {
+    transform: [{ pivot: 'type', value: 'y', groupby: ['date'] }],
+    mark: 'rule',
+    encoding: {
+      opacity: {
+        condition: { value: 1, selection: 'hover' },
+        value: 0,
+      },
+      tooltip: [
+        {
+          field: 'date',
+          type: 'temporal',
+          axis: {
+            format: '%d/%m %H:%M',
+            ticks: true,
+            tickCount: 4,
+            labelAngle: -50,
+            labelColor: '#B5B5B5',
+          },
+          title: 'Date',
+        },
+      ],
+      color: { legend: null },
+    },
+    selection: {
+      hover: {
+        type: 'single',
+        fields: ['date'],
+        nearest: true,
+        on: 'mouseover',
+        empty: 'none',
+        clear: 'mouseout',
+      },
+    },
+  };
+
+  const newFields = [...tooltipConfigBase.encoding.tooltip, ...fields];
+  const newConfig = Object.assign({}, tooltipConfigBase);
+  newConfig.encoding.tooltip = newFields;
+  return newConfig;
+};
