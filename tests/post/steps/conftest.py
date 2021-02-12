@@ -72,7 +72,7 @@ def _check_pods_status(
         name += " with label '{}'".format(label)
 
     # Wait for pod to be in the correct state
-    utils.retry(_wait_for_status, times=12, wait=5, name=name)
+    utils.retry(_wait_for_status, times=24, wait=5, name=name)
 
 
 # }}}
