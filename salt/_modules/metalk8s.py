@@ -25,6 +25,8 @@ log = logging.getLogger(__name__)
 
 __virtualname__ = "metalk8s"
 
+BOOTSTRAP_CONFIG = "/etc/metalk8s/bootstrap.yaml"
+
 
 def __virtual__():
     return __virtualname__
@@ -146,6 +148,28 @@ def _get_archive_info(info):
     return {"version": _get_archive_version(info), "name": _get_archive_name(info)}
 
 
+def archive_info_from_product_txt(archive):
+    if os.path.isdir(archive):
+        info = archive_info_from_tree(archive)
+        info.update({
+            'iso': None,
+            'path': archive,
+        })
+    elif os.path.isfile(archive):
+        info = archive_info_from_iso(archive)
+        info.update({
+            'iso': archive,
+            'path': '/srv/scality/metalk8s-{0}'.format(info['version']),
+        })
+    else:
+        raise CommandExecutionError(
+            'Invalid archive path {0}, should be an iso or a directory.'
+            .format(archive)
+        )
+
+    return info
+
+
 def archive_info_from_tree(path):
     """Extract archive information from a directory
 
@@ -210,31 +234,23 @@ def get_archives(archives=None):
 
     res = {}
     for archive in archives:
-        if os.path.isdir(archive):
-            iso = None
-            info = archive_info_from_tree(archive)
-            path = archive
-            version = info["version"]
-        elif os.path.isfile(archive):
-            iso = archive
-            info = archive_info_from_iso(archive)
-            version = info["version"]
-            path = "/srv/scality/metalk8s-{0}".format(version)
-        else:
-            log.warning(
-                "Skip, invalid archive path %s, should be an iso or a " "directory.",
-                archive,
-            )
-            continue
+        info = archive_info_from_product_txt(archive)
+        env_name = 'metalk8s-{0}'.format(info['version'])
 
-        info.update({"path": path, "iso": iso})
-        env_name = "metalk8s-{0}".format(version)
-
-        # Warn if we have 2 archives with the same version
+        # Raise if we have 2 archives with the same version
         if env_name in res:
-            archive = res[env_name]
-            log.warning(
-                "Archives have the same version: %s is overridden by %s.", archive, info
+            error_msg = []
+            for dup_version in (res[env_name], info):
+                if dup_version['iso']:
+                    path = dup_version['iso']
+                    kind = 'ISO'
+                else:
+                    path = dup_version['path']
+                    kind = 'directory'
+                error_msg.append("{0} ({1})".format(path, kind))
+            raise CommandExecutionError(
+                'Two archives have the same version "{0}":\n- {1}'
+                .format(info['version'], "\n- ".join(error_msg))
             )
 
         res.update({env_name: info})
@@ -625,3 +641,53 @@ def get_from_map(value, saltenv=None):
         input_data=tmplstr,
         saltenv=saltenv,
     )
+
+
+def _read_bootstrap_config():
+    try:
+        with salt.utils.files.fopen(BOOTSTRAP_CONFIG, 'r') as fd:
+            config = salt.utils.yaml.safe_load(fd)
+    except IOError as exc:
+        msg = 'Failed to load bootstrap config file at "{}"'.format(
+            BOOTSTRAP_CONFIG
+        )
+        raise CommandExecutionError(message=msg) from exc
+
+    return config
+
+
+def _write_bootstrap_config(config):
+    try:
+        with salt.utils.files.fopen(BOOTSTRAP_CONFIG, 'w') as fd:
+            salt.utils.yaml.safe_dump(config, fd, default_flow_style=False)
+    except Exception as exc:
+        msg = 'Failed to write bootstrap config file at "{}"'.format(
+            BOOTSTRAP_CONFIG
+        )
+        raise CommandExecutionError(message=msg) from exc
+
+
+def configure_archive(archive, remove=False):
+    """Add (or remove) a MetalK8s archive in the bootstrap config file."""
+    # raise if the archive does not exist or is invalid
+    archive_info_from_product_txt(archive)
+    config = _read_bootstrap_config()
+
+    if remove:
+        try:
+            config['archives'].remove(archive)
+            msg = "removed from bootstrap configuration"
+        except ValueError:
+            msg = "already absent in bootstrap configuration"
+    else:
+        if archive in config['archives']:
+            msg = "already present in bootstrap configuration"
+        else:
+            config['archives'].append(archive)
+            msg = "added to bootstrap configuration"
+
+    _write_bootstrap_config(config)
+
+    msg = "Archive '{0}' {1}".format(archive, msg)
+    log.info(msg)
+    return msg

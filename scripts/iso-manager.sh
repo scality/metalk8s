@@ -3,7 +3,6 @@ set -e
 set -u
 set -o pipefail
 
-BOOTSTRAP_CONFIG="/etc/metalk8s/bootstrap.yaml"
 VERBOSE=${VERBOSE:-0}
 LOGFILE="/var/log/metalk8s/iso-manager.log"
 SALT_CALL=${SALT_CALL:-salt-call}
@@ -25,7 +24,7 @@ ARCHIVES=()
 while (( "$#" )); do
   case "$1" in
     -a|--archive)
-      ARCHIVES+=("$2")
+      ARCHIVES+=("$(readlink -f "$2")")
       shift 2
       ;;
     -d|--dry-run)
@@ -65,70 +64,10 @@ cleanup() {
 
 trap cleanup EXIT
 
+BASE_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
 
-run_quiet() {
-    local name=$1
-    shift 1
-
-    echo -n "> ${name}..."
-    local start
-    start=$(date +%s)
-    set +e
-    "$@" 2>&1 | tee -ia "${LOGFILE}" > "${TMPFILES}/out"
-    local RC=$?
-    set -e
-    local end
-    end=$(date +%s)
-
-    local duration=$(( end - start ))
-
-    if [ $RC -eq 0 ]; then
-        echo " done [${duration}s]"
-    else
-        echo " fail [${duration}s]"
-        cat >/dev/stderr << EOM
-
-Failure while running step '${name}'
-
-Command: $@
-
-Output:
-
-<< BEGIN >>
-EOM
-        cat "${TMPFILES}/out" > /dev/stderr
-
-        cat >/dev/stderr << EOM
-<< END >>
-
-This script will now exit
-
-EOM
-
-        exit 1
-    fi
-}
-
-run_verbose() {
-    local name=$1
-    shift 1
-
-    echo "> ${name}..."
-    "$@"
-}
-
-run() {
-    if [ "$VERBOSE" -eq 1 ]; then
-        run_verbose "${@}"
-    else
-        run_quiet "${@}"
-    fi
-}
-
-die() {
-    echo 1>&2 "$@"
-    return 1
-}
+# shellcheck disable=SC1090
+. "$BASE_DIR"/common.sh
 
 # helper function to set the current saltenv
 _set_env() {
@@ -139,48 +78,10 @@ _set_env() {
     fi
 }
 
-# helper function to check for element in array
-containsElement () {
-  local element match="$1"
-  shift
-  for element in "$@"; do
-      [[ "$element" == "$match" ]] && return 0;
-  done
-  return 1
-}
-
 _add_archives() {
-    # Skip adding archive if None passed
-    [ $# -lt 1 ] && return 0
-    # Use salt file.serialize merge require having full list
-    # salt-call output example:
-    # local: ["/srv/scality/metalk8s-2.0.0/", "/tmp/metalk8s-2.1.0.iso"]
-    # parsed archives:
-    # ("/srv/scality/metalk8s-2.0.0/" "/tmp/metalk8s-2.1.0.iso")
-    IFS=" " read -r -a \
-        archives <<< "$(salt-call pillar.get metalk8s:archives \
-        --out txt | cut -d' ' -f2- | tr -d '[],')"
-    for archive in "$@"; do
-        if ! containsElement "'$archive'" "${archives[@]}"; then
-            archives+=("'$archive'")
-        fi
+    for archive; do
+        $SALT_CALL metalk8s.configure_archive "$archive"
     done
-    echo "Collecting archives..."
-    echo "${archives[@]}"
-    # build archive list
-    archive_list=${archives[0]}
-    for i in "${archives[@]:1}"; do
-        archive_list+=,$i
-    done
-    echo "Updating bootstrap.yaml"
-    $SALT_CALL state.single file.serialize "$BOOTSTRAP_CONFIG" \
-        dataset="{'archives': [$archive_list]}" \
-        merge_if_exists=True \
-        formatter=yaml \
-        show_changes=True \
-        test="$DRY_RUN" \
-        --retcode-passthrough
-    return $?
 }
 
 _configure_archives() {
@@ -216,10 +117,19 @@ _configure_archives() {
         --retcode-passthrough
 }
 
+_check_config() {
+    # This call will fail if there is any invalid archive
+    # configured in the bootstrap configuration file.
+    $SALT_CALL metalk8s.get_archives
+}
+
 # Main
 
 _set_env
 [ -z "$SALTENV" ] && die "saltenv not set"
 
-run "Add archives" _add_archives ${ARCHIVES[@]+"${ARCHIVES[@]}"}
+run "Check bootstrap configuration file" _check_config
+if (( ${#ARCHIVES[@]} )); then
+    run "Add archives" _add_archives "${ARCHIVES[@]}"
+fi
 run "Configure archives" _configure_archives

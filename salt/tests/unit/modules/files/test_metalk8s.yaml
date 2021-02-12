@@ -1,144 +1,72 @@
 get_archives:
-  - archives: "/my/path/iso"
-    infos: {"version": "2.5.0", "name": "MetalK8s"}
-    is_files: True
-    result: {
-      "metalk8s-2.5.0": {
-        "iso": "/my/path/iso",
-        "version": "2.5.0",
-        "name": "MetalK8s",
-        "path": "/srv/scality/metalk8s-2.5.0"
-      }
-    }
+  # 0. Ok - 1 existing ISO passed as argument
+  - archives: /my/path/iso
+    infos: &get_archives_infos_iso
+      version: 2.5.0
+      name: MetalK8s
+      iso: /my/path/iso
+      path: /srv/scality/metalk8s-2.5.0
+    result:
+      metalk8s-2.5.0: *get_archives_infos_iso
+  # 1. Ok - 1 existing ISO from pillar entries
   - archives: null
     pillar_archives:
       - "/my/path/iso"
-    infos: {"version": "2.5.0", "name": "MetalK8s"}
-    is_files: True
-    result: {
-      "metalk8s-2.5.0": {
-        "iso": "/my/path/iso",
-        "version": "2.5.0",
-        "name": "MetalK8s",
-        "path": "/srv/scality/metalk8s-2.5.0"
-      }
-    }
+    infos: *get_archives_infos_iso
+    result:
+      metalk8s-2.5.0: *get_archives_infos_iso
+  # 2. Ok - 1 existing directory passed as argument
   - archives: "/my/path"
-    infos: {"version": "2.5.0", "name": "MetalK8s"}
-    is_dirs: True
-    result: {
-      "metalk8s-2.5.0": {
-        "iso": null,
-        "version": "2.5.0",
-        "name": "MetalK8s",
-        "path": "/my/path"
-      }
-    }
+    infos: &get_archives_infos_dir
+      <<: *get_archives_infos_iso
+      iso: null
+      path: /my/path
+    result:
+      metalk8s-2.5.0: *get_archives_infos_dir
+  # 3. Nok - 1 ISO and 1 directory with the same version
   - archives:
       - "/my/path"
       - "/my/path/iso"
-    infos: {"version": "2.5.0", "name": "MetalK8s"}
-    is_dirs:
-      - True
-      - False
-    is_files: True
-    result: {
-      "metalk8s-2.5.0": {
-        "iso": "/my/path/iso",
-        "version": "2.5.0",
-        "name": "MetalK8s",
-        "path": "/srv/scality/metalk8s-2.5.0"
-      }
-    }
+    infos:
+      - <<: *get_archives_infos_iso
+        iso: null
+      - *get_archives_infos_iso
+    raises: True
+    result: Two archives have the same version .*
+  # 4. Ok - 2 ISOs with different versions
   - archives:
       - "/my/path/iso"
-      - "/my/path"
-    infos: {"version": "2.5.0", "name": "MetalK8s"}
-    is_dirs:
-      - False
-      - True
-    is_files: True
-    result: {
-      "metalk8s-2.5.0": {
-        "iso": null,
-        "version": "2.5.0",
-        "name": "MetalK8s",
-        "path": "/my/path"
-      }
-    }
-  - archives:
-      - "/my/first/iso"
       - "/my/second/iso"
     infos:
-      - {"version": "2.5.0", "name": "MetalK8s"}
-      - {"version": "2.5.1", "name": "MetalK8s"}
-    is_files: True
-    result: {
-      "metalk8s-2.5.0": {
-        "iso": "/my/first/iso",
-        "version": "2.5.0",
-        "name": "MetalK8s",
-        "path": "/srv/scality/metalk8s-2.5.0"
-      },
-      "metalk8s-2.5.1": {
-        "iso": "/my/second/iso",
-        "version": "2.5.1",
-        "name": "MetalK8s",
-        "path": "/srv/scality/metalk8s-2.5.1"
-      }
-    }
+      - *get_archives_infos_dir
+      - version: 2.5.1
+        name: MetalK8s
+        iso: /my/second/iso
+        path: /srv/scality/metalk8s-2.5.1
+    result:
+      metalk8s-2.5.0: *get_archives_infos_dir
+      metalk8s-2.5.1:
+        iso: /my/second/iso
+        version: 2.5.1
+        name: MetalK8s
+        path: /srv/scality/metalk8s-2.5.1
+  # 5. Nok - Archive path that does not exist
   - archives:
-      - "/my/path/does/not/exists"
+      - "/my/path/does/not/exist"
     infos: null
-    result: {}
+    invalid_path: True
+    raises: True
+    result: Invalid archive path
+  # 6. Ok - No archives
   - archives: null
     infos: null
     result: {}
+  # 7. Nok - Invalid `archives` argument
   - archives: {"invalid": "archives", "style": "123"}
     infos: null
     raises: True
     result: "Invalid archives: list or string expected, got .*"
-  - archives:
-      - "/my/first/iso"
-      - "/my/first/path"
-      - "/my/path/does/not/exists"
-      - "/my/second/path"
-      - "/my/second/iso"
-    infos:
-      - {"version": "2.5.1", "name": "MetalK8s"}
-      - {"version": "2.5.0", "name": "MetalK8s"}
-      - {"version": "2.5.1", "name": "MetalK8s"}
-      - {"version": "2.5.2", "name": "MetalK8s"}
-    is_dirs:
-      - False
-      - True
-      - False
-      - True
-      - False
-    is_files:
-      - True
-      - False
-      - True
-    result: {
-      "metalk8s-2.5.0": {
-        "iso": null,
-        "version": "2.5.0",
-        "name": "MetalK8s",
-        "path": "/my/first/path"
-      },
-      "metalk8s-2.5.1": {
-        "iso": null,
-        "version": "2.5.1",
-        "name": "MetalK8s",
-        "path": "/my/second/path"
-      },
-      "metalk8s-2.5.2": {
-        "iso": "/my/second/iso",
-        "version": "2.5.2",
-        "name": "MetalK8s",
-        "path": "/srv/scality/metalk8s-2.5.2"
-      }
-    }
+
 check_pillar_keys:
   - keys: "my-simple-key"
     pillar_content: {
@@ -437,3 +365,63 @@ manage_static_pod_manifest:
     atomic_copy_raises: Could not copy!
     error: >-
       Failed to commit change: Could not copy!
+
+archive_info_from_product_txt:
+  # 0. Ok - A valid ISO archive
+  - archive: /my/iso
+    is_file: True
+    info:
+      version: 2.8.0
+      name: MetalK8s
+    result:
+      version: 2.8.0
+      name: MetalK8s
+      iso: /my/iso
+      path: /srv/scality/metalk8s-2.8.0
+  # 1. Ok - A valid directory archive
+  - archive: /my/directory
+    is_dir: True
+    info:
+      version: 2.8.0
+      name: MetalK8s
+    result:
+      version: 2.8.0
+      name: MetalK8s
+      iso: null
+      path: /my/directory
+  # 2. Nok - Invalid path
+  - archive: /my/invalid
+    info: null
+    raises: True
+    result: Invalid archive path /my/invalid, should be an iso or a directory.
+
+configure_archive:
+  # 0. Ok -
+  - archive: /my/archive
+    config:
+      archives: []
+    result: Archive '/my/archive' added to bootstrap configuration
+  # 1. Ok -
+  - archive: /my/archive
+    remove: True
+    config:
+      archives:
+        - /my/archive
+    result: Archive '/my/archive' removed from bootstrap configuration
+  # 2. Ok -
+  - archive: /my/archive
+    config:
+      archives:
+        - /my/archive
+    result: Archive '/my/archive' already present in bootstrap configuration
+  # 3. Ok -
+  - archive: /my/archive
+    remove: True
+    config:
+      archives: []
+    result: Archive '/my/archive' already absent in bootstrap configuration
+  # 4. Nok -
+  - archive: /my/archive
+    invalid_path: True
+    raises: True
+    result: Invalid archive path
