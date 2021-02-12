@@ -3,9 +3,11 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTypedSelector } from '../hooks';
 import { updateAPIConfigAction } from '../ducks/config';
 import { useDispatch } from 'react-redux';
+import { ErrorBoundary } from 'react-error-boundary';
 
-function useWebComponent(src: string) {
-  useEffect(() => {
+function useWebComponent(src: string, customElementName: string) {
+  const [hasFailed, setHasFailed] = useState(false);
+  useLayoutEffect(() => {
     const body = document.body;
     // $flow-disable-line
     const element = [...(body?.querySelectorAll('script') || [])].find(
@@ -16,14 +18,26 @@ function useWebComponent(src: string) {
     if (!element && body) {
       const scriptElement = document.createElement('script');
       scriptElement.src = src;
+      scriptElement.onload = () => {
+        customElements.whenDefined(customElementName).catch(e => {
+          setHasFailed(true);
+        })
+      }
+      scriptElement.onerror = () => {
+        setHasFailed(true);
+      }
       body.appendChild(scriptElement);
     }
   }, [src]);
+
+  if (hasFailed) {
+    throw new Error(`Failed to load component ${customElementName}`);
+  }
 }
 
-type NavbarWebComponent = HTMLElement & {logOut: () => void};
+type NavbarWebComponent = HTMLElement & { logOut: () => void };
 
-function useLoginEffect(navbarRef: {current: ?NavbarWebComponent}) {
+function useLoginEffect(navbarRef: { current: NavbarWebComponent | null }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const dispatch = useDispatch();
 
@@ -62,26 +76,46 @@ function useLoginEffect(navbarRef: {current: ?NavbarWebComponent}) {
   return { isAuthenticated };
 }
 
-function useLogoutEffect(navbarRef: {current: ?NavbarWebComponent}, isAuthenticated: boolean) {
-    const user = useTypedSelector((state) => state.oidc?.user);
-    useLayoutEffect(() => {
-        if (!navbarRef.current) {
-          return;
-        }
-    
-        if (isAuthenticated && !user) {
-            console.log(navbarRef.current)
-            navbarRef.current.logOut(); // TODO  
-        }
-      }, [navbarRef, !user, isAuthenticated]);
+function useLogoutEffect(
+  navbarRef: { current: NavbarWebComponent | null },
+  isAuthenticated: boolean,
+) {
+  const user = useTypedSelector((state) => state.oidc?.user);
+  useLayoutEffect(() => {
+    if (!navbarRef.current) {
+      return;
+    }
+
+    if (isAuthenticated && !user) {
+      navbarRef.current.logOut();
+    }
+  }, [navbarRef, !user, isAuthenticated]);
+}
+
+function ErrorFallback({ error, resetErrorBoundary }) {
+  //Todo redirect to a beautiful error page
+  return (
+    <div role="alert">
+      <p>Something went wrong:</p>
+      <pre>{error.message}</pre>
+    </div>
+  );
 }
 
 export function Navbar() {
-  useWebComponent('/solution-ui-navbar.1.0.0.js');
+  return (
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <InternalNavbar />
+    </ErrorBoundary>
+  );
+}
+
+function InternalNavbar() {
+  useWebComponent('/solution-ui-navbar.1.0.0.js', 'solutions-navbar');
 
   const navbarRef = useRef<NavbarWebComponent | null>(null);
 
-  const {isAuthenticated} = useLoginEffect(navbarRef);
+  const { isAuthenticated } = useLoginEffect(navbarRef);
   useLogoutEffect(navbarRef, isAuthenticated);
 
   //TODO call updateLanguage() when language changed
@@ -89,13 +123,11 @@ export function Navbar() {
   return (
     <solutions-navbar
       ref={
-          // $flow-disable-line -- flow considers solutions-navbar as a row HTMLElement, TODO find if it is possible to extends JSX flow native definitions with custom element types 
-          navbarRef
-        }
-      oidc-provider-url={apiConfig.url_oidc_provider}
+        // $flow-disable-line -- flow considers solutions-navbar as a row HTMLElement, TODO find if it is possible to extends JSX flow native definitions with custom element types
+        navbarRef
+      }
       client-id="metalk8s-ui"
       response-type="id_token"
-      redirect-url={apiConfig.url_redirect}
       scopes="openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
     />
   );
