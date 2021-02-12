@@ -167,10 +167,10 @@ export const RowGraphContainer = styled.div`
 `;
 
 export const GraphTitle = styled.div`
-  font-size: ${fontSize.small};
+  font-size: ${fontSize.base};
   font-weight: ${fontWeight.bold};
-  color: ${(props) => props.theme.brand.textSecondary};
-  padding: ${padding.small} 0 0 ${padding.larger};
+  color: ${(props) => props.theme.brand.textPrimary};
+  padding: ${padding.base} 0 0 ${padding.larger};
 `;
 
 export const GraphWrapper = styled.div`

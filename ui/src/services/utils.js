@@ -417,7 +417,7 @@ export const useDynamicChartSize = (container_id) => {
     if (graphsContainerWidth) setGraphWidth(graphsContainerWidth / 2 - 50);
   }, [graphsContainerWidth]);
 
-  return [graphWidth, window.innerHeight / 6 - 30];
+  return [graphWidth, window.innerHeight / 6 - 50];
 };
 
 /*
