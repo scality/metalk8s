@@ -1873,7 +1873,8 @@ stages:
             ssh -F ssh_config bootstrap 'sudo bash -c "
             kubectl --kubeconfig=/etc/kubernetes/admin.conf
             wait pods --for=condition=Ready --all --all-namespaces
-            --field-selector=status.phase!=Succeeded"'
+            --field-selector=status.phase!=Succeeded"
+            --timeout=120s'
           workdir: build/eve/workers/openstack-terraform/terraform/
           haltOnFailure: true
       # --- We do not need to Test promoted version ---
