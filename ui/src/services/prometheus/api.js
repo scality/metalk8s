@@ -1,6 +1,6 @@
 //@flow
 import ApiClient from '../ApiClient';
-type RangeMatrixResult = {
+export type RangeMatrixResult = {
   resultType: 'matrix',
   result: {
     metric: {

@@ -15,6 +15,7 @@ import {
   getAlerts,
   queryPrometheus,
   queryPrometheusRange,
+  RangeMatrixResult,
 } from '../../services/prometheus/api';
 import * as CoreApi from '../../services/k8s/core';
 import {
@@ -107,9 +108,22 @@ const defaultState = {
   },
   nodeStats: {
     metricsTimeSpan: LAST_TWENTY_FOUR_HOURS,
+    showAvg: false,
     instanceIP: '',
     controlPlaneInterface: '',
     workloadPlaneInterface: '',
+    metricsAvg: {
+      cpuUsage: [],
+      systemLoad: [],
+      memory: [],
+      iopsRead: [],
+      iopsWrite: [],
+      controlPlaneNetworkBandwidthIn: [],
+      controlPlaneNetworkBandwidthOut: [],
+      workloadPlaneNetworkBandwidthIn: [],
+      workloadPlaneNetworkBandwidthOut: [],
+      queryStartingTime: 0,
+    },
     metrics: {
       cpuUsage: [],
       systemLoad: [],
@@ -125,6 +139,18 @@ const defaultState = {
     isRefreshing: false,
   },
   unameInfo: [],
+};
+export type MonitoringMetrics = {
+  cpuUsage: RangeMatrixResult,
+  systemLoad: RangeMatrixResult,
+  memory: RangeMatrixResult,
+  iopsRead: RangeMatrixResult,
+  iopsWrite: RangeMatrixResult,
+  controlPlaneNetworkBandwidthIn: RangeMatrixResult,
+  controlPlaneNetworkBandwidthOut: RangeMatrixResult,
+  workloadPlaneNetworkBandwidthIn: RangeMatrixResult,
+  workloadPlaneNetworkBandwidthOut: RangeMatrixResult,
+  queryStartingTime: number,
 };
 
 export type MonitoringState = {
@@ -169,18 +195,9 @@ export type MonitoringState = {
     instanceIP: string,
     controlPlaneInterface: string,
     workloadPlaneInterface: string,
-    metrics: {
-      cpuUsage: any[], // todo, identify this type
-      systemLoad: any[], // todo, identify this type
-      memory: any[], // todo, identify this type
-      iopsRead: any[], // todo, identify this type
-      iopsWrite: any[], // todo, identify this type
-      controlPlaneNetworkBandwidthIn: any[], // todo, identify this type
-      controlPlaneNetworkBandwidthOut: any[], // todo, identify this type
-      workloadPlaneNetworkBandwidthIn: any[], // todo, identify this type
-      workloadPlaneNetworkBandwidthOut: any[], // todo, identify this type
-      queryStartingTime: number,
-    },
+    metrics: MonitoringMetrics,
+    metricsAvg: MonitoringMetrics,
+    showAvg: boolean,
     isRefreshing: boolean,
   },
   unameInfo: any[], // todo, identify this type
@@ -321,6 +338,8 @@ const controlPlaneInterfaceSelector = (state) =>
   state.app.monitoring.nodeStats.controlPlaneInterface;
 const workloadPlaneInterfaceSelector = (state) =>
   state.app.monitoring.nodeStats.workloadPlaneInterface;
+export const nodeMetricsShowAvgSelector = (state) =>
+  state.app.monitoring.nodeStats.showAvg;
 
 // Sagas
 function getClusterQueryStatus(result) {
@@ -674,6 +693,7 @@ export function* fetchNodeStats() {
   const instanceIP = yield select(instanceIPSelector);
   const controlPlaneInterface = yield select(controlPlaneInterfaceSelector);
   const workloadPlaneInterface = yield select(workloadPlaneInterfaceSelector);
+  const showAvg = yield select(nodeMetricsShowAvgSelector);
 
   let cpuUsage = [];
   let systemLoad = [];
@@ -684,6 +704,15 @@ export function* fetchNodeStats() {
   let controlPlaneNetworkBandwidthOut = [];
   let workloadPlaneNetworkBandwidthIn = [];
   let workloadPlaneNetworkBandwidthOut = [];
+  let cpuUsageAvg = [];
+  let systemLoadAvg = [];
+  let memoryAvg = [];
+  let iopsReadAvg = [];
+  let iopsWriteAvg = [];
+  let controlPlaneNetworkBandwidthInAvg = [];
+  let controlPlaneNetworkBandwidthOutAvg = [];
+  let workloadPlaneNetworkBandwidthInAvg = [];
+  let workloadPlaneNetworkBandwidthOutAvg = [];
 
   let sampleDuration;
   let sampleFrequency;
@@ -714,6 +743,16 @@ export function* fetchNodeStats() {
   const controlPlaneNetworkBandwidthOutQuery = `sum(irate(node_network_transmit_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${controlPlaneInterface}"}[5m])) * 0.000001`;
   const workloadPlaneNetworkBandwidthInQuery = `sum(irate(node_network_receive_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${workloadPlaneInterface}"}[5m])) * 0.000001`;
   const workloadPlaneNetworkBandwidthOutQuery = `sum(irate(node_network_transmit_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${workloadPlaneInterface}"}[5m])) * 0.000001`;
+
+  const cpuUsageAvgQuery = `avg(100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100))`;
+  const systemLoadAvgQuery = `avg(node_load1/count without(cpu, mode) (node_cpu_seconds_total{mode="idle"})) * 100`;
+  const memoryAvgQuery = `avg(100 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100)`;
+  const iopsWriteAvgQuery = `avg(sum(irate(node_disk_writes_completed_total[5m])) by (instance))`;
+  const iopsReadAvgQuery = `avg(sum(irate(node_disk_reads_completed_total[5m])) by (instance))`;
+  const controlPlaneNetworkBandwidthInAvgQuery = `avg(irate(node_network_receive_bytes_total{job=~"node-exporter",device=~"${controlPlaneInterface}"}[5m]))* 0.000001`;
+  const controlPlaneNetworkBandwidthOutAvgQuery = `avg(irate(node_network_transmit_bytes_total{job=~"node-exporter",device=~"${controlPlaneInterface}"}[5m]))* 0.000001`;
+  const workloadPlaneNetworkBandwidthInAvgQuery = `avg(irate(node_network_receive_bytes_total{job=~"node-exporter",device=~"${workloadPlaneInterface}"}[5m]))* 0.000001`;
+  const workloadPlaneNetworkBandwidthOutAvgQuery = `avg(irate(node_network_transmit_bytes_total{job=~"node-exporter",device=~"${workloadPlaneInterface}"}[5m]))* 0.000001`;
 
   // Make sure the props are ready before sending the requests.
   if (instanceIP && controlPlaneInterface && workloadPlaneInterface) {
@@ -794,6 +833,117 @@ export function* fetchNodeStats() {
       ),
     ]);
 
+    if (showAvg) {
+      const [
+        cpuUsageAvgQueryResult,
+        systemLoadAvgQueryResult,
+        memoryAvgQueryResult,
+        iopsReadAvgQueryResult,
+        iopsWriteAvgQueryResult,
+        controlPlaneNetworkBandwidthInAvgQueryResult,
+        controlPlaneNetworkBandwidthOutAvgQueryResult,
+        workloadPlaneNetworkBandwidthInAvgQueryResult,
+        workloadPlaneNetworkBandwidthOutAvgQueryResult,
+      ] = yield all([
+        call(
+          queryPrometheusRange,
+          startingTimeISO,
+          currentTimeISO,
+          sampleFrequency,
+          cpuUsageAvgQuery,
+        ),
+        call(
+          queryPrometheusRange,
+          startingTimeISO,
+          currentTimeISO,
+          sampleFrequency,
+          systemLoadAvgQuery,
+        ),
+        call(
+          queryPrometheusRange,
+          startingTimeISO,
+          currentTimeISO,
+          sampleFrequency,
+          memoryAvgQuery,
+        ),
+        call(
+          queryPrometheusRange,
+          startingTimeISO,
+          currentTimeISO,
+          sampleFrequency,
+          iopsReadAvgQuery,
+        ),
+        call(
+          queryPrometheusRange,
+          startingTimeISO,
+          currentTimeISO,
+          sampleFrequency,
+          iopsWriteAvgQuery,
+        ),
+        call(
+          queryPrometheusRange,
+          startingTimeISO,
+          currentTimeISO,
+          sampleFrequency,
+          controlPlaneNetworkBandwidthInAvgQuery,
+        ),
+        call(
+          queryPrometheusRange,
+          startingTimeISO,
+          currentTimeISO,
+          sampleFrequency,
+          controlPlaneNetworkBandwidthOutAvgQuery,
+        ),
+        call(
+          queryPrometheusRange,
+          startingTimeISO,
+          currentTimeISO,
+          sampleFrequency,
+          workloadPlaneNetworkBandwidthInAvgQuery,
+        ),
+        call(
+          queryPrometheusRange,
+          startingTimeISO,
+          currentTimeISO,
+          sampleFrequency,
+          workloadPlaneNetworkBandwidthOutAvgQuery,
+        ),
+      ]);
+
+      if (!cpuUsageAvgQueryResult.error) {
+        cpuUsageAvg = cpuUsageAvgQueryResult.data.result;
+      }
+      if (!systemLoadAvgQueryResult.error) {
+        systemLoadAvg = systemLoadAvgQueryResult.data.result;
+      }
+      if (!memoryAvgQueryResult.error) {
+        memoryAvg = memoryAvgQueryResult.data.result;
+      }
+      if (!iopsReadAvgQueryResult.error) {
+        iopsReadAvg = iopsReadAvgQueryResult.data.result;
+      }
+      if (!iopsWriteAvgQueryResult.error) {
+        iopsWriteAvg = iopsWriteAvgQueryResult.data.result;
+      }
+      if (!controlPlaneNetworkBandwidthInAvgQueryResult.error) {
+        controlPlaneNetworkBandwidthInAvg =
+          controlPlaneNetworkBandwidthInAvgQueryResult.data.result;
+      }
+      if (!controlPlaneNetworkBandwidthOutAvgQueryResult.error) {
+        controlPlaneNetworkBandwidthOutAvg =
+          controlPlaneNetworkBandwidthOutAvgQueryResult.data.result;
+      }
+      if (!workloadPlaneNetworkBandwidthInAvgQueryResult.error) {
+        workloadPlaneNetworkBandwidthInAvg =
+          workloadPlaneNetworkBandwidthInAvgQueryResult.data.result;
+      }
+      if (!workloadPlaneNetworkBandwidthOutAvgQueryResult.error) {
+        workloadPlaneNetworkBandwidthOutAvg =
+          workloadPlaneNetworkBandwidthOutAvgQueryResult.data.result;
+      }
+    }
+    // Running Average Tasks In Parallel
+
     if (!cpuUsageQueryResult.error) {
       cpuUsage = cpuUsageQueryResult.data.result;
     }
@@ -838,7 +988,21 @@ export function* fetchNodeStats() {
       workloadPlaneNetworkBandwidthOut,
       queryStartingTime: startingTimestamp,
     };
-    yield put(updateNodeStatsAction({ metrics: metrics }));
+
+    const metricsAvg = {
+      cpuUsage: cpuUsageAvg,
+      systemLoad: systemLoadAvg,
+      memory: memoryAvg,
+      iopsRead: iopsReadAvg,
+      iopsWrite: iopsWriteAvg,
+      controlPlaneNetworkBandwidthIn: controlPlaneNetworkBandwidthInAvg,
+      controlPlaneNetworkBandwidthOut: controlPlaneNetworkBandwidthOutAvg,
+      workloadPlaneNetworkBandwidthIn: workloadPlaneNetworkBandwidthInAvg,
+      workloadPlaneNetworkBandwidthOut: workloadPlaneNetworkBandwidthOutAvg,
+      queryStartingTime: startingTimestamp,
+    };
+
+    yield put(updateNodeStatsAction({ metrics: metrics, metricsAvg }));
   }
 }
 
