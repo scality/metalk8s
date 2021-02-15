@@ -1,5 +1,5 @@
 {
-  "name": "metalk8s-client-generator",
+  "name": "crd-client-generator-js",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
