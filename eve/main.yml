@@ -1251,6 +1251,7 @@ stages:
           name: Trigger all unit tests simultaneously
           stage_names:
             - unit_tests_ui
+            - unit_tests_crd_client_generator
             - unit_tests_storage_operator
             - unit_tests_salt
 
@@ -1308,6 +1309,48 @@ stages:
             <<: *_env_final_status_artifact_success
             <<: *_unit-test_ui_junit_info
             STEP_NAME: unit_tests_ui
+      - Upload: *upload_final_status_artifact
+
+  unit_tests_crd_client_generator:
+    _metalk8s_internal_info:
+      junit_info: &_unit-test_crd_client_generator_junit_info
+        TEST_SUITE: unit test
+        TEST_NAME: crd client generator
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-unit-tests/pod.yaml
+      images:
+        docker-unit-tests:
+          context: 'tools/crd-client-generator-js'
+          dockerfile: eve/workers/pod-unit-tests/ui/Dockerfile
+      vars:
+        name: "metalk8s-unit-tests-crd-client-generator-worker"
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            <<: *_unit-test_crd_client_generator_junit_info
+            STEP_NAME: unit_tests_crd_client_generator
+      - ShellCommand:
+          name: Install CRD client generator dependencies
+          workdir: build/tools/crd-client-generator-js
+          command: >
+            npm ci --prefer-offline --no-audit
+          haltOnFailure: true
+      - ShellCommand:
+          name: Run all CRD client generator unit tests
+          workdir: build/tools/crd-client-generator-js
+          command: >
+            npm run test --no-update-notifier
+          haltOnFailure: true
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            <<: *_unit-test_crd_client_generator_junit_info
+            STEP_NAME: unit_tests_crd_client_generator
       - Upload: *upload_final_status_artifact
 
   unit_tests_storage_operator:
