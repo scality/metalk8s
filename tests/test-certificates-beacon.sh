@@ -101,6 +101,24 @@ apply_new_beacon_conf() {
     run_certificates_beacon_state "${pillar[*]}"
 }
 
+reset_beacon_conf() {
+    local salt_container
+
+    salt_container=$(get_salt_container)
+
+    readarray -t minions < <(get_salt_minion_ids)
+
+    for minion in "${minions[@]}"; do
+        crictl exec -i "$salt_container" \
+            salt-run metalk8s_saltutil.wait_minions tgt="$minion"
+        crictl exec -i "$salt_container" salt "$minion" beacons.disable
+    done
+
+    run_certificates_beacon_state
+
+    crictl exec -i "$salt_container" salt "*" beacons.enable
+}
+
 check_certificates_renewal() {
     local -i return_code=0
     local -ri retries=5 time_sleep=10
@@ -199,6 +217,6 @@ done
 echo "Resetting pillar configuration..."
 reset_pillar_conf
 echo "Resetting beacon configuration..."
-run_certificates_beacon_state
+reset_beacon_conf
 
 exit $EXIT_CODE
