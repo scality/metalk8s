@@ -90,7 +90,7 @@ def check_cp_ingress_pod_and_container(request, host, k8s_client, control_plane_
 
     utils.retry(
         _wait_for_ingress_pod_and_container,
-        times=10,
+        times=24,
         wait=5,
         name="wait for pod labeled '{}'".format(label),
     )
