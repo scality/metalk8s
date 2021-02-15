@@ -12,6 +12,7 @@ import {
   API_STATUS_DEPLOYING,
 } from '../constants';
 import { compareHealth } from './utils';
+import type { IPInterfaces } from './salt/api';
 
 const METALK8S_CONTROL_PLANE_IP = 'metalk8s:control_plane_ip';
 const METALK8S_WORKLOAD_PLANE_IP = 'metalk8s:workload_plane_ip';
@@ -141,7 +142,19 @@ export const getNodeListData = createSelector(
 //   control_plane: { ip: '10.0.1.42', interface: 'eth1'}
 //   workload_plane: { ip: '10.100.0.2', interface: 'eth3'},
 // }
-export const nodesCPWPIPsInterface = (IPsInterfacesObject) => {
+export const nodesCPWPIPsInterface = (
+  IPsInterfacesObject: IPInterfaces | boolean,
+): {
+  control_plane: { ip: string, interface: string },
+  workload_plane: { ip: string, interface: string },
+} => {
+  if (!IPsInterfacesObject) {
+    return {
+      control_plane: { ip: '', interface: '' },
+      workload_plane: { ip: '', interface: '' },
+    };
+  }
+  
   return {
     controlPlane: {
       ip: IPsInterfacesObject[METALK8S_CONTROL_PLANE_IP],
