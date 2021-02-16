@@ -55,7 +55,7 @@ def format_python() -> types.TaskDict:
         "name": "python",
         "title": utils.title_with_subtask_name("FORMAT"),
         "doc": format_python.__doc__,
-        "actions": [["tox", "-e", "format-python"]],
+        "actions": [["tox", "-e", "lint", "black"]],
         "file_dep": python_files,
     }
 
