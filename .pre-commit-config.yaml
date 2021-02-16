@@ -7,6 +7,14 @@ repos:
     hooks:
       - id: black
         name: Formatting Python
+      - id: black
+        # We want this hook to be part of "pylint" so that if we run
+        # `pre-commit run pylint` we include this hook
+        alias: pylint
+        name: Checking Python formatting
+        args:
+          - --check
+          - --diff
 
   - repo: https://github.com/pycqa/pylint
     rev: pylint-2.6.0
