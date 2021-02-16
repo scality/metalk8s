@@ -40,7 +40,7 @@
   },
   "scripts": {
     "analyze": "source-map-explorer 'build/static/js/*.js'",
-    "start:navbar": "docker stop solutions-navbar-dev-server; (docker run --rm -d --name solutions-navbar-dev-server -p 8084:80 $(docker build -q ../solutions-ui-navbar))",
+    "start:navbar": "docker stop shell-ui-dev-server; (docker run --rm -d --name shell-ui-dev-server -p 8084:80 $(docker build -q ../shell-ui))",
     "start:ui": "react-app-rewired start",
     "start": "npm run start:navbar && npm run start:ui",
     "build": "react-app-rewired --max_old_space_size=2048 build",
