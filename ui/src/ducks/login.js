@@ -11,15 +11,17 @@ import { User } from 'oidc-client';
 // Actions
 const AUTHENTICATE_SALT_API = 'AUTHENTICATE_SALT_API';
 export const SALT_AUTHENTICATION_SUCCESS = 'SALT_AUTHENTICATION_SUCCESS';
-export const SALT_AUTHENTICATION_FAILED = 'SALT_AUTHENTICATION_FAILED';
+export const SALT_IS_UNAVAILABLE = 'SALT_IS_UNAVAILABLE';
 
 // Reducer
 const defaultState = {
   salt: null,
+  isSaltUnavailable: false,
 };
 
 export type LoginState = {
   salt: ?ApiSalt.SaltToken,
+  isSaltUnavailable: boolean,
 };
 
 export default function reducer(
@@ -31,6 +33,11 @@ export default function reducer(
       return {
         ...state,
         salt: action.payload,
+      };
+    case SALT_IS_UNAVAILABLE:
+      return {
+        ...state,
+        isSaltUnavailable: true,
       };
 
     default:
@@ -45,6 +52,12 @@ export const setSaltAuthenticationSuccessAction = (
   return {
     type: SALT_AUTHENTICATION_SUCCESS,
     payload,
+  };
+};
+
+export const setSaltIsUnavailableAction = () => {
+  return {
+    type: SALT_IS_UNAVAILABLE,
   };
 };
 
@@ -67,6 +80,13 @@ export function* authenticateSaltApi(): Generator<Effect, void, any> {
         token: result.return[0].token,
       }),
     );
+  } else if (
+    result &&
+    result.error &&
+    (!result.error.response ||
+      result.error.response.status === 401)
+  ) {
+    yield put(setSaltIsUnavailableAction());
   } else {
     yield put(logoutAction());
   }
