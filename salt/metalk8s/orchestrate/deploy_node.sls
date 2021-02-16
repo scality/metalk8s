@@ -1,4 +1,5 @@
 {%- from "metalk8s/map.jinja" import defaults with context %}
+{%- from "metalk8s/map.jinja" import networks with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
 
 {%- set node_name = pillar.orchestrate.node_name %}
@@ -48,20 +49,24 @@ Check node:
     - roster: kubernetes
     - kwarg:
         # NOTE: We need to use the `conflicting_packages` and `conflicting_services`
-        # from the salt master since in salt-ssh when running an execution module
-        # we cannot embbed additional files (especially `map.jinja` in this case)
+        # `listening_process_per_role` from the salt master since in salt-ssh
+        # when running an execution module we cannot embbed additional files
+        # (especially `map.jinja` in this case)
         # Sees: https://github.com/saltstack/salt/issues/59314
         conflicting_packages: >-
           {{ repo.conflicting_packages | tojson }}
         conflicting_services: >-
           {{ defaults.conflicting_services | tojson }}
+        listening_process_per_role: >-
+          {{ networks.listening_process_per_role | tojson }}
         # NOTE: We also need to give all the pillar value needed since execution
         # module in Salt-ssh cannot read pillar data
         # Sees: https://github.com/saltstack/salt/issues/28503
         service_cidr: {{ pillar.networks.service }}
+        roles: {{ pillar.metalk8s.nodes[node_name].roles }}
     - failhard: true
     - require:
-      - salt: Set grains ssh
+      - metalk8s: Refresh grains
 
 Deploy salt-minion on a new node:
   salt.state:
