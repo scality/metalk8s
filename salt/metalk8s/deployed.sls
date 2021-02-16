@@ -9,6 +9,7 @@ include:
   - metalk8s.addons.nginx-ingress-control-plane.deployed
   - metalk8s.addons.volumes.deployed
   - metalk8s.addons.solutions.deployed
+  - metalk8s.addons.shell-ui.deployed
   - metalk8s.addons.ui.deployed
   - metalk8s.addons.dex.deployed
   - metalk8s.addons.prometheus-adapter.deployed

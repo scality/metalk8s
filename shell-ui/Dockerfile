@@ -21,7 +21,8 @@ WORKDIR /usr/share/nginx/html/
 RUN rm -rf ./*
 RUN mkdir shell
 COPY health ./shell
-COPY conf/config.json /config.json
+RUN mkdir -p /etc/metalk8s/shell-ui
+COPY conf/config.json /etc/metalk8s/shell-ui/config.json
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 COPY --from=build-step /home/node/dist ./shell

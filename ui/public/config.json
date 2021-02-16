@@ -3,8 +3,6 @@
     "url_salt": "https://{ip}:8443/api/salt",
     "url_prometheus": "https://{ip}:8443/api/prometheus",
     "url_grafana": "https://{ip}:8443/grafana",
-    "url_oidc_provider": "https://{ip}:8443/oidc",
-    "url_redirect": "http://localhost:3000",
     "url_doc": "https://{ip}:8443/docs",
     "url_alertmanager": "https://{ip}:8443/api/alertmanager"
 }
