@@ -1,5 +1,5 @@
 include:
-- .namespace
+- metalk8s.addons.shell-ui.deployed.namespace
 
 {%- from "metalk8s/addons/nginx-ingress-control-plane/control-plane-ip.sls"
     import ingress_control_plane with context
@@ -44,20 +44,6 @@ Create metalk8s-ui ConfigMap:
               "url_salt": "/api/salt",
               "url_prometheus": "/api/prometheus",
               "url_grafana": "/grafana",
-              "url_oidc_provider": "/oidc",
-              "url_redirect": "https://{{ ingress_control_plane }}",
               "url_doc": "/docs",
               "url_alertmanager": "/api/alertmanager"
             }
-
-Create ui-branding ConfigMap:
-  metalk8s_kubernetes.object_present:
-    - manifest:
-        apiVersion: v1
-        kind: ConfigMap
-        metadata:
-          name: ui-branding
-          namespace: metalk8s-ui
-        data:
-          theme.json: |-
-@@ThemeConfig

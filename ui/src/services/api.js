@@ -49,8 +49,6 @@ export type Config = {
   url_salt: string,
   url_prometheus: string,
   url_grafana: string,
-  url_oidc_provider: string,
-  url_redirect: string,
   url_doc: string,
   url_alertmanager: string,
 };

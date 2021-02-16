@@ -127,7 +127,7 @@ export function* fetchTheme(): Generator<Effect, void, Result<WrappedThemes>> {
 export function* fetchConfig(): Generator<Effect, void, Result<Config>> {
   yield call(Api.initialize, process.env.PUBLIC_URL);
   const result = yield call(Api.fetchConfig);
-  if (!result.error && result.url_oidc_provider && result.url_redirect) {
+  if (!result.error) {
     yield call(fetchTheme); /// todo get it from the navbar
     yield put(setApiConfigAction(result));
     yield call(ApiSalt.initialize, result.url_salt);

@@ -1,0 +1,70 @@
+{%- from "metalk8s/repo/macro.sls" import build_image_name with context -%}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shell-ui
+  namespace: metalk8s-ui
+  labels:
+    app: shell-ui
+    heritage: metalk8s
+    app.kubernetes.io/name: shell-ui
+    app.kubernetes.io/component: shell-ui
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/managed-by: salt
+spec:
+  selector:
+    matchLabels:
+      app: shell-ui
+  template:
+    metadata:
+      labels:
+        app: shell-ui
+    spec:
+      tolerations:
+      - key: "node-role.kubernetes.io/bootstrap"
+        operator: "Exists"
+        effect: "NoSchedule"
+      - key: "node-role.kubernetes.io/infra"
+        operator: "Exists"
+        effect: "NoSchedule"
+      nodeSelector:
+        kubernetes.io/os: linux
+        node-role.kubernetes.io/infra: ''
+      containers:
+        - name: shell-ui
+          image: {{ build_image_name('shell-ui') }}
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              memory: 170Mi
+            requests:
+              cpu: 100m
+              memory: 70Mi
+          ports:
+          - containerPort: 80
+            name: http
+            protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /shell/health
+              port: http
+              scheme: HTTP
+          readinessProbe:
+            httpGet:
+              path: /shell/health
+              port: http
+              scheme: HTTP
+          volumeMounts:
+          - name: shell-ui-volume
+            mountPath: /etc/metalk8s/shell-ui
+            readOnly: true
+          - name: ui-branding-volume
+            mountPath: /etc/metalk8s/shell-ui/brand
+            readOnly: true
+      volumes:
+        - name: shell-ui-volume
+          configMap:
+            name: shell-ui
+        - name: ui-branding-volume
+          configMap:
+            name: ui-branding

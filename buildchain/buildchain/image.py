@@ -241,6 +241,12 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
         build_args={"SALT_VERSION": versions.SALT_VERSION},
     ),
     _local_image(
+        name="shell-ui",
+        build_context=ROOT / "shell-ui",
+        dockerfile=ROOT / "shell-ui" / "Dockerfile",
+        file_dep=(list(coreutils.ls_files_rec(ROOT / "shell-ui"))),
+    ),
+    _local_image(
         name="metalk8s-ui",
         build_context=config.BUILD_ROOT,
         build_args={

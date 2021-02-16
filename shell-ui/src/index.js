@@ -41,7 +41,7 @@ type Config = {
 };
 
 // %CONFIG% is replaced at image boot by a provided configuration
-const jsonConfig = '%CONFIG%' || '{}';
+const jsonConfig = process.env.NODE_ENV === 'development' ? '{}' : '%CONFIG%' || '{}';
 const config: Config = JSON.parse(jsonConfig);
 
 const SolutionsNavbar = ({

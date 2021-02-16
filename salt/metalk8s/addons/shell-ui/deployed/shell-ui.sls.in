@@ -1,0 +1,64 @@
+include:
+- .namespace
+
+# Todo see how to deal with workload plane config
+{%- from "metalk8s/addons/nginx-ingress-control-plane/control-plane-ip.sls"
+    import ingress_control_plane with context
+%}
+
+Create shell-ui deployment:
+  metalk8s_kubernetes.object_present:
+    - name: salt://{{ slspath }}/files/shell-ui-deployment.yaml
+    - template: jinja
+
+Create shell-ui service:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: shell-ui
+          namespace: metalk8s-ui
+          labels:
+            run: shell-ui
+        spec:
+          ports:
+          - port: 80
+            protocol: TCP
+            targetPort: 80
+          selector:
+            app: shell-ui
+          type: ClusterIP
+
+Create shell-ui ConfigMap:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: shell-ui
+          namespace: metalk8s-ui
+        data:
+          config.json: |
+            {
+              "docUrl": "/docs",
+              "oidc": {
+                "providerUrl": "/oidc",
+                "redirectUrl": "https://{{ ingress_control_plane }}/",
+                "clientId": "metalk8s-ui",
+                "responseType": "id_token",
+                "scopes": "openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
+              }
+            }
+
+Create ui-branding ConfigMap:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: ui-branding
+          namespace: metalk8s-ui
+        data:
+          theme.json: |-
+@@ThemeConfig
