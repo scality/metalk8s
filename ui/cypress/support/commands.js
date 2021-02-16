@@ -24,6 +24,8 @@
 // -- This is will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 import 'cypress-wait-until';
+import '@testing-library/cypress/add-commands'
+
 
 import {
   EMPTY_QUERY_RANGE_RESULT,
