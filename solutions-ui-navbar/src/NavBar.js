@@ -67,5 +67,5 @@ export const Navbar = ({
       ],
     },
   ];
-  return <CoreUINavbar rightActions={rightActions} tabs={tabs} />;
+  return <CoreUINavbar rightActions={rightActions} tabs={tabs} role="navigation" />;
 };
