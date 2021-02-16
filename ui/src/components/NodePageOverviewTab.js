@@ -19,7 +19,8 @@ import { intl } from '../translations/IntlGlobalProvider';
 
 const TabContentContainer = styled.div`
   overflow-y: auto;
-  height: 75vh;
+  // 100vh subtract the height of navbar and tab header
+  height: calc(100vh - 40px - 2.8rem);
 `;
 
 const InformationSpan = styled.div`
