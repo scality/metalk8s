@@ -151,20 +151,23 @@ def _get_archive_info(info):
 def archive_info_from_product_txt(archive):
     if os.path.isdir(archive):
         info = archive_info_from_tree(archive)
-        info.update({
-            'iso': None,
-            'path': archive,
-        })
+        info.update(
+            {
+                "iso": None,
+                "path": archive,
+            }
+        )
     elif os.path.isfile(archive):
         info = archive_info_from_iso(archive)
-        info.update({
-            'iso': archive,
-            'path': '/srv/scality/metalk8s-{0}'.format(info['version']),
-        })
+        info.update(
+            {
+                "iso": archive,
+                "path": "/srv/scality/metalk8s-{0}".format(info["version"]),
+            }
+        )
     else:
         raise CommandExecutionError(
-            'Invalid archive path {0}, should be an iso or a directory.'
-            .format(archive)
+            "Invalid archive path {0}, should be an iso or a directory.".format(archive)
         )
 
     return info
@@ -235,22 +238,23 @@ def get_archives(archives=None):
     res = {}
     for archive in archives:
         info = archive_info_from_product_txt(archive)
-        env_name = 'metalk8s-{0}'.format(info['version'])
+        env_name = "metalk8s-{0}".format(info["version"])
 
         # Raise if we have 2 archives with the same version
         if env_name in res:
             error_msg = []
             for dup_version in (res[env_name], info):
-                if dup_version['iso']:
-                    path = dup_version['iso']
-                    kind = 'ISO'
+                if dup_version["iso"]:
+                    path = dup_version["iso"]
+                    kind = "ISO"
                 else:
-                    path = dup_version['path']
-                    kind = 'directory'
+                    path = dup_version["path"]
+                    kind = "directory"
                 error_msg.append("{0} ({1})".format(path, kind))
             raise CommandExecutionError(
-                'Two archives have the same version "{0}":\n- {1}'
-                .format(info['version'], "\n- ".join(error_msg))
+                'Two archives have the same version "{0}":\n- {1}'.format(
+                    info["version"], "\n- ".join(error_msg)
+                )
             )
 
         res.update({env_name: info})
@@ -645,12 +649,10 @@ def get_from_map(value, saltenv=None):
 
 def _read_bootstrap_config():
     try:
-        with salt.utils.files.fopen(BOOTSTRAP_CONFIG, 'r') as fd:
+        with salt.utils.files.fopen(BOOTSTRAP_CONFIG, "r") as fd:
             config = salt.utils.yaml.safe_load(fd)
     except IOError as exc:
-        msg = 'Failed to load bootstrap config file at "{}"'.format(
-            BOOTSTRAP_CONFIG
-        )
+        msg = 'Failed to load bootstrap config file at "{}"'.format(BOOTSTRAP_CONFIG)
         raise CommandExecutionError(message=msg) from exc
 
     return config
@@ -658,12 +660,10 @@ def _read_bootstrap_config():
 
 def _write_bootstrap_config(config):
     try:
-        with salt.utils.files.fopen(BOOTSTRAP_CONFIG, 'w') as fd:
+        with salt.utils.files.fopen(BOOTSTRAP_CONFIG, "w") as fd:
             salt.utils.yaml.safe_dump(config, fd, default_flow_style=False)
     except Exception as exc:
-        msg = 'Failed to write bootstrap config file at "{}"'.format(
-            BOOTSTRAP_CONFIG
-        )
+        msg = 'Failed to write bootstrap config file at "{}"'.format(BOOTSTRAP_CONFIG)
         raise CommandExecutionError(message=msg) from exc
 
 
@@ -675,15 +675,15 @@ def configure_archive(archive, remove=False):
 
     if remove:
         try:
-            config['archives'].remove(archive)
+            config["archives"].remove(archive)
             msg = "removed from bootstrap configuration"
         except ValueError:
             msg = "already absent in bootstrap configuration"
     else:
-        if archive in config['archives']:
+        if archive in config["archives"]:
             msg = "already present in bootstrap configuration"
         else:
-            config['archives'].append(archive)
+            config["archives"].append(archive)
             msg = "added to bootstrap configuration"
 
     _write_bootstrap_config(config)

@@ -224,7 +224,7 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
         result,
         invalid_path=False,
         raises=False,
-        pillar_archives=None
+        pillar_archives=None,
     ):
         """
         Tests the return of `get_archives` function
@@ -240,17 +240,14 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
         pillar_dict = {"metalk8s": {}}
         if pillar_archives is not None:
-            pillar_dict['metalk8s']['archives'] = pillar_archives
+            pillar_dict["metalk8s"]["archives"] = pillar_archives
 
-        with patch(
-            "metalk8s.archive_info_from_product_txt", infos_mock
-        ), patch.dict(metalk8s.__pillar__, pillar_dict):
+        with patch("metalk8s.archive_info_from_product_txt", infos_mock), patch.dict(
+            metalk8s.__pillar__, pillar_dict
+        ):
             if raises:
                 self.assertRaisesRegex(
-                    CommandExecutionError,
-                    result,
-                    metalk8s.get_archives,
-                    archives
+                    CommandExecutionError, result, metalk8s.get_archives, archives
                 )
             else:
                 self.assertEqual(metalk8s.get_archives(archives), result)
@@ -523,49 +520,52 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     compile_template_mock.call_args[1],
                     **expected_args,
                 ),
-                compile_template_mock.call_args[1]
+                compile_template_mock.call_args[1],
             )
 
-    @utils.parameterized_from_cases(
-        YAML_TESTS_CASES["archive_info_from_product_txt"]
-    )
-    def test_archive_info_from_product_txt(self, archive, info, result,
-            is_file=False, is_dir=False, raises=False):
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["archive_info_from_product_txt"])
+    def test_archive_info_from_product_txt(
+        self, archive, info, result, is_file=False, is_dir=False, raises=False
+    ):
         info_mock = MagicMock(return_value=info)
 
-        with patch("os.path.isdir", MagicMock(return_value=is_dir)), \
-                patch("os.path.isfile", MagicMock(return_value=is_file)), \
-                patch("metalk8s.archive_info_from_tree", info_mock), \
-                patch("metalk8s.archive_info_from_iso", info_mock):
+        with patch("os.path.isdir", MagicMock(return_value=is_dir)), patch(
+            "os.path.isfile", MagicMock(return_value=is_file)
+        ), patch("metalk8s.archive_info_from_tree", info_mock), patch(
+            "metalk8s.archive_info_from_iso", info_mock
+        ):
             if raises:
                 self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
                     metalk8s.archive_info_from_product_txt,
-                    archive
+                    archive,
                 )
             else:
                 self.assertEqual(
-                    metalk8s.archive_info_from_product_txt(archive),
-                    result
+                    metalk8s.archive_info_from_product_txt(archive), result
                 )
 
-
     @utils.parameterized_from_cases(YAML_TESTS_CASES["configure_archive"])
-    def test_configure_archive(self, archive, result, remove=None, config=None,
-                               invalid_path=False, raises=False):
+    def test_configure_archive(
+        self,
+        archive,
+        result,
+        remove=None,
+        config=None,
+        invalid_path=False,
+        raises=False,
+    ):
         """
         Tests the return of `configure_archive` function
         """
         info_mock = MagicMock()
         if invalid_path:
-            info_mock.side_effect = CommandExecutionError(
-                "Invalid archive path"
-            )
+            info_mock.side_effect = CommandExecutionError("Invalid archive path")
 
-        with patch("metalk8s.archive_info_from_product_txt", info_mock), \
-                patch("metalk8s._read_bootstrap_config", MagicMock(return_value=config)), \
-                patch("metalk8s._write_bootstrap_config", MagicMock()):
+        with patch("metalk8s.archive_info_from_product_txt", info_mock), patch(
+            "metalk8s._read_bootstrap_config", MagicMock(return_value=config)
+        ), patch("metalk8s._write_bootstrap_config", MagicMock()):
             if raises:
                 self.assertRaisesRegex(
                     CommandExecutionError,
@@ -576,22 +576,16 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 )
             else:
                 self.assertEqual(
-                    metalk8s.configure_archive(
-                        archive, remove=remove
-                    ),
-                    result
+                    metalk8s.configure_archive(archive, remove=remove), result
                 )
 
-    @parameterized.expand([
-        param(),
-        param(True, "Failed to write bootstrap config file")
-    ])
+    @parameterized.expand(
+        [param(), param(True, "Failed to write bootstrap config file")]
+    )
     def test__write_bootstrap_config(self, raises=False, result=None):
         open_mock = mock_open()
         if raises:
-            open_mock.side_effect = Exception(
-                "A wild exception appears!"
-            )
+            open_mock.side_effect = Exception("A wild exception appears!")
 
         with patch("salt.utils.files.fopen", open_mock):
             if raises:
@@ -599,7 +593,7 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     CommandExecutionError,
                     result,
                     metalk8s._write_bootstrap_config,
-                    None
+                    None,
                 )
             else:
                 self.assertEqual(
@@ -607,10 +601,9 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     None,
                 )
 
-    @parameterized.expand([
-        param(),
-        param(True, "Failed to load bootstrap config file")
-    ])
+    @parameterized.expand(
+        [param(), param(True, "Failed to load bootstrap config file")]
+    )
     def test__read_bootstrap_config(self, raises=False, result=None):
         open_mock = mock_open(read_data="config")
         if raises:
