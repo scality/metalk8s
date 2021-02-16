@@ -19,7 +19,12 @@ FROM nginx:${NGINX_IMAGE_VERSION}
 
 WORKDIR /usr/share/nginx/html/
 RUN rm -rf ./*
-COPY --from=build-step /home/node/dist ./
+RUN mkdir shell
+COPY health ./shell
+COPY conf/config.json /config.json
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+COPY --from=build-step /home/node/dist ./shell
 COPY conf/nginx.conf /etc/nginx/conf.d/default.conf
-
+ENTRYPOINT [ "/entrypoint.sh" ]
 CMD ["nginx", "-g", "daemon off;"]
