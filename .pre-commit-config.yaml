@@ -31,7 +31,7 @@ repos:
         name: Lint Salt
         # Linting for salt files only in directory "salt/_<module>/<module_name>.py"
         files: salt/_.*/.*\.py
-        additional_dependencies: ['saltpylint==2020.9.28']
+        additional_dependencies: ['saltpylint==2020.9.28', 'six==1.15.0']
         args:
           - --rcfile=salt/.pylintrc
           - --ignore=metalk8s_package_manager_apt.py
