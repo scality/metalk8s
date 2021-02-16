@@ -1,6 +1,10 @@
 # CHANGELOG
 
 ## Release 2.7.2 (in development)
+### Bug fixes
+- Embed `pause` image version 3.2 instead of 3.1 needed for MetalK8s to work
+  offline (needed by containerd version superior to 1.4.0)
+  (PR [#3120](https://github.com/scality/metalk8s/pull/3120))
 
 ## Release 2.7.1
 ### Bug fixes
