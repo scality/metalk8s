@@ -3,6 +3,39 @@ kind: Pod
 metadata:
   name: "metalk8s-integration-tests-ui"
 spec:
+  initContainers:
+  - name: shell-ui
+    image: {{ images['shell-ui'] }}
+    resources:
+      requests:
+        cpu: 250m
+        memory: 200Mi
+      limits:
+        cpu: 350m
+        memory: 300Mi
+    command: ["/bin/sh"]
+    args: 
+      - -c
+      - |
+        mkdir -p /etc/metalk8s/shell-ui
+        cat > /etc/metalk8s/shell-ui/config.json <<EOF
+        {
+          "docUrl": "/docs",
+          "oidc": {
+            "providerUrl": "/oidc",
+            "redirectUrl": "/",
+            "clientId": "metalk8s-ui",
+            "responseType": "id_token",
+            "scopes": "openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
+          }
+        }
+        EOF
+        cd /usr/share/nginx/html
+        /entrypoint.sh echo 'entrypoint'
+        cp -r /usr/share/nginx/html/ /tmp/shell-ui-files
+    volumeMounts:
+      - name: shell-ui-files
+        mountPath: /tmp/shell-ui-files
   containers:
   - name: worker
     image: {{ images['worker'] }}
@@ -18,6 +51,9 @@ spec:
     volumeMounts:
       - name: worker-workspace
         mountPath: /home/eve/workspace
+      - name: debug
+        mountPath: /tmp/debug
+    
   - name: application
     image: {{ images['application'] }}
     resources:
@@ -27,12 +63,25 @@ spec:
       limits:
         cpu: 350m
         memory: 300Mi
-    command: ["nginx"]
-    args: ["-g", "daemon off;"]
+    command: ["/bin/sh"]
+    args: 
+      - -c
+      - |
+        cp -r /tmp/shell-ui-files/html/shell/ /usr/share/nginx/html/
+        nginx -g 'daemon off;' 2>&1 > /tmp/debug/nginx.logs
     ports:
     - containerPort: 80
       name: http
       protocol: TCP
+    volumeMounts:
+      - name: shell-ui-files
+        mountPath: /tmp/shell-ui-files
+      - name: debug
+        mountPath: /tmp/debug
   volumes:
+    - name: debug
+      emptyDir: {}
     - name: worker-workspace
+      emptyDir: {}
+    - name: shell-ui-files
       emptyDir: {}

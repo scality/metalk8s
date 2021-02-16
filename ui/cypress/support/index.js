@@ -15,6 +15,14 @@
 
 import './commands';
 
+beforeEach(() =>{
+  // TODO figure out why CI is raising "clearImmediate is not defined" whereas everything goes well locally
+  window.clearImmediate = {};
+  cy.window().then((win) => {
+    win.clearImmediate = {};
+  });
+})
+
 afterEach(() => {
   // Redirect to empty page to cancel all requests in progress
   cy.window().then((win) => {
