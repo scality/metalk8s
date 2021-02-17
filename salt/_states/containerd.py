@@ -61,7 +61,9 @@ def image_managed(name, archive_path=None):
             )
             return ret
 
-        result = __salt__["containerd.load_cri_image"](path=archive_path)
+        real_archive_path = __salt__["cp.cache_file"](archive_path, __env__)
+
+        result = __salt__["containerd.load_cri_image"](path=real_archive_path)
         # ctr can fail to load the image and exit silently
         if result["retcode"] == 0 and __salt__["cri.available"](name):
             ret["changes"].update(
