@@ -230,6 +230,7 @@ class CriTestCase(TestCase, mixins.LoaderModuleMockMixin):
         """
         cmd = utils.cmd_output(retcode=retcode, stdout=stdout)
         mock_cmd = MagicMock(return_value=cmd)
+
         with patch.dict(cri.__salt__, {"cmd.run_all": mock_cmd}), patch(
             "time.sleep", MagicMock()
         ):
