@@ -1,9 +1,5 @@
 import styled from 'styled-components';
-import {
-  padding,
-  fontSize,
-  fontWeight,
-} from '@scality/core-ui/dist/style/theme';
+import { padding, fontWeight } from '@scality/core-ui/dist/style/theme';
 
 export const PageContainer = styled.div`
   display: flex;
@@ -24,7 +20,6 @@ export const LeftSideInstanceList = styled.div`
 export const RightSidePanel = styled.div`
   flex-direction: column;
   width: 51%;
-  overflow-y: auto;
   margin: 0 ${padding.small} ${padding.small} 8px;
 `;
 
@@ -130,7 +125,7 @@ export const MetricsActionContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
-  padding: ${padding.base} ${padding.base};
+  padding: ${padding.large} ${padding.base};
   position: sticky;
   top: 0px;
   z-index: 100;
@@ -168,7 +163,7 @@ export const RowGraphContainer = styled.div`
 `;
 
 export const GraphTitle = styled.div`
-  font-size: ${fontSize.base};
+  font-size: 1rem;
   font-weight: ${fontWeight.bold};
   color: ${(props) => props.theme.brand.textPrimary};
   padding: ${padding.base} 0 0 ${padding.larger};
