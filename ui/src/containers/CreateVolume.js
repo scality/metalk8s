@@ -172,15 +172,6 @@ const CheckboxContainer = styled.div`
   }
 `;
 
-const InputNumberComponentStyle = styled.input`
-  width: 60px;
-  height: 25px;
-  border: solid 1px ${(props) => props.theme.brand.border};
-  border-radius: 4px;
-  background-color: ${(props) => props.theme.brand.primary};
-  color: ${(props) => props.theme.brand.textPrimary};
-`;
-
 const MultiCreationFormContainer = styled.div`
   padding-left: ${padding.base};
   display: flex;
@@ -707,8 +698,7 @@ const CreateVolume = (props) => {
                               >
                                 {intl.translate('number_volume_create')}
                               </span>
-                              {/* TODO: Generalize the number input component to core-ui. */}
-                              <InputNumberComponentStyle
+                              <Input
                                 type="number"
                                 name="numberOfVolumes"
                                 value={values.numberOfVolumes}
