@@ -59,7 +59,8 @@ VERSION: str = "{}.{}{}".format(SHORT_VERSION, VERSION_PATCH, VERSION_SUFFIX)
 
 CENTOS_BASE_IMAGE: str = "docker.io/centos"
 CENTOS_BASE_IMAGE_SHA256: str = (
-    "6ae4cddb2b37f889afd576a17a5286b311dcbf10a904409670827f6f9b50065e"
+    # centos:7.9.2009
+    "e4ca2ed0202e76be184e75fb26d14bf974193579039d5573fb2348664deef76e"
 )
 
 NGINX_IMAGE_VERSION: str = "1.19.6-alpine"
