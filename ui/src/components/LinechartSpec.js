@@ -1,3 +1,4 @@
+//@flow
 export const yAxisUsage = [
   {
     field: 'y',
@@ -39,7 +40,9 @@ export const yAxisInOut = [
   },
 ];
 
-export const getTooltipConfig = (fields) => {
+export const getTooltipConfig = (
+  fields: { field: string, type: string, title: string, format: string }[],
+) => {
   const tooltipConfigBase = {
     transform: [{ pivot: 'type', value: 'y', groupby: ['date'] }],
     mark: 'rule',
@@ -75,7 +78,6 @@ export const getTooltipConfig = (fields) => {
     },
   };
   if (fields.length) {
-    fields = fields.filter((item) => !!item);
     const newFields = [...tooltipConfigBase.encoding.tooltip, ...fields];
     const newConfig = Object.assign({}, tooltipConfigBase);
     newConfig.encoding.tooltip = newFields;

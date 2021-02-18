@@ -96,7 +96,7 @@ const NodePageMetricsTab = ({
   const unameInfos = useTypedSelector(
     (state) => state.app.monitoring.unameInfo,
   );
-  const hostnameLabel = unameInfos?.find(
+  const hostnameLabel = unameInfos.find(
     (unameInfo) =>
       unameInfo?.metric?.instance === `${instanceIP}:${PORT_NODE_EXPORTER}`,
   )?.metric?.nodename;
@@ -190,58 +190,58 @@ const NodePageMetricsTab = ({
   }, {});
 
   let cpuData = nodeStatsData['cpuUsage'];
-  if (showAvg) cpuData = cpuData.concat(avgStatsData['cpuUsage']);
-  const tooltipConfigCPU = getTooltipConfig([
+  let systemLoadData = nodeStatsData['systemLoad'];
+  let memoryData = nodeStatsData['memory'];
+  // Combine the read/write, in/out into one dataset
+  let iopsData = nodeStatsData['iopsRead'].concat(nodeStatsData['iopsWrite']);
+  let controlPlaneNetworkBandwidthData = nodeStatsData[
+    'controlPlaneNetworkBandwidthIn'
+  ].concat(nodeStatsData['controlPlaneNetworkBandwidthOut']);
+  let workloadPlaneNetworkBandwidthData = nodeStatsData[
+    'workloadPlaneNetworkBandwidthIn'
+  ].concat(nodeStatsData['workloadPlaneNetworkBandwidthOut']);
+
+  if (showAvg) {
+    cpuData = cpuData.concat(avgStatsData['cpuUsage']);
+    systemLoadData = systemLoadData.concat(avgStatsData['systemLoad']);
+    memoryData = memoryData.concat(avgStatsData['memory']);
+    iopsData = iopsData
+      .concat(avgStatsData['iopsRead'])
+      .concat(avgStatsData['iopsWrite']);
+    controlPlaneNetworkBandwidthData = controlPlaneNetworkBandwidthData
+      .concat(avgStatsData['controlPlaneNetworkBandwidthIn'])
+      .concat(avgStatsData['controlPlaneNetworkBandwidthOut']);
+    workloadPlaneNetworkBandwidthData = workloadPlaneNetworkBandwidthData
+      .concat(avgStatsData['workloadPlaneNetworkBandwidthIn'])
+      .concat(avgStatsData['workloadPlaneNetworkBandwidthOut']);
+  }
+
+  // Tooltip Custom Spec
+  const ttpCPUSpec = [
     {
       field: 'CPU Usage',
       type: 'quantitative',
       title: `CPU Usage - ${nodeName}`,
       format: '.1f',
     },
-    showAvg && {
-      field: 'cluster avg',
-      type: 'quantitative',
-      title: `CPU Usage - ${intl.translate('cluster_avg')}`,
-      format: '.1f',
-    },
-  ]);
-
-  let systemLoadData = nodeStatsData['systemLoad'];
-  if (showAvg)
-    systemLoadData = systemLoadData.concat(avgStatsData['systemLoad']);
-  const tooltipConfigSystemLoad = getTooltipConfig([
+  ];
+  const ttpSystemLoadSpec = [
     {
       field: 'System Load',
       type: 'quantitative',
       title: `System Load - ${nodeName}`,
       format: '.1f',
     },
-    showAvg && {
-      field: 'cluster avg',
-      type: 'quantitative',
-      title: `System Load - ${intl.translate('cluster_avg')}`,
-      format: '.1f',
-    },
-  ]);
-
-  let memoryData = nodeStatsData['memory'];
-  if (showAvg) memoryData = memoryData.concat(avgStatsData['memory']);
-  const tooltipConfigMemory = getTooltipConfig([
+  ];
+  const ttpMemorySpec = [
     {
       field: 'Memory',
       type: 'quantitative',
       title: `Memory - ${nodeName}`,
       format: '.1f',
     },
-    showAvg && {
-      field: 'cluster avg',
-      type: 'quantitative',
-      title: `Memory - ${intl.translate('cluster_avg')}`,
-      format: '.1f',
-    },
-  ]);
-
-  const tooltipConfigIops = getTooltipConfig([
+  ];
+  const ttpIOPSSpec = [
     {
       field: `Read`,
       type: 'quantitative',
@@ -254,27 +254,8 @@ const NodePageMetricsTab = ({
       title: `Write - ${nodeName}`,
       format: '.1f',
     },
-    showAvg && {
-      field: 'read avg',
-      type: 'quantitative',
-      title: `Read - ${intl.translate('cluster_avg')}`,
-      format: '.1f',
-    },
-    showAvg && {
-      field: 'write avg',
-      type: 'quantitative',
-      title: `Write - ${intl.translate('cluster_avg')}`,
-      format: '.1f',
-    },
-  ]);
-  // Combine the read/write, in/out into one dataset
-  let iopsData = nodeStatsData['iopsRead'].concat(nodeStatsData['iopsWrite']);
-  if (showAvg)
-    iopsData = iopsData
-      .concat(avgStatsData['iopsRead'])
-      .concat(avgStatsData['iopsWrite']);
-
-  const tooltipConfigInOut = getTooltipConfig([
+  ];
+  const ttpInOutSpec = [
     {
       field: 'In',
       type: 'quantitative',
@@ -287,35 +268,60 @@ const NodePageMetricsTab = ({
       title: `Out - ${nodeName}`,
       format: '.1f',
     },
-    showAvg && {
-      field: 'in avg',
+  ];
+  if (showAvg) {
+    ttpCPUSpec.push({
+      field: 'cluster avg',
       type: 'quantitative',
-      title: `In - ${intl.translate('cluster_avg')}`,
+      title: `CPU Usage - ${intl.translate('cluster_avg')}`,
       format: '.1f',
-    },
-    showAvg && {
-      field: 'out avg',
+    });
+    ttpSystemLoadSpec.push({
+      field: 'cluster avg',
       type: 'quantitative',
-      title: `Out - ${intl.translate('cluster_avg')}`,
+      title: `System Load - ${intl.translate('cluster_avg')}`,
       format: '.1f',
-    },
-  ]);
-
-  let controlPlaneNetworkBandwidthData = nodeStatsData[
-    'controlPlaneNetworkBandwidthIn'
-  ].concat(nodeStatsData['controlPlaneNetworkBandwidthOut']);
-  if (showAvg)
-    controlPlaneNetworkBandwidthData = controlPlaneNetworkBandwidthData
-      .concat(avgStatsData['controlPlaneNetworkBandwidthIn'])
-      .concat(avgStatsData['controlPlaneNetworkBandwidthOut']);
-
-  let workloadPlaneNetworkBandwidthData = nodeStatsData[
-    'workloadPlaneNetworkBandwidthIn'
-  ].concat(nodeStatsData['workloadPlaneNetworkBandwidthOut']);
-  if (showAvg)
-    workloadPlaneNetworkBandwidthData = workloadPlaneNetworkBandwidthData
-      .concat(avgStatsData['workloadPlaneNetworkBandwidthIn'])
-      .concat(avgStatsData['workloadPlaneNetworkBandwidthOut']);
+    });
+    ttpMemorySpec.push({
+      field: 'cluster avg',
+      type: 'quantitative',
+      title: `Memory - ${intl.translate('cluster_avg')}`,
+      format: '.1f',
+    });
+    ttpIOPSSpec.push(
+      {
+        field: 'read avg',
+        type: 'quantitative',
+        title: `Read - ${intl.translate('cluster_avg')}`,
+        format: '.1f',
+      },
+      {
+        field: 'write avg',
+        type: 'quantitative',
+        title: `Write - ${intl.translate('cluster_avg')}`,
+        format: '.1f',
+      },
+    );
+    ttpInOutSpec.push(
+      {
+        field: 'in avg',
+        type: 'quantitative',
+        title: `In - ${intl.translate('cluster_avg')}`,
+        format: '.1f',
+      },
+      {
+        field: 'out avg',
+        type: 'quantitative',
+        title: `Out - ${intl.translate('cluster_avg')}`,
+        format: '.1f',
+      },
+    );
+  }
+  const tooltipConfigCPU = getTooltipConfig(ttpCPUSpec);
+  const tooltipConfigSystemLoad = getTooltipConfig(ttpSystemLoadSpec);
+  const tooltipConfigMemory = getTooltipConfig(ttpMemorySpec);
+  const tooltipConfigIops = getTooltipConfig(ttpIOPSSpec);
+  const tooltipConfigInOut = getTooltipConfig(ttpInOutSpec);
 
   const xAxis = {
     field: 'date',
@@ -358,7 +364,6 @@ const NodePageMetricsTab = ({
 
   // the `read` and `out` should be the same color
   // the `write` and `in` should be the same color
-
   const colorCPU = {
     field: 'type',
     type: 'nominal',
