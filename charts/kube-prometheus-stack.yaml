@@ -57,6 +57,8 @@ alertmanager:
   # config: '__var_tojson__(alertmanager.spec.notification.config)'
 
     useExistingSecret: true
+    secrets:
+      - alertmanager-prometheus-operator-alertmanager
 
 prometheusOperator:
   tls:

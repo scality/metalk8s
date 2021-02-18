@@ -53847,6 +53847,8 @@ spec:
   replicas: {% endraw -%}{{ alertmanager.spec.deployment.replicas }}{%- raw %}
   retention: 120h
   routePrefix: /
+  secrets:
+  - alertmanager-prometheus-operator-alertmanager
   securityContext:
     fsGroup: 2000
     runAsGroup: 2000
