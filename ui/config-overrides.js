@@ -4,6 +4,7 @@ const {
   useEslintRc,
   addWebpackPlugin,
 } = require('customize-cra');
+const webpack = require('webpack')
 const CompressionPlugin = require('compression-webpack-plugin');
 
 /**
@@ -27,9 +28,25 @@ const setWebpackPerformance = () => (config) => {
   return config;
 };
 
+const setNullModuleForOidcClient = () => (config) => {
+  config.module = {
+    ...config.module,
+    rules: [
+      ...config.module.rules,
+      {
+        test: /oidc-client/,
+        use: 'null-loader',
+      },
+    ],
+  }
+
+  return config;
+}
+
 module.exports = override(
   useBabelRc(),
   useEslintRc(),
+  setNullModuleForOidcClient(),// We only use oidc-client for type definitions
   addWebpackPlugin(new CompressionPlugin()),
   setWebpackPerformance(),
 );
