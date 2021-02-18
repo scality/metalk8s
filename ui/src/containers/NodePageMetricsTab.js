@@ -3,7 +3,7 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
-import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
+import { padding } from '@scality/core-ui/dist/style/theme';
 import { LineChart, Loader, Dropdown, Button, Toggle } from '@scality/core-ui';
 import {
   updateNodeStatsFetchArgumentAction,
@@ -49,16 +49,15 @@ const LoaderContainer = styled(Loader)`
 `;
 
 const ToggleContainer = styled.div`
+  flex: 1;
   margin-right: auto;
-  padding: ${padding.smaller};
-
   .text {
-    font-size: ${fontSize.base};
+    font-size: 1rem;
   }
   label {
-    width: 25px;
+    width: 1.85rem;
     input:checked + .sc-slider:before {
-      transform: translateX(15px);
+      transform: translateX(1rem);
     }
     .sc-slider:before {
       height: 12px;
@@ -345,7 +344,7 @@ const NodePageMetricsTab = ({
       title: null,
       values: [`${intl.translate('cluster_avg')}.`],
       symbolSize: 300,
-      labelFontSize: 14,
+      labelFontSize: 12,
     },
   };
 
@@ -369,7 +368,7 @@ const NodePageMetricsTab = ({
       orient: 'bottom',
       title: null,
       values: showAvg ? ['CPU Usage'] : [''],
-      labelFontSize: 14,
+      labelFontSize: 12,
       symbolSize: 300,
     },
   };
@@ -383,7 +382,7 @@ const NodePageMetricsTab = ({
       orient: 'bottom',
       title: null,
       values: showAvg ? ['System Load'] : [''],
-      labelFontSize: 14,
+      labelFontSize: 12,
       symbolSize: 300,
     },
   };
@@ -397,7 +396,7 @@ const NodePageMetricsTab = ({
       orient: 'bottom',
       title: null,
       values: showAvg ? ['Memory'] : [''],
-      labelFontSize: 14,
+      labelFontSize: 12,
       symbolSize: 300,
     },
   };
@@ -411,7 +410,7 @@ const NodePageMetricsTab = ({
       title: null,
       symbolType: 'stroke',
       symbolSize: 300,
-      labelFontSize: 14,
+      labelFontSize: 12,
       columnPadding: 15,
       symbolStrokeWidth: 2,
       values: ['Read', 'Write'],
@@ -433,7 +432,7 @@ const NodePageMetricsTab = ({
       title: null,
       symbolType: 'stroke',
       symbolSize: 300,
-      labelFontSize: 14,
+      labelFontSize: 12,
       columnPadding: 15,
       symbolStrokeWidth: 2,
       values: ['In', 'Out'],

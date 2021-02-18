@@ -1,3 +1,7 @@
+
+/* Set base font size to achieve responsive font */
+html { font-size: max(14px, calc(0.2em + 0.8vw)); } 
+
 body {
   margin: 0;
   padding: 0;

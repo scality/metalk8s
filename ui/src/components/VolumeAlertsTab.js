@@ -239,7 +239,10 @@ const ActiveAlertsCard = (props) => {
       {
         Header: 'Name',
         accessor: 'name',
-        cellStyle: { width: '200px' },
+        cellStyle: {
+          paddingRight: '5px',
+          wordBreak: 'break-all',
+        },
       },
       {
         Header: 'Severity',
@@ -250,7 +253,7 @@ const ActiveAlertsCard = (props) => {
       {
         Header: 'Active since',
         accessor: 'active_since',
-        cellStyle: { textAlign: 'center', width: '150px' },
+        cellStyle: { textAlign: 'center', width: '120px' },
       },
     ],
     [],

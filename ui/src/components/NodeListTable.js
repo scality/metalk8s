@@ -27,7 +27,7 @@ const NodeListContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   padding: ${padding.base};
   font-family: 'Lato';
-  font-size: ${fontSize.base};
+  font-size: 1rem;
   border-color: ${(props) => props.theme.brand.borderLight};
   background-color: ${(props) => props.theme.brand.primary};
   .sc-progressbarcontainer {
@@ -117,10 +117,17 @@ const Cell = styled.td`
 const ActionContainer = styled.span`
   display: flex;
   justify-content: space-between;
+  padding-bottom: 15px;
 `;
 
 const NodeNameText = styled.div`
   font-size: ${fontSize.large};
+`;
+
+// To make sure CP and WP stay next to each other, and then stack with responsive change.
+const IPs = styled.div`
+  display: inline-flex;
+  flex-wrap: wrap;
 `;
 
 const IPText = styled.span`
@@ -390,14 +397,14 @@ function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
                         <NodeNameText data-cy="node_table_name_cell">
                           {cell.value.name}
                         </NodeNameText>
-                        <div>
+                        <IPs>
                           {cell.value.controlPlaneIP ? (
-                            <IPText>CP: {cell.value.controlPlaneIP}</IPText>
+                            <IPText>CP : {cell.value.controlPlaneIP}</IPText>
                           ) : null}
                           {cell.value.workloadPlaneIP ? (
                             <IPText>WP: {cell.value.workloadPlaneIP}</IPText>
                           ) : null}
-                        </div>
+                        </IPs>
                       </Cell>
                     );
                   } else if (cell.value === intl.translate('unknown')) {
@@ -445,7 +452,6 @@ const NodeListTable = (props) => {
       {
         Header: 'Name',
         accessor: 'name',
-        cellStyle: { width: '180px' },
         sortType: 'name',
       },
       {

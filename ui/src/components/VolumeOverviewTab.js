@@ -25,12 +25,8 @@ import { formatSizeForDisplay } from '../services/utils';
 
 const VolumeDetailCardContainer = styled.div`
   display: flex;
-  min-height: 270px;
-`;
-
-const VolumeInformation = styled.div`
-  width: 50%;
-  word-break: break-all;
+  flex-wrap: wrap;
+  justify-content: space-between;
 `;
 
 const VolumeTitleSection = styled.div`
@@ -39,8 +35,6 @@ const VolumeTitleSection = styled.div`
   display: flex;
   justify-content: space-between;
 `;
-
-const VolumeNameContainer = styled.div``;
 
 const VolumeName = styled.span`
   font-size: ${fontSize.larger};
@@ -74,10 +68,10 @@ const ClickableInformationValue = styled.span`
 `;
 
 const DeleteButton = styled(Button)`
-  padding: ${padding.base};
-  margin: 0px ${padding.base};
-  font-size: ${fontSize.small};
+  height: 30px;
   background-color: ${(props) => props.theme.brand.critical};
+  font-size: ${fontSize.small};
+  margin: 0px ${padding.base} ${padding.base} 0;
   ${(props) => {
     if (props.disabled) return { opacity: 0.2 };
   }};
@@ -86,7 +80,6 @@ const DeleteButton = styled(Button)`
 const VolumeGraph = styled.div`
   display: flex;
   flex-direction: column;
-  width: 48%;
   margin-left: 2%;
 `;
 
@@ -106,7 +99,6 @@ const VolumeSectionTitle = styled.div`
 
 const ProgressBarContainer = styled.div`
   margin: ${padding.small};
-
   .sc-progressbarcontainer > div {
     background-color: ${(props) => props.theme.brand.secondaryDark1};
   }
@@ -141,6 +133,7 @@ const LabelValue = styled.span`
 const AlertsCounterContainer = styled.div`
   display: flex;
   flex-direction: column;
+  width: 200px;
 `;
 
 const VolumeDetailCard = (props) => {
@@ -226,10 +219,10 @@ const VolumeDetailCard = (props) => {
   return (
     <VolumeTab>
       <VolumeTitleSection data-cy="volume_detail_card_name">
-        <VolumeNameContainer>
+        <div>
           <CircleStatus className="fas fa-circle" status={health} />
           <VolumeName>{name}</VolumeName>
-        </VolumeNameContainer>
+        </div>
         <DeleteButton
           variant="danger"
           icon={<i className="fas fa-sm fa-trash" />}
@@ -243,7 +236,7 @@ const VolumeDetailCard = (props) => {
         />
       </VolumeTitleSection>
       <VolumeDetailCardContainer>
-        <VolumeInformation>
+        <div>
           <InformationSpan>
             <InformationLabel>{intl.translate('node')}</InformationLabel>
             <ClickableInformationValue onClick={onClickNodeName}>
@@ -320,7 +313,7 @@ const VolumeDetailCard = (props) => {
               })}
             </InformationValue>
           </InformationSpan>
-        </VolumeInformation>
+        </div>
 
         <VolumeGraph>
           {alertlist && (

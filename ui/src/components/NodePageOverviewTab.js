@@ -19,13 +19,12 @@ import { intl } from '../translations/IntlGlobalProvider';
 
 const TabContentContainer = styled.div`
   overflow-y: auto;
-  height: 78vh;
+  // 100vh subtract the height of navbar and tab header
+  height: calc(100vh - 40px - 2.8rem);
 `;
 
 const InformationSpan = styled.div`
-  padding-bottom: ${padding.large};
-  padding-left: ${padding.large};
-  display: flex;
+  padding: 0 0 ${padding.large} ${padding.large};
 `;
 
 const InformationLabel = styled.span`
@@ -48,8 +47,6 @@ const NodeNameContainer = styled.div`
   padding: ${padding.large} 0 ${padding.larger} ${padding.large};
 `;
 
-const NodeNameStatusContainer = styled.div``;
-
 const NodeName = styled.span`
   font-size: ${fontSize.larger};
   padding-left: ${padding.smaller};
@@ -63,12 +60,8 @@ const StatusText = styled.span`
 
 const Detail = styled.div`
   display: flex;
-  width: 100%;
-`;
-
-const InformationWrapper = styled.div`
-  width: 50%;
-  word-break: break-all;
+  flex-wrap: wrap;
+  justify-content: space-between;
 `;
 
 const ActiveAlertTitle = styled.div`
@@ -82,8 +75,7 @@ const ActiveAlertWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding-left: ${padding.base};
-  width: 48%;
-  margin-left: 2%;
+  width: 200px;
 `;
 
 const DeployButton = styled(Button)`
@@ -200,10 +192,10 @@ const NodePageOverviewTab = (props) => {
     <NodeTab>
       <TabContentContainer>
         <NodeNameContainer>
-          <NodeNameStatusContainer>
+          <div>
             <CircleStatus status={currentNode?.health?.health}></CircleStatus>
             <NodeName>{name}</NodeName>
-          </NodeNameStatusContainer>
+          </div>
           {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN ? (
             !currentNodeReturnByK8S?.deploying ? (
               <DeployButton
@@ -224,7 +216,7 @@ const NodePageOverviewTab = (props) => {
         </NodeNameContainer>
 
         <Detail>
-          <InformationWrapper>
+          <div>
             <InformationSpan>
               <InformationLabel>Control Plane IP</InformationLabel>
               <InformationValue>
@@ -299,7 +291,7 @@ const NodePageOverviewTab = (props) => {
                   intl.translate('unknown')}
               </InformationValue>
             </InformationSpan>
-          </InformationWrapper>
+          </div>
           <ActiveAlertWrapper>
             <ActiveAlertTitle>
               {intl.translate('active_alert')}

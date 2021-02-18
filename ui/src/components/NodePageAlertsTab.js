@@ -213,7 +213,10 @@ const NodePageAlertsTab = (props) => {
       {
         Header: 'Name',
         accessor: 'name',
-        cellStyle: { width: '230px' },
+        cellStyle: {
+          paddingRight: '5px',
+          wordBreak: 'break-all',
+        },
       },
       {
         Header: 'Severity',
