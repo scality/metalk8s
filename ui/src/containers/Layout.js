@@ -51,6 +51,7 @@ const Layout = (props) => {
 
   const sidebarConfig = {
     onToggleClick: toggleSidebar,
+    hoverable: true,
     expanded: sidebar.expanded,
     'data-cy-state-isexpanded': sidebar.expanded,
     actions: [
