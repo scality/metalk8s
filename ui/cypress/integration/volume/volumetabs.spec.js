@@ -61,9 +61,7 @@ describe('Volume page alerts tab', () => {
     it(`adds the filter of ${severity.value}`, () => {
       cy.get('[data-cy="alert_filter"]').click();
       cy.stubHistory();
-      cy.get('.sc-dropdown .trigger .menu-item')
-        .contains('li', severity.name)
-        .click();
+      cy.get('.sc-healthselector .trigger li').contains(severity.name).click();
       cy.get('@historyPush').should(
         'be.calledWith',
         `/volumes/master-0-alertmanager/alerts?severity=${severity.value}`,
