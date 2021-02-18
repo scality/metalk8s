@@ -1,6 +1,6 @@
 //@flow
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
 import { padding } from '@scality/core-ui/dist/style/theme';
@@ -79,10 +79,10 @@ const NodePageMetricsTab = ({
   avgStats: MonitoringMetrics,
 }) => {
   const dispatch = useDispatch();
-  const theme = useSelector((state) => state.config.theme);
+  const theme = useTypedSelector((state) => state.config.theme);
   const history = useHistory();
   const query = useQuery();
-  const config = useSelector((state) => state.config);
+  const api = useTypedSelector((state) => state.config.api);
   const metricsTimeSpan = useTypedSelector(
     (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
   );
@@ -505,17 +505,18 @@ const NodePageMetricsTab = ({
             }}
           />
         </ToggleContainer>
-        <Button
-          text={intl.translate('advanced_metrics')}
-          variant={'base'}
-          onClick={() => {}}
-          icon={<i className="fas fa-external-link-alt" />}
-          size={'small'}
-          href={`${config.api.url_grafana}/dashboard/db/nodes-detailed?var-DS_PROMETHEUS=Prometheus&var-job=node-exporter&var-name=${hostnameLabel}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          data-cy="advanced_metrics_node_detailed"
-        />
+        {api && api.url_grafana && (
+          <Button
+            text={intl.translate('advanced_metrics')}
+            variant={'base'}
+            icon={<i className="fas fa-external-link-alt" />}
+            size={'small'}
+            href={`${api.url_grafana}/dashboard/db/nodes-detailed?var-DS_PROMETHEUS=Prometheus&var-job=node-exporter&var-name=${hostnameLabel}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-cy="advanced_metrics_node_detailed"
+          />
+        )}
         <Dropdown
           items={metricsTimeSpanDropdownItems}
           text={metricsTimeSpan}
@@ -527,7 +528,7 @@ const NodePageMetricsTab = ({
         <RowGraphContainer>
           <GraphWrapper>
             <GraphTitle>CPU Usage (%)</GraphTitle>
-            {nodeStatsData['cpuUsage'].length !== 0 && graphWidth ? (
+            {nodeStatsData['cpuUsage'].length && graphWidth ? (
               <LineChart
                 id={'node_cpu_usage_id'}
                 data={cpuData}
@@ -549,7 +550,7 @@ const NodePageMetricsTab = ({
           </GraphWrapper>
           <GraphWrapper>
             <GraphTitle>CPU System Load (%)</GraphTitle>
-            {nodeStatsData['systemLoad'].length !== 0 && graphWidth ? (
+            {nodeStatsData['systemLoad'].length && graphWidth ? (
               <LineChart
                 id={'node_system_load_id'}
                 data={systemLoadData}
@@ -573,7 +574,7 @@ const NodePageMetricsTab = ({
         <RowGraphContainer>
           <GraphWrapper>
             <GraphTitle>Memory (%)</GraphTitle>
-            {nodeStatsData['memory'].length !== 0 && graphWidth ? (
+            {nodeStatsData['memory'].length && graphWidth ? (
               <LineChart
                 id={'node_memory_id'}
                 data={memoryData}
@@ -595,7 +596,7 @@ const NodePageMetricsTab = ({
           </GraphWrapper>
           <GraphWrapper>
             <GraphTitle>IOPS</GraphTitle>
-            {iopsData.length !== 0 && graphWidth ? (
+            {iopsData.length && graphWidth ? (
               <LineChart
                 id={'node_IOPS_id'}
                 data={iopsData}
@@ -620,7 +621,7 @@ const NodePageMetricsTab = ({
         <RowGraphContainer>
           <GraphWrapper>
             <GraphTitle>Control Plane Bandwidth (MB/s)</GraphTitle>
-            {controlPlaneNetworkBandwidthData.length !== 0 && graphWidth ? (
+            {controlPlaneNetworkBandwidthData.length && graphWidth ? (
               <LineChart
                 id={'node_control_plane_bandwidth_id'}
                 data={controlPlaneNetworkBandwidthData}
@@ -642,7 +643,7 @@ const NodePageMetricsTab = ({
           </GraphWrapper>
           <GraphWrapper>
             <GraphTitle>Workload Plane Bandwidth (MB/s)</GraphTitle>
-            {workloadPlaneNetworkBandwidthData.length !== 0 && graphWidth ? (
+            {workloadPlaneNetworkBandwidthData.length && graphWidth ? (
               <LineChart
                 id={'node_workload_plane_bandwidth_id'}
                 data={workloadPlaneNetworkBandwidthData}
