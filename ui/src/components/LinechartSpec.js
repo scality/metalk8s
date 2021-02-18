@@ -62,7 +62,6 @@ export const getTooltipConfig = (fields) => {
           title: 'Date',
         },
       ],
-      color: { legend: null },
     },
     selection: {
       hover: {
@@ -75,9 +74,12 @@ export const getTooltipConfig = (fields) => {
       },
     },
   };
-
-  const newFields = [...tooltipConfigBase.encoding.tooltip, ...fields];
-  const newConfig = Object.assign({}, tooltipConfigBase);
-  newConfig.encoding.tooltip = newFields;
-  return newConfig;
+  if (fields.length) {
+    fields = fields.filter((item) => !!item);
+    const newFields = [...tooltipConfigBase.encoding.tooltip, ...fields];
+    const newConfig = Object.assign({}, tooltipConfigBase);
+    newConfig.encoding.tooltip = newFields;
+    return newConfig;
+  }
+  return tooltipConfigBase;
 };
