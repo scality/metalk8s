@@ -77,6 +77,9 @@
 
 ## Release 2.7.2 (in development)
 ### Enhancements
+- Bump Kubernetes version to 1.18.16
+  (PR [#3132](https://github.com/scality/metalk8s/pull/3132))
+
 - Improve Salt master and cluster upgrade stability in slow environments
   (PR [#3125](https://github.com/scality/metalk8s/pull/3125))
 
