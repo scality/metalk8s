@@ -10,7 +10,7 @@
 - [#2164](https://github.com/scality/metalk8s/issues/2164) - Add RHEL 8 support
   (PR [#2997](https://github.com/scality/metalk8s/pull/2997))
 
-- Bump Kubernetes version to 1.19.7 (PR [#3037](https://github.com/scality/metalk8s/pull/3037))
+- Bump Kubernetes version to 1.19.8 (PR [#3137](https://github.com/scality/metalk8s/pull/3137))
 
 - Bump `coredns` version to 1.7.0 (PR [#3008](https://github.com/scality/metalk8s/pull/3008))
 
