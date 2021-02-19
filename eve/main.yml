@@ -1187,6 +1187,7 @@ stages:
             <<: *_env_final_status_artifact_failed
             <<: *_integration_tests_ui_junit_info
             STEP_NAME: integration_tests_ui
+      - ShellCommand: *ssh_ip_setup
       - ShellCommand: *yum_clean_all
       - ShellCommand:
           name: Install Cypress and its dependencies
@@ -1245,6 +1246,10 @@ stages:
             <<: *_integration_tests_ui_junit_info
             STEP_NAME: integration_tests_ui
       - Upload: *upload_final_status_artifact
+      - ShellCommand:
+          <<: *wait_debug
+          env:
+            STEP_NAME: integration-tests-ui
 
   unit_tests:
     worker:

@@ -13,8 +13,10 @@ RUN yum install -y --setopt=skip_missing_names_on_install=False \
         GConf2* \
         git \
         gtk3 \
+        iproute \
         libXtst* \
         libXScrnSaver* \
+        net-tools \
         nodejs \
         python36 \
         python36-devel \

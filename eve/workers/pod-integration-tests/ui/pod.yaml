@@ -30,11 +30,13 @@ spec:
           }
         }
         EOF
-        /entrypoint.sh "echo 'entrypoint'"
+        /entrypoint.sh "echo 'entrypoint'" 2>&1 > /shared/sidecar.out
         cp -r /usr/share/nginx/html/ /tmp/shell-ui-files
     volumeMounts:
       - name: shell-ui-files
         mountPath: /tmp/shell-ui-files
+      - name: shared
+        mountPath: /shared
   containers:
   - name: worker
     image: {{ images['worker'] }}
@@ -50,6 +52,8 @@ spec:
     volumeMounts:
       - name: worker-workspace
         mountPath: /home/eve/workspace
+      - name: shared
+        mountPath: /shared
     
   - name: application
     image: {{ images['application'] }}
@@ -77,4 +81,6 @@ spec:
     - name: worker-workspace
       emptyDir: {}
     - name: shell-ui-files
+      emptyDir: {}
+    - name: shared
       emptyDir: {}
