@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Release 2.5.2 (in development)
+## Release 2.5.2
 
 ### Enhancements
 - [#2572](https://github.com/scality/metalk8s/issues/2572) - Bump CoreDNS
