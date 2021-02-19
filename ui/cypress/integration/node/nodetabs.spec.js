@@ -65,9 +65,7 @@ describe('Node page alerts tab', () => {
       cy.stubHistory();
       cy.get('[data-cy="alert_filter"]').click();
 
-      cy.get('.sc-dropdown .trigger .menu-item')
-        .contains('li', severity.name)
-        .click();
+      cy.get('.sc-healthselector .trigger li').contains(severity.name).click();
       cy.get('@historyPush').should(
         'be.calledWith',
         `/nodes/master-0/alerts?severity=${severity.value}`,
