@@ -65,6 +65,7 @@ export const getTooltipConfig = (
           title: 'Date',
         },
       ],
+      color: {},
     },
     selection: {
       hover: {

@@ -260,13 +260,13 @@ const NodePageMetricsTab = ({
       field: 'In',
       type: 'quantitative',
       title: `In - ${nodeName}`,
-      format: '.1f',
+      format: '.2f',
     },
     {
       field: 'Out',
       type: 'quantitative',
       title: `Out - ${nodeName}`,
-      format: '.1f',
+      format: '.2f',
     },
   ];
   if (showAvg) {
@@ -307,13 +307,13 @@ const NodePageMetricsTab = ({
         field: 'in avg',
         type: 'quantitative',
         title: `In - ${intl.translate('cluster_avg')}`,
-        format: '.1f',
+        format: '.2f',
       },
       {
         field: 'out avg',
         type: 'quantitative',
         title: `Out - ${intl.translate('cluster_avg')}`,
-        format: '.1f',
+        format: '.2f',
       },
     );
   }
