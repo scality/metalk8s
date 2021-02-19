@@ -265,8 +265,8 @@ version to 1.6.5 (PR [#2582](https://github.com/scality/metalk8s/pull/2582))
 - [#2572](https://github.com/scality/metalk8s/issues/2572) - Bump CoreDNS
 version to 1.6.2 (PR [#2575](https://github.com/scality/metalk8s/pull/2575))
 
-- [#2674](https://github.com/scality/metalk8s/issues/2674) - Bump K8S version
-to 1.16.13 (PR [#2679](https://github.com/scality/metalk8s/pull/2679))
+- [#2674](https://github.com/scality/metalk8s/issues/2674) - Bump Kubernetes
+  version to 1.16.15 (PR [#3140](https://github.com/scality/metalk8s/pull/3140))
 
 ### Bug fixes
 - [#2854](https://github.com/scality/metalk8s/issues/2854) - Bump containerd
