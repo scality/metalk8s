@@ -9,6 +9,9 @@
 - [#2674](https://github.com/scality/metalk8s/issues/2674) - Bump Kubernetes
   version to 1.16.15 (PR [#3140](https://github.com/scality/metalk8s/pull/3140))
 
+- [#2421](https://github.com/scality/metalk8s/issues/2421) - Add support for raw
+  block volume (PR [#2651](https://github.com/scality/metalk8s/pull/2651))
+
 ### Bug fixes
 - [#2854](https://github.com/scality/metalk8s/issues/2854) - Bump containerd
   version to 1.2.14 to fix
@@ -18,6 +21,17 @@
 - [#2653](https://github.com/scality/metalk8s/issues/2653) - Bind MetalK8s
   OIDC static admin user to a Grafana Admin role
   (PR [#2742](https://github.com/scality/metalk8s/pull/2742))
+
+- [#2704](https://github.com/scality/metalk8s/issues/2704) - Always install the
+  right Salt minion version during Bootstrap
+  (PR [#2734](https://github.com/scality/metalk8s/pull/2734))
+
+- [#2653](https://github.com/scality/metalk8s/issues/2653) - Dex admin user have
+  super-admin access in Grafana
+  (PR [#2743](https://github.com/scality/metalk8s/pull/2743))
+
+- Storage Operator no longer spams Salt API because of an infinite reconciliation loop
+  (Commit [b0eca3d84](https://github.com/scality/metalk8s/commit/b0eca3d84e13c37235e0780cc84490cc7f6644e9), PR [#2651](https://github.com/scality/metalk8s/pull/2651))
 
 ## Release 2.5.1
 
