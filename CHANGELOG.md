@@ -4,20 +4,20 @@
 
 ### Enhancements
 - [#2572](https://github.com/scality/metalk8s/issues/2572) - Bump CoreDNS
-version to 1.6.2 (PR [#2575](https://github.com/scality/metalk8s/pull/2575))
+  version to 1.6.2 (PR [#2575](https://github.com/scality/metalk8s/pull/2575))
 
 - [#2674](https://github.com/scality/metalk8s/issues/2674) - Bump Kubernetes
   version to 1.16.15 (PR [#3140](https://github.com/scality/metalk8s/pull/3140))
 
 ### Bug fixes
 - [#2854](https://github.com/scality/metalk8s/issues/2854) - Bump containerd
-version to 1.2.14 to fix
-[CVE-2020-15157](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-15157)
-(PR [#2874](https://github.com/scality/metalk8s/pull/2874))
+  version to 1.2.14 to fix
+  [CVE-2020-15157](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-15157)
+  (PR [#2874](https://github.com/scality/metalk8s/pull/2874))
 
 - [#2653](https://github.com/scality/metalk8s/issues/2653) - Bind MetalK8s
-OIDC static admin user to a Grafana Admin role
-(PR [#2742](https://github.com/scality/metalk8s/pull/2742))
+  OIDC static admin user to a Grafana Admin role
+  (PR [#2742](https://github.com/scality/metalk8s/pull/2742))
 
 ## Release 2.5.1
 
