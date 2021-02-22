@@ -1,5 +1,6 @@
+//@flow
 import React, { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { ThemeProvider } from 'styled-components';
 import { useRouteMatch, useHistory } from 'react-router';
 import { Switch } from 'react-router-dom';
@@ -16,6 +17,7 @@ import About from './About';
 import PrivateRoute from './PrivateRoute';
 import SolutionDetail from './SolutionDetail';
 import VolumePage from './VolumePage';
+import DashboardPage from './DashboardPage';
 
 import { toggleSideBarAction } from '../ducks/app/layout';
 
@@ -24,14 +26,18 @@ import { updateLanguageAction, logoutAction } from '../ducks/config';
 import { FR_LANG, EN_LANG } from '../constants';
 import CreateVolume from './CreateVolume';
 import { fetchClusterVersionAction } from '../ducks/app/nodes';
+import { useTypedSelector } from '../hooks';
 
-const Layout = (props) => {
-  const user = useSelector((state) => state.oidc.user);
-  const sidebar = useSelector((state) => state.app.layout.sidebar);
-  const { theme, language } = useSelector((state) => state.config);
-  const notifications = useSelector((state) => state.app.notifications.list);
-  const solutions = useSelector((state) => state.app.solutions.solutions);
-  const isUserLoaded = useSelector((state) => !!state.oidc.user);
+const Layout = () => {
+  const user = useTypedSelector((state) => state.oidc.user);
+  const sidebar = useTypedSelector((state) => state.app.layout.sidebar);
+  const { theme, language } = useTypedSelector((state) => state.config);
+  const notifications = useTypedSelector(
+    (state) => state.app.notifications.list,
+  );
+  const solutions = useTypedSelector((state) => state.app.solutions.solutions);
+  const isUserLoaded = useTypedSelector((state) => !!state.oidc.user);
+  const api = useTypedSelector((state) => state.config.api);
   const dispatch = useDispatch();
 
   const logout = (event) => {
@@ -43,7 +49,6 @@ const Layout = (props) => {
   const updateLanguage = (language) => dispatch(updateLanguageAction(language));
   const toggleSidebar = () => dispatch(toggleSideBarAction());
   const history = useHistory();
-  const api = useSelector((state) => state.config.api);
 
   useEffect(() => {
     dispatch(fetchClusterVersionAction());
@@ -56,8 +61,22 @@ const Layout = (props) => {
     'data-cy-state-isexpanded': sidebar.expanded,
     actions: [
       {
-        label: intl.translate('alerts'),
+        label: intl.translate('dashboard'),
         icon: <i className="fas fa-desktop" />,
+        onClick: () => {
+          history.push('/dashboard');
+        },
+        active: useRouteMatch({
+          path: '/dashboard',
+          exact: true,
+          strict: true,
+        }),
+        'data-cy': 'sidebar_item_dashboard',
+      },
+      // TODO: Will move to the global navbar
+      {
+        label: intl.translate('alerts'),
+        icon: <i className="fas fa-bell" />,
         onClick: () => {
           history.push('/');
         },
@@ -109,11 +128,19 @@ const Layout = (props) => {
       },
     ],
   };
+  // Remove the access to dashboard page if no flags property in the config.json,
+  // or no `dashboard` specified in the values.
+  if (
+    (api && !Object.prototype.hasOwnProperty.call(api, 'flags')) ||
+    (api && api.flags && !api.flags.includes('dashboard'))
+  ) {
+    sidebarConfig.actions.shift();
+  }
 
   let applications = null;
   if (solutions?.length) {
-    applications = solutions?.reduce((prev, solution) => {
-      let solutionDeployedVersions = solution?.versions?.filter(
+    applications = solutions.reduce((prev, solution) => {
+      let solutionDeployedVersions = solution.versions.filter(
         (version) => version?.deployed && version?.ui_url,
       );
       let app = solutionDeployedVersions.map((version) => ({
@@ -169,7 +196,7 @@ const Layout = (props) => {
         {
           label: intl.translate('documentation'),
           onClick: () => {
-            window.open(`${api.url_doc}/index.html`);
+            api && api.url_doc && window.open(`${api.url_doc}/index.html`);
           },
           'data-cy': 'documentation',
         },
@@ -203,6 +230,7 @@ const Layout = (props) => {
   const navbar = {
     productName: intl.translate('product_name'),
     logo: <img alt="logo" src={process.env.PUBLIC_URL + theme.logo_path} />,
+    rightActions: [],
   };
   // display the sidebar and rightAction if the user is loaded
   if (isUserLoaded) {
@@ -241,6 +269,10 @@ const Layout = (props) => {
             component={EnvironmentCreationForm}
           />
           <PrivateRoute exact path="/about" component={About} />
+
+          {api && api.flags && api.flags.includes('dashboard') && (
+            <PrivateRoute exact path="/dashboard" component={DashboardPage} />
+          )}
           <PrivateRoute exact path="/" component={ClusterMonitoring} />
           <PrivateRoute
             exact
