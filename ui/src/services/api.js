@@ -53,6 +53,7 @@ export type Config = {
   url_redirect: string,
   url_doc: string,
   url_alertmanager: string,
+  flags?: [],
 };
 
 export function fetchTheme(): Promise<WrappedThemes> {
