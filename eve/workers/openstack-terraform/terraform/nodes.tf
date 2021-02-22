@@ -170,8 +170,8 @@ resource "openstack_compute_instance_v2" "bootstrap" {
   }
 
   provisioner "remote-exec" {
-    when = "destroy"
-    on_failure = "continue"
+    when = destroy
+    on_failure = continue
     inline = [
       "case '${var.os}' in rhel-*) sudo subscription-manager unregister;; esac"
     ]
@@ -260,8 +260,8 @@ resource "openstack_compute_instance_v2" "nodes" {
   }
 
   provisioner "remote-exec" {
-    when = "destroy"
-    on_failure = "continue"
+    when = destroy
+    on_failure = continue
     inline = [
       "case '${var.os}' in rhel-*) sudo subscription-manager unregister;; esac"
     ]
