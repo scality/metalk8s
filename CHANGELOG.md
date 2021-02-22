@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Release 2.6.1 (development in progress)
+## Release 2.6.1
 
 ### Features Added
 - [#2919](https://github.com/scality/metalk8s/issues/2919) - [UI] Ability to
