@@ -395,7 +395,7 @@ def _dex_login(username, password, control_plane_ip, request_retry_session):
                 "response_type": "id_token",
                 "client_id": "metalk8s-ui",
                 "scope": "openid audience:server:client_id:oidc-auth-client",
-                "redirect_uri": "https://{}:{}/oauth2/callback".format(
+                "redirect_uri": "https://{}:{}/".format(
                     control_plane_ip, CONTROL_PLANE_INGRESS_PORT
                 ),
                 "nonce": "nonce",
