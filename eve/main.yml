@@ -1916,7 +1916,7 @@ stages:
             ssh -F ssh_config bootstrap <<ENDSSH
             for ns in \$(sudo kubectl get ns --kubeconfig=/etc/kubernetes/admin.conf -o jsonpath='{.items[*].metadata.name}'); do
                 node_aff_pods=\$(sudo kubectl get pods --kubeconfig=/etc/kubernetes/admin.conf -n "\$ns" | grep NodeAffinity | awk '{print \$1}' | tr \\n ' ')
-                if [ \$node_aff_pods ]; then
+                if [ "\$node_aff_pods" ]; then
                     sudo kubectl delete pods --kubeconfig=/etc/kubernetes/admin.conf -n "\$ns" \$node_aff_pods
                 fi
             done
