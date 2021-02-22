@@ -23,6 +23,11 @@ variable "nodes_count" {
   default = "2"
 }
 
+variable "offline" {
+  type    = bool
+  default = true
+}
+
 resource "random_string" "current" {
   length  = 5
   special = false

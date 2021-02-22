@@ -5,6 +5,7 @@ resource "openstack_networking_port_v2" "bastion_public" {
   network_id          = data.openstack_networking_network_v2.default_network.id
   security_group_ids  = [
     openstack_networking_secgroup_v2.ingress.id,
+    openstack_networking_secgroup_v2.egress.id,
     openstack_networking_secgroup_v2.open_egress.id
   ]
 }
@@ -99,7 +100,7 @@ resource "openstack_networking_port_v2" "bootstrap_public" {
   network_id          = data.openstack_networking_network_v2.default_network.id
   security_group_ids  = [
     openstack_networking_secgroup_v2.ingress.id,
-    openstack_networking_secgroup_v2.open_egress.id
+    openstack_networking_secgroup_v2.egress.id
   ]
 }
 
@@ -185,7 +186,7 @@ resource "openstack_networking_port_v2" "nodes_public" {
   network_id          = data.openstack_networking_network_v2.default_network.id
   security_group_ids  = [
     openstack_networking_secgroup_v2.ingress.id,
-    openstack_networking_secgroup_v2.open_egress.id
+    openstack_networking_secgroup_v2.egress.id
   ]
   count               = var.nodes_count
 }
