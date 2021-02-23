@@ -20,24 +20,35 @@ Create kube-controller-manager Pod manifest:
         image_name: {{ build_image_name("kube-controller-manager") }}
         host: {{ grains['metalk8s']['control_plane_ip'] }}
         port: http-metrics
-        scheme: HTTP
+        scheme: HTTPS
         command:
+        # kubeadm flags {
           - kube-controller-manager
-          - --address={{ grains['metalk8s']['control_plane_ip'] }}
-          - --allocate-node-cidrs=true
-          - --cluster-cidr={{ networks.pod }}
+          - --authentication-kubeconfig=/etc/kubernetes/controller-manager.conf
+          - --authorization-kubeconfig=/etc/kubernetes/controller-manager.conf
+          - --bind-address={{ grains['metalk8s']['control_plane_ip'] }}
+          - --client-ca-file=/etc/kubernetes/pki/ca.crt
+          - --cluster-name=kubernetes
+          # In MetalK8s we do not use TLS bootstrapping
+          #- --cluster-signing-cert-file=/etc/kubernetes/pki/ca.crt
+          #- --cluster-signing-key-file=/etc/kubernetes/pki/ca.key
           - --controllers=*,bootstrapsigner,tokencleaner
           - --kubeconfig=/etc/kubernetes/controller-manager.conf
           - --leader-elect=true
-          - --node-cidr-mask-size=24
+          - --port=0
+          - --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt
           - --root-ca-file=/etc/kubernetes/pki/ca.crt
           - --service-account-private-key-file=/etc/kubernetes/pki/sa.key
           - --use-service-account-credentials=true
+        # }
+          - --allocate-node-cidrs=true
+          - --cluster-cidr={{ networks.pod }}
+          - --node-cidr-mask-size=24
           - --v={{ 2 if metalk8s.debug else 0 }}
         requested_cpu: 200m
         ports:
           - name: http-metrics
-            containerPort: 10252
+            containerPort: 10257
         volumes:
           {%- if grains['os_family'] == 'RedHat' %}
           - path: /etc/pki
