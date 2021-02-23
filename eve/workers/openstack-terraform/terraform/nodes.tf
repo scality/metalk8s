@@ -68,6 +68,16 @@ resource "openstack_compute_instance_v2" "bastion" {
     ]
   }
 
+  # Configure HTTP proxy for yum repositories
+  # We also use the proxy on the bastion, even if it has an access to the
+  # Internet, to benefit from the cache.
+  provisioner "remote-exec" {
+    inline = [
+      "if [ '${var.use_proxy}' = 'true' ]; then sudo chmod +x scripts/proxy-setup.sh; fi",
+      "if [ '${var.use_proxy}' = 'true' ]; then sudo scripts/proxy-setup.sh '${var.proxy_host}' '${var.proxy_port}'; fi"
+    ]
+  }
+
   # Install Cypress requirements
   provisioner "remote-exec" {
     inline = [
@@ -162,6 +172,14 @@ resource "openstack_compute_instance_v2" "bootstrap" {
     ]
   }
 
+  # Configure HTTP proxy for yum repositories
+  provisioner "remote-exec" {
+    inline = [
+      "if [ '${var.use_proxy}' = 'true' ]; then sudo chmod +x scripts/proxy-setup.sh; fi",
+      "if [ '${var.use_proxy}' = 'true' ]; then sudo scripts/proxy-setup.sh '${var.proxy_host}' '${var.proxy_port}'; fi"
+    ]
+  }
+
   # Register RHSM if OS = rhel
   provisioner "remote-exec" {
     inline = [
@@ -249,6 +267,14 @@ resource "openstack_compute_instance_v2" "nodes" {
       "sudo scripts/network.sh eth1",
       "sudo scripts/network.sh eth2",
       "sudo systemctl restart network || sudo systemctl restart NetworkManager"
+    ]
+  }
+
+  # Configure HTTP proxy for yum repositories
+  provisioner "remote-exec" {
+    inline = [
+      "if [ '${var.use_proxy}' = 'true' ]; then sudo chmod +x scripts/proxy-setup.sh; fi",
+      "if [ '${var.use_proxy}' = 'true' ]; then sudo scripts/proxy-setup.sh '${var.proxy_host}' '${var.proxy_port}'; fi"
     ]
   }
 
