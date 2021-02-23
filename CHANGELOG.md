@@ -189,7 +189,9 @@
   `metalk8s` plugin's `describe` option
   (PR [#3013](https://github.com/scality/metalk8s/pull/3013))
 
-## Release 2.6.1 (in development)
+## Release 2.6.2 (in development)
+
+## Release 2.6.1
 
 ### Features Added
 - [#1887](https://github.com/scality/metalk8s/issues/1887) - All Kubernetes
