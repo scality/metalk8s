@@ -51,16 +51,17 @@ Create kube-apiserver Pod manifest:
         image_name: {{ build_image_name("kube-apiserver") }}
         port: 6443
         scheme: HTTPS
+        liveness_path: /livez
+        readiness_path: /readyz
         command:
+        # kubeadm flags {
           - kube-apiserver
-          - --authorization-mode=Node,RBAC
           - --advertise-address={{ host }}
           - --allow-privileged=true
+          - --authorization-mode=Node,RBAC
           - --client-ca-file=/etc/kubernetes/pki/ca.crt
-          - --cors-allowed-origins=.*
           - --enable-admission-plugins=NodeRestriction
           - --enable-bootstrap-token-auth=true
-          - --encryption-provider-config={{ encryption_k8s_path }}
           - --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt
           - --etcd-certfile={{ certificates.client.files['apiserver-etcd'].path }}
           - --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
@@ -81,6 +82,9 @@ Create kube-apiserver Pod manifest:
           - --service-cluster-ip-range={{ networks.service }}
           - --tls-cert-file={{ certificates.server.files.apiserver.path }}
           - --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
+        # }
+          - --encryption-provider-config={{ encryption_k8s_path }}
+          - --cors-allowed-origins=.*
           - --oidc-issuer-url=https://{{ ingress_control_plane }}/oidc
           - --oidc-client-id=oidc-auth-client
           - --oidc-ca-file=/etc/metalk8s/pki/nginx-ingress/ca.crt
