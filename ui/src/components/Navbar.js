@@ -5,7 +5,7 @@ import { updateAPIConfigAction } from '../ducks/config';
 import { useDispatch } from 'react-redux';
 import { ErrorBoundary } from 'react-error-boundary';
 
-function useWebComponent(src: string, customElementName: string) {
+function useWebComponent(src?: string, customElementName: string) {
   const [hasFailed, setHasFailed] = useState(false);
   useLayoutEffect(() => {
     const body = document.body;
@@ -15,7 +15,7 @@ function useWebComponent(src: string, customElementName: string) {
       (scriptElement) => scriptElement.attributes.src?.value === src,
     );
 
-    if (!element && body) {
+    if (!element && body && src) {
       const scriptElement = document.createElement('script');
       scriptElement.src = src;
       scriptElement.onload = () => {
@@ -111,7 +111,8 @@ export function Navbar() {
 }
 
 function InternalNavbar() {
-  useWebComponent('/shell/solution-ui-navbar.1.0.0.js', 'solutions-navbar');
+  const navbarUrl = useTypedSelector((state) => state.config.api?.url_navbar);
+  useWebComponent(navbarUrl, 'solutions-navbar');
 
   const navbarRef = useRef<NavbarWebComponent | null>(null);
 
