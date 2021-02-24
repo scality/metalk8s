@@ -52,6 +52,7 @@ export type Config = {
   url_doc: string,
   url_alertmanager: string,
   flags?: [],
+  url_navbar: string,
 };
 
 export function fetchTheme(): Promise<WrappedThemes> {
