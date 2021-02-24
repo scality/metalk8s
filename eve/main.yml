@@ -1176,6 +1176,9 @@ stages:
         application:
           context: 'ui'
           dockerfile: eve/workers/pod-integration-tests/ui/app.Dockerfile
+        shell-ui:
+          context: 'shell-ui'
+          dockerfile: eve/workers/pod-integration-tests/ui/shell-ui.Dockerfile
     steps:
       - Git: *git_pull
       - ShellCommand:
@@ -1189,7 +1192,7 @@ stages:
           name: Install Cypress and its dependencies
           workdir: build/ui
           command: |
-            PKGS="cypress cypress-cucumber-preprocessor cypress-wait-until"
+            PKGS="cypress cypress-cucumber-preprocessor cypress-wait-until @testing-library/cypress"
             for pkg in $PKGS; do
               npm install --no-save --no-package-lock $pkg@$(node -p \
                 -e "require('./package-lock.json').dependencies['$pkg'].version" \
