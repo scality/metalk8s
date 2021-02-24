@@ -60,6 +60,8 @@ STATIC_CONTAINER_REGISTRY: Path = Path(ROOT, "buildchain/static-container-regist
 STORAGE_OPERATOR_ROOT: Path = ROOT / "storage-operator"
 # Path to the UI build root directory.
 UI_BUILD_ROOT: Path = config.BUILD_ROOT / "ui"
+# Path to the shell-ui build root directory.
+SHELL_UI_BUILD_ROOT: Path = config.BUILD_ROOT / "shell-ui"
 # Root for the source Debian package
 SRC_DEB_ROOT: Path = ROOT / "packages" / "debian"
 

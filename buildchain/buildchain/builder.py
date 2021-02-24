@@ -109,12 +109,25 @@ UI_BUILDER: LocalImage = _builder_image(
     ],
 )
 
+SHELL_UI_BUILDER: LocalImage = _builder_image(
+    name="shell-ui",
+    dockerfile=constants.ROOT / "ui" / "Dockerfile",
+    build_context=constants.ROOT / "shell-ui",
+    build_args={"NODE_IMAGE_VERSION": versions.NODEJS_IMAGE_VERSION},
+    file_dep=[
+        constants.ROOT / "shell-ui" / "package.json",
+        constants.ROOT / "shell-ui" / "package-lock.json",
+        constants.ROOT / "ui" / "entrypoint.sh",
+    ],
+)
+
 
 _BUILDERS: Tuple[LocalImage, ...] = (
     (
         DOC_BUILDER,
         GO_BUILDER,
         UI_BUILDER,
+        SHELL_UI_BUILDER,
     )
     + tuple(RPM_BUILDER.values())
     + tuple(DEB_BUILDER.values())

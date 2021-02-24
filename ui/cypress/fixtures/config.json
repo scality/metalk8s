@@ -3,8 +3,6 @@
     "url_salt": "/api/salt",
     "url_prometheus": "/api/prometheus",
     "url_grafana": "/grafana",
-    "url_oidc_provider": "/oidc",
-    "url_redirect": "/",
     "url_doc": "/docs",
     "url_alertmanager": "/api/alertmanager"
 }

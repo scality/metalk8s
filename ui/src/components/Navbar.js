@@ -111,7 +111,7 @@ export function Navbar() {
 }
 
 function InternalNavbar() {
-  useWebComponent('/solution-ui-navbar.1.0.0.js', 'solutions-navbar');
+  useWebComponent('/shell/solution-ui-navbar.1.0.0.js', 'solutions-navbar');
 
   const navbarRef = useRef<NavbarWebComponent | null>(null);
 
@@ -126,9 +126,6 @@ function InternalNavbar() {
         // $flow-disable-line -- flow considers solutions-navbar as a row HTMLElement, TODO find if it is possible to extends JSX flow native definitions with custom element types
         navbarRef
       }
-      client-id="metalk8s-ui"
-      response-type="id_token"
-      scopes="openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
     />
   );
 }

@@ -249,9 +249,10 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
         file_dep=(
             list(coreutils.ls_files_rec(constants.UI_BUILD_ROOT))
             + list(coreutils.ls_files_rec(constants.DOCS_BUILD_ROOT))
+            + list(coreutils.ls_files_rec(constants.SHELL_UI_BUILD_ROOT))
             + [config.BUILD_ROOT / "metalk8s-ui-nginx.conf"]
         ),
-        task_dep=["ui", "doc"],
+        task_dep=["ui", "shell_ui", "doc"],
     ),
     _local_image(
         name="metalk8s-utils",
