@@ -19,7 +19,9 @@ FROM nginx:${NGINX_IMAGE_VERSION}
 
 WORKDIR /usr/share/nginx/html/
 RUN rm -rf ./*
-COPY --from=build-step /home/node/dist ./
+RUN mkdir shell
+COPY public/shell/config.json ./shell
+COPY --from=build-step /home/node/build ./shell
 COPY conf/nginx.conf /etc/nginx/conf.d/default.conf
-
+ENTRYPOINT [ "/docker-entrypoint.sh" ]
 CMD ["nginx", "-g", "daemon off;"]

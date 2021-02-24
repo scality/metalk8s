@@ -6,6 +6,8 @@ import type { SolutionsNavbarProps } from './index';
 import type { Node } from 'react';
 import { logOut } from './auth/logout';
 
+export const LoadingNavbar = (): Node => <CoreUINavbar role="navigation" tabs={[{title: 'loading'}]} />;
+
 export const Navbar = ({
   options,
 }: {
@@ -67,5 +69,7 @@ export const Navbar = ({
       ],
     },
   ];
-  return <CoreUINavbar rightActions={rightActions} tabs={tabs} role="navigation" />;
+  return (
+    <CoreUINavbar rightActions={rightActions} tabs={tabs} role="navigation" />
+  );
 };
