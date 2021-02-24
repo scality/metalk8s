@@ -4,7 +4,7 @@
     "url_prometheus": "/api/prometheus",
     "url_grafana": "/grafana",
     "url_oidc_provider": "/oidc",
-    "url_redirect": "/oauth2/callback",
+    "url_redirect": "/",
     "url_doc": "/docs",
     "url_alertmanager": "/api/alertmanager"
 }
