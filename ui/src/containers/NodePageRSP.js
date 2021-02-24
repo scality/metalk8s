@@ -35,6 +35,7 @@ import {
   NODE_ALERTS_GROUP,
   PORT_NODE_EXPORTER,
 } from '../constants';
+import { filterAlerts } from '../services/alertUtils';
 import { intl } from '../translations/IntlGlobalProvider';
 import { useTypedSelector } from '../hooks';
 
@@ -121,13 +122,10 @@ const NodePageRSP = (props) => {
 
   // Filter alerts for the specific node, base on the InstaceIP and Alert Name
   const alerts = useSelector((state) => state.app.alerts.list);
-  const alertsNode =
-    alerts?.filter(
-      (alert) =>
-        NODE_ALERTS_GROUP.includes(alert?.labels?.alertname) &&
-        `${instanceIP}:${PORT_NODE_EXPORTER}` === alert?.labels?.instance,
-    ) ?? [];
-
+  const alertsNode = filterAlerts(alerts, {
+    alertname: NODE_ALERTS_GROUP,
+    instance: `${instanceIP}:${PORT_NODE_EXPORTER}`,
+  });
   const isHealthTabActive = location.pathname.endsWith('/overview');
   const isAlertsTabActive = location.pathname.endsWith('/alerts');
   const isMetricsTabActive = location.pathname.endsWith('/metrics');

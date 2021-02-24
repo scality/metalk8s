@@ -15,6 +15,7 @@ import {
   PORT_NODE_EXPORTER,
 } from '../constants';
 import { computeVolumeGlobalStatus } from '../services/NodeVolumesUtils';
+import { filterAlerts } from '../services/alertUtils';
 import {
   LeftSideInstanceList,
   NoInstanceSelectedContainer,
@@ -102,10 +103,7 @@ const VolumePageContent = (props) => {
 
   // get the alert
   const alertlist =
-    PVCName &&
-    alerts?.list?.filter(
-      (alert) => alert.labels.persistentvolumeclaim === PVCName,
-    );
+    PVCName && filterAlerts(alerts.list, { persistentvolumeclaim: PVCName });
 
   // prepare the data for <PerformanceGraphCard>
   const deviceName = volume?.status?.deviceName;

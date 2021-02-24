@@ -51,6 +51,7 @@ export type Config = {
   url_grafana: string,
   url_doc: string,
   url_alertmanager: string,
+  url_loki: string,
   flags?: [],
   url_navbar: string,
   url_navbar_config: string,

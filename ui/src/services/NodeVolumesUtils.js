@@ -1,4 +1,3 @@
-// @flow
 import { createSelector } from 'reselect';
 import {
   getNodeNameFromUrl,
@@ -16,22 +15,15 @@ import {
   STATUS_BOUND,
   STATUS_RELEASED,
   STATUS_READY,
-  STATUS_WARNING,
-  STATUS_CRITICAL,
   STATUS_NONE,
-  STATUS_HEALTH,
   PORT_NODE_EXPORTER,
-  NODE_FILESYSTEM_SPACE_FILLINGUP,
-  NODE_FILESYSTEM_ALMOST_OUTOF_SPACE,
-  NODE_FILESYSTEM_FILES_FILLINGUP,
-  NODE_FILESYSTEM_ALMOST_OUTOF_FILES,
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 import type { Alert, Health } from './alertUtils';
 import type { InstantVectorResult } from './prometheus/api';
 import { V1PersistentVolume } from '@kubernetes/client-node/dist/gen/model/models';
 import type { Metalk8sV1alpha1Volume } from '../services/k8s/Metalk8sVolumeClient.generated';
-
+import { getHealthStatus, filterAlerts } from '../services/alertUtils';
 export type VolumeStatus =
   | 'Unknown'
   | 'Ready'
@@ -218,8 +210,7 @@ export const getVolumeListData = createSelector(
       let volumeUsedCurrent = null;
       let volumeCapacityCurrent = null;
       let volumeAlerts = [];
-      let volumeHealth = '';
-
+      let volumeHealth = STATUS_NONE;
       // if volume is bounded
       if (volumePVC) {
         volumeUsedCurrent = volumeUsedCurrentList?.find(
@@ -231,28 +222,10 @@ export const getVolumeListData = createSelector(
             volCap.metric.persistentvolumeclaim === volumePVC.metadata.name,
         );
 
-        // filter the alerts related to the current volume.
-        volumeAlerts = alerts?.list?.filter(
-          (alert) =>
-            alert.labels.persistentvolumeclaim === volumePVC.metadata.name,
-        );
-
-        // THE RULES TO COMPUTE THE HEALTH
-        // compute the volume health based on the severity of the alerts
-        // critical => if there is at least one critical
-        if (volumeAlerts.length) {
-          volumeHealth = volumeAlerts.some(
-            (vol) => vol.labels.severity === STATUS_CRITICAL,
-          )
-            ? STATUS_CRITICAL
-            : STATUS_WARNING;
-        } else if (volumeComputedCondition === ('exclamation' || 'unlink')) {
-          volumeHealth = STATUS_NONE;
-        } else {
-          volumeHealth = STATUS_HEALTH;
-        }
-      } else {
-        volumeHealth = STATUS_NONE;
+        volumeAlerts = filterAlerts(alerts.list, {
+          persistentvolumeclaim: volumePVC.metadata.name,
+        });
+        volumeHealth = getHealthStatus(volumeAlerts);
       }
 
       const instanceIP = nodeList?.find(
@@ -363,7 +336,10 @@ export const getNodePartitionsTableData = (
 ): SystemDevice[] => {
   const partitions = usages.map((usage) => {
     const mountpoint = usage.metric.mountpoint;
-    const health = computePartitionHealth(mountpoint, alerts);
+    const alertsNodeFS = filterAlerts(alerts, {
+      mountpoint: mountpoint,
+    });
+    const health = getHealthStatus(alertsNodeFS);
     const size = getPartitionSize(mountpoint, sizes);
     return {
       partitionPath: mountpoint,
@@ -375,34 +351,6 @@ export const getNodePartitionsTableData = (
   });
 
   return partitions;
-};
-
-const computePartitionHealth = (
-  partitionPath: string,
-  alerts: Alert[],
-): Health => {
-  // filter the alerts by hardcoded alertname and mountpoint
-  const alertsNodeFS = alerts.filter(
-    (alert) =>
-      (alert.labels.alertname === NODE_FILESYSTEM_SPACE_FILLINGUP ||
-        NODE_FILESYSTEM_ALMOST_OUTOF_SPACE ||
-        NODE_FILESYSTEM_FILES_FILLINGUP ||
-        NODE_FILESYSTEM_ALMOST_OUTOF_FILES) &&
-      alert.labels.mountpoint === partitionPath,
-  );
-
-  if (!alertsNodeFS.length) {
-    return STATUS_HEALTH;
-  } else if (
-    alertsNodeFS.find((alert) => alert.labels.severity === STATUS_CRITICAL)
-  ) {
-    return STATUS_CRITICAL;
-  } else if (
-    alertsNodeFS.find((alert) => alert.labels.severity === STATUS_WARNING)
-  ) {
-    return STATUS_WARNING;
-  }
-  return STATUS_NONE;
 };
 
 const getPartitionSize = (
