@@ -191,7 +191,7 @@ FLUENT_BIT_DASHBOARD: Path = constants.ROOT.joinpath("charts/fluent-bit-dashboar
 SCALITY_LOGO: Path = constants.UI_ASSETS / "login/logo.png"
 SCALITY_FAVICON: Path = constants.UI_ASSETS / "login/favicon.png"
 LOGIN_STYLE: Path = constants.UI_ASSETS / "login/styles.css"
-UI_THEME_OPTIONS: Path = constants.UI_BRANDING / "theme.json"
+UI_THEME_OPTIONS: Path = constants.ROOT / "shell-ui" / "theme.json"
 
 # List of salt files to install.
 SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (

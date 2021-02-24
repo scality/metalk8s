@@ -58,6 +58,9 @@ spec:
           - name: metalk8s-ui-volume
             mountPath: /etc/metalk8s/ui/config
             readOnly: true
+          - name: shell-ui-volume
+            mountPath: /etc/metalk8s/ui/shell-config
+            readOnly: true
           - name: ui-branding-volume
             mountPath: /etc/metalk8s/ui/brand
             readOnly: true
@@ -65,6 +68,9 @@ spec:
         - name: metalk8s-ui-volume
           configMap:
             name: metalk8s-ui
+        - name: shell-ui-volume
+          configMap:
+            name: shell-ui
         - name: ui-branding-volume
           configMap:
             name: ui-branding

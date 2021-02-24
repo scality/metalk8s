@@ -204,6 +204,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest=None,
     ),
     Image(
+        name="shell-ui",
+        version=VERSION,
+        digest=None,
+    ),
+    Image(
         name="metalk8s-utils",
         version=VERSION,
         digest=None,

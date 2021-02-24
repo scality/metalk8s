@@ -63,8 +63,6 @@ it('update the config state when fetchConfig', () => {
     url: 'https://172.21.254.14:6443',
     url_salt: 'http://172.21.254.13:4507',
     url_prometheus: 'http://172.21.254.46:30222',
-    url_oidc_provider: 'http://172.21.254.46:32000',
-    url_redirect: 'http://172.21.254.46:3000',
     url_alertmanager: 'http://172.21.254.46:8443',
   };
 
