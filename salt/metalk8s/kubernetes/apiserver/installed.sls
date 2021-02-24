@@ -114,10 +114,27 @@ Create kube-apiserver Pod manifest:
       - file: Ensure SA pub key is present
       - file: Ensure Ingress CA cert is present
 
-Make sure kube-apiserver container is up:
-  module.wait:
+Delay after apiserver pod deployment:
+  module.run:
+    - test.sleep:
+      - length: 10
+    - onchanges:
+      - metalk8s: Create kube-apiserver Pod manifest
+
+Make sure kube-apiserver container is up and ready:
+  module.run:
     - cri.wait_container:
       - name: kube-apiserver
       - state: running
-    - watch:
+    - onchanges:
       - metalk8s: Create kube-apiserver Pod manifest
+    - require:
+      - module: Delay after apiserver pod deployment
+  http.wait_for_successful_query:
+    - name: https://127.0.0.1:6443/healthz
+    - verify_ssl: True
+    - ca_bundle: /etc/kubernetes/pki/ca.crt
+    - status: 200
+    - match: 'ok'
+    - require:
+      - module: Make sure kube-apiserver container is up and ready
