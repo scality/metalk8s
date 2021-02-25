@@ -53,6 +53,7 @@ export type Config = {
   url_alertmanager: string,
   flags?: [],
   url_navbar: string,
+  url_navbar_config: string,
 };
 
 export function fetchTheme(): Promise<WrappedThemes> {

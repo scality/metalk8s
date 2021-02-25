@@ -57,6 +57,7 @@ describe('navbar', () => {
             client-id="metalk8s-ui"
             response-type="id_token"
             redirect-url="http://localhost:8082"
+            config-url="/shell/config.json"
             scopes="openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
             />
         )
@@ -80,6 +81,7 @@ describe('navbar', () => {
             client-id="metalk8s-ui"
             response-type="id_token"
             redirect-url="http://localhost:8082"
+            config-url="/shell/config.json"
             scopes="openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
             />
         )
@@ -119,6 +121,7 @@ describe('navbar', () => {
             client-id="metalk8s-ui"
             response-type="id_token"
             redirect-url="http://localhost:8082"
+            config-url="/shell/config.json"
             scopes="openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
             />
         )

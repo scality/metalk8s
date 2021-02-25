@@ -19,13 +19,13 @@ function useWebComponent(src?: string, customElementName: string) {
       const scriptElement = document.createElement('script');
       scriptElement.src = src;
       scriptElement.onload = () => {
-        customElements.whenDefined(customElementName).catch(e => {
+        customElements.whenDefined(customElementName).catch((e) => {
           setHasFailed(true);
-        })
-      }
+        });
+      };
       scriptElement.onerror = () => {
         setHasFailed(true);
-      }
+      };
       body.appendChild(scriptElement);
     }
   }, [src]);
@@ -112,6 +112,9 @@ export function Navbar() {
 
 function InternalNavbar() {
   const navbarUrl = useTypedSelector((state) => state.config.api?.url_navbar);
+  const navbarConfigUrl = useTypedSelector(
+    (state) => state.config.api?.url_navbar_config,
+  );
   useWebComponent(navbarUrl, 'solutions-navbar');
 
   const navbarRef = useRef<NavbarWebComponent | null>(null);
@@ -127,6 +130,7 @@ function InternalNavbar() {
         // $flow-disable-line -- flow considers solutions-navbar as a row HTMLElement, TODO find if it is possible to extends JSX flow native definitions with custom element types
         navbarRef
       }
+      config-url={navbarConfigUrl}
     />
   );
 }
