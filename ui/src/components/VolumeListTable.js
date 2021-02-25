@@ -16,7 +16,7 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import { useQuery } from '../services/utils';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
-import { Button, ProgressBar, Tooltip } from '@scality/core-ui';
+import { Button, ProgressBar, Tooltip, EmptyTable } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 import TableRow from './TableRow';
 import {
@@ -324,25 +324,7 @@ function Table({
         </div>
         <Body {...getTableBodyProps()}>
           {data.length === 0 ? (
-            <div
-              style={{
-                width: '100%',
-                paddingTop: padding.base,
-                height: '60px',
-              }}
-              className="tr"
-            >
-              <div
-                style={{
-                  textAlign: 'center',
-                  background: theme.brand.primary,
-                  border: 'none',
-                }}
-                className="td"
-              >
-                {intl.translate('no_volume_found')}
-              </div>
-            </div>
+            <EmptyTable>{intl.translate('no_volume_found')}</EmptyTable>
           ) : null}
           {/* <AutoSizer> is a <div/> so it breaks the table layout, 
           we need to use <div/> for all the parts of table(thead, tbody, tr, td...) and retrieve the defaullt styles by className. */}
