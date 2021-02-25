@@ -221,3 +221,19 @@ kubeEtcd:
   service:
     port: 2381
     targetPort: 2381
+
+kubeScheduler:
+  service:
+    port: 10259
+    targetPort: 10259
+  serviceMonitor:
+    https: true
+    insecureSkipVerify: true
+
+kubeControllerManager:
+  service:
+    port: 10257
+    targetPort: 10257
+  serviceMonitor:
+    https: true
+    insecureSkipVerify: true
