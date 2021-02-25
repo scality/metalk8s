@@ -22,6 +22,7 @@ export type SolutionsNavbarProps = {
   'client-id'?: string,
   'response-type'?: string,
   'redirect-url'?: string,
+  'config-url'?: string,
   options?: Options,
   onAuthenticated?: (evt: CustomEvent) => void,
   logOut?: () => void,
@@ -45,20 +46,25 @@ const SolutionsNavbar = ({
   scopes,
   'client-id': clientId,
   'redirect-url': redirectUrl,
+  'config-url': configUrl,
   'response-type': responseType,
   options,
   onAuthenticated,
   logOut,
   setUserManager,
 }: SolutionsNavbarProps) => {
-  const { data: config, status } = useQuery<Config>('navbarConfig', () =>
-    fetch('/shell/config.json').then((r) => {
-      if (r.ok) {
-        return r.json();
-      } else {
-        return Promise.reject();
-      }
-    }),
+  const { data: config, status } = useQuery<Config>('navbarConfig', () => {
+    if (configUrl) {
+      return fetch(configUrl).then((r) => {
+        if (r.ok) {
+          return r.json();
+        } else {
+          return Promise.reject();
+        }
+      });
+    }
+    return Promise.resolve({});
+  },
   );
 
   switch (status) {
@@ -152,9 +158,10 @@ const SolutionsNavbar = ({
 };
 
 SolutionsNavbar.propTypes = {
-  'oidc-provider-url': PropTypes.string.isRequired,
-  scopes: PropTypes.string.isRequired,
-  'client-id': PropTypes.string.isRequired,
+  'oidc-provider-url': PropTypes.string,
+  scopes: PropTypes.string,
+  'client-id': PropTypes.string,
+  'config-url': PropTypes.string,
   'redirect-url': PropTypes.string,
   'response-type': PropTypes.string,
   options: PropTypes.object,
