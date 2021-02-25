@@ -9,7 +9,7 @@ import {
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
 import ActiveAlertsFilters from './ActiveAlertsFilters';
-import { Chips } from '@scality/core-ui';
+import { Chips, EmptyTable } from '@scality/core-ui';
 import { useTable } from 'react-table';
 import { intl } from '../translations/IntlGlobalProvider';
 import { VolumeTab } from './style/CommonLayoutStyle';
@@ -163,22 +163,7 @@ const ActiveAlertsCard = (props) => {
             </HeadRow>
           )}
           {PVCName && data?.length === 0 && (
-            <HeadRow
-              style={{
-                width: '100%',
-                paddingTop: padding.base,
-                height: '60px',
-              }}
-            >
-              <td
-                style={{
-                  textAlign: 'center',
-                  background: theme.brand.primary,
-                }}
-              >
-                {intl.translate('no_active_alerts')}
-              </td>
-            </HeadRow>
+            <EmptyTable>{intl.translate('no_active_alerts')}</EmptyTable>
           )}
           {rows?.map((row, i) => {
             prepareRow(row);

@@ -1,5 +1,12 @@
+/* eslint no-unused-vars: 0 */
 import React, { useEffect, useState, Fragment } from 'react';
-import { Route, useRouteMatch, Switch, Redirect } from 'react-router-dom';
+import {
+  Route,
+  useRouteMatch,
+  Switch,
+  Redirect,
+  useHistory,
+} from 'react-router-dom';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
 import {
   refreshAlertManagerAction,
@@ -7,7 +14,6 @@ import {
 } from '../ducks/app/alerts';
 import { useRefreshEffect } from '../services/utils';
 import NodeListTable from '../components/NodeListTable';
-import EmptyState from '../components/EmptyState';
 import NodePageRSP from './NodePageRSP';
 import {
   LeftSideInstanceList,
@@ -15,6 +21,7 @@ import {
   RightSidePanel,
 } from '../components/style/CommonLayoutStyle';
 import { usePrevious } from '../services/utils';
+import { EmptyState } from '@scality/core-ui';
 
 // <NodePageContent> get the current selected node and pass it to <NodeListTable> and <NodePageRSP>
 const NodePageContent = (props) => {
@@ -23,6 +30,7 @@ const NodePageContent = (props) => {
   const [defaultSelectNodeName, setDefaultSelectNodeName] = useState(null);
   const [isFirstLoadingDone, setIsFirstLoadingDone] = useState(false);
   const previousLoading = usePrevious(loading);
+  const history = useHistory();
 
   /*
    ** Used to determine if a first loading has happened
@@ -46,7 +54,12 @@ const NodePageContent = (props) => {
   return (
     <PageContentContainer>
       {!nodeTableData.length && isFirstLoadingDone ? (
-        <EmptyState label={'Node'} link="/nodes/create" icon="fa-server" />
+        <EmptyState
+          label={'Node'}
+          link="/nodes/create"
+          icon="fa-server"
+          history={history}
+        />
       ) : (
         <Fragment>
           <LeftSideInstanceList>

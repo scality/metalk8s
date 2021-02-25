@@ -10,7 +10,7 @@ import { Route, Switch } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import translations_en from '../translations/en';
 import translations_fr from '../translations/fr';
-import Loader from '../components/Loader';
+import { Loader } from '@scality/core-ui';
 import Layout from './Layout';
 import CallbackPage from './LoginCallback';
 import IntlGlobalProvider from '../translations/IntlGlobalProvider';
@@ -59,7 +59,7 @@ const App = (props) => {
       </OidcProvider>
     </QueryClientProvider>
   ) : (
-    <Loader />
+    <Loader size="massive" centered={true} />
   );
 };
 

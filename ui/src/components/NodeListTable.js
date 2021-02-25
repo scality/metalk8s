@@ -13,7 +13,7 @@ import {
 import { useQuery } from '../services/utils';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
-import { Button } from '@scality/core-ui';
+import { Button, EmptyTable } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 import { compareHealth, useTableSortURLSync } from '../services/utils';
 import {
@@ -359,24 +359,8 @@ function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
         </thead>
         <Body {...getTableBodyProps()}>
           {rows.length === 0 ? (
-            <HeadRow
-              style={{
-                width: '100%',
-                paddingTop: padding.base,
-                height: '60px',
-              }}
-            >
-              <td
-                style={{
-                  textAlign: 'center',
-                  background: theme.brand.primary,
-                }}
-              >
-                {intl.translate('no_node_found')}
-              </td>
-            </HeadRow>
+            <EmptyTable>{intl.translate('no_node_found')}</EmptyTable>
           ) : null}
-
           {rows.map((row, i) => {
             prepareRow(row);
             return (

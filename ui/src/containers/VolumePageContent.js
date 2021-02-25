@@ -1,17 +1,14 @@
-/* eslint no-unused-vars: 0 */
 import React, { Fragment, useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { useHistory, useLocation, useRouteMatch } from 'react-router';
 import { Switch, Route } from 'react-router-dom';
-import { Tabs } from '@scality/core-ui';
-import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
+import { Tabs, EmptyState } from '@scality/core-ui';
 import VolumeListTable from '../components/VolumeListTable';
 import VolumeOverviewTab from '../components/VolumeOverviewTab';
 import VolumeAlertsTab from '../components/VolumeAlertsTab';
 import VolumeMetricsTab from '../components/VolumeMetricsTab';
 import VolumeDetailsTab from '../components/VolumeDetailsTab';
-import EmptyState from '../components/EmptyState';
 import {
   SPARSE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
@@ -227,6 +224,7 @@ const VolumePageContent = (props) => {
           label={'Volume'}
           link="/volumes/createVolume"
           icon="fa-database"
+          history={history}
         />
       ) : (
         <Fragment>

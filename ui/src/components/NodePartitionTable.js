@@ -3,7 +3,7 @@ import React, { useCallback } from 'react';
 import styled, { useTheme } from 'styled-components';
 import { useTable } from 'react-table';
 import { useQuery } from 'react-query';
-import { ProgressBar, Loader } from '@scality/core-ui';
+import { ProgressBar, Loader, EmptyTable } from '@scality/core-ui';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import {
   queryNodeFSUsage,
@@ -156,21 +156,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
         </thead>
         <Body {...getTableBodyProps()}>
           {status === 'success' && partitions.length === 0 && (
-            <HeadRow
-              style={{
-                width: '100%',
-                paddingTop: padding.base,
-                height: '60px',
-              }}
-            >
-              <td
-                style={{
-                  textAlign: 'center',
-                }}
-              >
-                {intl.translate('no_system_partition')}
-              </td>
-            </HeadRow>
+            <EmptyTable>{intl.translate('no_system_partition')}</EmptyTable>
           )}
           {status === 'loading' && (
             <HeadRow
