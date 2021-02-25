@@ -377,6 +377,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
             "ThemeConfig": textwrap.indent(
                 UI_THEME_OPTIONS.read_text(encoding="utf-8"), 12 * " "
             ),
+            "ShellUIVersion": versions.SHELL_UI_VERSION,
         },
         file_dep=[UI_THEME_OPTIONS],
     ),
