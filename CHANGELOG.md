@@ -57,6 +57,9 @@
 - Improve the upgrade robustness when the platform is a bit slow
   (PR [#3105](https://github.com/scality/metalk8s/pull/3105))
 
+- Use HTTPS endpoints for kube-controller-manager and kube-scheduler
+  (PR [#3152](https://github.com/scality/metalk8s/pull/3152))
+
 ### Bug fixes
 
 - [#3079](https://github.com/scality/metalk8s/issues/3079) - Ensure configured
