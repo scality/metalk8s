@@ -14,7 +14,9 @@ import { logOut } from './auth/logout';
 const EVENTS_PREFIX = 'solutions-navbar--';
 export const AUTHENTICATED_EVENT: string = EVENTS_PREFIX + 'authenticated';
 
-type Options = { [path: string]: { en: string, fr: string, roles?: string[] } }; // TODO should be able to accept configs for paths in dropdown menu under user name
+type MenuItems = {[path: string]: { en: string, fr: string, roles?: string[] }}
+
+export type Options = { main: MenuItems, subLogin: MenuItems };
 
 export type SolutionsNavbarProps = {
   'oidc-provider-url'?: string,
@@ -23,7 +25,7 @@ export type SolutionsNavbarProps = {
   'response-type'?: string,
   'redirect-url'?: string,
   'config-url'?: string,
-  options?: Options,
+  options?: string,
   onAuthenticated?: (evt: CustomEvent) => void,
   logOut?: () => void,
   setUserManager?: (userManager: UserManager) => void,
@@ -149,7 +151,7 @@ const SolutionsNavbar = ({
               logo_path: '/brand/assets/branding-dark.svg',
             }}
           >
-            <Navbar options={options} />
+            <Navbar options={options ? JSON.parse(options) : config.options || { main: {}, subLogin: {} }} />
           </StyledComponentsProvider>
         </AuthProvider>
       );
@@ -164,7 +166,7 @@ SolutionsNavbar.propTypes = {
   'config-url': PropTypes.string,
   'redirect-url': PropTypes.string,
   'response-type': PropTypes.string,
-  options: PropTypes.object,
+  options: PropTypes.string,
 };
 
 const SolutionsNavbarProviderWrapper = (props: SolutionsNavbarProps) => {

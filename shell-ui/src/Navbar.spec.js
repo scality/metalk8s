@@ -123,12 +123,21 @@ describe('navbar', () => {
             redirect-url="http://localhost:8082"
             config-url="/shell/config.json"
             scopes="openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
+            options={
+                JSON.stringify({
+                    "main": {
+                        "http://localhost:8082/":{ "en": "Platform", "fr": "Plateforme" },
+                        "http://localhost:8082/test":{ "en": "Test", "fr": "Test" }
+                    },
+                    "subLogin": {}
+                })
+            }
             />
         )
         //E
         await waitForLoadingToFinish();
-
-        expect(screen.getByText(/overview/i)).toBeInTheDocument();
+        //V
+        expect(screen.getByText(/Platform/i)).toBeInTheDocument();
     })
 
     afterAll(() => server.close());
