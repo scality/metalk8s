@@ -2,10 +2,17 @@
 import CoreUINavbar from '@scality/core-ui/dist/components/navbar/Navbar.component';
 import { useAuth } from 'oidc-react';
 import { useLayoutEffect, useState } from 'react';
-import type { Options, SolutionsNavbarProps } from './index';
+import type {
+  Options,
+  SolutionsNavbarProps,
+  TranslationAndGroups,
+} from './index';
 import type { Node } from 'react';
 import { logOut } from './auth/logout';
-import { options } from 'jest-runtime/build/cli/args';
+import {
+  isEntryAccessibleByTheUser,
+  normalizePath,
+} from './auth/permissionUtils';
 
 export const LoadingNavbar = (): Node => (
   <CoreUINavbar role="navigation" tabs={[{ title: 'loading' }]} />
@@ -37,7 +44,9 @@ const translateOptionsToMenu = (
             };
           } catch (e) {
             throw new Error(
-              `[navbar][config] Options path should be provided thanks to fully qualified urls such as {protocol}://{host}{path}?{queryParams} but got "${path}" in ${section}[${i}] `,
+              `[navbar][config] Invalid path specified in "options.${section}": "${path}" ` +
+                '(keys must be defined as fully qualified URLs, ' +
+                'such as "{protocol}://{host}{path}?{queryParams}")',
             );
           }
         },
@@ -48,7 +57,16 @@ const translateOptionsToMenu = (
 export const Navbar = ({ options }: { options: Options }): Node => {
   const auth = useAuth();
 
-  const tabs = translateOptionsToMenu(options, 'main');
+  const userGroups: string[] = auth.userData?.profile?.groups || [];
+
+  const tabs = translateOptionsToMenu(
+    options,
+    'main',
+    (path, translationAndGroup) => ({
+      link: <a href={path}>{translationAndGroup.en}</a>,
+    }),
+    userGroups,
+  );
 
   const rightActions = [
     {
@@ -56,7 +74,17 @@ export const Navbar = ({ options }: { options: Options }): Node => {
       text: auth.userData?.profile.name || '',
       icon: <i className="fas fa-user" />,
       items: [
-        ...translateOptionsToMenu(options, 'subLogin'),
+        ...translateOptionsToMenu(
+          options,
+          'subLogin',
+          (path, translationAndGroup) => ({
+            label: translationAndGroup.en,
+            onClick: () => {
+              location.href = path;
+            },
+          }),
+          userGroups,
+        ),
         {
           label: 'Log out',
           onClick: () => {
@@ -66,6 +94,7 @@ export const Navbar = ({ options }: { options: Options }): Node => {
       ],
     },
   ];
+
   return (
     <CoreUINavbar rightActions={rightActions} tabs={tabs} role="navigation" />
   );

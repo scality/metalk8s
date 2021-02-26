@@ -14,7 +14,8 @@ import { logOut } from './auth/logout';
 const EVENTS_PREFIX = 'solutions-navbar--';
 export const AUTHENTICATED_EVENT: string = EVENTS_PREFIX + 'authenticated';
 
-type MenuItems = {[path: string]: { en: string, fr: string, roles?: string[] }}
+export type TranslationAndGroups = { en: string, fr: string, groups?: string[] };
+export type MenuItems = {[path: string]: TranslationAndGroups }
 
 export type Options = { main: MenuItems, subLogin: MenuItems };
 
@@ -94,6 +95,8 @@ const SolutionsNavbar = ({
         userStore: new WebStorageStateStore({ store: localStorage }),
       });
 
+      const computedMenuOptions = options ? JSON.parse(options) : config.options || { main: {}, subLogin: {} };
+      
       if (setUserManager) {
         setUserManager(userManager);
       }
@@ -151,7 +154,7 @@ const SolutionsNavbar = ({
               logo_path: '/brand/assets/branding-dark.svg',
             }}
           >
-            <Navbar options={options ? JSON.parse(options) : config.options || { main: {}, subLogin: {} }} />
+            <Navbar options={computedMenuOptions} />
           </StyledComponentsProvider>
         </AuthProvider>
       );

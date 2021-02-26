@@ -62,7 +62,7 @@ describe('navbar', () => {
             />
         )
         //V
-        expect(screen.getByText('loading')).toBeInTheDocument();
+        expect(screen.queryByText('loading')).toBeInTheDocument();
     })
 
     it('should display an error state when it failed to resolves its configuration', async () => {
@@ -88,7 +88,7 @@ describe('navbar', () => {
         //V
         await waitForLoadingToFinish();
 
-        expect(screen.getByText(/Failed to load navbar configuration/i)).toBeInTheDocument();
+        expect(screen.queryByText(/Failed to load navbar configuration/i)).toBeInTheDocument();
     })
 
     it('should display expected menu when it resolved its configuration', async () => {
@@ -138,6 +138,44 @@ describe('navbar', () => {
         await waitForLoadingToFinish();
         //V
         expect(screen.getByText(/Platform/i)).toBeInTheDocument();
+    })
+
+    it('should not display a restrained menu when an user is not authorized' , async () => {
+        //S
+        
+        // This is a hack to workarround the following issue : MSW return lower cased content-type header, 
+        // oidc-client is internally using XMLHttpRequest to perform queries and retrieve response header Content-Type using 'XMLHttpRequest.prototype.getResponseHeader'.
+        // XMLHttpRequest.prototype.getResponseHeader is case sensitive and hence when receiving a response with header content-type it is not mapping it to Content-Type
+        const caseSensitiveGetResponseHeader = XMLHttpRequest.prototype.getResponseHeader;
+        XMLHttpRequest.prototype.getResponseHeader = function(header) {
+            if (header === 'Content-Type') {
+                return caseSensitiveGetResponseHeader.call(this, 'content-type');
+            }
+            return caseSensitiveGetResponseHeader.call(this, header);
+        }
+
+        render(<solutions-navbar 
+            oidc-provider-url="https://mocked.ingress/oidc" 
+            client-id="metalk8s-ui"
+            response-type="id_token"
+            redirect-url="http://localhost:8082"
+            scopes="openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
+            options={
+                JSON.stringify({
+                    "main": {
+                        "http://localhost:8082/":{ "en": "Platform", "fr": "Plateforme" },
+                        "http://localhost:8082/test":{ "en": "Test", "fr": "Test", groups: ['group'] }
+                    },
+                    "subLogin": {}
+                })
+            }
+            />
+        )
+        //E
+        await waitForLoadingToFinish();
+
+        expect(screen.queryByText(/Platform/i)).toBeInTheDocument();
+        expect(screen.queryByText(/Test/i)).not.toBeInTheDocument();
     })
 
     afterAll(() => server.close());
