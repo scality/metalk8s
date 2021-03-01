@@ -46,7 +46,7 @@
 - Improve error handling when providing invalid CA minion in Bootstrap
   configuration file
   (PR [#3065](https://github.com/scality/metalk8s/pull/3065))
-  
+
 - [#2925](https://github.com/scality/metalk8s/issues/2925) - Compare node metrics with average from MetalK8s UI
   (PR [#3078](https://github.com/scality/metalk8s/pull/3078))
 
@@ -60,6 +60,9 @@
 
 - Improve the upgrade robustness when the platform is a bit slow
   (PR [#3105](https://github.com/scality/metalk8s/pull/3105))
+
+- Use HTTPS endpoints for kube-controller-manager and kube-scheduler
+  (PR [#3152](https://github.com/scality/metalk8s/pull/3152))
 
 ### Bug fixes
 
