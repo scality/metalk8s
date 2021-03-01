@@ -80,6 +80,25 @@
 
 ## Release 2.7.3 (in development)
 
+### Security fixes
+- Due to vulnerabilities (
+[CVE-2021-3197](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2021-3197),
+[CVE-2021-25281](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2021-25281),
+[CVE-2021-25282](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2021-25282),
+[CVE-2021-25283](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2021-25283),
+[CVE-2021-25284](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2021-25284),
+[CVE-2021-3148](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2021-3148),
+[CVE-2020-35662](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2020-35662),
+[CVE-2021-3144](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2021-3144),
+[CVE-2020-28972](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2020-28972)
+and
+[CVE-2020-28243](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2020-28243))
+affecting all Salt versions inferior to `3002.5`, this release ships with
+all Saltstack updated to `3002.5`.
+
+    Upgrade Salt to version `3002.5`
+    (PR [#3158](https://github.com/scality/metalk8s/pull/3158))
+
 ## Release 2.7.2
 ### Enhancements
 - Bump Kubernetes version to 1.18.16
