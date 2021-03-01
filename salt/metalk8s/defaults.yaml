@@ -59,7 +59,76 @@ repo:
   port: 8080
   registry_endpoint: 'metalk8s-registry-from-config.invalid'
 
-networks: {}
+networks:
+  listening_process_per_role:
+    bootstrap:
+      control_plane_ip:4505:
+        expected: salt-master
+        description: Salt master publisher
+      control_plane_ip:4506:
+        expected: salt-master
+        description: Salt master request server
+      control_plane_ip:4507:
+        expected: salt-api
+        description: Salt API
+      control_plane_ip:8080:
+        expected: nginx
+        description: MetalK8s repository
+      control_plane_ip:8443:
+        expected: kube-proxy
+        description: Control plane nginx ingress
+    master:
+      0.0.0.0:6443:
+        expected: kube-apiserver
+        description: Kubernetes apiserver
+      127.0.0.1:7080:
+        expected: nginx
+        description: Apiserver proxy health check
+      127.0.0.1:7443:
+        expected: nginx
+        description: Apiserver proxy
+      control_plane_ip:10257:
+        expected: kube-controller-manager
+        description: Kubernetes controller manager
+      control_plane_ip:10259:
+        expected: kube-scheduler
+        description: Kubernetes scheduler
+    etcd:
+      127.0.0.1:2379:
+        expected: etcd
+        description: Etcd client
+      control_plane_ip:2379:
+        expected: etcd
+        description: Etcd client
+      control_plane_ip:2380:
+        expected: etcd
+        description: Etcd peer
+      127.0.0.1:2381:
+        expected: etcd
+        description: Etcd metrics
+      control_plane_ip:2381:
+        expected: etcd
+        description: Etcd metrics
+    # Apply to all nodes
+    node:
+      127.0.0.1:9099:
+        expected: calico-node
+        description: Calico node
+      0.0.0.0:9100:
+        expected: node_exporter
+        description: Node exporter
+      127.0.0.1:10248:
+        expected: kubelet
+        description: Kubelet health check
+      0.0.0.0:10249:
+        expected: kube-proxy
+        description: Kubernetes proxy metrics
+      control_plane_ip:10250:
+        expected: kubelet
+        description: Kubelet
+      0.0.0.0:10256:
+        expected: kube-proxy
+        description: Kubernetes proxy health check
 
 kubelet:
   container_engine: "containerd"
