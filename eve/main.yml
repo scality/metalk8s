@@ -1661,6 +1661,7 @@ stages:
           doStepIf: "%(prop:patch_present)s"
           stage_names:
             - snapshot-single-node-upgrades
+            - snapshot-multi-node-upgrades
             - single-node-downgrade-promoted-centos
 
   lifecycle-minor-version:
