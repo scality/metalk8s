@@ -324,7 +324,9 @@ function Table({
         </div>
         <Body {...getTableBodyProps()}>
           {data.length === 0 ? (
-            <EmptyTable>{intl.translate('no_volume_found')}</EmptyTable>
+            <EmptyTable useDiv={true}>
+              {intl.translate('no_volume_found')}
+            </EmptyTable>
           ) : null}
           {/* <AutoSizer> is a <div/> so it breaks the table layout, 
           we need to use <div/> for all the parts of table(thead, tbody, tr, td...) and retrieve the defaullt styles by className. */}
