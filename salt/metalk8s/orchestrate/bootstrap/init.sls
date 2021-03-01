@@ -1,13 +1,22 @@
 {# Because of the grain lookup below, the bootstrap minion *must* be available
    before invoking this SLS, otherwise rendering will fail #}
-{%- set bootstrap_control_plane_ip = salt.saltutil.cmd(
+{%- set grains_ret = salt.saltutil.cmd(
         tgt=pillar.bootstrap_id,
         fun='grains.get',
         kwarg={
             'key': 'metalk8s:control_plane_ip',
         },
-    )[pillar.bootstrap_id]['ret']
+    )
 %}
+{%- if pillar.bootstrap_id not in grains_ret %}
+  {{- raise(
+        "Failed to get grain metalk8s:control_plane_ip from '" ~ pillar.bootstrap_id
+        ~ "' minion. Result: " ~ grains_ret | tojson
+      )
+  }}
+{%- else %}
+  {%- set bootstrap_control_plane_ip = grains_ret[pillar.bootstrap_id]['ret'] %}
+{%- endif %}
 
 {%- if 'metalk8s' in pillar
         and 'nodes' in pillar.metalk8s
