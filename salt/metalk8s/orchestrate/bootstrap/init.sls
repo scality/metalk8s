@@ -9,16 +9,6 @@
     )[pillar.bootstrap_id]['ret']
 %}
 
-{%- set bootstrap_workload_plane_ip = salt.saltutil.cmd(
-        tgt=pillar.bootstrap_id,
-        fun='grains.get',
-        kwarg={
-            'key': 'metalk8s:workload_plane_ip',
-        },
-    )[pillar.bootstrap_id]['ret']
-%}
-
-
 {%- if 'metalk8s' in pillar
         and 'nodes' in pillar.metalk8s
         and pillar.bootstrap_id in pillar.metalk8s.nodes
