@@ -167,6 +167,10 @@ export const GraphTitle = styled.div`
   font-weight: ${fontWeight.bold};
   color: ${(props) => props.theme.brand.textPrimary};
   padding: ${padding.base} 0 0 ${padding.larger};
+  display: flex;
+  .sc-loader {
+    padding-left: ${padding.small};
+  }
 `;
 
 export const GraphWrapper = styled.div`
