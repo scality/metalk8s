@@ -1,12 +1,22 @@
+import os.path
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 from parameterized import parameterized
 from salt.exceptions import CommandExecutionError
+import yaml
 
 import metalk8s_network
 
 from tests.unit import mixins
+from tests.unit import utils
+
+
+YAML_TESTS_FILE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "files", "test_metalk8s_network.yaml"
+)
+with open(YAML_TESTS_FILE) as fd:
+    YAML_TESTS_CASES = yaml.safe_load(fd)
 
 
 class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
@@ -228,3 +238,31 @@ class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 self.assertEqual(
                     result, metalk8s_network.get_mtu_from_ip("10.200.0.42")
                 )
+
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["get_listening_processes"])
+    def test_get_listening_processes(
+        self, result, net_conns_ret=None, process_ret=None
+    ):
+        """
+        Tests the return of `get_listening_processes` function
+        """
+        net_conns_return = []
+        for net_conn in net_conns_ret or []:
+            sconn_mock = MagicMock()
+            sconn_mock.status = net_conn.get("status", "LISTEN")
+            sconn_mock.laddr = net_conn.get("laddr")
+            sconn_mock.pid = net_conn.get("pid")
+            net_conns_return.append(sconn_mock)
+
+        process_return = {}
+        for pid, name in (process_ret or {}).items():
+            process_return[pid] = MagicMock()
+            process_return[pid].name.return_value = name
+
+        net_conns_mock = MagicMock(return_value=net_conns_return)
+        process_mock = MagicMock(side_effect=process_return.get)
+
+        with patch("psutil.net_connections", net_conns_mock), patch(
+            "psutil.Process", process_mock
+        ):
+            self.assertEqual(metalk8s_network.get_listening_processes(), result)
