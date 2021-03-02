@@ -1,14 +1,14 @@
-Pod and Service CIDR conflicts
+Pod and Service CIDR Conflicts
 ==============================
 
-If after installating a MetalK8s cluster you notice that the Pod-to-Pod
-communication has routing issues, perform the following checks:
+If, after installing a MetalK8s cluster you notice routing issues in
+pod-to-pod communication:
 
 #. Check the configured values for the internal pod and service networks.
 
    .. code-block:: shell
 
-      [root@bootstrap vagrant]# salt-call pillar.get networks
+      [root@bootstrap]# salt-call pillar.get networks
       local:
           ----------
           control_plane:

@@ -3,10 +3,10 @@
 Volume Management
 =================
 
-This chapter covers MetalK8s volume management operations, from
-creating a StorageClass, to creating and deleting a volume both from
-the CLI and the UI to use persistent data storage within a
-MetalK8s Cluster.
+This section covers MetalK8s volume management operations, from
+creating a StorageClass, to creating and deleting a volume using
+the CLI or the UI. The volumes enable the use of persistent data
+storage within a MetalK8s Cluster.
 
 .. toctree::
 

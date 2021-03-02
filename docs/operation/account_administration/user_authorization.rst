@@ -4,19 +4,19 @@ User Authorization
 Kubernetes API
 --------------
 
-To authorize specific users and/or groups against Kubernetes API, the
-:term:`API Server` relies on *RBAC* (Role-Based Access Control), through the
+To authorize users and groups against the Kubernetes API, the
+:term:`API Server` relies on RBAC (Role-Based Access Control), through the
 use of special API objects:
 
-- **(Cluster)Roles**, which define specific permissions on a set of API
-  resources,
-- **(Cluster)RoleBindings**, which map a user or group to a set of
-  (Cluster)Roles.
+- **Roles** and **ClusterRoles**, which define specific permissions on a set
+  of API resources,
+- **RoleBindings** and **ClusterRoleBindings**, which map a user or group to a
+  set of Roles or ClusterRoles.
 
 .. note::
 
    MetalK8s includes pre-provisioned ClusterRoles. Platform administrators can
-   create new (Cluster)Roles or refer to existing ones.
+   create new Roles or ClusterRoles or refer to existing ones.
 
 ClusterRoles
 ************
@@ -58,8 +58,8 @@ documentation.
 
 .. _bind-user-to-role:
 
-(Cluster)RoleBindings
-*********************
+ClusterRoleBindings
+*******************
 
 To bind one or more users to an existing ClusterRole in all namespaces, follow
 this procedure.

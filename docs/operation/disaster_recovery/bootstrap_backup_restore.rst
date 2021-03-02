@@ -1,33 +1,33 @@
 Bootstrap Node Backup and Restoration
 =====================================
 
-This section describes how to manually back up a MetalK8s bootstrap node,
-and how to restore a bootstrap node from such backup.
+This topic describes how to back up a MetalK8s bootstrap node manually,
+and how to restore a bootstrap node from such a backup.
 
 .. note::
 
-   A backup is run automatically:
+   A backup is generated automatically:
 
    - at the end of the bootstrap,
 
-   - at the beginning of the upgrade/downgrade,
+   - at the beginning of an upgrade or downgrade,
 
-   - at the end of the upgrade/downgrade,
+   - at the end of an upgrade downgrade,
 
    - at the end of a bootstrap restoration.
 
-Backing up a Bootstrap Node
+Backing Up a Bootstrap Node
 ***************************
 
 A backup file is generated at the end of the bootstrap.
 
-To create a new backup file run the following command:
+To create a new backup file, run the following command:
 
-.. code::
+.. parsed-literal::
 
-    /srv/scality/metalk8s-X.X.X/backup.sh
+    /srv/scality/metalk8s-|version|/backup.sh
 
-Backup archives are stored in ``/var/lib/metalk8s/``.
+Backup archives are stored in /var/lib/metalk8s/.
 
 Restoring a Bootstrap Node
 **************************
@@ -35,17 +35,17 @@ Restoring a Bootstrap Node
 .. warning::
 
    You must have a highly available control plane with at least
-   3 members in the ``etcd`` cluster (including the failed bootstrap node),
+   three members in the etcd cluster (including the failed bootstrap node),
    to use the restore script.
 
 .. note::
 
    To restore a bootstrap node you need a backup archive and MetalK8s ISOs.
    All the ISOs referenced in the bootstrap configuration file (located in
-   ``/etc/metalk8s/bootstrap.yaml``) must be present.
+   /etc/metalk8s/bootstrap.yaml) must be present.
 
-#. Unregister the unreachable ``etcd`` member from the cluster by running
-   the following commands from a working node with the ``etcd`` role:
+#. Unregister the unreachable etcd member from the cluster by running
+   the following commands from a working node with the etcd role:
 
    .. code::
 
@@ -68,9 +68,9 @@ Restoring a Bootstrap Node
          --cert /etc/kubernetes/pki/etcd/server.crt \
          member remove <etcd_id>
 
-#. Since multiple bootstrap nodes are not supported for the moment, remove
-   the old bootstrap node before performing the restoration by running the
-   following commands from a working Node with ``master`` role:
+#. Because multiple bootstrap nodes are not supported, remove the old
+   bootstrap node before performing the restoration by running the
+   following commands from a working node with a master role:
 
    .. code::
 
@@ -84,13 +84,10 @@ Restoring a Bootstrap Node
 
 #. Mount the ISO.
 
-#. Restore the bootstrap node.
+#. Restore the bootstrap node. Replace ``<backup_archive>`` with the path to
+   the backup archive you want to use, and ``<node_ip>`` with a
+   control-plane IP of one control-plane node.
 
    .. code::
 
-      /srv/scality/metalk8s-X.X.X/restore.sh --backup-file <backup_archive> --apiserver-node-ip <node_ip>
-
-.. note::
-
-    Replace ``<backup_archive>`` with the path to the backup archive you want
-    to use, and ``<node_ip>`` with a control-plane IP of one control-plane node.
+      /srv/scality/metalk8s-|version|/restore.sh --backup-file <backup_archive> --apiserver-node-ip <node_ip>

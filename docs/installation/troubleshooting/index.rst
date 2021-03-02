@@ -1,10 +1,10 @@
-.. _Troubleshooting Installation Guide:
+.. _Troubleshooting Installation Section:
 
 Troubleshooting
 ===============
 
-This guide covers some of the common issues users face during and
-after a MetalK8s installation. If your issue does not figure in this guide,
+This section describes common issues users face during and after a
+MetalK8s installation. If your issue is not presented here,
 reach out to Scality support, or create a
 `Github issue <https://github.com/scality/metalk8s/issues>`_.
 

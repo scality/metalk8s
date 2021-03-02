@@ -267,6 +267,6 @@ Validate the install
      storage volumes for both Prometheus and Alertmanager have been successfully
      provisioned.
 
-- If you encouter an error during installation or have issues
+- If you encounter an error during installation or have issues
   validating a fresh MetalK8s installation, refer to the
-  :ref:`Troubleshooting guide <Troubleshooting Installation Guide>`.
+  :ref:`Troubleshooting section <Troubleshooting Installation Section>`.

@@ -1,22 +1,22 @@
-Volume Management using the CLI
+Volume Management Using the CLI
 ===============================
 
-This section describes how to create and delete a MetalK8s **Volume**
-using the **CLI**.
+This topic describes how to create and delete a MetalK8s volume
+using the CLI.
 To use persistent storage in a MetalK8s cluster, you need to create
-**Volume** objects.
+volume objects.
 
 .. important::
 
-   **StorageClass** objects must be registered in your cluster to create
+   StorageClass objects must be registered in your cluster to create
    volumes. For more information refer to :doc:`/operation/volume_management/storageclass_creation`.
 
 Creating a Volume
 -----------------
 
-#. Create a **Volume** manifest.
+#. Create a volume manifest.
 
-   You can define a new **Volume** using the following template:
+   You can define a new volume using the following template:
 
    .. code-block:: yaml
 
@@ -35,19 +35,18 @@ Creating a Volume
 
    - **name**: the name of your volume, must be unique.
    - **nodeName**: the name of the node where the volume will be located.
-   - **storageClassName**: the **StorageClass** to use.
+   - **storageClassName**: the StorageClass to use.
    - **mode**: describes how the volume is intended to be consumed, either
      Block or Filesystem (default to Filesystem if not specified).
    - **devicePath**: path to the block device (for example: `/dev/sda1`).
 
-#. Create the **Volume**.
+#. Create the volume.
 
    .. code-block:: shell
 
       root@bootstrap $ kubectl apply -f volume.yml
 
-
-#. Check that the **Volume** has been created.
+#. Check that the volume has been created.
 
    .. code-block:: shell
 
@@ -60,12 +59,12 @@ Deleting a Volume
 
 .. note::
 
-   A **Volume** object can only be deleted if there is no backing storage,
-   or if the volume is not in use. Otherwise, the volume will simply be
+   A volume object can only be deleted if there is no backing storage,
+   or if the volume is not in use. Otherwise, the volume will be
    marked for deletion and remain available until one of the conditions
    is met.
 
-#. Delete a **Volume**.
+#. Delete a volume.
 
    .. code-block:: shell
 
@@ -73,7 +72,7 @@ Deleting a Volume
       volume.storage.metalk8s.scality.com <volume_name> deleted
 
 
-#. Check that the **Volume** has been deleted.
+#. Check that the volume has been deleted.
 
    .. note::
 

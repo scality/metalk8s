@@ -1,10 +1,10 @@
 MetalK8s Cluster Downgrade
 ==========================
 
-The MetalK8s Cluster Downgrade is handled via utility scripts which are
+MetalK8s clusters are downgraded using the utility scripts that are
 packaged with your current installation.
-This section describes how to downgrade MetalK8s with all the components
-that are included in the stack.
+This topic describes downgrading MetalK8s and all components included
+in the stack.
 
 Supported Versions
 ******************
@@ -40,7 +40,7 @@ with the current installation.
 
    /srv/scality/metalk8s-X.X.X/iso-manager.sh -a <path_to_iso>
 
-Pre-checks
+Pre-Checks
 ----------
 
 You can test if your environment will successfully downgrade with the following
@@ -61,8 +61,6 @@ changes to be carried out in your MetalK8s cluster.
 
 Downgrade
 *********
-
-#. Ensure that the prerequisites have been met.
 
 #. Run the utility script shipped with the *current* installation
    providing it with the destination version.

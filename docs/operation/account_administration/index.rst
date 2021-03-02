@@ -1,7 +1,7 @@
 Account Administration
 ======================
 
-This chapter covers MetalK8s account administration operations, from
+This section covers MetalK8s account administration operations, from
 user authentication and identity management to user authorization.
 
 .. toctree::

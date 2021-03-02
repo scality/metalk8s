@@ -1,17 +1,17 @@
 MetalK8s Cluster Upgrade
 ========================
 
-The MetalK8s Cluster Upgrade is handled via utility scripts which are packaged
-with every new release.
-This section describes how to upgrade MetalK8s with all the components
-that are included in the stack.
+MetalK8s clusters are upgraded using the utility scripts packaged with
+every new release.
+This topic describes upgrading MetalK8s and all components included
+in the stack.
 
 Supported Versions
 ******************
 
 .. note::
 
-    MetalK8s supports upgrade of **at most** one minor version at a time.
+    MetalK8s supports upgrade of *at most* one minor version at a time.
     For example:
 
     - from 2.4.0 to 2.4.4,
@@ -27,18 +27,17 @@ Prerequisites
 ISO Preparation
 ---------------
 
-Provision a new **MetalK8s** ISO by running the utility script shipped
+Provision a new MetalK8s ISO by running the utility script shipped
 with the current installation.
 
 .. code::
 
    /srv/scality/metalk8s-X.X.X/iso-manager.sh -a <path_to_iso>
 
-Pre-checks
+Pre-Checks
 ----------
 
-You can test if your environment will successfully upgrade with the following
-command:
+Use the ``--dry-run`` option to validate your environment for upgrade:
 
 .. code::
 
@@ -52,11 +51,8 @@ the changes to be carried out in your MetalK8s cluster.
     The version prefix metalk8s-**X.Y.Z** must be the *new* MetalK8s version
     you want to upgrade to.
 
-
 Upgrade
 *******
-
-#. Ensure that the prerequisites have been met.
 
 #. Run the utility script shipped with the *new* version you want to
    upgrade to.

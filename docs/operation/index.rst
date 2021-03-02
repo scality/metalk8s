@@ -10,15 +10,15 @@ do not have a working MetalK8s_ setup.
 
 .. toctree::
 
-   solutions
+   cluster_monitoring/index
+   account_administration/index
+   cluster_and_service_configuration
+   volume_management/index
    upgrade
    downgrade
    disaster_recovery/index
+   solutions
    changing_node_hostname
-   volume_management/index
-   account_administration/index
-   cluster_and_service_configuration
-   cluster_monitoring/index
    metalk8s-utils
    listening_processes
    troubleshooting/index

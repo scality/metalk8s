@@ -1,23 +1,20 @@
 Bootstrap Installation Errors
 =============================
 
-Bootstrap installation fails with no straightforward reason
------------------------------------------------------------
+**Bootstrap installation fails for no obvious reason**
 
-If during a MetalK8s installation you encounter a failure and the console
-output does not provide enough information to identify the cause of
-the failure, re-run the installation with the verbose flag (``--verbose``).
+If the Metalk8s installation fails and the console output does not provide
+enough information to identify the cause of the failure, re-run the
+installation with the verbose flag (``--verbose``).
 
 .. parsed-literal::
 
    root@bootstrap $ /srv/scality/metalk8s-|version|/bootstrap.sh --verbose
 
-Errors after restarting the bootstrap node
-------------------------------------------
+**Errors after restarting the bootstrap node**
 
-If you reboot the bootstrap node and for some reason some containers
-(especially the salt-master container) refuse to start, perform the
-following checks:
+If you reboot the bootstrap node and some containers (especially the
+salt-master container) do not start, perform the following checks:
 
 #. Ensure that the MetalK8s ISO is mounted properly.
 
@@ -38,9 +35,8 @@ following checks:
        Succeeded: 3
        Failed:    0
 
-Bootstrap fails and console log is unscrollable
------------------------------------------------
+**Bootstrap fails and console log is unscrollable**
 
-If during a MetalK8s installation the bootstrap process fails and the console
-output is unscrollable, consult the Bootstrap logs in
-``/var/log/metalk8s-bootstrap.log``.
+If the bootstrap process fails during MetalK8s installation and the console
+output is unscrollable, consult the bootstrap logs in
+``/var/log/metalk8s/bootstrap.log``.
