@@ -1,6 +1,34 @@
 # CHANGELOG
 
 ## Release 2.7.3 (in development)
+### Enhancements
+- [#2992](https://github.com/scality/metalk8s/issues/2992) - Check for conflicting
+  packages (`docker`, `docker-ce` and `containerd.io`) on target machines before
+  installation (bootstrap or expansion)
+  (PR [#3153](https://github.com/scality/metalk8s/pull/3153), backport of
+  PR [#3050](https://github.com/scality/metalk8s/pull/3050))
+
+- [#3067](https://github.com/scality/metalk8s/issues/3067) - Check for conflicting
+  services (`firewalld`) already started or enabled on target machines before
+  installation (bootstrap or expansion)
+  (PR [#3153](https://github.com/scality/metalk8s/pull/3153), backport of
+  PR [#3069](https://github.com/scality/metalk8s/pull/3069))
+
+- Improve error handling when providing invalid CA minion in Bootstrap
+  configuration file
+  (PR [#3153](https://github.com/scality/metalk8s/pull/3153), backport of
+  PR [#3065](https://github.com/scality/metalk8s/pull/3065))
+
+- [kubernetes/kubernetes#57534](https://github.com/kubernetes/kubernetes/issues/57534) -
+  Check if a route exists for the Service IPs CIDR
+  (PR [#3153](https://github.com/scality/metalk8s/pull/3153), backport of
+  PR [#3076](https://github.com/scality/metalk8s/pull/3076))
+
+### Bug fixes
+- Do not install `containerd.io` instead of `containerd` and `runc` when this
+  package is available in one configured repository
+  (PR [#3153](https://github.com/scality/metalk8s/pull/3153), backport of
+  PR [#3050](https://github.com/scality/metalk8s/pull/3050))
 
 ### Security fixes
 - Due to vulnerabilities (

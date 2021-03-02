@@ -156,24 +156,32 @@ def list_pkg_dependents(
     return all_pkgs
 
 
-def check_pkg_availability(pkgs_info):
+def check_pkg_availability(pkgs_info, exclude=None):
     '''
     Check that provided packages and their dependencies are available
 
     pkgs_info
         Value of pillar key `repo:packages` to consider for the requiring
         packages to check (format {"<name>": {"version": "<version>"}, ...})
+    exclude
+        List of package to exclude (e.g.: containerd.io)
     '''
     for name, info in pkgs_info.items():
         pkg_name = name
         if info.get('version'):
             pkg_name += '-' + str(info['version'])
 
-        ret = __salt__['cmd.run_all']([
+        cmd = [
             'yum', 'install', pkg_name,
             '--setopt', 'tsflags=test', '--assumeyes',
             '--disableplugin=versionlock'
-        ])
+        ]
+        if exclude:
+            if isinstance(exclude, list):
+                exclude = ','.join(exclude)
+            cmd.extend(['--setopt', 'exclude={}'.format(exclude)])
+
+        ret = __salt__['cmd.run_all'](cmd)
 
         if ret['retcode'] != 0:
             raise CommandExecutionError(

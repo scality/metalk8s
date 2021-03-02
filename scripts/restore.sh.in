@@ -343,6 +343,10 @@ run "Installing mandatory packages" install_packages "${PACKAGES[@]}"
 run "Configuring Salt minion to run in local mode" configure_salt_minion_local_mode
 
 run "Restoring MetalK8s configurations" restore_metalk8s_conf
+run "Ensure archive is available" ensure_archives_mounted
+
+run "Checking local node" check_local_node
+
 run "Restoring CAs certificates and keys" restore_cas
 run "Configuring salt-master" configure_salt_master
 run "Pushing CAs to salt mine" push_cas

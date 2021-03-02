@@ -1,3 +1,291 @@
+node:
+  # 1. Success: Nominal
+  - &node_nominal
+    packages_ret: True
+    services_ret: True
+    route_exists_ret: True
+    pillar:
+      networks:
+        service: 10.96.0.0/12
+    result: True
+
+  # 2. Success: Service CIDR from command-line
+  - <<: *node_nominal
+    pillar: {}
+    service_cidr: 10.96.0.0/12
+
+  # 3. Error: Packages
+  - &node_packages_error
+    <<: *node_nominal
+    packages_ret: "Package abcd got an error because of banana"
+    expect_raise: True
+    result: "Node my_node_1: Package abcd got an error because of banana"
+  - <<: *node_packages_error
+    raises: False
+    expect_raise: False
+
+  # 4. Error: Services
+  - packages_ret: True
+    services_ret: "Service abcd got an error because of penguin"
+    expect_raise: True
+    result: "Node my_node_1: Service abcd got an error because of penguin"
+
+  # 5. Error: Route for Service CIDR
+  - <<: *node_nominal
+    route_exists_ret: No route exists for banana
+    expect_raise: True
+    # NOTE: We shorten the exception message for ease of use as a regex.
+    result: >-
+      Node my_node_1: Invalid networks:service CIDR - No route exists for
+      banana.
+  - <<: *node_nominal
+    raises: False
+    route_exists_ret: No route exists for banana
+    result: >-
+      Node my_node_1: Invalid networks:service CIDR - No route exists for
+      banana. Please make sure to have either a default route or a dummy
+      interface and route for this range (for details, see
+      https://github.com/kubernetes/kubernetes/issues/57534#issuecomment-527653412).
+
+  # 6. Error: Combined errors
+  - <<: *node_nominal
+    packages_ret: "Package abcd got an error because of banana"
+    services_ret: "Service abcd got an error because of penguin"
+    expect_raise: True
+    result: |-
+      Node my_node_1: Package abcd got an error because of banana
+      Service abcd got an error because of penguin
+  - <<: *node_nominal
+    packages_ret: "Package abcd got an error because of banana"
+    route_exists_ret: "No route exists for penguin"
+    expect_raise: True
+    result: |-
+      Node my_node_1: Package abcd got an error because of banana
+      Invalid networks:service CIDR - No route exists for penguin
+
+packages:
+  # 1. Success: No conflicting packages to check
+  - conflicting_packages: {}
+    result: True
+
+  # 2. Success: Conflicting packages not installed
+  - conflicting_packages:
+      my-not-installed-package: null
+      my-not-installed-package2: null
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    result: True
+  # 2. bis
+  - conflicting_packages: my-not-installed-package
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    result: True
+  # 2. ter
+  - conflicting_packages:
+     - my-not-installed-package
+     - my-not-installed-package2
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    result: True
+
+  # 3. Success: Conflicting packages (from map) not installed
+  - get_map_ret:
+      conflicting_packages:
+        my-not-installed-package: null
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    result: True
+
+  # 4. Success: Conflicting packages in specific version not installed
+  - conflicting_packages:
+      my-installed-package:
+        - 1.2.4
+        - 1.2.5
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    result: True
+
+  # 5. Error: Conflicting packages installed
+  - conflicting_packages:
+      my-installed-package: null
+      my-not-installed-package: null
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    expect_raise: True
+    result: |-
+      Package my-installed-package-1.2.3 conflicts with MetalK8s installation, please remove it.
+  # 5. bis
+  - conflicting_packages: my-installed-package
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    expect_raise: True
+    result: |-
+      Package my-installed-package-1.2.3 conflicts with MetalK8s installation, please remove it.
+  # 5. ter
+  - conflicting_packages:
+      - my-not-installed-package
+      - my-installed-package
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    expect_raise: True
+    result: |-
+      Package my-installed-package-1.2.3 conflicts with MetalK8s installation, please remove it.
+
+  # 6. Error: Conflicting packages in specific version installed
+  - conflicting_packages:
+      my-installed-package: 1.2.3
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    expect_raise: True
+    result: |-
+      Package my-installed-package-1.2.3 conflicts with MetalK8s installation, please remove it.
+  # 6. bis
+  - conflicting_packages:
+      my-installed-package:
+        - 0.1.3
+        - 1.2.4
+        - 1.2.3
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    expect_raise: True
+    result: |-
+      Package my-installed-package-1.2.3 conflicts with MetalK8s installation, please remove it.
+  # 6. ter (no raise)
+  - conflicting_packages:
+      my-installed-package:
+        - 0.1.3
+        - 1.2.4
+        - 1.2.3
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+    raises: False
+    result: |-
+      Package my-installed-package-1.2.3 conflicts with MetalK8s installation, please remove it.
+
+  # 7. Error: Multiple conflicting package installed
+  - conflicting_packages:
+      my-installed-package1: null
+      my-installed-package2:
+        - 5.6.7
+    list_pkgs_ret:
+      my-installed-package1:
+        - version: 1.2.3
+      my-installed-package2:
+        - version: 5.6.7
+    expect_raise: True
+    result: |-
+      Package my-installed-package1-1.2.3 conflicts with MetalK8s installation, please remove it.
+      Package my-installed-package2-5.6.7 conflicts with MetalK8s installation, please remove it.
+
+  # 8. Error: Multiple package of same version installed
+  - conflicting_packages:
+      my-installed-package: null
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+        - version: 4.5.6
+    expect_raise: True
+    result: |-
+      Package my-installed-package-1.2.3 conflicts with MetalK8s installation, please remove it.
+      Package my-installed-package-4.5.6 conflicts with MetalK8s installation, please remove it.
+  # 8. bis
+  - conflicting_packages:
+      my-installed-package: 4.5.6
+    list_pkgs_ret:
+      my-installed-package:
+        - version: 1.2.3
+        - version: 4.5.6
+    expect_raise: True
+    result: |-
+      Package my-installed-package-4.5.6 conflicts with MetalK8s installation, please remove it.
+
+services:
+  # 1. Success: No conflicting services to check
+  - conflicting_services: []
+    result: True
+
+  # 2. Success: Conflicting services not installed
+  - conflicting_services:
+      - my-not-started-service
+      - my-not-started-service2
+    service_status_ret:
+      my-not-started-service: False
+      my-not-started-service2: False
+    service_disabled_ret:
+      my-not-started-service: True
+      my-not-started-service2: True
+    result: True
+  # 2. bis
+  - conflicting_services: my-not-started-service
+    service_status_ret:
+      my-not-started-service: False
+    service_disabled_ret:
+      my-not-started-service: True
+    result: True
+
+  # 3. Success: Conflicting service (from map) not started
+  - get_map_ret:
+      conflicting_services:
+        - my-not-started-service
+    service_status_ret:
+      my-not-started-service: False
+    service_disabled_ret:
+      my-not-started-service: True
+    result: True
+
+  # 4. Error: Conflicting service started
+  - conflicting_services:
+      - my-started-service
+      - my-not-started-service
+    service_status_ret:
+      my-started-service: True
+      my-not-started-service: False
+    service_disabled_ret:
+      my-started-service: False
+      my-not-started-service: True
+    expect_raise: True
+    result: |-
+      Service my-started-service conflicts with MetalK8s installation, please stop and disable it.
+  # 4. bis
+  - conflicting_services: my-started-service
+    service_status_ret:
+      my-started-service: True
+    service_disabled_ret:
+      my-started-service: True
+    expect_raise: True
+    result: |-
+      Service my-started-service conflicts with MetalK8s installation, please stop and disable it.
+  # 4. ter (no raise)
+  - conflicting_services: my-started-service
+    raises: False
+    service_status_ret:
+      my-started-service: True
+    service_disabled_ret:
+      my-started-service: True
+    result: |-
+      Service my-started-service conflicts with MetalK8s installation, please stop and disable it.
+
+  # 5. Service stopped but still enabled
+  - conflicting_services: my-enabled-service
+    service_status_ret:
+      my-enabled-service: False
+    service_disabled_ret:
+      my-enabled-service: False
+    expect_raise: True
+    result: |-
+      Service my-enabled-service conflicts with MetalK8s installation, please stop and disable it.
+
 sysctl:
   - params:
       net.ipv4.ip_forward: 1
@@ -17,3 +305,39 @@ sysctl:
       net.ipv4.ip_forward: '0'
     result: 'Incorrect value for .*'
     raises: True
+
+route_exists:
+  # 1. Success: Nominal (default route)
+  - &route_exists_nominal
+    destination: 10.96.0.0/12
+    routes_ret:
+      - &default_route
+        addr_family: inet
+        destination: "0.0.0.0"
+        flags: UG
+        gateway: "10.10.0.1"
+        interface: eth0
+        netmask: "0.0.0.0"
+
+  # 2. Success: Nominal (dedicated dummy route)
+  - <<: *route_exists_nominal
+    routes_ret:
+      - <<: *default_route
+        interface: dummy0
+        destination: "10.96.0.0"
+        netmask: "255.240.0.0"
+
+  # 3. Error: No route exists
+  - <<: *route_exists_nominal
+    routes_ret: []
+    error: No route exists for 10.96.0.0/12
+
+  # 4. Error: Route found is too small
+  - <<: *route_exists_nominal
+    routes_ret:
+      - <<: *default_route
+        destination: "10.96.0.0"
+        netmask: "255.255.0.0"  # It's a /16 i.s.o. a /12
+    error: >-
+      A route was found for 10.96.0.0, but it does not match the full
+      destination network 10.96.0.0/12
