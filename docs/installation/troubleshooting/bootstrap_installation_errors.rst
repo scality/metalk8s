@@ -23,7 +23,6 @@ salt-master container) do not start, perform the following checks:
       [root@bootstrap vagrant]# mount | grep /srv/scality/metalk8s-|version|
       /home/centos/metalk8s.iso on /srv/scality/metalk8s-|version| type iso9660 (ro,relatime)
 
-
 #. If the ISO is unmounted, run the following command to check the
    the status of the ISO file and remount it automatically.
 

@@ -4,67 +4,59 @@ Volume Management Using the UI
 This topic describes how to create and delete a MetalK8s volume
 using the MetalK8s UI.
 
-.. important::
+Requirements
+------------
 
-   StorageClass objects must be registered in your cluster to create
-   volumes. For more information refer to :doc:`/operation/volume_management/storageclass_creation`.
+- StorageClass objects must be registered in your cluster to create
+  volumes. For more information refer to
+  :doc:`/operation/volume_management/storageclass_creation`.
+
+- Access the MetalK8s UI. Refer to
+  :ref:`this procedure <installation-services-admin-ui>`.
 
 Creating a Volume
 -----------------
 
-.. note::
+#. Click **Nodes** on the sidebar to access the node list.
 
-   To access the MetalK8s UI, refer to
-   :ref:`this procedure <installation-services-admin-ui>`.
+   .. image:: /operation/volume_management/img/node_list.png
 
-#. Click **Nodes** on the sidebar to access the Node list.
+#. On the node list, select the node you want to create a volume on.
 
-    .. image:: /operation/volume_management/img/node_list.png
+#. Go to the **Volumes** tab and click **+ Create Volume**.
 
-#. From the Node list, select the node you want to create
-   a volume on.
+   .. image:: /operation/volume_management/img/volume_tab.png
 
-    .. image:: /operation/volume_management/img/all_nodes.png
+#. Fill in the respective fields, and click **Create**.
 
-#. Go to the **Volumes** tab.
+   - **Name**: Denotes the volume name.
+   - **Labels**: A set of key/value pairs used by PersistentVolumeClaims to
+     select the right PersistentVolumes.
+   - **Storage Class**: Refers to
+     :doc:`/operation/volume_management/storageclass_creation`.
+   - **Type**: MetalK8s currently only supports RawBlockDevice and
+     SparseLoopDevice.
+   - **Device path**: Refers to the path of an existing storage device.
 
-    .. image:: /operation/volume_management/img/node_detail.png
+   .. image:: /operation/volume_management/img/volume_creation.png
+      :scale: 40%
 
-#. Click **+** in the top right corner to create a volume.
+#. Click **Volumes** on the sidebar to access the volume list.
+   The new volume created appears in the list.
 
-    .. image:: /operation/volume_management/img/create_volume.png
+   .. image:: /operation/volume_management/img/volume_list.png
 
-#. Fill in the respective fields.
+Deleting a Volume
+-----------------
 
-    .. image:: /operation/volume_management/img/volume_creation.png
+#. Click **Volumes** on the sidebar to access the volume list, and select
+   the volume you want to delete.
 
-    - **Name**: Denotes the volume name.
-    - **Labels**: A set of key/value pairs used by PersistentVolumeClaims to select the right PersistentVolumes.
-    - **Storage Class**: Refers to :doc:`/operation/volume_management/storageclass_creation`.
-    - **Type**: MetalK8s currently only supports RawBlockDevice and
-      SparseLoopDevice.
-    - **Device path**: Refers to the path of an existing storage device.
+#. Go to the **Overview** tab, click **Delete Volume**.
 
-#. Click **Create** on the bottom right corner.
-
-   .. image:: /operation/volume_management/img/test_volume.png
-
-   The new volume is listed in the **Volume list**.
-
-    .. image:: /operation/volume_management/img/volume_created.png
-
-#. Click any volume in the **Volume list** to see more information about it
-   in the Volume detail view.
-
-    .. image:: /operation/volume_management/img/volume_detail.png
-
-Delete a Volume
----------------
-
-#. From the Volume view, click the trash icon on the top right corner.
-
-    .. image:: /operation/volume_management/img/volume_delete.png
+   .. image:: /operation/volume_management/img/volume_overview_delete.png
 
 #. Confirm the volume deletion request by clicking **Delete**.
 
-    .. image:: /operation/volume_management/img/volume_delete_confirmation.png
+   .. image:: /operation/volume_management/img/volume_delete_confirmation.png
+      :scale: 50%

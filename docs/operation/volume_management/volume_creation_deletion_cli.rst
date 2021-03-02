@@ -6,10 +6,12 @@ using the CLI.
 To use persistent storage in a MetalK8s cluster, you need to create
 volume objects.
 
-.. important::
+Requirements
+------------
 
-   StorageClass objects must be registered in your cluster to create
-   volumes. For more information refer to :doc:`/operation/volume_management/storageclass_creation`.
+- StorageClass objects must be registered in your cluster to create
+  volumes. For more information refer to
+  :doc:`/operation/volume_management/storageclass_creation`.
 
 Creating a Volume
 -----------------
