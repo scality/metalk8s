@@ -43,6 +43,12 @@ repos:
         args:
           - --rcfile=salt/.pylintrc
           - --ignore=metalk8s_package_manager_apt.py
+      - id: pylint
+        name: Lint Salt Formulas tests
+        files: salt/tests/unit/formulas/.*\.py
+        additional_dependencies:
+          - 'pyenchant~=2.0'
+          - pytest
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.812
@@ -51,7 +57,7 @@ repos:
         # We want this hook to be part of "pylint" so that if we run
         # `pre-commit run pylint` we include this hook
         alias: pylint
-        name: Python typing
+        name: Python typing (buildchain)
         # Only check typing for typed files
         files: >
           (?x)^(
@@ -61,6 +67,15 @@ repos:
           )$
         args:
           - --strict
+      - id: mypy
+        # We want this hook to be part of "pylint" so that if we run
+        # `pre-commit run pylint` we include this hook
+        alias: pylint
+        name: Python typing (formulas rendering tests)
+        files: ^(salt/tests/unit/formulas/.*\.py)$
+        args: [--strict]
+        additional_dependencies:
+          - pytest
 
   - repo: https://github.com/warpnet/salt-lint
     rev: v0.5.2
@@ -74,5 +89,6 @@ repos:
         files: >
           (?x)^(
               eve/main.yml|
-              salt/metalk8s/defaults.yaml
+              salt/metalk8s/defaults.yaml|
+              salt/tests/unit/formulas/.*\.yaml
           )$
