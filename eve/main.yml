@@ -579,7 +579,7 @@ models:
       doStepIf: "%(prop:generate_snapshot:-false)s"
       env:
         <<: *_env_terraform
-        SNAPSHOT_NAME: "%(prop:metalk8s_version)s-%(prop:os:-centos-7)s-%(prop:environment_type)s-%(prop:environment_name)s"
+        SNAPSHOT_NAME: "metalk8s-%(prop:metalk8s_version)s-%(prop:os:-centos-7)s-%(prop:environment_type)s-%(prop:environment_name)s"
       command: ./generate_snapshot.sh
       workdir: build/eve/workers/openstack-terraform/terraform/
       haltOnFailure: true
@@ -663,6 +663,18 @@ models:
         create-env --name "$ENVIRONMENT_NAME"
       workdir: build/eve/workers/openstack-terraform/terraform/
       haltOnFailure: true
+  - ShellCommand: &untaint_bootstrap
+      doStepIf: "%(prop:install_solution:-false)s"
+      name: Untaint Bootstrap before deploying a Solution
+      env:
+        NODE_NAME: "bootstrap"
+      command: |
+        ssh -F ssh_config bootstrap <<ENDSSH
+        sudo kubectl --kubeconfig /etc/kubernetes/admin.conf \
+        patch node "$NODE_NAME" --patch '{"spec": {"taints": []}}'
+        ENDSSH
+      workdir: build/eve/workers/openstack-terraform/terraform/
+      haltOnFailure: true
   - ShellCommand: &deploy_solution
       doStepIf: "%(prop:install_solution:-false)s"
       name: Deploy Solution
@@ -676,6 +688,20 @@ models:
         sudo "$METALK8S_MOUNTPOINT/solutions.sh"
         add-solution --name "$ENVIRONMENT_NAME"
         --solution "$SOLUTION_NAME" --version "$SOLUTION_VERSION"
+      workdir: build/eve/workers/openstack-terraform/terraform/
+      haltOnFailure: true
+  - ShellCommand: &wait_for_solution_operator
+      doStepIf: "%(prop:install_solution:-false)s"
+      name: Wait for Solution Operator to become ready
+      env:
+        ENVIRONMENT_NAME: "%(prop:solution_env_name:-example-environment)s"
+        SOLUTION_NAME: "%(prop:solution_name:-example-solution)s"
+      command: >
+        ssh -F ssh_config bootstrap
+        sudo kubectl --kubeconfig /etc/kubernetes/admin.conf
+        wait pods --namespace "$ENVIRONMENT_NAME"
+        --selector "app.kubernetes.io/name=$SOLUTION_NAME-operator"
+        --for condition=Ready
       workdir: build/eve/workers/openstack-terraform/terraform/
       haltOnFailure: true
 
@@ -1595,7 +1621,9 @@ stages:
       - ShellCommand: *import_solution
       - ShellCommand: *activate_solution
       - ShellCommand: *create_solution_env
+      - ShellCommand: *untaint_bootstrap
       - ShellCommand: *deploy_solution
+      - ShellCommand: *wait_for_solution_operator
     # }}}
       - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand: *git_pull_ssh
@@ -1661,6 +1689,7 @@ stages:
           doStepIf: "%(prop:patch_present)s"
           stage_names:
             - snapshot-single-node-upgrades
+            - snapshot-multi-node-upgrades
             - single-node-downgrade-promoted-centos
 
   lifecycle-minor-version:
@@ -2111,7 +2140,9 @@ stages:
       - ShellCommand: *import_solution
       - ShellCommand: *activate_solution
       - ShellCommand: *create_solution_env
+      - ShellCommand: *untaint_bootstrap
       - ShellCommand: *deploy_solution
+      - ShellCommand: *wait_for_solution_operator
     # }}}
       - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand: &multi_node_fast_tests
