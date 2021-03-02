@@ -359,6 +359,15 @@ ensure_archives_mounted() {
         saltenv=metalk8s-@@VERSION
 }
 
+set_local_grains() {
+    # Grains must be set (in `/etc/salt/grains`) *before* invoking `salt-call`,
+    # otherwise grains set during execution won't be taken into account
+    # properly.
+    "$SALT_CALL" --local --state-output=mixed --retcode-passthrough state.sls \
+        metalk8s.node.grains \
+        saltenv=metalk8s-@@VERSION
+}
+
 check_local_node() {
     "$SALT_CALL" --local --retcode-passthrough metalk8s_checks.node \
         saltenv=metalk8s-@@VERSION

@@ -20,6 +20,26 @@ Install python36:
     - raw_shell: true
     - roster: kubernetes
 
+Set grains ssh:
+  salt.state:
+    - ssh: true
+    - roster: kubernetes
+    - tgt: {{ node_name }}
+    - saltenv: metalk8s-{{ version }}
+    - sls:
+      - metalk8s.node.grains
+    - require:
+      - metalk8s: Install python36
+
+Refresh grains:
+  metalk8s.saltutil_cmd:
+    - name: saltutil.sync_grains
+    - tgt: {{ node_name }}
+    - ssh: true
+    - roster: kubernetes
+    - require:
+      - salt: Set grains ssh
+
 Check node:
   metalk8s.saltutil_cmd:
     - name: metalk8s_checks.node
@@ -41,7 +61,7 @@ Check node:
         service_cidr: {{ pillar.networks.service }}
     - failhard: true
     - require:
-      - metalk8s: Install python36
+      - salt: Set grains ssh
 
 Deploy salt-minion on a new node:
   salt.state:
