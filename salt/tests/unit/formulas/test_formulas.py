@@ -25,6 +25,6 @@ def test_template_renders(
         try:
             template.render(**context.data)
         except jinja2.exceptions.TemplateError as exc:
-            pytest.xfail(
+            pytest.fail(
                 f"Cannot render {template_path} with context '{context.id}': {exc!r}"
             )
