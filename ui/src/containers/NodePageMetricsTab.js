@@ -3,8 +3,8 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
-import { padding } from '@scality/core-ui/dist/style/theme';
 import { LineChart, Loader, Dropdown, Button, Toggle } from '@scality/core-ui';
+import { padding } from '@scality/core-ui/dist/style/theme';
 import {
   updateNodeStatsFetchArgumentAction,
   MonitoringMetrics,
@@ -12,13 +12,12 @@ import {
 import {
   yAxisUsage,
   yAxis,
+  yAxisUsageLoading,
   getTooltipConfig,
 } from '../components/LinechartSpec';
 import {
   NodeTab,
   MetricsActionContainer,
-  GraphsContainer,
-  RowGraphContainer,
   GraphTitle,
   GraphWrapper,
 } from '../components/style/CommonLayoutStyle';
@@ -44,8 +43,36 @@ import {
 import { intl } from '../translations/IntlGlobalProvider';
 import { useTypedSelector } from '../hooks';
 
-const LoaderContainer = styled(Loader)`
-  padding-left: ${padding.larger};
+const GraphGrid = styled.div`
+  display: grid;
+  gap: 8px;
+  grid-template:
+    'cpuusage systemload' 1fr
+    'memory iops ' 1fr
+    'cpbandwidth wpbandwidth' 1fr
+    / 1fr 1fr;
+  .sc-vegachart svg {
+    background-color: inherit !important;
+  }
+  .cpuusage {
+    grid-area: cpuusage;
+  }
+  .systemLoad {
+    grid-area: systemLoad;
+  }
+  .memory {
+    grid-area: memory;
+  }
+  .iops {
+    grid-area: iops;
+  }
+  .cpbandwidth {
+    grid-area: cpbandwidth;
+  }
+  .wpbandwidth {
+    grid-area: wpbandwidth;
+  }
+  padding-left: ${padding.small};
 `;
 
 const ToggleContainer = styled.div`
@@ -335,7 +362,6 @@ const NodePageMetricsTab = ({
       // Boolean value that determines whether the axis should include ticks.
       ticks: true,
       tickCount: 4,
-      labelAngle: -50,
       labelColor: theme.brand.textSecondary,
     },
     title: null,
@@ -524,147 +550,155 @@ const NodePageMetricsTab = ({
           data-cy="metrics_timespan_selection"
         />
       </MetricsActionContainer>
-      <GraphsContainer id="graph_container">
-        <RowGraphContainer>
-          <GraphWrapper>
-            <GraphTitle>CPU Usage (%)</GraphTitle>
-            {nodeStatsData['cpuUsage'].length && graphWidth ? (
-              <LineChart
-                id={'node_cpu_usage_id'}
-                data={cpuData}
-                xAxis={xAxis}
-                yAxis={yAxisUsage}
-                color={colorCPU}
-                width={graphWidth}
-                height={graphHeight}
-                tooltip={true}
-                tooltipConfig={tooltipConfigCPU}
-                lineConfig={lineConfig}
-                strokeDashEncodingConfig={showAvg && strokeDashConfig}
-                opacityEncodingConfig={opacityConfig}
-                tooltipTheme={'dark'}
-              />
-            ) : (
-              <LoaderContainer size="small"></LoaderContainer>
-            )}
-          </GraphWrapper>
-          <GraphWrapper>
-            <GraphTitle>CPU System Load (%)</GraphTitle>
-            {nodeStatsData['systemLoad'].length && graphWidth ? (
-              <LineChart
-                id={'node_system_load_id'}
-                data={systemLoadData}
-                xAxis={xAxis}
-                yAxis={yAxis}
-                color={colorSystemLoad}
-                width={graphWidth}
-                height={graphHeight}
-                tooltip={true}
-                tooltipConfig={tooltipConfigSystemLoad}
-                lineConfig={lineConfig}
-                strokeDashEncodingConfig={showAvg && strokeDashConfig}
-                opacityEncodingConfig={opacityConfig}
-                tooltipTheme={'dark'}
-              />
-            ) : (
-              <LoaderContainer size="small"></LoaderContainer>
-            )}
-          </GraphWrapper>
-        </RowGraphContainer>
-        <RowGraphContainer>
-          <GraphWrapper>
-            <GraphTitle>Memory (%)</GraphTitle>
-            {nodeStatsData['memory'].length && graphWidth ? (
-              <LineChart
-                id={'node_memory_id'}
-                data={memoryData}
-                xAxis={xAxis}
-                yAxis={yAxisUsage}
-                color={colorMemory}
-                width={graphWidth}
-                height={graphHeight}
-                tooltip={true}
-                tooltipConfig={tooltipConfigMemory}
-                lineConfig={lineConfig}
-                strokeDashEncodingConfig={showAvg && strokeDashConfig}
-                opacityEncodingConfig={opacityConfig}
-                tooltipTheme={'dark'}
-              />
-            ) : (
-              <LoaderContainer size="small"></LoaderContainer>
-            )}
-          </GraphWrapper>
-          <GraphWrapper>
-            <GraphTitle>IOPS</GraphTitle>
-            {iopsData.length && graphWidth ? (
-              <LineChart
-                id={'node_IOPS_id'}
-                data={iopsData}
-                xAxis={xAxis}
-                yAxis={yAxis}
-                color={colorsWriteRead}
-                width={graphWidth}
-                height={graphHeight}
-                tooltip={true}
-                tooltipConfig={tooltipConfigIops}
-                lineConfig={lineConfig}
-                strokeDashEncodingConfig={showAvg && strokeDashConfig}
-                opacityEncodingConfig={opacityConfig}
-                tooltipTheme={'dark'}
-              />
-            ) : (
-              <LoaderContainer size="small"></LoaderContainer>
-            )}
-          </GraphWrapper>
-        </RowGraphContainer>
+      <GraphGrid id="graph_container">
+        <GraphWrapper className="cpuusage">
+          <GraphTitle>
+            <div>CPU Usage (%)</div>
+            {!cpuData.length && <Loader />}
+          </GraphTitle>
+          {graphWidth !== 0 && (
+            <LineChart
+              id={'node_cpu_usage_id'}
+              data={cpuData.length ? cpuData : []}
+              xAxis={xAxis}
+              yAxis={cpuData.length ? yAxisUsage : yAxisUsageLoading}
+              color={colorCPU}
+              width={graphWidth}
+              height={graphHeight}
+              tooltip={true}
+              tooltipConfig={tooltipConfigCPU}
+              lineConfig={lineConfig}
+              strokeDashEncodingConfig={showAvg && strokeDashConfig}
+              opacityEncodingConfig={opacityConfig}
+              tooltipTheme={'dark'}
+            />
+          )}
+        </GraphWrapper>
+        <GraphWrapper className="systemload">
+          <GraphTitle>
+            <div>CPU System Load (%)</div>
+            {!systemLoadData.length && <Loader />}
+          </GraphTitle>
+          {graphWidth !== 0 && (
+            <LineChart
+              id={'node_system_load_id'}
+              data={systemLoadData ? systemLoadData : []}
+              xAxis={xAxis}
+              yAxis={cpuData.length ? yAxisUsage : yAxisUsageLoading}
+              color={colorSystemLoad}
+              width={graphWidth}
+              height={graphHeight}
+              tooltip={true}
+              tooltipConfig={tooltipConfigSystemLoad}
+              lineConfig={lineConfig}
+              strokeDashEncodingConfig={showAvg && strokeDashConfig}
+              opacityEncodingConfig={opacityConfig}
+              tooltipTheme={'dark'}
+            />
+          )}
+        </GraphWrapper>
 
-        <RowGraphContainer>
-          <GraphWrapper>
-            <GraphTitle>Control Plane Bandwidth (MB/s)</GraphTitle>
-            {controlPlaneNetworkBandwidthData.length && graphWidth ? (
-              <LineChart
-                id={'node_control_plane_bandwidth_id'}
-                data={controlPlaneNetworkBandwidthData}
-                xAxis={xAxis}
-                yAxis={yAxis}
-                color={colorsInOut}
-                width={graphWidth}
-                height={graphHeight}
-                tooltip={true}
-                tooltipConfig={tooltipConfigInOut}
-                lineConfig={lineConfig}
-                strokeDashEncodingConfig={showAvg && strokeDashConfig}
-                opacityEncodingConfig={opacityConfig}
-                tooltipTheme={'dark'}
-              />
-            ) : (
-              <LoaderContainer size="small"></LoaderContainer>
-            )}
-          </GraphWrapper>
-          <GraphWrapper>
-            <GraphTitle>Workload Plane Bandwidth (MB/s)</GraphTitle>
-            {workloadPlaneNetworkBandwidthData.length && graphWidth ? (
-              <LineChart
-                id={'node_workload_plane_bandwidth_id'}
-                data={workloadPlaneNetworkBandwidthData}
-                xAxis={xAxis}
-                yAxis={yAxis}
-                color={colorsInOut}
-                width={graphWidth}
-                height={graphHeight}
-                tooltip={true}
-                tooltipConfig={tooltipConfigInOut}
-                lineConfig={lineConfig}
-                strokeDashEncodingConfig={showAvg && strokeDashConfig}
-                opacityEncodingConfig={opacityConfig}
-                tooltipTheme={'dark'}
-              />
-            ) : (
-              <LoaderContainer size="small"></LoaderContainer>
-            )}
-          </GraphWrapper>
-        </RowGraphContainer>
-      </GraphsContainer>
+        <GraphWrapper className="memory">
+          <GraphTitle>
+            <div> Memory (%)</div>
+            {!memoryData.length && <Loader />}
+          </GraphTitle>
+          {graphWidth !== 0 && (
+            <LineChart
+              id={'node_memory_id'}
+              data={memoryData.length ? memoryData : []}
+              xAxis={xAxis}
+              yAxis={cpuData.length ? yAxisUsage : yAxisUsageLoading}
+              color={colorMemory}
+              width={graphWidth}
+              height={graphHeight}
+              tooltip={true}
+              tooltipConfig={tooltipConfigMemory}
+              lineConfig={lineConfig}
+              strokeDashEncodingConfig={showAvg && strokeDashConfig}
+              opacityEncodingConfig={opacityConfig}
+              tooltipTheme={'dark'}
+            />
+          )}
+        </GraphWrapper>
+        <GraphWrapper className="iops">
+          <GraphTitle>
+            <div>IOPS</div>
+            {!iopsData.length && <Loader />}
+          </GraphTitle>
+          {graphWidth !== 0 && (
+            <LineChart
+              id={'node_IOPS_id'}
+              data={iopsData.length ? iopsData : []}
+              xAxis={xAxis}
+              yAxis={yAxis}
+              color={colorsWriteRead}
+              width={graphWidth}
+              height={graphHeight}
+              tooltip={true}
+              tooltipConfig={tooltipConfigIops}
+              lineConfig={lineConfig}
+              strokeDashEncodingConfig={showAvg && strokeDashConfig}
+              opacityEncodingConfig={opacityConfig}
+              tooltipTheme={'dark'}
+            />
+          )}
+        </GraphWrapper>
+        <GraphWrapper className="cpbandwidth">
+          <GraphTitle>
+            <div>Control Plane Bandwidth (MB/s)</div>
+            {!controlPlaneNetworkBandwidthData.length && <Loader />}
+          </GraphTitle>
+          {graphWidth !== 0 && (
+            <LineChart
+              id={'node_control_plane_bandwidth_id'}
+              data={
+                controlPlaneNetworkBandwidthData.length
+                  ? controlPlaneNetworkBandwidthData
+                  : []
+              }
+              xAxis={xAxis}
+              yAxis={yAxis}
+              color={colorsInOut}
+              width={graphWidth}
+              height={graphHeight}
+              tooltip={true}
+              tooltipConfig={tooltipConfigInOut}
+              lineConfig={lineConfig}
+              strokeDashEncodingConfig={showAvg && strokeDashConfig}
+              opacityEncodingConfig={opacityConfig}
+              tooltipTheme={'dark'}
+            />
+          )}
+        </GraphWrapper>
+        <GraphWrapper className="wpbandwidth">
+          <GraphTitle>
+            <div>Workload Plane Bandwidth (MB/s)</div>
+            {!workloadPlaneNetworkBandwidthData.length && <Loader />}
+          </GraphTitle>
+          {graphWidth !== 0 && (
+            <LineChart
+              id={'node_workload_plane_bandwidth_id'}
+              data={
+                workloadPlaneNetworkBandwidthData.length
+                  ? workloadPlaneNetworkBandwidthData
+                  : []
+              }
+              xAxis={xAxis}
+              yAxis={yAxis}
+              color={colorsInOut}
+              width={graphWidth}
+              height={graphHeight}
+              tooltip={true}
+              tooltipConfig={tooltipConfigInOut}
+              lineConfig={lineConfig}
+              strokeDashEncodingConfig={showAvg && strokeDashConfig}
+              opacityEncodingConfig={opacityConfig}
+              tooltipTheme={'dark'}
+            />
+          )}
+        </GraphWrapper>
+      </GraphGrid>
     </NodeTab>
   );
 };
