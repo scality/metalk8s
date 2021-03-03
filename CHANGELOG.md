@@ -58,6 +58,11 @@
   Salt dependencies from "base" RHEL 7 repository
   (PR [#3083](https://github.com/scality/metalk8s/pull/3083))
 
+### Deprecations and Removals
+
+- [#3168](https://github.com/scality/metalk8s/issues/3168) - [UI] Remove the environment page
+  (PR [#3167](https://github.com/scality/metalk8s/pull/3167))
+
 ## Release 2.7.4 (in development)
 
 ## Release 2.7.3
