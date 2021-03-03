@@ -139,22 +139,22 @@ export const getNodeListData = createSelector(
 // }
 // Return
 // {
-//   control_plane: { ip: '10.0.1.42', interface: 'eth1'}
-//   workload_plane: { ip: '10.100.0.2', interface: 'eth3'},
+//   controlPlane: { ip: '10.0.1.42', interface: 'eth1'}
+//   workloadPlane: { ip: '10.100.0.2', interface: 'eth3'},
 // }
 export const nodesCPWPIPsInterface = (
   IPsInterfacesObject: IPInterfaces | boolean,
 ): {
-  control_plane: { ip: string, interface: string },
-  workload_plane: { ip: string, interface: string },
+  controlPlane: { ip: string, interface: string },
+  workloadPlane: { ip: string, interface: string },
 } => {
   if (!IPsInterfacesObject) {
     return {
-      control_plane: { ip: '', interface: '' },
-      workload_plane: { ip: '', interface: '' },
+      controlPlane: { ip: '', interface: '' },
+      workloadPlane: { ip: '', interface: '' },
     };
   }
-  
+
   return {
     controlPlane: {
       ip: IPsInterfacesObject[METALK8S_CONTROL_PLANE_IP],
