@@ -35,6 +35,10 @@ Check node:
           {{ repo.conflicting_packages | tojson }}
         conflicting_services: >-
           {{ defaults.conflicting_services | tojson }}
+        # NOTE: We also need to give all the pillar value needed since execution
+        # module in Salt-ssh cannot read pillar data
+        # Sees: https://github.com/saltstack/salt/issues/28503
+        service_cidr: {{ pillar.networks.service }}
     - failhard: true
     - require:
       - metalk8s: Install python36
