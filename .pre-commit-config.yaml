@@ -48,7 +48,9 @@ repos:
         files: salt/tests/unit/formulas/.*\.py
         additional_dependencies:
           - 'pyenchant~=2.0'
+          - 'salt==3002.5'
           - pytest
+          - Jinja2
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.812
