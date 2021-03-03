@@ -54,6 +54,10 @@ const VolumeListContainer = styled.div`
 
     .thead > div[role='row'] {
       border-bottom: 1px solid ${(props) => props.theme.brand.border};
+
+      div[role='columnheader'] {
+        color: ${(props) => props.theme.brand.textPrimary} !important;
+      }
     }
 
     .td {
@@ -384,6 +388,7 @@ const VolumeListTable = (props) => {
           textAlign: 'left',
           flex: 1,
           minWidth: '95px',
+          color: theme.brand.secondary,
         },
       },
       {
