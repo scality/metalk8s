@@ -83,7 +83,9 @@ export type IPInterfaces = {
   'metalk8s:workload_plane_ip': string,
   ip_interfaces: { [interface: string]: string[] },
 };
-export async function getNodesIPsInterfaces(): Promise<{
+export async function getNodesIPsInterfaces(
+  nodeNames: string[],
+): Promise<{
   return: [{ [nodeName: string]: boolean | IPInterfaces }],
 }> {
   if (!saltApiClient) {
@@ -91,7 +93,8 @@ export async function getNodesIPsInterfaces(): Promise<{
   }
   return saltApiClient.post('/', {
     client: 'local',
-    tgt: '*',
+    tgt: nodeNames.join(','),
+    tgt_type: 'list',
     fun: 'grains.item',
     arg: [
       'metalk8s:control_plane_ip',

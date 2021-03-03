@@ -241,10 +241,6 @@ export const stopRefreshNodesAction = () => {
   return { type: STOP_REFRESH_NODES };
 };
 
-export const fetchNodesIPsInterfaceAction = () => {
-  return { type: FETCH_NODES_IPS_INTERFACES };
-};
-
 export const updateNodesIPsInterfacesAction = (payload) => {
   return { type: UPDATE_NODES_IPS_INTERFACES, payload };
 };
@@ -261,7 +257,7 @@ export const updateNodeObjectAction = (payload) => {
 export const clusterVersionSelector = (state) => state.app.nodes.clusterVersion;
 export const nodesRefreshingSelector = (state) => state.app.nodes.isRefreshing;
 export const isSaltAPIAuthenticatedSelector = (state) => state.login.salt;
-
+const nodeListSelector = (state) => state.app.nodes.list;
 // Sagas
 export function* fetchClusterVersion() {
   const result = yield call(CoreApi.getKubeSystemNamespace);
@@ -341,6 +337,7 @@ export function* fetchNodes() {
   }
   yield delay(1000); // To make sure that the loader is visible for at least 1s
   yield put(updateNodesAction({ isLoading: false }));
+  yield call(fetchNodesIPsInterface);
   return result;
 }
 
@@ -484,11 +481,17 @@ export function* stopRefreshNodes() {
 
 export function* fetchNodesIPsInterface() {
   let result;
+
+  const nodeList = yield select(nodeListSelector);
+  const nodeNames = nodeList.map((node) => {
+    return node.name;
+  });
+
   // Check if Salt API is already authenticated
   // If not, wait for the CONNECT_SALT_API action.
   const isSaltAPIAuthenticated = yield select(isSaltAPIAuthenticatedSelector);
   if (isSaltAPIAuthenticated) {
-    result = yield call(ApiSalt.getNodesIPsInterfaces);
+    result = yield call(ApiSalt.getNodesIPsInterfaces, nodeNames);
   } else {
     // eslint-disable-next-line no-unused-vars
     const { success, failure, timeout } = yield race({
@@ -496,7 +499,7 @@ export function* fetchNodesIPsInterface() {
       timeout: delay(5000),
     });
     if (success) {
-      result = yield call(ApiSalt.getNodesIPsInterfaces);
+      result = yield call(ApiSalt.getNodesIPsInterfaces, nodeNames);
     }
     //TODO: We're missing proper error-handling here.
   }
