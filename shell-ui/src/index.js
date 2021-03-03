@@ -10,6 +10,7 @@ import { QueryClient, QueryClientProvider, useQuery } from 'react-query';
 import { LoadingNavbar, Navbar } from './NavBar';
 import { UserDataListener } from './UserDataListener';
 import { logOut } from './auth/logout';
+import { prefetch } from "quicklink";
 
 const EVENTS_PREFIX = 'solutions-navbar--';
 export const AUTHENTICATED_EVENT: string = EVENTS_PREFIX + 'authenticated';
@@ -70,6 +71,13 @@ const SolutionsNavbar = ({
   },
   );
 
+  useLayoutEffect(() => {
+    const savedRedirectUri = localStorage.getItem('redirectUrl');
+    if (savedRedirectUri) {
+      prefetch(savedRedirectUri)
+    }
+  }, []);
+
   switch (status) {
     case 'idle':
     case 'loading':
@@ -96,7 +104,7 @@ const SolutionsNavbar = ({
       });
 
       const computedMenuOptions = options ? JSON.parse(options) : config.options || { main: {}, subLogin: {} };
-      
+
       if (setUserManager) {
         setUserManager(userManager);
       }
@@ -107,6 +115,7 @@ const SolutionsNavbar = ({
         },
         onSignIn: () => {
           const savedRedirectUri = localStorage.getItem('redirectUrl');
+          localStorage.removeItem('redirectUrl');
           if (savedRedirectUri) {
             location.href = savedRedirectUri;
           } else {

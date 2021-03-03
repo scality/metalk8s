@@ -10,9 +10,11 @@ import type {
 import type { Node } from 'react';
 import { logOut } from './auth/logout';
 import {
+  getAccessiblePathsFromOptions,
   isEntryAccessibleByTheUser,
   normalizePath,
 } from './auth/permissionUtils';
+import { prefetch } from 'quicklink';
 
 export const LoadingNavbar = (): Node => (
   <CoreUINavbar role="navigation" tabs={[{ title: 'loading' }]} />
@@ -58,6 +60,12 @@ export const Navbar = ({ options }: { options: Options }): Node => {
   const auth = useAuth();
 
   const userGroups: string[] = auth.userData?.profile?.groups || [];
+  const accessiblePaths = getAccessiblePathsFromOptions(options, userGroups);
+  useLayoutEffect(() => {
+    accessiblePaths.forEach((accessiblePath) => {
+      prefetch(accessiblePath);
+    });
+  }, [JSON.stringify(accessiblePaths)]);
 
   const tabs = translateOptionsToMenu(
     options,

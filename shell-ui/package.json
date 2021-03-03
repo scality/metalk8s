@@ -36,6 +36,7 @@
     "oidc-client": "^1.11.3",
     "oidc-react": "^1.1.5",
     "polished": "^4.0.5",
+    "quicklink": "^2.1.0",
     "react": "^17.0.1",
     "react-debounce-input": "^3.2.3",
     "react-dom": "^17.0.1",
