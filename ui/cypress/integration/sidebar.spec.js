@@ -30,12 +30,6 @@ describe('Sidebar', () => {
     cy.get('@historyPush').should('be.calledWith', '/volumes');
   });
 
-  it('brings me to the environment page', () => {
-    cy.get('[data-cy="sidebar_item_environments"]').click();
-
-    cy.get('@historyPush').should('be.calledWith', '/environments');
-  });
-
   it('can be expanded', () => {
     cy.window()
       .its('localStorage')
