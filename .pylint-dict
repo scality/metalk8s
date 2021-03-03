@@ -21,6 +21,7 @@ entrypoints
 env
 epel
 filename
+globals
 gofmt
 html
 init
@@ -53,6 +54,7 @@ sls
 timestamp
 tmp
 tmpfs
+tojson
 tox
 txt
 uptodate
