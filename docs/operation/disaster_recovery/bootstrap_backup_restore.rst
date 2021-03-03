@@ -12,14 +12,12 @@ and how to restore a bootstrap node from such a backup.
 
    - at the beginning of an upgrade or downgrade,
 
-   - at the end of an upgrade downgrade,
+   - at the end of an upgrade or downgrade,
 
    - at the end of a bootstrap restoration.
 
 Backing Up a Bootstrap Node
 ***************************
-
-A backup file is generated at the end of the bootstrap.
 
 To create a new backup file, run the following command:
 
@@ -47,46 +45,57 @@ Restoring a Bootstrap Node
 #. Unregister the unreachable etcd member from the cluster by running
    the following commands from a working node with the etcd role:
 
-   .. code::
+   #. Get etcd container id.
 
-      # Get etcd container id
-      CONT_ID=$(crictl ps -q --label io.kubernetes.container.name=etcd --state Running)
+      .. code::
 
-      # List all etcd members to get the ID of the etcd member that need to be removed
-      crictl exec -it "$CONT_ID" \
-         etcdctl --endpoints https://localhost:2379 \
-         --cacert /etc/kubernetes/pki/etcd/ca.crt \
-         --key /etc/kubernetes/pki/etcd/server.key \
-         --cert /etc/kubernetes/pki/etcd/server.crt \
-         member list
+         CONT_ID=$(crictl ps -q --label io.kubernetes.container.name=etcd --state Running)
 
-      # Remove the etcd member (replace <etcd_id> in the command)
-      crictl exec -it "$CONT_ID" \
-         etcdctl --endpoints https://localhost:2379 \
-         --cacert /etc/kubernetes/pki/etcd/ca.crt \
-         --key /etc/kubernetes/pki/etcd/server.key \
-         --cert /etc/kubernetes/pki/etcd/server.crt \
-         member remove <etcd_id>
+   #. List all etcd members to get the ID of the etcd member that needs to be removed.
+
+      .. code::
+
+         crictl exec -it "$CONT_ID" \
+            etcdctl --endpoints https://localhost:2379 \
+            --cacert /etc/kubernetes/pki/etcd/ca.crt \
+            --key /etc/kubernetes/pki/etcd/server.key \
+            --cert /etc/kubernetes/pki/etcd/server.crt \
+            member list
+
+   #. Remove the etcd member (replace ``<etcd_id>`` in the command).
+
+      .. code::
+
+         crictl exec -it "$CONT_ID" \
+            etcdctl --endpoints https://localhost:2379 \
+            --cacert /etc/kubernetes/pki/etcd/ca.crt \
+            --key /etc/kubernetes/pki/etcd/server.key \
+            --cert /etc/kubernetes/pki/etcd/server.crt \
+            member remove <etcd_id>
 
 #. Because multiple bootstrap nodes are not supported, remove the old
    bootstrap node before performing the restoration by running the
    following commands from a working node with a master role:
 
-   .. code::
+   #. List all nodes to get the node name of the old bootstrap node that needs
+      to be removed.
 
-      # List all nodes to get the node name of the old bootstrap node that need
-      # to get removed
-      kubectl get node --selector="node-role.kubernetes.io/bootstrap" \
-         --kubeconfig=/etc/kubernetes/admin.conf
+      .. code::
 
-      # Remove the old bootstrap node (replace <node_name> in the command)
-      kubectl delete node <node_name> --kubeconfig=/etc/kubernetes/admin.conf
+         kubectl get node --selector="node-role.kubernetes.io/bootstrap" \
+            --kubeconfig=/etc/kubernetes/admin.conf
+
+   #. Remove the old bootstrap node (replace ``<node_name>`` in the command).
+
+      .. code::
+
+         kubectl delete node <node_name> --kubeconfig=/etc/kubernetes/admin.conf
 
 #. Mount the ISO.
 
 #. Restore the bootstrap node. Replace ``<backup_archive>`` with the path to
    the backup archive you want to use, and ``<node_ip>`` with a
-   control-plane IP of one control-plane node.
+   control plane IP of one control plane node.
 
    .. code::
 

@@ -1,24 +1,22 @@
 Volume Management Using the CLI
 ===============================
 
-This topic describes how to create and delete a MetalK8s volume
+This topic describes how to create and delete a MetalK8s Volume
 using the CLI.
-To use persistent storage in a MetalK8s cluster, you need to create
-volume objects.
+Volume objects enable a declarative provisioning of persistent storage, to
+use in Kubernetes workloads (through PersistentVolumes).
 
 Requirements
 ------------
 
 - StorageClass objects must be registered in your cluster to create
-  volumes. For more information refer to
+  Volumes. For more information refer to
   :doc:`/operation/volume_management/storageclass_creation`.
 
 Creating a Volume
 -----------------
 
-#. Create a volume manifest.
-
-   You can define a new volume using the following template:
+#. Create a Volume manifest using the following template:
 
    .. code-block:: yaml
 
@@ -42,13 +40,13 @@ Creating a Volume
      Block or Filesystem (default to Filesystem if not specified).
    - **devicePath**: path to the block device (for example: `/dev/sda1`).
 
-#. Create the volume.
+#. Create the Volume.
 
    .. code-block:: shell
 
       root@bootstrap $ kubectl apply -f volume.yml
 
-#. Check that the volume has been created.
+#. Check that the Volume has been created.
 
    .. code-block:: shell
 
@@ -66,7 +64,7 @@ Deleting a Volume
    marked for deletion and remain available until one of the conditions
    is met.
 
-#. Delete a volume.
+#. Delete a Volume.
 
    .. code-block:: shell
 
@@ -74,7 +72,7 @@ Deleting a Volume
       volume.storage.metalk8s.scality.com <volume_name> deleted
 
 
-#. Check that the volume has been deleted.
+#. Check that the Volume has been deleted.
 
    .. note::
 

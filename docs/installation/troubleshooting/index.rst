@@ -12,3 +12,9 @@ MetalK8s installation.
 
    bootstrap_installation_errors
    pod_and_service_CIDR_conflicts
+
+.. todo::
+
+   - Add Salt master/minion logs, and explain how to run a specific state from
+     the Salt master.
+   - Add troubleshooting for networking issues.

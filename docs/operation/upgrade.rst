@@ -1,5 +1,5 @@
-MetalK8s Cluster Upgrade
-========================
+Cluster Upgrade
+===============
 
 MetalK8s clusters are upgraded using the utility scripts packaged with
 every new release.
@@ -30,7 +30,7 @@ ISO Preparation
 Provision a new MetalK8s ISO by running the utility script shipped
 with the current installation.
 
-.. code::
+.. parsed-literal::
 
    /srv/scality/metalk8s-X.X.X/iso-manager.sh -a <path_to_iso>
 

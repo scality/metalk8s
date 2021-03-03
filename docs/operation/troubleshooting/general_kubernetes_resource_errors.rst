@@ -46,10 +46,10 @@ hangs in a **Pending** state, perform the following checks:
       NAME                     CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS  STORAGECLASS             AGE       CLAIM
       <volume-name>              10Gi       RWO            Retain          Bound  <storage-class-name>     4d22h     <persistentvolume-claim-name>
 
-#. Check that the PersistentVolume matches the PersistentVolume claim
+#. Check that the PersistentVolume matches the PersistentVolumeClaim
    constraints (size, labels, storage class).
 
-   - Find the name of your PersistentVolume claim:
+   - Find the name of your PersistentVolumeClaim:
 
      .. code-block:: shell
 
@@ -57,11 +57,11 @@ hangs in a **Pending** state, perform the following checks:
         NAME                             STATUS   VOLUME                 CAPACITY   ACCESS MODES   STORAGECLASS          AGE
         <persistent-volume-claim-name>   Bound    <volume-name>          10Gi       RWO            <storage-class-name>  24h
 
-   - Check if the PersistentVolume claim constraints match:
+   - Check if the PersistentVolumeClaim constraints match:
 
      .. code-block:: shell
 
-        [root@bootstrap vagrant]# kubectl describe pvc <persistevolume-claim-name> -n <namespace>
+        [root@bootstrap vagrant]# kubectl describe pvc <persistentvolume-claim-name> -n <namespace>
         Name:          <persistentvolume-claim-name>
         Namespace:     <namespace>
         StorageClass:  <storage-class-name>
@@ -86,7 +86,7 @@ Access to MetalK8s GUI Fails With "undefined backend"
 If you encounter an "undefined backend" error while using the MetalK8s GUI,
 perform the following checks:
 
-#. Check that the ingress pods are running.
+#. Check that the ingress controller pods are running.
 
    .. code-block:: shell
 

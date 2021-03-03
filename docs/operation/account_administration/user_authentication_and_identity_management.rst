@@ -103,8 +103,8 @@ the following steps from the bootstrap node.
                          salt-master-bootstrap -- salt-run state.sls \\
                          metalk8s.addons.dex.deployed saltenv=metalk8s-|version|
 
-#. Bind the user to an existing (Cluster) role using
-   :ref:`ClusterRoleBlinding <bind-user-to-role>`.
+#. Bind the user to an existing (Cluster) Role using
+   :ref:`a ClusterRoleBlinding <bind-user-to-role>`.
 
 #. Check that the user has been successfully added. If so, log into the
    MetalK8s UI using the new email and password.
@@ -173,11 +173,3 @@ perform the following steps from the Bootstrap node.
 
 #. Check that the password has been changed. If so, log into the MetalK8s UI
    using the new password.
-
-.. todo::
-
-   Add documentation on the following
-
-   - Dex connectors
-
-   - How to add a new connector (LDAP, AD, SAML)

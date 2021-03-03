@@ -3,11 +3,11 @@ StorageClass Creation
 
 MetalK8s uses StorageClass objects to describe how volumes are
 formatted and mounted.
-This topic explains how use the CLI to create a Storageclass.
+This topic explains how to use the CLI to create a StorageClass.
 
-#. Create a **StorageClass** manifest.
+#. Create a StorageClass manifest.
 
-   You can define a new **StorageClass** using the following template:
+   You can define a new StorageClass using the following template:
 
    .. code-block:: yaml
 
@@ -37,7 +37,7 @@ This topic explains how use the CLI to create a Storageclass.
         volume.
       - Set ``volumeBindingMode`` as ``WaitForFirstConsumer``
         in order to delay the binding and provisioning of a Pod until a Pod
-        using the ``PersistentVolumeClaim`` is created.
+        using the PersistentVolumeClaim is created.
 
 #. Create the StorageClass.
 

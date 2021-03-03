@@ -1,5 +1,5 @@
-MetalK8s Cluster Downgrade
-==========================
+Cluster Downgrade
+=================
 
 MetalK8s clusters are downgraded using the utility scripts that are
 packaged with your current installation.
@@ -67,7 +67,7 @@ Downgrade
 
 #. From the :term:`Bootstrap node`, launch the downgrade.
 
-   .. code::
+   .. parsed-literal::
 
       /srv/scality/metalk8s-X.Y.Z/downgrade.sh --destination-version <version>
 

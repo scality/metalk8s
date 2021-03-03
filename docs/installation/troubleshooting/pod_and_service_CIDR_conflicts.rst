@@ -22,9 +22,3 @@ pod-to-pod communication:
 
 #. Ensure that the configured IP ranges (CIDR notation) do not conflict
    with your infrastructure.
-
-.. todo::
-
-   - Add Salt master/minion logs, and explain how to run a specific state from
-     the Salt master.
-   - Add troubleshooting for networking issues.

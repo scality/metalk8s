@@ -8,3 +8,11 @@ user authentication and identity management to user authorization.
 
    user_authentication_and_identity_management
    user_authorization
+
+.. todo::
+
+   Add documentation on the following
+
+   - Dex connectors
+
+   - How to add a new connector (LDAP, AD, SAML)

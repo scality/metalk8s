@@ -1,14 +1,14 @@
 Volume Management Using the UI
 ==============================
 
-This topic describes how to create and delete a MetalK8s volume
+This topic describes how to create and delete a MetalK8s Volume
 using the MetalK8s UI.
 
 Requirements
 ------------
 
 - StorageClass objects must be registered in your cluster to create
-  volumes. For more information refer to
+  Volumes. For more information refer to
   :doc:`/operation/volume_management/storageclass_creation`.
 
 - Access the MetalK8s UI. Refer to

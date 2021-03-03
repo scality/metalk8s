@@ -41,8 +41,8 @@ Deployment
 
       ./solutions.sh create-env --name <environment-name>
 
-#. Solutions are packaged with an :term:`Operator`, and optionally an
-   associated web UI, to provide all required domain-specific logic.
+#. Solutions are packaged with an :term:`Operator` to provide all
+   required domain-specific logic.
    To deploy a solution operator in an environment, run:
 
    .. code::
@@ -53,6 +53,6 @@ Deployment
 Configuration
 -------------
 
-The solution operator and UI (if any) are now deployed.
+The solution operator is now deployed.
 To finalize the deployment and configuration of a solution,
 refer to its documentation.
