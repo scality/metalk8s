@@ -3,7 +3,7 @@ import { When, Then } from 'cypress-cucumber-preprocessor/steps';
 When('I am on the node page', () => {
   cy.server();
   cy.route('GET', '/api/kubernetes/api/v1/nodes').as('getNodes');
-  cy.get('.sc-sidebar-item').eq(1).click();
+  cy.visit('/nodes');
 });
 
 Then('the bootstrap node appears the node list', () => {

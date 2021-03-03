@@ -65,7 +65,8 @@ export const getTooltipConfig = (
           title: 'Date',
         },
       ],
-      color: {},
+      // Hardcode the color of the rule until we have the design for light mode
+      color: { value: '#ffffff' },
     },
     selection: {
       hover: {
