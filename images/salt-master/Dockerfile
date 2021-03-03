@@ -3,7 +3,7 @@ FROM centos:7.6.1810
 MAINTAINER moonshot-platform <moonshot-platform@scality.com>
 
 # Versions to use
-ARG SALT_VERSION=3002.2
+ARG SALT_VERSION
 
 # Install saltstack
 RUN printf "[saltstack-repo]\n\

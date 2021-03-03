@@ -24,11 +24,24 @@ spec:
         failureThreshold: 8
         httpGet:
           host: {{ host }}
+        {%- if liveness_path is defined and liveness_path %}
+          path: {{ liveness_path }}
+        {%- else %}
           path: /healthz
+        {%- endif %}
           port: {{ port }}
           scheme: {{ scheme }}
         initialDelaySeconds: 15
         timeoutSeconds: 15
+    {%- if readiness_path is defined and readiness_path %}
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          host: {{ host }}
+          path: {{ readiness_path }}
+          port: {{ port }}
+          scheme: {{ scheme }}
+    {%- endif %}
 {%- if ports is defined and ports %}
       ports:
       {{ ports | yaml(False) | indent(6, False) }}

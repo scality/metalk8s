@@ -59,6 +59,7 @@ Create local etcd Pod manifest:
         name: etcd
         image_name: {{ build_image_name('etcd') }}
         command:
+        # kubeadm flags {
           - etcd
           - --advertise-client-urls=https://{{ node_ip }}:2379
           - --cert-file={{ certificates.server.files.etcd.path }}
@@ -66,11 +67,10 @@ Create local etcd Pod manifest:
           - --data-dir=/var/lib/etcd
           - --initial-advertise-peer-urls=https://{{ node_ip }}:2380
           - --initial-cluster={{ etcd_initial_cluster| sort | join(',') }}
-          - --initial-cluster-state={{ state }}
           - --key-file=/etc/kubernetes/pki/etcd/server.key
           - --listen-client-urls=https://127.0.0.1:2379,https://{{ node_ip }}:2379
-          - --listen-peer-urls=https://{{ node_ip }}:2380
           - --listen-metrics-urls=http://127.0.0.1:2381,http://{{ node_ip }}:2381
+          - --listen-peer-urls=https://{{ node_ip }}:2380
           - --name={{ node_name }}
           - --peer-cert-file={{ certificates.server.files['etcd-peer'].path }}
           - --peer-client-cert-auth=true
@@ -78,6 +78,8 @@ Create local etcd Pod manifest:
           - --peer-trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
           - --snapshot-count=10000
           - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+        # }
+          - --initial-cluster-state={{ state }}
         volumes:
           - path: /var/lib/etcd
             name: etcd-data

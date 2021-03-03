@@ -53263,9 +53263,9 @@ spec:
   clusterIP: None
   ports:
   - name: http-metrics
-    port: 10252
+    port: 10257
     protocol: TCP
-    targetPort: 10252
+    targetPort: 10257
   selector:
     component: kube-controller-manager
   type: ClusterIP
@@ -53338,9 +53338,9 @@ spec:
   clusterIP: None
   ports:
   - name: http-metrics
-    port: 10251
+    port: 10259
     protocol: TCP
-    targetPort: 10251
+    targetPort: 10259
   selector:
     component: kube-scheduler
   type: ClusterIP
@@ -56468,6 +56468,10 @@ spec:
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
     port: http-metrics
+    scheme: https
+    tlsConfig:
+      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecureSkipVerify: true
   jobLabel: jobLabel
   namespaceSelector:
     matchNames:
@@ -56546,6 +56550,10 @@ spec:
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
     port: http-metrics
+    scheme: https
+    tlsConfig:
+      caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecureSkipVerify: true
   jobLabel: jobLabel
   namespaceSelector:
     matchNames:
