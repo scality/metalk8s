@@ -38,6 +38,7 @@ mkisofs
 mypy
 nginx
 pdf
+parameterized
 prebuilt
 py
 readonly
