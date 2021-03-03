@@ -71,6 +71,9 @@ SALT_CALL=${SALT_CALL:-salt-call}
 
 declare -a PACKAGES=(
     salt-minion-@@SALT_VERSION
+    # NOTE: `python3-psutil` will install `python36-psutil` on RHEL7 based and
+    # `python3-psutil on RHEL8, as expected
+    python3-psutil
     genisoimage
 )
 
