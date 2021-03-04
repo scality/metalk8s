@@ -239,3 +239,54 @@ metalk8s:
 
   roles:
     _skip: false
+
+  salt:
+    _skip: false
+
+    master:
+      certs:
+        salt-api.sls:
+          _opts:
+            minion_state:
+              - standalone
+              - ready
+
+      files:
+        master-99-metalk8s.conf.j2:
+          _opts:
+            extra_context:
+              - "From metalk8s.salt.master.configured":
+                  debug: true
+                  salt_ip: "10.0.0.1"
+                  kubeconfig: /etc/salt/master-kubeconfig.conf
+                  salt_api_ssl_crt: /etc/salt/pki/api/salt-api.crt
+                  saltenv: metalk8s-2.7.1
+
+        salt-master-manifest.yaml.j2:
+          _opts:
+            extra_context:
+              - "From metalk8s.salt.master.installed":
+                  debug: true
+                  image: salt-master
+                  version: "3002.2"
+                  archives:
+                    metalk8s-2.7.1:
+                      path: /srv/scality/metalk8s-2.7.1
+                      iso: /archives/metalk8s-2.7.1
+                      version: "2.7.1"
+                  solution_archives:
+                    example-solution-1-2-3: /srv/scality/example-solution-1.2.3
+                  salt_ip: "10.0.0.1"
+                  config_digest: abcdefgh12345
+                  metalk8s_version: "2.7.1"
+
+    minion:
+      files:
+        minion-99-metalk8s.conf.j2:
+          _opts:
+            extra_context:
+              - "From metalk8s.salt.minion.configured":
+                  debug: true
+                  master_hostname: "10.233.0.123"
+                  minion_id: bootstrap
+                  saltenv: metalk8s-2.7.1
