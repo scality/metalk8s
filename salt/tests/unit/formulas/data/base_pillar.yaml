@@ -1,0 +1,180 @@
+---
+metalk8s:
+  archives:
+    - /archives/metalk8s-2.7.1.iso
+  ca:
+    minion: bootstrap
+  cluster_version: 2.7.1
+  debug: false
+  endpoints:
+    repositories:
+      hostname: null
+      ip: 51.68.68.162
+      node_name: bootstrap
+      ports:
+        http: 8080
+    salt-master:
+      hostname: null
+      ip: 51.68.68.162
+      node_name: bootstrap
+      ports:
+        api: 4507
+        publisher: 4505
+        requestserver: 4506
+  etcd:
+    members:
+      - client_urls:
+          - https://51.68.68.162:2379
+        id: 4746124461829215571
+        name: bootstrap
+        peer_urls:
+          - https://51.68.68.162:2380
+  nodes:
+    bootstrap:
+      roles:
+        - ca
+        - master
+        - bootstrap
+        - etcd
+        - infra
+      version: 2.7.1
+  private:
+    apiserver_key: '<some_rsa_key>'
+    sa_private_key: '<some_rsa_key>'
+  solutions:
+    _errors:
+      - >-
+        'Error when reading Solutions config file:
+        Failed to load "/etc/metalk8s/solutions.yaml":
+        [Errno 2] No such file or directory: ''/etc/metalk8s/solutions.yaml'''
+    available: {}
+    config:
+      _errors:
+        - >-
+          'Error when reading Solutions config file:
+          Failed to load "/etc/metalk8s/solutions.yaml":
+          [Errno 2] No such file or directory: ''/etc/metalk8s/solutions.yaml'''
+    environments: {}
+  volumes: {}
+networks:
+  control_plane:
+    cidr:
+      - 51.68.68.0/24
+  workload_plane:
+    cidr:
+      - 51.68.68.0/24
+    mtu: 1460
+  pod: 10.233.0.0/16
+  service: 10.96.0.0/12
+proxies: {}
+mine_functions:
+  control_plane_ip:
+    - mine_function: grains.get
+    - metalk8s:control_plane_ip
+  dex_ca_b64:
+    - mine_function: hashutil.base64_encodefile
+    - /etc/metalk8s/pki/dex/ca.crt
+  ingress_ca_b64:
+    - mine_function: hashutil.base64_encodefile
+    - /etc/metalk8s/pki/nginx-ingress/ca.crt
+  kubernetes_etcd_ca_b64:
+    - mine_function: hashutil.base64_encodefile
+    - /etc/kubernetes/pki/etcd/ca.crt
+  kubernetes_front_proxy_ca_b64:
+    - mine_function: hashutil.base64_encodefile
+    - /etc/kubernetes/pki/front-proxy-ca.crt
+  kubernetes_root_ca_b64:
+    - mine_function: hashutil.base64_encodefile
+    - /etc/kubernetes/pki/ca.crt
+  kubernetes_sa_pub_key_b64:
+    - mine_function: hashutil.base64_encodefile
+    - /etc/kubernetes/pki/sa.pub
+  workload_plane_ip:
+    - mine_function: grains.get
+    - metalk8s:workload_plane_ip
+x509_signing_policies:
+  dex_server_policy:
+    - minions: '*'
+    - signing_private_key: /etc/metalk8s/pki/dex/ca.key
+    - signing_cert: /etc/metalk8s/pki/dex/ca.crt
+    - keyUsage: critical digitalSignature, keyEncipherment
+    - extendedKeyUsage: serverAuth
+  etcd_client_policy:
+    - minions: '*'
+    - signing_private_key: /etc/kubernetes/pki/etcd/ca.key
+    - signing_cert: /etc/kubernetes/pki/etcd/ca.crt
+    - keyUsage: critical digitalSignature, keyEncipherment
+    - extendedKeyUsage: clientAuth
+  etcd_server_client_policy:
+    - minions: '*'
+    - signing_private_key: /etc/kubernetes/pki/etcd/ca.key
+    - signing_cert: /etc/kubernetes/pki/etcd/ca.crt
+    - keyUsage: critical digitalSignature, keyEncipherment
+    - extendedKeyUsage: serverAuth, clientAuth
+  front_proxy_client_policy:
+    - minions: '*'
+    - signing_private_key: /etc/kubernetes/pki/front-proxy-ca.key
+    - signing_cert: /etc/kubernetes/pki/front-proxy-ca.crt
+    - keyUsage: critical digitalSignature, keyEncipherment
+    - extendedKeyUsage: clientAuth
+  ingress_server_policy:
+    - minions: '*'
+    - signing_private_key: /etc/metalk8s/pki/nginx-ingress/ca.key
+    - signing_cert: /etc/metalk8s/pki/nginx-ingress/ca.crt
+    - keyUsage: critical digitalSignature, keyEncipherment
+    - extendedKeyUsage: serverAuth
+  kube_apiserver_client_policy:
+    - minions: '*'
+    - signing_private_key: /etc/kubernetes/pki/ca.key
+    - signing_cert: /etc/kubernetes/pki/ca.crt
+    - keyUsage: critical digitalSignature, keyEncipherment
+    - extendedKeyUsage: clientAuth
+  kube_apiserver_server_policy:
+    - minions: '*'
+    - signing_private_key: /etc/kubernetes/pki/ca.key
+    - signing_cert: /etc/kubernetes/pki/ca.crt
+    - keyUsage: critical digitalSignature, keyEncipherment
+    - extendedKeyUsage: serverAuth
+certificates:
+  client:
+    files:
+      apiserver-etcd:
+        watched: true
+      apiserver-kubelet:
+        watched: true
+      etcd-healthcheck:
+        watched: true
+      front-proxy:
+        watched: true
+      salt-master-etcd:
+        watched: true
+  kubeconfig:
+    files:
+      admin:
+        watched: true
+      calico:
+        watched: true
+      controller-manager:
+        watched: true
+      kubelet:
+        watched: true
+      salt-master:
+        watched: true
+      scheduler:
+        watched: true
+  server:
+    files:
+      apiserver:
+        watched: true
+      control-plane-ingress:
+        watched: true
+      dex:
+        watched: true
+      etcd:
+        watched: true
+      etcd-peer:
+        watched: true
+      salt-api:
+        watched: true
+      workload-plane-ingress:
+        watched: true

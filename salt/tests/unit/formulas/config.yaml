@@ -2,8 +2,19 @@
 # Default context options are listed here.
 # Please be mindful of the number of cases generated, as these will apply to
 # many formulas.
-default_opts: {}
+default_opts:
+  os:
+    - CentOS/7
 
 metalk8s:
   # Use the special `_skip` keyword to omit rendering of a directory or formula
   _skip: true
+
+  map.jinja:
+    _skip: false
+    _opts:
+      os:
+        - CentOS/7
+        - RedHat/7
+        - RedHat/8
+        - Ubuntu/18

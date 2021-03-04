@@ -1,6 +1,7 @@
 arg
 basename
 buildargs
+buildchain
 builddep
 buildrepo
 buildrpm
@@ -8,6 +9,7 @@ buildsrpm
 cli
 cni
 cmd
+config
 cp
 checksum
 checksums
@@ -22,6 +24,8 @@ entrypoints
 env
 epel
 filename
+getattr
+getitem
 globals
 gofmt
 html
@@ -31,6 +35,7 @@ json
 kubernetes
 kubectl
 kubelet
+kwargs
 linter
 livedoc
 metadata
@@ -46,6 +51,7 @@ readonly
 renderer
 repo
 reprepro
+ret
 rpmlint
 rpmspec
 runtime

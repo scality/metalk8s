@@ -50,11 +50,27 @@ class BaseOption:
         """Update the existing context given the selected value."""
 
 
+class OS(BaseOption):
+    """Simulate one of the OS distributions supported by MetalK8s."""
+
+    ALLOWED_VALUES: FrozenSet[str] = frozenset(
+        ("CentOS/7", "RedHat/7", "RedHat/8", "Ubuntu/18")
+    )
+
+    def update_context(self, context: Dict[str, Any]) -> None:
+        os_name, release = self.value.split("/")
+        family = "Debian" if os_name == "Ubuntu" else "RedHat"
+        grains = context["grains"]
+        grains["os"] = os_name
+        grains["os_family"] = family
+        grains["osmajorrelease"] = release
+
+
 # pylint: enable=too-few-public-methods
 
 # Register sub-classes of `BaseOption`, with the same key as desired in the
 # configuration file
-OPTION_KINDS: Dict[str, Type[BaseOption]] = {}
+OPTION_KINDS: Dict[str, Type[BaseOption]] = {"os": OS}
 
 OptionSet = Iterable[BaseOption]
 
