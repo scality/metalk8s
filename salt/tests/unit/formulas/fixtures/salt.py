@@ -2,6 +2,7 @@
 
 import functools
 from typing import Any, Callable, Dict, Optional, Type
+from unittest.mock import MagicMock
 
 import jinja2
 import salt.utils.data  # type: ignore
@@ -190,4 +191,13 @@ def metalk8s_get_archives(salt_mock: SaltMock) -> Dict[str, Dict[str, str]]:
 # }}}
 # pylint: enable=protected-access
 
+# Static mocks {{{
+
+# Used in metalk8s.internal.preflight.mandatory to check swap is not used.
+register_basic("mount.swaps")(MagicMock(return_value={}))
+
+# Used in metalk8s.internal.preflight.mandatory to check ports are free.
+register_basic("network.connect")(MagicMock(return_value=dict(result=False)))
+
+# }}}
 # }}}
