@@ -44,6 +44,10 @@
 - Use HTTPS endpoints for kube-controller-manager and kube-scheduler
   (PR [#3152](https://github.com/scality/metalk8s/pull/3152))
 
+- [#3092](https://github.com/scality/metalk8s/issues/3092) - Check if all needed
+  addresses are free, or already used by a MetalK8s process
+  (PR [#3163](https://github.com/scality/metalk8s/pull/3163))
+
 ### Bug fixes
 
 - [#3079](https://github.com/scality/metalk8s/issues/3079) - Ensure configured
