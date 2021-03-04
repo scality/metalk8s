@@ -5,6 +5,8 @@
 default_opts:
   os:
     - CentOS/7
+  saltenv:
+    - __default__  # Will use "metalk8s-{{ pillar.metalk8s.cluster_version }}"
 
 metalk8s:
   # Use the special `_skip` keyword to omit rendering of a directory or formula
@@ -33,7 +35,7 @@ metalk8s:
         50-metalk8s.conf.j2:
           _opts:
             extra_context:
-              - example:  # See metalk8s.container-engine.containerd.installed
+              - "From metalk8s.container-engine.containerd.installed":
                   containerd_args: [--log-level, info]
                   environment:
                     NO_PROXY: localhost,127.0.0.1,10.0.0.0/16
@@ -45,6 +47,113 @@ metalk8s:
 
   kubectl:
     _skip: false
+
+  kubernetes:
+    _skip: false
+
+    apiserver-proxy:
+      files:
+        apiserver-proxy.yaml.j2:
+          _opts:
+            extra_context:
+              - "From metalk8s.kubernetes.apiserver-proxy.installed":
+                  image_name: >-
+                    metalk8s-registry-from-config.invalid/metalk8s-2.7.1/nginx:1.2.3
+                  config_digest: abcdefgh12345
+                  metalk8s_version: "2.7.1"
+
+    etcd:
+      files:
+        manifest.yaml.j2:
+          _opts:
+            extra_context:
+              - "From metalk8s.kubernetes.etcd.installed":
+                  name: etcd
+                  image_name: >-
+                    metalk8s-registry-from-config.invalid/metalk8s-2.7.1/etcd:3.4.3
+                  command: [etcd, --some-arg, --some-more-args=toto]
+                  volumes:
+                    - path: /var/lib/etcd
+                      name: etcd-data
+                    - path: /etc/kubernetes/pki/etcd
+                      name: etcd-certs
+                      readOnly: true
+                  etcd_healthcheck_cert: >-
+                    /etc/kubernetes/pki/etcd/healthcheck-client.crt
+                  metalk8s_version: "2.7.1"
+                  config_digest: abcdefgh12345
+
+    files:
+      control-plane-manifest.yaml.j2:
+        _opts:
+          extra_context:
+            - "From metalk8s.kubernetes.scheduler.installed":
+                name: kube-scheduler
+                image_name: >-
+                  metalk8s-registry-from-config.invalid/metalk8s-2.7.1/kube-scheduler:1.18.5
+                host: "10.0.0.1"
+                port: http-metrics
+                scheme: HTTP
+                command:
+                  - kube-scheduler
+                  - --address=10.0.0.1
+                  - --kubeconfig=/etc/kubernetes/scheduler.conf
+                  - --leader-elect=true
+                  - --v=0
+                requested_cpu: 100m
+                ports:
+                  - name: http-metrics
+                    containerPort: 10251
+                volumes:
+                  - path: /etc/kubernetes/scheduler.conf
+                    name: kubeconfig
+                    type: File
+                metalk8s_version: "2.7.1"
+                config_digest: abcdefgh12345
+
+    kubelet:
+      files:
+        kubeadm.env.j2:
+          _opts:
+            extra_context:
+              - "From metalk8s.kubernetes.kubelet.standalone":
+                  options:
+                    container-runtime: remote
+                    container-runtime-endpoint: >-
+                      unix:///run/containerd/containerd.sock
+                    node-ip: "10.0.0.1"
+                    hostname-override: bootstrap
+                    v: 0
+
+        service-systemd.conf.j2:
+          _opts:
+            extra_context:
+              - "From metalk8s.kubernetes.kubelet.configured":
+                  kubeconfig: /etc/kubernetes/kubelet.conf
+                  config_file: /var/lib/kubelet/config.yaml
+                  env_file: /var/lib/kubelet/kubeadm-flags.env
+
+        service-standalone-systemd.conf.j2:
+          _opts:
+            extra_context:
+              - "From metalk8s.kubernetes.kubelet.standalone":
+                  env_file: /var/lib/kubelet/kubeadm-flags.env
+                  manifest_path: /etc/kubernetes/manifests
+
+    mark-control-plane:
+      files:
+        bootstrap_node_update.yaml.j2.in:
+          _opts:
+            extra_context:
+              - "From metalk8s.kubernetes.mark-control-plane.deployed":
+                  node_name: bootstrap
+                  cri_socket: unix:///run/containerd/containerd.sock
+
+      deployed.sls:
+        _opts:
+          pillar_overrides:
+            - example:
+                bootstrap_id: bootstrap
 
   reactor:
     _skip: false

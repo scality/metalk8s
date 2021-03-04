@@ -1,11 +1,13 @@
 """Expose a simple mock of Salt execution modules for use in templates."""
 
 import functools
-from typing import Any, Callable, Dict, Optional, Type
+from typing import Any, Callable, Dict, List, Optional, Type
 from unittest.mock import MagicMock
 
 import jinja2
 import salt.utils.data  # type: ignore
+
+from tests.unit.formulas.fixtures import kubernetes
 
 
 # Default minion configuration
@@ -36,11 +38,13 @@ class SaltMock:
         environment: jinja2.Environment,
         grains: Dict[str, Any],
         pillar: Dict[str, Any],
+        k8s_data: kubernetes.K8sData,
         config: Optional[Dict[str, Any]] = None,
     ):
         self._env = environment
         self._grains = grains
         self._pillar = pillar
+        self._k8s = kubernetes.KubernetesMock(k8s_data)
         self._config = dict(DEFAULT_CONFIG, **(config or {}))
 
     def __getitem__(self, key: str) -> Any:
@@ -188,10 +192,92 @@ def metalk8s_get_archives(salt_mock: SaltMock) -> Dict[str, Dict[str, str]]:
     return result
 
 
+@register("metalk8s.minions_by_role")
+def metalk8s_minions_by_role(salt_mock: SaltMock, role: str) -> List[str]:
+    """Use pillar.metalk8s.nodes to derive this."""
+    return [
+        name
+        for name, info in salt_mock._pillar["metalk8s"]["nodes"].items()
+        if role in info["roles"]
+    ]
+
+
+@register("metalk8s_kubernetes.get_object")
+def metalk8s_kubernetes_get_object(
+    salt_mock: SaltMock,
+    name: str,
+    kind: str,
+    # pylint: disable=invalid-name
+    apiVersion: str,
+    # pylint: enable=invalid-name
+    namespace: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
+    """Forward this call to the K8s API mock."""
+    return salt_mock._k8s.get(
+        api_version=apiVersion, kind=kind, name=name, namespace=namespace
+    )
+
+
+@register("mine.get")
+def mine_get(
+    salt_mock: SaltMock, tgt: str, fun: str, *_a: Any, **_k: Any
+) -> Dict[str, str]:
+    """Build a mocked view of an expected mine and return the requested value."""
+
+    # For now, we expect a single minion.
+    assert tgt == salt_mock._grains["id"], f"Getting mine data for unknown '{tgt}'"
+
+    mine_data = {
+        "control_plane_ip": salt_mock._grains["metalk8s"]["control_plane_ip"],
+        "workload_plane_ip": salt_mock._grains["metalk8s"]["workload_plane_ip"],
+    }
+
+    ca_minion = salt_mock._pillar["metalk8s"]["ca"]["minion"]
+    if tgt == ca_minion:
+        mine_data.update(
+            {
+                fun: "<b64-encoded CA cert>"
+                for fun in [
+                    "dex_ca_b64",
+                    "ingress_ca_b64",
+                    "kubernetes_etcd_ca_b64",
+                    "kubernetes_front_proxy_ca_b64",
+                    "kubernetes_root_ca_b64",
+                    "kubernetes_sa_pub_key_b64",
+                ]
+            }
+        )
+
+    return {tgt: mine_data[fun]}
+
+
+@register("pillar.get")
+def pillar_get(salt_mock: SaltMock, key: str) -> Any:
+    """Retrieve a value from the mocked pillar."""
+    res = salt_mock._pillar.copy()
+    for part in key.split(":"):
+        res = res.get(part, {})
+    return res
+
+
 # }}}
 # pylint: enable=protected-access
 
 # Static mocks {{{
+
+register_basic("hashutil.base64_b64decode")(lambda input_data: input_data)
+register_basic("metalk8s.format_san")(", ".join)
+
+# Static values for these IPs should be sufficient for rendering.
+register_basic("metalk8s_network.get_cluster_dns_ip")(
+    MagicMock(return_value="10.96.0.10")
+)
+register_basic("metalk8s_network.get_kubernetes_service_ip")(
+    MagicMock(return_value="10.96.0.1")
+)
+
+# Used in metalk8s.kubernetes.cni.calico.configured to setup virtual interfaces.
+register_basic("metalk8s_network.get_mtu_from_ip")(MagicMock(return_value=1500))
 
 # Used in metalk8s.internal.preflight.mandatory to check swap is not used.
 register_basic("mount.swaps")(MagicMock(return_value={}))

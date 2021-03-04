@@ -7,6 +7,7 @@ import pytest
 import yaml
 
 from tests.unit.formulas import paths
+from tests.unit.formulas.fixtures import kubernetes
 
 
 def _load_yaml_data(path: Path) -> Any:
@@ -38,3 +39,22 @@ def fixture_metalk8s_versions() -> Any:
 
     sys.path.pop(0)
     return versions.SALT_VERSIONS_JSON
+
+
+@pytest.fixture(scope="session", name="base_kubernetes")
+def fixture_base_kubernetes() -> kubernetes.K8sData:
+    """Return a basic dataset for mocking Kubernetes API.
+
+    This is not directly exposed as part of the rendering context, but is attached
+    in a SaltMock instance for providing data to the metalk8s_kubernetes mocks.
+    """
+    base_file = paths.DATA_DIR / "kubernetes/base.yaml"
+    with base_file.open("r") as handle:
+        list_objects = list(yaml.safe_load_all(handle))
+
+    result: kubernetes.K8sData = {}
+    for list_object in list_objects:
+        api_group = result.setdefault(list_object["apiVersion"], {})
+        api_group[list_object["objectKind"]] = list_object["items"]
+
+    return result
