@@ -185,5 +185,6 @@
   "no_system_partition": "No System Partition",
   "error_system_partitions": "System partitions request has failed.",
   "show_cluster_avg": "Show Cluster Average",
-  "cluster_avg": "Cluster avg"
+  "cluster_avg": "Cluster avg",
+  "dashboard": "Dashboard"
 }
