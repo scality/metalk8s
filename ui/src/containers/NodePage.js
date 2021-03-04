@@ -4,14 +4,12 @@ import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
 import { useRefreshEffect } from '../services/utils';
 import NodePageContent from './NodePageContent';
 import { PageContainer } from '../components/style/CommonLayoutStyle';
-import { fetchNodesIPsInterfaceAction } from '../ducks/app/nodes';
 import { fetchAlertsAlertmanagerAction } from '../ducks/app/alerts';
 import { getNodeListData } from '../services/NodeUtils';
 
 const NodePage = (props) => {
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(fetchNodesIPsInterfaceAction());
     dispatch(fetchAlertsAlertmanagerAction());
   }, [dispatch]);
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
