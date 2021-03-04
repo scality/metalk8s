@@ -266,6 +266,7 @@ def pillar_get(salt_mock: SaltMock, key: str) -> Any:
 
 # Static mocks {{{
 
+register_basic("file.join")(lambda *args: "/".join(args))
 register_basic("hashutil.base64_b64decode")(lambda input_data: input_data)
 register_basic("metalk8s.format_san")(", ".join)
 
