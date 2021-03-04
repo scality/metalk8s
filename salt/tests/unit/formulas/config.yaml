@@ -22,6 +22,9 @@ metalk8s:
   archives:
     _skip: false
 
+  beacon:
+    _skip: false
+
   reactor:
     _skip: false
 
