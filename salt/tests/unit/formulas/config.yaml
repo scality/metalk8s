@@ -290,3 +290,6 @@ metalk8s:
                   master_hostname: "10.233.0.123"
                   minion_id: bootstrap
                   saltenv: metalk8s-2.7.1
+
+  service-configuration:
+    _skip: false
