@@ -354,3 +354,6 @@ metalk8s:
                   config:
                     archives:
                       - /srv/scality/releases/example-solution-1.0.0.iso
+
+  sreport:
+    _skip: false
