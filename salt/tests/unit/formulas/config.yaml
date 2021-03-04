@@ -25,6 +25,21 @@ metalk8s:
   beacon:
     _skip: false
 
+  container-engine:
+    _skip: false
+
+    containerd:
+      files:
+        50-metalk8s.conf.j2:
+          _opts:
+            extra_context:
+              - example:  # See metalk8s.container-engine.containerd.installed
+                  containerd_args: [--log-level, info]
+                  environment:
+                    NO_PROXY: localhost,127.0.0.1,10.0.0.0/16
+                    HTTP_PROXY: http://my-proxy.local
+                    HTTPS_PROXY: https://my-proxy.local
+
   reactor:
     _skip: false
 

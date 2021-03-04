@@ -40,6 +40,8 @@ def fixture_render_contexts(
     if options is None:
         pytest.skip(f"{template_path!s} is configured to be skipped.")
 
+    # Adding this here since it derives from the template path
+    base_context["slspath"] = str(template_path.parent)
     return map(
         functools.partial(make_context, base_context),
         config.generate_option_combinations(options),
