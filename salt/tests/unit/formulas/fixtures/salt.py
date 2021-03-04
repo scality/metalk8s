@@ -308,6 +308,26 @@ register_basic("metalk8s_network.get_mtu_from_ip")(MagicMock(return_value=1500))
 # Used in metalk8s.salt.master.installed to mount Solution ISOs in the salt-master Pod.
 register_basic("metalk8s_solutions.list_available")(MagicMock(return_value={}))
 
+
+@register_basic("metalk8s_solutions.manifest_from_iso")
+def metalk8s_solutions_manifest_from_iso(path: str) -> Dict[str, Any]:
+    """Infer a mock manifest from the provided path.
+
+    Expects the path to be of the form: /srv/scality/releases/<name>-<version>.iso
+    """
+    dirname, _, basename = path.rpartition("/")
+    assert dirname == "/srv/scality/releases"
+    assert basename.endswith(".iso")
+    solution_id = basename[: -len(".iso")]
+    name, _, version = solution_id.rpartition("-")
+    return {
+        "id": solution_id,
+        "display_name": " ".join(map(str.capitalize, name.split("-"))),
+        "version": version,
+        "name": name,
+    }
+
+
 # Used in metalk8s.internal.preflight.mandatory to check swap is not used.
 register_basic("mount.swaps")(MagicMock(return_value={}))
 
