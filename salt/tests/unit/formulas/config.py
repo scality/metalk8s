@@ -32,11 +32,20 @@ DEFAULT_OPTIONS = TESTS_CONFIG["default_opts"]
 
 # pylint: disable=too-few-public-methods
 class BaseOption:
-    """Base-class for registering "option kinds".
+    """Base-class for registering "option kinds"."""
 
-    The default behavior is to check if the configured value, passed to the
-    constructor, is allowed.
-    """
+    def __init__(self, value: Any):
+        self.value = value
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__qualname__}<{self.value}>"
+
+    def update_context(self, context: Dict[str, Any]) -> None:
+        """Update the existing context given the selected value."""
+
+
+class EnumOption(BaseOption):
+    """Base-class for options with an enumeration of allowed values."""
 
     ALLOWED_VALUES: FrozenSet[Any] = frozenset()
 
@@ -44,13 +53,30 @@ class BaseOption:
         assert (
             value in self.ALLOWED_VALUES
         ), f"Value '{value}' is not allowed for option {self.__class__.__qualname__}"
-        self.value = value
-
-    def update_context(self, context: Dict[str, Any]) -> None:
-        """Update the existing context given the selected value."""
+        super().__init__(value)
 
 
-class OS(BaseOption):
+class DictOption(BaseOption):
+    """Base-class for options with arbitrary dictionaries as values.
+
+    The expected value format will be a dictionary with a single key, used as
+    an identifier for this value (to show in case of test failure), and the
+    corresponding value being stored in the `data` attribute, for later use
+    when updating the context.
+    """
+
+    def __init__(self, value: Dict[str, Dict[str, Any]]):
+        assert (
+            len(value.keys()) == 1
+        ), f"Can only provide a single key to {self.__class__.__qualname__} options"
+        _id, data = next(iter(value.items()))
+
+        # Store the _id as value for use in __repr__
+        super().__init__(value=_id)
+        self.data: Dict[str, Any] = data
+
+
+class OS(EnumOption):
     """Simulate one of the OS distributions supported by MetalK8s."""
 
     ALLOWED_VALUES: FrozenSet[str] = frozenset(
@@ -66,11 +92,18 @@ class OS(BaseOption):
         grains["osmajorrelease"] = release
 
 
+class ExtraContext(DictOption):
+    """Pass in additional context values for rendering a template."""
+
+    def update_context(self, context: Dict[str, Any]) -> None:
+        context.update(self.data)
+
+
 # pylint: enable=too-few-public-methods
 
 # Register sub-classes of `BaseOption`, with the same key as desired in the
 # configuration file
-OPTION_KINDS: Dict[str, Type[BaseOption]] = {"os": OS}
+OPTION_KINDS: Dict[str, Type[BaseOption]] = {"os": OS, "extra_context": ExtraContext}
 
 OptionSet = Iterable[BaseOption]
 

@@ -18,3 +18,17 @@ metalk8s:
         - RedHat/7
         - RedHat/8
         - Ubuntu/18
+
+  reactor:
+    _skip: false
+
+    certs:
+      renew.sls.in:
+        _opts:
+          extra_context:
+            - cert-beacon-event:
+                data:
+                  id: bootstrap
+                  certificates:
+                    - cert_path: /path/to/cert.pem
+                    - cert_path: /path/to/other.pem
