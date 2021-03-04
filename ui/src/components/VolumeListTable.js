@@ -96,6 +96,10 @@ const ActionContainer = styled.span`
   padding: ${padding.large} ${padding.base} 26px 20px;
 `;
 
+const NameLinkContaner = styled.div`
+  cursor: pointer;
+`;
+
 function GlobalFilter({
   preGlobalFilteredRows,
   globalFilter,
@@ -148,15 +152,7 @@ function GlobalFilter({
   );
 }
 
-function Table({
-  columns,
-  data,
-  nodeName,
-  onClickRow,
-  volumeName,
-  theme,
-  isSearchBar,
-}) {
+function Table({ columns, data, nodeName, volumeName, theme, isSearchBar }) {
   const history = useHistory();
   const query = useQuery();
   const querySearch = query.get('search');
@@ -244,12 +240,11 @@ function Table({
         <TableRow
           row={row}
           style={style}
-          onClickRow={onClickRow}
           isSelected={volumeName === row.values.name}
         ></TableRow>
       );
     },
-    [prepareRow, onClickRow, rows, volumeName],
+    [prepareRow, rows, volumeName],
   );
 
   return (
@@ -365,8 +360,37 @@ const VolumeListTable = (props) => {
 
   const theme = useSelector((state) => state.config.theme);
 
-  const columns = React.useMemo(
-    () => [
+  const columns = React.useMemo(() => {
+    const onClickCell = (name) => {
+      const query = new URLSearchParams(location.search);
+      const isAddNodeFilter = query.has('node');
+      const isTabSelected =
+        location.pathname.endsWith('/alerts') ||
+        location.pathname.endsWith('/metrics') ||
+        location.pathname.endsWith('/details');
+
+      if (isAddNodeFilter || !isNodeColumn) {
+        history.push(`/volumes/${name}/overview?node=${nodeName}`);
+      } else {
+        if (isTabSelected) {
+          const newPath = location.pathname.replace(
+            /\/volumes\/[^/]*\//,
+            `/volumes/${name}/`,
+          );
+          history.push({
+            pathname: newPath,
+            search: query.toString(),
+          });
+        } else {
+          history.push({
+            pathname: `/volumes/${name}/overview`,
+            search: query.toString(),
+          });
+        }
+      }
+    };
+
+    return [
       {
         Header: 'Health',
         accessor: 'health',
@@ -389,6 +413,19 @@ const VolumeListTable = (props) => {
           flex: 1,
           minWidth: '95px',
           color: theme.brand.secondary,
+        },
+        Cell: ({ value }) => {
+          return (
+            <NameLinkContaner
+              onClick={(event) => {
+                // event.preventDefault();
+                // event.stopPropagation();
+                onClickCell(value);
+              }}
+            >
+              {value}
+            </NameLinkContaner>
+          );
         },
       },
       {
@@ -491,9 +528,8 @@ const VolumeListTable = (props) => {
           return cellProps.value !== undefined ? cellProps.value + ' µs' : null;
         },
       },
-    ],
-    [volumeListData, theme, isNodeColumn],
-  );
+    ];
+  }, [volumeListData, theme, isNodeColumn, location, history, nodeName]);
   const nodeCol = {
     Header: 'Node',
     accessor: 'node',
@@ -508,43 +544,12 @@ const VolumeListTable = (props) => {
     columns.splice(2, 0, nodeCol);
   }
 
-  // handle the row selection by updating the URL
-  const onClickRow = (row) => {
-    const query = new URLSearchParams(location.search);
-    const isAddNodeFilter = query.has('node');
-    const isTabSelected =
-      location.pathname.endsWith('/alerts') ||
-      location.pathname.endsWith('/metrics') ||
-      location.pathname.endsWith('/details');
-
-    if (isAddNodeFilter || !isNodeColumn) {
-      history.push(`/volumes/${row.values.name}/overview?node=${nodeName}`);
-    } else {
-      if (isTabSelected) {
-        const newPath = location.pathname.replace(
-          /\/volumes\/[^/]*\//,
-          `/volumes/${row.values.name}/`,
-        );
-        history.push({
-          pathname: newPath,
-          search: query.toString(),
-        });
-      } else {
-        history.push({
-          pathname: `/volumes/${row.values.name}/overview`,
-          search: query.toString(),
-        });
-      }
-    }
-  };
-
   return (
     <VolumeListContainer>
       <Table
         columns={columns}
         data={volumeListData}
         nodeName={nodeName}
-        onClickRow={onClickRow}
         volumeName={volumeName}
         theme={theme}
         isSearchBar={isSearchBar}
