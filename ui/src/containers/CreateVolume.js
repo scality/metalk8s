@@ -4,8 +4,14 @@ import { useHistory } from 'react-router';
 import { Formik, Form, FieldArray, useFormikContext, useField } from 'formik';
 import * as yup from 'yup';
 import styled from 'styled-components';
-import Loader from '../components/Loader';
-import { Input, Button, Banner, Tooltip, Checkbox } from '@scality/core-ui';
+import {
+  Input,
+  Button,
+  Banner,
+  Tooltip,
+  Checkbox,
+  Loader,
+} from '@scality/core-ui';
 import isEmpty from 'lodash.isempty';
 import {
   fetchStorageClassAction,
@@ -358,7 +364,7 @@ const CreateVolume = (props) => {
   const isStorageClassExist = storageClassesName.length > 0;
 
   return isStorageClassLoading ? (
-    <Loader />
+    <Loader size="massive" centered={true} />
   ) : (
     <PageContainer>
       <CreateVolumeFormContainer>

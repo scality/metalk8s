@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
-import { Chips } from '@scality/core-ui';
+import { Chips, EmptyTable } from '@scality/core-ui';
 import {
   fontSize,
   padding,
@@ -138,22 +138,7 @@ const NodePageAlertsTab = (props) => {
         </thead>
         <Body {...getTableBodyProps()}>
           {activeAlertListData.length === 0 ? (
-            <HeadRow
-              style={{
-                width: '100%',
-                paddingTop: padding.base,
-                height: '60px',
-              }}
-            >
-              <td
-                style={{
-                  textAlign: 'center',
-                  background: theme.brand.primaryDark1,
-                }}
-              >
-                No Active Alert
-              </td>
-            </HeadRow>
+            <EmptyTable>{intl.translate('no_active_alerts')}</EmptyTable>
           ) : null}
           {rows.map((row, i) => {
             prepareRow(row);

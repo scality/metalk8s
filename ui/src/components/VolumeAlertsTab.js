@@ -1,5 +1,4 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import { useLocation } from 'react-router';
 import styled from 'styled-components';
@@ -9,7 +8,7 @@ import {
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
 import ActiveAlertsFilters from './ActiveAlertsFilters';
-import { Chips } from '@scality/core-ui';
+import { Chips, EmptyTable } from '@scality/core-ui';
 import { useTable } from 'react-table';
 import { intl } from '../translations/IntlGlobalProvider';
 import { VolumeTab } from './style/CommonLayoutStyle';
@@ -90,7 +89,6 @@ const Body = styled.tbody`
 const ActiveAlertsCard = (props) => {
   const { alertlist, PVCName } = props;
   const location = useLocation();
-  const theme = useSelector((state) => state.config.theme);
 
   const query = new URLSearchParams(location.search);
   const selectedFilter = query.get('severity');
@@ -145,40 +143,10 @@ const ActiveAlertsCard = (props) => {
 
         <Body {...getTableBodyProps()}>
           {!PVCName && (
-            <HeadRow
-              style={{
-                width: '100%',
-                paddingTop: padding.base,
-                height: '60px',
-              }}
-            >
-              <td
-                style={{
-                  textAlign: 'center',
-                  background: theme.brand.primary,
-                }}
-              >
-                {intl.translate('volume_is_not_bound')}
-              </td>
-            </HeadRow>
+            <EmptyTable> {intl.translate('volume_is_not_bound')}</EmptyTable>
           )}
           {PVCName && data?.length === 0 && (
-            <HeadRow
-              style={{
-                width: '100%',
-                paddingTop: padding.base,
-                height: '60px',
-              }}
-            >
-              <td
-                style={{
-                  textAlign: 'center',
-                  background: theme.brand.primary,
-                }}
-              >
-                {intl.translate('no_active_alerts')}
-              </td>
-            </HeadRow>
+            <EmptyTable>{intl.translate('no_active_alerts')}</EmptyTable>
           )}
           {rows?.map((row, i) => {
             prepareRow(row);
