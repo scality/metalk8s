@@ -236,3 +236,6 @@ metalk8s:
     redhat.sls:
       _opts:
         os: ["CentOS/7", "RedHat/7", "RedHat/8"]
+
+  roles:
+    _skip: false
