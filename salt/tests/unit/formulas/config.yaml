@@ -293,3 +293,64 @@ metalk8s:
 
   service-configuration:
     _skip: false
+
+  solutions:
+    _skip: false
+
+    available.sls:
+      _opts:
+        pillar_overrides:
+          - "Initial state (errors)":
+              metalk8s:
+                solutions:
+                  _errors: [Cannot read config file]
+                  available: {}
+                  config:
+                    _errors: [Cannot read config file]
+
+          # See ./data/base_pillar.yaml
+          - "Empty config (default)": {}
+
+          - "New archive in config":
+              metalk8s:
+                solutions:
+                  available:
+                    example-solution:
+                      - &example_solution
+                        archive: >-
+                          /srv/scality/releases/example-solution-1.0.0.iso
+                        name: example-solution
+                        version: "1.0.0"
+                        id: example-solution-1.0.0
+                        active: true
+                        mountpoint: /srv/scality/example-solution-1.0.0
+                  config:
+                    archives:
+                      - /srv/scality/releases/example-solution-1.0.0.iso
+                      - /srv/scality/releases/example-solution-1.2.0.iso
+
+          - "Active archive removed from config":
+              metalk8s:
+                solutions:
+                  available:
+                    example-solution:
+                      - *example_solution
+                  config:
+                    archives: []
+
+          - "Inactive archive removed from config":
+              metalk8s:
+                solutions:
+                  available:
+                    example-solution:
+                      - *example_solution
+                      - archive: >-
+                          /srv/scality/releases/example-solution-1.2.0.iso
+                        name: example-solution
+                        version: "1.2.0"
+                        id: example-solution-1.2.0
+                        active: false
+                        mountpoint: /srv/scality/example-solution-1.2.0
+                  config:
+                    archives:
+                      - /srv/scality/releases/example-solution-1.0.0.iso

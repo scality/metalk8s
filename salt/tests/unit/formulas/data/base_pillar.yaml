@@ -42,18 +42,11 @@ metalk8s:
     apiserver_key: '<some_rsa_key>'
     sa_private_key: '<some_rsa_key>'
   solutions:
-    _errors:
-      - >-
-        'Error when reading Solutions config file:
-        Failed to load "/etc/metalk8s/solutions.yaml":
-        [Errno 2] No such file or directory: ''/etc/metalk8s/solutions.yaml'''
     available: {}
     config:
-      _errors:
-        - >-
-          'Error when reading Solutions config file:
-          Failed to load "/etc/metalk8s/solutions.yaml":
-          [Errno 2] No such file or directory: ''/etc/metalk8s/solutions.yaml'''
+      kind: SolutionsConfiguration
+      apiVersion: solutions.metalk8s.scality.com/v1alpha1
+      archives: []
     environments: {}
   volumes: {}
 networks:
