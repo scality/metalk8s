@@ -40,6 +40,9 @@ metalk8s:
                     HTTP_PROXY: http://my-proxy.local
                     HTTPS_PROXY: https://my-proxy.local
 
+  internal:
+    _skip: false
+
   reactor:
     _skip: false
 
