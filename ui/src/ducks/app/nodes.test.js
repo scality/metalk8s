@@ -11,6 +11,7 @@ import {
   CREATE_NODE_FAILED,
   clusterVersionSelector,
   nodesRefreshingSelector,
+  fetchNodesIPsInterface,
 } from './nodes';
 import { allJobsSelector } from './salt';
 import {
@@ -127,6 +128,7 @@ describe('`fetchNodes` saga', () => {
     expect(_gen.next().value).toEqual(
       put({ type: UPDATE_NODES, payload: { isLoading: false } }),
     );
+    expect(_gen.next().value).toEqual(call(fetchNodesIPsInterface));
     expect(_gen.next().done).toBe(true);
   };
 
