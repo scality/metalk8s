@@ -13,7 +13,7 @@ from tests.unit.formulas.fixtures import kubernetes
 
 # Default minion configuration
 DEFAULT_CONFIG = {
-    "file_client": "local",
+    "file_client": "remote",
 }
 
 # The "public methods" are dynamically added by the `register` decorator
@@ -154,6 +154,12 @@ def register_basic(func_name: str) -> Callable[[MockFunc], MockFunc]:
 # Mock definitions {{{
 
 # Data-driven mocks {{{
+@register("config.get")
+def config_get(salt_mock: SaltMock, *args: Any, **kwargs: Any) -> Any:
+    """Read minion configuration values from a SaltMock instance."""
+    return salt_mock._config.get(*args, **kwargs)
+
+
 @register("grains.filter_by")
 def grains_filter_by(
     salt_mock: SaltMock,
@@ -296,6 +302,9 @@ def metalk8s_network_get_ip_from_cidrs(
 
 # Used in metalk8s.kubernetes.cni.calico.configured to setup virtual interfaces.
 register_basic("metalk8s_network.get_mtu_from_ip")(MagicMock(return_value=1500))
+
+# Used in metalk8s.salt.master.installed to mount Solution ISOs in the salt-master Pod.
+register_basic("metalk8s_solutions.list_available")(MagicMock(return_value={}))
 
 # Used in metalk8s.internal.preflight.mandatory to check swap is not used.
 register_basic("mount.swaps")(MagicMock(return_value={}))

@@ -131,9 +131,10 @@ class MinionState(EnumOption):
       functional, fully installed minion
     - "new": Clean up the default grains and pillar to simulate a fresh minion
       install
+    - "standalone": No ext pillar, local file client
     """
 
-    ALLOWED_VALUES: FrozenSet[str] = frozenset(("ready", "new"))
+    ALLOWED_VALUES: FrozenSet[str] = frozenset(("ready", "new", "standalone"))
 
     def update_context(self, context: Dict[str, Any]) -> None:
         if self.value == "ready":
@@ -142,6 +143,20 @@ class MinionState(EnumOption):
 
         if self.value == "new":
             context["grains"].pop("metalk8s", None)
+
+        if self.value == "standalone":
+            context["pillar"].pop("metalk8s", None)
+            context["pillar"].pop("networks", None)
+
+    @property
+    def config_overrides(self) -> Dict[str, Any]:
+        """Expose overrides for a minion configuration representing this state."""
+        if self.value == "standalone":
+            return {
+                "file_client": "local",
+            }
+
+        return {}
 
 
 class ExtraContext(DictOption):

@@ -69,15 +69,19 @@ def make_context(
     the context).
     """
     context_data = copy.deepcopy(base)
+    config_overrides = {}
 
     for option in options:
         option.update_context(context_data)
+        if isinstance(option, config.MinionState):
+            config_overrides.update(option.config_overrides)
 
     context_data["salt"] = SaltMock(
         environment=environment,
         grains=context_data["grains"],
         pillar=context_data["pillar"],
         k8s_data=copy.deepcopy(k8s_data),
+        config=config_overrides,
     )
 
     return Context(options=options, data=context_data)
