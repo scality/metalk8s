@@ -8,17 +8,27 @@ from pathlib import Path
 from typing import Any, Dict, Iterable
 
 import pytest
+import jinja2
 
 from tests.unit.formulas import config
+from tests.unit.formulas.fixtures.salt import SaltMock
 
 
 Context = namedtuple("Context", ("id", "data"))
 
 
 @pytest.fixture(scope="session", name="base_context")
-def fixture_base_context(base_grains: Dict[str, Any]) -> Dict[str, Any]:
+def fixture_base_context(
+    environment: jinja2.Environment,
+    base_grains: Dict[str, Any],
+    base_pillar: Dict[str, Any],
+) -> Dict[str, Any]:
     """Define the common basis for a rendering context."""
-    return dict(grains=base_grains)
+    return dict(
+        grains=base_grains,
+        pillar=base_pillar,
+        salt=SaltMock(environment=environment, grains=base_grains, pillar=base_pillar),
+    )
 
 
 @pytest.fixture(name="render_contexts")
