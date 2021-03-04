@@ -3,40 +3,37 @@ export const yAxisUsage = [
   {
     field: 'y',
     type: 'quantitative',
-    axis: { title: null },
+    axis: { title: null, orient: 'right' },
     // the max value of usage chart should always be 100%
     scale: { domain: [0, 100] },
   },
 ];
+// Remove the scale for the chart loading state
+export const yAxisUsageLoading = [
+  {
+    field: 'y',
+    type: 'quantitative',
+    axis: { title: null, orient: 'right' },
+  },
+];
+
 export const yAxis = [
   {
     field: 'y',
     type: 'quantitative',
-    axis: { title: null },
+    axis: { title: null, orient: 'right' },
   },
 ];
 export const yAxisWriteRead = [
   {
     field: 'write',
     type: 'quantitative',
-    axis: { title: null },
+    axis: { title: null, orient: 'right' },
   },
   {
     field: 'read',
     type: 'quantitative',
-    axis: { title: null },
-  },
-];
-export const yAxisInOut = [
-  {
-    field: 'in',
-    type: 'quantitative',
-    axis: { title: null },
-  },
-  {
-    field: 'out',
-    type: 'quantitative',
-    axis: { title: null },
+    axis: { title: null, orient: 'right' },
   },
 ];
 
