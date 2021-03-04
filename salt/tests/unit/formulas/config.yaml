@@ -357,3 +357,11 @@ metalk8s:
 
   sreport:
     _skip: false
+
+  utils:
+    _skip: false
+
+    httpd-tools:
+      installed.sls:
+        _opts:
+          os: ["CentOS/7", "Ubuntu/18"]
