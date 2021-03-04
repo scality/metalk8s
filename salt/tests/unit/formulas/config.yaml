@@ -7,6 +7,8 @@ default_opts:
     - CentOS/7
   saltenv:
     - __default__  # Will use "metalk8s-{{ pillar.metalk8s.cluster_version }}"
+  minion_state:
+    - ready
 
 metalk8s:
   # Use the special `_skip` keyword to omit rendering of a directory or formula
@@ -154,6 +156,15 @@ metalk8s:
           pillar_overrides:
             - example:
                 bootstrap_id: bootstrap
+
+  node:
+    _skip: false
+
+    grains.sls:
+      _opts:
+        minion_state:
+          - ready
+          - new
 
   reactor:
     _skip: false

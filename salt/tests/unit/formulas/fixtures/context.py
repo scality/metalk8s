@@ -3,6 +3,7 @@
 See the `tests.unit.formulas.options` module and the configuration file for details.
 """
 from collections import namedtuple
+import copy
 import functools
 from pathlib import Path
 from typing import Any, Dict, Iterable
@@ -11,6 +12,7 @@ import pytest
 import jinja2
 
 from tests.unit.formulas import config
+from tests.unit.formulas.fixtures import kubernetes
 from tests.unit.formulas.fixtures.salt import SaltMock
 
 
@@ -19,46 +21,63 @@ Context = namedtuple("Context", ("options", "data"))
 
 @pytest.fixture(scope="session", name="base_context")
 def fixture_base_context(
-    environment: jinja2.Environment,
     base_grains: Dict[str, Any],
     base_pillar: Dict[str, Any],
-    base_kubernetes: Dict[str, Dict[str, Any]],
 ) -> Dict[str, Any]:
-    """Define the common basis for a rendering context."""
-    return dict(
-        grains=base_grains,
-        pillar=base_pillar,
-        salt=SaltMock(
-            environment=environment,
-            grains=base_grains,
-            pillar=base_pillar,
-            k8s_data=base_kubernetes,
-        ),
-    )
+    """Define the common basis for a rendering context.
+
+    Do not include a SaltMock at this stage, since each data source will be replaced by
+    an independent copy for each test run (to avoid side-effects when applying options).
+    """
+    return dict(grains=base_grains, pillar=base_pillar)
 
 
 @pytest.fixture(name="render_contexts")
 def fixture_render_contexts(
-    template_path: Path, base_context: Dict[str, Any]
+    template_path: Path,
+    base_context: Dict[str, Any],
+    environment: jinja2.Environment,
+    base_kubernetes: kubernetes.K8sData,
 ) -> Iterable[Context]:
     """Generate all supported contexts for a given template."""
     options = config.get_options(template_path)
     if options is None:
         pytest.skip(f"{template_path!s} is configured to be skipped.")
 
-    # Adding this here since it derives from the template path
-    base_context["slspath"] = str(template_path.parent)
     return map(
-        functools.partial(make_context, base_context),
+        functools.partial(
+            make_context,
+            dict(base_context, slspath=str(template_path.parent)),
+            environment,
+            base_kubernetes,
+        ),
         config.generate_option_combinations(options),
     )
 
 
-def make_context(base: Dict[str, Any], options: config.OptionSet) -> Context:
-    """Prepare a rendering context for a set of option values."""
-    context_data = base.copy()
+def make_context(
+    base: Dict[str, Any],
+    environment: jinja2.Environment,
+    k8s_data: kubernetes.K8sData,
+    options: config.OptionSet,
+) -> Context:
+    """Prepare a rendering context for a set of option values.
+
+    Ensures each rendering pass will get a fresh copy of all fixtures, by copying all
+    the initial (shared) context data, and linking the context members with a SaltMock
+    instance after having applied all options (in case they remove or replace some of
+    the context).
+    """
+    context_data = copy.deepcopy(base)
 
     for option in options:
         option.update_context(context_data)
+
+    context_data["salt"] = SaltMock(
+        environment=environment,
+        grains=context_data["grains"],
+        pillar=context_data["pillar"],
+        k8s_data=copy.deepcopy(k8s_data),
+    )
 
     return Context(options=options, data=context_data)

@@ -1,6 +1,7 @@
 """Expose a simple mock of Salt execution modules for use in templates."""
 
 import functools
+import ipaddress
 from typing import Any, Callable, Dict, List, Optional, Type
 from unittest.mock import MagicMock
 
@@ -273,6 +274,24 @@ register_basic("metalk8s_network.get_cluster_dns_ip")(
 register_basic("metalk8s_network.get_kubernetes_service_ip")(
     MagicMock(return_value="10.96.0.1")
 )
+
+
+@register_basic("metalk8s_network.get_ip_from_cidrs")
+def metalk8s_network_get_ip_from_cidrs(
+    cidrs: List[str],
+    current_ip: Optional[str] = None,
+) -> str:
+    """Simple static mock for finding a host IP.
+
+    Will not play nice if we compare selected IPs for different hosts.
+    """
+    if current_ip is not None:
+        return current_ip
+
+    # Pick the first IP in first CIDR
+    network = ipaddress.IPv4Network(cidrs[0])
+    return next(map(str, network.hosts()))
+
 
 # Used in metalk8s.kubernetes.cni.calico.configured to setup virtual interfaces.
 register_basic("metalk8s_network.get_mtu_from_ip")(MagicMock(return_value=1500))

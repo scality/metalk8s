@@ -90,7 +90,9 @@ class Saltenv(BaseOption):
 
     def update_context(self, context: Dict[str, Any]) -> None:
         if self.value == "__default__":
-            cluster_version = context["pillar"]["metalk8s"]["cluster_version"]
+            cluster_version = (
+                context["pillar"].get("metalk8s", {}).get("cluster_version", "0.0.0")
+            )
             context["saltenv"] = self.saltenv = f"metalk8s-{cluster_version!s}"
         else:
             context["saltenv"] = self.value
@@ -116,6 +118,30 @@ class OS(EnumOption):
         grains["os"] = os_name
         grains["os_family"] = family
         grains["osmajorrelease"] = release
+
+
+class MinionState(EnumOption):
+    """Choose one of a few predefined minion states.
+
+    Each state will impact values in the context, usually mostly grains and
+    pillar.
+
+    Allowed states:
+    - "ready" (the default): Use default mocks and grains/pillar data from a
+      functional, fully installed minion
+    - "new": Clean up the default grains and pillar to simulate a fresh minion
+      install
+    """
+
+    ALLOWED_VALUES: FrozenSet[str] = frozenset(("ready", "new"))
+
+    def update_context(self, context: Dict[str, Any]) -> None:
+        if self.value == "ready":
+            # Nothing to do
+            return
+
+        if self.value == "new":
+            context["grains"].pop("metalk8s", None)
 
 
 class ExtraContext(DictOption):
@@ -145,6 +171,7 @@ class PillarOverrides(DictOption):
 OPTION_KINDS: Dict[str, Type[BaseOption]] = {
     "os": OS,
     "extra_context": ExtraContext,
+    "minion_state": MinionState,
     "pillar_overrides": PillarOverrides,
     "saltenv": Saltenv,
 }
