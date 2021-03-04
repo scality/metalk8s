@@ -73,6 +73,7 @@ xenial
 yaml
 Dockerfile
 GPG
+IP
 IPs
 Jinja
 JsonReporter
