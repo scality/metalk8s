@@ -14,7 +14,7 @@ from tests.unit.formulas import config
 from tests.unit.formulas.fixtures.salt import SaltMock
 
 
-Context = namedtuple("Context", ("id", "data"))
+Context = namedtuple("Context", ("options", "data"))
 
 
 @pytest.fixture(scope="session", name="base_context")
@@ -22,12 +22,18 @@ def fixture_base_context(
     environment: jinja2.Environment,
     base_grains: Dict[str, Any],
     base_pillar: Dict[str, Any],
+    base_kubernetes: Dict[str, Dict[str, Any]],
 ) -> Dict[str, Any]:
     """Define the common basis for a rendering context."""
     return dict(
         grains=base_grains,
         pillar=base_pillar,
-        salt=SaltMock(environment=environment, grains=base_grains, pillar=base_pillar),
+        salt=SaltMock(
+            environment=environment,
+            grains=base_grains,
+            pillar=base_pillar,
+            k8s_data=base_kubernetes,
+        ),
     )
 
 
@@ -55,4 +61,4 @@ def make_context(base: Dict[str, Any], options: config.OptionSet) -> Context:
     for option in options:
         option.update_context(context_data)
 
-    return Context(id="-".join(map(repr, options)), data=context_data)
+    return Context(options=options, data=context_data)

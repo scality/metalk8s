@@ -14,6 +14,7 @@ cp
 checksum
 checksums
 containerd
+dataset
 de
 debuild
 docstring
@@ -55,6 +56,7 @@ ret
 rpmlint
 rpmspec
 runtime
+saltenv
 scality
 sdk
 skopeo
@@ -70,6 +72,7 @@ xenial
 yaml
 Dockerfile
 GPG
+IPs
 Jinja
 JsonReporter
 LZ77

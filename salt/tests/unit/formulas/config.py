@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any, Dict, FrozenSet, Iterable, List, Optional, Type
 
 import yaml
+import salt.utils.dictupdate  # type: ignore
 
 from tests.unit.formulas import paths
 
@@ -38,7 +39,7 @@ class BaseOption:
         self.value = value
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__qualname__}<{self.value}>"
+        return f"{self.__class__.__qualname__}: {self.value}"
 
     def update_context(self, context: Dict[str, Any]) -> None:
         """Update the existing context given the selected value."""
@@ -76,6 +77,31 @@ class DictOption(BaseOption):
         self.data: Dict[str, Any] = data
 
 
+class Saltenv(BaseOption):
+    """Pick a saltenv to use when rendering.
+
+    Pass the special value "__default__" to use
+    "metalk8s-{{ pillar.metalk8s.cluster_version }}".
+    """
+
+    def __init__(self, value: str):
+        super().__init__(value)
+        self.saltenv = None if value == "__default__" else value
+
+    def update_context(self, context: Dict[str, Any]) -> None:
+        if self.value == "__default__":
+            cluster_version = context["pillar"]["metalk8s"]["cluster_version"]
+            context["saltenv"] = self.saltenv = f"metalk8s-{cluster_version!s}"
+        else:
+            context["saltenv"] = self.value
+
+    def __repr__(self) -> str:
+        saltenv = self.saltenv or "<not-initialized>"
+        if self.value == "__default__":
+            saltenv += " (default)"
+        return f"{self.__class__.__qualname__}: {saltenv}"
+
+
 class OS(EnumOption):
     """Simulate one of the OS distributions supported by MetalK8s."""
 
@@ -98,12 +124,30 @@ class ExtraContext(DictOption):
     def update_context(self, context: Dict[str, Any]) -> None:
         context.update(self.data)
 
+    def __repr__(self) -> str:
+        details = "\n".join(
+            f"      {key}: {value!r}" for key, value in self.data.items()
+        )
+        return f"{super().__repr__()}\n{details}"
+
+
+class PillarOverrides(DictOption):
+    """Override pillar data for a specific template."""
+
+    def update_context(self, context: Dict[str, Any]) -> None:
+        salt.utils.dictupdate.update(context["pillar"], self.data)
+
 
 # pylint: enable=too-few-public-methods
 
 # Register sub-classes of `BaseOption`, with the same key as desired in the
 # configuration file
-OPTION_KINDS: Dict[str, Type[BaseOption]] = {"os": OS, "extra_context": ExtraContext}
+OPTION_KINDS: Dict[str, Type[BaseOption]] = {
+    "os": OS,
+    "extra_context": ExtraContext,
+    "pillar_overrides": PillarOverrides,
+    "saltenv": Saltenv,
+}
 
 OptionSet = Iterable[BaseOption]
 
