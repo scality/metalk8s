@@ -179,3 +179,60 @@ metalk8s:
                   certificates:
                     - cert_path: /path/to/cert.pem
                     - cert_path: /path/to/other.pem
+
+  repo:
+    _skip: false
+
+    files:
+      apt.sources.list.j2:
+        _opts:
+          extra_context:
+            - "From metalk8s.repo.debian":
+                type: deb
+                options:
+                  trusted: "yes"
+                url: http://10.0.0.1:8080/metalk8s-2.7.1/debian/metalk8s-bionic
+                distribution: Ubuntu 18.04 Bionic Beaver
+                components: ["metalk8s-bionic"]
+
+      metalk8s-registry-config.inc.j2:
+        _opts:
+          extra_context:
+            - "From metalk8s.repo.configured":
+                archives: &example_archives
+                  metalk8s-2.7.1:
+                    iso: /archives/metalk8s.iso
+                    path: /srv/scality/metalk8s-2.7.1
+                    version: "2.7.1"
+
+      nginx.conf.j2:
+        _opts:
+          extra_context:
+            - "From metalk8s.repo.configured":
+                listening_address: "10.0.0.1"
+                listening_port: 8080
+
+      repositories-manifest.yaml.j2:
+        _opts:
+          extra_context:
+            - "From metalk8s.repo.installed":
+                container_port: 8080
+                image: >-
+                  metalk8s-registry-from-config.invalid/metalk8s-2.7.1/nginx:1.2.3
+                name: repositories
+                version: "1.0.0"
+                archives: *example_archives
+                solutions: {}
+                package_path: /packages
+                image_path: /images/
+                nginx_confd_path: /var/lib/metalk8s/repositories/conf.d
+                probe_host: "10.0.0.1"
+                metalk8s_version: "2.7.1"
+                config_digest: abcdefgh12345
+
+    debian.sls:
+      _opts:
+        os: ["Ubuntu/18"]
+    redhat.sls:
+      _opts:
+        os: ["CentOS/7", "RedHat/7", "RedHat/8"]
