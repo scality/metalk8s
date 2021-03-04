@@ -19,6 +19,9 @@ metalk8s:
         - RedHat/8
         - Ubuntu/18
 
+  archives:
+    _skip: false
+
   reactor:
     _skip: false
 

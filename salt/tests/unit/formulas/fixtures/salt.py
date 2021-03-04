@@ -167,6 +167,26 @@ def grains_filter_by(
     )
 
 
+@register("metalk8s.get_archives")
+def metalk8s_get_archives(salt_mock: SaltMock) -> Dict[str, Dict[str, str]]:
+    """Derive a map of MetalK8s archives from available pillar data."""
+    current_version = salt_mock._pillar["metalk8s"]["cluster_version"]
+    major_minor, _, patch_suffix = current_version.rpartition(".")
+    patch, _, _ = patch_suffix.partition("-")
+
+    result = {}
+    for idx, archive in enumerate(salt_mock._pillar["metalk8s"]["archives"]):
+        # NOTE: assumption is made that the first archive in pillar will match the
+        # current version - though it shouldn't affect the rendering logic.
+        version = current_version if idx == 0 else f"{major_minor}.{int(patch) + idx}"
+        result[f"metalk8s-{version}"] = {
+            "path": f"/srv/scality/metalk8s-{version}",
+            "iso": archive,
+            "version": f"{version}",
+        }
+    return result
+
+
 # }}}
 # pylint: enable=protected-access
 
