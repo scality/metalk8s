@@ -43,6 +43,9 @@ metalk8s:
   internal:
     _skip: false
 
+  kubectl:
+    _skip: false
+
   reactor:
     _skip: false
 
