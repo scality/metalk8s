@@ -232,9 +232,8 @@ def mine_get(
 ) -> Dict[str, str]:
     """Build a mocked view of an expected mine and return the requested value."""
 
-    # For now, we expect a single minion.
-    assert tgt == salt_mock._grains["id"], f"Getting mine data for unknown '{tgt}'"
-
+    # This is wrong, if target does not match the current minion, but since it's
+    # a mock, we just need to make sure we're not comparing these IPs.
     mine_data = {
         "control_plane_ip": salt_mock._grains["metalk8s"]["control_plane_ip"],
         "workload_plane_ip": salt_mock._grains["metalk8s"]["workload_plane_ip"],
@@ -266,6 +265,12 @@ def pillar_get(salt_mock: SaltMock, key: str) -> Any:
     for part in key.split(":"):
         res = res.get(part, {})
     return res
+
+
+@register("saltutil.runner")
+def saltutil_runner(salt_mock: SaltMock, method: str, **kwargs: Any) -> Any:
+    """Forward the call to a mock for `method`."""
+    return salt_mock[method](**kwargs)
 
 
 @register("slsutil.renderer")

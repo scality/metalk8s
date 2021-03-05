@@ -30,7 +30,12 @@ def fixture_base_context(
     Do not include a SaltMock at this stage, since each data source will be replaced by
     an independent copy for each test run (to avoid side-effects when applying options).
     """
-    return dict(grains=base_grains, pillar=base_pillar, __kubernetes__=base_kubernetes)
+    return dict(
+        grains=base_grains,
+        pillar=base_pillar,
+        opts={},
+        __kubernetes__=base_kubernetes,
+    )
 
 
 @pytest.fixture(name="render_contexts")
