@@ -120,6 +120,16 @@ class OS(EnumOption):
         grains["osmajorrelease"] = release
 
 
+class MinionMode(EnumOption):
+    """Switch between rendering on a plain minion or the master minion."""
+
+    ALLOWED_VALUES: FrozenSet[str] = frozenset(("minion", "master"))
+
+    def update_context(self, context: Dict[str, Any]) -> None:
+        assert "opts" in context
+        context["opts"]["__role"] = self.value
+
+
 class MinionState(EnumOption):
     """Choose one of a few predefined minion states.
 
@@ -278,6 +288,7 @@ OPTION_KINDS: Dict[str, Type[BaseOption]] = {
     "extra_context": ExtraContext,
     "k8s_overrides": KubernetesOverrides,
     "minion_state": MinionState,
+    "mode": MinionMode,
     "pillar_overrides": PillarOverrides,
     "saltenv": Saltenv,
     "volumes": Volumes,

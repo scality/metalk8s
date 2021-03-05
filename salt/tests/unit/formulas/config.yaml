@@ -11,6 +11,8 @@ default_opts:
     - ready
   volumes:
     - none
+  mode:
+    - minion
 
 metalk8s:
   # Use the special `_skip` keyword to omit rendering of a directory or formula
@@ -88,6 +90,33 @@ metalk8s:
 
     nginx-ingress:
       _skip: false
+
+    nginx-ingress-control-plane:
+      _skip: false
+
+      control-plane-ip.sls:
+        _opts:
+          mode:
+            - minion
+            - master
+          pillar_overrides:
+            - "Bootstrap node is local minion (default)": {}
+            - "Bootstrapping (errors in pillar)":
+                metalk8s:
+                  nodes:
+                    _errors: ["Some error when retrieving nodes"]
+            - "Bootstrapping (no nodes in pillar)":
+                metalk8s:
+                  nodes: []
+            - "Bootstrap minion is not local":
+                metalk8s:
+                  ca:
+                    minion: other-bootstrap
+                  nodes:
+                    bootstrap:  # default grains.id
+                      roles: [master, infra, etcd]
+                    other-bootstrap:
+                      roles: [ca, bootstrap]
 
   archives:
     _skip: false
