@@ -28,9 +28,9 @@ metalk8s:
         - Ubuntu/18
 
   addons:
-    dex:
-      _skip: false
+    _skip: false
 
+    dex:
       deployed:
         service-configuration.sls:
           _opts:
@@ -67,8 +67,6 @@ metalk8s:
                           spec: {}
 
     logging:
-      _skip: false
-
       loki:
         deployed:
           service-configuration.sls:
@@ -88,12 +86,7 @@ metalk8s:
                             kind: LokiConfig
                             spec: {}
 
-    nginx-ingress:
-      _skip: false
-
     nginx-ingress-control-plane:
-      _skip: false
-
       control-plane-ip.sls:
         _opts:
           mode:
@@ -118,12 +111,7 @@ metalk8s:
                     other-bootstrap:
                       roles: [ca, bootstrap]
 
-    prometheus-adapter:
-      _skip: false
-
     prometheus-operator:
-      _skip: false
-
       post-cleanup.sls:
         _opts:
           k8s_overrides:
@@ -159,8 +147,6 @@ metalk8s:
                           spec: {}
 
     solutions:
-      _skip: false
-
       deployed:
         configmap.sls:
           _opts:
