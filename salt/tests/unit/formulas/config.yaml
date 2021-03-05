@@ -158,6 +158,28 @@ metalk8s:
                           kind: PrometheusConfig
                           spec: {}
 
+    solutions:
+      _skip: false
+
+      deployed:
+        configmap.sls:
+          _opts:
+            pillar_overrides:
+              - "No solution available (default)": {}
+              - "Some solution available":
+                  metalk8s:
+                    solutions:
+                      available:
+                        example-solution:
+                          - &example_solution
+                            archive: >-
+                              /srv/scality/releases/example-solution-1.0.0.iso
+                            name: example-solution
+                            version: "1.0.0"
+                            id: example-solution-1.0.0
+                            active: true
+                            mountpoint: /srv/scality/example-solution-1.0.0
+
   archives:
     _skip: false
 
@@ -451,14 +473,7 @@ metalk8s:
                 solutions:
                   available:
                     example-solution:
-                      - &example_solution
-                        archive: >-
-                          /srv/scality/releases/example-solution-1.0.0.iso
-                        name: example-solution
-                        version: "1.0.0"
-                        id: example-solution-1.0.0
-                        active: true
-                        mountpoint: /srv/scality/example-solution-1.0.0
+                      - *example_solution
                   config:
                     archives:
                       - /srv/scality/releases/example-solution-1.0.0.iso
