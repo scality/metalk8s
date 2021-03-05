@@ -62,7 +62,9 @@
   Salt dependencies from "base" RHEL 7 repository
   (PR [#3083](https://github.com/scality/metalk8s/pull/3083))
 
-## Release 2.7.3 (in development)
+## Release 2.7.4 (in development)
+
+## Release 2.7.3
 ### Enhancements
 - [#2992](https://github.com/scality/metalk8s/issues/2992) - Check for conflicting
   packages (`docker`, `docker-ce` and `containerd.io`) on target machines before
