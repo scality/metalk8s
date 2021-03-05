@@ -25,6 +25,46 @@ metalk8s:
         - RedHat/8
         - Ubuntu/18
 
+  addons:
+    dex:
+      _skip: false
+
+      deployed:
+        service-configuration.sls:
+          _opts:
+            k8s_overrides:
+              - "No service configuration (default)": {}
+              - "Existing service configuration (v1alpha2)":
+                  add:
+                    - &dex_service_conf
+                      kind: ConfigMap
+                      apiVersion: v1
+                      metadata:
+                        name: metalk8s-dex-config
+                        namespace: metalk8s-auth
+                      data:
+                        config.yaml: |-
+                          apiVersion: addons.metalk8s.scality.com/v1alpha2
+                          kind: DexConfig
+                          spec: {}
+              - "Old service configuration (v1alpha1)":
+                  add:
+                    - <<: *dex_service_conf
+                      data:
+                        config.yaml: |-
+                          apiVersion: addons.metalk8s.scality.com/v1alpha1
+                          kind: DexConfig
+                          spec: {}
+              - "Unknown service configuration version":
+                  add:
+                    - <<: *dex_service_conf
+                      data:
+                        config.yaml: |-
+                          apiVersion: addons.metalk8s.scality.com/v1
+                          kind: DexConfig
+                          spec: {}
+
+
   archives:
     _skip: false
 

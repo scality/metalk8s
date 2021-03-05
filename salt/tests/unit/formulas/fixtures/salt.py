@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 
 import jinja2
 import salt.utils.data  # type: ignore
+import salt.utils.yamlloader  # type: ignore
 
 from tests.unit.formulas.fixtures import kubernetes
 
@@ -267,13 +268,30 @@ def pillar_get(salt_mock: SaltMock, key: str) -> Any:
     return res
 
 
+@register("slsutil.renderer")
+def slsutil_renderer(salt_mock: SaltMock, source: str, **_kwargs: Any) -> Any:
+    """Render a template assuming it comes from the same source saltenv."""
+    assert source.startswith("salt://")
+    template = salt_mock._env.get_template(source[len("salt://") :])
+    rendered = template.render(
+        grains=salt_mock._grains,
+        pillar=salt_mock._pillar,
+        salt=salt_mock,
+    )
+    return salt.utils.yamlloader.load(rendered)
+
+
 # }}}
 # pylint: enable=protected-access
 
 # Static mocks {{{
 
 register_basic("file.join")(lambda *args: "/".join(args))
+register_basic("file.read")(MagicMock(return_value="<file contents>"))
 register_basic("hashutil.base64_b64decode")(lambda input_data: input_data)
+register_basic("hashutil.base64_encodefile")(
+    MagicMock(return_value="<b64-encoded data>")
+)
 register_basic("log.warning")(print)
 register_basic("metalk8s.format_san")(", ".join)
 
@@ -283,6 +301,9 @@ register_basic("metalk8s_network.get_cluster_dns_ip")(
 )
 register_basic("metalk8s_network.get_kubernetes_service_ip")(
     MagicMock(return_value="10.96.0.1")
+)
+register_basic("metalk8s_network.get_oidc_service_ip")(
+    MagicMock(return_value="10.96.0.7")
 )
 
 
@@ -305,6 +326,11 @@ def metalk8s_network_get_ip_from_cidrs(
 
 # Used in metalk8s.kubernetes.cni.calico.configured to setup virtual interfaces.
 register_basic("metalk8s_network.get_mtu_from_ip")(MagicMock(return_value=1500))
+
+# Used in most metalk8s.addons.<addon>.deployed.chart, to inject overrides.
+register_basic("metalk8s_service_configuration.get_service_conf")(
+    lambda _namespace, _name, defaults: defaults
+)
 
 # Used in metalk8s.salt.master.installed to mount Solution ISOs in the salt-master Pod.
 register_basic("metalk8s_solutions.list_available")(MagicMock(return_value={}))

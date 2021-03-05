@@ -433,3 +433,9 @@ items:
         operatingSystem: linux
         osImage: CentOS Linux 7 (Core)
         systemUUID: EB0EB251-7413-4A0A-867E-0E129650C679
+
+---
+# Default configmaps list (empty)
+apiVersion: v1
+objectKind: ConfigMap
+items: []

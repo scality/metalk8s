@@ -23,13 +23,14 @@ Context = namedtuple("Context", ("options", "data"))
 def fixture_base_context(
     base_grains: Dict[str, Any],
     base_pillar: Dict[str, Any],
+    base_kubernetes: kubernetes.K8sData,
 ) -> Dict[str, Any]:
     """Define the common basis for a rendering context.
 
     Do not include a SaltMock at this stage, since each data source will be replaced by
     an independent copy for each test run (to avoid side-effects when applying options).
     """
-    return dict(grains=base_grains, pillar=base_pillar)
+    return dict(grains=base_grains, pillar=base_pillar, __kubernetes__=base_kubernetes)
 
 
 @pytest.fixture(name="render_contexts")
@@ -37,7 +38,6 @@ def fixture_render_contexts(
     template_path: Path,
     base_context: Dict[str, Any],
     environment: jinja2.Environment,
-    base_kubernetes: kubernetes.K8sData,
 ) -> Iterable[Context]:
     """Generate all supported contexts for a given template."""
     options = config.get_options(template_path)
@@ -49,7 +49,6 @@ def fixture_render_contexts(
             make_context,
             dict(base_context, slspath=str(template_path.parent)),
             environment,
-            base_kubernetes,
         ),
         config.generate_option_combinations(options),
     )
@@ -58,7 +57,6 @@ def fixture_render_contexts(
 def make_context(
     base: Dict[str, Any],
     environment: jinja2.Environment,
-    k8s_data: kubernetes.K8sData,
     options: config.OptionSet,
 ) -> Context:
     """Prepare a rendering context for a set of option values.
@@ -80,7 +78,7 @@ def make_context(
         environment=environment,
         grains=context_data["grains"],
         pillar=context_data["pillar"],
-        k8s_data=copy.deepcopy(k8s_data),
+        k8s_data=context_data.pop("__kubernetes__"),
         config=config_overrides,
     )
 

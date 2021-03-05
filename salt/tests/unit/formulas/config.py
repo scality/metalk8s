@@ -238,6 +238,37 @@ class PillarOverrides(DictOption):
         salt.utils.dictupdate.update(context["pillar"], self.data)
 
 
+class KubernetesOverrides(DictOption):
+    """Declare resources to add/remove/edit in the mocked K8s API."""
+
+    def update_context(self, context: Dict[str, Any]) -> None:
+        assert "__kubernetes__" in context
+        for action, objects in self.data.items():
+            if action == "add":
+                for obj in objects:
+                    context["__kubernetes__"].setdefault(
+                        obj["apiVersion"], {}
+                    ).setdefault(obj["kind"], []).append(obj)
+            if action == "remove":
+                for obj in objects:
+                    api_group = context["__kubernetes__"][obj["apiVersion"]]
+                    api_group[obj["kind"]] = [
+                        existing
+                        for existing in api_group[obj["kind"]]
+                        if not all(
+                            [
+                                existing["metadata"].get(key)
+                                == obj["metadata"].get(key)
+                                for key in ["name", "namespace"]
+                            ]
+                        )
+                    ]
+            if action == "edit":
+                raise NotImplementedError(
+                    "Editing mocked K8s objects is not supported yet"
+                )
+
+
 # pylint: enable=too-few-public-methods
 
 # Register sub-classes of `BaseOption`, with the same key as desired in the
@@ -245,6 +276,7 @@ class PillarOverrides(DictOption):
 OPTION_KINDS: Dict[str, Type[BaseOption]] = {
     "os": OS,
     "extra_context": ExtraContext,
+    "k8s_overrides": KubernetesOverrides,
     "minion_state": MinionState,
     "pillar_overrides": PillarOverrides,
     "saltenv": Saltenv,
