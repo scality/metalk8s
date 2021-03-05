@@ -439,3 +439,9 @@ items:
 apiVersion: v1
 objectKind: ConfigMap
 items: []
+
+---
+# Default prometheus rules list (empty)
+apiVersion: monitoring.coreos.com/v1
+objectKind: PrometheusRule
+items: []

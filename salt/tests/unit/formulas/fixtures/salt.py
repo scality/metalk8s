@@ -2,6 +2,7 @@
 
 import functools
 import ipaddress
+import json
 from typing import Any, Callable, Dict, List, Optional, Type
 from unittest.mock import MagicMock
 
@@ -10,6 +11,7 @@ import salt.utils.data  # type: ignore
 import salt.utils.yamlloader  # type: ignore
 
 from tests.unit.formulas.fixtures import kubernetes
+from tests.unit.formulas import paths
 
 
 # Default minion configuration
@@ -226,6 +228,25 @@ def metalk8s_kubernetes_get_object(
     )
 
 
+@register("metalk8s_kubernetes.list_objects")
+def metalk8s_kubernetes_list_objects(
+    salt_mock: SaltMock,
+    kind: str,
+    # pylint: disable=invalid-name
+    apiVersion: str,
+    # pylint: enable=invalid-name
+    namespace: Optional[str] = None,
+    label_selector: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+    """Forward this call to the K8s API mock."""
+    return salt_mock._k8s.list(
+        api_version=apiVersion,
+        kind=kind,
+        namespace=namespace,
+        label_selector=label_selector,
+    )
+
+
 @register("mine.get")
 def mine_get(
     salt_mock: SaltMock, tgt: str, fun: str, *_a: Any, **_k: Any
@@ -299,6 +320,16 @@ register_basic("hashutil.base64_encodefile")(
 )
 register_basic("log.warning")(print)
 register_basic("metalk8s.format_san")(", ".join)
+
+
+@register_basic("metalk8s_grafana.load_dashboard")
+def metalk8s_grafana_load_dashboard(source: str, **_kwargs: Any) -> Any:
+    """Read the relevant JSON file directly from local sources."""
+    assert source.startswith("salt://")
+    path = paths.SALT_DIR / source[len("salt://") :]
+    with path.open("r") as dashboard:
+        return json.load(dashboard)
+
 
 # Static values for these IPs should be sufficient for rendering.
 register_basic("metalk8s_network.get_cluster_dns_ip")(

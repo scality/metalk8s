@@ -121,6 +121,43 @@ metalk8s:
     prometheus-adapter:
       _skip: false
 
+    prometheus-operator:
+      _skip: false
+
+      post-cleanup.sls:
+        _opts:
+          k8s_overrides:
+            - "No old rules (default)": {}
+            - "Old rules to remove":
+                add:
+                  - kind: PrometheusRule
+                    apiVersion: monitoring.coreos.com/v1
+                    metadata:
+                      name: example-old-rule
+                      namespace: metalk8s-monitoring
+                      labels:
+                        app.kubernetes.io/part-of: metalk8s
+                        # Assume our current version is higher than this
+                        metalk8s.scality.com/version: "2.4.0"
+
+      deployed:
+        service-configuration.sls:
+          _opts:
+            k8s_overrides:
+              - "No existing configuration (default)": {}
+              - "Service configuration exists (only one of them)":
+                  add:
+                    - kind: ConfigMap
+                      apiVersion: v1
+                      metadata:
+                        name: metalk8s-prometheus-config
+                        namespace: metalk8s-monitoring
+                      data:
+                        config.yaml: |-
+                          apiVersion: addons.metalk8s.scality.com
+                          kind: PrometheusConfig
+                          spec: {}
+
   archives:
     _skip: false
 
