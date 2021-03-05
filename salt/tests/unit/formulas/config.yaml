@@ -86,6 +86,8 @@ metalk8s:
                             kind: LokiConfig
                             spec: {}
 
+    nginx-ingress:
+      _skip: false
 
   archives:
     _skip: false
