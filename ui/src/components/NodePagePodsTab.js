@@ -2,8 +2,12 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { useTable } from 'react-table';
 import styled from 'styled-components';
+import { Tooltip } from '@scality/core-ui';
+
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import { NodeTab } from './style/CommonLayoutStyle';
+import { TooltipContent } from './TableRow';
+
 import {
   STATUS_RUNNING,
   STATUS_PENDING,
@@ -184,13 +188,18 @@ const NodePagePodsTab = (props) => {
         cellStyle: { textAlign: 'center', width: '40px' },
         Cell: ({ value }) => {
           return (
-            <ExternalLink
-              href={`${config.api.url_grafana}/dashboard/db/logs?orgId=1&var-logs=Loki&var-logmetrics=Prometheus&var-metrics=Prometheus&var-podlogs=.*&var-systemlogs=.%2B&var-deployment=calico-kube-controllers&var-pod=${value}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Tooltip
+              placement={'left'}
+              overlay={<TooltipContent>Advanced Monitoring</TooltipContent>}
             >
-              <i className="fas fa-chart-line" />
-            </ExternalLink>
+              <ExternalLink
+                href={`${config.api.url_grafana}/dashboard/db/logs?orgId=1&var-logs=Loki&var-logmetrics=Prometheus&var-metrics=Prometheus&var-podlogs=.*&var-systemlogs=.%2B&var-deployment=calico-kube-controllers&var-pod=${value}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <i className="fas fa-chart-line" />
+              </ExternalLink>
+            </Tooltip>
           );
         },
       },
