@@ -9,6 +9,8 @@ default_opts:
     - __default__  # Will use "metalk8s-{{ pillar.metalk8s.cluster_version }}"
   minion_state:
     - ready
+  volumes:
+    - none
 
 metalk8s:
   # Use the special `_skip` keyword to omit rendering of a directory or formula
@@ -365,3 +367,31 @@ metalk8s:
       installed.sls:
         _opts:
           os: ["CentOS/7", "Ubuntu/18"]
+
+  volumes:
+    _skip: false
+
+    _opts:
+      pillar_overrides:
+        - "No target volume (default)": {}
+        - "Target a single volume":
+            volume: bootstrap-prometheus
+
+    unprepared.sls:
+      _opts:
+        volumes:
+          - none
+          - errors
+          - sparse
+          - block
+          - mix
+
+    prepared.sls:
+      _opts:
+        volumes:
+          - none
+          - errors
+          - bootstrap
+          - sparse
+          - block
+          - mix
