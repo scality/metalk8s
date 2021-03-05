@@ -472,7 +472,7 @@ const VolumeListTable = (props) => {
             case 'exclamation':
               return (
                 <Tooltip
-                  placement="top"
+                  placement={cellProps.row.index === 0 ? 'bottom' : 'top'}
                   overlay={
                     <TooltipContent>{volume?.errorReason}</TooltipContent>
                   }
@@ -483,7 +483,7 @@ const VolumeListTable = (props) => {
             case 'link':
               return (
                 <Tooltip
-                  placement="top"
+                  placement={cellProps.row.index === 0 ? 'bottom' : 'top'}
                   overlay={<TooltipContent>In use</TooltipContent>}
                 >
                   <i className="fas fa-link"></i>
@@ -492,7 +492,7 @@ const VolumeListTable = (props) => {
             case 'unlink':
               return (
                 <Tooltip
-                  placement="top"
+                  placement={cellProps.row.index === 0 ? 'bottom' : 'top'}
                   overlay={<TooltipContent>Unused</TooltipContent>}
                 >
                   <i className="fas fa-unlink"></i>
@@ -501,7 +501,7 @@ const VolumeListTable = (props) => {
             default:
               return (
                 <Tooltip
-                  placement="top"
+                  placement={cellProps.row.index === 0 ? 'bottom' : 'top'}
                   overlay={
                     <TooltipContent>{intl.translate('unknown')}</TooltipContent>
                   }
