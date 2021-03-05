@@ -118,6 +118,9 @@ metalk8s:
                     other-bootstrap:
                       roles: [ca, bootstrap]
 
+    prometheus-adapter:
+      _skip: false
+
   archives:
     _skip: false
 
