@@ -92,6 +92,7 @@ RUN yum install -y epel-release && \
         openssl \
         parted \
         perf \
+        qperf \
         rsync \
         salt-master \
         salt-minion \
