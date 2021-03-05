@@ -57,6 +57,7 @@ const VolumeListContainer = styled.div`
 
       div[role='columnheader'] {
         color: ${(props) => props.theme.brand.textPrimary} !important;
+        cursor: pointer;
       }
     }
 
