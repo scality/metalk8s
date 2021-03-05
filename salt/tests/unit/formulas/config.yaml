@@ -64,6 +64,28 @@ metalk8s:
                           kind: DexConfig
                           spec: {}
 
+    logging:
+      _skip: false
+
+      loki:
+        deployed:
+          service-configuration.sls:
+            _opts:
+              k8s_overrides:
+                - "No existing configuration (default)": {}
+                - "Service configuration exists":
+                    add:
+                      - kind: ConfigMap
+                        apiVersion: v1
+                        metadata:
+                          name: metalk8s-loki-config
+                          namespace: metalk8s-logging
+                        data:
+                          config.yaml: |-
+                            apiVersion: addons.metalk8s.scality.com
+                            kind: LokiConfig
+                            spec: {}
+
 
   archives:
     _skip: false
