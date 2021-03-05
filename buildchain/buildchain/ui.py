@@ -11,8 +11,9 @@ Overview:
 
 
 from pathlib import Path
+from typing import List, Optional
 
-from buildchain import builder
+from buildchain import builder as builders
 from buildchain import config
 from buildchain import constants
 from buildchain import coreutils
@@ -55,7 +56,7 @@ def task__ui_build() -> types.TaskDict:
         "actions": [run_ui_builder("build")],
         "title": utils.title_with_target1("NPM BUILD"),
         "task_dep": [
-            "_build_builder:{}".format(builder.UI_BUILDER.name),
+            "_build_builder:{}".format(builders.UI_BUILDER.name),
             "_ui_mkdir_build_root",
         ],
         "file_dep": list(utils.git_ls("ui")),
@@ -79,27 +80,47 @@ def task__ui_config() -> types.TaskDict:
     }
 
 
-def run_ui_builder(cmd: str) -> docker_command.DockerRun:
-    """Return a DockerRun instance of the UI builder for the given command."""
+def run_nodejs_builder(
+    cmd: str,
+    builder: targets.local_image.LocalImage,
+    source_dir: Path,
+    build_dir: Path,
+    entrypoint: str = "entrypoint.sh",
+    source_mounts: Optional[List[str]] = None,
+) -> docker_command.DockerRun:
+    """Return a DockerRun instance of a NodeJS-based builder for the given command.
+
+    This builder assumes a simplistic build context, where the target projects lives in
+    a source directory, exposes an entry-point script and some source files to use at
+    build time.
+
+    Used for building all UI projects.
+    """
     return docker_command.DockerRun(
-        builder=builder.UI_BUILDER,
+        builder=builder,
         command=["/entrypoint.sh", cmd],
-        run_config=docker_command.default_run_config(
-            constants.ROOT / "ui" / "entrypoint.sh"
-        ),
+        run_config=docker_command.default_run_config(source_dir / entrypoint),
         mounts=[
-            utils.bind_mount(
-                target=Path("/home/node/build"),
-                source=constants.UI_BUILD_ROOT,
-            ),
+            utils.bind_mount(target=Path("/home/node/build"), source=build_dir),
         ]
         + [
             utils.bind_ro_mount(
                 target=Path("/home/node") / path,
-                source=constants.ROOT / "ui" / path,
+                source=source_dir / path,
             )
-            for path in ["public", "src", "config-overrides.js", ".babelrc"]
+            for path in (source_mounts or [])
         ],
+    )
+
+
+def run_ui_builder(cmd: str) -> docker_command.DockerRun:
+    """Return a DockerRun instance of the UI builder for the given command."""
+    return run_nodejs_builder(
+        cmd=cmd,
+        builder=builders.UI_BUILDER,
+        source_dir=constants.ROOT / "ui",
+        build_dir=constants.UI_BUILD_ROOT,
+        source_mounts=["public", "src", "config-overrides.js", ".babelrc"],
     )
 
 

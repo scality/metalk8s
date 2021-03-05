@@ -30,10 +30,10 @@ repos:
           - 'PyYAML~=5.3.1'
         files: >
           (?x)^(
-              buildchain/dodo.py|
-              buildchain/buildchain|
-              packages/debian/common/download_packages.py|
-              salt/metalk8s/volumes/files/sparse_volume_cleanup.py
+              buildchain/dodo\.py|
+              buildchain/buildchain/.*\.py|
+              packages/debian/common/download_packages\.py|
+              salt/metalk8s/volumes/files/sparse_volume_cleanup\.py
           )$
       - id: pylint
         name: Lint Salt

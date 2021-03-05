@@ -9,17 +9,13 @@ Overview:
 └──────────┘    └───────┘    └───────┘
 """
 
-
-from pathlib import Path
-
 from buildchain import builder
-from buildchain import config
 from buildchain import constants
-from buildchain import coreutils
 from buildchain import docker_command
 from buildchain import targets
 from buildchain import types
 from buildchain import utils
+from buildchain import ui
 
 
 def task_shell_ui() -> types.TaskDict:
@@ -64,30 +60,18 @@ def task__shell_ui_build() -> types.TaskDict:
 
 
 def run_shell_ui_builder(cmd: str) -> docker_command.DockerRun:
-    """Return a DockerRun instance of the UI builder for the given command."""
-    return docker_command.DockerRun(
+    """Return a DockerRun instance of the Shell UI builder for the given command."""
+    return ui.run_nodejs_builder(
+        cmd=cmd,
         builder=builder.SHELL_UI_BUILDER,
-        command=["/entrypoint.sh", cmd],
-        run_config=docker_command.default_run_config(
-            constants.ROOT / "ui" / "entrypoint.sh"
-        ),
-        mounts=[
-            utils.bind_mount(
-                target=Path("/home/node/build"),
-                source=constants.SHELL_UI_BUILD_ROOT,
-            ),
-        ]
-        + [
-            utils.bind_ro_mount(
-                target=Path("/home/node") / path,
-                source=constants.ROOT / "shell-ui" / path,
-            )
-            for path in [
-                "src",
-                "webpack.config.prd.js",
-                "babel.config.js",
-                ".flowconfig",
-            ]
+        source_dir=constants.ROOT / "shell-ui",
+        build_dir=constants.SHELL_UI_BUILD_ROOT,
+        entrypoint="../ui/entrypoint.sh",
+        source_mounts=[
+            "src",
+            "webpack.config.prd.js",
+            "babel.config.js",
+            ".flowconfig",
         ],
     )
 
