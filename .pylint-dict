@@ -25,6 +25,7 @@ gofmt
 html
 init
 io
+json
 kubernetes
 kubectl
 kubelet
