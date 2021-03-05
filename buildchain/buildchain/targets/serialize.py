@@ -149,9 +149,7 @@ SaltState = collections.namedtuple("SaltState", ["content", "shebang", "imports"
 
 
 def _literal_representer(dumper: yaml.BaseDumper, data: Any) -> Any:
-    scalar = yaml.representer.SafeRepresenter.represent_str(  # type: ignore
-        dumper, data
-    )
+    scalar = yaml.dumper.SafeDumper.represent_str(dumper, data)  # type: ignore
     scalar.style = "|"
     return scalar
 
@@ -161,7 +159,7 @@ def _bytestring_representer(dumper: yaml.BaseDumper, data: Any) -> Any:
 
 
 def _yaml_dump(data: Sequence[Any], fp: IO[Any]) -> None:
-    dumper = yaml.SafeDumper(fp, sort_keys=False)  # type: ignore
+    dumper = yaml.SafeDumper(fp, sort_keys=False)
     dumper.add_representer(YAMLDocument.Literal, _literal_representer)  # type: ignore
     dumper.add_representer(  # type: ignore
         YAMLDocument.ByteString, _bytestring_representer
