@@ -159,6 +159,65 @@ class MinionState(EnumOption):
         return {}
 
 
+class Volumes(EnumOption):
+    """Override pillar data for volumes using simple aliases.
+
+    Allowed values:
+    - "none" (default): no volume in pillar
+    - "errors": some _errors in pillar
+    - "bootstrap": pillar.metalk8s.volumes set to None
+    - "sparse": some sparse loop volumes
+    - "block": some raw block volumes
+    - "mix": mix of both volume kinds
+    """
+
+    ALLOWED_VALUES: FrozenSet[str] = frozenset(
+        ("none", "errors", "bootstrap", "sparse", "block", "mix")
+    )
+
+    @staticmethod
+    def _generate_volume(name: str, kind: str, node: str) -> Dict[str, Any]:
+        volume: Dict[str, Any] = {
+            "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+            "kind": "Volume",
+            "metadata": {
+                "name": name,
+                "uid": "abcde-12345",
+            },
+            "spec": {
+                "mode": "Filesystem",
+                "nodeName": node,
+            },
+        }
+        if kind == "sparse":
+            volume["spec"]["sparseLoopDevice"] = {"size": "20Gi"}
+        elif kind == "block":
+            volume["spec"]["rawBlockDevice"] = {"devicePath": "/dev/sdb1"}
+        return volume
+
+    def update_context(self, context: Dict[str, Any]) -> None:
+        volumes: Optional[Dict[str, Any]]
+        if self.value == "bootstrap":
+            volumes = None
+        elif self.value == "errors":
+            volumes = {"_errors": ["Some error when retrieving volumes"]}
+        else:
+            volumes = {}
+            node = context["grains"]["id"]
+            if self.value in ["sparse", "mix"]:
+                for service in ["prometheus", "alertmanager"]:
+                    name = f"{node}-{service}"
+                    volumes[name] = self._generate_volume(name, "sparse", node)
+            if self.value in ["block", "mix"]:
+                for service in ["loki", "cool-app"]:
+                    name = f"{node}-{service}"
+                    volumes[name] = self._generate_volume(name, "block", node)
+
+        salt.utils.dictupdate.update(
+            context["pillar"], {"metalk8s": {"volumes": volumes}}
+        )
+
+
 class ExtraContext(DictOption):
     """Pass in additional context values for rendering a template."""
 
@@ -189,6 +248,7 @@ OPTION_KINDS: Dict[str, Type[BaseOption]] = {
     "minion_state": MinionState,
     "pillar_overrides": PillarOverrides,
     "saltenv": Saltenv,
+    "volumes": Volumes,
 }
 
 OptionSet = Iterable[BaseOption]
