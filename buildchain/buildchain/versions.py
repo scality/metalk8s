@@ -206,6 +206,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     # Local images
     Image(
+        name="metalk8s-alert-logger",
+        version=VERSION,
+        digest=None,
+    ),
+    Image(
         name="metalk8s-ui",
         version=VERSION,
         digest=None,
