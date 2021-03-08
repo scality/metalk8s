@@ -14,12 +14,18 @@ models:
       method: clobber
       retryFetch: true
       haltOnFailure: true
+  - ShellCommand: &git_pull_terraform
+      name: Git pull terraform snapshot
+      command: >
+        git clone --depth 1 "git@github.com:scality/terraform-snapshot.git"
+        --branch "0.1.0"
+      haltOnFailure: true
   - ShellCommand: &git_pull_ssh
       name: Git pull on bastion
       command: >
         ssh -F ssh_config bastion --
         git clone "https://github.com/scality/metalk8s" --branch "%(prop:branch)s"
-      workdir: &terraform_workdir build/eve/workers/openstack-terraform/terraform/
+      workdir: &terraform_workdir build/terraform-snapshot/terraform/
       haltOnFailure: true
   - ShellCommand: &yum_clean_all
       # Eve cache the workers, so time to time yum repositories definition are
@@ -64,7 +70,7 @@ models:
         SSH_CONFIG: ssh_config
         SSH_HOST: bootstrap
       command: >
-        git checkout "%(prop:branch)s" &&
+        pushd "%(prop:builddir)s/build" && git checkout "%(prop:branch)s" && popd &&
         scp -F "$SSH_CONFIG" %(prop:builddir)s/build/eve/wait_pods_stable.sh "$SSH_HOST":/tmp/ &&
         ssh -F "$SSH_CONFIG" "$SSH_HOST" sudo /tmp/wait_pods_stable.sh
         --sleep-time "$SLEEP_TIME" --stabilization-time "$STABILIZATION_TIME"
@@ -535,15 +541,9 @@ models:
 
   # --- Re-usable steps related to terraform actions ---
   - ShellCommand: &terraform_install
-      name: Download and install terraform
-      env:
-        TF_VERSION: "0.12.3"
-      command: >
-        TF_URL="https://releases.hashicorp.com/terraform/${TF_VERSION}/";
-        TF_FILE="terraform_${TF_VERSION}_linux_amd64.zip";
-        curl --retry 5 -O "${TF_URL}${TF_FILE}" &&
-        sudo unzip "${TF_FILE}" -d /usr/local/sbin/ &&
-        rm -f "${TF_FILE}"
+      name: Install terraform and requirements
+      command: bash ../requirements.sh
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &terraform_install_check
       name: Check that terraform was installed
@@ -616,7 +616,7 @@ models:
       env:
         <<: *_env_terraform
         SNAPSHOT_NAME: "metalk8s-%(prop:metalk8s_version)s-%(prop:os:-centos-7)s-%(prop:environment_type)s-%(prop:environment_name)s"
-      command: ./generate_snapshot.sh
+      command: ../generate_snapshot.sh
       workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &terraform_destroy
@@ -1683,10 +1683,10 @@ stages:
         CLASS_NAME: "single node.%(prop:os:-centos-7)s"
         TEST_NAME: simple environment
     simultaneous_build: 20
-    worker: &terraform_worker
-      <<: *single_node_worker
+    worker: &openstack_worker
+      type: openstack
+      image: CentOS-7-x86_64-GenericCloud-1809.qcow2
       flavor: m1.medium
-      path: eve/workers/openstack-terraform
     steps:
       - Git: *git_pull
       - ShellCommand:
@@ -1697,6 +1697,7 @@ stages:
             STEP_NAME: "single-node-install-%(prop:os:-centos-7)s"
       - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
+      - ShellCommand: *git_pull_terraform
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
       - ShellCommand: *check_iso_checksum
@@ -1915,7 +1916,7 @@ stages:
         CLASS_NAME: "%(prop:promoted_version_type:-unknown)s.%(prop:environment_type)s.%(prop:os:-centos-7)s"
         TEST_NAME: "%(prop:environment_name)s"
     simultaneous_build: 20
-    worker: *terraform_worker
+    worker: *openstack_worker
     steps:
       - Git: *git_pull
       - ShellCommand:
@@ -1926,6 +1927,7 @@ stages:
             STEP_NAME: "%(prop:environment_type)s-%(prop:environment_name)s-upgrade-%(prop:promoted_version_type:-unknown)s-%(prop:os:-centos-7)s"
       - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
+      - ShellCommand: *git_pull_terraform
       # --- Get ISO for version N ---
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
@@ -2128,7 +2130,7 @@ stages:
         CLASS_NAME: "multi node.%(prop:os:-centos-7)s"
         TEST_NAME: "1 bootstrap %(prop:nodes_count:-1)s master,etcd"
     simultaneous_builds: 20
-    worker: *terraform_worker
+    worker: *openstack_worker
     steps:
       - Git: *git_pull
       - SetProperty:
@@ -2145,6 +2147,7 @@ stages:
             STEP_NAME: "multiple-nodes-%(prop:os:-centos-7)s"
       - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
+      - ShellCommand: *git_pull_terraform
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
       - ShellCommand: *check_iso_checksum
@@ -2296,7 +2299,7 @@ stages:
         CLASS_NAME: "multi node.%(prop:os:-centos-7)s"
         TEST_NAME: bootstrap restore
       simultaneous_builds: 20
-    worker: *terraform_worker
+    worker: *openstack_worker
     steps:
       - Git: *git_pull
       - SetProperty:
@@ -2313,6 +2316,7 @@ stages:
             STEP_NAME: bootstrap-restore
       - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
+      - ShellCommand: *git_pull_terraform
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
       - ShellCommand: *check_iso_checksum
@@ -2481,7 +2485,7 @@ stages:
         CLASS_NAME: "single node.%(prop:os:-centos-7)s"
         TEST_NAME: solutions
     simultaneous_builds: 20
-    worker: *terraform_worker
+    worker: *openstack_worker
     steps:
       - Git: *git_pull
       - ShellCommand:
@@ -2492,6 +2496,7 @@ stages:
             STEP_NAME: single-node-solutions
       - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
+      - ShellCommand: *git_pull_terraform
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
       - ShellCommand: *check_iso_checksum
