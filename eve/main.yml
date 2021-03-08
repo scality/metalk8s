@@ -2213,13 +2213,6 @@ stages:
             <<: *_env_mount_iso_ssh
             ARCHIVE: /archives/metalk8s.iso
       - ShellCommand: *run_bootstrap_ssh
-      - ShellCommand: &install_kubectl_bootstrap_ssh
-          name: Install kubectl on the boostrap node
-          command: >
-            ssh -F ssh_config bootstrap
-            sudo yum install -y kubectl --disablerepo=*
-            --enablerepo=metalk8s-kubernetes
-          workdir: *terraform_workdir
       - ShellCommand: *git_pull_ssh
       - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand:
@@ -2514,7 +2507,6 @@ stages:
       - ShellCommand: *mount_iso_ssh
       - ShellCommand: *run_bootstrap_ssh
       - ShellCommand: *provision_volumes_ssh
-      - ShellCommand: *install_kubectl_bootstrap_ssh
       - ShellCommand: *untaint_bootstrap_ssh
       - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand:
