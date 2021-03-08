@@ -1215,6 +1215,21 @@ stages:
             '
           haltOnFailure: true
       - ShellCommand:
+          name: Wait for shell-ui to be available
+          command: |
+            bash -c '
+              attempts=0
+              until curl -Isfo /dev/null http://localhost:8080/shell/config.json; do
+                (( attempts++ ))
+                if [ $attempts -gt 100 ]; then
+                  >&2 echo "Failed to reach shell-ui after 5 minutes"
+                  exit 1
+                fi
+                sleep 3
+              done
+            '
+          haltOnFailure: true
+      - ShellCommand:
           name: Run all UI integration tests
           workdir: build/ui
           env:

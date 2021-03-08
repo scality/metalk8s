@@ -5,6 +5,6 @@
     "url_grafana": "/grafana",
     "url_doc": "/docs",
     "url_alertmanager": "/api/alertmanager",
-    "url_navbar": "/shell/solution-ui-navbar.1.0.0.js",
+    "url_navbar": "http://localhost:8080/shell/solution-ui-navbar.1.0.0.js",
     "url_navbar_config": "/shell/config.json"
 }
