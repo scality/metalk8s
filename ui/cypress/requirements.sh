@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# This script is designed to run on RHEL/CentOS with `sudo` installed
+# Mainly used in the CI
+
+if ! [ -f /etc/redhat-release ]; then
+    echo "Only RedHat family dists are supported" 1>&2
+    exit 1
+fi
+
 set -xue -o pipefail
 
 YUM_OPTS=(

@@ -473,6 +473,14 @@ models:
         "
       workdir: build/eve/workers/openstack-terraform/terraform/
       haltOnFailure: true
+  - ShellCommand: &install_cypress_ssh
+      name: Install Cypress on Bastion
+      command: >
+        ssh -F ssh_config bastion --
+        "cd metalk8s &&
+        bash ui/cypress/requirements.sh"
+      workdir: build/eve/workers/openstack-terraform/terraform/
+      haltOnFailure: true
   - ShellCommand: &bastion_ui_tests
       name: Run UI tests on Bastion
       env: &_env_bastion_ui_tests
@@ -1721,6 +1729,7 @@ stages:
       - ShellCommand: *git_pull_ssh
       - ShellCommand: *bastion_fast_tests
       - SetPropertyFromCommand: *set_bootstrap_cp_ip_ssh
+      - ShellCommand: *install_cypress_ssh
       - ShellCommand: *bastion_ui_tests
       - ShellCommand: *collect_cypress_result_ssh
       - Upload: *upload_cypress_artifacts
