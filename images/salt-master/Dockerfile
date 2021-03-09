@@ -27,6 +27,12 @@ gpgkey=https://repo.saltstack.com/py3/redhat/\$releasever/\$basearch/archive/%s/
  && yum install -y salt-master salt-api salt-ssh openssh-clients \
  && yum clean all
 
+# Disable host key checking due to a bug in salt-ssh
+# Sees: https://github.com/saltstack/salt/issues/59691
+RUN mkdir /root/.ssh \
+  && printf "Host *\n\
+  StrictHostKeyChecking no\n" > /root/.ssh/config
+
 # salt-master, salt-api
 EXPOSE 4505 4506
 

@@ -1682,6 +1682,9 @@ stages:
       - ShellCommand: *mount_iso_ssh
       - ShellCommand: *run_bootstrap_ssh
       - ShellCommand: *provision_volumes_ssh
+      - ShellCommand:
+          <<: *untaint_bootstrap
+          doStepIf: true
     # NOTE: This section only run if property "install_solution" is True
     # {{{
       - ShellCommand: *retrieve_iso_solution
@@ -1689,7 +1692,6 @@ stages:
       - ShellCommand: *import_solution
       - ShellCommand: *activate_solution
       - ShellCommand: *create_solution_env
-      - ShellCommand: *untaint_bootstrap
       - ShellCommand: *deploy_solution
       - ShellCommand: *wait_for_solution_operator
     # }}}

@@ -1,0 +1,39 @@
+get_listening_processes:
+  - result: {}
+  - net_conns_ret:
+      # `::` will be replaced with `0.0.0.0`
+      - laddr: ["::", 6443]
+        pid: 111
+      # `::1` will be replaced with `127.0.0.1`
+      - laddr: ["::1", 456]
+        pid: 123
+      - laddr: ["1.2.3.4", 123]
+        pid: 222
+      - laddr: ["2.3.4.5", 123]
+        pid: 333
+      # Ignored as status != LISTEN
+      - laddr: ["127.0.0.1", 12345]
+        status: ESTABILISHED
+        pid: 456
+    process_ret:
+      111: apiserver
+      123: likely-something
+      222: my-process
+      333: my-second-process
+      456: do-we-care
+    result:
+      "123":
+        1.2.3.4:
+          pid: 222
+          name: my-process
+        2.3.4.5:
+          pid: 333
+          name: my-second-process
+      "6443":
+        0.0.0.0:
+          pid: 111
+          name: apiserver
+      "456":
+        127.0.0.1:
+          pid: 123
+          name: likely-something
