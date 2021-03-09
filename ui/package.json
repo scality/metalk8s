@@ -47,8 +47,7 @@
     "eject": "react-scripts eject",
     "test:nowatch": "CI=true react-app-rewired test --env=jsdom --reporters=default --reporters=jest-junit",
     "test:integration": "cypress run --spec 'cypress/integration/**/*.spec.js'",
-    "test:e2e": "cypress run --spec 'cypress/integration/e2e/**/!(Solutions).feature'",
-    "test:e2esolutions": "cypress run --spec 'cypress/integration/e2e/Solutions.feature'",
+    "test:e2e": "cypress run --spec 'cypress/integration/e2e/**/*.feature'",
     "flow": "flow check"
   },
   "eslintConfig": {

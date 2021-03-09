@@ -9,13 +9,10 @@ import { Layout as CoreUILayout, Notifications } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 import NodeCreateForm from './NodeCreateForm';
 import NodePage from './NodePage';
-import SolutionList from './SolutionList';
-import EnvironmentCreationForm from './EnvironmentCreationForm';
 import NodeDeployment from './NodeDeployment';
 import ClusterMonitoring from './ClusterMonitoring';
 import About from './About';
 import PrivateRoute from './PrivateRoute';
-import SolutionDetail from './SolutionDetail';
 import VolumePage from './VolumePage';
 import DashboardPage from './DashboardPage';
 
@@ -35,7 +32,6 @@ const Layout = () => {
   const notifications = useTypedSelector(
     (state) => state.app.notifications.list,
   );
-  const solutions = useTypedSelector((state) => state.app.solutions.solutions);
   const isUserLoaded = useTypedSelector((state) => !!state.oidc.user);
   const api = useTypedSelector((state) => state.config.api);
   const dispatch = useDispatch();
@@ -113,19 +109,6 @@ const Layout = () => {
         }),
         'data-cy': 'sidebar_item_volumes',
       },
-      {
-        label: intl.translate('environments'),
-        icon: <i className="fas fa-th" />,
-        onClick: () => {
-          history.push('/environments');
-        },
-        active: useRouteMatch({
-          path: '/environments',
-          exact: false,
-          strict: true,
-        }),
-        'data-cy': 'sidebar_item_environments',
-      },
     ],
   };
   // Remove the access to dashboard page if no flags property in the config.json,
@@ -135,21 +118,6 @@ const Layout = () => {
     (api && api.flags && !api.flags.includes('dashboard'))
   ) {
     sidebarConfig.actions.shift();
-  }
-
-  let applications = null;
-  if (solutions?.length) {
-    applications = solutions.reduce((prev, solution) => {
-      let solutionDeployedVersions = solution.versions.filter(
-        (version) => version?.deployed && version?.ui_url,
-      );
-      let app = solutionDeployedVersions.map((version) => ({
-        label: solution.name,
-        // TO BE IMPROVED in core-ui to allow display Link or <a></a>
-        onClick: () => window.open(version.ui_url, '_self'),
-      }));
-      return [...prev, ...app];
-    }, []);
   }
 
   // In this particular case, the label should not be translated
@@ -217,16 +185,6 @@ const Layout = () => {
     },
   ];
 
-  const applicationsAction = {
-    type: 'dropdown',
-    icon: <i className="fas fa-th" />,
-    items: applications,
-  };
-
-  if (applications && applications.length) {
-    rightActions.splice(1, 0, applicationsAction);
-  }
-
   const navbar = {
     productName: intl.translate('product_name'),
     logo: <img alt="logo" src={process.env.PUBLIC_URL + theme.logo_path} />,
@@ -261,24 +219,13 @@ const Layout = () => {
             component={CreateVolume}
           />
           <PrivateRoute path="/nodes" component={NodePage} />
-          <PrivateRoute exact path="/environments" component={SolutionList} />
           <PrivateRoute path="/volumes/:name?" component={VolumePage} />
-          <PrivateRoute
-            exact
-            path="/environments/create-environment"
-            component={EnvironmentCreationForm}
-          />
           <PrivateRoute exact path="/about" component={About} />
 
           {api && api.flags && api.flags.includes('dashboard') && (
             <PrivateRoute exact path="/dashboard" component={DashboardPage} />
           )}
           <PrivateRoute exact path="/" component={ClusterMonitoring} />
-          <PrivateRoute
-            exact
-            path="/environments/:id"
-            component={SolutionDetail}
-          />
         </Switch>
       </CoreUILayout>
     </ThemeProvider>

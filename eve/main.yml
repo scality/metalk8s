@@ -2521,30 +2521,6 @@ stages:
           env:
             <<: *_env_bastion_tests
             PYTEST_FILTERS: "solution"
-      - SetPropertyFromCommand: *set_bootstrap_cp_ip_ssh
-      - ShellCommand: &import_solution_archive_ssh
-          name: Import Solution example-solution archive
-          env:
-            SOLUTION_ARCHIVE: /var/tmp/example-solution.iso
-          command: >
-            ssh -F ssh_config bootstrap
-            sudo /var/tmp/metalk8s/solutions.sh
-            import --archive "$SOLUTION_ARCHIVE"
-          workdir: build/eve/workers/openstack-terraform/terraform/
-          haltOnFailure: true
-      - ShellCommand:
-          <<: *import_solution_archive_ssh
-          name: Import Solution next example-solution archive
-          env:
-            SOLUTION_ARCHIVE: /var/tmp/example-solution-next.iso
-      - ShellCommand:
-          <<: *bastion_ui_tests
-          name: Run Solutions UI tests
-          env:
-            <<: *_env_bastion_ui_tests
-            TEST_FILTER: "e2esolutions"
-      - ShellCommand: *collect_cypress_result_ssh
-      - Upload: *upload_cypress_artifacts
       - ShellCommand: *generate_report_over_ssh
       - ShellCommand:
           <<: *collect_report_over_ssh
