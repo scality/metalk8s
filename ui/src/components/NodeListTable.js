@@ -44,7 +44,6 @@ const NodeListContainer = styled.div`
       height: 10px;
     }
     tr {
-      border-bottom: 5px solid ${(props) => props.theme.brand.primary};
       :last-child {
         td {
           border-bottom: 0;
@@ -87,6 +86,8 @@ const CreateNodeButton = styled(Button)`
 const TableRow = styled(HeadRow)`
   height: 76px;
   border-radius: 10px;
+  margin: 5px 0px;
+  box-sizing: border-box;
   &:hover,
   &:focus {
     background-color: ${(props) => props.theme.brand.backgroundBluer};
