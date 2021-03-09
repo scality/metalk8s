@@ -1,5 +1,6 @@
 """Expose a simple mock of Salt execution modules for use in templates."""
 
+import copy
 import functools
 import ipaddress
 import json
@@ -7,7 +8,9 @@ from typing import Any, Callable, Dict, List, Optional, Type
 from unittest.mock import MagicMock
 
 import jinja2
+import pytest
 import salt.utils.data  # type: ignore
+import salt.utils.dictupdate  # type: ignore
 import salt.utils.yamlloader  # type: ignore
 
 from tests.unit.formulas.fixtures import kubernetes
@@ -42,14 +45,38 @@ class SaltMock:
         environment: jinja2.Environment,
         grains: Dict[str, Any],
         pillar: Dict[str, Any],
+        opts: Dict[str, Any],
+        minions: Dict[str, Any],
         k8s_data: kubernetes.K8sData,
         config: Optional[Dict[str, Any]] = None,
     ):
         self._env = environment
         self._grains = grains
         self._pillar = pillar
+        self._opts = opts
+        self._minions = minions
         self._k8s = kubernetes.KubernetesMock(k8s_data)
         self._config = dict(DEFAULT_CONFIG, **(config or {}))
+
+    def _as_minion(self, minion: str) -> "SaltMock":
+        try:
+            minion_info = self._minions[minion]
+        except KeyError:
+            pytest.fail(f"SalMock has no minion '{minion}' configured")
+
+        grains = copy.deepcopy(self._grains)
+        grains["id"] = minion
+        salt.utils.dictupdate.update(grains, minion_info.get("grains", {}))
+
+        return SaltMock(
+            environment=self._env,
+            grains=grains,
+            pillar=self._pillar,
+            opts=self._opts,
+            minions=self._minions,
+            k8s_data=self._k8s.data,
+            config=self._config,
+        )
 
     def __getitem__(self, key: str) -> Any:
         try:
@@ -161,6 +188,15 @@ def register_basic(func_name: str) -> Callable[[MockFunc], MockFunc]:
 def config_get(salt_mock: SaltMock, *args: Any, **kwargs: Any) -> Any:
     """Read minion configuration values from a SaltMock instance."""
     return salt_mock._config.get(*args, **kwargs)
+
+
+@register("grains.get")
+def grains_get(salt_mock: SaltMock, key: str) -> Any:
+    """Read grain values from a SaltMock instance."""
+    result = salt_mock._grains
+    for part in key.split(":"):
+        result = result[part]
+    return result
 
 
 @register("grains.filter_by")
@@ -291,7 +327,31 @@ def pillar_get(salt_mock: SaltMock, key: str) -> Any:
 @register("saltutil.runner")
 def saltutil_runner(salt_mock: SaltMock, method: str, **kwargs: Any) -> Any:
     """Forward the call to a mock for `method`."""
+    assert (
+        salt_mock._opts["__role"] == "master"
+    ), "Cannot use 'saltutil.runner' outside of a master context"
+
+    # Provide runner mocks here (for now, since we don't have many)
+    if method == "manage.up":
+        return list(salt_mock._minions)
+
     return salt_mock[method](**kwargs)
+
+
+@register("saltutil.cmd")
+def saltutil_cmd(
+    salt_mock: SaltMock,
+    tgt: str,
+    fun: str,
+    arg: Optional[List[Any]] = None,
+    kwarg: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Execute the desired mock function as if running on the targeted minion(s)."""
+    # Currently only support a single minion
+    assert tgt in salt_mock._minions, f"Minion '{tgt}' does not exist"
+
+    target_minion = salt_mock._as_minion(tgt)
+    return {tgt: {"ret": target_minion[fun](*(arg or []), **(kwarg or {}))}}
 
 
 @register("slsutil.renderer")

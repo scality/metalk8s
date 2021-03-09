@@ -309,6 +309,35 @@ metalk8s:
           - ready
           - new
 
+  orchestrate:
+    _opts:
+      mode:
+        - master
+
+    bootstrap:
+      _skip: false
+
+      accept-minion.sls:
+        _opts:
+          pillar_overrides:
+            - "Bootstrap minion is available":
+                bootstrap_id: bootstrap
+            # The mocks will only return known minions for `manage.up`
+            - "Bootstrap minion is unavailable":
+                bootstrap_id: unavailable-bootstrap
+
+      init.sls:
+        _opts:
+          pillar_overrides:
+            - "Bootstrap node exists in K8s":
+                bootstrap_id: bootstrap
+            - "Bootstrap node does not exist yet":
+                bootstrap_id: bootstrap
+                metalk8s:
+                  nodes: {}
+            # FIXME: metalk8s.orchestrate.bootstrap.init does not handle an
+            # unavailable minion yet
+
   reactor:
     _skip: false
 
