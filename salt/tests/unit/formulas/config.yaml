@@ -338,6 +338,27 @@ metalk8s:
             # FIXME: metalk8s.orchestrate.bootstrap.init does not handle an
             # unavailable minion yet
 
+    certs:
+      _skip: false
+
+      renew.sls:
+        _opts:
+          pillar_overrides:
+            - "No certificate to process":
+                orchestrate:
+                  certificates: []
+                  target: bootstrap
+            - "Some certificates to process":
+                orchestrate:
+                  certificates:
+                    # Client
+                    - /etc/kubernetes/pki/etcd/salt-master-etcd-client.crt
+                    # Kubeconfig
+                    - /etc/kubernetes/admin.conf
+                    # Server
+                    - /etc/kubernetes/pki/apiserver.crt
+                  target: bootstrap
+
   reactor:
     _skip: false
 
