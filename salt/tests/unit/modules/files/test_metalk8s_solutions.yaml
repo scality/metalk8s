@@ -368,6 +368,10 @@ list_available:
   - mountpoints:
       /: {}
       /srv/scality/metalk8s-x.y.z: {}
+      # Ignored as it does not contain any manifests
+      /srv/scality/no-solution:
+        alt_device: /tmp/not-a-solution.iso
+        fstype: iso9660
   # Ok - No mountpoint
   - {}
 

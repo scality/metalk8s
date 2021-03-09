@@ -62,6 +62,10 @@
   Salt dependencies from "base" RHEL 7 repository
   (PR [#3083](https://github.com/scality/metalk8s/pull/3083))
 
+- [#3128](https://github.com/scality/metalk8s/issues/3128) - No longer assume ISOs
+  mounted under `/srv/scality` are Solutions
+  (PR [#3182](https://github.com/scality/metalk8s/pull/3182))
+
 ### Deprecations and Removals
 
 - [#3168](https://github.com/scality/metalk8s/issues/3168) - [UI] Remove the environment page
