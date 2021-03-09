@@ -16,7 +16,13 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import { useQuery } from '../services/utils';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
-import { Button, ProgressBar, Tooltip, EmptyTable } from '@scality/core-ui';
+import {
+  Button,
+  ProgressBar,
+  Tooltip,
+  SearchInput,
+  EmptyTable,
+} from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 import TableRow from './TableRow';
 import {
@@ -126,28 +132,14 @@ function GlobalFilter({
   }, 500);
 
   return (
-    <input
+    <SearchInput
       value={value || undefined}
       onChange={(e) => {
         setValue(e.target.value);
         onChange(e.target.value);
       }}
       placeholder={`Search`}
-      style={{
-        fontSize: '1.1rem',
-        color: theme.brand.textPrimary,
-        border: 'solid 1px #3b4045',
-        width: '223px',
-        height: '27px',
-        borderRadius: '4px',
-        backgroundColor: theme.brand.primaryDark2,
-        fontFamily: 'Lato',
-        fontStyle: 'italic',
-        opacity: '0.6',
-        lineHeight: '1.43',
-        letterSpacing: 'normal',
-        paddingLeft: '10px',
-      }}
+      disableToggle={true}
       data-cy="volume_list_search"
     />
   );

@@ -10,6 +10,7 @@ import {
   useAsyncDebounce,
   useSortBy,
 } from 'react-table';
+import { SearchInput } from '@scality/core-ui';
 import { useQuery } from '../services/utils';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
@@ -185,28 +186,14 @@ function GlobalFilter({
 
   return (
     <ActionContainer>
-      <input
+      <SearchInput
         value={value || undefined}
         onChange={(e) => {
           setValue(e.target.value);
           onChange(e.target.value);
         }}
         placeholder={`Search`}
-        style={{
-          fontSize: '1.1rem',
-          color: theme.brand.textPrimary,
-          border: 'solid 1px #3b4045',
-          width: '223px',
-          height: '27px',
-          borderRadius: '4px',
-          backgroundColor: theme.brand.primaryDark2,
-          fontFamily: 'Lato',
-          fontStyle: 'italic',
-          opacity: '0.6',
-          lineHeight: '1.43',
-          letterSpacing: 'normal',
-          paddingLeft: '10px',
-        }}
+        disableToggle={true}
         data-cy="node_list_search"
       />
       <CreateNodeButton
