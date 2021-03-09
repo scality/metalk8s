@@ -2418,7 +2418,7 @@ stages:
           # NOTE: Increase timeout as restore may take some time
           # Since we use pytest we do not have any output until restore totaly
           # finished
-          timeout: 1800
+          timeout: 2700
           env:
             <<: *_env_bastion_tests
             PYTEST_FILTERS: "restore"
