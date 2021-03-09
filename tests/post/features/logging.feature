@@ -20,3 +20,8 @@ Feature: Logging stack is up and running
     And the Loki API is available
     And we have set up a logger pod
     Then we can retrieve logs from logger pod in Loki API
+
+  Scenario: Retrieve cluster alerts from Loki
+    Given the Kubernetes API is available
+    And the Loki API is available
+    Then we can retrieve 'Watchdog' alert from Loki API

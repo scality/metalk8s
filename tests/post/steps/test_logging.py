@@ -170,7 +170,7 @@ def query_log_from_loki(k8s_client, context):
 
 
 @then("we can retrieve logs from logger pod in Loki API")
-def retrieve_pod_logs_from_loki(k8s_client, nodename, pod_creation_ts):
+def retrieve_pod_logs_from_loki(k8s_client, pod_creation_ts):
     query = {
         "query": '{pod="logger"}',
         "start": pod_creation_ts,
@@ -191,6 +191,35 @@ def retrieve_pod_logs_from_loki(k8s_client, nodename, pod_creation_ts):
         times=40,
         wait=5,
         name="check that a log exists for 'logger' pod",
+    )
+
+
+@then(parsers.parse("we can retrieve '{alertname}' alert from Loki API"))
+def retrieve_alert_from_loki(k8s_client, alertname):
+    query = {
+        "query": '{app="metalk8s-alert-logger"}',
+    }
+
+    def _check_alert_exists():
+        response = query_loki_api(k8s_client, query, route="query_range")
+        try:
+            alerts = response[0]["data"]["result"][0]["values"]
+        except (IndexError, KeyError):
+            alerts = []
+
+        alert_found = False
+        for element in alerts:
+            alert = json.loads(element[1])
+            if alert.get("labels", []).get("alertname") == alertname:
+                alert_found = True
+
+        assert alert_found, "No '{0}' alert found in Loki".format(alertname)
+
+    utils.retry(
+        _check_alert_exists,
+        times=40,
+        wait=5,
+        name="check that cluster alerts are logged in Loki",
     )
 
 
