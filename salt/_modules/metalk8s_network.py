@@ -3,6 +3,10 @@
 import itertools
 import logging
 
+# Note: psutil is a dependency of Salt RPMs in MetalK8s context we
+#       always use RPMs to install Salt
+import psutil  # pylint: disable=3rd-party-module-not-gated
+
 from salt._compat import ipaddress
 from salt.exceptions import CommandExecutionError
 
@@ -122,3 +126,44 @@ def get_mtu_from_ip(ip):
         )
 
     return int(__salt__["file.read"]("/sys/class/net/{}/mtu".format(iface)))
+
+
+def get_listening_processes():
+    """
+    Get all the listening processes on the local node
+
+    Output:
+    ```
+    {
+        '<port>': {
+            '<ip>': {
+                'pid': <pid>,
+                'name': '<process_name>'
+            }
+        }
+    }
+    ```
+    """
+    all_listen_connections = {}
+    for sconn in psutil.net_connections("inet"):
+        if sconn.status != psutil.CONN_LISTEN:
+            continue
+
+        ip, port = sconn.laddr
+        # If `<ip>` is `::1` replace with `127.0.0.1` so that we consider only IPv4
+        if ip == "::1":
+            ip = "127.0.0.1"
+        # If `<ip>` is `::` replace with `0.0.0.0` so that we consider only IPv4
+        elif ip == "::":
+            ip = "0.0.0.0"
+
+        all_listen_connections.setdefault(str(port), {}).update(
+            {
+                ip: {
+                    "pid": sconn.pid,
+                    "name": psutil.Process(sconn.pid).name(),
+                }
+            }
+        )
+
+    return all_listen_connections

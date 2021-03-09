@@ -74,6 +74,12 @@ with open("../salt/metalk8s/defaults.yaml", "r") as fd:
 if not salt_defaults["metalk8s"]["downgrade"]["enabled"]:
     tags.add("downgrade_not_supported")
 
+jinja_contexts = {
+    "salt_values": {
+        "listening_processes": salt_defaults["networks"]["listening_process_per_role"]
+    }
+}
+
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -86,6 +92,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinxcontrib.spelling",
     "sphinxcontrib.plantuml",
+    "sphinxcontrib.jinja",
     "sphinxcontrib_github_alt",
 ]
 

@@ -3,6 +3,7 @@ node:
   - &node_nominal
     packages_ret: True
     services_ret: True
+    ports_ret: True
     route_exists_ret: True
     pillar:
       networks:
@@ -30,7 +31,13 @@ node:
     expect_raise: True
     result: "Node my_node_1: Service abcd got an error because of penguin"
 
-  # 5. Error: Route for Service CIDR
+  # 5. Error: Ports
+  - <<: *node_nominal
+    ports_ret: "banana should be listening on 1.2.3.4:12345"
+    expect_raise: True
+    result: "Node my_node_1: banana should be listening on 1.2.3.4:12345"
+
+  # 6. Error: Route for Service CIDR
   - <<: *node_nominal
     route_exists_ret: No route exists for banana
     expect_raise: True
@@ -47,14 +54,16 @@ node:
       interface and route for this range (for details, see
       https://github.com/kubernetes/kubernetes/issues/57534#issuecomment-527653412).
 
-  # 6. Error: Combined errors
+  # 7. Error: Combined errors
   - <<: *node_nominal
     packages_ret: "Package abcd got an error because of banana"
     services_ret: "Service abcd got an error because of penguin"
+    ports_ret: "Monkey should be listening on Tree"
     expect_raise: True
     result: |-
       Node my_node_1: Package abcd got an error because of banana
       Service abcd got an error because of penguin
+      Monkey should be listening on Tree
   - <<: *node_nominal
     packages_ret: "Package abcd got an error because of banana"
     route_exists_ret: "No route exists for penguin"
@@ -285,6 +294,257 @@ services:
     expect_raise: True
     result: |-
       Service my-enabled-service conflicts with MetalK8s installation, please stop and disable it.
+
+ports:
+  # 1. Success: Nominal
+  - listening_process:
+      6443:
+        expected: apiserver
+      127.0.0.1:9099:
+        expected:
+          - calico-node
+      control_plane_ip:4505:
+        expected: salt-master
+    get_listening_ret:
+      "4505":
+        1.1.1.1:
+          pid: 147
+          name: salt-master
+    result: True
+  # 1. bis (Nothing listening)
+  - listening_process:
+      6443: {}
+      127.0.0.1:9099:
+        expected: null
+      control_plane_ip:4505:
+        expected: salt-master
+    result: True
+
+  # 2. Success: Nothing expected
+  - listening_process: {}
+    result: True
+
+  # 3. Success: Process already running
+  - listening_process:
+      6443:
+        expected: apiserver
+      127.0.0.1:9099:
+        expected: calico-node
+    get_listening_ret:
+      "6443":
+        0.0.0.0:
+          pid: 123
+          name: apiserver
+      "9099":
+        127.0.0.1:
+          pid: 345
+          name: calico-node
+    result: True
+  # 3. bis (per role) (and `node` role added by default)
+  - listening_process_per_role:
+      master:
+        6443:
+          expected: apiserver
+      node:
+        127.0.0.1:9099:
+          expected: calico-node
+          mandatory: true
+      bootstrap:
+        1.2.3.4:4505:
+          expected:
+            - null
+            - salt-master
+    roles:
+      - master
+    get_listening_ret:
+      "6443":
+        1.2.3.4:
+          pid: 123
+          name: apiserver
+      "9099":
+        127.0.0.1:
+          pid: 345
+          name: calico-node
+      "4505":
+        1.2.3.4:
+          pid: 678
+          name: salt-master
+    result: True
+  # 3. ter (all roles per default)
+  - get_map_ret:
+      listening_process_per_role:
+        master:
+          6443:
+            expected: apiserver
+        node:
+          127.0.0.1:9099:
+            expected:
+              - calico-node
+        bootstrap:
+          1.2.3.4:4505:
+            expected: salt-master
+    get_listening_ret:
+      "6443":
+        0.0.0.0:
+          pid: 123
+          name: apiserver
+      "9099":
+        127.0.0.1:
+          pid: 345
+          name: calico-node
+      "4505":
+        1.2.3.4:
+          pid: 678
+          name: salt-master
+    result: True
+  # 3. quater (with role from pillar)
+  - listening_process_per_role:
+      master:
+        "6443":
+          expected: apiserver
+      node:
+        127.0.0.1:9099:
+          expected: calico-.*
+      bootstrap:
+        1.2.3.4:4505:
+          expected: salt-master
+    pillar:
+      metalk8s:
+        nodes:
+          my_node_1:
+            roles:
+              - master
+              - node
+    get_listening_ret:
+      "6443":
+        0.0.0.0:
+          pid: 123
+          name: apiserver
+      "9099":
+        127.0.0.1:
+          pid: 345
+          name: calico-node
+      "4505":
+        1.2.3.4:
+          pid: 678
+          name: banana
+    result: True
+
+  # 4. Success: exact matching
+  - listening_process:
+      6443:
+        expected: apiserver
+        mandatory: True
+      127.0.0.1:9099:
+        expected: calico-.*
+        mandatory: True
+    get_listening_ret:
+      "6443":
+        0.0.0.0:
+          pid: 123
+          name: apiserver
+      "9099":
+        127.0.0.1:
+          pid: 345
+          name: calico-node
+      "22":
+        0.0.0.0:
+          pid: 111
+          name: sshd
+    result: True
+
+  # 5. Error: expected process is not listening
+  - listening_process:
+      6443:
+        expected: apiserver
+        description: Kubernetes apiserver
+        mandatory: True
+    expect_raise: True
+    result: |-
+      Kubernetes apiserver should be listening on 6443 but nothing listening.
+  # 4. bis
+  - listening_process:
+      127.0.0.1:9099:
+        expected: calico-node
+        mandatory: True
+    get_listening_process:
+      "9099":
+        1.2.3.4:
+          pid: 111
+          name: another-proc
+    expect_raise: True
+    result: |-
+      calico-node should be listening on 127.0.0.1:9099 but nothing listening.
+
+  # 5. Error: expect nothing listening
+  - listening_process:
+      6443: {}
+    get_listening_ret:
+      "6443":
+        0.0.0.0:
+          pid: 123
+          name: my-invalid-process
+    expect_raise: True
+    result: |-
+      nothing should be listening on 6443 but 'my-invalid-process' \(PID: 123\) listens on 0.0.0.0.
+  # 5. bis (a process listen on :: when we want 127.0.0.1)
+  - listening_process:
+      control_plane_ip:9099:
+        expected: null
+    get_listening_ret:
+      "9099":
+        0.0.0.0:
+          pid: 123
+          name: my-invalid-process
+    raises: False
+    result: |-
+      nothing should be listening on 1.1.1.1:9099 but 'my-invalid-process' (PID: 123) listens on 0.0.0.0.
+
+  # 6. Error: Another unexpected process already listening
+  - listening_process:
+      127.0.0.1:9099:
+        expected: calico-.*
+      6443:
+        expected: apiserver
+        description: Kubernetes apiserver
+    get_listening_ret:
+      "6443":
+        127.0.0.1:
+          pid: 111
+          name: not-apiserver-at-all
+        1.2.3.4:
+          pid: 123
+          name: banana
+      "9099":
+        127.0.0.1:
+          pid: 222
+          name: not-calico-node
+    expect_raise: True
+    result: |-
+      calico-.* or nothing should be listening on 127.0.0.1\:9099 but 'not-calico-node' \(PID: 222\) listens on 127.0.0.1.
+      Kubernetes apiserver should be listening on 6443 but 'not-apiserver-at-all' \(PID: 111\) listens on 127.0.0.1 and 'banana' \(PID: 123\) listens on 1.2.3.4.
+  # 6. bis (listening on another IP)
+  - listening_process:
+      127.0.0.1:9099:
+        expected: calico-node
+      6443:
+        expected: apiserver
+        mandatory: True
+    get_listening_ret:
+      "9099":
+        0.0.0.0:
+          pid: 222
+          name: not-calico-node
+    expect_raise: True
+    result: |-
+      calico-node or nothing should be listening on 127.0.0.1:9099 but 'not-calico-node' \(PID: 222\) listens on 0.0.0.0.
+      apiserver should be listening on 6443 but nothing listening.
+
+  # 7. Error: Invalid listening process object
+  - listening_process: abcd
+    expect_raise: True
+    result: |-
+      Invalid listening process, expected dict but got str.
 
 sysctl:
   - params:

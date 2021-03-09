@@ -71,6 +71,9 @@ SALT_CALL=${SALT_CALL:-salt-call}
 
 declare -a PACKAGES=(
     salt-minion-@@SALT_VERSION
+    # NOTE: `python3-psutil` will install `python36-psutil` on RHEL7 based and
+    # `python3-psutil on RHEL8, as expected
+    python3-psutil
     genisoimage
 )
 
@@ -152,13 +155,6 @@ restore_cas() {
 }
 
 configure_salt_master() {
-    # Grains must be set (in `/etc/salt/grains`) *before* invoking `salt-call`,
-    # otherwise grains set during execution won't be taken into account
-    # properly.
-    "${SALT_CALL}" --local --state-output=mixed --retcode-passthrough state.sls \
-        metalk8s.node.grains \
-        saltenv=metalk8s-@@VERSION
-
     local -r control_plane_ip=$(
         ${SALT_CALL} --local grains.get metalk8s:control_plane_ip --out txt \
         | awk '/^local\: /{ print $2 }'
@@ -343,6 +339,7 @@ run "Configuring Salt minion to run in local mode" configure_salt_minion_local_m
 
 run "Restoring MetalK8s configurations" restore_metalk8s_conf
 run "Ensure archive is available" ensure_archives_mounted
+run "Calculating Salt grains in local mode" set_local_grains
 
 run "Checking local node" check_local_node
 

@@ -1,4 +1,5 @@
 {%- from "metalk8s/map.jinja" import defaults with context %}
+{%- from "metalk8s/map.jinja" import networks with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
 
 {%- set node_name = pillar.orchestrate.node_name %}
@@ -20,6 +21,26 @@ Install python36:
     - raw_shell: true
     - roster: kubernetes
 
+Set grains ssh:
+  salt.state:
+    - ssh: true
+    - roster: kubernetes
+    - tgt: {{ node_name }}
+    - saltenv: metalk8s-{{ version }}
+    - sls:
+      - metalk8s.node.grains
+    - require:
+      - metalk8s: Install python36
+
+Refresh grains:
+  metalk8s.saltutil_cmd:
+    - name: saltutil.sync_grains
+    - tgt: {{ node_name }}
+    - ssh: true
+    - roster: kubernetes
+    - require:
+      - salt: Set grains ssh
+
 Check node:
   metalk8s.saltutil_cmd:
     - name: metalk8s_checks.node
@@ -28,16 +49,24 @@ Check node:
     - roster: kubernetes
     - kwarg:
         # NOTE: We need to use the `conflicting_packages` and `conflicting_services`
-        # from the salt master since in salt-ssh when running an execution module
-        # we cannot embbed additional files (especially `map.jinja` in this case)
+        # `listening_process_per_role` from the salt master since in salt-ssh
+        # when running an execution module we cannot embbed additional files
+        # (especially `map.jinja` in this case)
         # Sees: https://github.com/saltstack/salt/issues/59314
         conflicting_packages: >-
           {{ repo.conflicting_packages | tojson }}
         conflicting_services: >-
           {{ defaults.conflicting_services | tojson }}
+        listening_process_per_role: >-
+          {{ networks.listening_process_per_role | tojson }}
+        # NOTE: We also need to give all the pillar value needed since execution
+        # module in Salt-ssh cannot read pillar data
+        # Sees: https://github.com/saltstack/salt/issues/28503
+        service_cidr: {{ pillar.networks.service }}
+        roles: {{ pillar.metalk8s.nodes[node_name].roles }}
     - failhard: true
     - require:
-      - metalk8s: Install python36
+      - metalk8s: Refresh grains
 
 Deploy salt-minion on a new node:
   salt.state:
