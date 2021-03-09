@@ -4,6 +4,7 @@ Execution module for handling MetalK8s checks.
 """
 
 import ipaddress
+import re
 
 from salt.exceptions import CheckError
 
@@ -37,6 +38,11 @@ def node(raises=True, **kwargs):
     svc_ret = __salt__["metalk8s_checks.services"](raises=False, **kwargs)
     if svc_ret is not True:
         errors.append(svc_ret)
+
+    # Run `ports` check
+    ports_ret = __salt__["metalk8s_checks.ports"](raises=False, **kwargs)
+    if ports_ret is not True:
+        errors.append(ports_ret)
 
     # Run `route_exists` check for the Service Cluster IPs
     service_cidr = kwargs.pop(
@@ -161,6 +167,196 @@ def services(conflicting_services=None, raises=True, **kwargs):
                 "Service {} conflicts with MetalK8s installation, "
                 "please stop and disable it.".format(service_name)
             )
+
+    error_msg = "\n".join(errors)
+    if error_msg and raises:
+        raise CheckError(error_msg)
+
+    return error_msg or True
+
+
+def ports(
+    listening_process=None,
+    raises=True,
+    listening_process_per_role=None,
+    roles=None,
+    **kwargs
+):
+    """Check if an unexpected process already listening on a port on the machine,
+    return a string (or raise if `raises` is set to `True`) with the list of
+    unexpected process and port.
+
+    Arguments:
+        listening_process (dict): override the list of ports expected to be
+            unused (or bound to a MetalK8s process).
+        raises (bool): the method will raise if there is any unexpected process
+            bound on a MetalK8s port.
+        listening_process_per_role (dict): If `listening_process` not provided
+            compute it from this dict. Dict matching between listening process
+            and roles (default: retrieve using map.jinja)
+        roles (list): List of local role for the node (default: retrieve from
+            pillar)
+
+    Note: `listening_process` is a dict like
+    ```
+    {
+        '<address>': {
+            'expected': '<processes>',
+            'description': '<description>',
+            'mandatory': True/False
+        }
+    }
+    ```
+    Where:
+    - `<address>` could be a full address `<ip>:<port>` or just a `<port>`
+      (if `<ip>` is equal to `control_plane_ip` or `workload_plane_ip` we replace
+      it with the local expected IP
+    - `<processes>` could be a single process regexp matching or a list of regexp
+      (if one of the processes in this list match then result is ok)
+    - `<description>` is optional, and is just a description of the expected usage
+      of this address
+    - `<mandatory>` is a boolean to force this expected process, if set to False
+      we expected either, the process in `expected` either nothing (default: False)
+    """
+    if listening_process is None:
+        if listening_process_per_role is None:
+            listening_process_per_role = __salt__["metalk8s.get_from_map"](
+                "networks", saltenv=kwargs.get("saltenv")
+            )["listening_process_per_role"]
+        if roles is None:
+            roles = (
+                __pillar__.get("metalk8s", {})
+                .get("nodes", {})
+                .get(__grains__["id"], {})
+                .get("roles")
+            )
+
+        # If role not yet set consider we have all roles
+        if roles is None:
+            roles = listening_process_per_role.keys()
+
+        # Compute full dict of listening process according to local `roles`
+        # Note: We consider all minions as "node"
+        listening_process = listening_process_per_role.get("node") or {}
+        for role in roles:
+            listening_process.update(listening_process_per_role.get(role) or {})
+
+    if not isinstance(listening_process, dict):
+        raise ValueError(
+            "Invalid listening process, expected dict but got {}.".format(
+                type(listening_process).__name__
+            )
+        )
+
+    errors = []
+
+    all_listen_connections = __salt__["metalk8s_network.get_listening_processes"]()
+
+    for address, matching in listening_process.items():
+        if isinstance(address, int):
+            address = str(address)
+        ip, _, port = address.rpartition(":")
+
+        if ip and ip in ["control_plane_ip", "workload_plane_ip"]:
+            ip = __grains__["metalk8s"][ip]
+
+            # We also update the `address` for error message
+            address = "{}:{}".format(ip, port)
+
+        processes = matching.get("expected")
+        if not isinstance(processes, list):
+            processes = [processes]
+
+        # If process is not mandatory then we expect the process to be listening
+        # or nothing, so add `None` to the processes list
+        if not matching.get("mandatory") and None not in processes:
+            processes.append(None)
+
+        process_on_port = all_listen_connections.get(port)
+
+        success = False
+        error_process = {}
+        # In this loop we check for a matching process in this `processes` list
+        # if running process match one of the process in the `processes` list then
+        # we succeed, otherwise we get an error
+        # `None` mean we expect nothing listening
+        for process in processes:
+            match = True
+
+            # We expect nothing to be listening on this port
+            if process is None:
+                if process_on_port:
+                    # Failure:
+                    # - we expect nothing listening on this port
+                    # - a process listen on every IPs
+                    # - something already listening on the expected IP
+                    # NOTE: Normaly if a process listen on `0.0.0.0` we do not
+                    # have any other process on this port
+                    if not ip:
+                        error_process = process_on_port
+                        match = False
+                    if "0.0.0.0" in process_on_port:
+                        error_process["0.0.0.0"] = process_on_port["0.0.0.0"]
+                        match = False
+                    if ip in process_on_port:
+                        error_process[ip] = process_on_port[ip]
+                        match = False
+
+            # We expect "<process>" to be listening on this port
+            # NOTE: if nothing listening it's a failure
+            else:
+                # Failure:
+                # - nothing listening on this ip:port
+                # - nothing listening on the expected IP
+                # - something not expected already listening
+                if (
+                    not process_on_port
+                    or ip
+                    and "0.0.0.0" not in process_on_port
+                    and ip not in process_on_port
+                ):
+                    match = False
+                elif "0.0.0.0" in process_on_port and not re.match(
+                    process, process_on_port["0.0.0.0"]["name"]
+                ):
+                    error_process["0.0.0.0"] = process_on_port["0.0.0.0"]
+                    match = False
+                elif (
+                    ip
+                    and ip in process_on_port
+                    and not re.match(process, process_on_port[ip]["name"])
+                ):
+                    error_process[ip] = process_on_port[ip]
+                    match = False
+                elif not ip:
+                    for proc_ip, proc in process_on_port.items():
+                        if not re.match(process, proc["name"]):
+                            error_process[proc_ip] = proc
+                            match = False
+
+            # This "process" match what we expect
+            if match:
+                success = True
+                break
+
+        if not success:
+            fail_msg = "{} should be listening on {} but {}.".format(
+                matching.get(
+                    "description",
+                    " or ".join(process or "nothing" for process in processes),
+                ),
+                address,
+                "nothing listening"
+                if not error_process
+                else " and ".join(
+                    "'{proc[name]}' (PID: {proc[pid]}) listens on {addr}".format(
+                        proc=proc, addr=addr
+                    )
+                    for addr, proc in error_process.items()
+                ),
+            )
+
+            errors.append(fail_msg)
 
     error_msg = "\n".join(errors)
     if error_msg and raises:

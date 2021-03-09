@@ -39,6 +39,7 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
         expect_raise=False,
         packages_ret=True,
         services_ret=True,
+        ports_ret=True,
         route_exists_ret=True,
         pillar=None,
         **kwargs
@@ -48,11 +49,13 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
         """
         packages_mock = MagicMock(return_value=packages_ret)
         services_mock = MagicMock(return_value=services_ret)
+        ports_mock = MagicMock(return_value=ports_ret)
         route_exists_mock = MagicMock(return_value=route_exists_ret)
 
         salt_dict = {
             "metalk8s_checks.packages": packages_mock,
             "metalk8s_checks.services": services_mock,
+            "metalk8s_checks.ports": ports_mock,
         }
 
         with patch.dict(metalk8s_checks.__grains__, {"id": "my_node_1"}), patch.dict(
@@ -120,6 +123,45 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 )
             else:
                 self.assertEqual(metalk8s_checks.services(**kwargs), result)
+
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["ports"])
+    def test_ports(
+        self,
+        result,
+        get_map_ret=None,
+        get_listening_ret=None,
+        expect_raise=False,
+        pillar=None,
+        **kwargs
+    ):
+        """
+        Tests the return of `ports` function
+        """
+        salt_dict = {
+            "metalk8s.get_from_map": MagicMock(return_value=get_map_ret),
+            "metalk8s_network.get_listening_processes": MagicMock(
+                return_value=get_listening_ret or {}
+            ),
+        }
+
+        with patch.dict(metalk8s_checks.__salt__, salt_dict), patch.dict(
+            metalk8s_checks.__pillar__, pillar or {}
+        ), patch.dict(
+            metalk8s_checks.__grains__,
+            {
+                "id": "my_node_1",
+                "metalk8s": {
+                    "control_plane_ip": "1.1.1.1",
+                    "workload_plane_ip": "1.1.1.2",
+                },
+            },
+        ):
+            if expect_raise:
+                self.assertRaisesRegex(
+                    Exception, result, metalk8s_checks.ports, **kwargs
+                )
+            else:
+                self.assertEqual(metalk8s_checks.ports(**kwargs), result)
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["sysctl"])
     def test_sysctl(self, params, data, result, raises=False):
