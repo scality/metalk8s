@@ -34,6 +34,7 @@ def fixture_base_context(
         grains=base_grains,
         pillar=base_pillar,
         opts={},
+        __minions__={base_grains["id"]: {}},
         __kubernetes__=base_kubernetes,
     )
 
@@ -83,6 +84,8 @@ def make_context(
         environment=environment,
         grains=context_data["grains"],
         pillar=context_data["pillar"],
+        opts=context_data["opts"],
+        minions=context_data.pop("__minions__"),
         k8s_data=context_data.pop("__kubernetes__"),
         config=config_overrides,
     )
