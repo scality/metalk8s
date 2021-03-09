@@ -260,7 +260,7 @@ function Table({ columns, data, nodeName, volumeName, theme, isSearchBar }) {
                   size="small"
                   variant={'secondary'}
                   text={intl.translate('create_new_volume')}
-                  icon={<i className="fas fa-plus-circle"></i>}
+                  icon={<i className="fas fa-plus"></i>}
                   onClick={() => {
                     // depends on if we add node filter
                     if (nodeName) {

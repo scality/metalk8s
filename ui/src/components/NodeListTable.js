@@ -213,7 +213,7 @@ function GlobalFilter({
         size="small"
         variant="secondary"
         text={intl.translate('create_new_node')}
-        icon={<i className="fas fa-plus-circle"></i>}
+        icon={<i className="fas fa-plus"></i>}
         onClick={() => {
           history.push('/nodes/create');
         }}
