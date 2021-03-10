@@ -20,6 +20,7 @@ import {
   GraphTitle,
   GraphWrapper,
 } from '../components/style/CommonLayoutStyle';
+import { ToggleWrapper } from '../components/style/FormStyle';
 import {
   addMissingDataPoint,
   fromUnixTimestampToDate,
@@ -72,25 +73,6 @@ const GraphGrid = styled.div`
     grid-area: wpbandwidth;
   }
   padding-left: ${padding.small};
-`;
-
-const ToggleContainer = styled.div`
-  flex: 1;
-  margin-right: auto;
-  .text {
-    font-size: 1rem;
-  }
-  label {
-    width: 1.85rem;
-    input:checked + .sc-slider:before {
-      transform: translateX(1rem);
-    }
-    .sc-slider:before {
-      height: 12px;
-      width: 12px;
-      top: -4px;
-    }
-  }
 `;
 
 const NodePageMetricsTab = ({
@@ -514,7 +496,7 @@ const NodePageMetricsTab = ({
   return (
     <NodeTab>
       <MetricsActionContainer>
-        <ToggleContainer>
+        <ToggleWrapper>
           <Toggle
             name="showAvg"
             label={intl.translate('show_cluster_avg')}
@@ -529,7 +511,7 @@ const NodePageMetricsTab = ({
               );
             }}
           />
-        </ToggleContainer>
+        </ToggleWrapper>
         {api && api.url_grafana && (
           <Button
             text={intl.translate('advanced_metrics')}
