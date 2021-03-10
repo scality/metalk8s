@@ -49,11 +49,11 @@ export type Config = {
   url_salt: string,
   url_prometheus: string,
   url_grafana: string,
-  url_oidc_provider: string,
-  url_redirect: string,
   url_doc: string,
   url_alertmanager: string,
   flags?: [],
+  url_navbar: string,
+  url_navbar_config: string,
 };
 
 export function fetchTheme(): Promise<WrappedThemes> {

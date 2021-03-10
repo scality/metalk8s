@@ -22,11 +22,13 @@
     "flow-bin": "^0.143.1",
     "html-webpack-plugin": "^4.5.1",
     "jest": "^26.6.3",
+    "msw": "^0.26.2",
     "prop-types": "^15.7.2",
     "style-loader": "^2.0.0",
     "webpack": "^5.17.0",
     "webpack-cli": "^4.4.0",
-    "webpack-dev-server": "^3.11.2"
+    "webpack-dev-server": "^3.11.2",
+    "whatwg-fetch": "^3.6.1"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.1",
@@ -37,7 +39,7 @@
     "react": "^17.0.1",
     "react-debounce-input": "^3.2.3",
     "react-dom": "^17.0.1",
-    "react-query": "^3.8.2",
+    "react-query": "^3.9.7",
     "react-select": "^3.1.1",
     "react-to-webcomponent": "^1.5.1",
     "react-virtualized": "^9.22.3",

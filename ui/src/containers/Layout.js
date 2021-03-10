@@ -4,45 +4,38 @@ import { useDispatch } from 'react-redux';
 import { ThemeProvider } from 'styled-components';
 import { useRouteMatch, useHistory } from 'react-router';
 import { Switch } from 'react-router-dom';
-import { Layout as CoreUILayout, Notifications } from '@scality/core-ui';
-
+import { Layout as CoreUILayout, Notifications, Loader } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
-import NodeCreateForm from './NodeCreateForm';
-import NodePage from './NodePage';
-import NodeDeployment from './NodeDeployment';
-import ClusterMonitoring from './ClusterMonitoring';
-import About from './About';
-import PrivateRoute from './PrivateRoute';
-import VolumePage from './VolumePage';
-import DashboardPage from './DashboardPage';
-
 import { toggleSideBarAction } from '../ducks/app/layout';
-
 import { removeNotificationAction } from '../ducks/app/notifications';
-import { updateLanguageAction, logoutAction } from '../ducks/config';
-import { FR_LANG, EN_LANG } from '../constants';
 import CreateVolume from './CreateVolume';
 import { fetchClusterVersionAction } from '../ducks/app/nodes';
 import { useTypedSelector } from '../hooks';
+import { Navbar } from '../components/Navbar';
+import { Suspense } from 'react';
+
+const NodeCreateForm = React.lazy(() => import('./NodeCreateForm'));
+const NodePage = React.lazy(() => import('./NodePage'));
+const NodeDeployment = React.lazy(() => import('./NodeDeployment'));
+const ClusterMonitoring = React.lazy(() => import('./ClusterMonitoring'));
+const About = React.lazy(() => import('./About'));
+const PrivateRoute = React.lazy(() => import('./PrivateRoute'));
+const VolumePage = React.lazy(() => import('./VolumePage'));
+const DashboardPage = React.lazy(() => import('./DashboardPage'));
 
 const Layout = () => {
-  const user = useTypedSelector((state) => state.oidc.user);
   const sidebar = useTypedSelector((state) => state.app.layout.sidebar);
-  const { theme, language } = useTypedSelector((state) => state.config);
+  const { theme } = useTypedSelector((state) => state.config);
   const notifications = useTypedSelector(
     (state) => state.app.notifications.list,
   );
-  const isUserLoaded = useTypedSelector((state) => !!state.oidc.user);
+
+  const isUserLoaded = useTypedSelector((state) => !!state.oidc?.user);
   const api = useTypedSelector((state) => state.config.api);
+
   const dispatch = useDispatch();
 
-  const logout = (event) => {
-    event.preventDefault();
-    dispatch(logoutAction());
-  };
-
   const removeNotification = (uid) => dispatch(removeNotificationAction(uid));
-  const updateLanguage = (language) => dispatch(updateLanguageAction(language));
   const toggleSidebar = () => dispatch(toggleSideBarAction());
   const history = useHistory();
 
@@ -120,113 +113,43 @@ const Layout = () => {
     sidebarConfig.actions.shift();
   }
 
-  // In this particular case, the label should not be translated
-  const languages = [
-    {
-      label: 'Français',
-      name: FR_LANG,
-      onClick: () => {
-        updateLanguage(FR_LANG);
-      },
-      selected: language === FR_LANG,
-      'data-cy': FR_LANG,
-    },
-    {
-      label: 'English',
-      name: EN_LANG,
-      onClick: () => {
-        updateLanguage(EN_LANG);
-      },
-      selected: language === EN_LANG,
-      'data-cy': EN_LANG,
-    },
-  ];
-
-  const filterLanguage = languages.filter((lang) => lang.name !== language);
-
-  const rightActions = [
-    {
-      type: 'dropdown',
-      text: language,
-      icon: <i className="fas fa-globe" />,
-      items: filterLanguage,
-    },
-    {
-      type: 'dropdown',
-      icon: <i className="fas fa-question-circle" />,
-      items: [
-        {
-          label: intl.translate('about'),
-          onClick: () => {
-            history.push('/about');
-          },
-        },
-        {
-          label: intl.translate('documentation'),
-          onClick: () => {
-            api && api.url_doc && window.open(`${api.url_doc}/index.html`);
-          },
-          'data-cy': 'documentation',
-        },
-      ],
-    },
-    {
-      type: 'dropdown',
-      text: user?.profile?.name,
-      icon: <i className="fas fa-user" />,
-      'data-cy': 'user_dropdown',
-      items: [
-        {
-          label: intl.translate('log_out'),
-          onClick: (event) => logout(event),
-          'data-cy': 'logout_button',
-        },
-      ],
-    },
-  ];
-
-  const navbar = {
-    productName: intl.translate('product_name'),
-    logo: <img alt="logo" src={process.env.PUBLIC_URL + theme.logo_path} />,
-    rightActions: [],
-  };
-  // display the sidebar and rightAction if the user is loaded
-  if (isUserLoaded) {
-    navbar['rightActions'] = rightActions;
-  }
-
   return (
     <ThemeProvider theme={theme}>
-      <CoreUILayout sidebar={isUserLoaded && sidebarConfig} navbar={navbar}>
+      <CoreUILayout
+        sidebar={isUserLoaded && sidebarConfig}
+        navbarElement={<Navbar />}
+      >
         <Notifications
           notifications={notifications}
           onDismiss={removeNotification}
         />
-        <Switch>
-          <PrivateRoute exact path="/nodes/create" component={NodeCreateForm} />
-          <PrivateRoute
-            exact
-            path="/nodes/:id/deploy"
-            component={NodeDeployment}
-          />
-          <PrivateRoute
-            path={`/nodes/:id/createVolume`}
-            component={CreateVolume}
-          />
-          <PrivateRoute
-            exact
-            path="/volumes/createVolume"
-            component={CreateVolume}
-          />
-          <PrivateRoute path="/nodes" component={NodePage} />
-          <PrivateRoute path="/volumes/:name?" component={VolumePage} />
-          <PrivateRoute exact path="/about" component={About} />
+        <Suspense fallback={<Loader size="massive" centered={true} />}>
+          <Switch>
+            <PrivateRoute exact path="/nodes/create" component={NodeCreateForm} />
+            <PrivateRoute
+              exact
+              path="/nodes/:id/deploy"
+              component={NodeDeployment}
+            />
+            <PrivateRoute
+              path={`/nodes/:id/createVolume`}
+              component={CreateVolume}
+            />
+            <PrivateRoute
+              exact
+              path="/volumes/createVolume"
+              component={CreateVolume}
+            />
+            <PrivateRoute path="/nodes" component={NodePage} />
+            <PrivateRoute path="/volumes/:name?" component={VolumePage} />
+            <PrivateRoute exact path="/about" component={About} />
 
-          {api && api.flags && api.flags.includes('dashboard') && (
-            <PrivateRoute exact path="/dashboard" component={DashboardPage} />
-          )}
-          <PrivateRoute exact path="/" component={ClusterMonitoring} />
-        </Switch>
+            {api && api.flags && api.flags.includes('dashboard') && (
+              <PrivateRoute exact path="/dashboard" component={DashboardPage} />
+            )}
+            <PrivateRoute exact path="/" component={ClusterMonitoring} />
+          </Switch>
+        </Suspense>
       </CoreUILayout>
     </ThemeProvider>
   );

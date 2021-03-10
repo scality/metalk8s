@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { lazy, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import { useLocation, useHistory, useRouteMatch } from 'react-router';
 import { Switch, Route } from 'react-router-dom';
-import { Table, Tabs } from '@scality/core-ui';
+import { Loader, Table, Tabs } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import { fetchPodsAction } from '../ducks/app/pods';
@@ -20,7 +20,7 @@ import {
   makeGetVolumesFromUrl,
   useRefreshEffect,
 } from '../services/utils';
-import NodeVolumes from './NodeVolumes';
+const NodeVolumes = lazy(() => import('./NodeVolumes'));
 import {
   InformationListContainer,
   InformationSpan,
@@ -215,6 +215,7 @@ const NodeInformation = (props) => {
   return (
     <NodeInformationContainer>
       <Tabs activeColor={theme.brand.secondary} items={items}>
+        <Suspense fallback={<Loader size="massive" centered={true} />}>
         <Switch>
           <Route path={`${match.url}/pods`} component={NodePods} />
           <Route
@@ -225,6 +226,7 @@ const NodeInformation = (props) => {
           />
           <Route path="/" component={NodeDetails} />
         </Switch>
+        </Suspense>
       </Tabs>
     </NodeInformationContainer>
   );

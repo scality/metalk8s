@@ -4,10 +4,6 @@ import type { Config, Theme, Themes, WrappedThemes } from '../services/api';
 import { Effect, call, put, takeEvery, select } from 'redux-saga/effects';
 import { mergeTheme } from '@scality/core-ui/dist/utils';
 import * as defaultTheme from '@scality/core-ui/dist/style/theme';
-import { loadUser, createUserManager } from 'redux-oidc';
-import { USER_FOUND } from 'redux-oidc';
-import { UserManager, WebStorageStateStore } from 'oidc-client';
-import { store } from '../index';
 import * as Api from '../services/api';
 import * as ApiK8s from '../services/k8s/api';
 import * as ApiSalt from '../services/salt/api';
@@ -17,6 +13,7 @@ import { EN_LANG, FR_LANG, LANGUAGE } from '../constants';
 
 import { authenticateSaltApi } from './login';
 import type { Result } from '../types';
+import { logOut, setUser } from './oidc';
 // Actions
 export const SET_LANG = 'SET_LANG';
 export const SET_THEME = 'SET_THEME';
@@ -26,8 +23,6 @@ const FETCH_CONFIG = 'FETCH_CONFIG';
 export const SET_API_CONFIG = 'SET_API_CONFIG';
 const SET_INITIAL_LANGUAGE = 'SET_INITIAL_LANGUAGE';
 const UPDATE_LANGUAGE = 'UPDATE_LANGUAGE';
-export const SET_USER_MANAGER_CONFIG = 'SET_USER_MANAGER_CONFIG';
-export const SET_USER_MANAGER = 'SET_USER_MANAGER';
 export const UPDATE_API_CONFIG = 'UPDATE_API_CONFIG';
 export const LOGOUT = 'LOGOUT';
 export const SET_USER_LOADED = 'SET_USER_LOADED';
@@ -38,25 +33,6 @@ const defaultState = {
   language: EN_LANG,
   theme: {}, // current theme
   api: null,
-  userManagerConfig: {
-    client_id: 'metalk8s-ui',
-    redirect_uri: 'http://localhost:3000/callback',
-    response_type: 'id_token',
-    scope: [
-      'openid',
-      'profile',
-      'email',
-      'groups',
-      'offline_access', // For refresh tokens, not sure if that's useful
-      'audience:server:client_id:oidc-auth-client', // A token for apiserver
-    ].join(' '),
-    authority: '',
-    loadUserInfo: false,
-    post_logout_redirect_uri: '/',
-    userStore: new WebStorageStateStore({ store: localStorage }),
-  },
-  userManager: null,
-  isUserLoaded: false,
   themes: {}, // include light, dark and custom
 };
 
@@ -64,18 +40,6 @@ export type ConfigState = {
   language: string,
   theme: Theme,
   api: ?Config,
-  userManagerConfig: {
-    client_id: string,
-    redirect_uri: string,
-    response_type: string,
-    scope: string,
-    authority: string,
-    loadUserInfo: boolean,
-    post_logout_redirect_uri: string,
-    userStore: WebStorageStateStore,
-  },
-  userManager: UserManager,
-  isUserLoaded: boolean,
   themes: Themes,
 };
 
@@ -90,16 +54,6 @@ export default function reducer(
       return { ...state, theme: action.payload };
     case SET_API_CONFIG:
       return { ...state, api: action.payload };
-    case SET_USER_MANAGER_CONFIG:
-      return {
-        ...state,
-        userManagerConfig: {
-          ...state.userManagerConfig,
-          ...action.payload,
-        },
-      };
-    case SET_USER_MANAGER:
-      return { ...state, userManager: action.payload };
     case SET_USER_LOADED:
       return { ...state, isUserLoaded: action.payload };
     case SET_THEMES:
@@ -139,23 +93,7 @@ export function updateLanguageAction(language: string) {
   return { type: UPDATE_LANGUAGE, payload: language };
 }
 
-export function setUserManagerConfigAction(payload: {
-  authority: string,
-  redirect_uri: string,
-}) {
-  return { type: SET_USER_MANAGER_CONFIG, payload };
-}
-
-export function setUserManagerAction(conf: UserManager) {
-  return { type: SET_USER_MANAGER, payload: conf };
-}
-
-export function setUserLoadedAction(isLoaded: boolean) {
-  return { type: SET_USER_LOADED, payload: isLoaded };
-}
-
-// Todo : this actually seems to be never used and duplicate of setApiConfigAction
-export function updateAPIConfigAction(payload: Config) {
+export function updateAPIConfigAction(payload: { id_token: string, token_type: string }) {
   return { type: UPDATE_API_CONFIG, payload };
 }
 
@@ -189,26 +127,12 @@ export function* fetchTheme(): Generator<Effect, void, Result<WrappedThemes>> {
 export function* fetchConfig(): Generator<Effect, void, Result<Config>> {
   yield call(Api.initialize, process.env.PUBLIC_URL);
   const result = yield call(Api.fetchConfig);
-  if (!result.error && result.url_oidc_provider && result.url_redirect) {
-    yield call(fetchTheme);
+  if (!result.error) {
+    yield call(fetchTheme); /// todo get it from the navbar
     yield put(setApiConfigAction(result));
     yield call(ApiSalt.initialize, result.url_salt);
     yield call(ApiPrometheus.initialize, result.url_prometheus);
     yield call(ApiAlertmanager.initialize, result.url_alertmanager);
-
-    yield put(
-      setUserManagerConfigAction({
-        authority: result.url_oidc_provider,
-        redirect_uri: result.url_redirect,
-      }),
-    );
-    const userManagerConfig = yield select(
-      (state: RootState) => state.config.userManagerConfig,
-    );
-    yield put(setUserManagerAction(createUserManager(userManagerConfig)));
-    const userManager = yield select((state) => state.config.userManager);
-    yield call(loadUser, store, userManager);
-    yield put(setUserLoadedAction(true));
   }
 }
 
@@ -219,6 +143,7 @@ export function* updateApiServerConfig({
 }): Generator<Effect, void, Config> {
   const api = yield select((state: RootState) => state.config.api);
   if (api) {
+    yield put(setUser(payload));
     yield call(
       ApiK8s.updateApiServerConfig,
       api.url,
@@ -252,27 +177,11 @@ export function* updateLanguage(action: {
   localStorage.setItem(LANGUAGE, language);
 }
 
-export function* logout(): Generator<Effect, void, UserManager> {
-  const userManager = yield select(
-    (state: RootState) => state.config.userManager,
-  );
-  if (userManager) {
-    userManager.removeUser(); // removes the user data from sessionStorage
-  }
-}
-
-export function* userFoundHandle(payload: {
-  payload: { id_token: string, token_type: string },
-}): Generator<Effect, void, void> {
-  yield call(updateApiServerConfig, payload);
-}
-
 export function* configSaga(): Generator<Effect, void, void> {
   yield takeEvery(FETCH_THEME, fetchTheme);
   yield takeEvery(FETCH_CONFIG, fetchConfig);
   yield takeEvery(SET_INITIAL_LANGUAGE, setInitialLanguage);
   yield takeEvery(UPDATE_LANGUAGE, updateLanguage);
   yield takeEvery(UPDATE_API_CONFIG, updateApiServerConfig);
-  yield takeEvery(USER_FOUND, userFoundHandle);
-  yield takeEvery(LOGOUT, logout);
+  yield takeEvery(LOGOUT, logOut);
 }

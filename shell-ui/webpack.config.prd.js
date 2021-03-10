@@ -1,11 +1,13 @@
 const path = require("path");
+const {name, version} = require("./package.json");
+const {DefinePlugin} = require("webpack");
 module.exports = {
   mode: "production",
   devtool: false,
   entry: "./src/index.js",
   output: {
-    path: path.resolve(__dirname, "dist"),
-    filename: "[name].js",
+    path: path.resolve(__dirname, "build"),
+    filename: `${name}.${version}.js`,
   },
   module: {
     // ...
@@ -19,4 +21,11 @@ module.exports = {
       }
     ],
   },
+  plugins: [
+    new DefinePlugin({
+      'process.env': {
+        NODE_ENV: JSON.stringify('production')
+      }
+    }),
+  ]
 };

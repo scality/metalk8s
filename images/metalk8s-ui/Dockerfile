@@ -8,5 +8,6 @@ RUN rm -rf /usr/share/nginx/html/*
 
 COPY ui /usr/share/nginx/html/
 COPY docs/html /usr/share/nginx/html/docs
+COPY shell-ui /usr/share/nginx/html/shell
 
 CMD ["nginx", "-g", "daemon off;"]

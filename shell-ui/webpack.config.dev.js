@@ -1,4 +1,5 @@
 const HtmlWebPackPlugin = require("html-webpack-plugin");
+const {DefinePlugin} = require("webpack")
 module.exports = {
   mode: "development",
   devtool: "source-map",
@@ -21,11 +22,17 @@ module.exports = {
   },
   devServer: {
         port: process.env.PORT || 8082,
-        historyApiFallback: true
+        historyApiFallback: true,
+        contentBase: 'public'
       },
   plugins: [
+    new DefinePlugin({
+      'process.env': {
+        NODE_ENV: JSON.stringify('development')
+      }
+    }),
     new HtmlWebPackPlugin({
       template: "./index-template.html",
-    }),
+    })
   ],
 };

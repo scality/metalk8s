@@ -3,8 +3,8 @@
     "url_salt": "/api/salt",
     "url_prometheus": "/api/prometheus",
     "url_grafana": "/grafana",
-    "url_oidc_provider": "/oidc",
-    "url_redirect": "/oauth2/callback",
     "url_doc": "/docs",
-    "url_alertmanager": "/api/alertmanager"
+    "url_alertmanager": "/api/alertmanager",
+    "url_navbar": "/shell/solution-ui-navbar.1.0.0.js",
+    "url_navbar_config": "/shell/config.json"
 }

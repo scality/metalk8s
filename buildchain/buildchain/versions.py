@@ -7,6 +7,7 @@ This module MUST be kept valid in a standalone context, since it is intended
 for use in tests and documentation as well.
 """
 import operator
+import json
 
 from collections import namedtuple
 from pathlib import Path
@@ -39,7 +40,8 @@ def load_version_information() -> None:
                 globals()[var] = value.strip()
 
 
-VERSION_FILE = (Path(__file__) / "../../../VERSION").resolve()
+REPO_ROOT = (Path(__file__) / "../../../").resolve()
+VERSION_FILE = REPO_ROOT / "VERSION"
 
 # Metalk8s version.
 # (Those declarations are not mandatory, but they help pylint and mypy).
@@ -53,6 +55,11 @@ load_version_information()
 SHORT_VERSION: str = "{}.{}".format(VERSION_MAJOR, VERSION_MINOR)
 VERSION: str = "{}.{}{}".format(SHORT_VERSION, VERSION_PATCH, VERSION_SUFFIX)
 
+# Get shell ui version from package.json
+shell_ui_package_contents = (REPO_ROOT / "shell-ui/package.json").read_text(
+    encoding="utf-8"
+)
+SHELL_UI_VERSION: str = json.loads(shell_ui_package_contents)["version"]
 
 # }}}
 # Container images {{{
@@ -200,6 +207,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     # Local images
     Image(
         name="metalk8s-ui",
+        version=VERSION,
+        digest=None,
+    ),
+    Image(
+        name="shell-ui",
         version=VERSION,
         digest=None,
     ),

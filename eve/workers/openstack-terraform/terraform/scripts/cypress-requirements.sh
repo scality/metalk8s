@@ -23,6 +23,7 @@ NODE_PACKAGES=(
     cypress@5.6.0
     cypress-cucumber-preprocessor@4.0.0
     cypress-wait-until@1.7.1
+    @testing-library/cypress@7.0.3
 )
 
 curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -

@@ -3,9 +3,9 @@
     "url_salt": "https://{ip}:8443/api/salt",
     "url_prometheus": "https://{ip}:8443/api/prometheus",
     "url_grafana": "https://{ip}:8443/grafana",
-    "url_oidc_provider": "https://{ip}:8443/oidc",
-    "url_redirect": "http://localhost:3000/oauth2/callback",
     "url_doc": "https://{ip}:8443/docs",
     "url_alertmanager": "https://{ip}:8443/api/alertmanager",
-    "flags": []
+    "flags": [],
+    "url_navbar": "/shell/solution-ui-navbar.1.0.0.js",
+    "url_navbar_config": "/shell/config.json"
 }

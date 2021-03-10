@@ -24,6 +24,8 @@
 // -- This is will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 import 'cypress-wait-until';
+import '@testing-library/cypress/add-commands'
+
 
 import {
   EMPTY_QUERY_RANGE_RESULT,
@@ -33,6 +35,9 @@ import {
 
 Cypress.Commands.add('setupMocks', () => {
   // Static files
+  cy.route2('GET', '/shell/config.json', {
+    fixture: 'shell-config.json',
+  });
   cy.route2('GET', '/config.json', { fixture: 'config.json' });
   cy.route2('GET', '/brand/theme.json', { fixture: 'theme.json' });
   cy.route2('GET', '/oidc/.well-known/openid-configuration', {

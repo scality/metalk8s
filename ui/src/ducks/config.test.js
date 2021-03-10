@@ -6,8 +6,6 @@ jest.mock('../index.js', () => {
   };
 });
 
-import { loadUser } from 'redux-oidc';
-
 import { call, put, select } from 'redux-saga/effects';
 import {
   fetchTheme,
@@ -17,9 +15,7 @@ import {
   updateLanguage,
   SET_LANG,
   setInitialLanguage,
-  SET_USER_MANAGER_CONFIG,
   setUserManagerAction,
-  SET_USER_MANAGER,
   SET_USER_LOADED,
   SET_THEMES,
 } from './config.js';
@@ -67,8 +63,6 @@ it('update the config state when fetchConfig', () => {
     url: 'https://172.21.254.14:6443',
     url_salt: 'http://172.21.254.13:4507',
     url_prometheus: 'http://172.21.254.46:30222',
-    url_oidc_provider: 'http://172.21.254.46:32000',
-    url_redirect: 'http://172.21.254.46:3000',
     url_alertmanager: 'http://172.21.254.46:8443',
   };
 
@@ -90,25 +84,6 @@ it('update the config state when fetchConfig', () => {
     call(ApiAlertmanager.initialize, 'http://172.21.254.46:8443'),
   );
 
-  expect(gen.next().value).toEqual(
-    put({
-      type: SET_USER_MANAGER_CONFIG,
-      payload: {
-        authority: result.url_oidc_provider,
-        redirect_uri: result.url_redirect,
-      },
-    }),
-  );
-  expect(gen.next().value.type).toEqual('SELECT');
-  expect(gen.next().value.payload.action.type).toEqual(SET_USER_MANAGER);
-  expect(gen.next().value.type).toEqual('SELECT');
-  expect(gen.next().value).toEqual(call(loadUser, 'store', undefined));
-  expect(gen.next().value).toEqual(
-    put({
-      type: SET_USER_LOADED,
-      payload: true,
-    }),
-  );
   expect(gen.next().done).toEqual(true);
 });
 

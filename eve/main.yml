@@ -1176,6 +1176,9 @@ stages:
         application:
           context: 'ui'
           dockerfile: eve/workers/pod-integration-tests/ui/app.Dockerfile
+        shell-ui:
+          context: 'shell-ui'
+          dockerfile: eve/workers/pod-integration-tests/ui/shell-ui.Dockerfile
     steps:
       - Git: *git_pull
       - ShellCommand:
@@ -1189,7 +1192,7 @@ stages:
           name: Install Cypress and its dependencies
           workdir: build/ui
           command: |
-            PKGS="cypress cypress-cucumber-preprocessor cypress-wait-until"
+            PKGS="cypress cypress-cucumber-preprocessor cypress-wait-until @testing-library/cypress"
             for pkg in $PKGS; do
               npm install --no-save --no-package-lock $pkg@$(node -p \
                 -e "require('./package-lock.json').dependencies['$pkg'].version" \
@@ -1251,6 +1254,7 @@ stages:
           name: Trigger all unit tests simultaneously
           stage_names:
             - unit_tests_ui
+            - unit_tests_shell_ui
             - unit_tests_crd_client_generator
             - unit_tests_storage_operator
             - unit_tests_salt
@@ -1309,6 +1313,49 @@ stages:
             <<: *_env_final_status_artifact_success
             <<: *_unit-test_ui_junit_info
             STEP_NAME: unit_tests_ui
+      - Upload: *upload_final_status_artifact
+
+  unit_tests_shell_ui:
+    _metalk8s_internal_info:
+      junit_info: &_unit-test_shell_ui_junit_info
+        TEST_SUITE: unit test
+        TEST_NAME: shell-ui
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-unit-tests/pod.yaml
+      images:
+        docker-unit-tests:
+          context: 'shell-ui'
+          dockerfile: eve/workers/pod-unit-tests/ui/Dockerfile
+      vars:
+        name: "metalk8s-unit-tests-shell-ui-worker"
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            <<: *_unit-test_shell_ui_junit_info
+            STEP_NAME: unit_tests_shell_ui
+      - ShellCommand: *yum_clean_all
+      - ShellCommand:
+          name: Install UI dependencies
+          workdir: build/shell-ui
+          command: >
+            npm ci --prefer-offline --no-audit
+          haltOnFailure: true
+      - ShellCommand:
+          name: Run all Shell UI unit tests
+          workdir: build/shell-ui
+          command: >
+            npm run test --no-update-notifier
+          haltOnFailure: true
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            <<: *_unit-test_shell_ui_junit_info
+            STEP_NAME: unit_tests_sehll_ui
       - Upload: *upload_final_status_artifact
 
   unit_tests_crd_client_generator:
