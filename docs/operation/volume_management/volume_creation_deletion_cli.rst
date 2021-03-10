@@ -59,7 +59,7 @@ Deleting a Volume
 
 .. note::
 
-   A volume object can only be deleted if there is no backing storage,
+   A Volume object can only be deleted if there is no backing storage,
    or if the volume is not in use. Otherwise, the volume will be
    marked for deletion and remain available until one of the conditions
    is met.
