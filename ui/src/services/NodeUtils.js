@@ -32,6 +32,7 @@ export const getNodeListData = createSelector(
   (nodes, nodeIPsInfo, brand, alerts) => {
     const mapped =
       nodes?.map((node) => {
+        const conditions = node.conditions;
         const IPsInfo = nodeIPsInfo?.[node.name];
         let statusTextColor, health;
         const alertsNode = alerts?.filter(
@@ -69,18 +70,15 @@ export const getNodeListData = createSelector(
         // "yellow" when status.conditions['Ready'] == True and some other conditions are true
         // "red" when status.conditions['Ready'] == False
         // "grey" when there is no status.conditions
-        if (
-          node?.status === API_STATUS_READY &&
-          node?.conditions.length === 0
-        ) {
+        if (node?.status === API_STATUS_READY && conditions.length === 0) {
           statusTextColor = brand?.healthy;
           computedStatus.push(API_STATUS_READY);
         } else if (
           node?.status === API_STATUS_READY &&
-          node?.conditions.length !== 0
+          conditions.length !== 0
         ) {
           statusTextColor = brand?.warning;
-          nodes.conditions.map((cond) => {
+          conditions.map((cond) => {
             return computedStatus.push(cond);
           });
         } else if (node.deploying && node.status === API_STATUS_UNKNOWN) {
