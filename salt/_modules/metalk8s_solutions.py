@@ -156,26 +156,6 @@ def deactivate_solution(solution):
     return True
 
 
-def _is_solution_mount(mount_tuple):
-    """Return whether a mount is for a Solution archive.
-
-    Any ISO9660 mounted in `/srv/scality` that isn't for MetalK8s is considered
-    to be a Solution archive.
-    """
-    mountpoint, mount_info = mount_tuple
-
-    if not mountpoint.startswith("/srv/scality/"):
-        return False
-
-    if mountpoint.startswith("/srv/scality/metalk8s-"):
-        return False
-
-    if mount_info["fstype"] != "iso9660":
-        return False
-
-    return True
-
-
 SOLUTION_MANIFEST = "manifest.yaml"
 SOLUTION_MANIFEST_KIND = "Solution"
 SOLUTION_MANIFEST_APIVERSIONS = [
@@ -339,10 +319,29 @@ def list_available():
 
     active_mounts = __salt__["mount.active"]()
 
-    solution_mounts = filter(_is_solution_mount, active_mounts.items())
+    for mountpoint, mount_info in active_mounts.items():
+        # Skip mountpoint not in `/srv/scality`
+        if not mountpoint.startswith("/srv/scality/"):
+            continue
 
-    for mountpoint, mount_info in solution_mounts:
-        manifest, info = read_solution_manifest(mountpoint)
+        # Skip MetalK8s mountpoint
+        if mountpoint.startswith("/srv/scality/metalk8s-"):
+            continue
+
+        # Skip non ISO mountpoint
+        if mount_info["fstype"] != "iso9660":
+            continue
+
+        try:
+            manifest, info = read_solution_manifest(mountpoint)
+        except CommandExecutionError as exc:
+            log.info(
+                "Skipping %s: not a Solution (failed to read/parse %s): %s",
+                mountpoint,
+                SOLUTION_MANIFEST,
+                exc,
+            )
+            continue
 
         result[info["name"]].append(
             {

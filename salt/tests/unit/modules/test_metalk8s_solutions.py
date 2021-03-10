@@ -267,14 +267,14 @@ class Metalk8sSolutionsTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 self.assertEqual(metalk8s_solutions.manifest_from_iso(path), result)
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["list_available"])
-    def test_list_available(
-        self, mountpoints=None, archive_infos=None, result=None, raises=False
-    ):
+    def test_list_available(self, mountpoints=None, archive_infos=None, result=None):
         """
         Tests the return of `list_available` function
         """
         mount_active_mock = MagicMock(return_value=mountpoints or {})
         read_solution_manifest_mock = MagicMock(return_value=(None, archive_infos))
+        if archive_infos is None:
+            read_solution_manifest_mock.side_effect = CommandExecutionError("Banana")
 
         salt_dict_patch = {
             "mount.active": mount_active_mock,
@@ -282,14 +282,7 @@ class Metalk8sSolutionsTestCase(TestCase, mixins.LoaderModuleMockMixin):
         with patch.dict(metalk8s_solutions.__salt__, salt_dict_patch), patch(
             "metalk8s_solutions.read_solution_manifest", read_solution_manifest_mock
         ):
-            if raises:
-                self.assertRaisesRegex(
-                    Exception,
-                    'Path has no "product.txt"',
-                    metalk8s_solutions.list_available,
-                )
-            else:
-                self.assertEqual(metalk8s_solutions.list_available(), result or {})
+            self.assertEqual(metalk8s_solutions.list_available(), result or {})
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["operator_roles_from_manifest"])
     def test_operator_roles_from_manifest(
