@@ -27,7 +27,7 @@ import {
   NODE_FILESYSTEM_ALMOST_OUTOF_FILES,
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
-import type { PrometheusAlert } from './alertmanager/api';
+import type { Alert, Health } from './alertUtils';
 import type { InstantVectorResult } from './prometheus/api';
 import { V1PersistentVolume } from '@kubernetes/client-node/dist/gen/model/models';
 import type { Metalk8sV1alpha1Volume } from '../services/k8s/Metalk8sVolumeClient.generated';
@@ -359,7 +359,7 @@ type SystemDevice = {
 export const getNodePartitionsTableData = (
   usages: $PropertyType<InstantVectorResult, 'result'>,
   sizes: $PropertyType<InstantVectorResult, 'result'>,
-  alerts: Array<PrometheusAlert>,
+  alerts: Alert[],
 ): SystemDevice[] => {
   const partitions = usages.map((usage) => {
     const mountpoint = usage.metric.mountpoint;
@@ -379,7 +379,7 @@ export const getNodePartitionsTableData = (
 
 const computePartitionHealth = (
   partitionPath: string,
-  alerts: Array<PrometheusAlert>,
+  alerts: Alert[],
 ): Health => {
   // filter the alerts by hardcoded alertname and mountpoint
   const alertsNodeFS = alerts.filter(

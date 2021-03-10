@@ -1,6 +1,11 @@
 //@flow
 import ApiClient from '../ApiClient';
-
+import { STATUS_CRITICAL, STATUS_HEALTH } from '../../constants';
+import {
+  removeWarningAlerts,
+  formatActiveAlerts,
+  sortAlerts,
+} from '../alertUtils';
 let alertmanagerApiClient: ?ApiClient = null;
 
 export function initialize(apiUrl: string) {
@@ -28,15 +33,40 @@ export type PrometheusAlert = {
   generatorURL: string,
 };
 
+export type AlertLabels = {
+  [labelName: string]: string,
+  parents?: string[],
+  selectors?: string[],
+};
+
 export function getAlerts() {
   if (!alertmanagerApiClient) {
     throw new Error('alertmanagerApiClient should be defined');
   }
 
-  return alertmanagerApiClient.get('/api/v2/alerts').then((resolve) => {
-    if (resolve.error) {
-      throw resolve.error;
-    }
-    return resolve;
-  });
+  return alertmanagerApiClient
+    .get('/api/v2/alerts')
+    .then((resolve) => {
+      if (resolve.error) {
+        throw resolve.error;
+      }
+      return resolve;
+    })
+    .then((result) => {
+      // format the alerts then remove the warning and finally sort the alerts.
+      return sortAlerts(removeWarningAlerts(formatActiveAlerts(result)));
+    });
 }
+
+export const checkActiveAlertProvider = (): Promise<{
+  status: 'healthy' | 'critical',
+}> => {
+  // depends on Watchdog to see the if Alertmanager is up
+  return getAlerts().then((result) => {
+    const watchdog = result.find(
+      (alert) => alert.labels.alertname === 'Watchdog',
+    );
+    if (watchdog) return STATUS_HEALTH;
+    else return STATUS_CRITICAL;
+  });
+};
