@@ -34,6 +34,8 @@ import {
   formatBatchName,
 } from '../services/NodeVolumesUtils';
 import { intl } from '../translations/IntlGlobalProvider';
+import { TitlePage } from '../components/style/CommonLayoutStyle';
+import { CheckboxWrapper } from '../components/style/FormStyle';
 
 const MAX_VOLUME_BATCH_CREATION = 70;
 
@@ -42,7 +44,7 @@ const MAX_VOLUME_BATCH_CREATION = 70;
 const CreateVolumeFormContainer = styled.div`
   display: inline-block;
   height: 100%;
-  padding: ${padding.small};
+  padding: ${padding.small} ${padding.large};
 `;
 
 const FormSection = styled.div`
@@ -71,10 +73,15 @@ const CreateVolumeLayout = styled.div`
   form {
     .sc-input {
       display: inline-flex;
-      margin: ${padding.smaller} 0;
+      margin-bottom: ${padding.large};
       .sc-input-label {
         width: 150px;
         color: ${(props) => props.theme.brand.textPrimary};
+      }
+
+      // Avoid double margins for nested sc-inputs
+      .sc-input {
+        margin-bottom: 0px;
       }
     }
   }
@@ -150,12 +157,6 @@ const LabelsName = styled(LabelsValue)`
   color: ${(props) => props.theme.brand.textPrimary};
 `;
 
-const PageContainer = styled.div`
-  display: flex;
-  // To avoid the big empty space on the right side of page
-  justify-content: space-around;
-`;
-
 const DocumentationIcon = styled.div`
   margin: 60px 20px;
   button {
@@ -163,12 +164,6 @@ const DocumentationIcon = styled.div`
       cursor: pointer;
     }
   }
-`;
-
-const TitlePage = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
-  font-size: 24px;
-  padding: ${padding.small} 0 0 ${padding.large};
 `;
 
 const CheckboxContainer = styled.div`
@@ -201,6 +196,13 @@ const SingleVolumeForm = styled.div`
 const InputQuestionMark = styled.i`
   padding-left: ${padding.small};
   color: ${(props) => props.theme.brand.info};
+`;
+
+const RequiredText = styled.div`
+  color: ${(props) => props.theme.brand.textPrimary};
+  font-size: ${fontSize.base};
+  font-weight: 700;
+  margin: ${padding.base} 0 ${padding.large} ${padding.small};
 `;
 
 const CreateVolume = (props) => {
@@ -366,7 +368,7 @@ const CreateVolume = (props) => {
   return isStorageClassLoading ? (
     <Loader size="massive" centered={true} />
   ) : (
-    <PageContainer>
+    <>
       <CreateVolumeFormContainer>
         <TitlePage>Create New Volume</TitlePage>
         {isStorageClassExist ? null : (
@@ -515,18 +517,22 @@ const CreateVolume = (props) => {
               return (
                 <Form>
                   <FormSection>
+                    <RequiredText>All * are mandatory fields</RequiredText>
+                  </FormSection>
+
+                  <FormSection>
                     <Input
                       name="name"
                       value={values.name}
                       onChange={handleChange('name')}
-                      label={intl.translate('name')}
+                      label={`${intl.translate('name')}*`}
                       error={touched.name && errors.name}
                       onBlur={handleOnBlur}
                     />
                     {/* The node input will be prefilled if we create volume from node*/}
                     <Input
                       id="node_input"
-                      label={intl.translate('node')}
+                      label={`${intl.translate('node')}*`}
                       clearable={false}
                       type="select"
                       options={optionsNodes}
@@ -589,7 +595,7 @@ const CreateVolume = (props) => {
 
                     <Input
                       id="storageClass_input"
-                      label={intl.translate('storageClass')}
+                      label={`${intl.translate('storageClass')}*`}
                       clearable={false}
                       type="select"
                       options={optionsStorageClasses}
@@ -606,7 +612,7 @@ const CreateVolume = (props) => {
                     />
                     <Input
                       id="type_input"
-                      label={intl.translate('volume_type')}
+                      label={`${intl.translate('volume_type')}*`}
                       clearable={false}
                       type="select"
                       options={optionsTypes}
@@ -626,7 +632,7 @@ const CreateVolume = (props) => {
                           min="1"
                           value={values.sizeInput}
                           onChange={handleChange('sizeInput')}
-                          label={intl.translate('volume_size')}
+                          label={`${intl.translate('volume_size')}*`}
                           error={touched.sizeInput && errors.sizeInput}
                           onBlur={handleOnBlur}
                         />
@@ -656,7 +662,7 @@ const CreateVolume = (props) => {
                         onChange={handleChange('path')}
                         label={
                           <>
-                            {intl.translate('device_path')}
+                            {`${intl.translate('device_path')}*`}
                             <Tooltip
                               placement="right"
                               overlay={
@@ -674,14 +680,16 @@ const CreateVolume = (props) => {
                       />
                     )}
                     <CheckboxContainer>
-                      <Checkbox
-                        name="multiVolumeCreation"
-                        label={intl.translate('create_multiple_volumes')}
-                        checked={values.multiVolumeCreation}
-                        value={values.multiVolumeCreation}
-                        onChange={handleCheckboxChange('multiVolumeCreation')}
-                        onBlur={handleOnBlur}
-                      />
+                      <CheckboxWrapper>
+                        <Checkbox
+                          name="multiVolumeCreation"
+                          label={intl.translate('create_multiple_volumes')}
+                          checked={values.multiVolumeCreation}
+                          value={values.multiVolumeCreation}
+                          onChange={handleCheckboxChange('multiVolumeCreation')}
+                          onBlur={handleOnBlur}
+                        />
+                      </CheckboxWrapper>
                     </CheckboxContainer>
                   </FormSection>
 
@@ -737,7 +745,7 @@ const CreateVolume = (props) => {
                               values.volumes.map((volume, index) => (
                                 <SingleVolumeContainer key={`volume${index}`}>
                                   <div
-                                    style={{ paddingTop: `${padding.base}` }}
+                                    style={{ paddingTop: `${padding.small}` }}
                                   >
                                     {index + 1}-
                                   </div>
@@ -776,6 +784,7 @@ const CreateVolume = (props) => {
                     <Button
                       text={intl.translate('create')}
                       type="submit"
+                      variant={'secondary'}
                       disabled={!dirty || !isEmpty(errors)}
                       data-cy="submit-create-volume"
                     />
@@ -800,7 +809,7 @@ const CreateVolume = (props) => {
           />
         </Tooltip>
       </DocumentationIcon>
-    </PageContainer>
+    </>
   );
 };
 

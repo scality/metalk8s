@@ -176,3 +176,9 @@ export const GraphTitle = styled.div`
 export const GraphWrapper = styled.div`
   padding-left: 0px;
 `;
+
+export const TitlePage = styled.div`
+  color: ${(props) => props.theme.brand.textPrimary};
+  font-size: 24px;
+  padding: ${padding.small} 0 0 ${padding.large};
+`;

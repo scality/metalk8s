@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import { useHistory } from 'react-router';
-import { Button, Input, Checkbox } from '@scality/core-ui';
+import { Button, Checkbox, Input, Toggle } from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import isEmpty from 'lodash.isempty';
 import {
@@ -12,10 +12,12 @@ import {
   clearCreateNodeErrorAction,
 } from '../ducks/app/nodes';
 import { intl } from '../translations/IntlGlobalProvider';
+import { CheckboxWrapper, ToggleWrapper } from '../components/style/FormStyle';
+import { TitlePage } from '../components/style/CommonLayoutStyle';
 
 const CreateNodeContainter = styled.div`
   height: 100%;
-  padding: ${padding.small};
+  padding: ${padding.small} ${padding.large};
   display: inline-block;
 `;
 
@@ -26,10 +28,13 @@ const CreateNodeLayout = styled.div`
   margin-top: ${padding.base};
   form {
     .sc-input {
-      margin: ${padding.smaller} 0;
+      margin-top: ${padding.large};
       .sc-input-label {
         width: 200px;
         color: ${(props) => props.theme.brand.textPrimary};
+      }
+      .sc-input-type {
+        width: 240px;
       }
     }
   }
@@ -87,6 +92,13 @@ const InputValue = styled(InputLabel)`
   padding: ${padding.small} 0;
 `;
 
+const RequiredText = styled.div`
+  color: ${(props) => props.theme.brand.textPrimary};
+  font-size: ${fontSize.base};
+  font-weight: 700;
+  margin: ${padding.base} 0 ${padding.base} ${padding.small};
+`;
+
 const initialValues = {
   name: '',
   ssh_user: '',
@@ -126,6 +138,7 @@ const NodeCreateForm = () => {
 
   return (
     <CreateNodeContainter>
+      <TitlePage>Create New Node</TitlePage>
       <CreateNodeLayout>
         <Formik
           initialValues={initialValues}
@@ -153,12 +166,15 @@ const NodeCreateForm = () => {
             return (
               <Form>
                 <FormSection>
+                  <RequiredText>All * are mandatory fields</RequiredText>
+                </FormSection>
+                <FormSection>
                   <FormSectionTitle>
                     {intl.translate('new_node_data')}
                   </FormSectionTitle>
                   <Input
                     name="name"
-                    label={intl.translate('name')}
+                    label={`${intl.translate('name')}*`}
                     value={values.name}
                     onChange={handleChange('name')}
                     error={touched.name && errors.name}
@@ -175,30 +191,37 @@ const NodeCreateForm = () => {
                       {intl.translate('roles')}
                     </InputLabel>
                     <CheckboxGroup>
-                      <Checkbox
-                        name="workload_plane"
-                        label={intl.translate('workload_plane')}
-                        checked={values.workload_plane}
-                        value={values.workload_plane}
-                        onChange={handleChange('workload_plane')}
-                        onBlur={handleOnBlur}
-                      />
-                      <Checkbox
-                        name="control_plane"
-                        label={intl.translate('control_plane')}
-                        checked={values.control_plane}
-                        value={values.control_plane}
-                        onChange={handleChange('control_plane')}
-                        onBlur={handleOnBlur}
-                      />
-                      <Checkbox
-                        name="infra"
-                        label={intl.translate('infra')}
-                        checked={values.infra}
-                        value={values.infra}
-                        onChange={handleChange('infra')}
-                        onBlur={handleOnBlur}
-                      />
+                      <CheckboxWrapper>
+                        <Checkbox
+                          name="workload_plane"
+                          label={intl.translate('workload_plane')}
+                          checked={values.workload_plane}
+                          value={values.workload_plane}
+                          onChange={handleChange('workload_plane')}
+                          onBlur={handleOnBlur}
+                        />
+                      </CheckboxWrapper>
+                      <CheckboxWrapper>
+                        <Checkbox
+                          name="control_plane"
+                          label={intl.translate('control_plane')}
+                          checked={values.control_plane}
+                          value={values.control_plane}
+                          onChange={handleChange('control_plane')}
+                          onBlur={handleOnBlur}
+                        />
+                      </CheckboxWrapper>
+                      <CheckboxWrapper>
+                        <Checkbox
+                          name="infra"
+                          label={intl.translate('infra')}
+                          checked={values.infra}
+                          value={values.infra}
+                          onChange={handleChange('infra')}
+                          onBlur={handleOnBlur}
+                        />
+                      </CheckboxWrapper>
+
                       <ErrorMessage
                         visible={
                           !(
@@ -220,7 +243,7 @@ const NodeCreateForm = () => {
                   </FormSectionTitle>
                   <Input
                     name="ssh_user"
-                    label={intl.translate('ssh_user')}
+                    label={`${intl.translate('ssh_user')}*`}
                     value={values.ssh_user}
                     onChange={handleChange('ssh_user')}
                     error={touched.ssh_user && errors.ssh_user}
@@ -228,7 +251,7 @@ const NodeCreateForm = () => {
                   />
                   <Input
                     name="hostName_ip"
-                    label={intl.translate('hostName_ip')}
+                    label={`${intl.translate('hostName_ip')}*`}
                     value={values.hostName_ip}
                     onChange={handleChange('hostName_ip')}
                     error={touched.hostName_ip && errors.hostName_ip}
@@ -236,7 +259,7 @@ const NodeCreateForm = () => {
                   />
                   <Input
                     name="ssh_port"
-                    label={intl.translate('ssh_port')}
+                    label={`${intl.translate('ssh_port')}*`}
                     value={values.ssh_port}
                     onChange={handleChange('ssh_port')}
                     error={touched.ssh_port && errors.ssh_port}
@@ -244,21 +267,27 @@ const NodeCreateForm = () => {
                   />
                   <Input
                     name="ssh_key_path"
-                    label={intl.translate('ssh_key_path')}
+                    label={`${intl.translate('ssh_key_path')}*`}
                     value={values.ssh_key_path}
                     onChange={handleChange('ssh_key_path')}
                     error={touched.ssh_key_path && errors.ssh_key_path}
                     onBlur={handleOnBlur}
                   />
-                  <Input
-                    name="sudo_required"
-                    type="checkbox"
-                    label={intl.translate('sudo_required')}
-                    value={values.sudo_required}
-                    checked={values.sudo_required}
-                    onChange={handleChange('sudo_required')}
-                    onBlur={handleOnBlur}
-                  />
+
+                  <InputContainer className="sc-input">
+                    <InputLabel className="sc-input-label">
+                      {intl.translate('sudo_required')}
+                    </InputLabel>
+                    <ToggleWrapper>
+                      <Toggle
+                        name="sudo_required"
+                        toggle={values.sudo_required}
+                        value={values.sudo_required}
+                        onChange={handleChange('sudo_required')}
+                        onBlur={handleOnBlur}
+                      />
+                    </ToggleWrapper>
+                  </InputContainer>
                 </FormSection>
                 <ActionContainer>
                   <div>
@@ -271,6 +300,7 @@ const NodeCreateForm = () => {
                       />
                       <Button
                         text={intl.translate('create')}
+                        variant={'secondary'}
                         type="submit"
                         disabled={
                           !dirty ||
