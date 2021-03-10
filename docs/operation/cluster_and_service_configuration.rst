@@ -8,8 +8,8 @@ given Cluster and Services Configurations.
 Default Service Configurations
 ------------------------------
 
-MetalK8s addons (Alertmanager, Dex, Grafana and Prometheus) ships with default
-runtime service configurations required for basic service deployment.
+MetalK8s addons (Alertmanager, Dex, Grafana, Prometheus and UI) ships with
+default runtime service configurations required for basic service deployment.
 Find below an exhaustive list of available default Service Configurations
 deployed in a MetalK8s cluster.
 
@@ -85,6 +85,21 @@ The default configuration values for Loki are specified below:
 .. literalinclude:: ../../salt/metalk8s/addons/logging/loki/config/loki.yaml
    :language: yaml
    :lines: 3-
+
+
+UI Default Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+MetalK8s UI simplifies management and monitoring of a MetalK8s cluster from a
+centralized user interface.
+
+The default configuration values for MetalK8s UI are specified below:
+
+.. literalinclude:: ../../salt/metalk8s/addons/ui/config/metalk8s-ui-config.yaml
+   :language: yaml
+   :lines: 3-
+
+See :ref:`csc-ui-customization` to override these defaults.
 
 Service Configurations Customization
 ------------------------------------
@@ -547,6 +562,53 @@ edited as follows:
 
    Due to internal implementation, ``retention_period`` must be a multiple of
    ``24h`` in order to get the expected behavior
+
+.. _csc-ui-customization:
+
+Metalk8s UI Configuration Customization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Default configuration for MetalK8s UI can be overridden by editing its
+Cluster and Service ConfigMap ``metalk8s-ui-config`` in namespace
+``metalk8s-ui`` under the key ``data.config\.yaml``:
+
+  .. code-block:: shell
+
+     root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                        edit configmap -n metalk8s-ui \
+                        metalk8s-ui-config
+
+Changing the MetalK8s UI Ingress Path
+""""""""""""""""""""""""""""""""""""""""""""""""
+
+In order to expose another UI at the root path of the control plane,
+in place of MetalK8s UI, you need to change the Ingress path from
+which MetalK8s UI is served.
+
+For example, to serve MetalK8s UI at **/platform** instead of **/**, follow
+these steps:
+
+#. Change the value of ``spec.basePath`` in the ConfigMap:
+
+.. code-block:: yaml
+
+    apiVersion: v1
+    kind: ConfigMap
+    data:
+      config.yaml: |-
+        apiVersion: addons.metalk8s.scality.com/v1alpha1
+        kind: UIConfig
+        spec:
+          basePath: /platform
+
+#. Apply your changes by running:
+
+.. parsed-literal::
+
+      root\@bootstrap $ kubectl exec -n kube-system -c salt-master \\
+                         --kubeconfig /etc/kubernetes/admin.conf \\
+                         salt-master-bootstrap -- salt-run state.sls \\
+                         metalk8s.addons.ui.deployed saltenv=metalk8s-|version|
 
 Replicas Count Customization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
