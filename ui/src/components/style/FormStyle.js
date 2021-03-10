@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { padding } from '@scality/core-ui/dist/style/theme';
 
 // This is a temporary styling wrapper before we merge this styling in core-ui component
 export const CheckboxWrapper = styled.div`
@@ -27,6 +28,13 @@ export const CheckboxWrapper = styled.div`
 export const ToggleWrapper = styled.div`
   flex: 1;
   margin-right: auto;
+  display: flex;
+  align-items: center;
+
+  .sc-loader {
+    margin: ${padding.small};
+  }
+
   .text {
     font-size: 1rem;
   }

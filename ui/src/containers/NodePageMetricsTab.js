@@ -511,6 +511,7 @@ const NodePageMetricsTab = ({
               );
             }}
           />
+          {showAvg && !avgStatsData['cpuUsage'].length ? <Loader /> : null}
         </ToggleWrapper>
         {api && api.url_grafana && (
           <Button
