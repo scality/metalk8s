@@ -348,8 +348,6 @@ export const formatBatchName = (name: string, index: number): string => {
   return '';
 };
 
-// can be a global type be used by all the health status
-type Health = 'health' | 'warning' | 'critical' | 'none';
 type SystemDevice = {
   partitionPath: string,
   health: Health,
