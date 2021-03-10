@@ -172,10 +172,7 @@ const ClusterMonitoring = (props) => {
       return {
         name: alert.labels.alertname,
         severity: alert.labels.severity,
-        message:
-          alert.annotations.description ||
-          alert.annotations.message ||
-          alert.annotations.summary,
+        message: alert.description || alert.summary,
         activeAt: alert.startsAt,
       };
     });
