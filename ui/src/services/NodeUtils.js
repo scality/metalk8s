@@ -180,7 +180,7 @@ Return
   }
 */
 export const nodesCPWPIPsInterface = (
-  IPsInterfacesObject: IPInterfaces | boolean,
+  IPsInterfacesObject: IPInterfaces | false,
 ): {
   controlPlane: { ip: string, interface: string },
   workloadPlane: { ip: string, interface: string },
@@ -195,19 +195,21 @@ export const nodesCPWPIPsInterface = (
   return {
     controlPlane: {
       ip: IPsInterfacesObject[METALK8S_CONTROL_PLANE_IP],
-      interface: Object.keys(IPsInterfacesObject[IP_INTERFACES]).find((en) =>
-        IPsInterfacesObject[IP_INTERFACES][en].includes(
-          IPsInterfacesObject[METALK8S_CONTROL_PLANE_IP],
-        ),
-      ),
+      interface:
+        Object.keys(IPsInterfacesObject[IP_INTERFACES]).find((en) =>
+          IPsInterfacesObject[IP_INTERFACES][en].includes(
+            IPsInterfacesObject[METALK8S_CONTROL_PLANE_IP],
+          ),
+        ) || '',
     },
     workloadPlane: {
       ip: IPsInterfacesObject[METALK8S_WORKLOAD_PLANE_IP],
-      interface: Object.keys(IPsInterfacesObject[IP_INTERFACES]).find((en) =>
-        IPsInterfacesObject[IP_INTERFACES][en].includes(
-          IPsInterfacesObject[METALK8S_WORKLOAD_PLANE_IP],
-        ),
-      ),
+      interface:
+        Object.keys(IPsInterfacesObject[IP_INTERFACES]).find((en) =>
+          IPsInterfacesObject[IP_INTERFACES][en].includes(
+            IPsInterfacesObject[METALK8S_WORKLOAD_PLANE_IP],
+          ),
+        ) || '',
     },
   };
 };
