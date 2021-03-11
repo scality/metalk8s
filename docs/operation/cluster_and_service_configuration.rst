@@ -114,6 +114,24 @@ The default theme for MetalK8s UI are specified below:
 
 See :ref:`csc-ui-theme-customization` to override these defaults.
 
+Shell UI Default Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+MetalK8s Shell UI provides a common set of features to MetalK8s UI and
+any other UI (both control and workload plane) configured to include the
+Shell UI component(s).
+Features exposed include:
+- user authentication using an OIDC provider
+- navigation menu items, displayed according to user groups
+(retrieved from OIDC)
+
+The default Shell UI configuration values are specified below:
+
+.. literalinclude:: ../../salt/metalk8s/addons/ui/config/metalk8s-shell-ui-config.yaml.j2
+   :language: yaml
+   :lines: 3-
+
+See :ref:`csc-shell-ui-config-customization` to override these defaults.
 
 Service Configurations Customization
 ------------------------------------
@@ -648,6 +666,104 @@ Once the theme is edited, apply your changes by running:
                          --kubeconfig /etc/kubernetes/admin.conf \\
                          salt-master-bootstrap -- salt-run state.sls \\
                          metalk8s.addons.ui.deployed saltenv=metalk8s-|version|
+
+.. _csc-shell-ui-config-customization:
+
+MetalK8s Shell UI Configuration Customization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Default configuration for MetalK8s Shell UI can be overridden by editing its
+Cluster and Service ConfigMap ``metalk8s-shell-ui-config`` in namespace
+``metalk8s-ui`` under the key ``data.config\.yaml``.
+
+Changing UI OIDC Configuration
+""""""""""""""""""""""""""""""
+
+In order to adapt the OIDC configuration (e.g. the provider URL or
+the client ID) used by the UI shareable navigation bar (called Shell UI),
+you need to modify its ConfigMap.
+
+For example, in order to replace the default client ID with "ui",
+follow these steps:
+
+#. Edit the ConfigMap:
+
+.. code-block:: shell
+
+    root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                    edit configmap -n metalk8s-ui \
+                    metalk8s-shell-ui-config
+
+#. Add the following entry:
+
+.. code-block:: yaml
+
+    apiVersion: v1
+    kind: ConfigMap
+    data:
+      config.yaml: |-
+        apiVersion: addons.metalk8s.scality.com/v1alpha1
+        kind: ShellUIConfig
+        spec:
+          # [...]
+          oidc:
+            # [...]
+            clientId: "ui"
+
+#. Apply your changes by running:
+
+.. parsed-literal::
+
+      root\@bootstrap $ kubectl exec -n kube-system -c salt-master \\
+                         --kubeconfig /etc/kubernetes/admin.conf \\
+                         salt-master-bootstrap -- salt-run state.sls \\
+                         metalk8s.addons.ui.deployed saltenv=metalk8s-|version|
+
+You can similarly edit the requested scopes through the "scopes" attribute or
+the OIDC provider URL through the "providerUrl" attribute.
+
+Changing UI Menu Entries
+""""""""""""""""""""""""
+
+To change the UI navigation menu entries, follow these steps:
+
+#. Edit the ConfigMap:
+
+.. code-block:: shell
+
+    root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                    edit configmap -n metalk8s-ui \
+                    metalk8s-shell-ui-config
+
+#. Edit the ``options`` field. As an example, we add an entry to
+   the ``main`` section (there is also a ``subLogin`` section):
+
+.. code-block:: yaml
+
+    apiVersion: v1
+    kind: ConfigMap
+    data:
+      config.yaml: |-
+        apiVersion: addons.metalk8s.scality.com/v1alpha1
+        kind: ShellUIConfig
+        spec:
+          # [...]
+          options:
+            # [...]
+            main:
+              # [...]
+              https://www.scality.com/:
+                en: "Scality"
+                fr: "Scality"
+
+#. Apply your changes by running:
+
+.. parsed-literal::
+
+      root\@bootstrap $ kubectl exec -n kube-system -c salt-master \\
+                          --kubeconfig /etc/kubernetes/admin.conf \\
+                          salt-master-bootstrap -- salt-run state.sls \\
+                          metalk8s.addons.ui.deployed saltenv=metalk8s-|version|
 
 Replicas Count Customization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
