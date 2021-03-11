@@ -20,5 +20,5 @@ do not have a working MetalK8s_ setup.
    cluster_and_service_configuration
    cluster_monitoring/index
    metalk8s-utils
-   troubleshooting
    listening_processes
+   troubleshooting/index

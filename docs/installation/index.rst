@@ -19,3 +19,4 @@ and shows how to access various services after completing the setup.
    post-install
    services
    advanced-guide
+   troubleshooting/index
