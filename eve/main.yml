@@ -2,6 +2,9 @@
 version: "0.2"
 
 branches:
+  user/gdemonet/debug-bootstrap:
+    stage: debug-bootstrap
+
   # yamllint disable rule:line-length
   user/*, feature/*, improvement/*, bugfix/*, w/*, q/*, hotfix/*, dependabot/*, documentation/*, release/*:
     stage: pre-merge
@@ -800,6 +803,31 @@ models:
       alwaysRun: true
 
 stages:
+  debug-bootstrap:
+    worker:
+      type: local
+    steps:
+      - SetPropertyFromCommand:
+          name: Determine whether to run or not
+          command: >
+            if [ -z "%(prop:premerge_artifacts_name)s" ];
+            then echo "true";
+            else echo "false";
+            fi
+          property: halt_debug_bootstrap
+      - ShellCommand:
+          name: Halt if needed
+          command: exit 1
+          haltOnFailure: true
+          doStepIf: "%(prop:halt_debug_bootstrap)s"
+      - SetProperty: *set_premerge_url
+      - SetPropertyFromCommand: *set_version_prop
+      - SetPropertyFromCommand: *set_short_version_prop
+      - TriggerStages:
+          name: Trigger single node bootstrap install
+          stage_names:
+            - plain-bootstrap
+
   pre-merge:
     worker:
       type: local
@@ -2595,3 +2623,26 @@ stages:
           name: Trigger multiple-nodes step with snapshot enabled
           stage_names:
             - multiple-nodes
+
+  plain-bootstrap:
+    simultaneous_builds: 5
+    worker: *single_node_worker
+    steps:
+      - Git: *git_pull
+      - ShellCommand: *yum_clean_all
+      - ShellCommand: *ssh_ip_setup
+      # --- Get ISO for version N ---
+      - ShellCommand: *retrieve_iso_checksum
+      - ShellCommand: *retrieve_iso
+      - ShellCommand: *check_iso_checksum
+      # --- Prepare for Bootstrap in version N ---
+      - ShellCommand: *create_mountpoint
+      - ShellCommand: *mount_iso
+      - ShellCommand: *bootstrap_config
+      # --- Install version N ---
+      - ShellCommand: *run_bootstrap
+      - ShellCommand:
+          name: Wait for a while
+          command: sleep 7200
+          timeout: 7200
+          alwaysRun: true
