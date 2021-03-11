@@ -1,68 +1,62 @@
-Volume Management using the UI
+Volume Management Using the UI
 ==============================
 
-This section describes the creation and deletion of MetalK8s **Volume**
+This topic describes how to create and delete a MetalK8s Volume
 using the MetalK8s UI.
-In order to create Volumes you need to have StorageClass objects registered in
-your cluster. See :doc:`/operation/volume_management/storageclass_creation`
 
-Volume Creation
----------------
+Requirements
+------------
 
-To access the UI, refer to
-:ref:`this procedure <installation-services-admin-ui>`
+- StorageClass objects must be registered in your cluster to create
+  Volumes. For more information refer to
+  :doc:`/operation/volume_management/storageclass_creation`.
 
-#. Navigate to the **Nodes** list page, by clicking the button in the sidebar:
+- Access the MetalK8s UI. Refer to
+  :ref:`this procedure <installation-services-admin-ui>`.
 
-    .. image:: /operation/volume_management/img/node_list.png
+Creating a Volume
+-----------------
 
-#. From the Node list, select the node you would like to create
-   a volume on
+#. Click **Nodes** on the sidebar to access the node list.
 
-    .. image:: /operation/volume_management/img/all_nodes.png
+   .. image:: /operation/volume_management/img/node_list.png
 
-#. Navigate to the **Volumes** tab
+#. On the node list, select the node you want to create a volume on.
 
-    .. image:: /operation/volume_management/img/node_detail.png
+#. Go to the **Volumes** tab and click **+ Create Volume**.
 
-#. Click the **+** button to create a volume
+   .. image:: /operation/volume_management/img/volume_tab.png
 
-    .. image:: /operation/volume_management/img/create_volume.png
+#. Fill in the respective fields, and click **Create**.
 
-#. Fill out the respective fields
+   - **Name**: Denotes the volume name.
+   - **Labels**: A set of key/value pairs used by PersistentVolumeClaims to
+     select the right PersistentVolumes.
+   - **Storage Class**: Refers to
+     :doc:`/operation/volume_management/storageclass_creation`.
+   - **Type**: MetalK8s currently only supports RawBlockDevice and
+     SparseLoopDevice.
+   - **Device path**: Refers to the path of an existing storage device.
 
-    .. image:: /operation/volume_management/img/volume_creation.png
+   .. image:: /operation/volume_management/img/volume_creation.png
+      :scale: 40%
 
-    - **Name**: Denotes the volume name.
-    - **Labels**: A set of key/value pairs that are used by Persistent Volume Claims to select the right Persistent Volumes.
-    - **Storage Class**: Refer to the storage class creation page listed here:
-      :doc:`/operation/volume_management/storageclass_creation`
-    - **Type**: Metalk8s currently only supports **RawBlockDevice** and
-      **SparseLoopDevice**.
-    - **Device path**: Refers to the path of an existing storage device.
+#. Click **Volumes** on the sidebar to access the volume list.
+   The new volume created appears in the list.
 
-#. Finally, click the **Create** button
+   .. image:: /operation/volume_management/img/volume_list.png
 
-    .. image:: /operation/volume_management/img/test_volume.png
+Deleting a Volume
+-----------------
 
-#. You should have a new volume listed in the **Volume list**
+#. Click **Volumes** on the sidebar to access the volume list, and select
+   the volume you want to delete.
 
-    .. image:: /operation/volume_management/img/volume_created.png
+#. Go to the **Overview** tab, click **Delete Volume**.
 
-#. If you click on any volume in the Volume list,
-   you will see more information in the Volume detail view:
+   .. image:: /operation/volume_management/img/volume_overview_delete.png
 
-    .. image:: /operation/volume_management/img/volume_detail.png
+#. Confirm the volume deletion request by clicking **Delete**.
 
-
-Volume Deletion
----------------
-
-#. To delete a volume from the MetalK8s UI, from the volume listing, click the
-   delete button
-
-    .. image:: /operation/volume_management/img/volume_delete.png
-
-#. Confirm the volume deletion request by clicking the **Delete** button
-
-    .. image:: /operation/volume_management/img/volume_delete_confirmation.png
+   .. image:: /operation/volume_management/img/volume_delete_confirmation.png
+      :scale: 50%

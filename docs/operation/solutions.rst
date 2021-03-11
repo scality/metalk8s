@@ -1,61 +1,58 @@
-Solutions Guide
-===============
+Solution Deployment
+===================
 
-To deploy a Solution in a MetalK8s cluster, a utility script is provided.
-This section describes, step by step, how to deploy a Solution using this
-tool, located at the root of MetalK8s archive:
+To deploy a solution in a MetalK8s cluster, a utility script is provided.
+This procedure describes how to deploy a solution using this
+tool, which is located at the root of the MetalK8s archive:
 
   .. parsed-literal::
 
     /srv/scality/metalk8s-|version|/solutions.sh
 
-Import a Solution
-*****************
+Preparation
+-----------
 
-First, the Solution must be imported in the cluster (make the container images
-available through the cluster registry):
+#. Import a solution in the cluster, and make the container images
+   available through the cluster registry.
 
-  .. code::
+   .. code::
 
-    ./solutions.sh import --archive </path/to/solution.iso>
+      ./solutions.sh import --archive </path/to/solution.iso>
 
+#. Activate a solution version.
 
-Activate a Solution Version
-***************************
+   .. code::
 
-Only one version of a Solution can be active at any point in time.
-An active Solution version provides the cluster-wide resources, such as CRDs,
-to all other versions of this Solution. To activate a version, run:
+      ./solutions.sh activate --name <solution-name> --version <solution-version>
 
-  .. code::
+   Only one version of a solution can be active at a time.
+   An active solution version provides cluster-wide resources,
+   such as CRDs, to all other versions of this solution.
 
-    ./solutions.sh activate --name <solution-name> --version <solution-version>
+Deployment
+----------
 
-Environment Creation
-********************
+#. Solutions are meant to be deployed in isolated namespaces called
+   :term:`environments <Environment>`.
 
-Solutions are meant to be deployed in isolated namespaces, which we call
-:term:`Environments <Environment>`. To create an Environment, run:
+   To create an environment, run:
 
-  .. code::
+   .. code::
 
-    ./solutions.sh create-env --name <environment-name>
+      ./solutions.sh create-env --name <environment-name>
 
-Adding a Solution Version to an Environment
-*******************************************
+#. Solutions are packaged with an :term:`Operator` to provide all
+   required domain-specific logic.
+   To deploy a solution operator in an environment, run:
 
-Solutions are packaged with an :term:`Operator`, and optionally an
-associated web UI, to provide all required domain-specific logic.
-To deploy a Solution Operator and its UI in an Environment, run:
+   .. code::
 
-  .. code::
-
-    ./solutions.sh add-solution --name <environment-name> \
+      ./solutions.sh add-solution --name <environment-name> \
       --solution <solution-name> --version <solution-version>
 
-Configure a Solution
-********************
+Configuration
+-------------
 
-The Solution Operator and UI (if any) are now deployed.
-To finalize deployment and configuration of the Solution application,
-please refer to its documentation.
+The solution operator is now deployed.
+To finalize the deployment and configuration of a solution,
+refer to its documentation.

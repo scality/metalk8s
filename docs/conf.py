@@ -151,7 +151,7 @@ else:
     }
 
     # Build tag for Scality product documentation
-    if tags.has("scality-product"):
+    if tags.has("scality_product"):
         _kblink = "https://support.scality.com/hc/en-us"
         _homelink = "https://documentation.scality.com"
         html_theme_options["footer_links"] = [

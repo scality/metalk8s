@@ -1,5 +1,5 @@
-Operational Guide
-=================
+Operation
+=========
 
 .. _MetalK8s: https://github.com/scality/metalk8s/
 
@@ -10,17 +10,15 @@ do not have a working MetalK8s_ setup.
 
 .. toctree::
 
-   bootstrap_backup_restore
-   enable_ip_ip
-   preparation
-   solutions
+   cluster_monitoring/index
+   account_administration/index
+   cluster_and_service_configuration
+   volume_management/index
    upgrade
    downgrade
+   disaster_recovery/index
+   solutions
    changing_node_hostname
-   volume_management/index
-   account_administration
-   cluster_and_service_configuration
-   cluster_monitoring
    metalk8s-utils
-   troubleshooting
    listening_processes
+   troubleshooting/index

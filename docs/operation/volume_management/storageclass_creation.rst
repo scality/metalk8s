@@ -1,13 +1,13 @@
 StorageClass Creation
 =====================
 
-**MetalK8s** uses **StorageClass** objects to describe how **Volumes** are
+MetalK8s uses StorageClass objects to describe how volumes are
 formatted and mounted.
-This section hightlights how to create a Storageclass using the **CLI**.
+This topic explains how to use the CLI to create a StorageClass.
 
-#. Create a **StorageClass** manifest.
+#. Create a StorageClass manifest.
 
-   You can define a new **StorageClass** using the following template:
+   You can define a new StorageClass using the following template:
 
    .. code-block:: yaml
 
@@ -26,26 +26,26 @@ This section hightlights how to create a Storageclass using the **CLI**.
 
    Set the following fields:
 
-      - **mountOptions**: specifies how the volume should be mounted. For
-        example **rw** (read/write), **ro** (read-only).
-      - **fsType**: specifies the filesystem to use on the volume.
-        **xfs** and **ext4** are the only currently supported file system types.
-      - **mkfsOptions**: specifies how the volume should be formatted.
+      - ``mountOptions``: specifies how the volume should be mounted. For
+        example: ``rw`` (read/write), or ``ro`` (read-only).
+      - ``fsType``: specifies the filesystem to use on the volume.
+        ``xfs`` and ``ext4`` are the only currently supported file system types.
+      - ``mkfsOptions``: specifies how the volume should be formatted.
         This field is optional
         (note that the options are passed as a JSON-encoded string). For example
-        **'["-m", "0"]'** could be used as **mkfsOptions** for an **ext4**
+        ``'["-m", "0"]'`` could be used as ``mkfsOptions`` for an ``ext4``
         volume.
-      - Set **volumeBindingMode** as **WaitForFirstConsumer**
+      - Set ``volumeBindingMode`` as ``WaitForFirstConsumer``
         in order to delay the binding and provisioning of a Pod until a Pod
-        using the **PersistentVolumeClaim** is created.
+        using the PersistentVolumeClaim is created.
 
-#. Create the **StorageClass**.
+#. Create the StorageClass.
 
    .. code-block:: shell
 
       root@bootstrap $ kubectl apply -f storageclass.yml
 
-#. Check that the **StorageClass** has been created.
+#. Check that the StorageClass has been created.
 
    .. code-block:: shell
 
