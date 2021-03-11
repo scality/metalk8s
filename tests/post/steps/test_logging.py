@@ -151,13 +151,22 @@ def push_log_to_loki(k8s_client, context):
 @then("we can query this example log from Loki")
 def query_log_from_loki(k8s_client, context):
     query = {"query": '{{identifier="{0}"}}'.format(context["test_log_id"])}
-    response = query_loki_api(k8s_client, query)
-    result_data = response[0]["data"]["result"]
 
-    assert result_data, "No test log found in Loki with identifier={}".format(
-        context["test_log_id"]
+    def _check_example_log():
+        response = query_loki_api(k8s_client, query)
+        result_data = response[0]["data"]["result"]
+
+        assert result_data, "No test log found in Loki with identifier={}".format(
+            context["test_log_id"]
+        )
+        assert result_data[0]["stream"]["identifier"] == context["test_log_id"]
+
+    utils.retry(
+        _check_example_log,
+        times=40,
+        wait=5,
+        name="check the example log can be retrieved",
     )
-    assert result_data[0]["stream"]["identifier"] == context["test_log_id"]
 
 
 @then("we can retrieve logs from logger pod in Loki API")
