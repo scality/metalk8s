@@ -8,14 +8,6 @@ export const yAxisUsage = [
     scale: { domain: [0, 100] },
   },
 ];
-// Remove the scale for the chart loading state
-export const yAxisUsageLoading = [
-  {
-    field: 'y',
-    type: 'quantitative',
-    axis: { title: null, orient: 'right' },
-  },
-];
 
 export const yAxis = [
   {
