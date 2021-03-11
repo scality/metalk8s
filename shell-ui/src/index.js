@@ -21,6 +21,8 @@ export type MenuItems = {[path: string]: TranslationAndGroups }
 
 export type Options = { main: MenuItems, subLogin: MenuItems };
 
+export type UserGroupsMapping = {[email: string]: string[]};
+
 export type SolutionsNavbarProps = {
   'oidc-provider-url'?: string,
   scopes?: string,
@@ -44,6 +46,7 @@ type Config = {
     scopes?: string,
   },
   options?: Options,
+  userGroupsMapping?: UserGroupsMapping
 };
 
 const SolutionsNavbar = ({
@@ -133,7 +136,7 @@ const SolutionsNavbar = ({
 
       return (
         <AuthProvider {...oidcConfig}>
-          <UserDataListener onAuthenticated={onAuthenticated} />
+          <UserDataListener userGroupsMapping={config.userGroupsMapping} onAuthenticated={onAuthenticated} />
           <StyledComponentsProvider
             theme={{
               // todo manages theme https://github.com/scality/metalk8s/issues/2545
@@ -141,7 +144,7 @@ const SolutionsNavbar = ({
               logo_path: '/brand/assets/branding-dark.svg',
             }}
           >
-            <Navbar options={computedMenuOptions} />
+            <Navbar options={computedMenuOptions} userGroupsMapping={config.userGroupsMapping} />
           </StyledComponentsProvider>
         </AuthProvider>
       );

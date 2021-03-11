@@ -1,6 +1,7 @@
 //@flow
 import {
   getAccessiblePathsFromOptions,
+  getUserGroups,
   isEntryAccessibleByTheUser,
   isPathAccessible,
   normalizePath,
@@ -114,5 +115,53 @@ describe('permission utils - isPathAccessible', () => {
     ]);
     //V
     expect(isAccessible).toBe(false);
+  });
+});
+
+describe('permission utils - getUserGroups', () => {
+  it('should return an array of groups when defined in OIDC claims ', () => {
+    //E
+    const oidcGroups = ['oidcGroup'];
+    const groups = getUserGroups(
+      { profile: { email: 'test@test.com', groups: oidcGroups } },
+      undefined,
+    );
+    //V
+    expect(groups).toEqual(oidcGroups);
+  });
+
+  it('should return an array of groups when defined in static mapping', () => {
+    //S
+    const staticGroups = ['oidcGroup'];
+    //E
+    const groups = getUserGroups(
+      { profile: { email: 'test@test.com' } },
+      { 'test@test.com': staticGroups },
+    );
+    //V
+    expect(groups).toEqual(staticGroups);
+  });
+
+  it('should return a merged array of groups when defined in OIDC claims and mapping ', () => {
+    //S
+    const oidcOnlyGroups = ['OIDCGroup'];
+    const staticOnlyGroups = ['StaticGroup'];
+    const oidcAndStaticGroups = ['group'];
+    //E
+    const groups = getUserGroups(
+      {
+        profile: {
+          email: 'test@test.com',
+          groups: [...oidcAndStaticGroups, ...oidcOnlyGroups],
+        },
+      },
+      { 'test@test.com': [...oidcAndStaticGroups, ...staticOnlyGroups] },
+    );
+    //V
+    expect(groups).toEqual([
+      ...oidcAndStaticGroups,
+      ...oidcOnlyGroups,
+      ...staticOnlyGroups,
+    ]);
   });
 });

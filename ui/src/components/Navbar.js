@@ -51,7 +51,7 @@ function useLoginEffect(navbarRef: { current: NavbarWebComponent | null }) {
     const onAuthenticated = (evt: Event) => {
       /// flow is not accepting CustomEvent type for listener arguments of {add,remove}EventListener https://github.com/facebook/flow/issues/7179
       // $flow-disable-line
-      if (evt.detail) {
+      if (evt.detail && evt.detail.profile) {
         // $flow-disable-line
         dispatch(updateAPIConfigAction(evt.detail));
         setIsAuthenticated(true);
