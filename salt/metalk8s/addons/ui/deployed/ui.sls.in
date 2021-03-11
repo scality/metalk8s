@@ -16,6 +16,17 @@ include:
     )
 %}
 
+
+{%- set metalk8s_theme_defaults = salt.slsutil.renderer(
+        'salt://metalk8s/addons/ui/config/metalk8s-theme.yaml', saltenv=saltenv
+    )
+%}
+
+{%- set metalk8s_theme = salt.metalk8s_service_configuration.get_service_conf(
+        'metalk8s-ui', 'metalk8s-theme', metalk8s_theme_defaults
+    )
+%}
+
 Create metalk8s-ui deployment:
   metalk8s_kubernetes.object_present:
     - name: salt://{{ slspath }}/files/metalk8s-ui-deployment.yaml.j2
@@ -101,4 +112,4 @@ Create ui-branding ConfigMap:
           namespace: metalk8s-ui
         data:
           theme.json: |-
-@@ThemeConfig
+            {{metalk8s_theme.spec.theme | indent(12, False) }}

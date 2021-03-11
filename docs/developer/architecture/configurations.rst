@@ -45,7 +45,10 @@ customize on-site in order to match with my environment specificities:
 - New Grafana dashboards or new Grafana datasources
 - Number of replicas for the Prometheus, Alert Manager, Grafana or Dex
   deployments
-- Changing the path on which the metalk8s UI is deployed
+- Changing the path on which the MetalK8s UI is deployed
+- Customizing the UI theme
+- Modifying OIDC provider, client ID or scopes
+- Adding custom menu entries
 
 .. note::
 
