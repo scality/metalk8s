@@ -9,6 +9,8 @@ const TableRowStyle = styled.div`
   &:focus {
     background-color: ${(props) => props.theme.brand.backgroundBluer};
     outline: none;
+
+    ${(props) => (!props.isNameLink ? ' cursor: pointer;' : '')}
   }
 
   &:last-child {
@@ -35,11 +37,11 @@ export const UnknownIcon = styled.i`
 `;
 
 const TableRow = (props) => {
-  const { row, style, isSelected } = props;
-
+  const { row, style, onClickRow, isSelected, isNameLink } = props;
   return (
     <TableRowStyle
       {...row.getRowProps({
+        onClick: props.onClickRow ? () => onClickRow(row) : null,
         // Note:
         // We need to pass the style property to the row component.
         // Otherwise when we scroll down, the next rows are flashing because they are re-rendered in loop.
@@ -47,6 +49,7 @@ const TableRow = (props) => {
       })}
       isSelected={isSelected}
       row={row}
+      isNameLink={isNameLink}
     >
       {row.cells.map((cell) => {
         let cellProps = cell.getCellProps({
@@ -59,7 +62,10 @@ const TableRow = (props) => {
           },
         });
 
-        if (cell.column.Header === 'Name' || cell.column.Header === 'Node') {
+        if (
+          !isNameLink &&
+          (cell.column.Header === 'Name' || cell.column.Header === 'Node')
+        ) {
           return (
             <div {...cellProps} data-cy="volume_table_name_cell" className="td">
               <ConstrainedText
