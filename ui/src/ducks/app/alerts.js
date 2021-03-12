@@ -11,9 +11,8 @@ import {
 import * as ApiAlertmanager from '../../services/alertmanager/api';
 import type { RootState } from '../reducer';
 import type { Result } from '../../types';
-
 import { REFRESH_TIMEOUT } from '../../constants';
-import { removeWarningAlerts } from '../../services/utils';
+
 // Actions
 const FETCH_ALERTS_ALERTMANAGER = 'FETCH_ALERTS_ALERTMANAGER';
 const UPDATE_ALERTS_ALERTMANAGER = 'UPDATE_ALERTS_ALERTMANAGER';
@@ -75,9 +74,7 @@ export function* fetchAlertsAlertmanager(): Generator<
   const result = yield call(ApiAlertmanager.getAlerts);
 
   if (!result.error) {
-    yield put(
-      updateAlertsAlertmanagerAction({ list: removeWarningAlerts(result) }),
-    );
+    yield put(updateAlertsAlertmanagerAction({ list: result }));
   }
   return result;
 }
