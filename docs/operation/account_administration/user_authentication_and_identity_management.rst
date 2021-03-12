@@ -96,12 +96,26 @@ the following steps from the bootstrap node.
 
 #. Apply your changes.
 
-   .. parsed-literal::
+   #. Update Dex deployment.
 
-      root\@bootstrap $ kubectl exec -n kube-system -c salt-master \\
-                         --kubeconfig /etc/kubernetes/admin.conf \\
-                         salt-master-bootstrap -- salt-run state.sls \\
-                         metalk8s.addons.dex.deployed saltenv=metalk8s-|version|
+      .. parsed-literal::
+
+         root\@bootstrap $ kubectl exec -n kube-system -c salt-master \\
+                           --kubeconfig /etc/kubernetes/admin.conf \\
+                           salt-master-bootstrap -- salt-run state.sls \\
+                           metalk8s.addons.dex.deployed \\
+                           saltenv=metalk8s-|version|
+
+   #. Update Grafana configuration (so this new user is recognized as a
+      Grafana admin user).
+
+      .. parsed-literal::
+
+         root\@bootstrap $ kubectl exec -n kube-system -c salt-master \\
+                           --kubeconfig /etc/kubernetes/admin.conf \\
+                           salt-master-bootstrap -- salt-run state.sls \\
+                           metalk8s.addons.prometheus-operator.deployed \\
+                           saltenv=metalk8s-|version|
 
 #. Bind the user to an existing (Cluster) Role using
    :ref:`a ClusterRoleBlinding <bind-user-to-role>`.
