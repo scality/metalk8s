@@ -120,6 +120,55 @@ class OS(EnumOption):
         grains["osmajorrelease"] = release
 
 
+class Architecture(EnumOption):
+    """Simulate one of the supported deployment architectures."""
+
+    ALLOWED_VALUES: FrozenSet[str] = frozenset(
+        ("single-node", "compact", "standard", "extended")
+    )
+
+    def update_context(self, context: Dict[str, Any]) -> None:
+        if self.value == "single-node":
+            # Nothing to do, it's the default context
+            return
+
+        metalk8s_pillar = context["pillar"]["metalk8s"]
+        if "nodes" not in metalk8s_pillar:
+            pytest.fail(
+                "Cannot use custom architectures with an empty `pillar:metalk8s`"
+            )
+
+        current_version = metalk8s_pillar["cluster_version"]
+
+        # Declare additional nodes as { <node name>: [<node role>, ...], ... }
+        new_nodes: Dict[str, List[str]] = {}
+
+        def _add(basename: str, count: int, roles: List[str]) -> None:
+            new_nodes.update(
+                {f"{basename}-{index + 1}": roles for index in range(count)}
+            )
+
+        if self.value == "compact":
+            _add("master", 2, ["master", "etcd", "infra", "node"])
+
+        elif self.value == "standard":
+            _add("master", 2, ["master", "etcd", "infra"])
+            _add("worker", 3, ["node"])
+
+        elif self.value == "extended":
+            _add("master", 2, ["master", "etcd"])
+            _add("infra", 2, ["infra"])
+            _add("worker", 3, ["node"])
+
+        metalk8s_pillar["nodes"].update(
+            {
+                node_name: {"roles": roles, "version": current_version}
+                for node_name, roles in new_nodes.items()
+            }
+        )
+        context["__minions__"].update({minion: {} for minion in new_nodes.keys()})
+
+
 class MinionMode(EnumOption):
     """Switch between rendering on a plain minion or the master minion."""
 
@@ -285,6 +334,7 @@ class KubernetesOverrides(DictOption):
 # configuration file
 OPTION_KINDS: Dict[str, Type[BaseOption]] = {
     "os": OS,
+    "architecture": Architecture,
     "extra_context": ExtraContext,
     "k8s_overrides": KubernetesOverrides,
     "minion_state": MinionState,

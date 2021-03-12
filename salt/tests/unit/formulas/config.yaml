@@ -9,6 +9,8 @@ default_opts:
     - __default__  # Will use "metalk8s-{{ pillar.metalk8s.cluster_version }}"
   minion_state:
     - ready
+  architecture:
+    - single-node
   volumes:
     - none
   mode:
@@ -310,9 +312,18 @@ metalk8s:
           - new
 
   orchestrate:
+    # _skip: false
     _opts:
       mode:
         - master
+
+    # apiserver.sls:
+
+    # deploy_node.sls:
+
+    # etcd.sls:
+
+    # register_etcd.sls:
 
     bootstrap:
       _skip: false
@@ -359,6 +370,62 @@ metalk8s:
                     # Server
                     - /etc/kubernetes/pki/apiserver.crt
                   target: bootstrap
+
+    downgrade:
+      _skip: false
+
+      init.sls:
+        _opts:
+          architecture:
+            - single-node
+            - compact
+            - standard
+            - extended
+          pillar_overrides:
+            - "Destination matches all nodes (default)": {}
+            - "Destination is lower than all nodes":
+                metalk8s:
+                  cluster_version: 2.6.1
+            - "Destination is lower than some nodes":
+                metalk8s:
+                  cluster_version: 2.6.1
+                  # Only update bootstrap since this is the only one present
+                  # in all architectures
+                  nodes:
+                    bootstrap:
+                      version: 2.6.1
+
+    #   post.sls:
+
+    #   pre.sls:
+
+    #   precheck.sls:
+
+    # solutions:
+    #   deploy-components.sls:
+
+    #   import-components.sls:
+
+    #   prepare-environment.sls:
+
+    #   files:
+    #     operator:
+    #       configmap.yaml.j2:
+
+    #       deployment.yaml.j2:
+
+    #       role_binding.yaml.j2:
+
+    #       service_account.yaml.j2:
+
+    # upgrade:
+    #   init.sls:
+
+    #   post.sls:
+
+    #   pre.sls:
+
+    #   precheck.sls:
 
   reactor:
     _skip: false

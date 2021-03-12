@@ -1,0 +1,15 @@
+salt/tests: Check rendering for metalk8s.orchestrate.downgrade.*
+
+TODO:
+- define "architecture" config option to prepare a set of minions
+- test cases for downgrade.init:
+    - all documented architectures (single node, compact, standard, extended)
+    - partial upgrades (some minions are already upgraded, use "pillar_overrides")
+
+Add mock for `pkg.version_cmp`.
+
+Running `tox -e unit-tests -- -m formulas` shows:
+- 219 passed
+- 16 skipped
+
+See: #3073
