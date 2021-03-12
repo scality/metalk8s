@@ -5,6 +5,7 @@ resource "openstack_networking_port_v2" "bastion_public" {
   network_id          = data.openstack_networking_network_v2.default_network.id
   security_group_ids  = [
     openstack_networking_secgroup_v2.ingress.id,
+    openstack_networking_secgroup_v2.egress.id,
     openstack_networking_secgroup_v2.open_egress.id
   ]
 }
@@ -67,6 +68,16 @@ resource "openstack_compute_instance_v2" "bastion" {
     ]
   }
 
+  # Configure HTTP proxy for yum repositories
+  # We also use the proxy on the bastion, even if it has an access to the
+  # Internet, to benefit from the cache.
+  provisioner "remote-exec" {
+    inline = [
+      "if [ '${var.use_proxy}' = 'true' ]; then sudo chmod +x scripts/proxy-setup.sh; fi",
+      "if [ '${var.use_proxy}' = 'true' ]; then sudo scripts/proxy-setup.sh '${var.proxy_host}' '${var.proxy_port}'; fi"
+    ]
+  }
+
   # Install Cypress requirements
   provisioner "remote-exec" {
     inline = [
@@ -99,7 +110,7 @@ resource "openstack_networking_port_v2" "bootstrap_public" {
   network_id          = data.openstack_networking_network_v2.default_network.id
   security_group_ids  = [
     openstack_networking_secgroup_v2.ingress.id,
-    openstack_networking_secgroup_v2.open_egress.id
+    openstack_networking_secgroup_v2.egress.id
   ]
 }
 
@@ -161,6 +172,14 @@ resource "openstack_compute_instance_v2" "bootstrap" {
     ]
   }
 
+  # Configure HTTP proxy for yum repositories
+  provisioner "remote-exec" {
+    inline = [
+      "if [ '${var.use_proxy}' = 'true' ]; then sudo chmod +x scripts/proxy-setup.sh; fi",
+      "if [ '${var.use_proxy}' = 'true' ]; then sudo scripts/proxy-setup.sh '${var.proxy_host}' '${var.proxy_port}'; fi"
+    ]
+  }
+
   # Register RHSM if OS = rhel
   provisioner "remote-exec" {
     inline = [
@@ -170,8 +189,8 @@ resource "openstack_compute_instance_v2" "bootstrap" {
   }
 
   provisioner "remote-exec" {
-    when = "destroy"
-    on_failure = "continue"
+    when = destroy
+    on_failure = continue
     inline = [
       "case '${var.os}' in rhel-*) sudo subscription-manager unregister;; esac"
     ]
@@ -185,7 +204,7 @@ resource "openstack_networking_port_v2" "nodes_public" {
   network_id          = data.openstack_networking_network_v2.default_network.id
   security_group_ids  = [
     openstack_networking_secgroup_v2.ingress.id,
-    openstack_networking_secgroup_v2.open_egress.id
+    openstack_networking_secgroup_v2.egress.id
   ]
   count               = var.nodes_count
 }
@@ -251,6 +270,14 @@ resource "openstack_compute_instance_v2" "nodes" {
     ]
   }
 
+  # Configure HTTP proxy for yum repositories
+  provisioner "remote-exec" {
+    inline = [
+      "if [ '${var.use_proxy}' = 'true' ]; then sudo chmod +x scripts/proxy-setup.sh; fi",
+      "if [ '${var.use_proxy}' = 'true' ]; then sudo scripts/proxy-setup.sh '${var.proxy_host}' '${var.proxy_port}'; fi"
+    ]
+  }
+
   # Register RHSM if OS = rhel
   provisioner "remote-exec" {
     inline = [
@@ -260,8 +287,8 @@ resource "openstack_compute_instance_v2" "nodes" {
   }
 
   provisioner "remote-exec" {
-    when = "destroy"
-    on_failure = "continue"
+    when = destroy
+    on_failure = continue
     inline = [
       "case '${var.os}' in rhel-*) sudo subscription-manager unregister;; esac"
     ]
