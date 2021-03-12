@@ -63,13 +63,73 @@ resource "openstack_networking_secgroup_rule_v2" "ingress_ingress" {
   security_group_id = openstack_networking_secgroup_v2.ingress.id
 }
 
-resource "openstack_networking_secgroup_rule_v2" "ingress_egress" {
-  direction         = "egress"
-  ethertype         = "IPv4"
-  remote_group_id   = openstack_networking_secgroup_v2.ingress.id
-  security_group_id = openstack_networking_secgroup_v2.ingress.id
-}
-
 resource "openstack_networking_secgroup_v2" "open_egress" {
   name                 = "${local.prefix}-open-egress"
+}
+
+resource "openstack_networking_secgroup_v2" "egress" {
+  name                 = "${local.prefix}-egress"
+  delete_default_rules = var.offline
+}
+
+resource "openstack_networking_secgroup_rule_v2" "egress_egress" {
+  direction         = "egress"
+  ethertype         = "IPv4"
+  remote_group_id   = openstack_networking_secgroup_v2.egress.id
+  security_group_id = openstack_networking_secgroup_v2.egress.id
+}
+
+data "dns_a_record_set" "proxy" {
+  count = var.use_proxy ? 1 : 0
+  host  = var.proxy_host
+}
+
+resource "openstack_networking_secgroup_rule_v2" "egress_proxy" {
+  count             = var.use_proxy ? length(data.dns_a_record_set.proxy[0].addrs) : 0
+  direction         = "egress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = var.proxy_port
+  port_range_max    = var.proxy_port
+  remote_ip_prefix  = "${element(data.dns_a_record_set.proxy[0].addrs, count.index)}/32"
+  security_group_id = openstack_networking_secgroup_v2.egress.id
+}
+
+# Allow DNS queries to go out, especially because SSHd is doing
+# reverse DNS on incoming IPs, otherwise it could really slow down
+# connections
+resource "openstack_networking_secgroup_rule_v2" "egress_dns" {
+  direction         = "egress"
+  ethertype         = "IPv4"
+  protocol          = "udp"
+  port_range_min    = 53
+  port_range_max    = 53
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = openstack_networking_secgroup_v2.egress.id
+}
+
+# Used by cloud-init to retrieve SSH keys during VM deployment
+resource "openstack_networking_secgroup_rule_v2" "egress_metadata" {
+  direction         = "egress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 80
+  port_range_max    = 80
+  remote_ip_prefix  = "169.254.169.254/32"
+  security_group_id = openstack_networking_secgroup_v2.egress.id
+}
+
+data "dns_a_record_set" "rhsm" {
+  host = "subscription.rhsm.redhat.com"
+}
+
+resource "openstack_networking_secgroup_rule_v2" "egress_rhsm" {
+  count             = length(data.dns_a_record_set.rhsm.addrs)
+  direction         = "egress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 443
+  port_range_max    = 443
+  remote_ip_prefix  = "${element(data.dns_a_record_set.rhsm.addrs, count.index)}/32"
+  security_group_id = openstack_networking_secgroup_v2.egress.id
 }

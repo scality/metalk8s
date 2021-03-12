@@ -1,0 +1,4 @@
+.terraform
+.terraform.tfstate*
+ssh_config
+terraform.tfstate*

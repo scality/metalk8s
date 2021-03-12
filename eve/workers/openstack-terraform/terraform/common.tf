@@ -23,6 +23,26 @@ variable "nodes_count" {
   default = "2"
 }
 
+variable "offline" {
+  type    = bool
+  default = false
+}
+
+variable "use_proxy" {
+  type    = bool
+  default = false
+}
+
+variable "proxy_host" {
+  type    = string
+  default = "proxy-cache"
+}
+
+variable "proxy_port" {
+  type    = string
+  default = "3128"
+}
+
 resource "random_string" "current" {
   length  = 5
   special = false

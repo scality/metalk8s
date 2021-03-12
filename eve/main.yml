@@ -597,6 +597,8 @@ models:
         TF_VAR_rhsm_username: "%(secret:rhel_ci_login)s"
         TF_VAR_rhsm_password: "%(secret:rhel_ci_password)s"
         TF_VAR_debug: "%(prop:metalk8s_debug:-false)s"
+        TF_VAR_offline: "%(prop:offline:-true)s"
+        TF_VAR_use_proxy: "%(prop:use_proxy:-true)s"
         MAX_RETRIES: "3"
       workdir: build/eve/workers/openstack-terraform/terraform/
       haltOnFailure: true
@@ -1688,6 +1690,17 @@ stages:
           name: Set OS property to rhel-8
           property: os
           value: "rhel-8"
+      # FIXME: We disable offline mode for RHEL as it does not work for now,
+      # there are some certificates issues when trying to reach RedHat
+      # repositories through the company proxy.
+      - SetProperty:
+          name: Set offline property to false
+          property: offline
+          value: "false"
+      - SetProperty:
+          name: Set use_proxy property to false
+          property: use_proxy
+          value: "false"
       - TriggerStages:
           name: Trigger single-node-install with os set to rhel-8
           stage_names:
