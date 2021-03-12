@@ -12,7 +12,6 @@ import {
 import {
   yAxisUsage,
   yAxis,
-  yAxisUsageLoading,
   getTooltipConfig,
 } from '../components/LinechartSpec';
 import {
@@ -561,7 +560,7 @@ const NodePageMetricsTab = ({
               id={'node_cpu_usage_id'}
               data={cpuData.length ? cpuData : []}
               xAxis={xAxis}
-              yAxis={cpuData.length ? yAxisUsage : yAxisUsageLoading}
+              yAxis={cpuData.length ? yAxisUsage : yAxis}
               color={colorCPU}
               width={graphWidth}
               height={graphHeight}
@@ -584,7 +583,7 @@ const NodePageMetricsTab = ({
               id={'node_system_load_id'}
               data={systemLoadData ? systemLoadData : []}
               xAxis={xAxis}
-              yAxis={cpuData.length ? yAxisUsage : yAxisUsageLoading}
+              yAxis={yAxis}
               color={colorSystemLoad}
               width={graphWidth}
               height={graphHeight}
@@ -608,7 +607,7 @@ const NodePageMetricsTab = ({
               id={'node_memory_id'}
               data={memoryData.length ? memoryData : []}
               xAxis={xAxis}
-              yAxis={cpuData.length ? yAxisUsage : yAxisUsageLoading}
+              yAxis={cpuData.length ? yAxisUsage : yAxis}
               color={colorMemory}
               width={graphWidth}
               height={graphHeight}
