@@ -445,7 +445,7 @@ it('should return the volume list filtered by a specific node', () => {
       storageCapacity: '5Gi',
       storageClass: 'metalk8s',
       usageRawData: '20MiB',
-      health: 'health',
+      health: 'healthy',
       latency: undefined,
     },
     {
@@ -457,7 +457,7 @@ it('should return the volume list filtered by a specific node', () => {
       storageCapacity: '20Gi',
       storageClass: 'metalk8s',
       usageRawData: '4GiB',
-      health: 'health',
+      health: 'healthy',
       latency: 900,
     },
   ];

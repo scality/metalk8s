@@ -94,10 +94,7 @@ const NodePageAlertsTab = (props) => {
         return {
           name: alert.labels.alertname,
           severity: alert.labels.severity,
-          alertDescription:
-            alert.annotations.description ||
-            alert.annotations.message ||
-            alert.annotation.summary,
+          alertDescription: alert.description || alert.summary,
           activeSince: alert.startsAt,
         };
       })
