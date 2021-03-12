@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.1",
-    "@scality/core-ui": "github:scality/core-ui.git#v0.7.1",
+    "@scality/core-ui": "github:scality/core-ui.git#v0.13.0",
     "oidc-client": "^1.11.3",
     "oidc-react": "^1.1.5",
     "polished": "^4.0.5",

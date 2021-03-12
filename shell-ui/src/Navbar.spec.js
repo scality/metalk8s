@@ -43,6 +43,19 @@ const server = setupServer(
     )
 )
 
+const mockOIDCProvider = () => {
+    // This is a hack to workarround the following issue : MSW return lower cased content-type header, 
+    // oidc-client is internally using XMLHttpRequest to perform queries and retrieve response header Content-Type using 'XMLHttpRequest.prototype.getResponseHeader'.
+    // XMLHttpRequest.prototype.getResponseHeader is case sensitive and hence when receiving a response with header content-type it is not mapping it to Content-Type
+    const caseSensitiveGetResponseHeader = XMLHttpRequest.prototype.getResponseHeader;
+    XMLHttpRequest.prototype.getResponseHeader = function(header) {
+        if (header === 'Content-Type') {
+            return caseSensitiveGetResponseHeader.call(this, 'content-type');
+        }
+        return caseSensitiveGetResponseHeader.call(this, header);
+    }
+}
+
 describe('navbar', () => {
     // use fake timers to let react query retry immediately after promise failure
     jest.useFakeTimers();
@@ -85,10 +98,64 @@ describe('navbar', () => {
             scopes="openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
             />
         )
-        //V
+        //E
         await waitForLoadingToFinish();
-
+        //V
         expect(screen.queryByText(/Failed to load navbar configuration/i)).toBeInTheDocument();
+    })
+
+    it('should display expected selected menu when it matches by exact loaction (default behavior)', async () => {
+        //S
+        mockOIDCProvider();
+        //E
+        render(<solutions-navbar 
+            oidc-provider-url="https://mocked.ingress/oidc" 
+            client-id="metalk8s-ui"
+            response-type="id_token"
+            redirect-url="http://localhost:8082"
+            scopes="openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
+            options={
+                JSON.stringify({
+                    "main": {
+                        "http://localhost/":{ "en": "Platform", "fr": "Plateforme" },
+                        "http://localhost:8082/test":{ "en": "Test", "fr": "Test" }
+                    },
+                    "subLogin": {}
+                })
+            }
+            />
+        )
+        await waitForLoadingToFinish();
+        //V
+        const platformEntry = screen.getByRole('tab', {name: /Platform/i, selected: true});
+        expect(platformEntry).toBeInTheDocument();
+    })
+
+    it('should display expected selected menu when it matches by regex', async () => {
+        //S
+        mockOIDCProvider();
+        //E
+        render(<solutions-navbar 
+            oidc-provider-url="https://mocked.ingress/oidc" 
+            client-id="metalk8s-ui"
+            response-type="id_token"
+            redirect-url="http://localhost:8082"
+            scopes="openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
+            options={
+                JSON.stringify({
+                    "main": {
+                        "http://localhost:8082/":{ "en": "Platform", "fr": "Plateforme", "activeIfMatches": "http:\/\/localhost.*" },
+                        "http://localhost:8082/test":{ "en": "Test", "fr": "Test" }
+                    },
+                    "subLogin": {}
+                })
+            }
+            />
+        )
+        await waitForLoadingToFinish();
+        //V
+        const platformEntry = screen.getByRole('tab', {name: /Platform/i, selected: true});
+        expect(platformEntry).toBeInTheDocument();
     })
 
     it('should display expected menu when it resolved its configuration', async () => {
@@ -105,16 +172,7 @@ describe('navbar', () => {
               ),
         )
 
-        // This is a hack to workarround the following issue : MSW return lower cased content-type header, 
-        // oidc-client is internally using XMLHttpRequest to perform queries and retrieve response header Content-Type using 'XMLHttpRequest.prototype.getResponseHeader'.
-        // XMLHttpRequest.prototype.getResponseHeader is case sensitive and hence when receiving a response with header content-type it is not mapping it to Content-Type
-        const caseSensitiveGetResponseHeader = XMLHttpRequest.prototype.getResponseHeader;
-        XMLHttpRequest.prototype.getResponseHeader = function(header) {
-            if (header === 'Content-Type') {
-                return caseSensitiveGetResponseHeader.call(this, 'content-type');
-            }
-            return caseSensitiveGetResponseHeader.call(this, header);
-        }
+        mockOIDCProvider();
 
         render(<solutions-navbar 
             oidc-provider-url="https://mocked.ingress/oidc" 
@@ -143,16 +201,7 @@ describe('navbar', () => {
     it('should not display a restrained menu when an user is not authorized' , async () => {
         //S
         
-        // This is a hack to workarround the following issue : MSW return lower cased content-type header, 
-        // oidc-client is internally using XMLHttpRequest to perform queries and retrieve response header Content-Type using 'XMLHttpRequest.prototype.getResponseHeader'.
-        // XMLHttpRequest.prototype.getResponseHeader is case sensitive and hence when receiving a response with header content-type it is not mapping it to Content-Type
-        const caseSensitiveGetResponseHeader = XMLHttpRequest.prototype.getResponseHeader;
-        XMLHttpRequest.prototype.getResponseHeader = function(header) {
-            if (header === 'Content-Type') {
-                return caseSensitiveGetResponseHeader.call(this, 'content-type');
-            }
-            return caseSensitiveGetResponseHeader.call(this, header);
-        }
+        mockOIDCProvider();
 
         render(<solutions-navbar 
             oidc-provider-url="https://mocked.ingress/oidc" 
@@ -173,7 +222,7 @@ describe('navbar', () => {
         )
         //E
         await waitForLoadingToFinish();
-
+        //V
         expect(screen.queryByText(/Platform/i)).toBeInTheDocument();
         expect(screen.queryByText(/Test/i)).not.toBeInTheDocument();
     })

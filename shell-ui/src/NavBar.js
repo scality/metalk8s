@@ -42,7 +42,11 @@ const translateOptionsToMenu = (
           try {
             return {
               ...renderer(path, translationAndGroup),
-              selected: normalizedLocation === normalizePath(path),
+              selected: translationAndGroup.activeIfMatches
+                ? new RegExp(translationAndGroup.activeIfMatches).test(
+                    location.href,
+                  )
+                : normalizedLocation === normalizePath(path),
             };
           } catch (e) {
             throw new Error(

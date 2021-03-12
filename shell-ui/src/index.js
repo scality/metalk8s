@@ -11,11 +11,12 @@ import { LoadingNavbar, Navbar } from './NavBar';
 import { UserDataListener } from './UserDataListener';
 import { logOut } from './auth/logout';
 import { prefetch } from "quicklink";
+import {defaultTheme} from '@scality/core-ui/dist/style/theme';
 
 const EVENTS_PREFIX = 'solutions-navbar--';
 export const AUTHENTICATED_EVENT: string = EVENTS_PREFIX + 'authenticated';
 
-export type TranslationAndGroups = { en: string, fr: string, groups?: string[] };
+export type TranslationAndGroups = { en: string, fr: string, groups?: string[], activeIfMatches?: string };
 export type MenuItems = {[path: string]: TranslationAndGroups }
 
 export type Options = { main: MenuItems, subLogin: MenuItems };
@@ -136,30 +137,7 @@ const SolutionsNavbar = ({
           <StyledComponentsProvider
             theme={{
               // todo manages theme https://github.com/scality/metalk8s/issues/2545
-              brand: {
-                alert: '#FFE508',
-                base: '#7B7B7B',
-                primary: '#1D1D1D',
-                primaryDark1: '#171717',
-                primaryDark2: '#0A0A0A',
-                secondary: '#055DFF',
-                secondaryDark1: '#1C3D59',
-                secondaryDark2: '#1C2E3F',
-                success: '#006F62',
-                healthy: '#30AC26',
-                healthySecondary: '#69E44C',
-                warning: '#FFC10A',
-                danger: '#AA1D05',
-                critical: '#BE321F',
-                background: '#121212',
-                backgroundBluer: '#192A41',
-                textPrimary: '#FFFFFF',
-                textSecondary: '#B5B5B5',
-                textTertiary: '#DFDFDF',
-                borderLight: '#A5A5A5',
-                border: '#313131',
-                info: '#434343',
-              },
+              brand: defaultTheme.dark,
               logo_path: '/brand/assets/branding-dark.svg',
             }}
           >
