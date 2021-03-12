@@ -1,0 +1,40 @@
+@startuml(id=LoggingContainers)
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4.puml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+LAYOUT_WITH_LEGEND()
+
+title MetalK8s Logging - Containers
+caption A detailed view of the logging system in a MetalK8s cluster.
+
+Person(1, "Admin", "A MetalK8s administrator.")
+System(28, "Application Containers", "All containerized applications running in MetalK8s.")
+System(2, "External Log Storage", "A customer-provided system for storing log data.")
+System(30, "Kubernetes API", "The core API for a Kubernetes cluster.")
+System(31, "MetalK8s Monitoring", "MetalK8s services for monitoring and alerting.")
+System(29, "Systemd Services", "MetalK8s services running on each host as systemd units.")
+System_Boundary(3_boundary, MetalK8s Logging) {
+  Container(25, "Container Runtime Interface", "", "Manage containers standard streams and write logs to files.")
+  Container(5, "Loki", "", "Ingest, compress, store and query log lines.")
+  Container(4, "fluent-bit", "", "Collect, parse, enrich, and forward log streams from files.")
+  Container(27, "journald", "", "Manage systemd unit log streams.")
+  Container(26, "logrotate", "", "Manage count-based and size-based rotation of log files.")
+}
+Rel_D(1, 5, "Sends a LogQL query to", "")
+Rel_D(1, 5, "Queries logs from", "")
+Rel_D(1, 31, "Consumes alerts and dashboards from", "")
+Rel_D(25, 28, "Collects logs from", "")
+Rel_D(5, 1, "Returns log lines to", "")
+Rel_D(5, 31, "Triggers alerts", "")
+Rel_D(31, 5, "Reads logs from", "")
+Rel_D(4, 25, "Reads container logs from", "")
+Rel_D(4, 2, "Forwards logs to", "")
+Rel_D(4, 30, "Reads configuration from, and enriches logs with", "")
+Rel_D(4, 5, "Forwards log streams to", "")
+Rel_D(4, 5, "Forwards logs to", "")
+Rel_D(4, 27, "Reads journal logs from", "")
+Rel_D(27, 29, "Collects logs from", "")
+Rel_D(26, 25, "Rotates logs from", "")
+Rel_D(26, 27, "Rotates logs from", "")
+@enduml

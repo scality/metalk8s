@@ -1,0 +1,18 @@
+distributor = component "Distributor" "Process incoming log streams and forwards valid chunks" "Go"
+ingester = component "Ingester" "Buffers incoming chunks, compresses them and flushes them to storage" "Go"
+queryFrontend = component "Query Frontend" "Queues and splits incoming log queries, and caches results" "Go" "Optional"
+querier = component "Querier" "Parses and executes LogQL queries" "Go"
+chunkStore = component "Chunk Store" "Persistent data store for chunks and an index" "BoltDB"
+
+# Write path
+fluentBit -> distributor "Forwards log streams to"
+distributor -> ingester "Forwards log chunks to (hash-based)"
+ingester -> chunkStore "Writes log chunks to"
+
+# Read path
+user -> queryFrontend "Sends a LogQL query to"
+queryFrontend -> querier "Sends a (opt. reduced) LogQL query to"
+querier -> ingester "Retrieves in-memory chunks from"
+querier -> chunkStore "Retrieves persisted chunks from"
+querier -> queryFrontend "Returns log lines to"
+queryFrontend -> user "Returns log lines to"

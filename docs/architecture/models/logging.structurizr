@@ -1,0 +1,68 @@
+workspace "MetalK8s Logging" "This is a model of all logging-related functionality in MetalK8s." {
+
+    model {
+        user = person "Admin" "A MetalK8s administrator."
+        externalLogStorage = softwareSystem "External Log Storage" "A customer-provided system for storing log data."
+
+        group "MetalK8s Cluster" {
+            loggingSystem = softwareSystem "MetalK8s Logging" "Tools and services for collecting, aggregating, searching and displaying log data." {
+                fluentBit = container "fluent-bit" "Collect, parse, enrich, and forward log streams from files." "C"
+                loki = container "Loki" "Ingest, compress, store and query log lines." "Go" {
+                    !include ./loki.structurizr
+                }
+                CRI = container "Container Runtime Interface" "Manage containers standard streams and write logs to files."
+                logrotate = container "logrotate" "Manage count-based and size-based rotation of log files."
+                journald = container "journald" "Manage systemd unit log streams."
+            }
+            applicationContainers = softwareSystem "Application Containers" "All containerized applications running in MetalK8s."
+            systemdServices = softwareSystem "Systemd Services" "MetalK8s services running on each host as systemd units."
+            kubernetesAPI = softwareSystem "Kubernetes API" "The core API for a Kubernetes cluster."
+            monitoringSystem = softwareSystem "MetalK8s Monitoring" "MetalK8s services for monitoring and alerting."
+        }
+
+        CRI -> applicationContainers "Collects logs from"
+        journald -> systemdServices "Collects logs from"
+        fluentBit -> externalLogStorage "Forwards logs to"
+
+        logrotate -> CRI "Rotates logs from"
+        logrotate -> journald "Rotates logs from"
+
+        fluentBit -> CRI "Reads container logs from"
+        fluentBit -> journald "Reads journal logs from"
+        fluentBit -> kubernetesAPI "Reads configuration from, and enriches logs with"
+        #fluentBit -> loki "Forwards logs to"
+        fluentBit -> externalLogStorage "Forwards logs to"
+
+        #user -> loki "Queries logs from"
+
+        monitoringSystem -> loki "Reads logs from"
+        loki -> monitoringSystem "Triggers alerts"
+        user -> monitoringSystem "Consumes alerts and dashboards from"
+    }
+
+    views {
+        systemContext loggingSystem "LoggingSystemContext" "An overview of the logging system in a MetalK8s cluster." {
+            include *
+        }
+
+        container loggingSystem "LoggingContainers" "A detailed view of the logging system in a MetalK8s cluster." {
+            include *
+        }
+
+        component loki "LokiComponents" "A detailed view of Loki components." {
+            include *
+        }
+
+        styles {
+            element "Software System" {
+                background #1168bd
+                color #ffffff
+            }
+            element "Person" {
+                shape person
+                background #08427b
+                color #ffffff
+            }
+        }
+    }
+}

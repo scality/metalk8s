@@ -22,6 +22,7 @@ Welcome to MetalK8s's documentation!
    installation/index
    operation/index
    developer/index
+   architecture/index
    glossary
 
 Indices and tables

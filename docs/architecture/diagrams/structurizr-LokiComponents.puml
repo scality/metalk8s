@@ -1,0 +1,29 @@
+@startuml(id=LokiComponents)
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4.puml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+LAYOUT_WITH_LEGEND()
+
+title MetalK8s Logging - Loki - Components
+caption A detailed view of Loki components.
+
+Person(1, "Admin", "A MetalK8s administrator.")
+Container(4, "fluent-bit", "", "Collect, parse, enrich, and forward log streams from files.")
+Container_Boundary(5_boundary, Loki) {
+  Component(10, "Chunk Store", "", "Persistent data store for chunks and an index")
+  Component(6, "Distributor", "Golang", "Process incoming log streams and forwards valid chunks")
+  Component(7, "Ingester", "Golang", "Buffers incoming chunks, compresses them and flushes them to storage")
+  Component(9, "Querier", "Golang", "Parses and executes LogQL queries")
+  Component(8, "Query Frontend", "Golang", "Queues and splits incoming log queries, and caches results")
+}
+Rel_D(1, 8, "Sends a LogQL query to", "")
+Rel_D(6, 7, "Forwards log chunks to (hash-based)", "")
+Rel_D(7, 10, "Writes log chunks to", "")
+Rel_D(9, 10, "Retrieves persisted chunks from", "")
+Rel_D(9, 7, "Retrieves in-memory chunks from", "")
+Rel_D(9, 8, "Returns log lines to", "")
+Rel_D(8, 1, "Returns log lines to", "")
+Rel_D(8, 9, "Sends a (opt. reduced) LogQL query to", "")
+Rel_D(4, 6, "Forwards log streams to", "")
+@enduml
