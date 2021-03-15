@@ -3,7 +3,8 @@ import { combineReducers } from 'redux';
 
 import config from './config';
 import type { ConfigState } from './config';
-import nodes, { NodesState } from './app/nodes';
+import nodes from './app/nodes';
+import type { NodesState } from './app/nodes';
 import pods from './app/pods';
 import type { PodsState } from './app/pods';
 import volumes from './app/volumes';
