@@ -2,6 +2,7 @@ import json
 import pathlib
 import re
 import requests.exceptions
+import time
 
 import kubernetes
 import pytest
@@ -243,14 +244,6 @@ def ssh_config(request):
     return request.config.getoption("--ssh-config")
 
 
-@pytest.fixture(scope="function")
-def request_retry_session(request):
-    # Callers can inject arguments using `pytest.mark.parametrize`
-    params = getattr(request, "param", {})
-
-    return utils.requests_retry_session(**params)
-
-
 @pytest.fixture
 def prometheus_api(control_plane_ip):
     return utils.PrometheusApi(control_plane_ip, CONTROL_PLANE_INGRESS_PORT)
@@ -336,30 +329,79 @@ def check_resource_list(host, resource, namespace):
 
 
 @then(
-    parsers.parse(
-        "we are able to login to Dex as '{username}' using password '{password}'"
-    )
+    parsers.re(
+        r"^we are (?P<should_fail>(?:not )?)able to login to Dex "
+        r"as '(?P<username>[^']+)' using password '(?P<password>[^']+)'$"
+    ),
+    converters=dict(should_fail=lambda s: s == "not "),
 )
-def dex_successful_login(username, password, control_plane_ip, request_retry_session):
-
-    response = _dex_login(username, password, control_plane_ip, request_retry_session)
-    assert response.text is not None
-    assert response.status_code == 303
-    assert response.headers.get("location") is not None
-
-
-@then(
-    parsers.parse(
-        "we are not able to login to Dex " "as '{username}' using password '{password}'"
+def dex_login(username, password, should_fail, control_plane_ip):
+    session = utils.requests_retry_session(
+        # Both Dex and the ingress controller may fail with one of the following codes
+        status_forcelist=(500, 502, 503, 504),
+        retries=10,
+        backoff_factor=2,
     )
-)
-def dex_failed_login(username, password, control_plane_ip, request_retry_session):
-    response = _dex_login(username, password, control_plane_ip, request_retry_session)
-    assert response.text is not None
-    assert response.status_code == 200
-    # 'Invalid Email Address and password' is found in reponse text
-    assert "Invalid Email Address and password" in response.text
-    assert response.headers.get("locaction") is None
+    ingress_url = "https://{}:{}".format(control_plane_ip, CONTROL_PLANE_INGRESS_PORT)
+
+    get_auth_start = time.time()
+    try:
+        auth_page = session.post(
+            ingress_url + "/oidc/auth?",
+            data={
+                "response_type": "id_token",
+                "client_id": "metalk8s-ui",
+                "scope": "openid audience:server:client_id:oidc-auth-client",
+                "redirect_uri": ingress_url + "/oauth2/callback",
+                "nonce": "nonce",
+            },
+            verify=False,
+        )
+    except requests.exceptions.ConnectionError as exc:
+        pytest.fail("Failed to retrieve Dex authentication page: {}".format(exc))
+
+    get_auth_duration = time.time() - get_auth_start
+    if auth_page.status_code != 200:
+        pytest.fail(
+            f"Failed to retrieve Dex authentication page after {get_auth_duration:.1f} "
+            f"seconds [status={auth_page.status_code}]:\n{auth_page.text}"
+        )
+
+    # The response is an HTML form (for display in a browser)
+    auth_form = auth_page.text
+
+    # The form action looks like:
+    # <a href="/oidc/auth/local?req=ovc5qdll5zznlubewjok266rl" target="_self">
+    next_path_match = re.search(r'href=[\'"](?P<next_path>/oidc/\S+)[\'"] ', auth_form)
+    assert (
+        next_path_match is not None
+    ), "Could not find an anchor with `href='/oidc/...'` in Dex response:\n{}".format(
+        auth_form
+    )
+    next_path = next_path_match.group("next_path")
+
+    try:
+        auth_response = session.post(
+            ingress_url + next_path,
+            data={"login": username, "password": password},
+            verify=False,
+            allow_redirects=False,
+        )
+    except requests.exceptions.ConnectionError as exc:
+        pytest.fail(
+            "Failed when authenticating to Dex through '{}': {}".format(
+                ingress_url + next_path, exc
+            )
+        )
+
+    assert auth_response.text is not None
+    if should_fail:
+        assert auth_response.status_code == 200
+        assert "Invalid Email Address and password" in auth_response.text
+        assert auth_response.headers.get("location") is None
+    else:
+        assert auth_response.status_code == 303
+        assert auth_response.headers.get("location") is not None
 
 
 @then(parsers.parse('node "{node_name}" is a member of etcd cluster'))
@@ -382,49 +424,6 @@ def _verify_kubeapi_service(host):
         res = host.run(cmd)
         if res.rc != 0:
             pytest.fail(res.stderr)
-
-
-def _dex_login(username, password, control_plane_ip, request_retry_session):
-    """Login to Dex and return the result"""
-    try:
-        response = request_retry_session.post(
-            "https://{}:{}/oidc/auth?".format(
-                control_plane_ip, CONTROL_PLANE_INGRESS_PORT
-            ),
-            data={
-                "response_type": "id_token",
-                "client_id": "metalk8s-ui",
-                "scope": "openid audience:server:client_id:oidc-auth-client",
-                "redirect_uri": "https://{}:{}/oauth2/callback".format(
-                    control_plane_ip, CONTROL_PLANE_INGRESS_PORT
-                ),
-                "nonce": "nonce",
-            },
-            verify=False,
-        )
-    except requests.exceptions.ConnectionError as exc:
-        pytest.fail("Dex authentication request failed with error: {}".format(exc))
-
-    auth_request = response.text  # response is an html form
-    # form action looks like:
-    # <a href="/oidc/auth/local?req=ovc5qdll5zznlubewjok266rl" target="_self">
-    reqpath = re.search(r'href=[\'"](?P<reqpath>/oidc/\S+)[\'"] ', auth_request).group(
-        "reqpath"
-    )
-
-    try:
-        result = requests.post(
-            "https://{}:{}{}".format(
-                control_plane_ip, CONTROL_PLANE_INGRESS_PORT, reqpath
-            ),
-            data={"login": username, "password": password},
-            verify=False,
-            allow_redirects=False,
-        )
-    except requests.exceptions.ConnectionError as exc:
-        pytest.fail("Unable to login: {}".format(exc))
-
-    return result
 
 
 def etcdctl(k8s_client, command, ssh_config):
