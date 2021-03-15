@@ -689,7 +689,7 @@ models:
         create-env --name "$ENVIRONMENT_NAME"
       workdir: build/eve/workers/openstack-terraform/terraform/
       haltOnFailure: true
-  - ShellCommand: &untaint_bootstrap
+  - ShellCommand: &untaint_bootstrap_ssh
       doStepIf: "%(prop:install_solution:-false)s"
       name: Untaint Bootstrap before deploying a Solution
       env:
@@ -1530,6 +1530,14 @@ stages:
             git checkout "${BRANCH}" --quiet &&
             sudo -E eve/create-volumes.sh
           haltOnFailure: true
+      - ShellCommand: &untaint_bootstrap
+          name: Untaint Bootstrap node
+          env:
+            NODE_NAME: "bootstrap"
+          command: |
+            sudo kubectl --kubeconfig /etc/kubernetes/admin.conf \
+            patch node "$NODE_NAME" --patch '{"spec": {"taints": []}}'
+          haltOnFailure: true
       # --- Wait for the cluster to be stabilized ---
       - ShellCommand: *wait_pods_stable
       # --- Test version N ---
@@ -1640,6 +1648,7 @@ stages:
             BRANCH: "development/%(prop:product_version_prev)s"
             PRODUCT_TXT: "/srv/scality/metalk8s-%(prop:metalk8s_version_prev)s/product.txt"
             PRODUCT_MOUNT: "/srv/scality/metalk8s-%(prop:metalk8s_version_prev)s"
+      - ShellCommand: *untaint_bootstrap
       - ShellCommand: *wait_pods_stable
       # --- Test version N-1 ---
       - ShellCommand: *fast_tests_prev
@@ -1730,7 +1739,7 @@ stages:
       - ShellCommand: *run_bootstrap_ssh
       - ShellCommand: *provision_volumes_ssh
       - ShellCommand:
-          <<: *untaint_bootstrap
+          <<: *untaint_bootstrap_ssh
           doStepIf: true
     # NOTE: This section only run if property "install_solution" is True
     # {{{
@@ -2256,7 +2265,7 @@ stages:
       - ShellCommand: *import_solution
       - ShellCommand: *activate_solution
       - ShellCommand: *create_solution_env
-      - ShellCommand: *untaint_bootstrap
+      - ShellCommand: *untaint_bootstrap_ssh
       - ShellCommand: *deploy_solution
       - ShellCommand: *wait_for_solution_operator
     # }}}
@@ -2531,6 +2540,7 @@ stages:
       - ShellCommand: *run_bootstrap_ssh
       - ShellCommand: *provision_volumes_ssh
       - ShellCommand: *install_kubectl_bootstrap_ssh
+      - ShellCommand: *untaint_bootstrap_ssh
       - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand:
           <<: *retrieve_iso
