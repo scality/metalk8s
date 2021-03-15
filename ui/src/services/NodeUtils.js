@@ -1,3 +1,4 @@
+//@flow
 import { createSelector } from 'reselect';
 import {
   NODE_ALERTS_GROUP,
@@ -13,10 +14,44 @@ import {
 } from '../constants';
 import { compareHealth } from './utils';
 import type { IPInterfaces } from './salt/api';
+import type { RootState } from '../ducks/reducer';
+import type { NodesState } from '../ducks/app/nodes';
+import type { AlertsState } from '../ducks/app/alerts';
+import type { Brand } from '../services/api';
 
 const METALK8S_CONTROL_PLANE_IP = 'metalk8s:control_plane_ip';
 const METALK8S_WORKLOAD_PLANE_IP = 'metalk8s:workload_plane_ip';
 const IP_INTERFACES = 'ip_interfaces';
+
+// Note that: Reverse the selectors and result in order to type unknown number of selectors.
+export const createTypedSelector: <T>(
+  selectorsResult: (...result: any) => T,
+  ...selectors: ((state: RootState) => any)[]
+) => T = (selectorsResult, ...selectors) =>
+  createSelector(...selectors, selectorsResult);
+
+type NodetableList = {
+  name: { name: string, controlPlaneIP: string, workloadPlaneIP: string },
+  status: {
+    status: 'ready' | 'not_ready' | 'unknown',
+    conditions: (
+      | 'DiskPressure'
+      | 'MemoryPressure'
+      | 'PIDPressure'
+      | 'NetworkUnavailable'
+      | 'Unschedulable'
+    )[],
+    statusTextColor: string,
+    computedStatus: [],
+  },
+  health: {
+    health: 'health' | 'warning' | 'critical' | 'none',
+    totalAlertsCounter: number,
+    criticalAlertsCounter: number,
+    warningAlertsCounter: number,
+  },
+  roles: string,
+}[];
 
 const IPsInfoSelector = (state) => state.app.nodes.IPsInfo;
 const nodesSelector = (state) => state.app.nodes.list;
@@ -24,32 +59,32 @@ const brandSelector = (state) => state.config.theme.brand;
 const alertsSelector = (state) => state.app.alerts.list;
 
 // Return the data used by the Node list table
-export const getNodeListData = createSelector(
-  nodesSelector,
-  IPsInfoSelector,
-  brandSelector,
-  alertsSelector,
-  (nodes, nodeIPsInfo, brand, alerts) => {
+export const getNodeListData = createTypedSelector<NodetableList>(
+  (
+    nodes: $PropertyType<NodesState, 'list'>,
+    nodeIPsInfo: NodesState,
+    brand: Brand,
+    alerts: $PropertyType<AlertsState, 'list'>,
+  ) => {
     const mapped =
-      nodes?.map((node) => {
-        const IPsInfo = nodeIPsInfo?.[node.name];
+      nodes.map((node) => {
+        const conditions = node.conditions;
+        const IPsInfo = nodeIPsInfo[node.name];
         let statusTextColor, health;
-        const alertsNode = alerts?.filter(
+        const alertsNode = alerts.filter(
           (alert) =>
-            NODE_ALERTS_GROUP.includes(alert?.labels?.alertname) &&
+            NODE_ALERTS_GROUP.includes(alert.labels.alertname) &&
             `${node.internalIP}:${PORT_NODE_EXPORTER}` ===
               alert.labels.instance,
         );
 
-        const totalAlertsCounter = alertsNode?.length ?? -1;
-        const criticalAlertsCounter =
-          alertsNode?.filter(
-            (alert) => alert.labels.severity === STATUS_CRITICAL,
-          )?.length ?? -1;
-        const warningAlertsCounter =
-          alertsNode?.filter(
-            (alert) => alert.labels.severity === STATUS_WARNING,
-          )?.length ?? -1;
+        const totalAlertsCounter = alertsNode.length;
+        const criticalAlertsCounter = alertsNode.filter(
+          (alert) => alert.labels.severity === STATUS_CRITICAL,
+        ).length;
+        const warningAlertsCounter = alertsNode.filter(
+          (alert) => alert.labels.severity === STATUS_WARNING,
+        ).length;
 
         if (criticalAlertsCounter > 0) {
           health = STATUS_CRITICAL;
@@ -64,35 +99,32 @@ export const getNodeListData = createSelector(
         }
 
         const computedStatus = [];
-        // The rules of the color of the node status
-        // "green" when status.conditions['Ready'] == True and all other conditions are false
-        // "yellow" when status.conditions['Ready'] == True and some other conditions are true
-        // "red" when status.conditions['Ready'] == False
-        // "grey" when there is no status.conditions
-        if (
-          node?.status === API_STATUS_READY &&
-          node?.conditions.length === 0
-        ) {
-          statusTextColor = brand?.healthy;
+        /*  The rules of the color of the node status
+         <green>  when status.conditions['Ready'] == True and all other conditions are false
+         <yellow> when status.conditions['Ready'] == True and some other conditions are true
+         <red>    when status.conditions['Ready'] == False
+         <grey>   when there is no status.conditions */
+        if (node.status === API_STATUS_READY && conditions.length === 0) {
+          statusTextColor = brand.healthy;
           computedStatus.push(API_STATUS_READY);
         } else if (
-          node?.status === API_STATUS_READY &&
-          node?.conditions.length !== 0
+          node.status === API_STATUS_READY &&
+          conditions.length !== 0
         ) {
-          statusTextColor = brand?.warning;
-          nodes.conditions.map((cond) => {
+          statusTextColor = brand.warning;
+          conditions.map((cond) => {
             return computedStatus.push(cond);
           });
         } else if (node.deploying && node.status === API_STATUS_UNKNOWN) {
-          statusTextColor = brand?.textSecondary;
+          statusTextColor = brand.textSecondary;
           computedStatus.push(API_STATUS_DEPLOYING);
           health = STATUS_NONE;
-        } else if (node?.status !== API_STATUS_READY) {
-          statusTextColor = brand?.critical;
+        } else if (node.status !== API_STATUS_READY) {
+          statusTextColor = brand.critical;
           computedStatus.push(API_STATUS_NOT_READY);
           health = STATUS_NONE;
         } else {
-          statusTextColor = brand?.textSecondary;
+          statusTextColor = brand.textSecondary;
           computedStatus.push(API_STATUS_UNKNOWN);
           health = STATUS_NONE;
         }
@@ -100,17 +132,17 @@ export const getNodeListData = createSelector(
         return {
           // According to the design, the IPs of Control Plane and Workload Plane are in the same Cell with Name
           name: {
-            name: node?.name,
+            name: node.name,
             controlPlaneIP: IPsInfo?.controlPlane?.ip,
             workloadPlaneIP: IPsInfo?.workloadPlane?.ip,
           },
           status: {
-            status: node?.status,
-            conditions: node?.conditions,
+            status: node.status,
+            conditions: node.conditions,
             statusTextColor,
             computedStatus,
           },
-          roles: node?.roles,
+          roles: node.roles,
           health: {
             health,
             totalAlertsCounter,
@@ -118,32 +150,37 @@ export const getNodeListData = createSelector(
             warningAlertsCounter,
           },
         };
-      }) ?? [];
+      }) || [];
 
     return mapped.sort((a, b) =>
       compareHealth(b.health.health, a.health.health),
     );
   },
+  nodesSelector,
+  IPsInfoSelector,
+  brandSelector,
+  alertsSelector,
 );
 
-// This function returns the IP and interface of Control Plane and Workload Plane for each Node
-// Arguments:
-//  ipsInterfacesObject =
-// {
-//    ip_interface: {
-//      eth1:['10.0.1.42', 'fe80::f816:3eff:fe25:5843'],
-//      eth3:['10.100.0.2', 'fe80::f816:3eff:fe37:2f34']
-// },
-//    metalk8s:control_plane_ip: "10.0.1.42",
-//    metalk8s:workload_plane_ip: "10.100.0.2"
-// }
-// Return
-// {
-//   controlPlane: { ip: '10.0.1.42', interface: 'eth1'}
-//   workloadPlane: { ip: '10.100.0.2', interface: 'eth3'},
-// }
+/*
+This function returns the IP and interface of Control Plane and Workload Plane for each Node
+Arguments:
+  ipsInterfacesObject = {
+    ip_interface: {
+      eth1:['10.0.1.42', 'fe80::f816:3eff:fe25:5843'],
+      eth3:['10.100.0.2', 'fe80::f816:3eff:fe37:2f34']
+   },
+    metalk8s:control_plane_ip: "10.0.1.42",
+    metalk8s:workload_plane_ip: "10.100.0.2"
+  }
+Return
+  {
+   controlPlane: { ip: '10.0.1.42', interface: 'eth1'}
+   workloadPlane: { ip: '10.100.0.2', interface: 'eth3'},
+  }
+*/
 export const nodesCPWPIPsInterface = (
-  IPsInterfacesObject: IPInterfaces | boolean,
+  IPsInterfacesObject: IPInterfaces | false,
 ): {
   controlPlane: { ip: string, interface: string },
   workloadPlane: { ip: string, interface: string },
@@ -158,19 +195,21 @@ export const nodesCPWPIPsInterface = (
   return {
     controlPlane: {
       ip: IPsInterfacesObject[METALK8S_CONTROL_PLANE_IP],
-      interface: Object.keys(IPsInterfacesObject[IP_INTERFACES]).find((en) =>
-        IPsInterfacesObject[IP_INTERFACES][en].includes(
-          IPsInterfacesObject[METALK8S_CONTROL_PLANE_IP],
-        ),
-      ),
+      interface:
+        Object.keys(IPsInterfacesObject[IP_INTERFACES]).find((en) =>
+          IPsInterfacesObject[IP_INTERFACES][en].includes(
+            IPsInterfacesObject[METALK8S_CONTROL_PLANE_IP],
+          ),
+        ) || '',
     },
     workloadPlane: {
       ip: IPsInterfacesObject[METALK8S_WORKLOAD_PLANE_IP],
-      interface: Object.keys(IPsInterfacesObject[IP_INTERFACES]).find((en) =>
-        IPsInterfacesObject[IP_INTERFACES][en].includes(
-          IPsInterfacesObject[METALK8S_WORKLOAD_PLANE_IP],
-        ),
-      ),
+      interface:
+        Object.keys(IPsInterfacesObject[IP_INTERFACES]).find((en) =>
+          IPsInterfacesObject[IP_INTERFACES][en].includes(
+            IPsInterfacesObject[METALK8S_WORKLOAD_PLANE_IP],
+          ),
+        ) || '',
     },
   };
 };
