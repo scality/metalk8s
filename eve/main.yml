@@ -2077,6 +2077,7 @@ stages:
       # --- Install version N ---
       - ShellCommand: *run_bootstrap
       - ShellCommand: *provision_prometheus_volumes
+      - ShellCommand: *untaint_bootstrap
       - ShellCommand: *wait_pods_stable
       # --- Test version N ---
       - ShellCommand: *fast_tests
