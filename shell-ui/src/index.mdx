@@ -8,4 +8,13 @@ import * as WebComponent from './index.js';
     response-type="id_token"
     redirect-url="http://localhost:8082"
     scopes="openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
+    options={
+        JSON.stringify({
+            "main": {
+                "http://localhost:8082/":{ "en": "Platform", "fr": "Plateforme" },
+                "http://localhost:8082/test":{ "en": "Test", "fr": "Test" }
+            },
+            "subLogin": {}
+        })
+    }
     />

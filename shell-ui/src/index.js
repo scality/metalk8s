@@ -10,11 +10,16 @@ import { QueryClient, QueryClientProvider, useQuery } from 'react-query';
 import { LoadingNavbar, Navbar } from './NavBar';
 import { UserDataListener } from './UserDataListener';
 import { logOut } from './auth/logout';
+import { prefetch } from "quicklink";
+import {defaultTheme} from '@scality/core-ui/dist/style/theme';
 
 const EVENTS_PREFIX = 'solutions-navbar--';
 export const AUTHENTICATED_EVENT: string = EVENTS_PREFIX + 'authenticated';
 
-type Options = { [path: string]: { en: string, fr: string, roles?: string[] } }; // TODO should be able to accept configs for paths in dropdown menu under user name
+export type TranslationAndGroups = { en: string, fr: string, groups?: string[], activeIfMatches?: string };
+export type MenuItems = {[path: string]: TranslationAndGroups }
+
+export type Options = { main: MenuItems, subLogin: MenuItems };
 
 export type SolutionsNavbarProps = {
   'oidc-provider-url'?: string,
@@ -23,7 +28,7 @@ export type SolutionsNavbarProps = {
   'response-type'?: string,
   'redirect-url'?: string,
   'config-url'?: string,
-  options?: Options,
+  options?: string,
   onAuthenticated?: (evt: CustomEvent) => void,
   logOut?: () => void,
   setUserManager?: (userManager: UserManager) => void,
@@ -67,6 +72,13 @@ const SolutionsNavbar = ({
   },
   );
 
+  useLayoutEffect(() => {
+    const savedRedirectUri = localStorage.getItem('redirectUrl');
+    if (savedRedirectUri) {
+      prefetch(savedRedirectUri)
+    }
+  }, []);
+
   switch (status) {
     case 'idle':
     case 'loading':
@@ -92,6 +104,8 @@ const SolutionsNavbar = ({
         userStore: new WebStorageStateStore({ store: localStorage }),
       });
 
+      const computedMenuOptions = options ? JSON.parse(options) : config.options || { main: {}, subLogin: {} };
+
       if (setUserManager) {
         setUserManager(userManager);
       }
@@ -102,6 +116,7 @@ const SolutionsNavbar = ({
         },
         onSignIn: () => {
           const savedRedirectUri = localStorage.getItem('redirectUrl');
+          localStorage.removeItem('redirectUrl');
           if (savedRedirectUri) {
             location.href = savedRedirectUri;
           } else {
@@ -122,34 +137,11 @@ const SolutionsNavbar = ({
           <StyledComponentsProvider
             theme={{
               // todo manages theme https://github.com/scality/metalk8s/issues/2545
-              brand: {
-                alert: '#FFE508',
-                base: '#7B7B7B',
-                primary: '#1D1D1D',
-                primaryDark1: '#171717',
-                primaryDark2: '#0A0A0A',
-                secondary: '#055DFF',
-                secondaryDark1: '#1C3D59',
-                secondaryDark2: '#1C2E3F',
-                success: '#006F62',
-                healthy: '#30AC26',
-                healthySecondary: '#69E44C',
-                warning: '#FFC10A',
-                danger: '#AA1D05',
-                critical: '#BE321F',
-                background: '#121212',
-                backgroundBluer: '#192A41',
-                textPrimary: '#FFFFFF',
-                textSecondary: '#B5B5B5',
-                textTertiary: '#DFDFDF',
-                borderLight: '#A5A5A5',
-                border: '#313131',
-                info: '#434343',
-              },
+              brand: defaultTheme.dark,
               logo_path: '/brand/assets/branding-dark.svg',
             }}
           >
-            <Navbar options={options} />
+            <Navbar options={computedMenuOptions} />
           </StyledComponentsProvider>
         </AuthProvider>
       );
@@ -164,7 +156,7 @@ SolutionsNavbar.propTypes = {
   'config-url': PropTypes.string,
   'redirect-url': PropTypes.string,
   'response-type': PropTypes.string,
-  options: PropTypes.object,
+  options: PropTypes.string,
 };
 
 const SolutionsNavbarProviderWrapper = (props: SolutionsNavbarProps) => {
