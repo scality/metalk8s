@@ -340,6 +340,7 @@ PACKAGES: Dict[str, Any] = {
         PackageVersion(name="e2fsprogs"),
         PackageVersion(name="ebtables"),
         PackageVersion(name="ethtool"),
+        PackageVersion(name="gdisk"),
         PackageVersion(name="genisoimage"),
         PackageVersion(name="iproute"),
         PackageVersion(name="iptables"),
