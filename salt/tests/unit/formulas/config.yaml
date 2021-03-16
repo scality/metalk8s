@@ -316,19 +316,52 @@ metalk8s:
           minion_state: new
 
   orchestrate:
-    # _skip: false
+    _skip: false
 
-    # apiserver.sls:
+    apiserver.sls:
+      _cases: &orch_base_cases
+        "Single-node cluster":
+          mode: master
+          architecture: single-node
+        "Compact cluster": &orch_compact_arch
+          mode: master
+          architecture: compact
 
-    # deploy_node.sls:
+    register_etcd.sls:
+      _cases:
+        "Target a new master node": &orch_target_master_node
+          <<: *orch_compact_arch
+          pillar_overrides: &pillar_orch_target_master_node
+            bootstrap_id: bootstrap
+            orchestrate:
+              node_name: master-1
 
-    # etcd.sls:
+    deploy_node.sls:
+      _cases:
+        "Target a new master node":
+          <<: *orch_target_master_node
+          _subcases:
+            "Minion already exists (default)": {}
+            "Minion is new":
+              minion_state: new
+            "Skip drain":
+              pillar_overrides:
+                <<: *pillar_orch_target_master_node
+                orchestrate:
+                  node_name: master-1
+                  skip_draining: true
+            "Skip etcd role":
+              pillar_overrides:
+                <<: *pillar_orch_target_master_node
+                metalk8s:
+                  nodes:
+                    master-1:
+                      skip_roles: [etcd]
 
-    # register_etcd.sls:
+    etcd.sls:
+      _cases: *orch_base_cases
 
     bootstrap:
-      _skip: false
-
       accept-minion.sls:
         _cases:
           "From master":
@@ -359,8 +392,6 @@ metalk8s:
                     nodes: {}
 
     certs:
-      _skip: false
-
       renew.sls:
         _cases:
           "From master":
@@ -384,8 +415,6 @@ metalk8s:
                     target: bootstrap
 
     downgrade:
-      _skip: false
-
       init.sls:
         _cases:
           "Single node cluster":
@@ -481,8 +510,6 @@ metalk8s:
                     version: 2.8.0
 
     solutions:
-      _skip: false
-
       deploy-components.sls:
         _cases:
           "Empty SolutionsConfig (default)": {}
@@ -613,8 +640,6 @@ metalk8s:
                   role_name: example-role
 
     upgrade:
-      _skip: false
-
       init.sls:
         _cases:
           "Single node cluster":

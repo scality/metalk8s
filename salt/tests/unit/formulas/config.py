@@ -45,6 +45,10 @@ DEFAULT_CASE = TESTS_CONFIG["default_case"]
 class BaseOption:
     """Base-class for registering "option kinds"."""
 
+    # PRIORITY is used for ordering the application of options on a given context
+    # A higher PRIORITY means an earlier application
+    PRIORITY = 1
+
     def __init__(self, value: Any):
         self.value = value
 
@@ -88,6 +92,8 @@ class Saltenv(BaseOption):
     "metalk8s-{{ pillar.metalk8s.cluster_version }}".
     """
 
+    PRIORITY = 8
+
     def __init__(self, value: str):
         match = re.match(r"^metalk8s-(?P<version>2\.\d+\.\d+)$", value)
         assert (
@@ -125,6 +131,8 @@ class OS(EnumOption):
 
 class Architecture(EnumOption):
     """Simulate one of the supported deployment architectures."""
+
+    PRIORITY = 9
 
     ALLOWED_VALUES: FrozenSet[str] = frozenset(
         ("single-node", "compact", "standard", "extended")
@@ -212,6 +220,8 @@ class Architecture(EnumOption):
 class MinionMode(EnumOption):
     """Switch between rendering on a plain minion or the master minion."""
 
+    PRIORITY = 7
+
     ALLOWED_VALUES: FrozenSet[str] = frozenset(("minion", "master"))
 
     def update_context(self, context: Dict[str, Any]) -> None:
@@ -228,10 +238,12 @@ class MinionState(EnumOption):
     Allowed states:
     - "ready" (the default): Use default mocks and grains/pillar data from a
       functional, fully installed minion
-    - "new": Clean up the default grains and pillar to simulate a fresh minion
-      install
+    - "new": Clean up the custom grains and remove from list of minions
+      to simulate a fresh minion install
     - "standalone": No ext pillar, local file client
     """
+
+    PRIORITY = 4
 
     ALLOWED_VALUES: FrozenSet[str] = frozenset(("ready", "new", "standalone"))
 
@@ -242,6 +254,15 @@ class MinionState(EnumOption):
 
         if self.value == "new":
             context["grains"].pop("metalk8s", None)
+
+            if context["opts"].get("__role") == "master":
+                # If running from the master, we assume the target we care
+                # about is in pillar.orchestrate.node_name
+                target_minion = context["pillar"]["orchestrate"]["node_name"]
+            else:
+                target_minion = context["grains"]["id"]
+
+            context["__minions__"].pop(target_minion)
 
         if self.value == "standalone":
             context["pillar"].pop("metalk8s", None)
@@ -269,6 +290,8 @@ class Volumes(EnumOption):
     - "block": some raw block volumes
     - "mix": mix of both volume kinds
     """
+
+    PRIORITY = 6
 
     ALLOWED_VALUES: FrozenSet[str] = frozenset(
         ("none", "errors", "bootstrap", "sparse", "block", "mix")
@@ -333,6 +356,8 @@ class ExtraContext(DictOption):
 class PillarOverrides(DictOption):
     """Override pillar data for a specific template."""
 
+    PRIORITY = 5
+
     def update_context(self, context: Dict[str, Any]) -> None:
         salt.utils.dictupdate.update(context["pillar"], self.value)
 
@@ -390,16 +415,19 @@ class KubernetesOverrides(DictOption):
 
 # Register sub-classes of `BaseOption`, with the same key as desired in the
 # configuration file
+# For clarity, the options are sorted by priority (descending order, same as runtime)
 OPTION_KINDS: Dict[str, Type[BaseOption]] = {
-    "os": OS,
     "architecture": Architecture,
+    "saltenv": Saltenv,
+    "mode": MinionMode,
+    "volumes": Volumes,
+    "pillar_overrides": PillarOverrides,
+    "minion_state": MinionState,
+    # Unspecified priority for options below, they should not rely on execution order
+    # respectively to other options in this group
+    "os": OS,
     "extra_context": ExtraContext,
     "k8s_overrides": KubernetesOverrides,
-    "minion_state": MinionState,
-    "mode": MinionMode,
-    "pillar_overrides": PillarOverrides,
-    "saltenv": Saltenv,
-    "volumes": Volumes,
 }
 
 

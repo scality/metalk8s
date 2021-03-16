@@ -77,7 +77,7 @@ def make_context(
     context_data = copy.deepcopy(base)
     config_overrides = {}
 
-    for option in test_case.options:
+    for option in sorted(test_case.options, key=lambda o: o.PRIORITY, reverse=True):
         option.update_context(context_data)
         if isinstance(option, config.MinionState):
             config_overrides.update(option.config_overrides)
