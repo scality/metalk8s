@@ -54,6 +54,7 @@ export type Config = {
   flags?: [],
   url_navbar: string,
   url_navbar_config: string,
+  ui_base_path?: string,
 };
 
 export function fetchTheme(): Promise<WrappedThemes> {

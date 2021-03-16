@@ -1,7 +1,6 @@
 import { call, put, delay, select } from 'redux-saga/effects';
 import { cloneableGenerator } from '@redux-saga/testing-utils';
 import * as CoreApi from '../../services/k8s/core';
-import history from '../../history';
 import { REFRESH_TIMEOUT } from '../../constants';
 import {
   fetchNodes,
@@ -12,6 +11,7 @@ import {
   clusterVersionSelector,
   nodesRefreshingSelector,
   fetchNodesIPsInterface,
+  historySelector
 } from './nodes';
 import { allJobsSelector } from './salt';
 import {
@@ -263,7 +263,9 @@ describe('`createNode` saga', () => {
     expect(gen.next({ whatever: 'nominal result' }).value).toEqual(
       call(fetchNodes),
     );
-    expect(gen.next().value).toEqual(call(history.push, '/nodes'));
+    gen.next().value;
+    const historyMock = {push: jest.fn()};
+    expect(gen.next({history: historyMock}).value).toEqual(call(historyMock.push, '/nodes'));
     expect(gen.next().value).toMatchObject(
       put({
         type: ADD_NOTIFICATION_SUCCESS,
@@ -345,7 +347,9 @@ describe('`createNode` saga', () => {
     expect(gen.next({ whatever: 'nominal result' }).value).toEqual(
       call(fetchNodes),
     );
-    expect(gen.next().value).toEqual(call(history.push, '/nodes'));
+    gen.next().value;
+    const historyMock = {push: jest.fn()};
+    expect(gen.next({history: historyMock}).value).toEqual(call(historyMock.push, '/nodes'));
     expect(gen.next().value).toMatchObject(
       put({
         type: ADD_NOTIFICATION_SUCCESS,

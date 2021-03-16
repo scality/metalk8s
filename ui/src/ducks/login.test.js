@@ -7,7 +7,6 @@ jest.mock('../index.js', () => {
 });
 
 import { call, put } from 'redux-saga/effects';
-import history from '../history';
 import {
   SALT_AUTHENTICATION_FAILED,
   SALT_AUTHENTICATION_SUCCESS,

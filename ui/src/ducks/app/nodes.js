@@ -13,7 +13,6 @@ import {
 
 import * as CoreApi from '../../services/k8s/core';
 import * as ApiSalt from '../../services/salt/api';
-import history from '../../history';
 import {
   addNotificationSuccessAction,
   addNotificationErrorAction,
@@ -257,6 +256,7 @@ export const updateNodeObjectAction = (payload) => {
 // Selectors
 export const clusterVersionSelector = (state) => state.app.nodes.clusterVersion;
 export const nodesRefreshingSelector = (state) => state.app.nodes.isRefreshing;
+export const historySelector = (state) => state.history;
 export const isSaltAPIAuthenticatedSelector = (state) => state.login.salt;
 const nodeListSelector = (state) => state.app.nodes.list;
 // Sagas
@@ -380,7 +380,8 @@ export function* createNode({ payload }) {
 
   if (!result.error) {
     yield call(fetchNodes);
-    yield call(history.push, '/nodes');
+    const historyState = yield select(historySelector);
+    yield call(historyState.history.push, '/nodes');
     yield put(
       addNotificationSuccessAction({
         title: intl.translate('node_creation'),

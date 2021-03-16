@@ -21,6 +21,7 @@ export const SET_THEME = 'SET_THEME';
 const FETCH_THEME = 'FETCH_THEME';
 const FETCH_CONFIG = 'FETCH_CONFIG';
 export const SET_API_CONFIG = 'SET_API_CONFIG';
+export const SET_CONFIG_STATUS = 'SET_CONFIG_STATUS';
 const SET_INITIAL_LANGUAGE = 'SET_INITIAL_LANGUAGE';
 const UPDATE_LANGUAGE = 'UPDATE_LANGUAGE';
 export const UPDATE_API_CONFIG = 'UPDATE_API_CONFIG';
@@ -29,18 +30,22 @@ export const SET_USER_LOADED = 'SET_USER_LOADED';
 export const SET_THEMES = 'SET_THEMES';
 
 // Reducer
-const defaultState = {
-  language: EN_LANG,
-  theme: {}, // current theme
-  api: null,
-  themes: {}, // include light, dark and custom
-};
+type Status = 'idle' | 'loading' | 'error' | 'success';
 
 export type ConfigState = {
   language: string,
   theme: Theme,
   api: ?Config,
   themes: Themes,
+  status: Status,
+};
+
+const defaultState: ConfigState = {
+  language: EN_LANG,
+  theme: {}, // current theme
+  api: null,
+  themes: {}, // include light, dark and custom
+  status: 'idle',
 };
 
 export default function reducer(
@@ -58,6 +63,8 @@ export default function reducer(
       return { ...state, isUserLoaded: action.payload };
     case SET_THEMES:
       return { ...state, themes: action.payload };
+    case SET_CONFIG_STATUS:
+      return { ...state, status: action.status };
     default:
       return state;
   }
@@ -82,6 +89,10 @@ export function fetchConfigAction() {
 
 export function setApiConfigAction(conf: Config) {
   return { type: SET_API_CONFIG, payload: conf };
+}
+
+export function setConfigStatusAction(status: Status) {
+  return { type: SET_CONFIG_STATUS, status };
 }
 
 export function setInitialLanguageAction() {
@@ -125,6 +136,7 @@ export function* fetchTheme(): Generator<Effect, void, Result<WrappedThemes>> {
 }
 
 export function* fetchConfig(): Generator<Effect, void, Result<Config>> {
+  yield put(setConfigStatusAction('loading'));
   yield call(Api.initialize, process.env.PUBLIC_URL);
   const result = yield call(Api.fetchConfig);
   if (!result.error) {
@@ -133,6 +145,9 @@ export function* fetchConfig(): Generator<Effect, void, Result<Config>> {
     yield call(ApiSalt.initialize, result.url_salt);
     yield call(ApiPrometheus.initialize, result.url_prometheus);
     yield call(ApiAlertmanager.initialize, result.url_alertmanager);
+    yield put(setConfigStatusAction('success'));
+  } else {
+    yield put(setConfigStatusAction('error'));
   }
 }
 

@@ -7,9 +7,9 @@ import {
   delay,
   select,
 } from 'redux-saga/effects';
+import type { RootState } from '../reducer';
 import * as VolumesApi from '../../services/k8s/volumes';
 import * as Metalk8sVolumesApi from '../../services/k8s/Metalk8sVolumeClient.generated';
-import history from '../../history';
 import { intl } from '../../translations/IntlGlobalProvider';
 import {
   addNotificationErrorAction,
@@ -366,6 +366,7 @@ export function* createVolumes({
         body,
       );
       if (!result.error) {
+        const {history} = yield select((state: RootState) => state.history);
         yield call(
           history.push,
           `/volumes/${newVolumes[i].name}/overview?node=${newVolumes[i].node}`,

@@ -1,5 +1,4 @@
-import { call, put, delay } from 'redux-saga/effects';
-import history from '../../history';
+import { call, put, delay, select } from 'redux-saga/effects';
 import {
   ADD_NOTIFICATION_ERROR,
   ADD_NOTIFICATION_SUCCESS,
@@ -352,9 +351,11 @@ it('create volume with the type sparseloopdevice', () => {
     },
   };
 
-  expect(gen.next(result).value).toEqual(
+  const historyMock = {push: jest.fn()};
+  gen.next(result).value;
+  expect(gen.next({history: historyMock}).value).toEqual(
     call(
-      history.push,
+      historyMock.push,
       `/volumes/${newVolumes[0].name}/overview?node=${newVolumes[0].node}`,
     ),
   );
@@ -431,9 +432,11 @@ it('create a volume with the type rawBlockdevice', () => {
     },
   };
 
-  expect(gen.next(result).value).toEqual(
+  const historyMock = {push: jest.fn()};
+  const historyState = gen.next(result).value;
+  expect(gen.next({history: historyMock}).value).toEqual(
     call(
-      history.push,
+      historyMock.push,
       `/volumes/${newVolumes[0].name}/overview?node=${newVolumes[0].node}`,
     ),
   );
