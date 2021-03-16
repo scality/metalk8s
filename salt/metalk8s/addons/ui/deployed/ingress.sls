@@ -90,3 +90,19 @@ spec:
         backend:
           serviceName: metalk8s-ui
           servicePort: 80
+      - path: /config.json
+        backend:
+          serviceName: metalk8s-ui
+          servicePort: 80
+      - path: /brand
+        backend:
+          serviceName: metalk8s-ui
+          servicePort: 80
+      - path: /static
+        backend:
+          serviceName: metalk8s-ui
+          servicePort: 80
+      - path: /manifest.json
+        backend:
+          serviceName: metalk8s-ui
+          servicePort: 80

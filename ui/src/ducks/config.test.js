@@ -18,6 +18,7 @@ import {
   setUserManagerAction,
   SET_USER_LOADED,
   SET_THEMES,
+  setConfigStatusAction,
 } from './config.js';
 import { fetchUserInfo } from './login';
 import { LANGUAGE, FR_LANG, EN_LANG } from '../constants';
@@ -57,6 +58,7 @@ it('update the theme state and logo path when fetchTheme', () => {
 it('update the config state when fetchConfig', () => {
   const gen = fetchConfig();
 
+  expect(gen.next().value).toEqual(put(setConfigStatusAction('loading')));
   expect(gen.next().value).toEqual(call(Api.initialize, ''));
   expect(gen.next().value).toEqual(call(Api.fetchConfig));
 
@@ -89,6 +91,7 @@ it('update the config state when fetchConfig', () => {
   expect(gen.next(result).value).toEqual(
     call(ApiLoki.initialize, 'http://172.21.254.46:8080'),
   );
+  expect(gen.next().value).toEqual(put(setConfigStatusAction('success')));
 
   expect(gen.next().done).toEqual(true);
 });

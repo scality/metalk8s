@@ -1,7 +1,8 @@
+//@flow
 import '@fortawesome/fontawesome-free/css/all.css';
 
 import React, { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { IntlProvider, addLocaleData } from 'react-intl';
 import locale_en from 'react-intl/locale-data/en';
 import locale_fr from 'react-intl/locale-data/fr';
@@ -15,6 +16,7 @@ import Layout from './Layout';
 import IntlGlobalProvider from '../translations/IntlGlobalProvider';
 import { fetchConfigAction, setInitialLanguageAction } from '../ducks/config';
 import { initToggleSideBarAction } from '../ducks/app/layout';
+import { useTypedSelector } from '../hooks';
 
 const queryClient = new QueryClient();
 const messages = {
@@ -24,19 +26,24 @@ const messages = {
 
 addLocaleData([...locale_en, ...locale_fr]);
 
-const App = (props) => {
-  const { language, api, theme } = useSelector((state) => state.config);
+const App = () => {
+  const { language, api, theme, status } = useTypedSelector(
+    (state) => state.config,
+  );
+
   const dispatch = useDispatch();
 
   useEffect(() => {
     document.title = messages[language].product_name;
-    dispatch(fetchConfigAction());
-    dispatch(setInitialLanguageAction()); // todo removes this once the navbar provides it
-    dispatch(initToggleSideBarAction());
+    if (status === 'idle') {
+      dispatch(fetchConfigAction());
+      dispatch(setInitialLanguageAction());// todo removes this once the navbar provides it 
+      dispatch(initToggleSideBarAction());
+    }
     // eslint-disable-next-line
-  }, []);
+  }, [status]);
 
-  return api && theme ? (
+  return status === 'success' && api && theme ? (
     <QueryClientProvider client={queryClient}>
       <AlertProvider>
         <AlertHistoryProvider>
