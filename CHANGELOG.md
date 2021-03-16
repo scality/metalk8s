@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Release 2.8.0 (in development)
+## Release 2.8.0
 ### Enhancements
 
 - [#3051](https://github.com/scality/metalk8s/issues/3051) - Prefix OIDC claims
