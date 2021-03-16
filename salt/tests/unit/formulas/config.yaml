@@ -12,10 +12,9 @@ default_case:
 
 metalk8s:
   # Use the special `_skip` keyword to omit rendering of a directory or formula
-  _skip: true
+  # _skip: true
 
   map.jinja:
-    _skip: false
     _cases:
       "CentOS 7":
         os: CentOS/7
@@ -27,8 +26,6 @@ metalk8s:
         os: Ubuntu/18
 
   addons:
-    _skip: false
-
     dex:
       deployed:
         service-configuration.sls:
@@ -171,15 +168,7 @@ metalk8s:
                           active: true
                           mountpoint: /srv/scality/example-solution-1.0.0
 
-  archives:
-    _skip: false
-
-  beacon:
-    _skip: false
-
   container-engine:
-    _skip: false
-
     containerd:
       files:
         50-metalk8s.conf.j2:
@@ -192,15 +181,7 @@ metalk8s:
                   HTTP_PROXY: http://my-proxy.local
                   HTTPS_PROXY: https://my-proxy.local
 
-  internal:
-    _skip: false
-
-  kubectl:
-    _skip: false
-
   kubernetes:
-    _skip: false
-
     apiserver-proxy:
       files:
         apiserver-proxy.yaml.j2:
@@ -306,8 +287,6 @@ metalk8s:
               bootstrap_id: bootstrap
 
   node:
-    _skip: false
-
     grains.sls:
       _cases:
         "Grains are already set":
@@ -316,8 +295,6 @@ metalk8s:
           minion_state: new
 
   orchestrate:
-    _skip: false
-
     apiserver.sls:
       _cases: &orch_base_cases
         "Single-node cluster":
@@ -723,8 +700,6 @@ metalk8s:
                 cluster_version: 2.8.0
 
   reactor:
-    _skip: false
-
     certs:
       renew.sls.in:
         _cases:
@@ -737,8 +712,6 @@ metalk8s:
                   - cert_path: /path/to/other.pem
 
   repo:
-    _skip: false
-
     files:
       apt.sources.list.j2:
         _cases:
@@ -799,12 +772,7 @@ metalk8s:
         "RHEL 8":
           os: RedHat/8
 
-  roles:
-    _skip: false
-
   salt:
-    _skip: false
-
     master:
       certs:
         salt-api.sls:
@@ -854,12 +822,7 @@ metalk8s:
                 minion_id: bootstrap
                 saltenv: metalk8s-2.7.1
 
-  service-configuration:
-    _skip: false
-
   solutions:
-    _skip: false
-
     available.sls:
       _cases:
         # See ./data/base_pillar.yaml
@@ -913,12 +876,7 @@ metalk8s:
                   archives:
                     - /srv/scality/releases/example-solution-1.0.0.iso
 
-  sreport:
-    _skip: false
-
   utils:
-    _skip: false
-
     httpd-tools:
       installed.sls:
         _cases:
@@ -928,8 +886,6 @@ metalk8s:
             os: CentOS/7
 
   volumes:
-    _skip: false
-
     unprepared.sls:
       _cases: &volumes_cases
         "No volume (default)":
