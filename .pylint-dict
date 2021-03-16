@@ -9,6 +9,7 @@ buildsrpm
 cli
 cni
 cmd
+cmp
 config
 cp
 checksum
@@ -24,6 +25,7 @@ dedup
 entrypoints
 env
 epel
+etcd
 filename
 getattr
 getitem

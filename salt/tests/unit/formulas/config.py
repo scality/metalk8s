@@ -13,6 +13,7 @@ Options are read from a configuration file, following this format:
 
 import copy
 from pathlib import Path
+import re
 from typing import (
     Any,
     Dict,
@@ -88,23 +89,22 @@ class Saltenv(BaseOption):
     """
 
     def __init__(self, value: str):
+        match = re.match(r"^metalk8s-(?P<version>2\.\d+\.\d+)$", value)
+        assert (
+            match is not None
+        ), f"Value '{value}' does not match saltenv format 'metalk8s-<version>'"
+
         super().__init__(value)
-        self.saltenv = None if value == "__default__" else value
+        self.version = match.group("version")
 
     def update_context(self, context: Dict[str, Any]) -> None:
-        if self.value == "__default__":
-            cluster_version = (
-                context["pillar"].get("metalk8s", {}).get("cluster_version", "0.0.0")
-            )
-            context["saltenv"] = self.saltenv = f"metalk8s-{cluster_version!s}"
-        else:
-            context["saltenv"] = self.value
+        context["pillar"].setdefault("metalk8s", {})["cluster_version"] = self.version
 
-    def __repr__(self) -> str:
-        saltenv = self.saltenv or "<not-initialized>"
-        if self.value == "__default__":
-            saltenv += " (default)"
-        return f"{self.__class__.__qualname__}: {saltenv}"
+        nodes_pillar = context["pillar"]["metalk8s"].get("nodes", {})
+        for node in nodes_pillar:
+            nodes_pillar[node]["version"] = self.version
+
+        context["saltenv"] = self.value
 
 
 class OS(EnumOption):
@@ -121,6 +121,92 @@ class OS(EnumOption):
         grains["os"] = os_name
         grains["os_family"] = family
         grains["osmajorrelease"] = release
+
+
+class Architecture(EnumOption):
+    """Simulate one of the supported deployment architectures."""
+
+    ALLOWED_VALUES: FrozenSet[str] = frozenset(
+        ("single-node", "compact", "standard", "extended")
+    )
+
+    def update_context(self, context: Dict[str, Any]) -> None:
+        if self.value == "single-node":
+            # Nothing to do, it's the default context
+            return
+
+        metalk8s_pillar = context["pillar"]["metalk8s"]
+        if "nodes" not in metalk8s_pillar:
+            pytest.fail(
+                "Cannot use custom architectures with an empty `pillar:metalk8s`"
+            )
+
+        current_version = metalk8s_pillar["cluster_version"]
+
+        # Declare additional nodes as { <node name>: [<node role>, ...], ... }
+        new_nodes: Dict[str, List[str]] = {}
+
+        def _add(basename: str, count: int, roles: List[str]) -> None:
+            new_nodes.update(
+                {f"{basename}-{index + 1}": roles for index in range(count)}
+            )
+
+        if self.value == "compact":
+            _add("master", 2, ["master", "etcd", "infra", "node"])
+
+        elif self.value == "standard":
+            _add("master", 2, ["master", "etcd", "infra"])
+            _add("worker", 3, ["node"])
+
+        elif self.value == "extended":
+            _add("master", 2, ["master", "etcd"])
+            _add("infra", 2, ["infra"])
+            _add("worker", 3, ["node"])
+
+        metalk8s_pillar["nodes"].update(
+            {
+                node_name: {"roles": roles, "version": current_version}
+                for node_name, roles in new_nodes.items()
+            }
+        )
+        context["__minions__"].update({minion: {} for minion in new_nodes})
+
+        known_nodes = context["__kubernetes__"].get("v1", {}).get("Node", [])
+        assert (
+            len(known_nodes) >= 1
+        ), "Must pre-configure K8s mock with at least one node"
+
+        for node_name, roles in new_nodes.items():
+            node = next(
+                (n for n in known_nodes if n["metadata"]["name"] == node_name),
+                None,
+            )
+            if node is None:
+                node = copy.deepcopy(known_nodes[0])
+                node["metadata"]["name"] = node_name
+                known_nodes.append(node)
+
+            # Clear roles before setting them
+            node["metadata"]["labels"] = {
+                key: val
+                for key, val in node["metadata"].get("labels", {}).items()
+                if not key.startswith("node-role.kubernetes.io/")
+            }
+
+            for role in roles:
+                node["metadata"][f"node-role.kubernetes.io/{role}"] = ""
+
+            # Overwrite taints
+            if "node" in roles:
+                taints = []
+            elif "infra" in roles:
+                taints = ["infra"]
+            else:  # only 'master' and 'etcd' in roles
+                taints = ["master"]
+
+            node["spec"]["taints"] = [
+                {"key": taint, "effect": "NoSchedule"} for taint in taints
+            ]
 
 
 class MinionMode(EnumOption):
@@ -277,9 +363,27 @@ class KubernetesOverrides(DictOption):
                         )
                     ]
             if action == "edit":
-                raise NotImplementedError(
-                    "Editing mocked K8s objects is not supported yet"
-                )
+                for patch in objects:
+                    try:
+                        api_group = context["__kubernetes__"][patch["apiVersion"]]
+                        items = api_group[patch["kind"]]
+                        item = next(
+                            filter(
+                                lambda obj: all(
+                                    obj["metadata"].get(key)
+                                    == patch["metadata"].get(key)
+                                    for key in ["name", "namespace"]
+                                ),
+                                items,
+                            )
+                        )
+                    except (KeyError, StopIteration):
+                        pytest.fail(
+                            "Cannot apply patch - could not find matching object.\n"
+                            f"  Patch: {patch}"
+                        )
+
+                    salt.utils.dictupdate.update(item, patch)
 
 
 # pylint: enable=too-few-public-methods
@@ -288,6 +392,7 @@ class KubernetesOverrides(DictOption):
 # configuration file
 OPTION_KINDS: Dict[str, Type[BaseOption]] = {
     "os": OS,
+    "architecture": Architecture,
     "extra_context": ExtraContext,
     "k8s_overrides": KubernetesOverrides,
     "minion_state": MinionState,

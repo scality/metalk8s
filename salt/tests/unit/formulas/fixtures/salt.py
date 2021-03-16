@@ -382,6 +382,18 @@ register_basic("log.warning")(print)
 register_basic("metalk8s.format_san")(", ".join)
 
 
+@register_basic("metalk8s.cmp_sorted")
+def metalk8s_cmp_sorted(
+    source: List[Any], cmp: Callable[[Any, Any], int], reverse: bool = False
+) -> List[Any]:
+    """Re-implementation of our custom module.
+
+    Enforces that the `cmp` argument is provided (otherwise we shouldn't need this
+    function).
+    """
+    return sorted(source, key=functools.cmp_to_key(cmp), reverse=reverse)
+
+
 @register_basic("metalk8s_grafana.load_dashboard")
 def metalk8s_grafana_load_dashboard(source: str, **_kwargs: Any) -> Any:
     """Read the relevant JSON file directly from local sources."""
@@ -456,6 +468,19 @@ register_basic("mount.swaps")(MagicMock(return_value={}))
 
 # Used in metalk8s.internal.preflight.mandatory to check ports are free.
 register_basic("network.connect")(MagicMock(return_value=dict(result=False)))
+
+
+@register_basic("pkg.version_cmp")
+def pkg_version_cmp(left: str, right: str) -> int:
+    """Naive implementation of version comparison (which trims suffixes)."""
+    left_clean, _, _ = left.partition("-")
+    right_clean, _, _ = right.partition("-")
+    if left_clean < right_clean:
+        return -1
+    if left_clean == right_clean:
+        return 0
+    return 1
+
 
 # }}}
 # }}}

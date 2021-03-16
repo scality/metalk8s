@@ -4,8 +4,7 @@
 # many formulas.
 default_case:
   os: CentOS/7
-  # Will use "metalk8s-{{ pillar.metalk8s.cluster_version }}"
-  saltenv: __default__
+  saltenv: metalk8s-2.8.0
   minion_state: ready
   architecture: single-node
   volumes: none
@@ -383,6 +382,103 @@ metalk8s:
                       # Server
                       - /etc/kubernetes/pki/apiserver.crt
                     target: bootstrap
+
+    downgrade:
+      _skip: false
+
+      init.sls:
+        _cases:
+          "Single node cluster":
+            architecture: single-node
+            _subcases:
+              "Destination matches (default)": {}
+              "Destination is lower than node version":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.7.3
+
+          "Compact cluster":
+            architecture: compact
+            _subcases: &downgrade_subcases
+              "Destination matches (default)": {}
+              "Destination is lower than all nodes":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.7.3
+              "Destination is lower than some nodes":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.7.3
+                    nodes:
+                      master-1:
+                        version: 2.7.3
+
+          "Standard cluster":
+            architecture: standard
+            _subcases: *downgrade_subcases
+
+          "Extended cluster":
+            architecture: extended
+            _subcases: *downgrade_subcases
+
+      precheck.sls:
+        _cases:
+          "Saltenv matches highest node version (default)":
+            saltenv: metalk8s-2.8.0
+            # Use multi-node to verify handling of heterogeneous versions
+            architecture: compact
+            _subcases:
+              "All nodes already in desired version (default)": {}
+              "Desired version is too old":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.6.1
+              "Some nodes in desired version":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.7.3
+                    nodes:
+                      master-1:
+                        version: 2.7.3
+              "Some nodes in older version than desired":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.7.3
+                    nodes:
+                      master-1:
+                        version: 2.7.1
+              "Some node is not ready":
+                k8s_overrides: &k8s_patch_node_not_ready
+                  edit:
+                    - apiVersion: v1
+                      kind: Node
+                      metadata:
+                        name: master-1
+                      status:
+                        conditions:
+                          - type: Ready
+                            status: false
+                            reason: NodeHasDiskPressure
+
+          "Saltenv is higher than highest node version":
+            saltenv: metalk8s-2.9.0
+            architecture: single-node
+            pillar_overrides:
+              metalk8s:
+                cluster_version: 2.7.3
+                nodes:
+                  bootstrap:
+                    version: 2.8.0
+
+          "Saltenv is lower than highest node version":
+            saltenv: metalk8s-2.7.3
+            architecture: single-node
+            pillar_overrides:
+              metalk8s:
+                cluster_version: 2.7.3
+                nodes:
+                  bootstrap:
+                    version: 2.8.0
 
   reactor:
     _skip: false
