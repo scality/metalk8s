@@ -27,8 +27,7 @@ def test_template_renders(
         except jinja2.exceptions.TemplateError as exc:
             error_parts = [
                 f"Failed to render {template_path}:",
-                "  Context:",
+                f"  Test case: {context.id}",
             ]
-            error_parts.extend(f"    {option!r}" for option in context.options)
             error_parts.append(f"  Error: [{exc.__class__.__qualname__}] {exc!s}")
             pytest.fail("\n".join(error_parts))

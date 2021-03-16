@@ -55,38 +55,89 @@ Since we do not want to specify these for each and every formula, we define a
 configuration structure, based on YAML, which builds on the natural hierarchy
 of our Salt formulas.
 
-As an example, assume that we only have a ``node_kind`` context option, each
-value describing a set of *Node* roles (say we only handle ``"bootstrap"``,
-``"master"`` and ``"worker"`` options). A configuration file could look like:
+Each level in the hierarchy can define test cases, with the special ``_cases``
+key. This key contains a map, where keys are (partial) test case identifiers,
+and values are describing the context for each test case. The root-level
+``default_case`` defines the default test case applied to all tests, unless
+specified otherwise. The ``default_case`` also serves as default configuration
+of any test case from which overrides are applied.
+
+Assuming we have some options for specifying the target minion's OS and its
+configured Volumes, here is how we could use these in a configuration file:
 
 .. code-block:: yaml
 
-   default_opts:
-     node_kind:
-       - bootstrap
-       - master
-       - worker
+   default_case:
+     os: CentOS/7
+     volumes: none
 
-   metalk8s:
-     salt:
-       master:
-         _opts:
-           node_kind:
-             - bootstrap
+   map.jinja:
+     # All cases defined here will use `volumes = "none"`
+     _cases:
+       "CentOS 7":
+         os: CentOS/7
+       "RHEL 7":
+         os: RHEL/7
+       "RHEL 8":
+         os: RHEL/8
+       "Ubuntu 18":
+         os: Ubuntu/18
 
-     repo:
-       _opts:
-         node_kind:
-           - bootstrap
+   volumes:
+     prepared.sls:
+       # All cases defined here will use `os = "CentOS/7"`
+       _cases:
+         "No Volume to prepare":
+           volumes: none
+         "Only sparse Volumes to prepare":
+           volumes: sparse
+         "Only block Volumes to prepare":
+           volumes: block
+         "Mix of sparse and block Volumes to prepare":
+           volumes: mix
 
-     addons:
-       _skip: True
+To further generate interesting test cases, each entry in the ``_cases`` map
+supports a ``_subcases`` key, which then behaves as a basic ``_cases`` map.
+Assuming we have options for choosing a deployment architecture and for
+passing overrides to the available pillar, here is how it could look like:
 
-.. note::
+.. code-block:: yaml
 
-   Context options are configured with lists, even if using a single value.
-   This allows us to generate combinations between many different allowed
-   values when using multiple options simultaneously.
+   _cases:
+     "Single node":
+       architecture: single-node
+       _subcases:
+         "Bootstrapping (no nodes in pillar)":
+           pillar_overrides:
+             metalk8s: { nodes: {} }
+         "Version mismatch":
+           pillar_overrides:
+             metalk8s:
+               nodes:
+                 bootstrap:
+                   version: 2.6.0
+
+     "Multi nodes":
+       architecture: multi-nodes
+       _subcases:
+         # No additional option
+         "All minions match": {}
+         "Some minion versions mismatch":
+           pillar_overrides:
+             metalk8s:
+               nodes:
+                 master-1:
+                   version: 2.6.0
+         "All minion versions mismatch":
+           pillar_overrides:
+             metalk8s:
+               nodes:
+                 bootstrap:
+                   version: 2.6.0
+                 master-1:
+                   version: 2.6.0
+                 master-2:
+                   version: 2.6.0
 
 The full configuration currently used is
 :ref:`included below for reference <formulas-unit-tests-config>`.

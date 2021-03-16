@@ -16,7 +16,7 @@ from tests.unit.formulas.fixtures import kubernetes
 from tests.unit.formulas.fixtures.salt import SaltMock
 
 
-Context = namedtuple("Context", ("options", "data"))
+Context = namedtuple("Context", ("id", "data"))
 
 
 @pytest.fixture(scope="session", name="base_context")
@@ -46,9 +46,11 @@ def fixture_render_contexts(
     environment: jinja2.Environment,
 ) -> Iterable[Context]:
     """Generate all supported contexts for a given template."""
-    options = config.get_options(template_path)
-    if options is None:
-        pytest.skip(f"{template_path!s} is configured to be skipped.")
+    test_cases = config.get_cases(template_path)
+    if not test_cases:
+        pytest.skip(
+            f"{template_path!s} has no test case configured or is explicitly skipped."
+        )
 
     return map(
         functools.partial(
@@ -56,14 +58,14 @@ def fixture_render_contexts(
             dict(base_context, slspath=str(template_path.parent)),
             environment,
         ),
-        config.generate_option_combinations(options),
+        test_cases,
     )
 
 
 def make_context(
     base: Dict[str, Any],
     environment: jinja2.Environment,
-    options: config.OptionSet,
+    test_case: config.TestCase,
 ) -> Context:
     """Prepare a rendering context for a set of option values.
 
@@ -75,7 +77,7 @@ def make_context(
     context_data = copy.deepcopy(base)
     config_overrides = {}
 
-    for option in options:
+    for option in test_case.options:
         option.update_context(context_data)
         if isinstance(option, config.MinionState):
             config_overrides.update(option.config_overrides)
@@ -90,4 +92,4 @@ def make_context(
         config=config_overrides,
     )
 
-    return Context(options=options, data=context_data)
+    return Context(id=test_case.id, data=context_data)

@@ -1,22 +1,31 @@
-"""Expose configuration options to generate test cases for rendering formulas.
+"""Expose configuration options to define test cases for rendering formulas.
 
 Options are read from a configuration file, following this format:
-- a root-level "default_opts" key defines default options to use
+- a root-level "default_case" key defines the options to use in the default test case
 - other keys define directories and/or file names for which to override the default
-  options (higher specificity takes precedence, see the `get_options` method)
-- outside of the "default_opts" key, overrides are specified by the "_opts" key
-- options are passed as a map from <option_name> to an array of <option_value>s
+  options (higher specificity takes precedence, see the `get_cases` method)
+- outside of the "default_case" key, custom test cases are specified by the "_cases" key
+- test cases are defined as a map of <test case ID> to a "<name>: <value>" map of
+  options
 - the special key "_skip" can be used to omit rendering of a specific directory or file
   (uses a Boolean value, defaults to False)
-
-The Cartesian product of each option's allowed values generates the full set of test
-cases for a given formula (see the `generate_option_combinations` method).
 """
 
-import itertools
+import copy
 from pathlib import Path
-from typing import Any, Dict, FrozenSet, Iterable, List, Optional, Type
+from typing import (
+    Any,
+    Dict,
+    FrozenSet,
+    Iterator,
+    List,
+    NamedTuple,
+    Optional,
+    Tuple,
+    Type,
+)
 
+import pytest
 import yaml
 import salt.utils.dictupdate  # type: ignore
 
@@ -28,7 +37,7 @@ with CONFIG_FILE.open("r") as config_file:
     TESTS_CONFIG = yaml.safe_load(config_file)
 
 
-DEFAULT_OPTIONS = TESTS_CONFIG["default_opts"]
+DEFAULT_CASE = TESTS_CONFIG["default_case"]
 
 
 # pylint: disable=too-few-public-methods
@@ -60,21 +69,15 @@ class EnumOption(BaseOption):
 class DictOption(BaseOption):
     """Base-class for options with arbitrary dictionaries as values.
 
-    The expected value format will be a dictionary with a single key, used as
-    an identifier for this value (to show in case of test failure), and the
-    corresponding value being stored in the `data` attribute, for later use
-    when updating the context.
+    Simply adds a runtime check that value is indeed a dictionary.
     """
 
-    def __init__(self, value: Dict[str, Dict[str, Any]]):
-        assert (
-            len(value.keys()) == 1
-        ), f"Can only provide a single key to {self.__class__.__qualname__} options"
-        _id, data = next(iter(value.items()))
-
-        # Store the _id as value for use in __repr__
-        super().__init__(value=_id)
-        self.data: Dict[str, Any] = data
+    def __init__(self, value: Dict[str, Any]):
+        assert isinstance(value, dict), (
+            f"Value '{value}' is not a dictionary, "
+            f"which is invalid for option {self.__class__.__qualname__}"
+        )
+        super().__init__(value)
 
 
 class Saltenv(BaseOption):
@@ -232,11 +235,11 @@ class ExtraContext(DictOption):
     """Pass in additional context values for rendering a template."""
 
     def update_context(self, context: Dict[str, Any]) -> None:
-        context.update(self.data)
+        context.update(self.value)
 
     def __repr__(self) -> str:
         details = "\n".join(
-            f"      {key}: {value!r}" for key, value in self.data.items()
+            f"      {key}: {value!r}" for key, value in self.value.items()
         )
         return f"{super().__repr__()}\n{details}"
 
@@ -245,7 +248,7 @@ class PillarOverrides(DictOption):
     """Override pillar data for a specific template."""
 
     def update_context(self, context: Dict[str, Any]) -> None:
-        salt.utils.dictupdate.update(context["pillar"], self.data)
+        salt.utils.dictupdate.update(context["pillar"], self.value)
 
 
 class KubernetesOverrides(DictOption):
@@ -253,7 +256,7 @@ class KubernetesOverrides(DictOption):
 
     def update_context(self, context: Dict[str, Any]) -> None:
         assert "__kubernetes__" in context
-        for action, objects in self.data.items():
+        for action, objects in self.value.items():
             if action == "add":
                 for obj in objects:
                     context["__kubernetes__"].setdefault(
@@ -294,21 +297,28 @@ OPTION_KINDS: Dict[str, Type[BaseOption]] = {
     "volumes": Volumes,
 }
 
-OptionSet = Iterable[BaseOption]
+
+class TestCase(NamedTuple):
+    """A test case encapsulating options for mutating the rendering context."""
+
+    id: str
+    options: List[BaseOption]
 
 
-def get_options(template: Path) -> Optional[Dict[str, List[Any]]]:
-    """Compute the options for a template path by parsing the configuration hierarchy.
+def get_cases(template: Path) -> List[TestCase]:
+    """List all test cases for a template path by parsing the configuration hierarchy.
 
     See the docstring for this module for an overview of the principles.
     """
-    options = DEFAULT_OPTIONS.copy()
+    cases = {"<default>": copy.deepcopy(DEFAULT_CASE)}
     should_skip = False
-    config = TESTS_CONFIG
 
+    config = TESTS_CONFIG
     for part in template.parts:
         config = config.get(part, {})
-        options.update(config.get("_opts", {}))
+
+        # Always use the most specific definition of `_cases`
+        cases = config.get("_cases", cases)
 
         _skip = config.get("_skip", None)
         if _skip is not None:
@@ -316,32 +326,32 @@ def get_options(template: Path) -> Optional[Dict[str, List[Any]]]:
             # but re-enable some files under it.
             should_skip = _skip
 
-    return None if should_skip else options
+    if should_skip:
+        return []
+
+    return [
+        TestCase(id=case_id, options=list(_cast_options(case_options)))
+        for case_id, case_options in _generate_test_cases(cases)
+    ]
 
 
-# pylint: disable=wrong-spelling-in-docstring
-def generate_option_combinations(options: Dict[str, List[str]]) -> Iterable[OptionSet]:
-    """Generate the Cartesian product of all possible option values.
+def _generate_test_cases(cases: Dict[str, Any]) -> Iterator[Tuple[str, Dict[str, Any]]]:
+    for case_id, case_options in cases.items():
+        sub_cases = case_options.pop("_subcases", None)
+        if sub_cases is not None:
+            for sub_id, sub_options in _generate_test_cases(sub_cases):
+                yield f"{case_id} - {sub_id}", dict(case_options, **sub_options)
+        else:
+            yield case_id, case_options
 
-    This function handles checking if the key is registered in `OPTION_KINDS`, and casts
-    the provided values as instances of their own `BaseOption`-subclasses.
 
-    To remind the reader of what a cartesian product is, here is an example:
+def _cast_options(case_options: Dict[str, Any]) -> Iterator[BaseOption]:
+    # Always use the default case definition as a basis
+    enriched = dict(DEFAULT_CASE, **case_options)
+    for option_key, option_value in enriched.items():
+        try:
+            option_cls = OPTION_KINDS[option_key]
+        except KeyError:
+            pytest.fail(f"Option '{option_key}' is not registered")
 
-    .. code-block:: python
-
-       >>> options = {"size": ["small", "big", "huuuge"], "color": ["blue", "red"]}
-       >>> for combination in itertools.product(*options.values()):
-       ...     print(combination)
-       ('small', 'blue')
-       ('small', 'red')
-       ('big', 'blue')
-       ('big', 'red')
-       ('huuuge', 'blue')
-       ('huuuge', 'red')
-    """
-    option_sets = []
-    for key, option_values in options.items():
-        option_kind = OPTION_KINDS[key]
-        option_sets.append([option_kind(value) for value in option_values])
-    return itertools.product(*option_sets)
+        yield option_cls(option_value)
