@@ -372,6 +372,7 @@ def slsutil_renderer(salt_mock: SaltMock, source: str, **_kwargs: Any) -> Any:
 
 # Static mocks {{{
 
+register_basic("file.find")(MagicMock(return_value=[]))
 register_basic("file.join")(lambda *args: "/".join(args))
 register_basic("file.read")(MagicMock(return_value="<file contents>"))
 register_basic("hashutil.base64_b64decode")(lambda input_data: input_data)

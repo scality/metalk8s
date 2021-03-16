@@ -480,6 +480,138 @@ metalk8s:
                   bootstrap:
                     version: 2.8.0
 
+    solutions:
+      _skip: false
+
+      deploy-components.sls:
+        _cases:
+          "Empty SolutionsConfig (default)": {}
+          "Errors in solutions pillar":
+            pillar_overrides:
+              metalk8s:
+                solutions:
+                  _errors: ["Some error"]
+
+          "Specific Solution version to deploy":
+            pillar_overrides:
+              bootstrap_id: bootstrap
+              metalk8s:
+                solutions:
+                  available: &base_example_available_solution
+                    example-solution:
+                      - id: example-solution-1.2.3
+                        version: "1.2.3"
+                        name: example-solution
+                        display_name: Example Solution
+                        mountpoint: /srv/scality/example-solution-1.2.3
+                        manifest:
+                          spec:
+                            operator:
+                              image:
+                                name: example-operator
+                                tag: "1.2.3"
+                            images:
+                              example-operator: "1.2.3"
+                  config:
+                    active:
+                      example-solution: "1.2.3"
+
+          "Latest Solution version to deploy":
+            pillar_overrides:
+              bootstrap_id: bootstrap
+              metalk8s:
+                solutions:
+                  available: *base_example_available_solution
+                  config:
+                    active:
+                      example-solution: "latest"
+
+          "Some available Solution to remove":
+            pillar_overrides:
+              bootstrap_id: bootstrap
+              metalk8s:
+                solutions:
+                  available: *base_example_available_solution
+                  config:
+                    active: {}
+
+          "Some desired Solution name is not available":
+            pillar_overrides:
+              metalk8s:
+                solutions:
+                  available: *base_example_available_solution
+                  config:
+                    active:
+                      unknown-solution: "1.2.3"
+
+          "Some desired Solution version is not available":
+            pillar_overrides:
+              metalk8s:
+                solutions:
+                  available: *base_example_available_solution
+                  config:
+                    active:
+                      example-solution: "4.5.6"
+
+      import-components.sls:
+        _cases:
+          "Target an existing Bootstrap node":
+            pillar_overrides:
+              bootstrap_id: bootstrap
+
+      prepare-environment.sls:
+        _cases:
+          "Environment does not exist (default)":
+            pillar_overrides: &base_pillar_prepare_environment
+              orchestrate:
+                env_name: example-env
+
+          "Errors in pillar":
+            pillar_overrides:
+              <<: *base_pillar_prepare_environment
+              metalk8s:
+                solutions:
+                  # FIXME: likely this formula should only look at
+                  # pillar.metalk8s.solutions.environments._errors
+                  _errors: ["Some error", "Some other error"]
+                  environments:
+                    _errors: ["Some error"]
+
+      files:
+        operator:
+          service_account.yaml.j2:
+            _cases:
+              "Example Solution v1.2.3 (see ../../prepare-environment.sls)":
+                extra_context: &base_context_solution_operator_files
+                  solution: example-solution
+                  version: "1.2.3"
+                  namespace: example-env
+
+          configmap.yaml.j2:
+            _cases:
+              "Example Solution v1.2.3 (see ../../prepare-environment.sls)":
+                extra_context:
+                  <<: *base_context_solution_operator_files
+                  registry: metalk8s-registry-from-config.invalid
+
+          deployment.yaml.j2:
+            _cases:
+              "Example Solution v1.2.3 (see ../../prepare-environment.sls)":
+                extra_context:
+                  <<: *base_context_solution_operator_files
+                  repository: >-
+                    metalk8s-registry-from-config.invalid/example-solution-1.2.3
+                  image_name: example-operator
+                  image_tag: "1.2.3"
+
+          role_binding.yaml.j2:
+            _cases:
+              "Example Solution v1.2.3 (see ../../prepare-environment.sls)":
+                extra_context:
+                  <<: *base_context_solution_operator_files
+                  role_kind: ClusterRole
+                  role_name: example-role
+
   reactor:
     _skip: false
 
