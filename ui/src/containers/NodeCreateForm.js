@@ -12,7 +12,6 @@ import {
   clearCreateNodeErrorAction,
 } from '../ducks/app/nodes';
 import { intl } from '../translations/IntlGlobalProvider';
-import { CheckboxWrapper, ToggleWrapper } from '../components/style/FormStyle';
 import { TitlePage } from '../components/style/CommonLayoutStyle';
 
 const CreateNodeContainter = styled.div`
@@ -191,36 +190,30 @@ const NodeCreateForm = () => {
                       {intl.translate('roles')}
                     </InputLabel>
                     <CheckboxGroup>
-                      <CheckboxWrapper>
-                        <Checkbox
-                          name="workload_plane"
-                          label={intl.translate('workload_plane')}
-                          checked={values.workload_plane}
-                          value={values.workload_plane}
-                          onChange={handleChange('workload_plane')}
-                          onBlur={handleOnBlur}
-                        />
-                      </CheckboxWrapper>
-                      <CheckboxWrapper>
-                        <Checkbox
-                          name="control_plane"
-                          label={intl.translate('control_plane')}
-                          checked={values.control_plane}
-                          value={values.control_plane}
-                          onChange={handleChange('control_plane')}
-                          onBlur={handleOnBlur}
-                        />
-                      </CheckboxWrapper>
-                      <CheckboxWrapper>
-                        <Checkbox
-                          name="infra"
-                          label={intl.translate('infra')}
-                          checked={values.infra}
-                          value={values.infra}
-                          onChange={handleChange('infra')}
-                          onBlur={handleOnBlur}
-                        />
-                      </CheckboxWrapper>
+                      <Checkbox
+                        name="workload_plane"
+                        label={intl.translate('workload_plane')}
+                        checked={values.workload_plane}
+                        value={values.workload_plane}
+                        onChange={handleChange('workload_plane')}
+                        onBlur={handleOnBlur}
+                      />
+                      <Checkbox
+                        name="control_plane"
+                        label={intl.translate('control_plane')}
+                        checked={values.control_plane}
+                        value={values.control_plane}
+                        onChange={handleChange('control_plane')}
+                        onBlur={handleOnBlur}
+                      />
+                      <Checkbox
+                        name="infra"
+                        label={intl.translate('infra')}
+                        checked={values.infra}
+                        value={values.infra}
+                        onChange={handleChange('infra')}
+                        onBlur={handleOnBlur}
+                      />
 
                       <ErrorMessage
                         visible={
@@ -278,15 +271,13 @@ const NodeCreateForm = () => {
                     <InputLabel className="sc-input-label">
                       {intl.translate('sudo_required')}
                     </InputLabel>
-                    <ToggleWrapper>
-                      <Toggle
-                        name="sudo_required"
-                        toggle={values.sudo_required}
-                        value={values.sudo_required}
-                        onChange={handleChange('sudo_required')}
-                        onBlur={handleOnBlur}
-                      />
-                    </ToggleWrapper>
+                    <Toggle
+                      name="sudo_required"
+                      toggle={values.sudo_required}
+                      value={values.sudo_required}
+                      onChange={handleChange('sudo_required')}
+                      onBlur={handleOnBlur}
+                    />
                   </InputContainer>
                 </FormSection>
                 <ActionContainer>

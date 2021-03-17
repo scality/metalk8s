@@ -35,7 +35,6 @@ import {
 } from '../services/NodeVolumesUtils';
 import { intl } from '../translations/IntlGlobalProvider';
 import { TitlePage } from '../components/style/CommonLayoutStyle';
-import { CheckboxWrapper } from '../components/style/FormStyle';
 
 const MAX_VOLUME_BATCH_CREATION = 70;
 
@@ -680,16 +679,14 @@ const CreateVolume = (props) => {
                       />
                     )}
                     <CheckboxContainer>
-                      <CheckboxWrapper>
-                        <Checkbox
-                          name="multiVolumeCreation"
-                          label={intl.translate('create_multiple_volumes')}
-                          checked={values.multiVolumeCreation}
-                          value={values.multiVolumeCreation}
-                          onChange={handleCheckboxChange('multiVolumeCreation')}
-                          onBlur={handleOnBlur}
-                        />
-                      </CheckboxWrapper>
+                      <Checkbox
+                        name="multiVolumeCreation"
+                        label={intl.translate('create_multiple_volumes')}
+                        checked={values.multiVolumeCreation}
+                        value={values.multiVolumeCreation}
+                        onChange={handleCheckboxChange('multiVolumeCreation')}
+                        onBlur={handleOnBlur}
+                      />
                     </CheckboxContainer>
                   </FormSection>
 
