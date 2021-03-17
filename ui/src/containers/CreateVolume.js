@@ -41,11 +41,15 @@ import {
 
 const MAX_VOLUME_BATCH_CREATION = 70;
 
+const PageContainer = styled(CenteredPageContainer)`
+  height: calc(100vh - 48px);
+  overflow: auto;
+`;
+
 // We might want to do a factorization later for
 // form styled components
 const CreateVolumeFormContainer = styled.div`
   display: inline-block;
-  height: 100%;
   padding: ${padding.small} ${padding.large};
 `;
 
@@ -70,8 +74,6 @@ const ActionContainer = styled.div`
 const CreateVolumeLayout = styled.div`
   display: inline-block;
   margin-top: ${padding.base};
-  overflow-y: auto;
-  height: 85vh;
   form {
     .sc-input {
       display: inline-flex;
@@ -374,7 +376,7 @@ const CreateVolume = (props) => {
   return isStorageClassLoading ? (
     <Loader size="massive" centered={true} />
   ) : (
-    <CenteredPageContainer>
+    <PageContainer>
       <CreateVolumeFormContainer>
         <TitleWrapper>
           <TitlePage>Create New Volume</TitlePage>
@@ -817,7 +819,7 @@ const CreateVolume = (props) => {
           </Formik>
         </CreateVolumeLayout>
       </CreateVolumeFormContainer>
-    </CenteredPageContainer>
+    </PageContainer>
   );
 };
 

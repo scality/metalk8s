@@ -17,17 +17,20 @@ import {
   CenteredPageContainer,
 } from '../components/style/CommonLayoutStyle';
 
+const PageContainer = styled(CenteredPageContainer)`
+  height: calc(100vh - 48px);
+  overflow: auto;
+`;
+
 const CreateNodeContainter = styled.div`
-  height: 100%;
   padding: ${padding.small} ${padding.large};
-  display: inline-block;
+  display: flex;
+  flex-direction: column;
 `;
 
 const CreateNodeLayout = styled.div`
-  height: 100%;
-  overflow: auto;
   display: inline-block;
-  margin-top: ${padding.base};
+  margin: ${padding.base} 0px;
   form {
     .sc-input {
       margin-top: ${padding.large};
@@ -138,7 +141,7 @@ const NodeCreateForm = () => {
   }, [dispatch]);
 
   return (
-    <CenteredPageContainer>
+    <PageContainer>
       <CreateNodeContainter>
         <TitlePage>Create New Node</TitlePage>
         <CreateNodeLayout>
@@ -326,7 +329,7 @@ const NodeCreateForm = () => {
           </Formik>
         </CreateNodeLayout>
       </CreateNodeContainter>
-    </CenteredPageContainer>
+    </PageContainer>
   );
 };
 
