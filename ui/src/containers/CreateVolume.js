@@ -34,7 +34,10 @@ import {
   formatBatchName,
 } from '../services/NodeVolumesUtils';
 import { intl } from '../translations/IntlGlobalProvider';
-import { TitlePage } from '../components/style/CommonLayoutStyle';
+import {
+  TitlePage,
+  CenteredPageContainer,
+} from '../components/style/CommonLayoutStyle';
 
 const MAX_VOLUME_BATCH_CREATION = 70;
 
@@ -151,13 +154,18 @@ const LabelsValue = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
 `;
 
+const TitleWrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
 const LabelsName = styled(LabelsValue)`
   font-weight: ${fontWeight.bold};
   color: ${(props) => props.theme.brand.textPrimary};
 `;
 
 const DocumentationIcon = styled.div`
-  margin: 60px 20px;
+  margin: ${padding.base};
   button {
     :hover {
       cursor: pointer;
@@ -366,9 +374,25 @@ const CreateVolume = (props) => {
   return isStorageClassLoading ? (
     <Loader size="massive" centered={true} />
   ) : (
-    <>
+    <CenteredPageContainer>
       <CreateVolumeFormContainer>
-        <TitlePage>Create New Volume</TitlePage>
+        <TitleWrapper>
+          <TitlePage>Create New Volume</TitlePage>
+          <DocumentationIcon>
+            <Tooltip placement="top" overlay={intl.translate('documentation')}>
+              <Button
+                icon={<i className="fas fa-book-reader fa-lg" />}
+                inverted={true}
+                type="button"
+                onClick={() =>
+                  window.open(
+                    `${api.url_doc}/operation/volume_management/volume_creation_deletion_gui.html#volume-creation`,
+                  )
+                }
+              />
+            </Tooltip>
+          </DocumentationIcon>
+        </TitleWrapper>
         {isStorageClassExist ? null : (
           <Banner
             variant="warning"
@@ -793,21 +817,7 @@ const CreateVolume = (props) => {
           </Formik>
         </CreateVolumeLayout>
       </CreateVolumeFormContainer>
-      <DocumentationIcon>
-        <Tooltip placement="top" overlay={intl.translate('documentation')}>
-          <Button
-            icon={<i className="fas fa-book-reader fa-lg" />}
-            inverted={true}
-            type="button"
-            onClick={() =>
-              window.open(
-                `${api.url_doc}/operation/volume_management/volume_creation_deletion_gui.html#volume-creation`,
-              )
-            }
-          />
-        </Tooltip>
-      </DocumentationIcon>
-    </>
+    </CenteredPageContainer>
   );
 };
 

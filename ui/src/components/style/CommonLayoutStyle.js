@@ -9,6 +9,11 @@ export const PageContainer = styled.div`
   padding: 0;
 `;
 
+export const CenteredPageContainer = styled.div`
+  display: flex;
+  justify-content: space-around;
+`;
+
 export const LeftSideInstanceList = styled.div`
   flex-direction: column;
   min-height: 696px;
