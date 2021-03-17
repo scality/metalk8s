@@ -91,7 +91,7 @@ const ActionContainer = styled.span`
 
 const NameLinkContaner = styled.div`
   cursor: pointer;
-  text-decoration: underline;
+  padding-right: ${padding.small};
 `;
 
 function Table({ columns, data, nodeName, volumeName, theme }) {
