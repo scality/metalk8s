@@ -1,6 +1,11 @@
 # CHANGELOG
 
 ## Release 2.9.0 (in development)
+### Features Added
+- [#3180](https://github.com/scality/metalk8s/issues/3180) - All alerts from
+  Alertmanager are now stored in Loki database for persistence
+  (PR[#3191](https://github.com/scality/metalk8s/pull/))
+
 ### Enhancements
 - Bump Kubernetes version to 1.20.4 (PR[#3139](https://github.com/scality/metalk8s/pull/3139))
 
