@@ -190,7 +190,11 @@ const NodePagePodsTab = (props) => {
           return (
             <Tooltip
               placement={'left'}
-              overlay={<TooltipContent>Advanced Monitoring</TooltipContent>}
+              overlay={
+                <TooltipContent>
+                  {intl.translate('advanced_monitoring')}
+                </TooltipContent>
+              }
             >
               <ExternalLink
                 href={`${config.api.url_grafana}/dashboard/db/logs?orgId=1&var-logs=Loki&var-logmetrics=Prometheus&var-metrics=Prometheus&var-podlogs=.*&var-systemlogs=.%2B&var-deployment=calico-kube-controllers&var-pod=${value}`}
