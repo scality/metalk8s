@@ -158,5 +158,6 @@
   "error_system_partitions": "System partitions request has failed.",
   "show_cluster_avg": "Show Cluster Average",
   "cluster_avg": "Cluster avg",
-  "dashboard": "Dashboard"
+  "dashboard": "Dashboard",
+  "required_fields": "* Required fields"
 }

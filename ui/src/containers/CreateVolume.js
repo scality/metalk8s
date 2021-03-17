@@ -200,7 +200,6 @@ const InputQuestionMark = styled.i`
 const RequiredText = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.base};
-  font-weight: 700;
   margin: ${padding.base} 0 ${padding.large} ${padding.small};
 `;
 
@@ -516,7 +515,9 @@ const CreateVolume = (props) => {
               return (
                 <Form>
                   <FormSection>
-                    <RequiredText>All * are mandatory fields</RequiredText>
+                    <RequiredText>
+                      {intl.translate('required_fields')}
+                    </RequiredText>
                   </FormSection>
 
                   <FormSection>

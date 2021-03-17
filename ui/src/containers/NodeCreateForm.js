@@ -94,7 +94,6 @@ const InputValue = styled(InputLabel)`
 const RequiredText = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-size: ${fontSize.base};
-  font-weight: 700;
   margin: ${padding.base} 0 ${padding.base} ${padding.small};
 `;
 
@@ -165,7 +164,9 @@ const NodeCreateForm = () => {
             return (
               <Form>
                 <FormSection>
-                  <RequiredText>All * are mandatory fields</RequiredText>
+                  <RequiredText>
+                    {intl.translate('required_fields')}
+                  </RequiredText>
                 </FormSection>
                 <FormSection>
                   <FormSectionTitle>
