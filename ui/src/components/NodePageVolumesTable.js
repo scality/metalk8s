@@ -8,7 +8,13 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import { useQuery } from '../services/utils';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
-import { Button, ProgressBar, Tooltip, EmptyTable } from '@scality/core-ui';
+import {
+  Button,
+  ProgressBar,
+  Tooltip,
+  EmptyTable,
+  ConstrainedText,
+} from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 import TableRow from './TableRow';
 import {
@@ -300,7 +306,7 @@ const VolumeListTable = (props) => {
           minWidth: '95px',
           color: theme.brand.secondary,
         },
-        Cell: ({ value }) => {
+        Cell: ({ value, row }) => {
           return (
             <NameLinkContaner
               data-cy="volume_table_name_cell"
@@ -308,7 +314,11 @@ const VolumeListTable = (props) => {
                 onClickCell(value);
               }}
             >
-              {value}
+              <ConstrainedText
+                text={value}
+                tooltipStyle={{ width: '150px' }}
+                tooltipPlacement={row.index === 0 ? 'bottom' : 'top'}
+              ></ConstrainedText>
             </NameLinkContaner>
           );
         },
