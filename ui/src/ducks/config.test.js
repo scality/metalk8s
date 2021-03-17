@@ -27,7 +27,7 @@ it('update the config state when fetchConfig', () => {
   const gen = fetchConfig();
 
   expect(gen.next().value).toEqual(put(setConfigStatusAction('loading')));
-  expect(gen.next().value).toEqual(call(Api.initialize, ''));
+  expect(gen.next().value).toEqual(call(Api.initialize, undefined));
   expect(gen.next().value).toEqual(call(Api.fetchConfig));
 
   const result = {

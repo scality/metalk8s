@@ -1,5 +1,6 @@
 import './index';
-import { version } from '../../package.json';
+import packageJson from '../../package.json';
+const { version } = packageJson;
 import { useContext, createContext } from 'react';
 import {useQuery, QueryClientProvider, QueryClient} from 'react-query';
 

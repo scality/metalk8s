@@ -39,9 +39,9 @@ code {
   font-style: normal;
   font-weight: normal;
   src: local(''),
-    url('/brand/assets/fonts/lato/Lato-Regular.woff2') format('woff2'),
+    url('../public/brand/assets/fonts/lato/Lato-Regular.woff2') format('woff2'),
     /* Chrome 26+, Opera 23+, Firefox 39+ */
-      url('/brand/assets/fonts/lato/Lato-Regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+      url('../public/brand/assets/fonts/lato/Lato-Regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
 /* Lato-Bold */
@@ -50,7 +50,7 @@ code {
   font-style: normal;
   font-weight: bold;
   src: local(''),
-    url('/brand/assets/fonts/lato/Lato-Bold.woff2') format('woff2'),
+    url('../public/brand/assets/fonts/lato/Lato-Bold.woff2') format('woff2'),
     /* Chrome 26+, Opera 23+, Firefox 39+ */
-      url('/brand/assets/fonts/lato/Lato-Bold.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+      url('../public/brand/assets/fonts/lato/Lato-Bold.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }

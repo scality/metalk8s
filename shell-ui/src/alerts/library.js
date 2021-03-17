@@ -1,4 +1,5 @@
-import { version } from '../../package.json';
+import packageJson from '../../package.json';
+const { version } = packageJson;
 import * as alertLibrary from './AlertProvider';
 import * as alertHook from './services/alertHooks';
 
