@@ -1,17 +1,20 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { Tooltip, ConstrainedText } from '@scality/core-ui';
 import { fontWeight, padding } from '@scality/core-ui/dist/style/theme';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const TableRowStyle = styled.div`
-  &:hover,
-  &:focus {
-    background-color: ${(props) => props.theme.brand.backgroundBluer};
-    outline: none;
-
-    ${(props) => (!props.isNameLink ? ' cursor: pointer;' : '')}
-  }
+  ${(props) =>
+    !props.isNameLink &&
+    css`
+      &:hover,
+      &:focus {
+        background-color: ${(props) => props.theme.brand.backgroundBluer};
+        outline: none;
+        cursor: pointer;
+      }
+    `}
 
   &:last-child {
     border: none;
