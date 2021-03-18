@@ -6,7 +6,7 @@
 
 Apply ServiceAccount for Operator of Solution {{ solution.name }}:
   metalk8s_kubernetes.object_present:
-    - name: salt://{{ slspath }}/files/operator/service_account.yaml
+    - name: salt://{{ slspath }}/files/operator/service_account.yaml.j2
     - template: jinja
     - defaults:
         solution: {{ name }}
@@ -27,7 +27,7 @@ Apply Operator {{ role_kind }} {{ role_name }} for Solution {{ solution.name }}:
 
 Apply RoleBinding of {{ role_kind }} {{ role_name }} for Solution {{ solution.name }}:
   metalk8s_kubernetes.object_present:
-    - name: salt://{{ slspath }}/files/operator/role_binding.yaml
+    - name: salt://{{ slspath }}/files/operator/role_binding.yaml.j2
     - template: jinja
     - defaults:
         solution: {{ name }}
@@ -46,7 +46,7 @@ Apply RoleBinding of {{ role_kind }} {{ role_name }} for Solution {{ solution.na
    TODO: add documentation about this file #}
 Apply Operator ConfigMap for Solution {{ solution.name }}:
   metalk8s_kubernetes.object_present:
-    - name: salt://{{ slspath }}/files/operator/configmap.yaml
+    - name: salt://{{ slspath }}/files/operator/configmap.yaml.j2
     - template: jinja
     - defaults:
         solution: {{ name }}
@@ -56,7 +56,7 @@ Apply Operator ConfigMap for Solution {{ solution.name }}:
 
 Apply Operator Deployment for Solution {{ solution.name }}:
   metalk8s_kubernetes.object_present:
-    - name: salt://{{ slspath }}/files/operator/deployment.yaml
+    - name: salt://{{ slspath }}/files/operator/deployment.yaml.j2
     - template: jinja
     - defaults:
         solution: {{ name }}

@@ -1,0 +1,915 @@
+---
+# Default context options are listed here.
+# Please be mindful of the number of cases generated, as these will apply to
+# many formulas.
+default_case:
+  os: CentOS/7
+  saltenv: metalk8s-2.8.0
+  minion_state: ready
+  architecture: single-node
+  volumes: none
+  mode: minion
+
+metalk8s:
+  # Use the special `_skip` keyword to omit rendering of a directory or formula
+  # _skip: true
+
+  map.jinja:
+    _cases:
+      "CentOS 7":
+        os: CentOS/7
+      "RHEL 7":
+        os: RedHat/7
+      "RHEL 8":
+        os: RedHat/8
+      "Ubuntu 18":
+        os: Ubuntu/18
+
+  addons:
+    dex:
+      deployed:
+        service-configuration.sls:
+          _cases:
+            "No service configuration (default)": {}
+            "Existing service configuration (v1alpha2)":
+              k8s_overrides:
+                add:
+                  - &dex_service_conf
+                    kind: ConfigMap
+                    apiVersion: v1
+                    metadata:
+                      name: metalk8s-dex-config
+                      namespace: metalk8s-auth
+                    data:
+                      config.yaml: |-
+                        apiVersion: addons.metalk8s.scality.com/v1alpha2
+                        kind: DexConfig
+                        spec: {}
+            "Old service configuration (v1alpha1)":
+              k8s_overrides:
+                add:
+                  - <<: *dex_service_conf
+                    data:
+                      config.yaml: |-
+                        apiVersion: addons.metalk8s.scality.com/v1alpha1
+                        kind: DexConfig
+                        spec: {}
+            "Unknown service configuration version":
+              k8s_overrides:
+                add:
+                  - <<: *dex_service_conf
+                    data:
+                      config.yaml: |-
+                        apiVersion: addons.metalk8s.scality.com/v1
+                        kind: DexConfig
+                        spec: {}
+
+    logging:
+      loki:
+        deployed:
+          service-configuration.sls:
+            _cases:
+              "No existing configuration (default)": {}
+              "Service configuration exists":
+                k8s_overrides:
+                  add:
+                    - kind: ConfigMap
+                      apiVersion: v1
+                      metadata:
+                        name: metalk8s-loki-config
+                        namespace: metalk8s-logging
+                      data:
+                        config.yaml: |-
+                          apiVersion: addons.metalk8s.scality.com
+                          kind: LokiConfig
+                          spec: {}
+
+    nginx-ingress-control-plane:
+      control-plane-ip.sls:
+        _cases:
+          "Bootstrap node is local minion (default)": {}
+          "Bootstrapping (errors in pillar)":
+            pillar_overrides:
+              metalk8s:
+                nodes:
+                  _errors: ["Some error when retrieving nodes"]
+          "Bootstrapping (no nodes in pillar)":
+            pillar_overrides:
+              metalk8s:
+                nodes: []
+          "Bootstrap minion is not local":
+            _subcases:
+              "From master":
+                mode: master
+              "From minion":
+                mode: minion
+            pillar_overrides:
+              metalk8s:
+                ca:
+                  minion: other-bootstrap
+                nodes:
+                  bootstrap:  # default grains.id
+                    roles: [master, infra, etcd]
+                  other-bootstrap:
+                    roles: [ca, bootstrap]
+
+    prometheus-operator:
+      post-cleanup.sls:
+        _cases:
+          "No old rules (default)": {}
+          "Old rules to remove":
+            k8s_overrides:
+              add:
+                - kind: PrometheusRule
+                  apiVersion: monitoring.coreos.com/v1
+                  metadata:
+                    name: example-old-rule
+                    namespace: metalk8s-monitoring
+                    labels:
+                      app.kubernetes.io/part-of: metalk8s
+                      # Assume our current version is higher than this
+                      metalk8s.scality.com/version: "2.4.0"
+
+      deployed:
+        service-configuration.sls:
+          _cases:
+            "No existing configuration (default)": {}
+            "Service configuration exists (only one of them)":
+              k8s_overrides:
+                add:
+                  - kind: ConfigMap
+                    apiVersion: v1
+                    metadata:
+                      name: metalk8s-prometheus-config
+                      namespace: metalk8s-monitoring
+                    data:
+                      config.yaml: |-
+                        apiVersion: addons.metalk8s.scality.com
+                        kind: PrometheusConfig
+                        spec: {}
+
+    solutions:
+      deployed:
+        configmap.sls:
+          _cases:
+            "No solution available (default)": {}
+            "Some solution available":
+              pillar_overrides:
+                metalk8s:
+                  solutions:
+                    available:
+                      example-solution:
+                        - &example_solution
+                          archive: >-
+                            /srv/scality/releases/example-solution-1.0.0.iso
+                          name: example-solution
+                          version: "1.0.0"
+                          id: example-solution-1.0.0
+                          active: true
+                          mountpoint: /srv/scality/example-solution-1.0.0
+
+  container-engine:
+    containerd:
+      files:
+        50-metalk8s.conf.j2:
+          _cases:
+            "From metalk8s.container-engine.containerd.installed":
+              extra_context:
+                containerd_args: [--log-level, info]
+                environment:
+                  NO_PROXY: localhost,127.0.0.1,10.0.0.0/16
+                  HTTP_PROXY: http://my-proxy.local
+                  HTTPS_PROXY: https://my-proxy.local
+
+  kubernetes:
+    apiserver-proxy:
+      files:
+        apiserver-proxy.yaml.j2:
+          _cases:
+            "From metalk8s.kubernetes.apiserver-proxy.installed":
+              extra_context:
+                image_name: >-
+                  metalk8s-registry-from-config.invalid/metalk8s-2.7.1/nginx:1.2.3
+                config_digest: abcdefgh12345
+                metalk8s_version: "2.7.1"
+
+    etcd:
+      files:
+        manifest.yaml.j2:
+          _cases:
+            "From metalk8s.kubernetes.etcd.installed":
+              extra_context:
+                name: etcd
+                image_name: >-
+                  metalk8s-registry-from-config.invalid/metalk8s-2.7.1/etcd:3.4.3
+                command: [etcd, --some-arg, --some-more-args=toto]
+                volumes:
+                  - path: /var/lib/etcd
+                    name: etcd-data
+                  - path: /etc/kubernetes/pki/etcd
+                    name: etcd-certs
+                    readOnly: true
+                etcd_healthcheck_cert: >-
+                  /etc/kubernetes/pki/etcd/healthcheck-client.crt
+                metalk8s_version: "2.7.1"
+                config_digest: abcdefgh12345
+
+    files:
+      control-plane-manifest.yaml.j2:
+        _cases:
+          "From metalk8s.kubernetes.scheduler.installed":
+            extra_context:
+              name: kube-scheduler
+              image_name: >-
+                metalk8s-registry-from-config.invalid/metalk8s-2.7.1/kube-scheduler:1.18.5
+              host: "10.0.0.1"
+              port: http-metrics
+              scheme: HTTP
+              command:
+                - kube-scheduler
+                - --address=10.0.0.1
+                - --kubeconfig=/etc/kubernetes/scheduler.conf
+                - --leader-elect=true
+                - --v=0
+              requested_cpu: 100m
+              ports:
+                - name: http-metrics
+                  containerPort: 10251
+              volumes:
+                - path: /etc/kubernetes/scheduler.conf
+                  name: kubeconfig
+                  type: File
+              metalk8s_version: "2.7.1"
+              config_digest: abcdefgh12345
+
+    kubelet:
+      files:
+        kubeadm.env.j2:
+          _cases:
+            "From metalk8s.kubernetes.kubelet.standalone":
+              extra_context:
+                options:
+                  container-runtime: remote
+                  container-runtime-endpoint: >-
+                    unix:///run/containerd/containerd.sock
+                  node-ip: "10.0.0.1"
+                  hostname-override: bootstrap
+                  v: 0
+
+        service-systemd.conf.j2:
+          _cases:
+            "From metalk8s.kubernetes.kubelet.configured":
+              extra_context:
+                kubeconfig: /etc/kubernetes/kubelet.conf
+                config_file: /var/lib/kubelet/config.yaml
+                env_file: /var/lib/kubelet/kubeadm-flags.env
+
+        service-standalone-systemd.conf.j2:
+          _cases:
+            "From metalk8s.kubernetes.kubelet.standalone":
+              extra_context:
+                env_file: /var/lib/kubelet/kubeadm-flags.env
+                manifest_path: /etc/kubernetes/manifests
+
+    mark-control-plane:
+      files:
+        bootstrap_node_update.yaml.j2.in:
+          _cases:
+            "From metalk8s.kubernetes.mark-control-plane.deployed":
+              extra_context:
+                node_name: bootstrap
+                cri_socket: unix:///run/containerd/containerd.sock
+
+      deployed.sls:
+        _cases:
+          "Default bootstrap target":
+            pillar_overrides:
+              bootstrap_id: bootstrap
+
+  node:
+    grains.sls:
+      _cases:
+        "Grains are already set":
+          minion_state: ready
+        "Grains are not yet set":
+          minion_state: new
+
+  orchestrate:
+    apiserver.sls:
+      _cases: &orch_base_cases
+        "Single-node cluster":
+          mode: master
+          architecture: single-node
+        "Compact cluster": &orch_compact_arch
+          mode: master
+          architecture: compact
+
+    register_etcd.sls:
+      _cases:
+        "Target a new master node": &orch_target_master_node
+          <<: *orch_compact_arch
+          pillar_overrides: &pillar_orch_target_master_node
+            bootstrap_id: bootstrap
+            orchestrate:
+              node_name: master-1
+
+    deploy_node.sls:
+      _cases:
+        "Target a new master node":
+          <<: *orch_target_master_node
+          _subcases:
+            "Minion already exists (default)": {}
+            "Minion is new":
+              minion_state: new
+            "Skip drain":
+              pillar_overrides:
+                <<: *pillar_orch_target_master_node
+                orchestrate:
+                  node_name: master-1
+                  skip_draining: true
+            "Skip etcd role":
+              pillar_overrides:
+                <<: *pillar_orch_target_master_node
+                metalk8s:
+                  nodes:
+                    master-1:
+                      skip_roles: [etcd]
+
+    etcd.sls:
+      _cases: *orch_base_cases
+
+    bootstrap:
+      accept-minion.sls:
+        _cases:
+          "From master":
+            mode: master
+            _subcases:
+              "Bootstrap minion is available":
+                pillar_overrides:
+                  bootstrap_id: bootstrap
+              "Bootstrap minion is unavailable":
+                # The mocks will only return known minions for `manage.up`
+                pillar_overrides:
+                  bootstrap_id: unavailable-bootstrap
+
+      init.sls:
+        _cases:
+          "From master":
+            mode: master
+            _subcases:
+              # FIXME: metalk8s.orchestrate.bootstrap.init does not handle an
+              # unavailable minion yet
+              "Bootstrap node exists in K8s":
+                pillar_overrides:
+                  bootstrap_id: bootstrap
+              "Bootstrap node does not exist yet":
+                pillar_overrides:
+                  bootstrap_id: bootstrap
+                  metalk8s:
+                    nodes: {}
+
+    certs:
+      renew.sls:
+        _cases:
+          "From master":
+            mode: master
+            _subcases:
+              "No certificate to process":
+                pillar_overrides:
+                  orchestrate:
+                    certificates: []
+                    target: bootstrap
+              "Some certificates to process":
+                pillar_overrides:
+                  orchestrate:
+                    certificates:
+                      # Client
+                      - /etc/kubernetes/pki/etcd/salt-master-etcd-client.crt
+                      # Kubeconfig
+                      - /etc/kubernetes/admin.conf
+                      # Server
+                      - /etc/kubernetes/pki/apiserver.crt
+                    target: bootstrap
+
+    downgrade:
+      init.sls:
+        _cases:
+          "Single node cluster":
+            architecture: single-node
+            _subcases:
+              "Destination matches (default)": {}
+              "Destination is lower than node version":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.7.3
+
+          "Compact cluster":
+            architecture: compact
+            _subcases: &downgrade_subcases
+              "Destination matches (default)": {}
+              "Destination is lower than all nodes":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.7.3
+              "Destination is lower than some nodes":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.7.3
+                    nodes:
+                      master-1:
+                        version: 2.7.3
+
+          "Standard cluster":
+            architecture: standard
+            _subcases: *downgrade_subcases
+
+          "Extended cluster":
+            architecture: extended
+            _subcases: *downgrade_subcases
+
+      precheck.sls:
+        _cases:
+          "Saltenv matches highest node version (default)":
+            saltenv: metalk8s-2.8.0
+            # Use multi-node to verify handling of heterogeneous versions
+            architecture: compact
+            _subcases:
+              "All nodes already in desired version (default)": {}
+              "Desired version is too old":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.6.1
+              "Some nodes in desired version":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.7.3
+                    nodes:
+                      master-1:
+                        version: 2.7.3
+              "Some nodes in older version than desired":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.7.3
+                    nodes:
+                      master-1:
+                        version: 2.7.1
+              "Some node is not ready":
+                k8s_overrides: &k8s_patch_node_not_ready
+                  edit:
+                    - apiVersion: v1
+                      kind: Node
+                      metadata:
+                        name: master-1
+                      status:
+                        conditions:
+                          - type: Ready
+                            status: false
+                            reason: NodeHasDiskPressure
+
+          "Saltenv is higher than highest node version":
+            saltenv: metalk8s-2.9.0
+            architecture: single-node
+            pillar_overrides:
+              metalk8s:
+                cluster_version: 2.7.3
+                nodes:
+                  bootstrap:
+                    version: 2.8.0
+
+          "Saltenv is lower than highest node version":
+            saltenv: metalk8s-2.7.3
+            architecture: single-node
+            pillar_overrides:
+              metalk8s:
+                cluster_version: 2.7.3
+                nodes:
+                  bootstrap:
+                    version: 2.8.0
+
+    solutions:
+      deploy-components.sls:
+        _cases:
+          "Empty SolutionsConfig (default)": {}
+          "Errors in solutions pillar":
+            pillar_overrides:
+              metalk8s:
+                solutions:
+                  _errors: ["Some error"]
+
+          "Specific Solution version to deploy":
+            pillar_overrides:
+              bootstrap_id: bootstrap
+              metalk8s:
+                solutions:
+                  available: &base_example_available_solution
+                    example-solution:
+                      - id: example-solution-1.2.3
+                        version: "1.2.3"
+                        name: example-solution
+                        display_name: Example Solution
+                        mountpoint: /srv/scality/example-solution-1.2.3
+                        manifest:
+                          spec:
+                            operator:
+                              image:
+                                name: example-operator
+                                tag: "1.2.3"
+                            images:
+                              example-operator: "1.2.3"
+                  config:
+                    active:
+                      example-solution: "1.2.3"
+
+          "Latest Solution version to deploy":
+            pillar_overrides:
+              bootstrap_id: bootstrap
+              metalk8s:
+                solutions:
+                  available: *base_example_available_solution
+                  config:
+                    active:
+                      example-solution: "latest"
+
+          "Some available Solution to remove":
+            pillar_overrides:
+              bootstrap_id: bootstrap
+              metalk8s:
+                solutions:
+                  available: *base_example_available_solution
+                  config:
+                    active: {}
+
+          "Some desired Solution name is not available":
+            pillar_overrides:
+              metalk8s:
+                solutions:
+                  available: *base_example_available_solution
+                  config:
+                    active:
+                      unknown-solution: "1.2.3"
+
+          "Some desired Solution version is not available":
+            pillar_overrides:
+              metalk8s:
+                solutions:
+                  available: *base_example_available_solution
+                  config:
+                    active:
+                      example-solution: "4.5.6"
+
+      import-components.sls:
+        _cases:
+          "Target an existing Bootstrap node":
+            pillar_overrides:
+              bootstrap_id: bootstrap
+
+      prepare-environment.sls:
+        _cases:
+          "Environment does not exist (default)":
+            pillar_overrides: &base_pillar_prepare_environment
+              orchestrate:
+                env_name: example-env
+
+          "Errors in pillar":
+            pillar_overrides:
+              <<: *base_pillar_prepare_environment
+              metalk8s:
+                solutions:
+                  # FIXME: likely this formula should only look at
+                  # pillar.metalk8s.solutions.environments._errors
+                  _errors: ["Some error", "Some other error"]
+                  environments:
+                    _errors: ["Some error"]
+
+      files:
+        operator:
+          service_account.yaml.j2:
+            _cases:
+              "Example Solution v1.2.3 (see ../../prepare-environment.sls)":
+                extra_context: &base_context_solution_operator_files
+                  solution: example-solution
+                  version: "1.2.3"
+                  namespace: example-env
+
+          configmap.yaml.j2:
+            _cases:
+              "Example Solution v1.2.3 (see ../../prepare-environment.sls)":
+                extra_context:
+                  <<: *base_context_solution_operator_files
+                  registry: metalk8s-registry-from-config.invalid
+
+          deployment.yaml.j2:
+            _cases:
+              "Example Solution v1.2.3 (see ../../prepare-environment.sls)":
+                extra_context:
+                  <<: *base_context_solution_operator_files
+                  repository: >-
+                    metalk8s-registry-from-config.invalid/example-solution-1.2.3
+                  image_name: example-operator
+                  image_tag: "1.2.3"
+
+          role_binding.yaml.j2:
+            _cases:
+              "Example Solution v1.2.3 (see ../../prepare-environment.sls)":
+                extra_context:
+                  <<: *base_context_solution_operator_files
+                  role_kind: ClusterRole
+                  role_name: example-role
+
+    upgrade:
+      init.sls:
+        _cases:
+          "Single node cluster":
+            architecture: single-node
+            _subcases:
+              "Destination matches (default)": {}
+              "Destination is higher than node version":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.9.0
+
+          "Compact cluster":
+            architecture: compact
+            _subcases: &upgrade_subcases
+              "Destination matches (default)": {}
+              "Destination is higher than all nodes":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.9.0
+              "Destination is higher than some nodes":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.9.0
+                    nodes:
+                      master-1:
+                        version: 2.9.0
+
+          "Standard cluster":
+            architecture: standard
+            _subcases: *upgrade_subcases
+
+          "Extended cluster":
+            architecture: extended
+            _subcases: *upgrade_subcases
+
+      precheck.sls:
+        _cases:
+          "Saltenv matches destination version (default)":
+            saltenv: metalk8s-2.8.0
+            # Use multi-node to verify handling of heterogeneous versions
+            architecture: compact
+            _subcases:
+              "All nodes already in desired version (default)": {}
+              "All nodes in older compatible version":
+                pillar_overrides:
+                  metalk8s:
+                    nodes: &_upgrade_compatible_nodes
+                      bootstrap: &_upgrade_compatible_node_version
+                        version: 2.7.3
+                      master-1: *_upgrade_compatible_node_version
+                      master-2: *_upgrade_compatible_node_version
+              "Current version of some node is too old":
+                pillar_overrides:
+                  metalk8s:
+                    nodes:
+                      <<: *_upgrade_compatible_nodes
+                      master-1:
+                        version: 2.6.1
+              "Current version of some node is newer than destination":
+                pillar_overrides:
+                  metalk8s:
+                    nodes:
+                      <<: *_upgrade_compatible_nodes
+                      master-1:
+                        version: 2.9.0
+              "Some nodes in older version than desired":
+                pillar_overrides:
+                  metalk8s:
+                    cluster_version: 2.7.3
+                    nodes:
+                      master-1:
+                        version: 2.7.1
+              "Some node is not ready":
+                k8s_overrides: *k8s_patch_node_not_ready
+
+          "Saltenv does not match destination version":
+            saltenv: metalk8s-2.7.3
+            architecture: single-node
+            pillar_overrides:
+              metalk8s:
+                cluster_version: 2.8.0
+
+  reactor:
+    certs:
+      renew.sls.in:
+        _cases:
+          "Sample beacon event":
+            extra_context:
+              data:
+                id: bootstrap
+                certificates:
+                  - cert_path: /path/to/cert.pem
+                  - cert_path: /path/to/other.pem
+
+  repo:
+    files:
+      apt.sources.list.j2:
+        _cases:
+          "From metalk8s.repo.debian":
+            extra_context:
+              type: deb
+              options:
+                trusted: "yes"
+              url: http://10.0.0.1:8080/metalk8s-2.7.1/debian/metalk8s-bionic
+              distribution: Ubuntu 18.04 Bionic Beaver
+              components: ["metalk8s-bionic"]
+
+      metalk8s-registry-config.inc.j2:
+        _cases:
+          "From metalk8s.repo.configured":
+            extra_context:
+              archives: &example_archives
+                metalk8s-2.7.1:
+                  iso: /archives/metalk8s.iso
+                  path: /srv/scality/metalk8s-2.7.1
+                  version: "2.7.1"
+
+      nginx.conf.j2:
+        _cases:
+          "From metalk8s.repo.configured":
+            extra_context:
+              listening_address: "10.0.0.1"
+              listening_port: 8080
+
+      repositories-manifest.yaml.j2:
+        _cases:
+          "From metalk8s.repo.installed":
+            extra_context:
+              container_port: 8080
+              image: >-
+                metalk8s-registry-from-config.invalid/metalk8s-2.7.1/nginx:1.2.3
+              name: repositories
+              version: "1.0.0"
+              archives: *example_archives
+              solutions: {}
+              package_path: /packages
+              image_path: /images/
+              nginx_confd_path: /var/lib/metalk8s/repositories/conf.d
+              probe_host: "10.0.0.1"
+              metalk8s_version: "2.7.1"
+              config_digest: abcdefgh12345
+
+    debian.sls:
+      _cases:
+        "Ubuntu 18":
+          os: "Ubuntu/18"
+    redhat.sls:
+      _cases:
+        "CentOS 7":
+          os: CentOS/7
+        "RHEL 7":
+          os: RedHat/7
+        "RHEL 8":
+          os: RedHat/8
+
+  salt:
+    master:
+      certs:
+        salt-api.sls:
+          _cases:
+            "Minion is standalone (bootstrap)":
+              minion_state: standalone
+            "Minion is connected to master and CA (default)":
+              minion_state: ready
+
+      files:
+        master-99-metalk8s.conf.j2:
+          _cases:
+            "From metalk8s.salt.master.configured":
+              extra_context:
+                debug: true
+                salt_ip: "10.0.0.1"
+                kubeconfig: /etc/salt/master-kubeconfig.conf
+                salt_api_ssl_crt: /etc/salt/pki/api/salt-api.crt
+                saltenv: metalk8s-2.7.1
+
+        salt-master-manifest.yaml.j2:
+          _cases:
+            "From metalk8s.salt.master.installed":
+              extra_context:
+                debug: true
+                image: salt-master
+                version: "3002.2"
+                archives:
+                  metalk8s-2.7.1:
+                    path: /srv/scality/metalk8s-2.7.1
+                    iso: /archives/metalk8s-2.7.1
+                    version: "2.7.1"
+                solution_archives:
+                  example-solution-1-2-3: /srv/scality/example-solution-1.2.3
+                salt_ip: "10.0.0.1"
+                config_digest: abcdefgh12345
+                metalk8s_version: "2.7.1"
+
+    minion:
+      files:
+        minion-99-metalk8s.conf.j2:
+          _cases:
+            "From metalk8s.salt.minion.configured":
+              extra_context:
+                debug: true
+                master_hostname: "10.233.0.123"
+                minion_id: bootstrap
+                saltenv: metalk8s-2.7.1
+
+  solutions:
+    available.sls:
+      _cases:
+        # See ./data/base_pillar.yaml
+        "Empty config (default)": {}
+        "Initial state (errors)":
+          pillar_overrides:
+            metalk8s:
+              solutions:
+                _errors: [Cannot read config file]
+                available: {}
+                config:
+                  _errors: [Cannot read config file]
+
+        "New archive in config":
+          pillar_overrides:
+            metalk8s:
+              solutions:
+                available:
+                  example-solution:
+                    - *example_solution
+                config:
+                  archives:
+                    - /srv/scality/releases/example-solution-1.0.0.iso
+                    - /srv/scality/releases/example-solution-1.2.0.iso
+
+        "Active archive removed from config":
+          pillar_overrides:
+            metalk8s:
+              solutions:
+                available:
+                  example-solution:
+                    - *example_solution
+                config:
+                  archives: []
+
+        "Inactive archive removed from config":
+          pillar_overrides:
+            metalk8s:
+              solutions:
+                available:
+                  example-solution:
+                    - *example_solution
+                    - archive: >-
+                        /srv/scality/releases/example-solution-1.2.0.iso
+                      name: example-solution
+                      version: "1.2.0"
+                      id: example-solution-1.2.0
+                      active: false
+                      mountpoint: /srv/scality/example-solution-1.2.0
+                config:
+                  archives:
+                    - /srv/scality/releases/example-solution-1.0.0.iso
+
+  utils:
+    httpd-tools:
+      installed.sls:
+        _cases:
+          "Debian family":
+            os: Ubuntu/18
+          "RedHat family":
+            os: CentOS/7
+
+  volumes:
+    unprepared.sls:
+      _cases: &volumes_cases
+        "No volume (default)":
+          volumes: none
+          _subcases: &volumes_subcases
+            "No target volume (default)": {}
+            "Target a single volume":
+              pillar_overrides:
+                volume: bootstrap-prometheus
+        "Errors in volumes pillar":
+          volumes: errors
+          _subcases: *volumes_subcases
+        "Only sparse loop volumes":
+          volumes: sparse
+          _subcases: *volumes_subcases
+        "Only raw block volumes":
+          volumes: block
+          _subcases: *volumes_subcases
+        "Mix of sparse and block volumes":
+          volumes: mix
+          _subcases: *volumes_subcases
+
+    prepared.sls:
+      _cases:
+        <<: *volumes_cases
+        "Volumes pillar is set to None (bootstrap)":
+          volumes: bootstrap

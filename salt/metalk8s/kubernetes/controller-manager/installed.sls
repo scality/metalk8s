@@ -10,7 +10,7 @@ include:
 Create kube-controller-manager Pod manifest:
   metalk8s.static_pod_managed:
     - name: /etc/kubernetes/manifests/kube-controller-manager.yaml
-    - source: salt://metalk8s/kubernetes/files/control-plane-manifest.yaml
+    - source: salt://metalk8s/kubernetes/files/control-plane-manifest.yaml.j2
     - config_files:
         - /etc/kubernetes/controller-manager.conf
         - /etc/kubernetes/pki/ca.crt

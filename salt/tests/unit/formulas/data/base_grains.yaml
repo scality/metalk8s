@@ -1,0 +1,320 @@
+---
+biosreleasedate: 06/14/2019
+biosversion: 3.1a
+cpu_flags:
+  - fpu
+  - vme
+  - de
+  - pse
+  - tsc
+  - msr
+  - pae
+  - mce
+  - cx8
+  - apic
+  - sep
+  - mtrr
+  - pge
+  - mca
+  - cmov
+  - pat
+  - pse36
+  - clflush
+  - dts
+  - acpi
+  - mmx
+  - fxsr
+  - sse
+  - sse2
+  - ss
+  - ht
+  - tm
+  - pbe
+  - syscall
+  - nx
+  - pdpe1gb
+  - rdtscp
+  - lm
+  - constant_tsc
+  - arch_perfmon
+  - pebs
+  - bts
+  - rep_good
+  - nopl
+  - xtopology
+  - nonstop_tsc
+  - aperfmperf
+  - eagerfpu
+  - pni
+  - pclmulqdq
+  - dtes64
+  - monitor
+  - ds_cpl
+  - vmx
+  - smx
+  - est
+  - tm2
+  - ssse3
+  - sdbg
+  - fma
+  - cx16
+  - xtpr
+  - pdcm
+  - pcid
+  - dca
+  - sse4_1
+  - sse4_2
+  - x2apic
+  - movbe
+  - popcnt
+  - tsc_deadline_timer
+  - aes
+  - xsave
+  - avx
+  - f16c
+  - rdrand
+  - lahf_lm
+  - abm
+  - 3dnowprefetch
+  - epb
+  - cat_l3
+  - cdp_l3
+  - invpcid_single
+  - intel_ppin
+  - intel_pt
+  - ssbd
+  - ibrs
+  - ibpb
+  - stibp
+  - tpr_shadow
+  - vnmi
+  - flexpriority
+  - ept
+  - vpid
+  - fsgsbase
+  - tsc_adjust
+  - bmi1
+  - hle
+  - avx2
+  - smep
+  - bmi2
+  - erms
+  - invpcid
+  - rtm
+  - cqm
+  - rdt_a
+  - rdseed
+  - adx
+  - smap
+  - xsaveopt
+  - cqm_llc
+  - cqm_occup_llc
+  - cqm_mbm_total
+  - cqm_mbm_local
+  - dtherm
+  - ida
+  - arat
+  - pln
+  - pts
+  - spec_ctrl
+  - intel_stibp
+  - flush_l1d
+cpu_model: Intel(R) Xeon(R) CPU E5-2620 v4 @ 2.10GHz
+cpuarch: x86_64
+cwd: /root
+disks: []
+dns:
+  domain: ''
+  ip4_nameservers:
+    - 213.186.33.99
+  ip6_nameservers: []
+  nameservers:
+    - 213.186.33.99
+  options: []
+  search:
+    - ovh.net
+  sortlist: []
+domain: ip-51-68-68.eu
+fqdn: ns631140750.ip-51-68-68.eu
+fqdn_ip4:
+  - 51.68.68.162
+  - 51.68.68.162
+  - 51.68.68.162
+fqdn_ip6: []
+fqdns:
+  - ns631140750.ip-51-68-68.eu
+gid: 0
+gpus:
+  - model: ASPEED Graphics Family
+    vendor: aspeed
+groupname: root
+host: ns631140750
+hwaddr_interfaces:
+  eth0: 3c:ec:ef:0d:96:06
+  eth1: 3c:ec:ef:0d:96:07
+  lo: 00:00:00:00:00:00
+  tunl0: 0.0.0.0
+id: bootstrap
+init: systemd
+ip4_gw: 51.68.68.254
+ip4_interfaces:
+  eth0:
+    - 51.68.68.162
+  eth1: []
+  lo:
+    - 127.0.0.1
+  tunl0:
+    - 10.233.132.64
+ip6_gw: 2001:41d0:203:3bff:ff:ff:ff:ff
+ip6_interfaces:
+  eth0:
+    - '2001:41d0:203:3ba2::'
+    - fe80::3eec:efff:fe0d:9606
+  eth1: []
+  lo:
+    - ::1
+  tunl0: []
+ip_gw: true
+ip_interfaces:
+  eth0:
+    - 51.68.68.162
+    - '2001:41d0:203:3ba2::'
+    - fe80::3eec:efff:fe0d:9606
+  eth1: []
+  lo:
+    - 127.0.0.1
+    - ::1
+  tunl0:
+    - 10.233.132.64
+ipv4:
+  - 10.233.132.64
+  - 51.68.68.162
+  - 127.0.0.1
+ipv6:
+  - ::1
+  - '2001:41d0:203:3ba2::'
+  - fe80::3eec:efff:fe0d:9606
+  - fe80::ecee:eeff:feee:eeee
+kernel: Linux
+kernelparams:
+  - - BOOT_IMAGE
+    - /boot/vmlinuz-3.10.0-1160.15.2.el7.x86_64
+  - - root
+    - /dev/md2
+  - - ro
+    - null
+  - - crashkernel
+    - auto
+  - - rhgb
+    - null
+  - - quiet
+    - null
+  - - vga
+    - normal
+  - - nomodeset
+    - null
+  - - rd.auto
+    - '1'
+  - - rd.md.uuid
+    - fab89e05:3f33a6f5:a4d2adc2:26fd5302
+  - - rootdelay
+    - '10'
+  - - rootdelay
+    - '10'
+  - - noquiet
+    - null
+  - - nosplash
+    - null
+  - - net.ifnames
+    - '0'
+  - - biosdevname
+    - '0'
+kernelrelease: 3.10.0-1160.15.2.el7.x86_64
+kernelversion: '#1 SMP Wed Feb 3 15:06:38 UTC 2021'
+locale_info:
+  defaultencoding: UTF-8
+  defaultlanguage: en_US
+  detectedencoding: UTF-8
+  timezone: unknown
+localhost: ns631140750
+lsb_distrib_codename: CentOS Linux 7 (Core)
+lsb_distrib_id: CentOS Linux
+lvm: {}
+machine_id: afec8d2527c836686dd418bb601d4f4f
+manufacturer: Supermicro
+master: 51.68.68.162
+mdadm:
+  - md2
+mem_total: 64153
+metalk8s:
+  control_plane_ip: 51.68.68.162
+  workload_plane_ip: 51.68.68.162
+nodename: ns631140750
+num_cpus: 32
+num_gpus: 1
+os: CentOS
+os_family: RedHat
+osarch: x86_64
+oscodename: CentOS Linux 7 (Core)
+osfinger: CentOS Linux-7
+osfullname: CentOS Linux
+osmajorrelease: 7
+osrelease: 7.9.2009
+osrelease_info:
+  - 7
+  - 9
+  - 2009
+path: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin
+pid: 6928
+productname: X10DRH
+ps: ps -efHww
+pythonexecutable: /usr/bin/python3
+pythonpath:
+  - /var/cache/salt/minion/extmods/utils
+  - /usr/bin
+  - /usr/lib64/python36.zip
+  - /usr/lib64/python3.6
+  - /usr/lib64/python3.6/lib-dynload
+  - /usr/lib64/python3.6/site-packages
+  - /usr/lib/python3.6/site-packages
+pythonversion:
+  - 3
+  - 6
+  - 8
+  - final
+  - 0
+saltpath: /usr/lib/python3.6/site-packages/salt
+saltversion: '3002.2'
+saltversioninfo:
+  - 3002
+  - 2
+selinux:
+  enabled: true
+  enforced: Enforcing
+serialnumber: '123456789'
+server_id: 1242679636
+shell: /bin/bash
+ssds:
+  - sda
+  - sdb
+  - sdc
+  - sdd
+swap_total: 0
+systemd:
+  features: >-
+    +PAM +AUDIT +SELINUX +IMA -APPARMOR +SMACK +SYSVINIT +UTMP +LIBCRYPTSETUP
+    +GCRYPT +GNUTLS +ACL +XZ +LZ4 -SECCOMP +BLKID +ELFUTILS +KMOD +IDN
+  version: '219'
+systempath:
+  - /usr/local/sbin
+  - /usr/local/bin
+  - /usr/sbin
+  - /usr/bin
+  - /root/bin
+uid: 0
+username: root
+uuid: 00000000-0000-0000-0000-3cecef0d9606
+virtual: physical
+zfs_feature_flags: false
+zfs_support: false
+zmqversion: 4.1.4

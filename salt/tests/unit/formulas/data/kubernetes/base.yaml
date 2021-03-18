@@ -1,0 +1,447 @@
+---
+# Default nodes list (single node)
+apiVersion: v1
+objectKind: Node
+items:
+  - apiVersion: v1
+    kind: Node
+    metadata:
+      annotations:
+        kubeadm.alpha.kubernetes.io/cri-socket: >-
+          unix:///run/containerd/containerd.sock
+        node.alpha.kubernetes.io/ttl: "0"
+        projectcalico.org/IPv4Address: 192.168.2.12/24
+        projectcalico.org/IPv4IPIPTunnelAddr: 10.233.132.64
+        volumes.kubernetes.io/controller-managed-attach-detach: "true"
+      creationTimestamp: "2021-02-24T15:47:32Z"
+      labels:
+        beta.kubernetes.io/arch: amd64
+        beta.kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
+        kubernetes.io/hostname: bootstrap
+        kubernetes.io/os: linux
+        metalk8s.scality.com/version: 2.8.0-dev
+        node-role.kubernetes.io/bootstrap: ""
+        node-role.kubernetes.io/etcd: ""
+        node-role.kubernetes.io/infra: ""
+        node-role.kubernetes.io/master: ""
+        node-role.kubernetes.io/node: ""
+      managedFields:
+        - apiVersion: v1
+          fieldsType: FieldsV1
+          fieldsV1:
+            f:metadata:
+              f:annotations:
+                .: {}
+                f:volumes.kubernetes.io/controller-managed-attach-detach: {}
+              f:labels:
+                .: {}
+                f:beta.kubernetes.io/arch: {}
+                f:beta.kubernetes.io/os: {}
+                f:kubernetes.io/arch: {}
+                f:kubernetes.io/hostname: {}
+                f:kubernetes.io/os: {}
+            f:status:
+              f:addresses:
+                .: {}
+                k:{"type":"Hostname"}:
+                  .: {}
+                  f:address: {}
+                  f:type: {}
+                k:{"type":"InternalIP"}:
+                  .: {}
+                  f:address: {}
+                  f:type: {}
+              f:allocatable:
+                .: {}
+                f:cpu: {}
+                f:ephemeral-storage: {}
+                f:hugepages-1Gi: {}
+                f:hugepages-2Mi: {}
+                f:memory: {}
+                f:pods: {}
+              f:capacity:
+                .: {}
+                f:cpu: {}
+                f:ephemeral-storage: {}
+                f:hugepages-1Gi: {}
+                f:hugepages-2Mi: {}
+                f:memory: {}
+                f:pods: {}
+              f:conditions:
+                .: {}
+                k:{"type":"DiskPressure"}:
+                  .: {}
+                  f:lastHeartbeatTime: {}
+                  f:lastTransitionTime: {}
+                  f:message: {}
+                  f:reason: {}
+                  f:status: {}
+                  f:type: {}
+                k:{"type":"MemoryPressure"}:
+                  .: {}
+                  f:lastHeartbeatTime: {}
+                  f:lastTransitionTime: {}
+                  f:message: {}
+                  f:reason: {}
+                  f:status: {}
+                  f:type: {}
+                k:{"type":"PIDPressure"}:
+                  .: {}
+                  f:lastHeartbeatTime: {}
+                  f:lastTransitionTime: {}
+                  f:message: {}
+                  f:reason: {}
+                  f:status: {}
+                  f:type: {}
+                k:{"type":"Ready"}:
+                  .: {}
+                  f:lastHeartbeatTime: {}
+                  f:lastTransitionTime: {}
+                  f:message: {}
+                  f:reason: {}
+                  f:status: {}
+                  f:type: {}
+              f:daemonEndpoints:
+                f:kubeletEndpoint:
+                  f:Port: {}
+              f:images: {}
+              f:nodeInfo:
+                f:architecture: {}
+                f:bootID: {}
+                f:containerRuntimeVersion: {}
+                f:kernelVersion: {}
+                f:kubeProxyVersion: {}
+                f:kubeletVersion: {}
+                f:machineID: {}
+                f:operatingSystem: {}
+                f:osImage: {}
+                f:systemUUID: {}
+          manager: kubelet
+          operation: Update
+          time: "2021-02-24T15:47:32Z"
+        - apiVersion: v1
+          fieldsType: FieldsV1
+          fieldsV1:
+            f:metadata:
+              f:annotations:
+                f:projectcalico.org/IPv4Address: {}
+                f:projectcalico.org/IPv4IPIPTunnelAddr: {}
+            f:status:
+              f:conditions:
+                k:{"type":"NetworkUnavailable"}:
+                  .: {}
+                  f:lastHeartbeatTime: {}
+                  f:lastTransitionTime: {}
+                  f:message: {}
+                  f:reason: {}
+                  f:status: {}
+                  f:type: {}
+          manager: calico-node
+          operation: Update
+          time: "2021-02-24T15:48:17Z"
+        - apiVersion: v1
+          fieldsType: FieldsV1
+          fieldsV1:
+            f:metadata:
+              f:labels:
+                f:node-role.kubernetes.io/node: {}
+          manager: kubectl
+          operation: Update
+          time: "2021-02-24T15:48:42Z"
+        - apiVersion: v1
+          fieldsType: FieldsV1
+          fieldsV1:
+            f:metadata:
+              f:annotations:
+                f:kubeadm.alpha.kubernetes.io/cri-socket: {}
+              f:labels:
+                f:metalk8s.scality.com/version: {}
+                f:node-role.kubernetes.io/bootstrap: {}
+                f:node-role.kubernetes.io/etcd: {}
+                f:node-role.kubernetes.io/infra: {}
+                f:node-role.kubernetes.io/master: {}
+          manager: OpenAPI-Generator
+          operation: Update
+          time: "2021-03-01T09:31:51Z"
+        - apiVersion: v1
+          fieldsType: FieldsV1
+          fieldsV1:
+            f:metadata:
+              f:annotations:
+                f:node.alpha.kubernetes.io/ttl: {}
+            f:spec:
+              f:podCIDR: {}
+              f:podCIDRs:
+                .: {}
+                v:"10.233.0.0/24": {}
+          manager: kube-controller-manager
+          operation: Update
+          time: "2021-03-01T09:31:52Z"
+      name: bootstrap
+      resourceVersion: "1835703"
+      selfLink: /api/v1/nodes/bootstrap
+      uid: 7bd013fd-e7d8-4296-a76a-8cb63f88b4a3
+    spec:
+      podCIDR: 10.233.0.0/24
+      podCIDRs:
+        - 10.233.0.0/24
+    status:
+      addresses:
+        - address: 192.168.1.5
+          type: InternalIP
+        - address: bootstrap
+          type: Hostname
+      allocatable:
+        cpu: "8"
+        ephemeral-storage: "38644306266"
+        hugepages-1Gi: "0"
+        hugepages-2Mi: "0"
+        memory: 16163148Ki
+        pods: "110"
+      capacity:
+        cpu: "8"
+        ephemeral-storage: 41931756Ki
+        hugepages-1Gi: "0"
+        hugepages-2Mi: "0"
+        memory: 16265548Ki
+        pods: "110"
+      conditions:
+        - lastHeartbeatTime: "2021-03-01T14:02:38Z"
+          lastTransitionTime: "2021-03-01T14:02:38Z"
+          message: Calico is running on this node
+          reason: CalicoIsUp
+          status: "False"
+          type: NetworkUnavailable
+        - lastHeartbeatTime: "2021-03-04T15:51:50Z"
+          lastTransitionTime: "2021-02-24T15:47:29Z"
+          message: kubelet has sufficient memory available
+          reason: KubeletHasSufficientMemory
+          status: "False"
+          type: MemoryPressure
+        - lastHeartbeatTime: "2021-03-04T15:51:50Z"
+          lastTransitionTime: "2021-02-24T15:47:29Z"
+          message: kubelet has no disk pressure
+          reason: KubeletHasNoDiskPressure
+          status: "False"
+          type: DiskPressure
+        - lastHeartbeatTime: "2021-03-04T15:51:50Z"
+          lastTransitionTime: "2021-02-24T15:47:29Z"
+          message: kubelet has sufficient PID available
+          reason: KubeletHasSufficientPID
+          status: "False"
+          type: PIDPressure
+        - lastHeartbeatTime: "2021-03-04T15:51:50Z"
+          lastTransitionTime: "2021-03-01T09:34:45Z"
+          message: kubelet is posting ready status
+          reason: KubeletReady
+          status: "True"
+          type: Ready
+      daemonEndpoints:
+        kubeletEndpoint:
+          Port: 10250
+      images:
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/salt-master@sha256:33cbe1c5ba3c08fab43b8038ca655e39a27df9204423fdafa63b2f90338a1157
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/salt-master:3002.2-1
+          sizeBytes: 175311842
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/salt-master@sha256:0c8a33d9e9a0aa314c4f86e3a507817d8944b4a981410074e46da82157f3ca7f
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/salt-master:3002.2-1
+          sizeBytes: 175308405
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/nginx@sha256:5b49c8e2c890fbb0a35f6050ed3c5109c5bb47b9e774264f4f3aa85bb69e2033
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/nginx:1.15.8
+            - docker.io/library/nginx:1.15.8
+          sizeBytes: 112920678
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/nginx-ingress-controller@sha256:e11b7d264cac4cfc7566b78bb150c94168ea4612a4e9769ca549eb03469db906
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/nginx-ingress-controller@sha256:e11b7d264cac4cfc7566b78bb150c94168ea4612a4e9769ca549eb03469db906
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/nginx-ingress-controller:v0.41.2
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/nginx-ingress-controller:v0.41.2
+          sizeBytes: 102371561
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/etcd@sha256:4198ba6f82f642dfd18ecf840ee37afb9df4b596f06eef20e44d0aec4ea27216
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/etcd:3.4.3-0
+          sizeBytes: 100946002
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/etcd@sha256:bd4d2c9a19be8a492bc79df53eee199fd04b415e9993eb69f7718052602a147a
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/etcd:3.4.13-0
+          sizeBytes: 86740602
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/prometheus@sha256:b2c050d4d0d60a6f7eb07aba31640487da70ef7363015ede66f3c6c1ca7b7d1d
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/prometheus@sha256:b2c050d4d0d60a6f7eb07aba31640487da70ef7363015ede66f3c6c1ca7b7d1d
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/prometheus:v2.22.1
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/prometheus:v2.22.1
+          sizeBytes: 65987124
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/grafana@sha256:f129cbbe45d1af23d13cb3ba4cbb1fd6f5d937af4880de9a61e8e6c7d548184e
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/grafana@sha256:f129cbbe45d1af23d13cb3ba4cbb1fd6f5d937af4880de9a61e8e6c7d548184e
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/grafana:7.3.5
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/grafana:7.3.5
+          sizeBytes: 61082105
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/metalk8s-ui@sha256:31058e1301a9b3416c0296e7400a2c183f7f6eff5bbcf4a5995682a03d57d0fd
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/metalk8s-ui:2.7.2
+          sizeBytes: 60461309
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/storage-operator@sha256:01e651f94e0856c46b49d8e8fe640b1021026a5ca3ce84e977ca240354cc6a2f
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/storage-operator:latest
+          sizeBytes: 59553435
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/storage-operator@sha256:aaa57884121591676530ccd78f020a273d4921d4ac6b6f315fcc2e264667fe37
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/storage-operator:latest
+          sizeBytes: 59553426
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/calico-node@sha256:e80256fd81ad579f255fbe128af0605ff43801489e0584788480722c5abe31f4
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/calico-node@sha256:e80256fd81ad579f255fbe128af0605ff43801489e0584788480722c5abe31f4
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/calico-node:v3.17.0
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/calico-node:v3.17.0
+          sizeBytes: 58365546
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/kube-apiserver@sha256:ac0e9171b22194fd475218f6c9c0fb3d9820cbeaaf1ff3aa92b4f86778fd6cc8
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/kube-apiserver:v1.18.16
+          sizeBytes: 51112220
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/kube-proxy@sha256:14dbaece26c46ed11c5e2e8f9d7e6e344ad50432fc50258d7bea00e9b66f83af
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/kube-proxy:v1.18.16
+          sizeBytes: 49390034
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/kube-proxy@sha256:40c5d8be53a1547226ac36943cb113e50728e72e5fee5109483e66af1c1da439
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/kube-proxy:v1.19.7
+          sizeBytes: 49323410
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/kube-controller-manager@sha256:29dcee2cd061384c3c496fef4cd253e9751f1b68cd161d4fd6be5b734ef351af
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/kube-controller-manager:v1.18.16
+          sizeBytes: 49159579
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/fluent-bit-plugin-loki@sha256:cb1cd95d0fcf76b626623684f0c8b204a9f773443650c7b3d243b96c29ff7020
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/fluent-bit-plugin-loki@sha256:cb1cd95d0fcf76b626623684f0c8b204a9f773443650c7b3d243b96c29ff7020
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/fluent-bit-plugin-loki:1.6.0-amd64
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/fluent-bit-plugin-loki:1.6.0-amd64
+          sizeBytes: 38805651
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/kube-scheduler@sha256:d26dbf6f3e81c2429633170634dd545f27325b30a4e74f581242a3b82c6735c4
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/kube-scheduler:v1.18.16
+          sizeBytes: 34284935
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/kube-apiserver@sha256:77f9f5ded0538e25d50091d18aa6e435892ac1402ab4bbc911e46e55cc40aac7
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/kube-apiserver:v1.19.7
+          sizeBytes: 29680557
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/kube-controller-manager@sha256:5db3be91f8e073359b46e7693fdaea4d41133b2c20cc5b95cfac2363085ca1d6
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/kube-controller-manager:v1.19.7
+          sizeBytes: 28042088
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/alertmanager@sha256:913293083cb14085bfc01018bb30d1dcbbc9ed197ae21ef2ca917b0d29265198
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/alertmanager@sha256:913293083cb14085bfc01018bb30d1dcbbc9ed197ae21ef2ca917b0d29265198
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/alertmanager:v0.21.0
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/alertmanager:v0.21.0
+          sizeBytes: 27096286
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/metalk8s-ui@sha256:a7537145f85eca12d6ddffcaff312864b808c895314250da78b068a6ac56c470
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/metalk8s-ui:2.8.0-dev
+          sizeBytes: 26845538
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/k8s-sidecar@sha256:3d1e7bfda06ca8d00e20e60733d1551bdbb3adb13685167185489b1931365f05
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/k8s-sidecar@sha256:3d1e7bfda06ca8d00e20e60733d1551bdbb3adb13685167185489b1931365f05
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/k8s-sidecar:1.1.0
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/k8s-sidecar:1.1.0
+          sizeBytes: 26345706
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/k8s-prometheus-adapter-amd64@sha256:afbf7f6166855623ed6e9943b15659d140ce4b57ede7ea1f6ce045f2bf407a0f
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/k8s-prometheus-adapter-amd64@sha256:afbf7f6166855623ed6e9943b15659d140ce4b57ede7ea1f6ce045f2bf407a0f
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/k8s-prometheus-adapter-amd64:v0.8.2
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/k8s-prometheus-adapter-amd64:v0.8.2
+          sizeBytes: 25554176
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/calico-kube-controllers@sha256:3c8151da1da10fc3aed680ed038c2091f52f5886ca3e6ad3ebd2a3b165038c05
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/calico-kube-controllers@sha256:3c8151da1da10fc3aed680ed038c2091f52f5886ca3e6ad3ebd2a3b165038c05
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/calico-kube-controllers:v3.17.0
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/calico-kube-controllers:v3.17.0
+          sizeBytes: 22039450
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/loki@sha256:c613cf8e572666ac0237284a9fedfbc6d63690b8816cec4ae5acf391454ad9f8
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/loki@sha256:c613cf8e572666ac0237284a9fedfbc6d63690b8816cec4ae5acf391454ad9f8
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/loki:2.0.0
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/loki:2.0.0
+          sizeBytes: 21480533
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/coredns@sha256:242d440e3192ffbcecd40e9536891f4d9be46a650363f3a004497c2070f96f5a
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/coredns:1.7.0
+          sizeBytes: 13980685
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/kube-scheduler@sha256:1f715b4182a05279aa16fa0af1eafc02caf21458e6aa436f6c783f8f4fff78f8
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/kube-scheduler:v1.19.7
+          sizeBytes: 13820430
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/coredns@sha256:695a5e109604331f843d2c435f488bf3f239a88aec49112d452c1cbf87e88405
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/coredns:1.6.7
+          sizeBytes: 13596850
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/prometheus-operator@sha256:f2f25b7d715aa161494cbe1ded2e15a4da2756c7cc800e8859c36767328c5017
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/prometheus-operator@sha256:f2f25b7d715aa161494cbe1ded2e15a4da2756c7cc800e8859c36767328c5017
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/prometheus-operator:v0.43.2
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/prometheus-operator:v0.43.2
+          sizeBytes: 13400356
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/node-exporter@sha256:f5b6df287cc3a87e8feb00e3dbbfc630eb411ca6dc3f61abfefe623022fa6927
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/node-exporter@sha256:f5b6df287cc3a87e8feb00e3dbbfc630eb411ca6dc3f61abfefe623022fa6927
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/node-exporter:v1.0.1
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/node-exporter:v1.0.1
+          sizeBytes: 12952320
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/dex@sha256:9e2d93f10f20551ad874da3e3fa570e6723f9d1d70ddce243c26b6c0fe03b447
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/dex@sha256:9e2d93f10f20551ad874da3e3fa570e6723f9d1d70ddce243c26b6c0fe03b447
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/dex:v2.27.0
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/dex:v2.27.0
+          sizeBytes: 12558799
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/kube-state-metrics@sha256:2f82f0da199c60a7699c43c63a295c44e673242de0b7ee1b17c2d5a23bec34cb
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/kube-state-metrics@sha256:2f82f0da199c60a7699c43c63a295c44e673242de0b7ee1b17c2d5a23bec34cb
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/kube-state-metrics:v1.9.7
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/kube-state-metrics:v1.9.7
+          sizeBytes: 10302292
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/nginx@sha256:01747306a7247dbe928db991eab42e4002118bf636dd85b4ffea05dd907e5b66
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/nginx:1.19.6-alpine
+            - docker.io/library/nginx:1.19.6-alpine
+          sizeBytes: 9718654
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/prometheus-config-reloader@sha256:85d405020a9d45d1845d93e1e1000ef00a8a388044fdebfb1b38afa8541b5f9c
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/prometheus-config-reloader@sha256:85d405020a9d45d1845d93e1e1000ef00a8a388044fdebfb1b38afa8541b5f9c
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/prometheus-config-reloader:v0.43.2
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/prometheus-config-reloader:v0.43.2
+          sizeBytes: 5374510
+        - names:
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/nginx-ingress-defaultbackend-amd64@sha256:4dc5e07c8ca4e23bddb3153737d7b8c556e5fb2f29c4558b7cd6e6df99c512c7
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/nginx-ingress-defaultbackend-amd64@sha256:4dc5e07c8ca4e23bddb3153737d7b8c556e5fb2f29c4558b7cd6e6df99c512c7
+            - metalk8s-registry-from-config.invalid/metalk8s-2.7.2/nginx-ingress-defaultbackend-amd64:1.5
+            - metalk8s-registry-from-config.invalid/metalk8s-2.8.0-dev/nginx-ingress-defaultbackend-amd64:1.5
+          sizeBytes: 1995666
+        - names:
+            - k8s.gcr.io/pause:3.2
+          sizeBytes: 685724
+      nodeInfo:
+        architecture: amd64
+        bootID: fdbc96df-027a-4877-bd23-5f5d33ce09a1
+        containerRuntimeVersion: containerd://1.4.3
+        kernelVersion: 3.10.0-1160.15.2.el7.x86_64
+        kubeProxyVersion: v1.19.7
+        kubeletVersion: v1.19.7
+        machineID: cc2c86fe566741e6a2ff6d399c5d5daa
+        operatingSystem: linux
+        osImage: CentOS Linux 7 (Core)
+        systemUUID: EB0EB251-7413-4A0A-867E-0E129650C679
+
+---
+# Default configmaps list (empty)
+apiVersion: v1
+objectKind: ConfigMap
+items: []
+
+---
+# Default prometheus rules list (empty)
+apiVersion: monitoring.coreos.com/v1
+objectKind: PrometheusRule
+items: []

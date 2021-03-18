@@ -104,8 +104,7 @@ class _StaticContainerRegistryBase(targets.AtomicTarget, abc.ABC):
 
 
 class CommonStaticContainerRegistry(_StaticContainerRegistryBase):
-    """Generate a nginx configuration to serve common static container
-    registry."""
+    """Generate a nginx configuration to serve common static container registry."""
 
     def _get_parts(self) -> Iterator[str]:
         parts: Iterator[str] = container_registry.create_config(
@@ -205,27 +204,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     targets.SerializedData(
         task_name="versions.json",
         destination=constants.ISO_ROOT / "salt" / "metalk8s" / "versions.json",
-        data={
-            "kubernetes": {"version": versions.K8S_VERSION},
-            "packages": {
-                "centos": {
-                    version: {pkg.name: {"version": pkg.full_version} for pkg in pkgs}
-                    for version, pkgs in versions.REDHAT_PACKAGES.items()
-                },
-                "redhat": {
-                    version: {pkg.name: {"version": pkg.full_version} for pkg in pkgs}
-                    for version, pkgs in versions.REDHAT_PACKAGES.items()
-                },
-                "ubuntu": {
-                    version: {pkg.name: {"version": pkg.full_version} for pkg in pkgs}
-                    for version, pkgs in versions.DEB_PACKAGES.items()
-                },
-            },
-            "images": {
-                img.name: {"version": img.version} for img in versions.CONTAINER_IMAGES
-            },
-            "metalk8s": {"version": versions.VERSION},
-        },
+        data=versions.SALT_VERSIONS_JSON,
         renderer=targets.Renderer.JSON,
     ),
     Path("salt/metalk8s/addons/dex/ca/init.sls"),
@@ -276,7 +255,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
         file_dep=[SCALITY_LOGO, SCALITY_FAVICON, LOGIN_STYLE],
         renderer=targets.Renderer.SLS,
     ),
-    Path("salt/metalk8s/addons/dex/deployed/", "nginx-ingress-ca-cert-configmap.sls"),
+    Path("salt/metalk8s/addons/dex/deployed/nginx-ingress-ca-cert-configmap.sls"),
     Path("salt/metalk8s/addons/logging/deployed/init.sls"),
     targets.TemplateFile(
         task_name="logs dashboard.sls",
@@ -331,10 +310,8 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     ),
     Path("salt/metalk8s/addons/logging/loki/deployed/datasource.sls"),
     Path("salt/metalk8s/addons/logging/loki/deployed/init.sls"),
-    Path(
-        "salt/metalk8s/addons/logging/loki/deployed/", "loki-configuration-secret.sls"
-    ),
-    Path("salt/metalk8s/addons/logging/loki/deployed/", "service-configuration.sls"),
+    Path("salt/metalk8s/addons/logging/loki/deployed/loki-configuration-secret.sls"),
+    Path("salt/metalk8s/addons/logging/loki/deployed/service-configuration.sls"),
     Path("salt/metalk8s/addons/logging/loki/deployed/services.sls"),
     Path("salt/metalk8s/addons/prometheus-adapter/deployed/chart.sls"),
     Path("salt/metalk8s/addons/prometheus-adapter/deployed/init.sls"),
@@ -345,27 +322,24 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/prometheus-operator/config/grafana.yaml"),
     Path("salt/metalk8s/addons/prometheus-operator/config/prometheus.yaml"),
     Path(
-        "salt/metalk8s/addons/prometheus-operator/deployed/"
-        "alertmanager-configuration-secret.sls"
+        "salt/metalk8s/addons/prometheus-operator/deployed/",
+        "alertmanager-configuration-secret.sls",
     ),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/chart.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/cleanup.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/dashboards.sls"),
     Path(
-        "salt/metalk8s/addons/prometheus-operator/deployed/files/"
-        "node-exporter-full.json"
+        "salt/metalk8s/addons/prometheus-operator/deployed/files/",
+        "node-exporter-full.json",
     ),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/init.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/namespace.sls"),
-    Path("salt/metalk8s/addons/prometheus-operator/deployed/" "prometheus-rules.sls"),
-    Path(
-        "salt/metalk8s/addons/prometheus-operator/deployed/",
-        "service-configuration.sls",
-    ),
+    Path("salt/metalk8s/addons/prometheus-operator/deployed/prometheus-rules.sls"),
+    Path("salt/metalk8s/addons/prometheus-operator/deployed/service-configuration.sls"),
     Path("salt/metalk8s/addons/ui/deployed/dependencies.sls"),
     Path("salt/metalk8s/addons/ui/deployed/ingress.sls"),
     Path("salt/metalk8s/addons/ui/deployed/init.sls"),
-    Path("salt/metalk8s/addons/ui/deployed/files/metalk8s-ui-deployment.yaml"),
+    Path("salt/metalk8s/addons/ui/deployed/files/metalk8s-ui-deployment.yaml.j2"),
     Path("salt/metalk8s/addons/ui/deployed/namespace.sls"),
     targets.TemplateFile(
         task_name="salt/metalk8s/addons/ui/deployed/ui.sls",
@@ -429,10 +403,8 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/nginx-ingress-control-plane/certs/server.sls"),
     Path("salt/metalk8s/addons/nginx-ingress-control-plane/deployed/init.sls"),
     Path("salt/metalk8s/addons/nginx-ingress-control-plane/deployed/chart.sls"),
-    Path(
-        "salt/metalk8s/addons/nginx-ingress-control-plane/deployed/", "tls-secret.sls"
-    ),
-    Path("salt/metalk8s/addons/nginx-ingress-control-plane/", "control-plane-ip.sls"),
+    Path("salt/metalk8s/addons/nginx-ingress-control-plane/deployed/tls-secret.sls"),
+    Path("salt/metalk8s/addons/nginx-ingress-control-plane/control-plane-ip.sls"),
     Path("salt/metalk8s/beacon/certificates.sls"),
     Path("salt/metalk8s/container-engine/containerd/configured.sls"),
     Path("salt/metalk8s/container-engine/containerd/files/50-metalk8s.conf.j2"),
@@ -463,8 +435,8 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/kubernetes/apiserver/installed.sls"),
     Path("salt/metalk8s/kubernetes/apiserver/cryptconfig.sls"),
     Path("salt/metalk8s/kubernetes/apiserver/kubeconfig.sls"),
-    Path("salt/metalk8s/kubernetes/apiserver-proxy/files/" "apiserver-proxy.conf.j2"),
-    Path("salt/metalk8s/kubernetes/apiserver-proxy/files/" "apiserver-proxy.yaml.j2"),
+    Path("salt/metalk8s/kubernetes/apiserver-proxy/files/apiserver-proxy.conf.j2"),
+    Path("salt/metalk8s/kubernetes/apiserver-proxy/files/apiserver-proxy.yaml.j2"),
     Path("salt/metalk8s/kubernetes/apiserver-proxy/init.sls"),
     Path("salt/metalk8s/kubernetes/apiserver-proxy/installed.sls"),
     Path("salt/metalk8s/kubernetes/ca/advertised.sls"),
@@ -489,19 +461,19 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/kubernetes/controller-manager/kubeconfig.sls"),
     Path("salt/metalk8s/kubernetes/coredns/deployed.sls"),
     Path("salt/metalk8s/kubernetes/coredns/files/coredns-deployment.yaml.j2"),
-    Path("salt/metalk8s/kubernetes/files/control-plane-manifest.yaml"),
+    Path("salt/metalk8s/kubernetes/files/control-plane-manifest.yaml.j2"),
     Path("salt/metalk8s/kubernetes/etcd/certs/healthcheck-client.sls"),
     Path("salt/metalk8s/kubernetes/etcd/certs/init.sls"),
     Path("salt/metalk8s/kubernetes/etcd/certs/peer.sls"),
     Path("salt/metalk8s/kubernetes/etcd/certs/server.sls"),
-    Path("salt/metalk8s/kubernetes/etcd/files/manifest.yaml"),
+    Path("salt/metalk8s/kubernetes/etcd/files/manifest.yaml.j2"),
     Path("salt/metalk8s/kubernetes/etcd/init.sls"),
     Path("salt/metalk8s/kubernetes/etcd/installed.sls"),
     Path("salt/metalk8s/kubernetes/etcd/prepared.sls"),
     Path("salt/metalk8s/kubernetes/kubelet/configured.sls"),
-    Path("salt/metalk8s/kubernetes/kubelet/files/kubeadm.env"),
-    Path("salt/metalk8s/kubernetes/kubelet/files/service-standalone-systemd.conf"),
-    Path("salt/metalk8s/kubernetes/kubelet/files/service-systemd.conf"),
+    Path("salt/metalk8s/kubernetes/kubelet/files/kubeadm.env.j2"),
+    Path("salt/metalk8s/kubernetes/kubelet/files/service-standalone-systemd.conf.j2"),
+    Path("salt/metalk8s/kubernetes/kubelet/files/service-systemd.conf.j2"),
     Path("salt/metalk8s/kubernetes/kubelet/init.sls"),
     Path("salt/metalk8s/kubernetes/kubelet/installed.sls"),
     Path("salt/metalk8s/kubernetes/kubelet/running.sls"),
@@ -558,10 +530,10 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/orchestrate/solutions/import-components.sls"),
     Path("salt/metalk8s/orchestrate/solutions/prepare-environment.sls"),
     Path("salt/metalk8s/orchestrate/solutions/deploy-components.sls"),
-    Path("salt/metalk8s/orchestrate/solutions/files/operator/configmap.yaml"),
-    Path("salt/metalk8s/orchestrate/solutions/files/operator/deployment.yaml"),
-    Path("salt/metalk8s/orchestrate/solutions/files/operator/role_binding.yaml"),
-    Path("salt/metalk8s/orchestrate/solutions/files/operator/service_account.yaml"),
+    Path("salt/metalk8s/orchestrate/solutions/files/operator/configmap.yaml.j2"),
+    Path("salt/metalk8s/orchestrate/solutions/files/operator/deployment.yaml.j2"),
+    Path("salt/metalk8s/orchestrate/solutions/files/operator/role_binding.yaml.j2"),
+    Path("salt/metalk8s/orchestrate/solutions/files/operator/service_account.yaml.j2"),
     Path("salt/metalk8s/archives/configured.sls"),
     Path("salt/metalk8s/archives/init.sls"),
     Path("salt/metalk8s/archives/mounted.sls"),

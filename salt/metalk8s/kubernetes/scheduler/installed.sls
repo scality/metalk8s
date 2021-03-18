@@ -7,7 +7,7 @@ include:
 Create kube-scheduler Pod manifest:
   metalk8s.static_pod_managed:
     - name: /etc/kubernetes/manifests/kube-scheduler.yaml
-    - source: salt://metalk8s/kubernetes/files/control-plane-manifest.yaml
+    - source: salt://metalk8s/kubernetes/files/control-plane-manifest.yaml.j2
     - config_files:
       - /etc/kubernetes/scheduler.conf
     - context:
