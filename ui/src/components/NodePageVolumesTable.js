@@ -288,7 +288,7 @@ const VolumeListTable = (props) => {
         accessor: 'health',
         cellStyle: {
           textAlign: 'center',
-          width: '75px',
+          flexBasis: '105px',
         },
         Cell: (cellProps) => {
           return (
@@ -415,7 +415,7 @@ const VolumeListTable = (props) => {
         Header: 'Latency',
         accessor: 'latency',
         cellStyle: {
-          textAlign: 'right',
+          textAlign: 'center',
           width: '110px',
           paddingRight: '6px',
         },
