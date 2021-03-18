@@ -14,12 +14,18 @@ models:
       method: clobber
       retryFetch: true
       haltOnFailure: true
+  - ShellCommand: &git_pull_terraform
+      name: Git pull terraform snapshot
+      command: >
+        git clone --depth 1 "git@github.com:scality/terraform-snapshot.git"
+        --branch "0.1.0"
+      haltOnFailure: true
   - ShellCommand: &git_pull_ssh
       name: Git pull on bastion
       command: >
         ssh -F ssh_config bastion --
         git clone "https://github.com/scality/metalk8s" --branch "%(prop:branch)s"
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: &terraform_workdir build/terraform-snapshot/terraform/
       haltOnFailure: true
   - ShellCommand: &yum_clean_all
       # Eve cache the workers, so time to time yum repositories definition are
@@ -64,13 +70,13 @@ models:
         SSH_CONFIG: ssh_config
         SSH_HOST: bootstrap
       command: >
-        git checkout "%(prop:branch)s" &&
+        pushd "%(prop:builddir)s/build" && git checkout "%(prop:branch)s" && popd &&
         scp -F "$SSH_CONFIG" %(prop:builddir)s/build/eve/wait_pods_stable.sh "$SSH_HOST":/tmp/ &&
         ssh -F "$SSH_CONFIG" "$SSH_HOST" sudo /tmp/wait_pods_stable.sh
         --sleep-time "$SLEEP_TIME" --stabilization-time "$STABILIZATION_TIME"
         --retry "$RETRY"
       usePTY: true
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &build_all
       name: Build everything
@@ -278,7 +284,7 @@ models:
       command: >
         scp -F ssh_config "$ARCHIVE_DIRECTORY/$ARCHIVE"
         bootstrap:"$DEST"
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &create_mountpoint
       name: Create mountpoint
@@ -290,7 +296,7 @@ models:
       command: >
         ssh -F ssh_config bootstrap
         sudo mkdir -p /var/tmp/metalk8s
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &mount_iso
       name: Mount ISO image
@@ -308,7 +314,7 @@ models:
       command: >
         ssh -F ssh_config bootstrap
         sudo mount -o loop ${ARCHIVE} ${MOUNTPOINT}
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &set_bootstrap_minion_id_ssh
       name: Set the Salt minion ID on boostrap node
@@ -320,7 +326,7 @@ models:
         mkdir -p /etc/salt
         echo \"$MINION_ID\" > /etc/salt/minion_id
         EOF"
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &bootstrap_config
       name: Create bootstrap configuration file
@@ -371,7 +377,7 @@ models:
         END
         EOF"
       haltOnFailure: true
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
   - ShellCommand: &run_bootstrap
       name: Start the bootstrap process
       env:
@@ -387,7 +393,7 @@ models:
         ssh -F ssh_config bootstrap
         sudo bash
         /var/tmp/metalk8s/bootstrap.sh --verbose
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &provision_volumes_ssh
       name: Provision MetalK8s Volumes
@@ -405,7 +411,7 @@ models:
         PRODUCT_TXT="$PRODUCT_TXT"
         NODE_NAME=$NODE_NAME
         /tmp/create-volumes.sh
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &add_archive
       name: Add ISO to cluster
@@ -427,7 +433,7 @@ models:
         sudo bash
         /srv/scality/metalk8s-${PRODUCT_VERSION}/iso-manager.sh
         --archive \"\$(readlink -f \"${ISO_PATH}\")\" --verbose"
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &local_tests
       name: Run tests locally
@@ -455,7 +461,7 @@ models:
         export TEST_HOSTS_LIST=\"${TEST_HOSTS_LIST}\" &&
         export BOOTSTRAP_BACKUP_ARCHIVE=\"${BOOTSTRAP_BACKUP_ARCHIVE}\" &&
         tox -e tests -- ${PYTEST_ARGS:-""} -m \"${PYTEST_FILTERS}\""
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &bastion_fast_tests
       <<: *bastion_tests
@@ -471,7 +477,15 @@ models:
             sudo salt-call grains.get metalk8s:control_plane_ip --out txt |
             sed -rn 's/^local: (.*)$/\1/p'
         "
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
+      haltOnFailure: true
+  - ShellCommand: &install_cypress_ssh
+      name: Install Cypress on Bastion
+      command: >
+        ssh -F ssh_config bastion --
+        "cd metalk8s &&
+        bash ui/cypress/requirements.sh"
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &bastion_ui_tests
       name: Run UI tests on Bastion
@@ -482,7 +496,7 @@ models:
         ssh -F ssh_config bastion --
         "cd metalk8s/ui &&
         CYPRESS_BASE_URL=$TARGET_URL npm run test:$TEST_FILTER"
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &add_final_status_artifact
       name: Add final status to artifacts
@@ -527,15 +541,9 @@ models:
 
   # --- Re-usable steps related to terraform actions ---
   - ShellCommand: &terraform_install
-      name: Download and install terraform
-      env:
-        TF_VERSION: "0.12.3"
-      command: >
-        TF_URL="https://releases.hashicorp.com/terraform/${TF_VERSION}/";
-        TF_FILE="terraform_${TF_VERSION}_linux_amd64.zip";
-        curl --retry 5 -O "${TF_URL}${TF_FILE}" &&
-        sudo unzip "${TF_FILE}" -d /usr/local/sbin/ &&
-        rm -f "${TF_FILE}"
+      name: Install terraform and requirements
+      command: bash ../requirements.sh
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &terraform_install_check
       name: Check that terraform was installed
@@ -562,12 +570,12 @@ models:
         done
       env:
         MAX_RETRIES: "12"
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &terraform_validate
       name: Validate terraform definition
       command: terraform validate
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &terraform_apply
       name: Spawn openstack virtual infra
@@ -600,7 +608,7 @@ models:
         TF_VAR_offline: "%(prop:offline:-true)s"
         TF_VAR_use_proxy: "%(prop:use_proxy:-true)s"
         MAX_RETRIES: "3"
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &terraform_gen_snapshot
       name: Generate snapshot from terraform environment
@@ -608,8 +616,8 @@ models:
       env:
         <<: *_env_terraform
         SNAPSHOT_NAME: "metalk8s-%(prop:metalk8s_version)s-%(prop:os:-centos-7)s-%(prop:environment_type)s-%(prop:environment_name)s"
-      command: ./generate_snapshot.sh
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      command: ../generate_snapshot.sh
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &terraform_destroy
       name: Destroy openstack virtual infra
@@ -626,7 +634,7 @@ models:
           fi
         done
       env: *_env_terraform
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       alwaysRun: true
       sigtermTime: 600
 
@@ -664,7 +672,7 @@ models:
         ssh -F ssh_config bootstrap
         sudo "$METALK8S_MOUNTPOINT/solutions.sh"
         import --archive "\$(readlink -f \"$SOLUTION_ARCHIVE\")"
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &activate_solution
       doStepIf: "%(prop:install_solution:-false)s"
@@ -677,7 +685,7 @@ models:
         ssh -F ssh_config bootstrap
         sudo "$METALK8S_MOUNTPOINT/solutions.sh"
         activate --name "$SOLUTION_NAME" --version "$SOLUTION_VERSION"
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &create_solution_env
       doStepIf: "%(prop:install_solution:-false)s"
@@ -689,7 +697,7 @@ models:
         ssh -F ssh_config bootstrap
         sudo "$METALK8S_MOUNTPOINT/solutions.sh"
         create-env --name "$ENVIRONMENT_NAME"
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &untaint_bootstrap_ssh
       doStepIf: "%(prop:install_solution:-false)s"
@@ -701,7 +709,7 @@ models:
         sudo kubectl --kubeconfig /etc/kubernetes/admin.conf \
         patch node "$NODE_NAME" --patch '{"spec": {"taints": []}}'
         ENDSSH
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &deploy_solution
       doStepIf: "%(prop:install_solution:-false)s"
@@ -716,7 +724,7 @@ models:
         sudo "$METALK8S_MOUNTPOINT/solutions.sh"
         add-solution --name "$ENVIRONMENT_NAME"
         --solution "$SOLUTION_NAME" --version "$SOLUTION_VERSION"
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &wait_for_solution_operator
       doStepIf: "%(prop:install_solution:-false)s"
@@ -730,7 +738,7 @@ models:
         wait pods --namespace "$ENVIRONMENT_NAME"
         --selector "app.kubernetes.io/name=$SOLUTION_NAME-operator"
         --for condition=Ready
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       haltOnFailure: true
 
   # --- Previous version (for Upgrade/Downgrade) ---
@@ -766,7 +774,7 @@ models:
           --batch --tmp-dir /var/tmp && \
           sudo chown '$REPORT_OWNER:$REPORT_GROUP' /var/tmp/sosreport*"
         done
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       alwaysRun: true
   - ShellCommand: &collect_report_over_ssh
       name: Download every sosreports on worker
@@ -785,7 +793,7 @@ models:
           "$host:/var/tmp/sosreport-*.tar.xz" \
           "$DEST_DIR/$STEP_NAME/$host-sosreport.tar.xz"
         done
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       alwaysRun: true
   - ShellCommand: &collect_cypress_result_ssh
       name: Download Cypress result from Bastion
@@ -798,7 +806,7 @@ models:
         scp -r -F "$SSH_CONFIG" "$SSH_HOST":metalk8s/ui/cypress/screenshots "$DEST_DIR/cypress/"
         scp -r -F "$SSH_CONFIG" "$SSH_HOST":metalk8s/ui/cypress/videos "$DEST_DIR/cypress/"
         scp -r -F "$SSH_CONFIG" "$SSH_HOST":metalk8s/ui/junit "$DEST_DIR"
-      workdir: build/eve/workers/openstack-terraform/terraform/
+      workdir: *terraform_workdir
       alwaysRun: true
 
 stages:
@@ -1675,10 +1683,10 @@ stages:
         CLASS_NAME: "single node.%(prop:os:-centos-7)s"
         TEST_NAME: simple environment
     simultaneous_build: 20
-    worker: &terraform_worker
-      <<: *single_node_worker
+    worker: &openstack_worker
+      type: openstack
+      image: CentOS-7-x86_64-GenericCloud-1809.qcow2
       flavor: m1.medium
-      path: eve/workers/openstack-terraform
     steps:
       - Git: *git_pull
       - ShellCommand:
@@ -1689,6 +1697,7 @@ stages:
             STEP_NAME: "single-node-install-%(prop:os:-centos-7)s"
       - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
+      - ShellCommand: *git_pull_terraform
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
       - ShellCommand: *check_iso_checksum
@@ -1721,6 +1730,7 @@ stages:
       - ShellCommand: *git_pull_ssh
       - ShellCommand: *bastion_fast_tests
       - SetPropertyFromCommand: *set_bootstrap_cp_ip_ssh
+      - ShellCommand: *install_cypress_ssh
       - ShellCommand: *bastion_ui_tests
       - ShellCommand: *collect_cypress_result_ssh
       - Upload: *upload_cypress_artifacts
@@ -1906,7 +1916,7 @@ stages:
         CLASS_NAME: "%(prop:promoted_version_type:-unknown)s.%(prop:environment_type)s.%(prop:os:-centos-7)s"
         TEST_NAME: "%(prop:environment_name)s"
     simultaneous_build: 20
-    worker: *terraform_worker
+    worker: *openstack_worker
     steps:
       - Git: *git_pull
       - ShellCommand:
@@ -1917,6 +1927,7 @@ stages:
             STEP_NAME: "%(prop:environment_type)s-%(prop:environment_name)s-upgrade-%(prop:promoted_version_type:-unknown)s-%(prop:os:-centos-7)s"
       - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
+      - ShellCommand: *git_pull_terraform
       # --- Get ISO for version N ---
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
@@ -1946,7 +1957,7 @@ stages:
                 fi
             done
             ENDSSH
-          workdir: build/eve/workers/openstack-terraform/terraform/
+          workdir: *terraform_workdir
           haltOnFailure: true
       - ShellCommand:
           # NOTE: we ignore Succeeded pods which were scheduled by Jobs, since
@@ -1957,7 +1968,7 @@ stages:
             kubectl --kubeconfig=/etc/kubernetes/admin.conf
             wait pods --for=condition=Ready --all --all-namespaces
             --field-selector=status.phase!=Succeeded"'
-          workdir: build/eve/workers/openstack-terraform/terraform/
+          workdir: *terraform_workdir
           haltOnFailure: true
       # --- We do not need to Test promoted version ---
       # --- Upgrade to version N ---
@@ -1979,7 +1990,7 @@ stages:
             sudo bash
             /srv/scality/metalk8s-%(prop:metalk8s_version)s/upgrade.sh
             --verbose"
-          workdir: build/eve/workers/openstack-terraform/terraform/
+          workdir: *terraform_workdir
           haltOnFailure: true
       - ShellCommand:
           <<: *provision_volumes_ssh
@@ -2066,6 +2077,7 @@ stages:
       # --- Install version N ---
       - ShellCommand: *run_bootstrap
       - ShellCommand: *provision_prometheus_volumes
+      - ShellCommand: *untaint_bootstrap
       - ShellCommand: *wait_pods_stable
       # --- Test version N ---
       - ShellCommand: *fast_tests
@@ -2119,7 +2131,7 @@ stages:
         CLASS_NAME: "multi node.%(prop:os:-centos-7)s"
         TEST_NAME: "1 bootstrap %(prop:nodes_count:-1)s master,etcd"
     simultaneous_builds: 20
-    worker: *terraform_worker
+    worker: *openstack_worker
     steps:
       - Git: *git_pull
       - SetProperty:
@@ -2136,21 +2148,10 @@ stages:
             STEP_NAME: "multiple-nodes-%(prop:os:-centos-7)s"
       - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
+      - ShellCommand: *git_pull_terraform
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
       - ShellCommand: *check_iso_checksum
-      - ShellCommand:
-          name: Check if unzip and curl are installed
-          command: |-
-            if ! unzip -h 2&> /dev/null; then
-              echo "aborting - unzip not installed and required" >&2
-              exit 1
-            fi
-            if ! curl -h 2&> /dev/null; then
-              echo "aborting - curl not installed and required" >&2
-              exit 1
-            fi
-          haltOnFailure: true
       - ShellCommand: *terraform_install
       - ShellCommand: *terraform_install_check
       - ShellCommand: *terraform_init
@@ -2167,7 +2168,7 @@ stages:
               sleep 5
               ssh -F ssh_config bootstrap id && break
             done;
-          workdir: build/eve/workers/openstack-terraform/terraform/
+          workdir: *terraform_workdir
           haltOnFailure: true
       - ShellCommand: &copy_bastion_priv_key_to_bootstrap
           # FIXME: find a cleaner way with Terraform.
@@ -2176,7 +2177,7 @@ stages:
               ssh -F ssh_config bootstrap "sudo mkdir -p /etc/metalk8s/pki/" &&
               scp -F ssh_config -3 bastion:.ssh/bastion bootstrap:./         &&
               ssh -F ssh_config bootstrap "sudo cp bastion /etc/metalk8s/pki/"
-          workdir: build/eve/workers/openstack-terraform/terraform/
+          workdir: *terraform_workdir
           haltOnFailure: true
       - ShellCommand: *set_bootstrap_minion_id_ssh
       - ShellCommand:
@@ -2185,7 +2186,7 @@ stages:
             ssh -F ssh_config bootstrap '
               sudo mkdir /archives && sudo chown $USER: /archives
             '
-          workdir: build/eve/workers/openstack-terraform/terraform/
+          workdir: *terraform_workdir
           haltOnFailure: true
       - ShellCommand:
           <<: *bootstrap_config_ssh
@@ -2204,13 +2205,6 @@ stages:
             <<: *_env_mount_iso_ssh
             ARCHIVE: /archives/metalk8s.iso
       - ShellCommand: *run_bootstrap_ssh
-      - ShellCommand: &install_kubectl_bootstrap_ssh
-          name: Install kubectl on the boostrap node
-          command: >
-            ssh -F ssh_config bootstrap
-            sudo yum install -y kubectl --disablerepo=*
-            --enablerepo=metalk8s-kubernetes
-          workdir: build/eve/workers/openstack-terraform/terraform/
       - ShellCommand: *git_pull_ssh
       - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand:
@@ -2255,7 +2249,7 @@ stages:
           command: |
               scp -F ssh_config %(prop:builddir)s/build/tests/test-certificates-beacon.sh bootstrap:
               ssh -F ssh_config bootstrap "sudo ./test-certificates-beacon.sh /var/tmp/metalk8s"
-          workdir: build/eve/workers/openstack-terraform/terraform/
+          workdir: *terraform_workdir
           haltOnFailure: true
       - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand:
@@ -2294,7 +2288,7 @@ stages:
         CLASS_NAME: "multi node.%(prop:os:-centos-7)s"
         TEST_NAME: bootstrap restore
       simultaneous_builds: 20
-    worker: *terraform_worker
+    worker: *openstack_worker
     steps:
       - Git: *git_pull
       - SetProperty:
@@ -2311,6 +2305,7 @@ stages:
             STEP_NAME: bootstrap-restore
       - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
+      - ShellCommand: *git_pull_terraform
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
       - ShellCommand: *check_iso_checksum
@@ -2346,7 +2341,7 @@ stages:
             ssh -F ssh_config bootstrap
             "sudo find /var/lib/metalk8s -name 'backup_*.tar.gz'
             -printf '%f\n' | sort | tail -n1"
-          workdir: build/eve/workers/openstack-terraform/terraform/
+          workdir: *terraform_workdir
           haltOnFailure: true
       - ShellCommand:
           name: Retrieve the backup archive from the bootstrap node
@@ -2354,7 +2349,7 @@ stages:
             scp -F ssh_config
             bootstrap:"/var/lib/metalk8s/%(prop:bootstrap_backup_archive)s"
             /tmp
-          workdir: build/eve/workers/openstack-terraform/terraform/
+          workdir: *terraform_workdir
           haltOnFailure: true
       - ShellCommand:
           name: Destroy the bootstrap node
@@ -2362,7 +2357,7 @@ stages:
           command: >
             terraform destroy -auto-approve
             -target openstack_compute_instance_v2.bootstrap
-          workdir: build/eve/workers/openstack-terraform/terraform/
+          workdir: *terraform_workdir
           haltOnFailure: true
       - SetPropertyFromCommand:
           name: Set node-1 etcd container id
@@ -2371,7 +2366,7 @@ stages:
             ssh -F ssh_config node-1
             sudo crictl ps -q --label io.kubernetes.pod.namespace=kube-system
             --label io.kubernetes.container.name=etcd --state Running
-          workdir: build/eve/workers/openstack-terraform/terraform/
+          workdir: *terraform_workdir
           haltOnFailure: true
       - SetPropertyFromCommand:
           name: Set boostrap node etcd member id
@@ -2384,7 +2379,7 @@ stages:
             --key /etc/kubernetes/pki/etcd/server.key
             --cacert /etc/kubernetes/pki/etcd/ca.crt
             member list\" | awk -F ', ' '$3 ~ "bootstrap" { print $1 }'
-          workdir: build/eve/workers/openstack-terraform/terraform/
+          workdir: *terraform_workdir
           haltOnFailure: true
       - ShellCommand:
           name: Remove bootstrap node from etcd members
@@ -2396,7 +2391,7 @@ stages:
             --key /etc/kubernetes/pki/etcd/server.key
             --cacert /etc/kubernetes/pki/etcd/ca.crt
             member remove %(prop:bootstrap_etcd_member_id)s\"
-          workdir: build/eve/workers/openstack-terraform/terraform/
+          workdir: *terraform_workdir
           haltOnFailure: true
       - ShellCommand:
           name: Remove bootstrap node object
@@ -2408,7 +2403,7 @@ stages:
                 sleep 5
             done
             exit 1
-          workdir: build/eve/workers/openstack-terraform/terraform/
+          workdir: *terraform_workdir
           haltOnFailure: true
       - ShellCommand:
           name: Create a new bootstrap node
@@ -2418,14 +2413,14 @@ stages:
             -target openstack_compute_instance_v2.bootstrap
             -target null_resource.copy_bastion_pub_to_bootstrap
             -target null_resource.ssh_config
-          workdir: build/eve/workers/openstack-terraform/terraform/
+          workdir: *terraform_workdir
           haltOnFailure: true
       - ShellCommand:
           name: Copy the backup archive to the new bootstrap node
           command: >
             scp -F ssh_config
             "/tmp/%(prop:bootstrap_backup_archive)s" bootstrap:/tmp
-          workdir: build/eve/workers/openstack-terraform/terraform/
+          workdir: *terraform_workdir
           haltOnFailure: true
       - ShellCommand:
           <<: *copy_iso_bootstrap_ssh
@@ -2479,7 +2474,7 @@ stages:
         CLASS_NAME: "single node.%(prop:os:-centos-7)s"
         TEST_NAME: solutions
     simultaneous_builds: 20
-    worker: *terraform_worker
+    worker: *openstack_worker
     steps:
       - Git: *git_pull
       - ShellCommand:
@@ -2490,6 +2485,7 @@ stages:
             STEP_NAME: single-node-solutions
       - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
+      - ShellCommand: *git_pull_terraform
       - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
       - ShellCommand: *check_iso_checksum
@@ -2505,7 +2501,6 @@ stages:
       - ShellCommand: *mount_iso_ssh
       - ShellCommand: *run_bootstrap_ssh
       - ShellCommand: *provision_volumes_ssh
-      - ShellCommand: *install_kubectl_bootstrap_ssh
       - ShellCommand: *untaint_bootstrap_ssh
       - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand:
@@ -2537,7 +2532,7 @@ stages:
             "%(prop:builddir)s/build/example-solution.iso"
             "%(prop:builddir)s/build/example-solution-next.iso"
             "bootstrap:/var/tmp"
-          workdir: build/eve/workers/openstack-terraform/terraform/
+          workdir: *terraform_workdir
           haltOnFailure: true
       - ShellCommand: *git_pull_ssh
       - ShellCommand:
