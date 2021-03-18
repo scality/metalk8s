@@ -10,7 +10,7 @@ import type { StreamValue } from './loki/api';
 import { compareHealth } from './utils';
 
 export type Health = 'healthy' | 'warning' | 'critical' | 'none';
-type FilterLabels = {
+export type FilterLabels = {
   [labelName: string]: string | string[],
   parents?: string[],
   selectors?: string[],
