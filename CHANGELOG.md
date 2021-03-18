@@ -6,7 +6,9 @@
 - Include [qperf](https://github.com/linux-rdma/qperf) in the `metalk8s-utils`
   container image (PR [#3174](https://github.com/scality/metalk8s/pull/3174))
 
-## Release 2.8.0 (in development)
+## Release 2.8.1 (in development)
+
+## Release 2.8.0
 ### Enhancements
 
 - [#3051](https://github.com/scality/metalk8s/issues/3051) - Prefix OIDC claims
