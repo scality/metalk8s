@@ -1,0 +1,62 @@
+@startuml(id=Container)
+title Alert history - Containers
+caption A detailed view of the alert history system.
+
+skinparam {
+  shadowing false
+  arrowFontSize 10
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 100
+}
+hide stereotype
+skinparam rectangle<<1>> {
+  BackgroundColor #08427b
+  FontColor #ffffff
+  BorderColor #dddddd
+}
+skinparam rectangle<<2>> {
+  BackgroundColor #1168bd
+  FontColor #ffffff
+  BorderColor #dddddd
+  roundCorner 20
+}
+skinparam rectangle<<6>> {
+  BackgroundColor #438dd5
+  FontColor #ffffff
+  BorderColor #dddddd
+  roundCorner 20
+}
+skinparam rectangle<<7>> {
+  BackgroundColor #438dd5
+  FontColor #ffffff
+  BorderColor #dddddd
+  roundCorner 20
+}
+skinparam rectangle<<8>> {
+  BackgroundColor #438dd5
+  FontColor #ffffff
+  BorderColor #dddddd
+  roundCorner 20
+}
+skinparam rectangle<<9>> {
+  BackgroundColor #438dd5
+  FontColor #ffffff
+  BorderColor #dddddd
+  roundCorner 20
+}
+rectangle "==MetalK8s Logging\n<size:10>[Software System]</size>" <<2>> as 2
+rectangle "==User\n<size:10>[Person]</size>\n\nA MetalK8s user." <<1>> as 1
+package "MetalK8s Monitoring\n[Software System]" {
+  rectangle "==Alert Logger\n<size:10>[Container]</size>\n\nService logging alerts received from Alertmanager." <<6>> as 6
+  rectangle "==Alertmanager\n<size:10>[Container]</size>\n\nService deduplicating, grouping and forwarding alerts." <<7>> as 7
+  rectangle "==Grafana\n<size:10>[Container]</size>\n\nService displaying metrics and logs through dashboards." <<9>> as 9
+  rectangle "==Prometheus\n<size:10>[Container]</size>\n\nService monitoring the cluster components." <<8>> as 8
+}
+7 .[#707070,thickness=2].> 6 : "Forwards alerts to"
+9 .[#707070,thickness=2].> 2 : "Queries logs (alerts) from"
+9 .[#707070,thickness=2].> 8 : "Queries metrics from"
+2 .[#707070,thickness=2].> 6 : "Reads logs from"
+8 .[#707070,thickness=2].> 7 : "Sends alerts to"
+1 .[#707070,thickness=2].> 9 : "Consults alerts dashboard"
+@enduml
