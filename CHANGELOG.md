@@ -3,11 +3,13 @@
 ## Release 2.9.0 (in development)
 ### Enhancements
 - Bump Kubernetes version to 1.20.4 (PR[#3139](https://github.com/scality/metalk8s/pull/3139))
+
 - Include [qperf](https://github.com/linux-rdma/qperf) in the `metalk8s-utils`
   container image (PR [#3174](https://github.com/scality/metalk8s/pull/3174))
 
-## Release 2.8.1 (in development)
+- Bump Node.js version to 14.16.0 (PR[#3214](https://github.com/scality/metalk8s/pull/3214))
 
+## Release 2.8.1 (in development)
 ## Release 2.8.0
 ### Enhancements
 
