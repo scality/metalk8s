@@ -71,7 +71,7 @@ CENTOS_BASE_IMAGE_SHA256: str = (
 )
 
 NGINX_IMAGE_VERSION: str = "1.19.6-alpine"
-NODEJS_IMAGE_VERSION: str = "10.16.0"
+NODEJS_IMAGE_VERSION: str = "14.16.0"
 
 # Current build IDs, to be augmented whenever we rebuild the corresponding
 # image, e.g. because the `Dockerfile` is changed, or one of the dependencies
