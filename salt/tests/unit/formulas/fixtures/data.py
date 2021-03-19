@@ -2,6 +2,7 @@
 from pathlib import Path
 from typing import Any
 import sys
+import textwrap
 
 import pytest
 import yaml
@@ -39,6 +40,26 @@ def fixture_metalk8s_versions() -> Any:
 
     sys.path.pop(0)
     return versions.SALT_VERSIONS_JSON
+
+
+@pytest.fixture(scope="session", name="buildchain_template_context")
+def fixture_buildchain_template_context() -> Any:
+    """Emulate .in template context for buildchain."""
+    buildchain_path = paths.REPO_ROOT / "buildchain"
+    sys.path.insert(0, str(buildchain_path))
+    # pylint: disable=import-error,import-outside-toplevel
+    from buildchain import versions
+
+    # pylint: enable=import-error,import-outside-toplevel
+
+    sys.path.pop(0)
+    ui_theme_options: Path = paths.REPO_ROOT / "shell-ui" / "theme.json"
+    return {
+        "VERSION": versions.VERSION,
+        "ThemeConfig": textwrap.indent(
+            ui_theme_options.read_text(encoding="utf-8"), 4 * " "
+        ),
+    }
 
 
 @pytest.fixture(scope="session", name="base_kubernetes")
