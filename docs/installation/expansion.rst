@@ -132,11 +132,32 @@ following the template below:
        metalk8s.scality.com/ssh-key-path: /etc/metalk8s/pki/salt-bootstrap
        metalk8s.scality.com/ssh-host: <node control plane IP>
        metalk8s.scality.com/ssh-sudo: 'false'
+       metalk8s.scality.com/ssh-user: 'root'
      labels:
        metalk8s.scality.com/version: '|version|'
        <role labels>
    spec:
      taints: <taints>
+
+Annotations are used by Salt-SSH to connect to the node and deploy it.
+All annotations are prefixed with ``metalk8s.scality.com/``:
+
++--------------+--------------------------------------------------+-----------+
+| Annotation   | Description                                      | Default   |
++==============+==================================================+===========+
+| ssh-host     | Control plane IP of the node, must be accessible | None      |
+|              | over SSH from the Bootstrap node                 |           |
++--------------+--------------------------------------------------+-----------+
+| ssh-key-path | Path to the private SSH key used to connect to   | None      |
+|              | the node                                         |           |
++--------------+--------------------------------------------------+-----------+
+| ssh-sudo     | Whether to use ``sudo`` to execute commands or   | ``false`` |
+|              | not (root privileges are needed to deploy a      |           |
+|              | node, it must be set to ``true`` if ssh-user is  |           |
+|              | not ``root``)                                    |           |
++--------------+--------------------------------------------------+-----------+
+| ssh-user     | User to connect to the node and run commands     | ``root``  |
++--------------+--------------------------------------------------+-----------+
 
 The combination of ``<role labels>`` and ``<taints>`` will determine what is
 installed and deployed on the Node.
