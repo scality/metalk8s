@@ -4,7 +4,7 @@ Running the platform UI locally
 Requirements
 ------------
 
-- `Node.js <https://nodejs.org/en/>`_, 10.16
+- `Node.js <https://nodejs.org/en/>`_, 14.16
 
 Prerequisites
 -------------
