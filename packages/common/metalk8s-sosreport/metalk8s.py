@@ -47,8 +47,10 @@ class metalk8s(Plugin, RedHatPlugin, UbuntuPlugin):
                 self.add_cmd_output('{0} {1}'.format(kube_cmd, subcmd))
 
             # get all namespaces in use
-            namespaces_result = self.get_command_output('{0} get namespaces'.format(kube_cmd))
-            kube_namespaces = [n.split()[0] for n in namespaces_result['output'].splitlines()[1:] if n]
+            namespaces_result = self.exec_cmd("{0} get namespaces".format(kube_cmd))
+            kube_namespaces = [
+                n.split()[0] for n in namespaces_result["output"].splitlines()[1:] if n
+            ]
 
             resources = [
                 'pods',
@@ -81,22 +83,24 @@ class metalk8s(Plugin, RedHatPlugin, UbuntuPlugin):
                     # need to drop json formatting for this
                     kube_namespaced_cmd = '{0} get {1}'.format(kube_cmd, kube_namespace)
                     for res in resources:
-                        r = self.get_command_output(
-                            '{0} {1}'.format(kube_namespaced_cmd, res))
-                        if r['status'] == 0:
-                            kube_cmd_result = [k.split()[0] for k in
-                                      r['output'].splitlines()[1:]]
+                        r = self.exec_cmd("{0} {1}".format(kube_namespaced_cmd, res))
+                        if r["status"] == 0:
+                            kube_cmd_result = [
+                                k.split()[0] for k in r["output"].splitlines()[1:]
+                            ]
                             for k in kube_cmd_result:
                                 kube_namespaced_cmd = '{0} {1}'.format(kube_cmd, kube_namespace)
                                 self.add_cmd_output(
-                                    '{0} describe {1} {2}'.format(kube_namespaced_cmd, res, k))
+                                    "{0} describe {1} {2}".format(
+                                        kube_namespaced_cmd, res, k
+                                    )
+                                )
 
-                if self.get_option('podlogs'):
-                    kube_namespaced_cmd = '{0} {1}'.format(kube_cmd, kube_namespace)
-                    r = self.get_command_output('{} get pods'.format(kube_namespaced_cmd))
-                    if r['status'] == 0:
-                        pods = [p.split()[0] for p in
-                                r['output'].splitlines()[1:]]
+                if self.get_option("podlogs"):
+                    kube_namespaced_cmd = "{0} {1}".format(kube_cmd, kube_namespace)
+                    r = self.exec_cmd("{} get pods".format(kube_namespaced_cmd))
+                    if r["status"] == 0:
+                        pods = [p.split()[0] for p in r["output"].splitlines()[1:]]
                         for pod in pods:
                             self.add_cmd_output('{0} logs {1} --all-containers'.format(kube_namespaced_cmd, pod))
 
