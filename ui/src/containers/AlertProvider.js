@@ -1,6 +1,7 @@
 //@flow
 import React, { createContext, useContext } from 'react';
 import { useQuery } from 'react-query';
+import { Loader } from '@scality/core-ui';
 import { getAlerts } from '../services/alertmanager/api';
 import { filterAlerts } from '../services/alertUtils';
 import type { FilterLabels } from '../services/alertUtils';
@@ -27,11 +28,17 @@ const AlertProvider = ({ children }: any) => {
     // refetch the alerts every 10 seconds
     refetchInterval: 10000,
   });
-
-  return (
-    <AlertContext.Provider value={{ ...query }}>
-      {children}
-    </AlertContext.Provider>
-  );
+  if (query.status === 'loading') {
+    return (
+      <AlertContext.Provider value={{ ...query }}>
+        <Loader size="massive" centered={true} aria-label="loading" />
+      </AlertContext.Provider>
+    );
+  } else
+    return (
+      <AlertContext.Provider value={{ ...query }}>
+        {children}
+      </AlertContext.Provider>
+    );
 };
 export default AlertProvider;
