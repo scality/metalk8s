@@ -40,6 +40,23 @@ spec:
         spec:
           description: VolumeSpec defines the desired state of Volume
           properties:
+            lvmLogicalVolume:
+              properties:
+                size:
+                  anyOf:
+                  - type: integer
+                  - type: string
+                  description: Size of the created LVM LogicalVolume backing the PersistentVolume
+                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                  x-kubernetes-int-or-string: true
+                vgName:
+                  description: Name of the LVM VolumeGroup on the node to create the
+                    LVM LogicalVolume to back the PersistentVolume
+                  type: string
+              required:
+              - size
+              - vgName
+              type: object
             mode:
               description: How the volume is intended to be consumed, either Block
                 or Filesystem (default is Filesystem).
