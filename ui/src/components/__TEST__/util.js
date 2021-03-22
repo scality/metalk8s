@@ -3,6 +3,8 @@ import { ThemeProvider } from 'styled-components';
 import { render } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { screen, waitForElementToBeRemoved } from '@testing-library/react';
+import AlertProvider from '../../containers/AlertProvider';
+import AlertHistoryProvider from '../../containers/AlertHistoryProvider';
 
 export const waitForLoadingToFinish = () =>
   waitForElementToBeRemoved(
@@ -43,7 +45,11 @@ const AllTheProviders = ({ children }) => {
   };
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>{children}</ThemeProvider>
+      <AlertProvider>
+        <AlertHistoryProvider>
+          <ThemeProvider theme={theme}>{children}</ThemeProvider>
+        </AlertHistoryProvider>
+      </AlertProvider>
     </QueryClientProvider>
   );
 };

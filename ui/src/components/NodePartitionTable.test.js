@@ -7,6 +7,7 @@ import NodePartitionTable from './NodePartitionTable';
 import { waitForLoadingToFinish, render } from './__TEST__/util';
 import { initialize as initializeProm } from '../services/prometheus/api';
 import { initialize as initializeAM } from '../services/alertmanager/api';
+import { initialize as initializeLoki } from '../services/loki/api';
 
 const server = setupServer(
   rest.get(
@@ -52,7 +53,12 @@ const server = setupServer(
               'https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodefilesystemalmostoutofspace',
             summary: 'Filesystem has less than 5% space left.',
           },
-          endsAt: '2021-01-29T07:40:05.358Z',
+          /*
+          We want to have an active alert, meaning the current time should be in between `startsAt` and `endsAt`.
+          Since we can't spyon the `activeOn` in getHealthStatus(). If we use ```endsAt: new Date().toISOString()```, there will be slightly bwtween the two current time.
+          Hence, here we add one day to make sure the alert is active.
+          */
+          endsAt: new Date(new Date().getTime() + 86400000).toISOString(),
           fingerprint: '37b2591ac3cdb320',
           receivers: [
             {
@@ -91,7 +97,9 @@ const server = setupServer(
 );
 
 describe('the system partition table', () => {
-  beforeAll(() => server.listen());
+  beforeAll(() => {
+    server.listen();
+  });
 
   test('displays the table', async () => {
     // Setup
@@ -100,6 +108,7 @@ describe('the system partition table', () => {
     jest.useFakeTimers();
     initializeProm('http://192.168.1.18:8443/api/prometheus');
     initializeAM('http://192.168.1.18:8443/api/alertmanager');
+    initializeLoki('http://192.168.1.18:8443/api/loki');
 
     const { getByLabelText } = render(
       <NodePartitionTable instanceIP={'192.168.1.29'} />,
@@ -124,6 +133,7 @@ describe('the system partition table', () => {
     jest.useFakeTimers();
     initializeProm('http://192.168.1.18:8443/api/prometheus');
     initializeAM('http://192.168.1.18:8443/api/alertmanager');
+
     // override the default route with error status
     server.use(
       rest.get(
@@ -153,5 +163,7 @@ describe('the system partition table', () => {
     ).toBeInTheDocument();
   });
 
-  afterAll(() => server.close());
+  afterAll(() => {
+    server.close();
+  });
 });
