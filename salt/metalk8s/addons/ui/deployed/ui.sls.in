@@ -5,6 +5,38 @@ include:
     import ingress_control_plane with context
 %}
 
+
+{%- set metalk8s_ui_defaults = salt.slsutil.renderer(
+        'salt://metalk8s/addons/ui/config/metalk8s-ui-config.yaml', saltenv=saltenv
+    )
+%}
+
+{%- set metalk8s_ui_config = salt.metalk8s_service_configuration.get_service_conf(
+        'metalk8s-ui', 'metalk8s-ui-config', metalk8s_ui_defaults
+    )
+%}
+
+
+{%- set metalk8s_theme_defaults = salt.slsutil.renderer(
+        'salt://metalk8s/addons/ui/config/metalk8s-theme.yaml', saltenv=saltenv
+    )
+%}
+
+{%- set metalk8s_theme = salt.metalk8s_service_configuration.get_service_conf(
+        'metalk8s-ui', 'metalk8s-theme', metalk8s_theme_defaults
+    )
+%}
+
+{%- set metalk8s_shell_ui_defaults = salt.slsutil.renderer(
+        'salt://metalk8s/addons/ui/config/metalk8s-shell-ui-config.yaml.j2', saltenv=saltenv
+    )
+%}
+
+{%- set metalk8s_shell_ui_config = salt.metalk8s_service_configuration.get_service_conf(
+        'metalk8s-ui', 'metalk8s-shell-ui-config', metalk8s_shell_ui_defaults
+    )
+%}
+
 Create metalk8s-ui deployment:
   metalk8s_kubernetes.object_present:
     - name: salt://{{ slspath }}/files/metalk8s-ui-deployment.yaml.j2
@@ -47,7 +79,8 @@ Create metalk8s-ui ConfigMap:
               "url_doc": "/docs",
               "url_alertmanager": "/api/alertmanager",
               "url_navbar": "/shell/solution-ui-navbar.@@ShellUIVersion.js",
-              "url_navbar_config": "/shell/config.json"
+              "url_navbar_config": "/shell/config.json",
+              "ui_base_path": "{{ metalk8s_ui_config.spec.basePath }}"
             }
 
 Create shell-ui ConfigMap:
@@ -59,26 +92,8 @@ Create shell-ui ConfigMap:
           name: shell-ui
           namespace: metalk8s-ui
         data:
-          config.json: |
-            {
-              "docUrl": "/docs",
-              "oidc": {
-                "providerUrl": "/oidc",
-                "redirectUrl": "https://{{ ingress_control_plane }}/",
-                "clientId": "metalk8s-ui",
-                "responseType": "id_token",
-                "scopes": "openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
-              },
-              "options": {
-                "main": {
-                    "https://{{ ingress_control_plane }}/":{ "en": "Platform", "fr": "Plateforme" },
-                    "https://{{ ingress_control_plane }}/alerts":{ "en": "Alerts", "fr": "Alertes" }
-                },
-                "subLogin": {
-                    "https://{{ ingress_control_plane }}/docs":{ "en": "Documentation", "fr": "Documentation" }
-                }
-              }
-            }
+          config.json: |-
+            {{ metalk8s_shell_ui_config.spec | tojson }}
 
 Create ui-branding ConfigMap:
   metalk8s_kubernetes.object_present:
@@ -90,4 +105,4 @@ Create ui-branding ConfigMap:
           namespace: metalk8s-ui
         data:
           theme.json: |-
-@@ThemeConfig
+            {{metalk8s_theme.spec.theme | indent(12, False) }}

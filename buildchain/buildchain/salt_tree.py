@@ -339,6 +339,24 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/ui/deployed/dependencies.sls"),
     Path("salt/metalk8s/addons/ui/deployed/ingress.sls"),
     Path("salt/metalk8s/addons/ui/deployed/init.sls"),
+    Path("salt/metalk8s/addons/ui/config/metalk8s-shell-ui-config.yaml.j2"),
+    Path("salt/metalk8s/addons/ui/config/metalk8s-ui-config.yaml"),
+    targets.TemplateFile(
+        task_name="salt/metalk8s/addons/ui/config/metalk8s-theme.yaml",
+        source=constants.ROOT.joinpath(
+            "salt/metalk8s/addons/ui/config/metalk8s-theme.yaml.in"
+        ),
+        destination=constants.ISO_ROOT.joinpath(
+            "salt/metalk8s/addons/ui/config/metalk8s-theme.yaml"
+        ),
+        context={
+            "ThemeConfig": textwrap.indent(
+                UI_THEME_OPTIONS.read_text(encoding="utf-8"), 4 * " "
+            )
+        },
+        file_dep=[UI_THEME_OPTIONS],
+    ),
+    Path("salt/metalk8s/addons/ui/deployed/ui-configuration.sls"),
     Path("salt/metalk8s/addons/ui/deployed/files/metalk8s-ui-deployment.yaml.j2"),
     Path("salt/metalk8s/addons/ui/deployed/namespace.sls"),
     targets.TemplateFile(
@@ -348,12 +366,8 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
             "salt/metalk8s/addons/ui/deployed/ui.sls"
         ),
         context={
-            "ThemeConfig": textwrap.indent(
-                UI_THEME_OPTIONS.read_text(encoding="utf-8"), 12 * " "
-            ),
             "ShellUIVersion": versions.SHELL_UI_VERSION,
         },
-        file_dep=[UI_THEME_OPTIONS],
     ),
     Path("salt/metalk8s/addons/solutions/deployed/configmap.sls"),
     Path("salt/metalk8s/addons/solutions/deployed/init.sls"),

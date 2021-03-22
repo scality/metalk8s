@@ -1,4 +1,14 @@
-#! metalk8s_kubernetes
+#!jinja | metalk8s_kubernetes
+
+{%- set metalk8s_ui_defaults = salt.slsutil.renderer(
+        'salt://metalk8s/addons/ui/config/metalk8s-ui-config.yaml', saltenv=saltenv
+    )
+%}
+
+{%- set metalk8s_ui_config = salt.metalk8s_service_configuration.get_service_conf(
+        'metalk8s-ui', 'metalk8s-ui-config', metalk8s_ui_defaults
+    )
+%}
 
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
@@ -76,7 +86,7 @@ spec:
   rules:
   - http:
       paths:
-      - path: /
+      - path: {{ metalk8s_ui_config.spec.basePath }}
         backend:
           serviceName: metalk8s-ui
           servicePort: 80

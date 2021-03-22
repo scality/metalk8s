@@ -77,6 +77,7 @@ repos:
         files: ^(salt/tests/unit/formulas/.*\.py)$
         args: [--strict]
         additional_dependencies:
+          - 'pyenchant~=2.0'
           - pytest
 
   - repo: https://github.com/warpnet/salt-lint

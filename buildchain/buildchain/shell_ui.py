@@ -16,6 +16,7 @@ from buildchain import targets
 from buildchain import types
 from buildchain import utils
 from buildchain import ui
+from buildchain import versions
 
 
 def task_shell_ui() -> types.TaskDict:
@@ -54,7 +55,11 @@ def task__shell_ui_build() -> types.TaskDict:
             "_shell_ui_mkdir_build_root",
         ],
         "file_dep": list(utils.git_ls("shell-ui")),
-        "targets": [constants.SHELL_UI_BUILD_ROOT / "index.html"],
+        "targets": [
+            constants.SHELL_UI_BUILD_ROOT.joinpath(
+                f"solution-ui-navbar.{versions.SHELL_UI_VERSION}.js"
+            ),
+        ],
         "clean": [clean],
     }
 
