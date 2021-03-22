@@ -610,7 +610,7 @@ Cluster and Service ConfigMap ``metalk8s-ui-config`` in namespace
                         metalk8s-ui-config
 
 Changing the MetalK8s UI Ingress Path
-""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""
 
 In order to expose another UI at the root path of the control plane,
 in place of MetalK8s UI, you need to change the Ingress path from
@@ -644,7 +644,7 @@ these steps:
 .. _csc-ui-theme-customization:
 
 MetalK8s UI Theme Customization
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Default configuration for MetalK8s UI Theme can be overridden by editing its
 Cluster and Service ConfigMap ``metalk8s-theme`` in namespace
@@ -657,7 +657,6 @@ Cluster and Service ConfigMap ``metalk8s-theme`` in namespace
                         metalk8s-theme
 
 Once the theme is edited, apply your changes by running:
-
 
 .. parsed-literal::
 
