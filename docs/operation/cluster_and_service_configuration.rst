@@ -128,7 +128,6 @@ Features exposed include:
 The default Shell UI configuration values are specified below:
 
 .. literalinclude:: ../../salt/metalk8s/addons/ui/config/metalk8s-shell-ui-config.yaml.j2
-   :language: yaml
    :lines: 3-
 
 See :ref:`csc-shell-ui-config-customization` to override these defaults.
