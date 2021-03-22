@@ -153,6 +153,7 @@ export const filterAlerts = (
   alerts: Alert[],
   filters?: FilterLabels,
 ): Alert[] => {
+  if (!alerts) return [];
   if (!filters) {
     return alerts;
   }
