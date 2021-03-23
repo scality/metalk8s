@@ -99,6 +99,8 @@ class metalk8s(Plugin, RedHatPlugin, UbuntuPlugin):
 
     def setup(self):
         self.add_copy_spec("/etc/kubernetes/manifests")
+        self.add_copy_spec("/etc/metalk8s/bootstrap.yaml")
+        self.add_copy_spec("/etc/metalk8s/solutions.yaml")
         self.add_copy_spec("/etc/salt")
         self.add_forbidden_path("/etc/salt/pki")
         self.add_copy_spec("/var/log/pods")
