@@ -1,7 +1,9 @@
 #! /bin/env python3
 
-from sos.plugins import Plugin, RedHatPlugin, UbuntuPlugin
 from os import path
+
+import requests
+from sos.plugins import Plugin, RedHatPlugin, UbuntuPlugin
 
 
 class metalk8s(Plugin, RedHatPlugin, UbuntuPlugin):
@@ -14,15 +16,86 @@ class metalk8s(Plugin, RedHatPlugin, UbuntuPlugin):
     files = ('/etc/kubernetes/admin.conf',)
 
     option_list = [
-        ('all', 'also collect all namespaces output separately',
-            'slow', False),
-        ('describe', 'capture descriptions of all kube resources',
-            'fast', False),
-        ('podlogs', 'capture logs for pods', 'slow', False),
+        ("all", "also collect all namespaces output separately", "slow", False),
+        ("describe", "capture descriptions of all kube resources", "fast", False),
+        ("podlogs", "capture logs for pods", "slow", False),
+        ("prometheus-snapshot", "generate a Prometheus snapshot", "slow", False),
     ]
 
     def check_is_master(self):
         return any([path.exists("/etc/kubernetes/admin.conf")])
+
+    def prometheus_snapshot(self):
+        kube_cmd = (
+            "kubectl "
+            "--kubeconfig=/etc/kubernetes/admin.conf "
+            "--namespace metalk8s-monitoring"
+        )
+
+        # Retrieve Prometheus endpoint
+        prom_endpoint_cmd = (
+            "{0} get endpoints "
+            "prometheus-operator-prometheus --output "
+            "jsonpath='{{ .subsets[0].addresses[0].targetRef.name }} "
+            "{{ .subsets[0].addresses[0].ip }}:"
+            "{{ .subsets[0].ports[0].port }}'".format(kube_cmd)
+        )
+        prom_endpoint_res = self.exec_cmd(prom_endpoint_cmd)
+        prom_instance, prom_endpoint = prom_endpoint_res["output"].split()
+
+        # Generate snapshot
+        # return a JSON object as follows:
+        # {"status":"success","data":{"name":"20210322T164646Z-7d0b9ca8be8e9981"}}
+        # or in case of error:
+        # {"status":"error","errorType":"unavailable","error":"admin APIs disabled"}
+        prom_snapshot_url = "http://{0}/api/v1/admin/tsdb/snapshot".format(
+            prom_endpoint
+        )
+        res = requests.post(prom_snapshot_url)
+        try:
+            res.raise_for_status()
+        except requests.exceptions.HTTPError as exc:
+            self._log_error(
+                "An error occurred while querying Prometheus API: {0}".format(str(exc))
+            )
+            return
+
+        try:
+            res_json = res.json()
+        except ValueError as exc:
+            self._log_error(
+                "Invalid JSON returned by Prometheus API: {0}".format(res.text)
+            )
+            return
+
+        try:
+            snapshot_name = res_json["data"]["name"]
+        except KeyError:
+            self._log_error(
+                "Unable to generate Prometheus snapshot: {0}".format(res_json["error"])
+            )
+            return
+
+        # Copy snapshot locally
+        snapshot_archive_dir = "{0}/prometheus-snapshot".format(
+            self.archive.get_archive_path()
+        )
+
+        copy_snapshot_cmd = (
+            "{0} cp -c prometheus {1}:/prometheus/snapshots/{2} {3}".format(
+                kube_cmd, prom_instance, snapshot_name, snapshot_archive_dir
+            )
+        )
+        self.exec_cmd(copy_snapshot_cmd)
+
+        # Remove snapshot from Prometheus pod
+        delete_snapshot_cmd = (
+            "{0} exec -c prometheus {1} -- "
+            "rm -rf /prometheus/snapshots/{2}".format(
+                kube_cmd, prom_instance, snapshot_name
+            )
+        )
+        self.exec_cmd(delete_snapshot_cmd)
 
     def setup(self):
         self.add_copy_spec("/etc/kubernetes/manifests")
@@ -111,6 +184,9 @@ class metalk8s(Plugin, RedHatPlugin, UbuntuPlugin):
                 kube_namespaced_cmd = '{} get --all-namespaces=true'.format(kube_cmd)
                 for res in resources:
                     self.add_cmd_output('{0} {1}'.format(kube_namespaced_cmd, res))
+
+            if self.get_option("prometheus-snapshot"):
+                self.prometheus_snapshot()
 
     def postproc(self):
         # First, clear sensitive data from the json output collected.
