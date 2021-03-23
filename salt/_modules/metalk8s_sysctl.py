@@ -90,7 +90,7 @@ def has_precedence(name, value, config, strict=False):
             )
         )
 
-    parser = configparser.ConfigParser()
+    parser = configparser.ConfigParser(interpolation=None)
     epured_value = " ".join(str(value).split())
 
     for sysctl_file in sysctl_files:
