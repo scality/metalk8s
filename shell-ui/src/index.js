@@ -10,20 +10,30 @@ import { QueryClient, QueryClientProvider, useQuery } from 'react-query';
 import { LoadingNavbar, Navbar } from './NavBar';
 import { UserDataListener } from './UserDataListener';
 import { logOut } from './auth/logout';
-import { prefetch } from "quicklink";
-import {defaultTheme} from '@scality/core-ui/dist/style/theme';
+import { prefetch } from 'quicklink';
+import { defaultTheme } from '@scality/core-ui/dist/style/theme';
 import { LanguageProvider } from './lang';
+import { ThemeProvider } from './theme';
 
 const EVENTS_PREFIX = 'solutions-navbar--';
 export const AUTHENTICATED_EVENT: string = EVENTS_PREFIX + 'authenticated';
-export const LANGUAGE_CHANGED_EVENT: string = EVENTS_PREFIX + 'language-changed';
+export const LANGUAGE_CHANGED_EVENT: string =
+  EVENTS_PREFIX + 'language-changed';
+export const THEME_CHANGED_EVENT: string = EVENTS_PREFIX + 'theme-changed';
 
-export type PathDescription = { en: string, fr: string, groups?: string[], activeIfMatches?: string, icon?: string, isExternal?: boolean };
-export type MenuItems = {[path: string]: PathDescription }
+export type PathDescription = {
+  en: string,
+  fr: string,
+  groups?: string[],
+  activeIfMatches?: string,
+  icon?: string,
+  isExternal?: boolean,
+};
+export type MenuItems = { [path: string]: PathDescription };
 
 export type Options = { main: MenuItems, subLogin: MenuItems };
 
-export type UserGroupsMapping = {[email: string]: string[]};
+export type UserGroupsMapping = { [email: string]: string[] };
 
 export type SolutionsNavbarProps = {
   'oidc-provider-url'?: string,
@@ -35,6 +45,7 @@ export type SolutionsNavbarProps = {
   options?: string,
   onAuthenticated?: (evt: CustomEvent) => void,
   onLanguageChanged?: (evt: CustomEvent) => void,
+  onThemeChanged?: (evt: CustomEvent) => void,
   logOut?: () => void,
   setUserManager?: (userManager: UserManager) => void,
 };
@@ -49,7 +60,7 @@ type Config = {
     scopes?: string,
   },
   options?: Options,
-  userGroupsMapping?: UserGroupsMapping
+  userGroupsMapping?: UserGroupsMapping,
 };
 
 const SolutionsNavbar = ({
@@ -62,6 +73,7 @@ const SolutionsNavbar = ({
   options,
   onAuthenticated,
   onLanguageChanged,
+  onThemeChanged,
   logOut,
   setUserManager,
 }: SolutionsNavbarProps) => {
@@ -76,13 +88,12 @@ const SolutionsNavbar = ({
       });
     }
     return Promise.resolve({});
-  },
-  );
+  });
 
   useLayoutEffect(() => {
     const savedRedirectUri = localStorage.getItem('redirectUrl');
     if (savedRedirectUri) {
-      prefetch(savedRedirectUri)
+      prefetch(savedRedirectUri);
     }
   }, []);
 
@@ -111,7 +122,9 @@ const SolutionsNavbar = ({
         userStore: new WebStorageStateStore({ store: localStorage }),
       });
 
-      const computedMenuOptions = options ? JSON.parse(options) : config.options || { main: {}, subLogin: {} };
+      const computedMenuOptions = options
+        ? JSON.parse(options)
+        : config.options || { main: {}, subLogin: {} };
 
       if (setUserManager) {
         setUserManager(userManager);
@@ -141,16 +154,24 @@ const SolutionsNavbar = ({
       return (
         <AuthProvider {...oidcConfig}>
           <LanguageProvider onLanguageChanged={onLanguageChanged}>
-            <UserDataListener userGroupsMapping={config.userGroupsMapping} onAuthenticated={onAuthenticated} />
-            <StyledComponentsProvider
-              theme={{
-                // todo manages theme https://github.com/scality/metalk8s/issues/2545
-                brand: defaultTheme.dark,
-                logo_path: '/brand/assets/branding-dark.svg',
-              }}
-            >
-              <Navbar options={computedMenuOptions} userGroupsMapping={config.userGroupsMapping} />
-            </StyledComponentsProvider>
+            <ThemeProvider onThemeChanged={onThemeChanged}>
+              {(theme) => (
+                <>
+                  <UserDataListener
+                    userGroupsMapping={config.userGroupsMapping}
+                    onAuthenticated={onAuthenticated}
+                  />
+                  <StyledComponentsProvider
+                    theme={theme.brand}
+                  >
+                    <Navbar
+                      options={computedMenuOptions}
+                      userGroupsMapping={config.userGroupsMapping}
+                    />
+                  </StyledComponentsProvider>
+                </>
+              )}
+            </ThemeProvider>
           </LanguageProvider>
         </AuthProvider>
       );
@@ -193,6 +214,9 @@ class SolutionsNavbarWebComponent extends reactToWebComponent(
       this.dispatchEvent(evt);
     };
     this.onLanguageChanged = (evt: CustomEvent) => {
+      this.dispatchEvent(evt);
+    };
+    this.onThemeChanged = (evt: CustomEvent) => {
       this.dispatchEvent(evt);
     };
     this.logOut = () => {

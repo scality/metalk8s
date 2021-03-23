@@ -124,7 +124,9 @@ export const Navbar = ({
   userGroupsMapping?: UserGroupsMapping,
 }): Node => {
   const auth = useAuth();
-  const { brand } = useTheme();
+  const brand = useTheme();
+
+  const { themeName, unSelectedThemes, setTheme } = useThemeName();
   const { language, setLanguage, unSelectedLanguages } = useLanguage();
   const intl = useIntl();
 
@@ -158,8 +160,18 @@ export const Navbar = ({
     },
     {
       type: 'dropdown',
+      text: themeName,
+      items: unSelectedThemes.map((theme) => ({
+        label: theme,
+        onClick: () => {
+          setTheme(theme);
+        },
+      })),
+    },
+    {
+      type: 'dropdown',
       text: auth.userData?.profile.name || '',
-      icon: <i className="fas fa-user" />,
+      icon: <span style={{color: brand.textPrimary}}><i className="fas fa-user" /></span>,
       items: [
         ...translateOptionsToMenu(
           options,
