@@ -118,9 +118,9 @@ class metalk8s(Plugin, RedHatPlugin, UbuntuPlugin):
             if path.exists('/etc/kubernetes/admin.conf'):
                 kube_cmd += '--kubeconfig=/etc/kubernetes/admin.conf'
 
-            kube_get_cmd = 'get -o json '
-            for subcmd in ['version', 'config view']:
-                self.add_cmd_output('{0} {1}'.format(kube_cmd, subcmd))
+            kube_get_cmd = "get -o json "
+            for subcmd in ["version", "config view", "top nodes"]:
+                self.add_cmd_output("{0} {1}".format(kube_cmd, subcmd))
 
             # get all namespaces in use
             namespaces_result = self.exec_cmd(
@@ -151,10 +151,10 @@ class metalk8s(Plugin, RedHatPlugin, UbuntuPlugin):
                 if self.get_option('all'):
                     kube_namespaced_cmd = '{0} {1} {2}'.format(kube_cmd, kube_get_cmd, kube_namespace)
 
-                    self.add_cmd_output('{} events'.format(kube_namespaced_cmd))
-
-                    for res in resources:
-                        self.add_cmd_output('{0} {1}'.format(kube_namespaced_cmd, res))
+                    for subcmd in ["events", "top pods"] + resources:
+                        self.add_cmd_output(
+                            "{0} {1}".format(kube_namespaced_cmd, subcmd)
+                        )
 
                 if self.get_option('describe'):
                     # need to drop json formatting for this
