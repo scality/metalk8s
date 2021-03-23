@@ -51620,7 +51620,7 @@ spec:
       pathPrefix: /
       port: web
   baseImage: {% endraw -%}{{ build_image_name("prometheus", False) }}{%- raw %}
-  enableAdminAPI: false
+  enableAdminAPI: {% endraw -%}{{ prometheus.spec.config.enable_admin_api }}{%- raw %}
   externalUrl: http://prometheus-operator-prometheus.metalk8s-monitoring:9090
   listenLocal: false
   logFormat: logfmt

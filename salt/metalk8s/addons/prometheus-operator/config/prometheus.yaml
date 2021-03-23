@@ -6,3 +6,5 @@ spec:
   # Configure the Prometheus Deployment
   deployment:
     replicas: 1
+  config:
+    enable_admin_api: false
