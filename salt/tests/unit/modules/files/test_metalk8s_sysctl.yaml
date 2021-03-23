@@ -3,6 +3,7 @@ filesystem_tree:
       net.ipv4.ip_forward=0
   /etc/sysctl.d/99-sysctl.conf: |-
       net.ipv4.ip_forward=1
+      kernel.some-fancy-pattern=%prefix-fancy-value-%suffix
   /etc/sysctl.conf: ""
 
 has_precedence:
