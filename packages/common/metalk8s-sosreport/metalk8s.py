@@ -25,12 +25,15 @@ class metalk8s(Plugin, RedHatPlugin, UbuntuPlugin):
         return any([path.exists("/etc/kubernetes/admin.conf")])
 
     def setup(self):
-        self.add_copy_spec('/etc/kubernetes/manifests')
-        self.add_copy_spec('/var/log/pods')
-        self.add_copy_spec('/var/log/metalk8s')
+        self.add_copy_spec("/etc/kubernetes/manifests")
+        self.add_copy_spec("/etc/salt")
+        self.add_forbidden_path("/etc/salt/pki")
+        self.add_copy_spec("/var/log/pods")
+        self.add_copy_spec("/var/log/metalk8s")
 
         services = [
-            'kubelet',
+            "kubelet",
+            "salt-minion",
         ]
 
         for service in services:
