@@ -62,3 +62,6 @@ export * from '@testing-library/react';
 
 // override render method
 export { customRender as render };
+
+// use this fake control to initialize the APIs and retrieve the data from the APIs.
+export const FAKE_CONTROL_PLANE_IP = 'fake.control.plane.ip.invalid';

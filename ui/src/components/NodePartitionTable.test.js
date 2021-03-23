@@ -4,14 +4,18 @@ import { screen } from '@testing-library/react';
 import { setupServer } from 'msw/node';
 import { rest } from 'msw';
 import NodePartitionTable from './NodePartitionTable';
-import { waitForLoadingToFinish, render } from './__TEST__/util';
+import {
+  waitForLoadingToFinish,
+  render,
+  FAKE_CONTROL_PLANE_IP,
+} from './__TEST__/util';
 import { initialize as initializeProm } from '../services/prometheus/api';
 import { initialize as initializeAM } from '../services/alertmanager/api';
 import { initialize as initializeLoki } from '../services/loki/api';
 
 const server = setupServer(
   rest.get(
-    'http://192.168.1.18:8443/api/prometheus/api/v1/query',
+    `http://${FAKE_CONTROL_PLANE_IP}:8443/api/prometheus/api/v1/query`,
     (req, res, ctx) => {
       const result = {
         status: 'success',
@@ -42,7 +46,7 @@ const server = setupServer(
   ),
 
   rest.get(
-    'http://192.168.1.18:8443/api/alertmanager/api/v2/alerts',
+    `http://${FAKE_CONTROL_PLANE_IP}:8443/api/alertmanager/api/v2/alerts`,
     (req, res, ctx) => {
       const alerts = [
         {
@@ -54,11 +58,13 @@ const server = setupServer(
             summary: 'Filesystem has less than 5% space left.',
           },
           /*
-          We want to have an active alert, meaning the current time should be in between `startsAt` and `endsAt`.
-          Since we can't spyon the `activeOn` in getHealthStatus(). If we use ```endsAt: new Date().toISOString()```, there will be slightly bwtween the two current time.
+          We want to have an active alert triggered, meaning the current time should be in between `startsAt` and `endsAt`.
+          Since we can't spy on the `activeOn` in getHealthStatus(). If we use ```endsAt: new Date().toISOString()```, there will be a slightly difference between the two current times.
           Hence, here we add one day to make sure the alert is active.
           */
-          endsAt: new Date(new Date().getTime() + 86400000).toISOString(),
+          endsAt: new Date(
+            new Date().getTime() + 1000 * 60 * 60 * 24,
+          ).toISOString(),
           fingerprint: '37b2591ac3cdb320',
           receivers: [
             {
@@ -106,9 +112,9 @@ describe('the system partition table', () => {
 
     // use fake timers to let react query retry immediately after promise failure
     jest.useFakeTimers();
-    initializeProm('http://192.168.1.18:8443/api/prometheus');
-    initializeAM('http://192.168.1.18:8443/api/alertmanager');
-    initializeLoki('http://192.168.1.18:8443/api/loki');
+    initializeProm(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/prometheus`);
+    initializeAM(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/alertmanager`);
+    initializeLoki(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/loki`);
 
     const { getByLabelText } = render(
       <NodePartitionTable instanceIP={'192.168.1.29'} />,
@@ -131,19 +137,19 @@ describe('the system partition table', () => {
   test('handles server error', async () => {
     // S
     jest.useFakeTimers();
-    initializeProm('http://192.168.1.18:8443/api/prometheus');
-    initializeAM('http://192.168.1.18:8443/api/alertmanager');
+    initializeProm(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/prometheus`);
+    initializeAM(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/alertmanager`);
 
     // override the default route with error status
     server.use(
       rest.get(
-        'http://192.168.1.18:8443/api/prometheus/api/v1/query',
+        `http://${FAKE_CONTROL_PLANE_IP}:8443/api/prometheus/api/v1/query`,
         (req, res, ctx) => {
           return res(ctx.status(500));
         },
       ),
       rest.get(
-        'http://192.168.1.18:8443/api/alertmanager/api/v2/alerts',
+        `http://${FAKE_CONTROL_PLANE_IP}:8443/api/alertmanager/api/v2/alerts`,
         (req, res, ctx) => {
           return res(ctx.status(500));
         },
