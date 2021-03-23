@@ -21,6 +21,9 @@ import {
 } from './auth/permissionUtils';
 import { prefetch } from 'quicklink';
 import { useTheme } from 'styled-components';
+import { useLanguage } from './lang';
+import { useThemeName } from './theme';
+import { useIntl } from 'react-intl';
 
 export const LoadingNavbar = (): Node => (
   <CoreUINavbar role="navigation" tabs={[{ title: 'loading' }]} />
@@ -122,6 +125,8 @@ export const Navbar = ({
 }): Node => {
   const auth = useAuth();
   const { brand } = useTheme();
+  const { language, setLanguage, unSelectedLanguages } = useLanguage();
+  const intl = useIntl();
 
   const userGroups: string[] = getUserGroups(auth.userData, userGroupsMapping);
   const accessiblePaths = getAccessiblePathsFromOptions(options, userGroups);
@@ -135,12 +140,22 @@ export const Navbar = ({
     options,
     'main',
     (path, pathDescription) => ({
-      link: <a href={path}>{pathDescription.en}</a>,
+      link: <a href={path}>{pathDescription[language]}</a>,
     }),
     userGroups,
   );
 
   const rightActions = [
+    {
+      type: 'dropdown',
+      text: language,
+      items: unSelectedLanguages.map((lang) => ({
+        label: lang,
+        onClick: () => {
+          setLanguage(lang);
+        },
+      })),
+    },
     {
       type: 'dropdown',
       text: auth.userData?.profile.name || '',
@@ -155,7 +170,7 @@ export const Navbar = ({
               <Item
                 icon={pathDescription.icon}
                 isExternal={pathDescription.isExternal}
-                label={pathDescription.en}
+                label={pathDescription[language]}
               />
             ),
             onClick: () => {
@@ -169,7 +184,7 @@ export const Navbar = ({
           userGroups,
         ),
         {
-          label: <Item icon={'fas fa-sign-out-alt'} label={'Log Out'} />,
+          label: <Item icon={'fas fa-sign-out-alt'} label={intl.formatMessage({id: 'sign-out'})} />,
           onClick: () => {
             logOut(auth.userManager);
           },
