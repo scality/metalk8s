@@ -6,6 +6,9 @@ beforeEach(() => {
 // Navigation tests
 describe('Volume list', () => {
   it('brings me to the overview tab of the unhealthy volume', () => {
+    // Specify a fake now timestamp to make sure the alert is active.
+    const now = new Date('2020-11-09T08:33:26.330Z').getTime();
+    cy.clock(now);
     // Note that:
     // If we visit() in beforeEach, make sure we don't visit() again within each test case, or it may create issues with the test
     // (some network requests would be interrupted) - see 07a34b5 (#2891)

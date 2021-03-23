@@ -10,11 +10,8 @@ describe('Node list', () => {
     cy.stubHistory();
 
     cy.fixture('kubernetes/nodes.json').then((nodes) => {
-      // It may break when we implement sorting for the nodes
-      cy.location('pathname').should(
-        'eq',
-        `/nodes/${nodes.items[0].metadata.name}/overview`,
-      );
+      // With sorting implemented, node "test" is in unknown state hence should be the first on the nodelist.
+      cy.location('pathname').should('eq', `/nodes/test/overview`);
     });
   });
 
@@ -59,7 +56,7 @@ describe('Node list', () => {
   it(`keeps warning severity for the alert while searching the node`, () => {
     cy.visit('/nodes/master-0/alerts?severity=warning');
     cy.stubHistory();
-  
+
     cy.get('[data-cy="node_list_search"]').type('hello');
     cy.get('@historyPush').should(
       'be.calledWithExactly',

@@ -2687,9 +2687,9 @@
           "node-role.kubernetes.io/infra": "",
           "node-role.kubernetes.io/master": ""
         },
-        "name": "yanjin-test",
+        "name": "test",
         "resourceVersion": "20123936",
-        "selfLink": "/api/v1/nodes/yanjin-test",
+        "selfLink": "/api/v1/nodes/test",
         "uid": "c27b42b0-cd4c-459b-b31e-dc99d05be722"
       },
       "spec": {
