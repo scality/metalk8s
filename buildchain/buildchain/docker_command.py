@@ -6,6 +6,7 @@ Expose Docker commands (build, run, …) as Python classes, using Docker API.
 The instantiated objects are callable and can be used as doit action directly.
 """
 
+import ast
 import copy
 import functools
 import os
@@ -79,7 +80,14 @@ def build_error_handler(build_error: BuildError) -> str:
 
 def container_error_handler(container_error: ContainerError) -> str:
     """String formatting exception handler for Docker API ContainerError."""
-    return "{}:\n{}".format(str(container_error), container_error.stderr)
+    try:
+        err = ast.literal_eval(str(container_error.stderr)).decode()
+    except (ValueError, SyntaxError):
+        err = str(container_error.stderr)
+    msg = "Command '{0}' in image '{1}' returned non-zero exit status {2}:\n{3}".format(
+        container_error.command, container_error.image, container_error.exit_status, err
+    )
+    return msg
 
 
 def task_error(

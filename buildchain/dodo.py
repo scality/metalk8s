@@ -51,7 +51,6 @@ class CustomReporter(doit.reporter.JsonReporter):  # type: ignore
         super().add_failure(task, exception)
         result = {"task": task, "exception": exception}
         self.failures.append(result)
-        self._write_failure(result)
 
     def skip_uptodate(self, task: doit.task.Task) -> None:
         """Called when a task is skipped (up-to-date)."""
@@ -84,9 +83,11 @@ class CustomReporter(doit.reporter.JsonReporter):  # type: ignore
             self._write(failure_header)
             self._write_failure(result)
             err = "".join([action.err for action in task.actions if action.err])
-            self._write("{} <stderr>:\n{}\n".format(task.name, err))
+            if err:
+                self._write("{} <stderr>:\n{}\n".format(task.name, err))
             out = "".join([action.out for action in task.actions if action.out])
-            self._write("{} <stdout>:\n{}\n".format(task.name, out))
+            if out:
+                self._write("{} <stdout>:\n{}\n".format(task.name, out))
 
         if self.runtime_errors:
             self._write(failure_header)
