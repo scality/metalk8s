@@ -13,6 +13,7 @@
     "@babel/preset-env": "^7.12.11",
     "@babel/preset-flow": "^7.12.1",
     "@babel/preset-react": "^7.12.10",
+    "@fortawesome/fontawesome-free": "^5.15.3",
     "@mdx-js/loader": "^1.6.22",
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.5",
@@ -31,7 +32,6 @@
     "whatwg-fetch": "^3.6.1"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.15.1",
     "@scality/core-ui": "github:scality/core-ui.git#v0.13.0",
     "oidc-client": "^1.11.3",
     "oidc-react": "^1.1.5",
