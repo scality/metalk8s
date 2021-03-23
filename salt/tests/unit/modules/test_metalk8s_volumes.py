@@ -20,6 +20,8 @@ with open(YAML_TESTS_FILE) as fd:
 
 
 def device_name_mock(path):
+    if path.startswith("/dev/my_vg/"):
+        path = "dm-2"
     return {"success": True, "result": os.path.basename(path)}
 
 
@@ -46,13 +48,17 @@ class Metalk8sVolumesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         is_file=True,
         get_size=1073741824,
         is_blkdev=True,
+        lvdisplay=None,
     ):
         """
         Tests the return of `exists` function
         """
         pillar_dict = {"metalk8s": {"volumes": pillar_volumes or {}}}
 
-        salt_dict = {"file.is_blkdev": MagicMock(return_value=is_blkdev)}
+        salt_dict = {
+            "file.is_blkdev": MagicMock(return_value=is_blkdev),
+            "lvm.lvdisplay": MagicMock(return_value=lvdisplay or {}),
+        }
 
         is_file_mock = MagicMock(return_value=is_file)
         get_size_mock = MagicMock(return_value=get_size)
@@ -77,7 +83,9 @@ class Metalk8sVolumesTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 self.assertEqual(metalk8s_volumes.exists(name), result)
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["create"])
-    def test_create(self, name, raise_msg=None, pillar_volumes=None, ftruncate=True):
+    def test_create(
+        self, name, raise_msg=None, pillar_volumes=None, ftruncate=True, lvcreate=None
+    ):
         """
         Tests the return of `create` function
         """
@@ -90,9 +98,19 @@ class Metalk8sVolumesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         # Glob is used only for lvm, let simulate that we have 2 lvm volume
         glob_mock = MagicMock(return_value=["/dev/dm-1", "/dev/dm-2"])
 
-        with patch.dict(metalk8s_volumes.__pillar__, pillar_dict), patch(
-            "metalk8s_volumes.device_name", device_name_mock
-        ), patch("glob.glob", glob_mock), patch("os.open", MagicMock()), patch(
+        lvcreate_mock = MagicMock(return_value=lvcreate)
+        if not lvcreate:
+            lvcreate_mock.side_effect = Exception("Banana")
+        if isinstance(lvcreate, str):
+            lvcreate_mock.return_value = {"Output from lvcreate": lvcreate}
+
+        with patch.dict(metalk8s_volumes.__pillar__, pillar_dict), patch.dict(
+            metalk8s_volumes.__salt__, {"lvm.lvcreate": lvcreate_mock}
+        ), patch("metalk8s_volumes.device_name", device_name_mock), patch(
+            "glob.glob", glob_mock
+        ), patch(
+            "os.open", MagicMock()
+        ), patch(
             "os.unlink", MagicMock()
         ), patch(
             "os.ftruncate", ftruncate_mock
