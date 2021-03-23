@@ -16,8 +16,8 @@ import {defaultTheme} from '@scality/core-ui/dist/style/theme';
 const EVENTS_PREFIX = 'solutions-navbar--';
 export const AUTHENTICATED_EVENT: string = EVENTS_PREFIX + 'authenticated';
 
-export type TranslationAndGroups = { en: string, fr: string, groups?: string[], activeIfMatches?: string };
-export type MenuItems = {[path: string]: TranslationAndGroups }
+export type PathDescription = { en: string, fr: string, groups?: string[], activeIfMatches?: string, icon?: string, isExternal?: boolean };
+export type MenuItems = {[path: string]: PathDescription }
 
 export type Options = { main: MenuItems, subLogin: MenuItems };
 
