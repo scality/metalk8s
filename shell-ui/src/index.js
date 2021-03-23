@@ -12,9 +12,11 @@ import { UserDataListener } from './UserDataListener';
 import { logOut } from './auth/logout';
 import { prefetch } from "quicklink";
 import {defaultTheme} from '@scality/core-ui/dist/style/theme';
+import { LanguageProvider } from './lang';
 
 const EVENTS_PREFIX = 'solutions-navbar--';
 export const AUTHENTICATED_EVENT: string = EVENTS_PREFIX + 'authenticated';
+export const LANGUAGE_CHANGED_EVENT: string = EVENTS_PREFIX + 'language-changed';
 
 export type PathDescription = { en: string, fr: string, groups?: string[], activeIfMatches?: string, icon?: string, isExternal?: boolean };
 export type MenuItems = {[path: string]: PathDescription }
@@ -32,6 +34,7 @@ export type SolutionsNavbarProps = {
   'config-url'?: string,
   options?: string,
   onAuthenticated?: (evt: CustomEvent) => void,
+  onLanguageChanged?: (evt: CustomEvent) => void,
   logOut?: () => void,
   setUserManager?: (userManager: UserManager) => void,
 };
@@ -58,6 +61,7 @@ const SolutionsNavbar = ({
   'response-type': responseType,
   options,
   onAuthenticated,
+  onLanguageChanged,
   logOut,
   setUserManager,
 }: SolutionsNavbarProps) => {
@@ -136,16 +140,18 @@ const SolutionsNavbar = ({
 
       return (
         <AuthProvider {...oidcConfig}>
-          <UserDataListener userGroupsMapping={config.userGroupsMapping} onAuthenticated={onAuthenticated} />
-          <StyledComponentsProvider
-            theme={{
-              // todo manages theme https://github.com/scality/metalk8s/issues/2545
-              brand: defaultTheme.dark,
-              logo_path: '/brand/assets/branding-dark.svg',
-            }}
-          >
-            <Navbar options={computedMenuOptions} userGroupsMapping={config.userGroupsMapping} />
-          </StyledComponentsProvider>
+          <LanguageProvider onLanguageChanged={onLanguageChanged}>
+            <UserDataListener userGroupsMapping={config.userGroupsMapping} onAuthenticated={onAuthenticated} />
+            <StyledComponentsProvider
+              theme={{
+                // todo manages theme https://github.com/scality/metalk8s/issues/2545
+                brand: defaultTheme.dark,
+                logo_path: '/brand/assets/branding-dark.svg',
+              }}
+            >
+              <Navbar options={computedMenuOptions} userGroupsMapping={config.userGroupsMapping} />
+            </StyledComponentsProvider>
+          </LanguageProvider>
         </AuthProvider>
       );
     }
@@ -184,6 +190,9 @@ class SolutionsNavbarWebComponent extends reactToWebComponent(
       window.userManager = userManager;
     };
     this.onAuthenticated = (evt: CustomEvent) => {
+      this.dispatchEvent(evt);
+    };
+    this.onLanguageChanged = (evt: CustomEvent) => {
       this.dispatchEvent(evt);
     };
     this.logOut = () => {

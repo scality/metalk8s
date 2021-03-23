@@ -1,6 +1,7 @@
 import { setupServer } from 'msw/node';
 import { rest } from 'msw';
-import { screen, render } from '@testing-library/react';
+import { screen, render, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event'
 import './index';
 import { waitForLoadingToFinish } from './__TESTS__/utils';
 
@@ -165,6 +166,50 @@ describe('navbar', () => {
       selected: true,
     });
     expect(platformEntry).toBeInTheDocument();
+  });
+
+  it('should set the language of the navbar', async () => {
+    //S
+    mockOIDCProvider();
+    //E
+    render(
+      <solutions-navbar
+        oidc-provider-url="https://mocked.ingress/oidc"
+        client-id="metalk8s-ui"
+        response-type="id_token"
+        redirect-url="http://localhost:8082"
+        scopes="openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
+        options={JSON.stringify({
+          main: {
+            'http://localhost:8082/': {
+              en: 'Platform',
+              fr: 'Plateforme',
+              activeIfMatches: 'http://localhost.*',
+            },
+            'http://localhost:8082/test': { en: 'Test', fr: 'Test' },
+          },
+          subLogin: {},
+        })}
+      />,
+    );
+    await waitForLoadingToFinish();
+
+    //Open dropdown menu
+    userEvent.click(screen.getByText('en'));
+
+    //Select french language
+    userEvent.click(screen.getByText('fr'));
+
+    //V
+    const platformEntry = screen.getByRole('tab', {
+      name: /Plateforme/i,
+      selected: true,
+    });
+    expect(platformEntry).toBeInTheDocument();
+    expect(localStorage.setItem).toBeCalledWith('lang', 'fr');
+    
+    //C
+    userEvent.click(screen.getByText('en'));
   });
 
   it('should display expected menu when it resolved its configuration', async () => {

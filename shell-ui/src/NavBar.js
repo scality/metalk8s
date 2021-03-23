@@ -1,14 +1,14 @@
 //@flow
 import CoreUINavbar from '@scality/core-ui/dist/components/navbar/Navbar.component';
-import Dropdown from "@scality/core-ui/dist/components/dropdown/Dropdown.component";
-import  {type Item as CoreUIDropdownItem} from "@scality/core-ui/src/lib/components/dropdown/Dropdown.component";
+import Dropdown from '@scality/core-ui/dist/components/dropdown/Dropdown.component';
+import { type Item as CoreUIDropdownItem } from '@scality/core-ui/src/lib/components/dropdown/Dropdown.component';
 import { useAuth } from 'oidc-react';
 import { useLayoutEffect, useState } from 'react';
 import type {
   Options,
   SolutionsNavbarProps,
   PathDescription,
-  UserGroupsMapping
+  UserGroupsMapping,
 } from './index';
 import type { Node } from 'react';
 import { logOut } from './auth/logout';
@@ -20,6 +20,7 @@ import {
 } from './auth/permissionUtils';
 import { prefetch } from 'quicklink';
 import { useTheme } from 'styled-components';
+import { useLanguage } from './lang';
 
 export const LoadingNavbar = (): Node => (
   <CoreUINavbar role="navigation" tabs={[{ title: 'loading' }]} />
@@ -65,18 +66,43 @@ const translateOptionsToMenu = (
   );
 };
 
-const Item = ({icon, label, isExternal}: {icon: string, label: string, isExternal?: boolean}) => {
-  const {brand} = useTheme();
-  return <div style={{display: 'flex', width: "200px", alignItems: "center"}}>
-    {icon && <div style={{padding: "10px", color: brand.textSecondary}}><i className={icon} /></div>}
-    <div style={{flexGrow: '1'}}>{label}</div>
-    {isExternal && <div style={{padding: "10px", color: brand.secondary}}><i className='fas fa-external-link-alt' /></div>}
-  </div>
-}
+const Item = ({
+  icon,
+  label,
+  isExternal,
+}: {
+  icon?: string,
+  label: string,
+  isExternal?: boolean,
+}) => {
+  const { brand } = useTheme();
+  return (
+    <div style={{ display: 'flex', width: '200px', alignItems: 'center' }}>
+      {icon && (
+        <div style={{ padding: '10px', color: brand.textSecondary }}>
+          <i className={icon} />
+        </div>
+      )}
+      <div style={{ flexGrow: '1' }}>{label}</div>
+      {isExternal && (
+        <div style={{ padding: '10px', color: brand.secondary }}>
+          <i className="fas fa-external-link-alt" />
+        </div>
+      )}
+    </div>
+  );
+};
 
-export const Navbar = ({ options, userGroupsMapping }: { options: Options, userGroupsMapping?: UserGroupsMapping }): Node => {
+export const Navbar = ({
+  options,
+  userGroupsMapping,
+}: {
+  options: Options,
+  userGroupsMapping?: UserGroupsMapping,
+}): Node => {
   const auth = useAuth();
-  const {brand} = useTheme();
+  const { brand } = useTheme();
+  const { language, setLanguage, unSelectedLanguages } = useLanguage();
 
   const userGroups: string[] = getUserGroups(auth.userData, userGroupsMapping);
   const accessiblePaths = getAccessiblePathsFromOptions(options, userGroups);
@@ -90,12 +116,22 @@ export const Navbar = ({ options, userGroupsMapping }: { options: Options, userG
     options,
     'main',
     (path, pathDescription) => ({
-      link: <a href={path}>{pathDescription.en}</a>,
+      link: <a href={path}>{pathDescription[language]}</a>,
     }),
     userGroups,
   );
 
   const rightActions = [
+    {
+      type: 'dropdown',
+      text: language,
+      items: unSelectedLanguages.map((lang) => ({
+        label: lang,
+        onClick: () => {
+          setLanguage(lang);
+        },
+      })),
+    },
     {
       type: 'dropdown',
       text: auth.userData?.profile.name || '',
@@ -105,8 +141,14 @@ export const Navbar = ({ options, userGroupsMapping }: { options: Options, userG
           options,
           'subLogin',
           (path, pathDescription) => ({
-            // $FlowFixMe Dropdown item typing is currently a string but can also accepts a react node
-            label: <Item icon={pathDescription.icon} isExternal={pathDescription.isExternal} label={pathDescription.en} />,
+            label: (
+              // $FlowFixMe Dropdown item typing is currently a string but can also accepts a react node
+              <Item
+                icon={pathDescription.icon}
+                isExternal={pathDescription.isExternal}
+                label={pathDescription.en}
+              />
+            ),
             onClick: () => {
               if (pathDescription.isExternal) {
                 window.open(path, '_blank');
@@ -118,7 +160,7 @@ export const Navbar = ({ options, userGroupsMapping }: { options: Options, userG
           userGroups,
         ),
         {
-          label: <Item icon={'fas fa-sign-out-alt'} label={'Log Out'} />,
+          label: <Item icon={'fas fa-sign-out-alt'} label={language === 'en' ? 'Log Out' : 'Déconnexion'} />,
           onClick: () => {
             logOut(auth.userManager);
           },
