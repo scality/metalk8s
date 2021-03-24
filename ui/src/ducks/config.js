@@ -1,9 +1,7 @@
 //@flow
 import type { RootState } from './reducer';
-import type { Config, Theme, Themes, WrappedThemes } from '../services/api';
+import type { Config, Theme } from '../services/api';
 import { Effect, call, put, takeEvery, select } from 'redux-saga/effects';
-import { mergeTheme } from '@scality/core-ui/dist/utils';
-import * as defaultTheme from '@scality/core-ui/dist/style/theme';
 import * as Api from '../services/api';
 import * as ApiK8s from '../services/k8s/api';
 import * as ApiSalt from '../services/salt/api';
@@ -19,14 +17,12 @@ import { logOut, setUser } from './oidc';
 export const SET_LANG = 'SET_LANG';
 export const SET_THEME = 'SET_THEME';
 
-const FETCH_THEME = 'FETCH_THEME';
 const FETCH_CONFIG = 'FETCH_CONFIG';
 export const SET_API_CONFIG = 'SET_API_CONFIG';
 export const SET_CONFIG_STATUS = 'SET_CONFIG_STATUS';
 export const UPDATE_API_CONFIG = 'UPDATE_API_CONFIG';
 export const LOGOUT = 'LOGOUT';
 export const SET_USER_LOADED = 'SET_USER_LOADED';
-export const SET_THEMES = 'SET_THEMES';
 
 // Reducer
 type Status = 'idle' | 'loading' | 'error' | 'success';
@@ -35,7 +31,6 @@ export type ConfigState = {
   language: string,
   theme: Theme,
   api: ?Config,
-  themes: Themes,
   status: Status,
 };
 
@@ -43,7 +38,6 @@ const defaultState: ConfigState = {
   language: EN_LANG,
   theme: {}, // current theme
   api: null,
-  themes: {}, // include light, dark and custom
   status: 'idle',
 };
 
@@ -60,8 +54,6 @@ export default function reducer(
       return { ...state, api: action.payload };
     case SET_USER_LOADED:
       return { ...state, isUserLoaded: action.payload };
-    case SET_THEMES:
-      return { ...state, themes: action.payload };
     case SET_CONFIG_STATUS:
       return { ...state, status: action.status };
     default:
@@ -76,10 +68,6 @@ export function setLanguageAction(newLang: string) {
 
 export function setThemeAction(theme: Theme) {
   return { type: SET_THEME, payload: theme };
-}
-
-export function fetchThemeAction() {
-  return { type: FETCH_THEME };
 }
 
 export function fetchConfigAction() {
@@ -105,35 +93,16 @@ export function logoutAction() {
   return { type: LOGOUT };
 }
 
-export function setThemesAction(themes: Themes) {
-  return { type: SET_THEMES, payload: themes };
-}
-
 // Selectors
 export const languageSelector = (state: RootState) => state.config.language;
 export const apiConfigSelector = (state: RootState) => state.config.api;
 
 // Sagas
-export function* fetchTheme(): Generator<Effect, void, Result<WrappedThemes>> {
-  const result = yield call(Api.fetchTheme);
-  if (!result.error) {
-    // get the default theme from configMap
-    const defaultThemeMode = result.default;
-    result.theme[defaultThemeMode].brand = mergeTheme(
-      result.theme[defaultThemeMode],
-      defaultTheme,
-    );
-    yield put(setThemesAction(result.theme));
-    yield put(setThemeAction(result.theme[defaultThemeMode]));
-  }
-}
-
 export function* fetchConfig(): Generator<Effect, void, Result<Config>> {
   yield put(setConfigStatusAction('loading'));
   yield call(Api.initialize, process.env.PUBLIC_URL);
   const result = yield call(Api.fetchConfig);
   if (!result.error) {
-    yield call(fetchTheme); /// todo get it from the navbar
     yield put(setApiConfigAction(result));
     yield call(ApiSalt.initialize, result.url_salt);
     yield call(ApiPrometheus.initialize, result.url_prometheus);
@@ -164,7 +133,6 @@ export function* updateApiServerConfig({
 }
 
 export function* configSaga(): Generator<Effect, void, void> {
-  yield takeEvery(FETCH_THEME, fetchTheme);
   yield takeEvery(FETCH_CONFIG, fetchConfig);
   yield takeEvery(UPDATE_API_CONFIG, updateApiServerConfig);
   yield takeEvery(LOGOUT, logOut);

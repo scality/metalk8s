@@ -8,13 +8,10 @@ jest.mock('../index.js', () => {
 
 import { call, put, select } from 'redux-saga/effects';
 import {
-  fetchTheme,
-  SET_THEME,
   fetchConfig,
   SET_API_CONFIG,
   setUserManagerAction,
   SET_USER_LOADED,
-  SET_THEMES,
   setConfigStatusAction,
 } from './config.js';
 import { fetchUserInfo } from './login';
@@ -25,32 +22,6 @@ import * as ApiSalt from '../services/salt/api';
 import * as ApiPrometheus from '../services/prometheus/api';
 import * as ApiAlertmanager from '../services/alertmanager/api';
 import * as ApiLoki from '../services/loki/api';
-
-it('update the theme state and logo path when fetchTheme', () => {
-  const gen = fetchTheme();
-
-  expect(gen.next().value).toEqual(call(Api.fetchTheme));
-
-  const result = {
-    theme: {
-      light: {
-        brand: {
-          primary: '#283593',
-        },
-        logo_path: '/brand/assets/branding.svg',
-      },
-    },
-    default: 'light',
-  };
-
-  expect(gen.next(result).value).toEqual(
-    put({ type: SET_THEMES, payload: result.theme }),
-  );
-
-  expect(gen.next(result).value).toEqual(
-    put({ type: SET_THEME, payload: result.theme.light }),
-  );
-});
 
 it('update the config state when fetchConfig', () => {
   const gen = fetchConfig();
@@ -66,8 +37,6 @@ it('update the config state when fetchConfig', () => {
     url_alertmanager: 'http://172.21.254.46:8443',
     url_loki: 'http://172.21.254.46:8080',
   };
-
-  expect(gen.next(result).value).toEqual(call(fetchTheme));
 
   expect(gen.next(result).value).toEqual(
     put({ type: SET_API_CONFIG, payload: result }),
