@@ -12,9 +12,6 @@ import {
   SET_THEME,
   fetchConfig,
   SET_API_CONFIG,
-  updateLanguage,
-  SET_LANG,
-  setInitialLanguage,
   setUserManagerAction,
   SET_USER_LOADED,
   SET_THEMES,
@@ -93,32 +90,5 @@ it('update the config state when fetchConfig', () => {
   );
   expect(gen.next().value).toEqual(put(setConfigStatusAction('success')));
 
-  expect(gen.next().done).toEqual(true);
-});
-
-it('update the language when updateLanguage', () => {
-  const gen = updateLanguage({ payload: 'Chinese' });
-  expect(gen.next().value).toEqual(put({ type: SET_LANG, payload: 'Chinese' }));
-
-  expect(gen.next().value.type).toEqual('SELECT');
-  expect(gen.next('Chinese').done).toEqual(true);
-
-  expect(localStorage.getItem(LANGUAGE)).toEqual('Chinese');
-  expect(localStorage.removeItem(LANGUAGE));
-});
-
-it('set initial language from localstorage', () => {
-  const gen = setInitialLanguage();
-  localStorage.setItem(LANGUAGE, FR_LANG);
-  expect(gen.next().value).toEqual(put({ type: SET_LANG, payload: FR_LANG }));
-  expect(gen.next().done).toEqual(true);
-});
-
-it('set initial language from browser', () => {
-  expect(localStorage.removeItem(LANGUAGE));
-  const gen = setInitialLanguage();
-
-  const language = navigator.language.startsWith('fr') ? FR_LANG : EN_LANG;
-  expect(gen.next().value).toEqual(put({ type: SET_LANG, payload: language }));
   expect(gen.next().done).toEqual(true);
 });

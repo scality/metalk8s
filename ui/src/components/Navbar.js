@@ -1,7 +1,7 @@
 //@flow
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTypedSelector } from '../hooks';
-import { updateAPIConfigAction } from '../ducks/config';
+import { setThemeAction, updateAPIConfigAction, setLanguageAction } from '../ducks/config';
 import { useDispatch } from 'react-redux';
 import { ErrorBoundary } from 'react-error-boundary';
 
@@ -76,6 +76,39 @@ function useLoginEffect(navbarRef: { current: NavbarWebComponent | null }) {
   return { isAuthenticated };
 }
 
+function useLanguageEffect(navbarRef: { current: NavbarWebComponent | null }) {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!navbarRef.current) {
+      return;
+    }
+
+    const navbarElement = navbarRef.current;
+
+    const onLanguageChanged = (evt: Event) => {
+      /// flow is not accepting CustomEvent type for listener arguments of {add,remove}EventListener https://github.com/facebook/flow/issues/7179
+      // $flow-disable-line
+      if (evt.detail) {
+        // $flow-disable-line
+        dispatch(setLanguageAction(evt.detail));
+      }
+    };
+
+    navbarElement.addEventListener(
+      'solutions-navbar--language-changed',
+      onLanguageChanged,
+    );
+
+    return () => {
+      navbarElement.removeEventListener(
+        'solutions-navbar--language-changed',
+        onLanguageChanged,
+      );
+    };
+  }, [navbarRef, dispatch]);
+}
+
 function useLogoutEffect(
   navbarRef: { current: NavbarWebComponent | null },
   isAuthenticated: boolean,
@@ -121,8 +154,7 @@ function InternalNavbar() {
 
   const { isAuthenticated } = useLoginEffect(navbarRef);
   useLogoutEffect(navbarRef, isAuthenticated);
-
-  //TODO call updateLanguage() when language changed
+  useLanguageEffect(navbarRef);
 
   return (
     <solutions-navbar

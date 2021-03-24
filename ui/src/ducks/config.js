@@ -10,7 +10,7 @@ import * as ApiSalt from '../services/salt/api';
 import * as ApiPrometheus from '../services/prometheus/api';
 import * as ApiAlertmanager from '../services/alertmanager/api';
 import * as ApiLoki from '../services/loki/api';
-import { EN_LANG, FR_LANG, LANGUAGE } from '../constants';
+import { EN_LANG } from '../constants';
 
 import { authenticateSaltApi } from './login';
 import type { Result } from '../types';
@@ -23,8 +23,6 @@ const FETCH_THEME = 'FETCH_THEME';
 const FETCH_CONFIG = 'FETCH_CONFIG';
 export const SET_API_CONFIG = 'SET_API_CONFIG';
 export const SET_CONFIG_STATUS = 'SET_CONFIG_STATUS';
-const SET_INITIAL_LANGUAGE = 'SET_INITIAL_LANGUAGE';
-const UPDATE_LANGUAGE = 'UPDATE_LANGUAGE';
 export const UPDATE_API_CONFIG = 'UPDATE_API_CONFIG';
 export const LOGOUT = 'LOGOUT';
 export const SET_USER_LOADED = 'SET_USER_LOADED';
@@ -96,15 +94,6 @@ export function setConfigStatusAction(status: Status) {
   return { type: SET_CONFIG_STATUS, status };
 }
 
-export function setInitialLanguageAction() {
-  return { type: SET_INITIAL_LANGUAGE };
-}
-
-// Todo : this actually seems to be never used and duplicate of setLanguageAction
-export function updateLanguageAction(language: string) {
-  return { type: UPDATE_LANGUAGE, payload: language };
-}
-
 export function updateAPIConfigAction(payload: {
   id_token: string,
   token_type: string,
@@ -174,34 +163,9 @@ export function* updateApiServerConfig({
   }
 }
 
-export function* setInitialLanguage(): Generator<Effect, void, string> {
-  const languageLocalStorage = localStorage.getItem(LANGUAGE);
-  if (languageLocalStorage) {
-    languageLocalStorage === FR_LANG
-      ? yield put(setLanguageAction(FR_LANG))
-      : yield put(setLanguageAction(EN_LANG));
-  } else {
-    yield put(
-      setLanguageAction(
-        navigator.language.startsWith('fr') ? FR_LANG : EN_LANG,
-      ),
-    );
-  }
-}
-
-export function* updateLanguage(action: {
-  payload: string,
-}): Generator<Effect, void, string> {
-  yield put(setLanguageAction(action.payload));
-  const language = yield select(languageSelector);
-  localStorage.setItem(LANGUAGE, language);
-}
-
 export function* configSaga(): Generator<Effect, void, void> {
   yield takeEvery(FETCH_THEME, fetchTheme);
   yield takeEvery(FETCH_CONFIG, fetchConfig);
-  yield takeEvery(SET_INITIAL_LANGUAGE, setInitialLanguage);
-  yield takeEvery(UPDATE_LANGUAGE, updateLanguage);
   yield takeEvery(UPDATE_API_CONFIG, updateApiServerConfig);
   yield takeEvery(LOGOUT, logOut);
 }
