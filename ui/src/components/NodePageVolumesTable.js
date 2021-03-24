@@ -397,7 +397,7 @@ const VolumeListTable = (props) => {
         accessor: 'storageCapacity',
         cellStyle: {
           textAlign: 'right',
-          width: '110px',
+          width: '65px',
           paddingRight: '5px',
         },
         sortType: 'size',
@@ -408,7 +408,7 @@ const VolumeListTable = (props) => {
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
-          width: '120px',
+          width: '65px',
         },
         Cell: (cellProps) => {
           const volume = volumeListData?.find(
@@ -467,7 +467,7 @@ const VolumeListTable = (props) => {
         accessor: 'latency',
         cellStyle: {
           textAlign: 'center',
-          width: '110px',
+          width: '75px',
           paddingRight: '6px',
         },
         Cell: (cellProps) => {
