@@ -1,5 +1,10 @@
 //@flow
-import type { Options, TranslationAndGroups } from '../index';
+import type { User } from 'oidc-react';
+import type {
+  Options,
+  TranslationAndGroups,
+  UserGroupsMapping,
+} from '../index';
 
 export const isEntryAccessibleByTheUser = (
   [path, translationAndGroup]: [string, TranslationAndGroups],
@@ -38,4 +43,16 @@ export const isPathAccessible = (
   return accessiblePaths.some(
     (accessiblePath) => normalizePath(accessiblePath) === normalizedPath,
   );
+};
+
+export const getUserGroups = (
+  user?: User,
+  userGroupsMapping?: UserGroupsMapping,
+): string[] => {
+  const userOIDCGroups: string[] = user?.profile?.groups || [];
+  const userMappedGroups = userGroupsMapping
+    ? userGroupsMapping[user?.profile?.email || ''] || []
+    : [];
+
+  return Array.from(new Set([...userOIDCGroups, ...userMappedGroups]));
 };

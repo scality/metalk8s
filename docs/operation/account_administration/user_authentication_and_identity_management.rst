@@ -98,10 +98,12 @@ the following steps from the bootstrap node.
 
    .. parsed-literal::
 
+      root\@bootstrap $ STATES=$(printf ",metalk8s.addons.%s.deployed" \\
+                                 dex prometheus-operator ui)
       root\@bootstrap $ kubectl exec -n kube-system -c salt-master \\
-                         --kubeconfig /etc/kubernetes/admin.conf \\
-                         salt-master-bootstrap -- salt-run state.sls \\
-                         metalk8s.addons.dex.deployed saltenv=metalk8s-|version|
+                        --kubeconfig /etc/kubernetes/admin.conf \\
+                        salt-master-bootstrap -- salt-run state.sls \\
+                        "${STATES:1}" saltenv=metalk8s-|version|
 
 #. Bind the user to an existing (Cluster) Role using
    :ref:`a ClusterRoleBlinding <bind-user-to-role>`.

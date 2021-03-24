@@ -6,11 +6,13 @@ import type {
   Options,
   SolutionsNavbarProps,
   TranslationAndGroups,
+  UserGroupsMapping
 } from './index';
 import type { Node } from 'react';
 import { logOut } from './auth/logout';
 import {
   getAccessiblePathsFromOptions,
+  getUserGroups,
   isEntryAccessibleByTheUser,
   normalizePath,
 } from './auth/permissionUtils';
@@ -60,10 +62,10 @@ const translateOptionsToMenu = (
   );
 };
 
-export const Navbar = ({ options }: { options: Options }): Node => {
+export const Navbar = ({ options, userGroupsMapping }: { options: Options, userGroupsMapping?: UserGroupsMapping }): Node => {
   const auth = useAuth();
 
-  const userGroups: string[] = auth.userData?.profile?.groups || [];
+  const userGroups: string[] = getUserGroups(auth.userData, userGroupsMapping);
   const accessiblePaths = getAccessiblePathsFromOptions(options, userGroups);
   useLayoutEffect(() => {
     accessiblePaths.forEach((accessiblePath) => {
