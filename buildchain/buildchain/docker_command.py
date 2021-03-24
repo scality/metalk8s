@@ -74,8 +74,7 @@ def build_error_handler(build_error: BuildError) -> str:
             line = "buildchain: Unknown build log entry {}".format(str(item))
         output_lines.append(line)
 
-    log = "".join(output_lines)
-    return "{}:\n{}".format(str(build_error), log)
+    return "".join(output_lines)
 
 
 def container_error_handler(container_error: ContainerError) -> str:
