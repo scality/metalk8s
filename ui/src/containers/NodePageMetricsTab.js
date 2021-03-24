@@ -75,7 +75,13 @@ const GraphGrid = styled.div`
 `;
 
 const MetricsToggleWrapper = styled.div`
+  display: flex;
+  align-items: center;
   flex: 1;
+
+  .sc-toggle {
+    margin-right: ${padding.small};
+  }
 `;
 
 const NodePageMetricsTab = ({
