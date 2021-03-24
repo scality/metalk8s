@@ -31,7 +31,6 @@ const PodTableContainer = styled.div`
       font-weight: bold;
       height: 56px;
       text-align: left;
-      padding: ${padding.smaller};
     }
   }
 `;
