@@ -381,7 +381,7 @@ const CreateVolume = (props) => {
         <TitleWrapper>
           <TitlePage>Create New Volume</TitlePage>
           <DocumentationIcon>
-            <Tooltip placement="top" overlay={intl.translate('documentation')}>
+            <Tooltip placement="left" overlay={intl.translate('documentation')}>
               <Button
                 icon={<i className="fas fa-book-reader fa-lg" />}
                 inverted={true}
