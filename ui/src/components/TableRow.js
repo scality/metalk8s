@@ -1,20 +1,16 @@
 import React from 'react';
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import { Tooltip, ConstrainedText } from '@scality/core-ui';
 import { fontWeight, padding } from '@scality/core-ui/dist/style/theme';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const TableRowStyle = styled.div`
-  ${(props) =>
-    !props.isNameLink &&
-    css`
-      &:hover,
-      &:focus {
-        background-color: ${(props) => props.theme.brand.backgroundBluer};
-        outline: none;
-        cursor: pointer;
-      }
-    `}
+  &:hover,
+  &:focus {
+    background-color: ${(props) => props.theme.brand.backgroundBluer};
+    outline: none;
+    cursor: pointer;
+  }
 
   &:last-child {
     border: none;
@@ -40,11 +36,12 @@ export const UnknownIcon = styled.i`
 `;
 
 const TableRow = (props) => {
-  const { row, style, onClickRow, isSelected, isNameLink } = props;
+  const { row, style, onClickRow, isSelected } = props;
+
   return (
     <TableRowStyle
       {...row.getRowProps({
-        onClick: props.onClickRow ? () => onClickRow(row) : null,
+        onClick: () => onClickRow(row),
         // Note:
         // We need to pass the style property to the row component.
         // Otherwise when we scroll down, the next rows are flashing because they are re-rendered in loop.
@@ -52,7 +49,6 @@ const TableRow = (props) => {
       })}
       isSelected={isSelected}
       row={row}
-      isNameLink={isNameLink}
     >
       {row.cells.map((cell) => {
         let cellProps = cell.getCellProps({
@@ -65,10 +61,7 @@ const TableRow = (props) => {
           },
         });
 
-        if (
-          !isNameLink &&
-          (cell.column.Header === 'Name' || cell.column.Header === 'Node')
-        ) {
+        if (cell.column.Header === 'Name' || cell.column.Header === 'Node') {
           return (
             <div {...cellProps} data-cy="volume_table_name_cell" className="td">
               <ConstrainedText

@@ -16,7 +16,6 @@ import {
   ConstrainedText,
 } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
-import TableRow from './TableRow';
 import {
   VOLUME_CONDITION_LINK,
   VOLUME_CONDITION_UNLINK,
@@ -99,6 +98,58 @@ const NameLinkContaner = styled.div`
   cursor: pointer;
   padding-right: ${padding.small};
 `;
+
+const TableRowStyle = styled.div``;
+
+const TableRow = (props) => {
+  const { row, style, onClickRow, isSelected } = props;
+  return (
+    <TableRowStyle
+      {...row.getRowProps({
+        onClick: props.onClickRow ? () => onClickRow(row) : null,
+        // Note:
+        // We need to pass the style property to the row component.
+        // Otherwise when we scroll down, the next rows are flashing because they are re-rendered in loop.
+        style: { ...style },
+      })}
+      isSelected={isSelected}
+      row={row}
+    >
+      {row.cells.map((cell) => {
+        let cellProps = cell.getCellProps({
+          style: {
+            ...cell.column.cellStyle,
+            // Vertically center the text in cells.
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+          },
+        });
+
+        if (cell.column.Header !== 'Name' && cell.value === undefined) {
+          return (
+            <div {...cellProps} className="td">
+              <Tooltip
+                placement={cell.row.index === 0 ? 'bottom' : 'top'}
+                overlay={
+                  <TooltipContent>{intl.translate('unknown')}</TooltipContent>
+                }
+              >
+                <UnknownIcon className="fas fa-minus"></UnknownIcon>
+              </Tooltip>
+            </div>
+          );
+        } else {
+          return (
+            <div {...cellProps} className="td">
+              {cell.render('Cell')}
+            </div>
+          );
+        }
+      })}
+    </TableRowStyle>
+  );
+};
 
 function Table({ columns, data, nodeName, volumeName, theme }) {
   const history = useHistory();
