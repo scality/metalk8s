@@ -379,7 +379,7 @@ const VolumeListTable = (props) => {
         accessor: 'usage',
         cellStyle: {
           textAlign: 'center',
-          width: '150px',
+          width: '120px',
         },
         Cell: ({ value }) => {
           return (
