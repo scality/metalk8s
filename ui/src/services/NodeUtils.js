@@ -5,7 +5,6 @@ import {
   PORT_NODE_EXPORTER,
   STATUS_CRITICAL,
   STATUS_WARNING,
-  STATUS_HEALTH,
   STATUS_NONE,
   API_STATUS_READY,
   API_STATUS_NOT_READY,
@@ -18,6 +17,7 @@ import type { RootState } from '../ducks/reducer';
 import type { NodesState } from '../ducks/app/nodes';
 import type { AlertsState } from '../ducks/app/alerts';
 import type { Brand } from '../services/api';
+import { getHealthStatus, filterAlerts } from '../services/alertUtils';
 
 const METALK8S_CONTROL_PLANE_IP = 'metalk8s:control_plane_ip';
 const METALK8S_WORKLOAD_PLANE_IP = 'metalk8s:workload_plane_ip';
@@ -71,12 +71,11 @@ export const getNodeListData = createTypedSelector<NodetableList>(
         const conditions = node.conditions;
         const IPsInfo = nodeIPsInfo[node.name];
         let statusTextColor, health;
-        const alertsNode = alerts.filter(
-          (alert) =>
-            NODE_ALERTS_GROUP.includes(alert.labels.alertname) &&
-            `${node.internalIP}:${PORT_NODE_EXPORTER}` ===
-              alert.labels.instance,
-        );
+
+        const alertsNode = filterAlerts(alerts, {
+          alertname: NODE_ALERTS_GROUP,
+          instance: `${node.internalIP}:${PORT_NODE_EXPORTER}`,
+        });
 
         const totalAlertsCounter = alertsNode.length;
         const criticalAlertsCounter = alertsNode.filter(
@@ -86,18 +85,7 @@ export const getNodeListData = createTypedSelector<NodetableList>(
           (alert) => alert.labels.severity === STATUS_WARNING,
         ).length;
 
-        if (criticalAlertsCounter > 0) {
-          health = STATUS_CRITICAL;
-        } else if (warningAlertsCounter > 0) {
-          health = STATUS_WARNING;
-        } else if (criticalAlertsCounter === 0 && warningAlertsCounter === 0) {
-          // We don't know if the Node is health of not ready if there is no alerts
-          // so we need to specify the health is none when compute the status later.
-          health = STATUS_HEALTH;
-        } else {
-          health = STATUS_NONE;
-        }
-
+        health = getHealthStatus(alertsNode);
         const computedStatus = [];
         /*  The rules of the color of the node status
          <green>  when status.conditions['Ready'] == True and all other conditions are false

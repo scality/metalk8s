@@ -10,8 +10,15 @@ import {
   queryNodeFSSize,
 } from '../services/prometheus/fetchMetrics';
 import CircleStatus from './CircleStatus';
-import { getAlerts } from '../services/alertmanager/api';
 import { getNodePartitionsTableData } from '../services/NodeVolumesUtils';
+import { useAlerts } from '../containers/AlertProvider';
+import {
+  NODE_FILESYSTEM_SPACE_FILLINGUP,
+  NODE_FILESYSTEM_ALMOST_OUTOF_SPACE,
+  NODE_FILESYSTEM_FILES_FILLINGUP,
+  NODE_FILESYSTEM_ALMOST_OUTOF_FILES,
+  PORT_NODE_EXPORTER,
+} from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const HeadRow = styled.tr`
@@ -98,6 +105,17 @@ const LoaderContainer = styled.div`
 
 const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
   const theme = useTheme();
+  const alertList = useAlerts({
+    alertname: [
+      NODE_FILESYSTEM_SPACE_FILLINGUP,
+      NODE_FILESYSTEM_ALMOST_OUTOF_SPACE,
+      NODE_FILESYSTEM_FILES_FILLINGUP,
+      NODE_FILESYSTEM_ALMOST_OUTOF_FILES,
+    ],
+    instance: `${instanceIP}:${PORT_NODE_EXPORTER}`,
+  });
+
+  const alertNF = alertList && alertList.alerts;
   const { data: partitions, status } = useQuery(
     ['nodeDevices', instanceIP],
     useCallback(
@@ -105,8 +123,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
         Promise.all([
           queryNodeFSUsage(instanceIP),
           queryNodeFSSize(instanceIP),
-          getAlerts(),
-        ]).then(([nodeFSUsageResult, nodeFSSizeResult, alerts]) => {
+        ]).then(([nodeFSUsageResult, nodeFSSizeResult]) => {
           if (
             nodeFSUsageResult.status === 'success' &&
             nodeFSSizeResult.status === 'success' &&
@@ -116,11 +133,14 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
             return getNodePartitionsTableData(
               nodeFSUsageResult.data.result,
               nodeFSSizeResult.data.result,
-              alerts,
+              alertNF,
             );
           }
         }),
-      [instanceIP],
+      // disable the eslint checking because it requires `alertNF` to be in the dependency list,
+      // and since react is not performing a deep comparison, so useCallback would be recalled everytime useAlerts refetch the alerts.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [instanceIP, JSON.stringify(alertNF)],
     ),
   );
 

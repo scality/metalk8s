@@ -15,6 +15,7 @@ import {
   PORT_NODE_EXPORTER,
 } from '../constants';
 import { computeVolumeGlobalStatus } from '../services/NodeVolumesUtils';
+import { useAlerts } from '../containers/AlertProvider';
 import {
   LeftSideInstanceList,
   NoInstanceSelectedContainer,
@@ -100,12 +101,8 @@ const VolumePageContent = (props) => {
       pod.volumes.find((volume) => volume.persistentVolumeClaim === PVCName),
     );
 
-  // get the alert
-  const alertlist =
-    PVCName &&
-    alerts?.list?.filter(
-      (alert) => alert.labels.persistentvolumeclaim === PVCName,
-    );
+  const alertsVolume = useAlerts({ persistentvolumeclaim: PVCName });
+  const alertlist = alertsVolume && alertsVolume.data;
 
   // prepare the data for <PerformanceGraphCard>
   const deviceName = volume?.status?.deviceName;

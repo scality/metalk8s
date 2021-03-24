@@ -10,7 +10,7 @@ import type { StreamValue } from './loki/api';
 import { compareHealth } from './utils';
 
 export type Health = 'healthy' | 'warning' | 'critical' | 'none';
-type FilterLabels = {
+export type FilterLabels = {
   [labelName: string]: string | string[],
   parents?: string[],
   selectors?: string[],
@@ -74,7 +74,7 @@ export const removeWarningAlerts = (alerts: Alert[]): Alert[] => {
 // Sort the alerts base on the `severity`
 export const sortAlerts = (alerts: Alert[]): Alert[] => {
   return alerts.sort(function (a, b) {
-    return compareHealth(a.labels.severity, b.labels.severity);
+    return compareHealth(b.labels.severity, a.labels.severity);
   });
 };
 
@@ -153,6 +153,7 @@ export const filterAlerts = (
   alerts: Alert[],
   filters?: FilterLabels,
 ): Alert[] => {
+  if (!alerts) return [];
   if (!filters) {
     return alerts;
   }

@@ -9,6 +9,7 @@ import * as ApiK8s from '../services/k8s/api';
 import * as ApiSalt from '../services/salt/api';
 import * as ApiPrometheus from '../services/prometheus/api';
 import * as ApiAlertmanager from '../services/alertmanager/api';
+import * as ApiLoki from '../services/loki/api';
 import { EN_LANG, FR_LANG, LANGUAGE } from '../constants';
 
 import { authenticateSaltApi } from './login';
@@ -93,7 +94,10 @@ export function updateLanguageAction(language: string) {
   return { type: UPDATE_LANGUAGE, payload: language };
 }
 
-export function updateAPIConfigAction(payload: { id_token: string, token_type: string }) {
+export function updateAPIConfigAction(payload: {
+  id_token: string,
+  token_type: string,
+}) {
   return { type: UPDATE_API_CONFIG, payload };
 }
 
@@ -133,6 +137,7 @@ export function* fetchConfig(): Generator<Effect, void, Result<Config>> {
     yield call(ApiSalt.initialize, result.url_salt);
     yield call(ApiPrometheus.initialize, result.url_prometheus);
     yield call(ApiAlertmanager.initialize, result.url_alertmanager);
+    yield call(ApiLoki.initialize, result.url_loki);
   }
 }
 
