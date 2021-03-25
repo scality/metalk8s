@@ -37,9 +37,8 @@ function useWebComponent(src?: string, customElementName: string) {
 
 type NavbarWebComponent = HTMLElement & { logOut: () => void };
 
-function useLoginEffect(navbarRef: { current: NavbarWebComponent | null }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const dispatch = useDispatch();
+function useNavbarVersion(navbarRef: { current: NavbarWebComponent | null }): string | null {
+  const [version, setVersion] = useState(null);
 
   useEffect(() => {
     if (!navbarRef.current) {
@@ -48,10 +47,40 @@ function useLoginEffect(navbarRef: { current: NavbarWebComponent | null }) {
 
     const navbarElement = navbarRef.current;
 
-    const onAuthenticated = (evt: Event) => {
-      /// flow is not accepting CustomEvent type for listener arguments of {add,remove}EventListener https://github.com/facebook/flow/issues/7179
+    const onReady = (evt: Event) => {
       // $flow-disable-line
-      if (evt.detail && evt.detail.profile) {
+      setVersion(evt.detail.version)
+    }
+
+    navbarElement.addEventListener(
+      'ready',
+      onReady,
+    );
+
+    return () => {
+      navbarElement.removeEventListener(
+        'ready',
+        onReady,
+      );
+    };
+  }, [navbarRef])
+
+  return version;
+}
+
+function useLoginEffect(navbarRef: { current: NavbarWebComponent | null }, version: string | null) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!navbarRef.current || !version) {
+      return;
+    }
+
+    const navbarElement = navbarRef.current;
+
+    const onAuthenticated = (evt: Event) => {
+      if (window.shellUINavbar[version].isAuthenticatedEvent(evt)) {
         // $flow-disable-line
         dispatch(updateAPIConfigAction(evt.detail));
         setIsAuthenticated(true);
@@ -61,26 +90,26 @@ function useLoginEffect(navbarRef: { current: NavbarWebComponent | null }) {
     };
 
     navbarElement.addEventListener(
-      'solutions-navbar--authenticated',
+      window.shellUINavbar[version].events.AUTHENTICATED_EVENT,
       onAuthenticated,
     );
 
     return () => {
       navbarElement.removeEventListener(
-        'solutions-navbar--authenticated',
+        window.shellUINavbar[version].events.AUTHENTICATED_EVENT,
         onAuthenticated,
       );
     };
-  }, [navbarRef, dispatch]);
+  }, [navbarRef, version, dispatch]);
 
   return { isAuthenticated };
 }
 
-function useLanguageEffect(navbarRef: { current: NavbarWebComponent | null }) {
+function useLanguageEffect(navbarRef: { current: NavbarWebComponent | null }, version: string | null) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (!navbarRef.current) {
+    if (!navbarRef.current || !version) {
       return;
     }
 
@@ -96,24 +125,24 @@ function useLanguageEffect(navbarRef: { current: NavbarWebComponent | null }) {
     };
 
     navbarElement.addEventListener(
-      'solutions-navbar--language-changed',
+      window.shellUINavbar[version].events.LANGUAGE_CHANGED_EVENT,
       onLanguageChanged,
     );
 
     return () => {
       navbarElement.removeEventListener(
-        'solutions-navbar--language-changed',
+        window.shellUINavbar[version].events.LANGUAGE_CHANGED_EVENT,
         onLanguageChanged,
       );
     };
-  }, [navbarRef, dispatch]);
+  }, [navbarRef, version, dispatch]);
 }
 
-function useThemeEffect(navbarRef: { current: NavbarWebComponent | null }) {
+function useThemeEffect(navbarRef: { current: NavbarWebComponent | null }, version: string | null) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (!navbarRef.current) {
+    if (!navbarRef.current || !version) {
       return;
     }
 
@@ -129,17 +158,17 @@ function useThemeEffect(navbarRef: { current: NavbarWebComponent | null }) {
     };
 
     navbarElement.addEventListener(
-      'solutions-navbar--theme-changed',
+      window.shellUINavbar[version].events.THEME_CHANGED_EVENT,
       onThemeChanged,
     );
 
     return () => {
       navbarElement.removeEventListener(
-        'solutions-navbar--theme-changed',
+        window.shellUINavbar[version].events.THEME_CHANGED_EVENT,
         onThemeChanged,
       );
     };
-  }, [navbarRef, dispatch]);
+  }, [navbarRef, version, dispatch]);
 }
 
 function useLogoutEffect(
@@ -185,10 +214,11 @@ function InternalNavbar() {
 
   const navbarRef = useRef<NavbarWebComponent | null>(null);
 
-  const { isAuthenticated } = useLoginEffect(navbarRef);
+  const version = useNavbarVersion(navbarRef);
+  const { isAuthenticated } = useLoginEffect(navbarRef, version);
   useLogoutEffect(navbarRef, isAuthenticated);
-  useLanguageEffect(navbarRef);
-  useThemeEffect(navbarRef);
+  useLanguageEffect(navbarRef, version);
+  useThemeEffect(navbarRef, version);
 
   return (
     <solutions-navbar

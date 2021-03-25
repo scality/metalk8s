@@ -1,7 +1,8 @@
 import { useAuth } from 'oidc-react';
 import { useLayoutEffect } from 'react';
 import { getUserGroups } from './auth/permissionUtils';
-import { AUTHENTICATED_EVENT, SolutionsNavbarProps, type UserGroupsMapping } from './index';
+import { SolutionsNavbarProps, type UserGroupsMapping } from './index';
+import { AUTHENTICATED_EVENT } from './events';
 
 export const UserDataListener = ({
   userGroupsMapping,

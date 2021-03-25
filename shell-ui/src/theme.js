@@ -1,7 +1,8 @@
 //@flow
 import React, { useContext, useState, type Node, useLayoutEffect } from 'react';
 import { defaultTheme } from '@scality/core-ui/dist/style/theme';
-import { THEME_CHANGED_EVENT } from '.';
+import { THEME_CHANGED_EVENT } from "./events";
+
 
 type ThemeName = 'dark' | 'light' | 'custom';
 type ThemeContextValues = {
