@@ -50,7 +50,8 @@ const TableRow = styled(HeadRow)`
 const Body = styled.tbody`
   /* To display scroll bar on the table */
   display: block;
-  height: calc(100vh - 250px);
+  /* 100vh - navbar - tabs button height - tabs content padding - table header */
+  height: calc(100vh - 178px);
   overflow: auto;
   overflow-y: auto;
 `;
