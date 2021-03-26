@@ -16,29 +16,29 @@ Requirements
 Creating a Volume
 -----------------
 
-#. Create a Volume manifest using the following template:
+#. Create a Volume manifest using one of the following templates:
 
-   .. code-block:: yaml
+   .. jinja:: volume_values
 
-       apiVersion: storage.metalk8s.scality.com/v1alpha1
-       kind: Volume
-       metadata:
-         name: <volume_name>
-       spec:
-         nodeName: <node_name>
-         storageClassName: <storageclass_name>
-         mode: "Filesystem"
-         rawBlockDevice:
-           devicePath: <device_path>
+       {%- for volume_type, volume_info in volume_types.items() %}
 
-   Set the following fields:
+       {{ volume_type }} Volumes
+       ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   - **name**: the name of your volume, must be unique.
-   - **nodeName**: the name of the node where the volume will be located.
-   - **storageClassName**: the StorageClass to use.
-   - **mode**: describes how the volume is intended to be consumed, either
-     Block or Filesystem (default to Filesystem if not specified).
-   - **devicePath**: path to the block device (for example: `/dev/sda1`).
+       .. code-block:: yaml
+
+       {{ volume_info["basic"] | indent(8, first=true) }}
+
+
+       Set the following fields:
+
+       {% for key, info in common_fields.items() %}
+       - **{{ key }}**: {{ info }}.
+       {% endfor %}
+       {% for key, info in volume_info["fields"].items() %}
+       - **{{ key }}**: {{ info }}.
+       {% endfor %}
+       {% endfor %}
 
 #. Create the Volume.
 

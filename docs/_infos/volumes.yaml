@@ -1,0 +1,57 @@
+common_fields:
+  name: the name of your volume, must be unique
+  nodeName: the name of the node where the volume will be located
+  storageClassName: the StorageClass to use
+  mode: >-
+    describes how the volume is intented to be consumed, either
+    Block or Filesystem (default to Filesystem if not specified)
+
+volume_types:
+
+  rawBlockDevice:
+    example:
+      # Path relative to `docs/conf.py` file
+      path: "../examples/block-device-volumes.yaml"
+      variables:
+        # Will be used as follow:
+        # ```
+        # [...] replacing:
+        # - <key> <value>
+        # ```
+        device_path: "with the ``/dev/`` path for the partitions to use"
+    fields:
+      devicePath: "path to the block device (for example: ``/dev/sda1``)"
+    basic: |
+      apiVersion: storage.metalk8s.scality.com/v1alpha1
+      kind: Volume
+      metadata:
+        name: <volume_name>
+      spec:
+        nodeName: <node_name>
+        storageClassName: <storageclass_name>
+        mode: "Filesystem"
+        rawBlockDevice:
+          devicePath: <devicePath>
+
+  lvmLogicalVolume:
+    example:
+      path: "../examples/lvm-lv-volumes.yaml"
+      variables:
+        vg_name: "with the existing LVM VolumeGroup name on this specific Node"
+    fields:
+      vgName: >-
+        LVM VolumeGroup name to create the LogicalVolume the VolumeGroup
+        must exists on the Node
+      size: "Size of the LVM LogicalVolume to create"
+    basic: |
+      apiVersion: storage.metalk8s.scality.com/v1alpha1
+      kind: Volume
+      metadata:
+        name: <volume_name>
+      spec:
+        nodeName: <node_name>
+        storageClassName: <storageclass_name>
+        mode: "Filesystem"
+        lvmLogicalVolume:
+          vgName: <vg_name>
+          size: 10Gi
