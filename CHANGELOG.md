@@ -10,6 +10,12 @@
 - Bump Node.js version to 14.16.0 (PR[#3214](https://github.com/scality/metalk8s/pull/3214))
 
 ## Release 2.8.1 (in development)
+### Enhancements
+
+- [#1997](https://github.com/scality/metalk8s/issues/1997) - Add support for
+  LVM LogicalVolume Volume creation using storage operator
+  (PR [#3220](https://github.com/scality/metalk8s/pull/3220))
+
 ### Bug fixes
 
 - [#3223](https://github.com/scality/metalk8s/issues/3223) - Prevent failures
