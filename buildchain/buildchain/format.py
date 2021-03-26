@@ -40,7 +40,7 @@ def format_go() -> types.TaskDict:
         "name": "go",
         "title": utils.title_with_subtask_name("FORMAT"),
         "doc": format_go.__doc__,
-        "actions": [doit.action.CmdAction(cmd, cwd=cwd)],
+        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT).execute],
         "task_dep": ["check_for:gofmt"],
         "file_dep": list(constants.STORAGE_OPERATOR_SOURCES),
     }
