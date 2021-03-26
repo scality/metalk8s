@@ -119,6 +119,8 @@ prometheus:
             matchLabels:
               app.kubernetes.io/name: prometheus-operator-prometheus
 
+    enableAdminAPI: '__var__(prometheus.spec.config.enable_admin_api)'
+
 grafana:
   adminPassword: admin
 

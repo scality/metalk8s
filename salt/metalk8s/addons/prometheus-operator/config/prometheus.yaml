@@ -7,6 +7,8 @@ spec:
   # Configure the Prometheus Deployment
   deployment:
     replicas: 1
+  config:
+    enable_admin_api: false
   rules:
     node_exporter:
       node_filesystem_space_filling_up:
