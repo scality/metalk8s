@@ -53907,7 +53907,7 @@ spec:
       namespace: metalk8s-monitoring
       pathPrefix: /
       port: web
-  enableAdminAPI: false
+  enableAdminAPI: {% endraw -%}{{ prometheus.spec.config.enable_admin_api }}{%- raw %}
   externalUrl: http://prometheus-operator-prometheus.metalk8s-monitoring:9090
   image: {% endraw -%}{{ build_image_name("prometheus", False) }}{%- raw %}:v2.22.1
   listenLocal: false
