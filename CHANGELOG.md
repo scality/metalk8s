@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## Release 2.8.0 (in development)
+## Release 2.8.1 (in development)
+### Bug fixes
+
+- [#3223](https://github.com/scality/metalk8s/issues/3223) - Prevent failures
+  when some `sysctl` configuration file contains a `%` character
+  (PR [#3224](https://github.com/scality/metalk8s/pull/3224))
+
+## Release 2.8.0
 ### Enhancements
 
 - [#3051](https://github.com/scality/metalk8s/issues/3051) - Prefix OIDC claims
