@@ -140,14 +140,13 @@ def lint_sls() -> types.TaskDict:
 
 def check_go_fmt() -> Optional[doit.exceptions.TaskError]:
     """Check if Go code is properly formatted."""
-    cwd = constants.STORAGE_OPERATOR_ROOT
     cmd = [
         config.ExtCommand.GOFMT.value,
         "-s",
         "-d",
-        *tuple(constants.STORAGE_OPERATOR_FMT_ARGS),
+        *tuple(str(path) for path in constants.GO_SOURCES),
     ]
-    diff = subprocess.check_output(cmd, cwd=cwd)
+    diff = subprocess.check_output(cmd, cwd=constants.ROOT)
     if diff:
         return doit.exceptions.TaskError(
             msg="badly formatted Go code, please run `doit.sh format:go`"
@@ -181,7 +180,7 @@ def lint_go() -> types.TaskDict:
         "doc": lint_go.__doc__,
         "actions": [check_go_fmt, check_go_codegen],
         "task_dep": ["check_for:gofmt", "check_for:operator-sdk", "check_for:git"],
-        "file_dep": list(constants.STORAGE_OPERATOR_SOURCES),
+        "file_dep": list(constants.GO_SOURCES),
     }
 
 

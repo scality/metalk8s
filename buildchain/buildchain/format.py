@@ -23,7 +23,6 @@ def task_format() -> Iterator[types.TaskDict]:
 
 def format_go() -> types.TaskDict:
     """Format Go code using gofmt."""
-    cwd = constants.STORAGE_OPERATOR_ROOT
     cmd = " ".join(
         map(
             shlex.quote,
@@ -31,7 +30,7 @@ def format_go() -> types.TaskDict:
                 config.ExtCommand.GOFMT.value,
                 "-s",
                 "-w",
-                *tuple(constants.STORAGE_OPERATOR_FMT_ARGS),
+                *tuple(str(path) for path in constants.GO_SOURCES),
             ],
         )
     )
@@ -42,7 +41,7 @@ def format_go() -> types.TaskDict:
         "doc": format_go.__doc__,
         "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT).execute],
         "task_dep": ["check_for:gofmt"],
-        "file_dep": list(constants.STORAGE_OPERATOR_SOURCES),
+        "file_dep": list(constants.GO_SOURCES),
     }
 
 
