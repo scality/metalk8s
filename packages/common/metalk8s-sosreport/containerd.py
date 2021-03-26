@@ -65,7 +65,7 @@ class containerd(Plugin, RedHatPlugin, UbuntuPlugin):
 
     def _get_crio_list(self, cmd):
         ret = []
-        result = self.get_command_output(cmd)
+        result = self.exec_cmd(cmd)
         if result["status"] == 0:
             for entry in result["output"].splitlines():
                 if "deprecated" not in entry[0]:
