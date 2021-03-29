@@ -179,6 +179,7 @@ describe('navbar', () => {
         response-type="id_token"
         redirect-url="http://localhost:8082"
         scopes="openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
+        can-change-language="true"
         options={JSON.stringify({
           main: {
             'http://localhost:8082/': {

@@ -25,8 +25,12 @@ import { useLanguage } from './lang';
 import { useThemeName } from './theme';
 import { useIntl } from 'react-intl';
 
-export const LoadingNavbar = ({logo}: {logo: string}): Node => (
-  <CoreUINavbar logo={<img src={logo} alt='logo' />} role="navigation" tabs={[{ title: 'loading' }]} />
+export const LoadingNavbar = ({ logo }: { logo: string }): Node => (
+  <CoreUINavbar
+    logo={<img src={logo} alt="logo" />}
+    role="navigation"
+    tabs={[{ title: 'loading' }]}
+  />
 );
 
 const translateOptionsToMenu = (
@@ -120,10 +124,14 @@ export const Navbar = ({
   options,
   logo,
   userGroupsMapping,
+  canChangeLanguage,
+  canChangeTheme,
 }: {
   options: Options,
   logo: string,
   userGroupsMapping?: UserGroupsMapping,
+  canChangeLanguage?: boolean,
+  canChangeTheme?: boolean,
 }): Node => {
   const auth = useAuth();
   const brand = useTheme();
@@ -152,28 +160,12 @@ export const Navbar = ({
   const rightActions = [
     {
       type: 'dropdown',
-      text: language,
-      items: unSelectedLanguages.map((lang) => ({
-        label: lang,
-        onClick: () => {
-          setLanguage(lang);
-        },
-      })),
-    },
-    {
-      type: 'dropdown',
-      text: themeName,
-      items: unSelectedThemes.map((theme) => ({
-        label: theme,
-        onClick: () => {
-          setTheme(theme);
-        },
-      })),
-    },
-    {
-      type: 'dropdown',
       text: auth.userData?.profile.name || '',
-      icon: <span style={{color: brand.textPrimary}}><i className="fas fa-user" /></span>,
+      icon: (
+        <span style={{ color: brand.textPrimary }}>
+          <i className="fas fa-user" />
+        </span>
+      ),
       items: [
         ...translateOptionsToMenu(
           options,
@@ -198,7 +190,12 @@ export const Navbar = ({
           userGroups,
         ),
         {
-          label: <Item icon={'fas fa-sign-out-alt'} label={intl.formatMessage({id: 'sign-out'})} />,
+          label: (
+            <Item
+              icon={'fas fa-sign-out-alt'}
+              label={intl.formatMessage({ id: 'sign-out' })}
+            />
+          ),
           onClick: () => {
             logOut(auth.userManager);
           },
@@ -207,7 +204,38 @@ export const Navbar = ({
     },
   ];
 
+  if (canChangeLanguage) {
+    rightActions.unshift({
+      type: 'dropdown',
+      text: language,
+      items: unSelectedLanguages.map((lang) => ({
+        label: lang,
+        onClick: () => {
+          setLanguage(lang);
+        },
+      })),
+    });
+  }
+
+  if (canChangeTheme) {
+    rightActions.unshift({
+      type: 'dropdown',
+      text: themeName,
+      items: unSelectedThemes.map((theme) => ({
+        label: theme,
+        onClick: () => {
+          setTheme(theme);
+        },
+      })),
+    });
+  }
+
   return (
-    <CoreUINavbar logo={<img src={logo} alt='logo' />} rightActions={rightActions} tabs={tabs} role="navigation" />
+    <CoreUINavbar
+      logo={<img src={logo} alt="logo" />}
+      rightActions={rightActions}
+      tabs={tabs}
+      role="navigation"
+    />
   );
 };

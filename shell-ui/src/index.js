@@ -47,6 +47,8 @@ export type SolutionsNavbarProps = {
   'logo-light'?: string,
   'logo-dark'?: string,
   favicon: string,
+  'can-change-theme': string,
+  'can-change-language': string,
   onAuthenticated?: (evt: CustomEvent) => void,
   onLanguageChanged?: (evt: CustomEvent) => void,
   onThemeChanged?: (evt: CustomEvent) => void,
@@ -68,6 +70,8 @@ type Config = {
   },
   favicon?: string,
   options?: Options,
+  canChangeTheme?: boolean,
+  canChangeLanguage?: boolean,
   userGroupsMapping?: UserGroupsMapping,
 };
 
@@ -82,6 +86,8 @@ const SolutionsNavbar = ({
   'logo-light': logoLight,
   favicon,
   options,
+  'can-change-theme': canChangeTheme,
+  'can-change-language': canChangeLanguage,
   onAuthenticated,
   onLanguageChanged,
   onThemeChanged,
@@ -206,6 +212,8 @@ SolutionsNavbar.propTypes = {
   'response-type': PropTypes.string,
   'logo-light': PropTypes.string,
   'logo-dark': PropTypes.string,
+  'can-change-theme': PropTypes.string,
+  'can-change-language': PropTypes.string,
   favicon: PropTypes.string,
   options: PropTypes.string,
 };
