@@ -102,7 +102,7 @@ const VolumePageContent = (props) => {
     );
 
   const alertsVolume = useAlerts({ persistentvolumeclaim: PVCName });
-  const alertlist = alertsVolume && alertsVolume.data;
+  const alertlist = alertsVolume && alertsVolume.alerts;
 
   // prepare the data for <PerformanceGraphCard>
   const deviceName = volume?.status?.deviceName;
