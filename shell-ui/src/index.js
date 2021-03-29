@@ -14,6 +14,7 @@ import { prefetch } from 'quicklink';
 import { defaultTheme } from '@scality/core-ui/dist/style/theme';
 import { LanguageProvider } from './lang';
 import { ThemeProvider, useThemeName } from './theme';
+import { useFavicon } from './favicon';
 
 const EVENTS_PREFIX = 'solutions-navbar--';
 export const AUTHENTICATED_EVENT: string = EVENTS_PREFIX + 'authenticated';
@@ -45,6 +46,7 @@ export type SolutionsNavbarProps = {
   options?: string,
   'logo-light'?: string,
   'logo-dark'?: string,
+  favicon: string,
   onAuthenticated?: (evt: CustomEvent) => void,
   onLanguageChanged?: (evt: CustomEvent) => void,
   onThemeChanged?: (evt: CustomEvent) => void,
@@ -64,6 +66,7 @@ type Config = {
     light?: string,
     dark?: string
   },
+  favicon?: string,
   options?: Options,
   userGroupsMapping?: UserGroupsMapping,
 };
@@ -77,6 +80,7 @@ const SolutionsNavbar = ({
   'response-type': responseType,
   'logo-dark': logoDark,
   'logo-light': logoLight,
+  favicon,
   options,
   onAuthenticated,
   onLanguageChanged,
@@ -96,6 +100,8 @@ const SolutionsNavbar = ({
     }
     return Promise.resolve({});
   });
+
+  useFavicon(favicon || config?.favicon || '/brand/favicon-metalk8s.svg');
 
   const logos = {dark: logoDark, light: logoLight};
 
@@ -200,6 +206,7 @@ SolutionsNavbar.propTypes = {
   'response-type': PropTypes.string,
   'logo-light': PropTypes.string,
   'logo-dark': PropTypes.string,
+  favicon: PropTypes.string,
   options: PropTypes.string,
 };
 
