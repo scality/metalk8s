@@ -1,16 +1,8 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import {
-  useTable,
-  useFilters,
-  useGlobalFilter,
-  useAsyncDebounce,
-  useSortBy,
-  useBlockLayout,
-} from 'react-table';
+import { useTable, useFilters, useSortBy, useBlockLayout } from 'react-table';
 import { FixedSizeList as List } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { useQuery } from '../services/utils';
@@ -20,11 +12,10 @@ import {
   Button,
   ProgressBar,
   Tooltip,
-  SearchInput,
   EmptyTable,
+  ConstrainedText,
 } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
-import TableRow from './TableRow';
 import {
   VOLUME_CONDITION_LINK,
   VOLUME_CONDITION_UNLINK,
@@ -89,7 +80,7 @@ const VolumeListContainer = styled.div`
 const Body = styled.div`
   display: block;
   // 100vh - 48px(Navbar) - 77px(Table Search) - 32px(Table Header) - 15px(Margin bottom)
-  height: calc(100vh - 172px);
+  height: calc(100vh - 200px);
 `;
 
 const CreateVolumeButton = styled(Button)`
@@ -103,66 +94,68 @@ const ActionContainer = styled.span`
   padding: ${padding.large} ${padding.base} 26px 20px;
 `;
 
-function GlobalFilter({
-  preGlobalFilteredRows,
-  globalFilter,
-  setGlobalFilter,
-  nodeName,
-  theme,
-}) {
-  const [value, setValue] = React.useState(globalFilter);
-  const history = useHistory();
-  const location = useLocation();
-  const onChange = useAsyncDebounce((value) => {
-    setGlobalFilter(value || undefined);
+const NameLinkContaner = styled.div`
+  cursor: pointer;
+  padding-right: ${padding.small};
+`;
 
-    // update the URL with the content of search
-    const searchParams = new URLSearchParams(location.search);
-    const isSearch = searchParams.has('search');
-    if (!isSearch) {
-      searchParams.append('search', value);
-    } else {
-      searchParams.set('search', value);
-    }
-    history.push(`?${searchParams.toString()}`);
-  }, 500);
+const TableRowStyle = styled.div``;
 
+const TableRow = (props) => {
+  const { row, style, onClickRow, isSelected } = props;
   return (
-    <SearchInput
-      value={value || undefined}
-      onChange={(e) => {
-        setValue(e.target.value);
-        onChange(e.target.value);
-      }}
-      placeholder={`Search`}
-      disableToggle={true}
-      data-cy="volume_list_search"
-    />
-  );
-}
+    <TableRowStyle
+      {...row.getRowProps({
+        onClick: props.onClickRow ? () => onClickRow(row) : null,
+        // Note:
+        // We need to pass the style property to the row component.
+        // Otherwise when we scroll down, the next rows are flashing because they are re-rendered in loop.
+        style: { ...style },
+      })}
+      isSelected={isSelected}
+      row={row}
+    >
+      {row.cells.map((cell) => {
+        let cellProps = cell.getCellProps({
+          style: {
+            ...cell.column.cellStyle,
+            // Vertically center the text in cells.
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+          },
+        });
 
-function Table({
-  columns,
-  data,
-  nodeName,
-  volumeName,
-  theme,
-  isSearchBar,
-  onClickRow,
-}) {
+        if (cell.column.Header !== 'Name' && cell.value === undefined) {
+          return (
+            <div {...cellProps} className="td">
+              <Tooltip
+                placement={cell.row.index === 0 ? 'bottom' : 'top'}
+                overlay={
+                  <TooltipContent>{intl.translate('unknown')}</TooltipContent>
+                }
+              >
+                <UnknownIcon className="fas fa-minus"></UnknownIcon>
+              </Tooltip>
+            </div>
+          );
+        } else {
+          return (
+            <div {...cellProps} className="td">
+              {cell.render('Cell')}
+            </div>
+          );
+        }
+      })}
+    </TableRowStyle>
+  );
+};
+
+function Table({ columns, data, nodeName, volumeName, theme }) {
   const history = useHistory();
   const query = useQuery();
-  const querySearch = query.get('search');
   const querySort = query.get('sort');
   const queryDesc = query.get('desc');
-
-  // Use the state and functions returned from useTable to build your UI
-  const defaultColumn = React.useMemo(
-    () => ({
-      Filter: GlobalFilter,
-    }),
-    [],
-  );
 
   const sortTypes = React.useMemo(() => {
     return {
@@ -193,17 +186,12 @@ function Table({
     headerGroups,
     rows,
     prepareRow,
-    state,
     // visibleColumns,
-    preGlobalFilteredRows,
-    setGlobalFilter,
   } = useTable(
     {
       columns,
       data,
-      defaultColumn,
       initialState: {
-        globalFilter: querySearch,
         sortBy: [
           {
             id: querySort || 'health',
@@ -216,7 +204,6 @@ function Table({
       sortTypes,
     },
     useFilters,
-    useGlobalFilter,
     useSortBy,
     useBlockLayout,
   );
@@ -238,11 +225,11 @@ function Table({
           row={row}
           style={style}
           isSelected={volumeName === row.values.name}
-          onClickRow={onClickRow}
+          isNameLink={true}
         ></TableRow>
       );
     },
-    [prepareRow, rows, volumeName, onClickRow],
+    [prepareRow, rows, volumeName],
   );
 
   return (
@@ -268,15 +255,6 @@ function Table({
                   }}
                   data-cy="create_volume_button"
                 />
-                {isSearchBar ? (
-                  <GlobalFilter
-                    preGlobalFilteredRows={preGlobalFilteredRows}
-                    globalFilter={state.globalFilter}
-                    setGlobalFilter={setGlobalFilter}
-                    nodeName={nodeName}
-                    theme={theme}
-                  />
-                ) : null}
               </ActionContainer>
             </div>
           </div>
@@ -346,26 +324,22 @@ function Table({
 }
 
 const VolumeListTable = (props) => {
-  const {
-    nodeName,
-    volumeListData,
-    volumeName,
-    isNodeColumn,
-    isSearchBar,
-  } = props;
+  const { nodeName, volumeListData, volumeName } = props;
   const history = useHistory();
-  const location = useLocation();
-
   const theme = useSelector((state) => state.config.theme);
 
   const columns = React.useMemo(() => {
+    const onClickCell = (name) => {
+      history.push(`/volumes/${name}/overview?node=${nodeName}`);
+    };
+
     return [
       {
         Header: 'Health',
         accessor: 'health',
         cellStyle: {
           textAlign: 'center',
-          width: '75px',
+          flexBasis: '105px',
         },
         Cell: (cellProps) => {
           return (
@@ -381,6 +355,23 @@ const VolumeListTable = (props) => {
           textAlign: 'left',
           flex: 1,
           minWidth: '95px',
+          color: theme.brand.secondary,
+        },
+        Cell: ({ value, row }) => {
+          return (
+            <NameLinkContaner
+              data-cy="volume_table_name_cell"
+              onClick={() => {
+                onClickCell(value);
+              }}
+            >
+              <ConstrainedText
+                text={value}
+                tooltipStyle={{ width: '150px' }}
+                tooltipPlacement={row.index === 0 ? 'bottom' : 'top'}
+              ></ConstrainedText>
+            </NameLinkContaner>
+          );
         },
       },
       {
@@ -388,7 +379,7 @@ const VolumeListTable = (props) => {
         accessor: 'usage',
         cellStyle: {
           textAlign: 'center',
-          width: isNodeColumn ? '70px' : '150px',
+          width: '120px',
         },
         Cell: ({ value }) => {
           return (
@@ -406,7 +397,7 @@ const VolumeListTable = (props) => {
         accessor: 'storageCapacity',
         cellStyle: {
           textAlign: 'right',
-          width: isNodeColumn ? '55px' : '110px',
+          width: '65px',
           paddingRight: '5px',
         },
         sortType: 'size',
@@ -417,7 +408,7 @@ const VolumeListTable = (props) => {
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
-          width: isNodeColumn ? '60px' : '120px',
+          width: '65px',
         },
         Cell: (cellProps) => {
           const volume = volumeListData?.find(
@@ -475,8 +466,8 @@ const VolumeListTable = (props) => {
         Header: 'Latency',
         accessor: 'latency',
         cellStyle: {
-          textAlign: 'right',
-          width: isNodeColumn ? '70px' : '110px',
+          textAlign: 'center',
+          width: '75px',
           paddingRight: '6px',
         },
         Cell: (cellProps) => {
@@ -484,50 +475,7 @@ const VolumeListTable = (props) => {
         },
       },
     ];
-  }, [volumeListData, theme, isNodeColumn]);
-  const nodeCol = {
-    Header: 'Node',
-    accessor: 'node',
-    cellStyle: {
-      textAlign: 'left',
-      flex: 1,
-      paddingLeft: '12px',
-      minWidth: '80px',
-    },
-  };
-  if (isNodeColumn) {
-    columns.splice(2, 0, nodeCol);
-  }
-
-  // handle the row selection by updating the URL
-  const onClickRow = (row) => {
-    const query = new URLSearchParams(location.search);
-    const isAddNodeFilter = query.has('node');
-    const isTabSelected =
-      location.pathname.endsWith('/alerts') ||
-      location.pathname.endsWith('/metrics') ||
-      location.pathname.endsWith('/details');
-
-    if (isAddNodeFilter || !isNodeColumn) {
-      history.push(`/volumes/${row.values.name}/overview?node=${nodeName}`);
-    } else {
-      if (isTabSelected) {
-        const newPath = location.pathname.replace(
-          /\/volumes\/[^/]*\//,
-          `/volumes/${row.values.name}/`,
-        );
-        history.push({
-          pathname: newPath,
-          search: query.toString(),
-        });
-      } else {
-        history.push({
-          pathname: `/volumes/${row.values.name}/overview`,
-          search: query.toString(),
-        });
-      }
-    }
-  };
+  }, [volumeListData, theme, history, nodeName]);
 
   return (
     <VolumeListContainer>
@@ -535,10 +483,8 @@ const VolumeListTable = (props) => {
         columns={columns}
         data={volumeListData}
         nodeName={nodeName}
-        onClickRow={onClickRow}
         volumeName={volumeName}
         theme={theme}
-        isSearchBar={isSearchBar}
       />
     </VolumeListContainer>
   );

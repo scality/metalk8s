@@ -158,5 +158,7 @@
   "error_system_partitions": "Échec de la récupération de la partition système.",
   "show_cluster_avg": "Montrer la moyenne du Cluster",
   "cluster_avg": "Cluster moy",
-  "dashboard": "Dashboard"
+  "dashboard": "Dashboard",
+  "required_fields": "* Champs requis"
+
 }

@@ -74,22 +74,13 @@ const GraphGrid = styled.div`
   padding-left: ${padding.small};
 `;
 
-const ToggleContainer = styled.div`
+const MetricsToggleWrapper = styled.div`
+  display: flex;
+  align-items: center;
   flex: 1;
-  margin-right: auto;
-  .text {
-    font-size: 1rem;
-  }
-  label {
-    width: 1.85rem;
-    input:checked + .sc-slider:before {
-      transform: translateX(1rem);
-    }
-    .sc-slider:before {
-      height: 12px;
-      width: 12px;
-      top: -4px;
-    }
+
+  .sc-toggle {
+    margin-right: ${padding.small};
   }
 `;
 
@@ -514,7 +505,7 @@ const NodePageMetricsTab = ({
   return (
     <NodeTab>
       <MetricsActionContainer>
-        <ToggleContainer>
+        <MetricsToggleWrapper>
           <Toggle
             name="showAvg"
             label={intl.translate('show_cluster_avg')}
@@ -529,7 +520,8 @@ const NodePageMetricsTab = ({
               );
             }}
           />
-        </ToggleContainer>
+          {showAvg && !avgStatsData['cpuUsage'].length ? <Loader /> : null}
+        </MetricsToggleWrapper>
         {api && api.url_grafana && (
           <Button
             text={intl.translate('advanced_metrics')}

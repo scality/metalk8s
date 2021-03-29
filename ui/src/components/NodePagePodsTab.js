@@ -2,8 +2,12 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { useTable } from 'react-table';
 import styled from 'styled-components';
+import { Tooltip } from '@scality/core-ui';
+
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import { NodeTab } from './style/CommonLayoutStyle';
+import { TooltipContent } from './TableRow';
+
 import {
   STATUS_RUNNING,
   STATUS_PENDING,
@@ -27,7 +31,6 @@ const PodTableContainer = styled.div`
       font-weight: bold;
       height: 56px;
       text-align: left;
-      padding: ${padding.smaller};
     }
   }
 `;
@@ -47,7 +50,8 @@ const TableRow = styled(HeadRow)`
 const Body = styled.tbody`
   /* To display scroll bar on the table */
   display: block;
-  height: calc(100vh - 250px);
+  /* 100vh - navbar - tabs button height - tabs content padding - table header */
+  height: calc(100vh - 178px);
   overflow: auto;
   overflow-y: auto;
 `;
@@ -184,13 +188,22 @@ const NodePagePodsTab = (props) => {
         cellStyle: { textAlign: 'center', width: '40px' },
         Cell: ({ value }) => {
           return (
-            <ExternalLink
-              href={`${config.api.url_grafana}/dashboard/db/logs?orgId=1&var-logs=Loki&var-logmetrics=Prometheus&var-metrics=Prometheus&var-podlogs=.*&var-systemlogs=.%2B&var-deployment=calico-kube-controllers&var-pod=${value}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Tooltip
+              placement={'left'}
+              overlay={
+                <TooltipContent>
+                  {intl.translate('advanced_monitoring')}
+                </TooltipContent>
+              }
             >
-              <i className="fas fa-chart-line" />
-            </ExternalLink>
+              <ExternalLink
+                href={`${config.api.url_grafana}/dashboard/db/logs?orgId=1&var-logs=Loki&var-logmetrics=Prometheus&var-metrics=Prometheus&var-podlogs=.*&var-systemlogs=.%2B&var-deployment=calico-kube-controllers&var-pod=${value}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <i className="fas fa-chart-line" />
+              </ExternalLink>
+            </Tooltip>
           );
         },
       },
