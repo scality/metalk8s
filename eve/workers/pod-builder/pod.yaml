@@ -17,10 +17,10 @@ spec:
           # There's a limit of 4 CPUs, so we assign one to `doit`, and 3 to
           # Docker.
           cpu: "1"
-          memory: 2Gi
+          memory: 4Gi
         limits:
           cpu: "1"
-          memory: 2Gi
+          memory: 4Gi
       env:
         - name: DOCKER_HOST
           value: localhost:2375

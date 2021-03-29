@@ -31,7 +31,7 @@ def utils_pod(k8s_client, utils_image):
             k8s_client, name=pod_name, namespace="default", state="Running"
         ),
         times=10,
-        wait=5,
+        wait=12,
         name="wait for Pod '{}'".format(pod_name),
     )
 
