@@ -2,7 +2,6 @@
 from pathlib import Path
 from typing import Any
 import sys
-import textwrap
 
 import pytest
 import yaml
@@ -53,12 +52,8 @@ def fixture_buildchain_template_context() -> Any:
     # pylint: enable=import-error,import-outside-toplevel
 
     sys.path.pop(0)
-    ui_theme_options: Path = paths.REPO_ROOT / "shell-ui" / "theme.json"
     return {
         "VERSION": versions.VERSION,
-        "ThemeConfig": textwrap.indent(
-            ui_theme_options.read_text(encoding="utf-8"), 4 * " "
-        ),
     }
 
 

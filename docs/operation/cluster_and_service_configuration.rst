@@ -101,19 +101,6 @@ The default configuration values for MetalK8s UI are specified below:
 
 See :ref:`csc-ui-customization` to override these defaults.
 
-UI Default Theme
-~~~~~~~~~~~~~~~~
-
-You can override theme colors used by MetalK8s UI.
-
-The default theme for MetalK8s UI are specified below:
-
-.. literalinclude:: ../../shell-ui/theme.json
-   :language: json
-   :lines: 3-
-
-See :ref:`csc-ui-theme-customization` to override these defaults.
-
 Shell UI Default Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -633,30 +620,6 @@ these steps:
           basePath: /platform
 
 #. Apply your changes by running:
-
-.. parsed-literal::
-
-      root\@bootstrap $ kubectl exec -n kube-system -c salt-master \\
-                         --kubeconfig /etc/kubernetes/admin.conf \\
-                         salt-master-bootstrap -- salt-run state.sls \\
-                         metalk8s.addons.ui.deployed saltenv=metalk8s-|version|
-
-.. _csc-ui-theme-customization:
-
-MetalK8s UI Theme Customization
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Default configuration for MetalK8s UI Theme can be overridden by editing its
-Cluster and Service ConfigMap ``metalk8s-theme`` in namespace
-``metalk8s-ui`` under the key ``data.config\.yaml``:
-
-  .. code-block:: shell
-
-     root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
-                        edit configmap -n metalk8s-ui \
-                        metalk8s-theme
-
-Once the theme is edited, apply your changes by running:
 
 .. parsed-literal::
 
