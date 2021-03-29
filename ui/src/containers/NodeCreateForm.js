@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import { useHistory } from 'react-router';
-import { Button, Input, Checkbox } from '@scality/core-ui';
+import { Button, Checkbox, Input, Toggle } from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import isEmpty from 'lodash.isempty';
 import {
@@ -12,24 +12,34 @@ import {
   clearCreateNodeErrorAction,
 } from '../ducks/app/nodes';
 import { intl } from '../translations/IntlGlobalProvider';
+import {
+  TitlePage,
+  CenteredPageContainer,
+} from '../components/style/CommonLayoutStyle';
+
+const PageContainer = styled(CenteredPageContainer)`
+  height: calc(100vh - 48px);
+  overflow: auto;
+`;
 
 const CreateNodeContainter = styled.div`
-  height: 100%;
-  padding: ${padding.small};
-  display: inline-block;
+  padding: ${padding.small} ${padding.large};
+  display: flex;
+  flex-direction: column;
 `;
 
 const CreateNodeLayout = styled.div`
-  height: 100%;
-  overflow: auto;
   display: inline-block;
-  margin-top: ${padding.base};
+  margin: ${padding.base} 0px;
   form {
     .sc-input {
-      margin: ${padding.smaller} 0;
+      margin-top: ${padding.large};
       .sc-input-label {
         width: 200px;
         color: ${(props) => props.theme.brand.textPrimary};
+      }
+      .sc-input-type {
+        width: 240px;
       }
     }
   }
@@ -87,6 +97,12 @@ const InputValue = styled(InputLabel)`
   padding: ${padding.small} 0;
 `;
 
+const RequiredText = styled.div`
+  color: ${(props) => props.theme.brand.textPrimary};
+  font-size: ${fontSize.base};
+  margin: ${padding.base} 0 ${padding.base} ${padding.small};
+`;
+
 const initialValues = {
   name: '',
   ssh_user: '',
@@ -125,177 +141,195 @@ const NodeCreateForm = () => {
   }, [dispatch]);
 
   return (
-    <CreateNodeContainter>
-      <CreateNodeLayout>
-        <Formik
-          initialValues={initialValues}
-          validationSchema={validationSchema}
-          onSubmit={createNode}
-        >
-          {(props) => {
-            const {
-              values,
-              touched,
-              errors,
-              dirty,
-              setFieldTouched,
-              setFieldValue,
-            } = props;
+    <PageContainer>
+      <CreateNodeContainter>
+        <TitlePage>Create New Node</TitlePage>
+        <CreateNodeLayout>
+          <Formik
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            onSubmit={createNode}
+          >
+            {(props) => {
+              const {
+                values,
+                touched,
+                errors,
+                dirty,
+                setFieldTouched,
+                setFieldValue,
+              } = props;
 
-            //handleChange of the Formik props does not update 'values' when field value is empty
-            const handleChange = (field) => (e) => {
-              const { value, checked, type } = e.target;
-              setFieldValue(field, type === 'checkbox' ? checked : value, true);
-            };
-            //touched is not "always" correctly set
-            const handleOnBlur = (e) => setFieldTouched(e.target.name, true);
+              //handleChange of the Formik props does not update 'values' when field value is empty
+              const handleChange = (field) => (e) => {
+                const { value, checked, type } = e.target;
+                setFieldValue(
+                  field,
+                  type === 'checkbox' ? checked : value,
+                  true,
+                );
+              };
+              //touched is not "always" correctly set
+              const handleOnBlur = (e) => setFieldTouched(e.target.name, true);
 
-            return (
-              <Form>
-                <FormSection>
-                  <FormSectionTitle>
-                    {intl.translate('new_node_data')}
-                  </FormSectionTitle>
-                  <Input
-                    name="name"
-                    label={intl.translate('name')}
-                    value={values.name}
-                    onChange={handleChange('name')}
-                    error={touched.name && errors.name}
-                    onBlur={handleOnBlur}
-                  />
-                  <InputContainer className="sc-input">
-                    <InputLabel className="sc-input-label">
-                      {intl.translate('metalk8s_version')}
-                    </InputLabel>
-                    <InputValue>{clusterVersion}</InputValue>
-                  </InputContainer>
-                  <InputContainer className="sc-input">
-                    <InputLabel className="sc-input-label">
-                      {intl.translate('roles')}
-                    </InputLabel>
-                    <CheckboxGroup>
-                      <Checkbox
-                        name="workload_plane"
-                        label={intl.translate('workload_plane')}
-                        checked={values.workload_plane}
-                        value={values.workload_plane}
-                        onChange={handleChange('workload_plane')}
+              return (
+                <Form>
+                  <FormSection>
+                    <RequiredText>
+                      {intl.translate('required_fields')}
+                    </RequiredText>
+                  </FormSection>
+                  <FormSection>
+                    <FormSectionTitle>
+                      {intl.translate('new_node_data')}
+                    </FormSectionTitle>
+                    <Input
+                      name="name"
+                      label={`${intl.translate('name')}*`}
+                      value={values.name}
+                      onChange={handleChange('name')}
+                      error={touched.name && errors.name}
+                      onBlur={handleOnBlur}
+                    />
+                    <InputContainer className="sc-input">
+                      <InputLabel className="sc-input-label">
+                        {intl.translate('metalk8s_version')}
+                      </InputLabel>
+                      <InputValue>{clusterVersion}</InputValue>
+                    </InputContainer>
+                    <InputContainer className="sc-input">
+                      <InputLabel className="sc-input-label">
+                        {intl.translate('roles')}
+                      </InputLabel>
+                      <CheckboxGroup>
+                        <Checkbox
+                          name="workload_plane"
+                          label={intl.translate('workload_plane')}
+                          checked={values.workload_plane}
+                          value={values.workload_plane}
+                          onChange={handleChange('workload_plane')}
+                          onBlur={handleOnBlur}
+                        />
+                        <Checkbox
+                          name="control_plane"
+                          label={intl.translate('control_plane')}
+                          checked={values.control_plane}
+                          value={values.control_plane}
+                          onChange={handleChange('control_plane')}
+                          onBlur={handleOnBlur}
+                        />
+                        <Checkbox
+                          name="infra"
+                          label={intl.translate('infra')}
+                          checked={values.infra}
+                          value={values.infra}
+                          onChange={handleChange('infra')}
+                          onBlur={handleOnBlur}
+                        />
+
+                        <ErrorMessage
+                          visible={
+                            !(
+                              values.workload_plane ||
+                              values.control_plane ||
+                              values.infra
+                            )
+                          }
+                        >
+                          {intl.translate('role_values_error')}
+                        </ErrorMessage>
+                      </CheckboxGroup>
+                    </InputContainer>
+                  </FormSection>
+
+                  <FormSection>
+                    <FormSectionTitle>
+                      {intl.translate('new_node_access')}
+                    </FormSectionTitle>
+                    <Input
+                      name="ssh_user"
+                      label={`${intl.translate('ssh_user')}*`}
+                      value={values.ssh_user}
+                      onChange={handleChange('ssh_user')}
+                      error={touched.ssh_user && errors.ssh_user}
+                      onBlur={handleOnBlur}
+                    />
+                    <Input
+                      name="hostName_ip"
+                      label={`${intl.translate('hostName_ip')}*`}
+                      value={values.hostName_ip}
+                      onChange={handleChange('hostName_ip')}
+                      error={touched.hostName_ip && errors.hostName_ip}
+                      onBlur={handleOnBlur}
+                    />
+                    <Input
+                      name="ssh_port"
+                      label={`${intl.translate('ssh_port')}*`}
+                      value={values.ssh_port}
+                      onChange={handleChange('ssh_port')}
+                      error={touched.ssh_port && errors.ssh_port}
+                      onBlur={handleOnBlur}
+                    />
+                    <Input
+                      name="ssh_key_path"
+                      label={`${intl.translate('ssh_key_path')}*`}
+                      value={values.ssh_key_path}
+                      onChange={handleChange('ssh_key_path')}
+                      error={touched.ssh_key_path && errors.ssh_key_path}
+                      onBlur={handleOnBlur}
+                    />
+
+                    <InputContainer className="sc-input">
+                      <InputLabel className="sc-input-label">
+                        {intl.translate('sudo_required')}
+                      </InputLabel>
+                      <Toggle
+                        name="sudo_required"
+                        toggle={values.sudo_required}
+                        value={values.sudo_required}
+                        onChange={handleChange('sudo_required')}
                         onBlur={handleOnBlur}
                       />
-                      <Checkbox
-                        name="control_plane"
-                        label={intl.translate('control_plane')}
-                        checked={values.control_plane}
-                        value={values.control_plane}
-                        onChange={handleChange('control_plane')}
-                        onBlur={handleOnBlur}
-                      />
-                      <Checkbox
-                        name="infra"
-                        label={intl.translate('infra')}
-                        checked={values.infra}
-                        value={values.infra}
-                        onChange={handleChange('infra')}
-                        onBlur={handleOnBlur}
-                      />
-                      <ErrorMessage
-                        visible={
-                          !(
-                            values.workload_plane ||
-                            values.control_plane ||
-                            values.infra
-                          )
-                        }
-                      >
-                        {intl.translate('role_values_error')}
-                      </ErrorMessage>
-                    </CheckboxGroup>
-                  </InputContainer>
-                </FormSection>
-
-                <FormSection>
-                  <FormSectionTitle>
-                    {intl.translate('new_node_access')}
-                  </FormSectionTitle>
-                  <Input
-                    name="ssh_user"
-                    label={intl.translate('ssh_user')}
-                    value={values.ssh_user}
-                    onChange={handleChange('ssh_user')}
-                    error={touched.ssh_user && errors.ssh_user}
-                    onBlur={handleOnBlur}
-                  />
-                  <Input
-                    name="hostName_ip"
-                    label={intl.translate('hostName_ip')}
-                    value={values.hostName_ip}
-                    onChange={handleChange('hostName_ip')}
-                    error={touched.hostName_ip && errors.hostName_ip}
-                    onBlur={handleOnBlur}
-                  />
-                  <Input
-                    name="ssh_port"
-                    label={intl.translate('ssh_port')}
-                    value={values.ssh_port}
-                    onChange={handleChange('ssh_port')}
-                    error={touched.ssh_port && errors.ssh_port}
-                    onBlur={handleOnBlur}
-                  />
-                  <Input
-                    name="ssh_key_path"
-                    label={intl.translate('ssh_key_path')}
-                    value={values.ssh_key_path}
-                    onChange={handleChange('ssh_key_path')}
-                    error={touched.ssh_key_path && errors.ssh_key_path}
-                    onBlur={handleOnBlur}
-                  />
-                  <Input
-                    name="sudo_required"
-                    type="checkbox"
-                    label={intl.translate('sudo_required')}
-                    value={values.sudo_required}
-                    checked={values.sudo_required}
-                    onChange={handleChange('sudo_required')}
-                    onBlur={handleOnBlur}
-                  />
-                </FormSection>
-                <ActionContainer>
-                  <div>
+                    </InputContainer>
+                  </FormSection>
+                  <ActionContainer>
                     <div>
-                      <Button
-                        text={intl.translate('cancel')}
-                        type="button"
-                        outlined
-                        onClick={() => history.goBack()}
-                      />
-                      <Button
-                        text={intl.translate('create')}
-                        type="submit"
-                        disabled={
-                          !dirty ||
-                          !isEmpty(errors) ||
-                          !(
-                            values.workload_plane ||
-                            values.control_plane ||
-                            values.infra
-                          )
-                        }
-                      />
+                      <div>
+                        <Button
+                          text={intl.translate('cancel')}
+                          type="button"
+                          outlined
+                          onClick={() => history.goBack()}
+                        />
+                        <Button
+                          text={intl.translate('create')}
+                          variant={'secondary'}
+                          type="submit"
+                          disabled={
+                            !dirty ||
+                            !isEmpty(errors) ||
+                            !(
+                              values.workload_plane ||
+                              values.control_plane ||
+                              values.infra
+                            )
+                          }
+                        />
+                      </div>
+                      <ErrorMessage
+                        visible={asyncErrors && asyncErrors.create_node}
+                      >
+                        {asyncErrors && asyncErrors.create_node}
+                      </ErrorMessage>
                     </div>
-                    <ErrorMessage
-                      visible={asyncErrors && asyncErrors.create_node}
-                    >
-                      {asyncErrors && asyncErrors.create_node}
-                    </ErrorMessage>
-                  </div>
-                </ActionContainer>
-              </Form>
-            );
-          }}
-        </Formik>
-      </CreateNodeLayout>
-    </CreateNodeContainter>
+                  </ActionContainer>
+                </Form>
+              );
+            }}
+          </Formik>
+        </CreateNodeLayout>
+      </CreateNodeContainter>
+    </PageContainer>
   );
 };
 

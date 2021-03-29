@@ -4,7 +4,12 @@ import { useDispatch } from 'react-redux';
 import { ThemeProvider } from 'styled-components';
 import { useRouteMatch, useHistory } from 'react-router';
 import { Switch } from 'react-router-dom';
-import { Layout as CoreUILayout, Notifications, Loader } from '@scality/core-ui';
+import {
+  Layout as CoreUILayout,
+  Notifications,
+  Loader,
+  ScrollbarWrapper,
+} from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 import { toggleSideBarAction } from '../ducks/app/layout';
 import { removeNotificationAction } from '../ducks/app/notifications';
@@ -115,42 +120,52 @@ const Layout = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <CoreUILayout
-        sidebar={isUserLoaded && sidebarConfig}
-        navbarElement={<Navbar />}
-      >
-        <Notifications
-          notifications={notifications}
-          onDismiss={removeNotification}
-        />
-        <Suspense fallback={<Loader size="massive" centered={true} />}>
-          <Switch>
-            <PrivateRoute exact path="/nodes/create" component={NodeCreateForm} />
-            <PrivateRoute
-              exact
-              path="/nodes/:id/deploy"
-              component={NodeDeployment}
-            />
-            <PrivateRoute
-              path={`/nodes/:id/createVolume`}
-              component={CreateVolume}
-            />
-            <PrivateRoute
-              exact
-              path="/volumes/createVolume"
-              component={CreateVolume}
-            />
-            <PrivateRoute path="/nodes" component={NodePage} />
-            <PrivateRoute path="/volumes/:name?" component={VolumePage} />
-            <PrivateRoute exact path="/about" component={About} />
+      <ScrollbarWrapper>
+        <CoreUILayout
+          sidebar={isUserLoaded && sidebarConfig}
+          navbarElement={<Navbar />}
+        >
+          <Notifications
+            notifications={notifications}
+            onDismiss={removeNotification}
+          />
+          <Suspense fallback={<Loader size="massive" centered={true} />}>
+            <Switch>
+              <PrivateRoute
+                exact
+                path="/nodes/create"
+                component={NodeCreateForm}
+              />
+              <PrivateRoute
+                exact
+                path="/nodes/:id/deploy"
+                component={NodeDeployment}
+              />
+              <PrivateRoute
+                path={`/nodes/:id/createVolume`}
+                component={CreateVolume}
+              />
+              <PrivateRoute
+                exact
+                path="/volumes/createVolume"
+                component={CreateVolume}
+              />
+              <PrivateRoute path="/nodes" component={NodePage} />
+              <PrivateRoute path="/volumes/:name?" component={VolumePage} />
+              <PrivateRoute exact path="/about" component={About} />
 
-            {api && api.flags && api.flags.includes('dashboard') && (
-              <PrivateRoute exact path="/dashboard" component={DashboardPage} />
-            )}
-            <PrivateRoute exact path="/" component={ClusterMonitoring} />
-          </Switch>
-        </Suspense>
-      </CoreUILayout>
+              {api && api.flags && api.flags.includes('dashboard') && (
+                <PrivateRoute
+                  exact
+                  path="/dashboard"
+                  component={DashboardPage}
+                />
+              )}
+              <PrivateRoute exact path="/" component={ClusterMonitoring} />
+            </Switch>
+          </Suspense>
+        </CoreUILayout>
+      </ScrollbarWrapper>
     </ThemeProvider>
   );
 };

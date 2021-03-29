@@ -14,10 +14,9 @@ export function useHistoryAlerts(filters?: FilterLabels) {
       'The useHistoryAlerts hook can only be used within AlertHistoryProvider.',
     );
   } else if (query.status === 'success') {
-    return {
-      ...query,
-      alerts: filterAlerts(query.data, filters),
-    };
+    const newQuery = { ...query, alerts: filterAlerts(query.data, filters) };
+    delete newQuery.data;
+    return newQuery;
   }
   return query;
 }

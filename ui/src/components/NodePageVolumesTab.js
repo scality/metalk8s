@@ -16,7 +16,7 @@ import {
   stopRefreshCurrentVolumeStatsAction,
   fetchVolumeStatsAction,
 } from '../ducks/app/monitoring';
-import VolumeListTable from '../components/VolumeListTable';
+import NodePageVolumesTable from '../components/NodePageVolumesTable';
 import { getVolumeListData } from '../services/NodeVolumesUtils';
 import { useRefreshEffect } from '../services/utils';
 import { fontSize } from '@scality/core-ui/dist/style/theme';
@@ -63,12 +63,10 @@ const NodePageVolumesTab = (props) => {
   return (
     <NodesVolumesTab>
       <TabContent>
-        <VolumeListTable
+        <NodePageVolumesTable
           volumeListData={volumeListData}
-          isNodeColumn={false}
-          isSearchBar={false}
           nodeName={name}
-        ></VolumeListTable>
+        ></NodePageVolumesTable>
       </TabContent>
     </NodesVolumesTab>
   );

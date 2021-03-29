@@ -8,7 +8,6 @@ import { intl } from '../translations/IntlGlobalProvider';
 const NodeObjectContent = styled.div`
   padding: ${padding.large} 50px 0 ${padding.larger};
   white-space: pre-wrap;
-  overflow-y: auto;
   height: 78vh;
   font-size: ${fontSize.base};
 `;

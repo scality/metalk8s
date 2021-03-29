@@ -34,15 +34,23 @@ import {
   formatBatchName,
 } from '../services/NodeVolumesUtils';
 import { intl } from '../translations/IntlGlobalProvider';
+import {
+  TitlePage,
+  CenteredPageContainer,
+} from '../components/style/CommonLayoutStyle';
 
 const MAX_VOLUME_BATCH_CREATION = 70;
+
+const PageContainer = styled(CenteredPageContainer)`
+  height: calc(100vh - 48px);
+  overflow: auto;
+`;
 
 // We might want to do a factorization later for
 // form styled components
 const CreateVolumeFormContainer = styled.div`
   display: inline-block;
-  height: 100%;
-  padding: ${padding.small};
+  padding: ${padding.small} ${padding.large};
 `;
 
 const FormSection = styled.div`
@@ -66,15 +74,18 @@ const ActionContainer = styled.div`
 const CreateVolumeLayout = styled.div`
   display: inline-block;
   margin-top: ${padding.base};
-  overflow-y: auto;
-  height: 85vh;
   form {
     .sc-input {
       display: inline-flex;
-      margin: ${padding.smaller} 0;
+      margin-bottom: ${padding.large};
       .sc-input-label {
         width: 150px;
         color: ${(props) => props.theme.brand.textPrimary};
+      }
+
+      // Avoid double margins for nested sc-inputs
+      .sc-input {
+        margin-bottom: 0px;
       }
     }
   }
@@ -145,30 +156,23 @@ const LabelsValue = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
 `;
 
+const TitleWrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
 const LabelsName = styled(LabelsValue)`
   font-weight: ${fontWeight.bold};
   color: ${(props) => props.theme.brand.textPrimary};
 `;
 
-const PageContainer = styled.div`
-  display: flex;
-  // To avoid the big empty space on the right side of page
-  justify-content: space-around;
-`;
-
 const DocumentationIcon = styled.div`
-  margin: 60px 20px;
+  margin: ${padding.base};
   button {
     :hover {
       cursor: pointer;
     }
   }
-`;
-
-const TitlePage = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
-  font-size: 24px;
-  padding: ${padding.small} 0 0 ${padding.large};
 `;
 
 const CheckboxContainer = styled.div`
@@ -201,6 +205,12 @@ const SingleVolumeForm = styled.div`
 const InputQuestionMark = styled.i`
   padding-left: ${padding.small};
   color: ${(props) => props.theme.brand.info};
+`;
+
+const RequiredText = styled.div`
+  color: ${(props) => props.theme.brand.textPrimary};
+  font-size: ${fontSize.base};
+  margin: ${padding.base} 0 ${padding.large} ${padding.small};
 `;
 
 const CreateVolume = (props) => {
@@ -368,7 +378,23 @@ const CreateVolume = (props) => {
   ) : (
     <PageContainer>
       <CreateVolumeFormContainer>
-        <TitlePage>Create New Volume</TitlePage>
+        <TitleWrapper>
+          <TitlePage>Create New Volume</TitlePage>
+          <DocumentationIcon>
+            <Tooltip placement="left" overlay={intl.translate('documentation')}>
+              <Button
+                icon={<i className="fas fa-book-reader fa-lg" />}
+                inverted={true}
+                type="button"
+                onClick={() =>
+                  window.open(
+                    `${api.url_doc}/operation/volume_management/volume_creation_deletion_gui.html#volume-creation`,
+                  )
+                }
+              />
+            </Tooltip>
+          </DocumentationIcon>
+        </TitleWrapper>
         {isStorageClassExist ? null : (
           <Banner
             variant="warning"
@@ -515,18 +541,24 @@ const CreateVolume = (props) => {
               return (
                 <Form>
                   <FormSection>
+                    <RequiredText>
+                      {intl.translate('required_fields')}
+                    </RequiredText>
+                  </FormSection>
+
+                  <FormSection>
                     <Input
                       name="name"
                       value={values.name}
                       onChange={handleChange('name')}
-                      label={intl.translate('name')}
+                      label={`${intl.translate('name')}*`}
                       error={touched.name && errors.name}
                       onBlur={handleOnBlur}
                     />
                     {/* The node input will be prefilled if we create volume from node*/}
                     <Input
                       id="node_input"
-                      label={intl.translate('node')}
+                      label={`${intl.translate('node')}*`}
                       clearable={false}
                       type="select"
                       options={optionsNodes}
@@ -589,7 +621,7 @@ const CreateVolume = (props) => {
 
                     <Input
                       id="storageClass_input"
-                      label={intl.translate('storageClass')}
+                      label={`${intl.translate('storageClass')}*`}
                       clearable={false}
                       type="select"
                       options={optionsStorageClasses}
@@ -606,7 +638,7 @@ const CreateVolume = (props) => {
                     />
                     <Input
                       id="type_input"
-                      label={intl.translate('volume_type')}
+                      label={`${intl.translate('volume_type')}*`}
                       clearable={false}
                       type="select"
                       options={optionsTypes}
@@ -626,7 +658,7 @@ const CreateVolume = (props) => {
                           min="1"
                           value={values.sizeInput}
                           onChange={handleChange('sizeInput')}
-                          label={intl.translate('volume_size')}
+                          label={`${intl.translate('volume_size')}*`}
                           error={touched.sizeInput && errors.sizeInput}
                           onBlur={handleOnBlur}
                         />
@@ -656,7 +688,7 @@ const CreateVolume = (props) => {
                         onChange={handleChange('path')}
                         label={
                           <>
-                            {intl.translate('device_path')}
+                            {`${intl.translate('device_path')}*`}
                             <Tooltip
                               placement="right"
                               overlay={
@@ -737,7 +769,7 @@ const CreateVolume = (props) => {
                               values.volumes.map((volume, index) => (
                                 <SingleVolumeContainer key={`volume${index}`}>
                                   <div
-                                    style={{ paddingTop: `${padding.base}` }}
+                                    style={{ paddingTop: `${padding.small}` }}
                                   >
                                     {index + 1}-
                                   </div>
@@ -776,6 +808,7 @@ const CreateVolume = (props) => {
                     <Button
                       text={intl.translate('create')}
                       type="submit"
+                      variant={'secondary'}
                       disabled={!dirty || !isEmpty(errors)}
                       data-cy="submit-create-volume"
                     />
@@ -786,20 +819,6 @@ const CreateVolume = (props) => {
           </Formik>
         </CreateVolumeLayout>
       </CreateVolumeFormContainer>
-      <DocumentationIcon>
-        <Tooltip placement="top" overlay={intl.translate('documentation')}>
-          <Button
-            icon={<i className="fas fa-book-reader fa-lg" />}
-            inverted={true}
-            type="button"
-            onClick={() =>
-              window.open(
-                `${api.url_doc}/operation/volume_management/volume_creation_deletion_gui.html#volume-creation`,
-              )
-            }
-          />
-        </Tooltip>
-      </DocumentationIcon>
     </PageContainer>
   );
 };
