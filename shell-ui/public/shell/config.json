@@ -13,5 +13,6 @@
         "http://localhost:8082/test":{ "en": "Test", "fr": "Test" }
     },
     "subLogin": {}
-  }
+  },
+  "logo" : {}
 }

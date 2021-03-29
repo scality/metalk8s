@@ -13,7 +13,7 @@ import { logOut } from './auth/logout';
 import { prefetch } from 'quicklink';
 import { defaultTheme } from '@scality/core-ui/dist/style/theme';
 import { LanguageProvider } from './lang';
-import { ThemeProvider } from './theme';
+import { ThemeProvider, useThemeName } from './theme';
 
 const EVENTS_PREFIX = 'solutions-navbar--';
 export const AUTHENTICATED_EVENT: string = EVENTS_PREFIX + 'authenticated';
@@ -43,6 +43,8 @@ export type SolutionsNavbarProps = {
   'redirect-url'?: string,
   'config-url'?: string,
   options?: string,
+  'logo-light'?: string,
+  'logo-dark'?: string,
   onAuthenticated?: (evt: CustomEvent) => void,
   onLanguageChanged?: (evt: CustomEvent) => void,
   onThemeChanged?: (evt: CustomEvent) => void,
@@ -51,13 +53,16 @@ export type SolutionsNavbarProps = {
 };
 
 type Config = {
-  docUrl?: string,
   oidc?: {
     providerUrl?: string,
     redirectUrl?: string,
     clientId?: string,
     responseType?: string,
     scopes?: string,
+  },
+  logo?: {
+    light?: string,
+    dark?: string
   },
   options?: Options,
   userGroupsMapping?: UserGroupsMapping,
@@ -70,6 +75,8 @@ const SolutionsNavbar = ({
   'redirect-url': redirectUrl,
   'config-url': configUrl,
   'response-type': responseType,
+  'logo-dark': logoDark,
+  'logo-light': logoLight,
   options,
   onAuthenticated,
   onLanguageChanged,
@@ -90,6 +97,8 @@ const SolutionsNavbar = ({
     return Promise.resolve({});
   });
 
+  const logos = {dark: logoDark, light: logoLight};
+
   useLayoutEffect(() => {
     const savedRedirectUri = localStorage.getItem('redirectUrl');
     if (savedRedirectUri) {
@@ -101,7 +110,7 @@ const SolutionsNavbar = ({
     case 'idle':
     case 'loading':
     default:
-      return <LoadingNavbar />;
+      return <LoadingNavbar logo={logos.dark || `/brand/assets/logo-dark.svg`} />;
     case 'error':
       return <>Failed to load navbar configuration</>; // TODO redirects to a beautiful error page
     case 'success': {
@@ -155,7 +164,7 @@ const SolutionsNavbar = ({
         <AuthProvider {...oidcConfig}>
           <LanguageProvider onLanguageChanged={onLanguageChanged}>
             <ThemeProvider onThemeChanged={onThemeChanged}>
-              {(theme) => (
+              {(theme, themeName) => (
                 <>
                   <UserDataListener
                     userGroupsMapping={config.userGroupsMapping}
@@ -165,6 +174,9 @@ const SolutionsNavbar = ({
                     theme={theme.brand}
                   >
                     <Navbar
+                      logo={logos[themeName] || config?.logo?.[themeName] || `/brand/assets/logo-${themeName}.svg`}
+                      canChangeLanguage={canChangeLanguage !== undefined && canChangeLanguage !== null && canChangeLanguage !== 'false' || config.canChangeLanguage}
+                      canChangeTheme={canChangeTheme !== undefined && canChangeTheme !== null && canChangeTheme !== 'false' || config.canChangeTheme}
                       options={computedMenuOptions}
                       userGroupsMapping={config.userGroupsMapping}
                     />
@@ -186,6 +198,8 @@ SolutionsNavbar.propTypes = {
   'config-url': PropTypes.string,
   'redirect-url': PropTypes.string,
   'response-type': PropTypes.string,
+  'logo-light': PropTypes.string,
+  'logo-dark': PropTypes.string,
   options: PropTypes.string,
 };
 

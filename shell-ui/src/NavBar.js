@@ -25,8 +25,8 @@ import { useLanguage } from './lang';
 import { useThemeName } from './theme';
 import { useIntl } from 'react-intl';
 
-export const LoadingNavbar = (): Node => (
-  <CoreUINavbar role="navigation" tabs={[{ title: 'loading' }]} />
+export const LoadingNavbar = ({logo}: {logo: string}): Node => (
+  <CoreUINavbar logo={<img src={logo} alt='logo' />} role="navigation" tabs={[{ title: 'loading' }]} />
 );
 
 const translateOptionsToMenu = (
@@ -118,9 +118,11 @@ const Item = ({
 
 export const Navbar = ({
   options,
+  logo,
   userGroupsMapping,
 }: {
   options: Options,
+  logo: string,
   userGroupsMapping?: UserGroupsMapping,
 }): Node => {
   const auth = useAuth();
@@ -206,6 +208,6 @@ export const Navbar = ({
   ];
 
   return (
-    <CoreUINavbar rightActions={rightActions} tabs={tabs} role="navigation" />
+    <CoreUINavbar logo={<img src={logo} alt='logo' />} rightActions={rightActions} tabs={tabs} role="navigation" />
   );
 };
