@@ -187,8 +187,8 @@ const SolutionsNavbar = ({
                   >
                     <Navbar
                       logo={logos[themeName] || config?.logo?.[themeName] || `/brand/assets/logo-${themeName}.svg`}
-                      canChangeLanguage={canChangeLanguage !== undefined && canChangeLanguage !== null && canChangeLanguage !== 'false' || config.canChangeLanguage}
-                      canChangeTheme={canChangeTheme !== undefined && canChangeTheme !== null && canChangeTheme !== 'false' || config.canChangeTheme}
+                      canChangeLanguage={canChangeLanguage !== undefined && canChangeLanguage !== null ? Boolean(canChangeLanguage) : config.canChangeLanguage}
+                      canChangeTheme={canChangeTheme !== undefined && canChangeTheme !== null ? Boolean(canChangeTheme) : config.canChangeTheme}
                       options={computedMenuOptions}
                       userGroupsMapping={config.userGroupsMapping}
                     />
