@@ -32,10 +32,10 @@ spec:
       resources:
         requests:
           cpu: "3"
-          memory: 4Gi
+          memory: 6Gi
         limits:
           cpu: "3"
-          memory: 4Gi
+          memory: 6Gi
       env:
         - name: DOCKER_TLS_CERTDIR
           value: ''
