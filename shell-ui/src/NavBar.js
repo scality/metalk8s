@@ -25,9 +25,13 @@ import { useLanguage } from './lang';
 import { useThemeName } from './theme';
 import { useIntl } from 'react-intl';
 
+const Logo = styled.img`
+  height: 30px;
+`
+
 export const LoadingNavbar = ({ logo }: { logo: string }): Node => (
   <CoreUINavbar
-    logo={<img src={logo} alt="logo" />}
+    logo={<Logo src={logo} alt="logo" />}
     role="navigation"
     tabs={[{ title: 'loading' }]}
   />
@@ -232,7 +236,7 @@ export const Navbar = ({
 
   return (
     <CoreUINavbar
-      logo={<img src={logo} alt="logo" />}
+      logo={<Logo src={logo} alt="logo" />}
       rightActions={rightActions}
       tabs={tabs}
       role="navigation"
