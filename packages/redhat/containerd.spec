@@ -32,13 +32,14 @@ go build -compiler gc -tags="rpm_crashtraceback ${BUILDTAGS:-seccomp}" -ldflags 
 
 
 Name:           containerd
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        An industry-standard container runtime
 License:        ASL 2.0
 URL:            https://containerd.io
 Source0:        %{gosource}
 Source1:        containerd.service
 Source2:        containerd.toml
+Source3:        60-containerd.conf
 # Carve out code requiring github.com/Microsoft/hcsshim
 Patch0:         0001-Revert-commit-for-Windows-metrics.patch
 
@@ -184,6 +185,7 @@ install -D -p -m 0644 _man/ctr.8 %{buildroot}%{_mandir}/man1/ctr.8
 install -D -p -m 0644 _man/containerd-config.toml.5 %{buildroot}%{_mandir}/man5/containerd-config.toml.5
 install -D -p -m 0644 %{S:1} %{buildroot}%{_unitdir}/containerd.service
 install -D -p -m 0644 %{S:2} %{buildroot}%{_sysconfdir}/containerd/config.toml
+install -D -p -m 0644 %{S:3} %{buildroot}%{_sysctldir}/60-containerd.conf
 
 
 %if %{with tests}
@@ -194,6 +196,7 @@ install -D -p -m 0644 %{S:2} %{buildroot}%{_sysconfdir}/containerd/config.toml
 
 %post
 %systemd_post containerd.service
+%sysctl_apply 60-containerd.conf
 
 
 %preun
@@ -216,9 +219,13 @@ install -D -p -m 0644 %{S:2} %{buildroot}%{_sysconfdir}/containerd/config.toml
 %{_unitdir}/containerd.service
 %dir %{_sysconfdir}/containerd
 %config(noreplace) %{_sysconfdir}/containerd/config.toml
+%{_sysctldir}/60-containerd.conf
 
 
 %changelog
+* Fri Mar 19 2021 Nicolas Trangez <nicolas.trangez@scality.com> - 1.4.3-2
+- Configure 'fs.may_detach_mounts' sysctl to be '1'
+
 * Tue Dec 1 2020 Nicolas Trangez <nicolas.trangez@scality.com> - 1.4.3-1
 - Latest upstream
 
