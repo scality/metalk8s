@@ -79,6 +79,9 @@
   (PR [#3167](https://github.com/scality/metalk8s/pull/3167))
 
 ## Release 2.7.4 (in development)
+### Enhancements
+- Bump Salt version to 3002.6
+  (PR [#3248](https://github.com/scality/metalk8s/pull/3248))
 
 ## Release 2.7.3
 ### Enhancements
