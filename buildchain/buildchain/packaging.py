@@ -473,6 +473,11 @@ def _rpm_package_calico(releasever: str) -> targets.RPMPackage:
 
 def _rpm_package_containerd(releasever: str) -> targets.RPMPackage:
     """Containerd RPM package."""
+    extra_sources = []
+
+    if releasever == "7":
+        extra_sources.append(Path("60-containerd.conf"))
+
     return _rpm_package(
         name="containerd",
         releasever=releasever,
@@ -481,7 +486,8 @@ def _rpm_package_containerd(releasever: str) -> targets.RPMPackage:
             Path("containerd.service"),
             Path("containerd.toml"),
             Path("containerd-{}.tar.gz".format(versions.CONTAINERD_VERSION)),
-        ],
+        ]
+        + extra_sources,
     )
 
 
