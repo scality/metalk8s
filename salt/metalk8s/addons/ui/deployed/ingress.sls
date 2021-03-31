@@ -87,28 +87,30 @@ metadata:
     heritage: metalk8s
   annotations:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/rewrite-target: '/$2'
+    nginx.ingress.kubernetes.io/use-regex: 'true'
     kubernetes.io/ingress.class: "nginx-control-plane"
 spec:
   rules:
   - http:
       paths:
-      - path: {{ metalk8s_ui_config.spec.basePath }}
+      - path: {{ metalk8s_ui_config.spec.basePath }}(/|$)(.*)
         backend:
           serviceName: metalk8s-ui
           servicePort: 80
-      - path: /config.json
+      - path: /()(config\.json)
         backend:
           serviceName: metalk8s-ui
           servicePort: 80
-      - path: /brand
+      - path: /()(brand.*)
         backend:
           serviceName: metalk8s-ui
           servicePort: 80
-      - path: /static
+      - path: /()(static.*)
         backend:
           serviceName: metalk8s-ui
           servicePort: 80
-      - path: /manifest.json
+      - path: /()(manifest\.json)
         backend:
           serviceName: metalk8s-ui
           servicePort: 80
