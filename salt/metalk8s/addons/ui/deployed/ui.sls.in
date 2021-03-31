@@ -26,6 +26,9 @@ include:
     )
 %}
 
+{%- set stripped_base_path = metalk8s_ui_config.spec.basePath.strip('/') %}
+{%- set normalized_base_path = '/' ~ stripped_base_path %}
+
 Create metalk8s-ui deployment:
   metalk8s_kubernetes.object_present:
     - name: salt://{{ slspath }}/files/metalk8s-ui-deployment.yaml.j2
@@ -69,7 +72,7 @@ Create metalk8s-ui ConfigMap:
               "url_alertmanager": "/api/alertmanager",
               "url_navbar": "/shell/solution-ui-navbar.@@ShellUIVersion.js",
               "url_navbar_config": "/shell/config.json",
-              "ui_base_path": "{{ metalk8s_ui_config.spec.basePath }}"
+              "ui_base_path": "{{ normalized_base_path }}"
             }
 
 Create shell-ui ConfigMap:
