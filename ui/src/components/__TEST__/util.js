@@ -4,7 +4,6 @@ import { render } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { screen, waitForElementToBeRemoved } from '@testing-library/react';
 import AlertProvider from '../../containers/AlertProvider';
-import AlertHistoryProvider from '../../containers/AlertHistoryProvider';
 
 export const waitForLoadingToFinish = () =>
   waitForElementToBeRemoved(
@@ -46,9 +45,7 @@ const AllTheProviders = ({ children }) => {
   return (
     <QueryClientProvider client={queryClient}>
       <AlertProvider>
-        <AlertHistoryProvider>
-          <ThemeProvider theme={theme}>{children}</ThemeProvider>
-        </AlertHistoryProvider>
+        <ThemeProvider theme={theme}>{children}</ThemeProvider>
       </AlertProvider>
     </QueryClientProvider>
   );
