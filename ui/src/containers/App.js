@@ -14,7 +14,7 @@ import translations_fr from '../translations/fr';
 import { Loader } from '@scality/core-ui';
 import Layout from './Layout';
 import IntlGlobalProvider from '../translations/IntlGlobalProvider';
-import { fetchConfigAction, setInitialLanguageAction } from '../ducks/config';
+import { fetchConfigAction } from '../ducks/config';
 import { initToggleSideBarAction } from '../ducks/app/layout';
 import { useTypedSelector } from '../hooks';
 
@@ -37,7 +37,6 @@ const App = () => {
     document.title = messages[language].product_name;
     if (status === 'idle') {
       dispatch(fetchConfigAction());
-      dispatch(setInitialLanguageAction());// todo removes this once the navbar provides it 
       dispatch(initToggleSideBarAction());
     }
     // eslint-disable-next-line
@@ -47,7 +46,10 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <AlertProvider>
         <AlertHistoryProvider>
-          <IntlProvider locale={language} messages={messages[language]}>
+          <IntlProvider
+            locale={language}
+            messages={messages[language.toUpperCase()]}
+          >
             <IntlGlobalProvider>
               <Layout />
             </IntlGlobalProvider>
