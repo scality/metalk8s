@@ -2,7 +2,7 @@ FROM centos:7
 
 ENV LANG=en_US.utf8
 
-RUN curl -sL https://rpm.nodesource.com/setup_12.x | bash -
+RUN curl -sL https://rpm.nodesource.com/setup_14.x | bash -
 RUN yum install -y --setopt=skip_missing_names_on_install=False \
         epel-release \
         && \

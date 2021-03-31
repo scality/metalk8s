@@ -4,7 +4,7 @@ ARG BUILDBOT_VERSION=2.0.1
 
 ENV LANG=en_US.utf8
 
-RUN curl -sL https://rpm.nodesource.com/setup_10.x | bash -
+RUN curl -sL https://rpm.nodesource.com/setup_14.x | bash -
 RUN yum install -y --setopt=skip_missing_names_on_install=False \
     epel-release \
     && yum install -y --setopt=skip_missing_names_on_install=False \

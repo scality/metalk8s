@@ -34,7 +34,7 @@ NODE_PACKAGES=(
     @testing-library/cypress@7.0.3
 )
 
-curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -
+curl -sL https://rpm.nodesource.com/setup_14.x | sudo bash -
 
 sudo yum install "${YUM_OPTS[@]}" "${RPM_PACKAGES[@]}"
 
