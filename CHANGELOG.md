@@ -2,6 +2,16 @@
 
 ## Release 2.5.3 (in development)
 
+### Enhancements
+- [#3218](https://github.com/scality/metalk8s/issues/3218) - Enrich sosreport
+  plugins:
+  - Add a Prometheus snapshot
+  - Add Salt configuration
+  - Add salt-minion journal
+  - Add kubectl top nodes & pods
+  - Add bootstrap and solutions configuration files
+  (PR [#3222](https://github.com/scality/metalk8s/pull/3222))
+
 ## Release 2.5.2
 
 ### Enhancements
