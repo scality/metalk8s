@@ -1111,7 +1111,9 @@ stages:
           name: Build documentation with Scality theme
           command: >-
             rm -rf docs/_build &&
-            tox --workdir /tmp/tox -e docs -- html latexpdf
+            ./docs/entrypoint.sh html latexpdf
+          env:
+            BUILD_DIR: "%(prop:builddir)s/build/docs/_build"
           haltOnFailure: true
       - ShellCommand:
           <<: *copy_artifacts
