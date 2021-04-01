@@ -40,7 +40,7 @@
   "scripts": {
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "start": "react-app-rewired start",
-    "build": "react-app-rewired build",
+    "build": "react-app-rewired --max_old_space_size=3072 build",
     "test": "react-app-rewired test --env=jsdom",
     "eject": "react-scripts eject",
     "test:nowatch": "CI=true react-app-rewired test --env=jsdom --reporters=default --reporters=jest-junit",

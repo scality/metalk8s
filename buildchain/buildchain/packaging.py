@@ -311,6 +311,7 @@ CONTAINERD_RPM = _rpm_package(
         Path('0001-Revert-commit-for-Windows-metrics.patch'),
         Path('containerd.service'),
         Path('containerd.toml'),
+        Path('60-containerd.conf'),
         Path('containerd-{}.tar.gz'.format(versions.CONTAINERD_VERSION)),
     ],
 )
