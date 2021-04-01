@@ -39,7 +39,6 @@ Cypress.Commands.add('setupMocks', () => {
     fixture: 'shell-config.json',
   });
   cy.route2('GET', '/config.json', { fixture: 'config.json' });
-  cy.route2('GET', '/brand/theme.json', { fixture: 'theme.json' });
   cy.route2('GET', '/oidc/.well-known/openid-configuration', {
     fixture: 'openid-config.json',
   });

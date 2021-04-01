@@ -67,6 +67,7 @@ const TableRow = (props) => {
               <ConstrainedText
                 text={cell.value}
                 tooltipStyle={{ width: '150px' }}
+                tooltipPlacement={cell.row.index === 0 ? 'bottom' : 'top'}
               ></ConstrainedText>
             </div>
           );
@@ -74,7 +75,7 @@ const TableRow = (props) => {
           return (
             <div {...cellProps} className="td">
               <Tooltip
-                placement="top"
+                placement={cell.row.index === 0 ? 'bottom' : 'top'}
                 overlay={
                   <TooltipContent>{intl.translate('unknown')}</TooltipContent>
                 }

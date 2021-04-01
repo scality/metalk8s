@@ -88,6 +88,9 @@
   (PR [#3167](https://github.com/scality/metalk8s/pull/3167))
 
 ## Release 2.7.4 (in development)
+### Enhancements
+- Bump Salt version to 3002.6
+  (PR [#3248](https://github.com/scality/metalk8s/pull/3248))
 
 ## Release 2.7.3
 ### Enhancements
@@ -325,6 +328,16 @@ version to 1.6.5 (PR [#2582](https://github.com/scality/metalk8s/pull/2582))
   (PR[#2824](https://github.com/scality/metalk8s/pull/2824))
 
 ## Release 2.5.3 (in development)
+
+### Enhancements
+- [#3218](https://github.com/scality/metalk8s/issues/3218) - Enrich sosreport
+  plugins:
+  - Add a Prometheus snapshot
+  - Add Salt configuration
+  - Add salt-minion journal
+  - Add kubectl top nodes & pods
+  - Add bootstrap and solutions configuration files
+  (PR [#3222](https://github.com/scality/metalk8s/pull/3222))
 
 ## Release 2.5.2
 

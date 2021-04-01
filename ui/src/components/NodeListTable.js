@@ -10,6 +10,7 @@ import {
   useAsyncDebounce,
   useSortBy,
 } from 'react-table';
+import { SearchInput } from '@scality/core-ui';
 import { useQuery } from '../services/utils';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
@@ -43,7 +44,6 @@ const NodeListContainer = styled.div`
       height: 10px;
     }
     tr {
-      border-bottom: 5px solid ${(props) => props.theme.brand.primary};
       :last-child {
         td {
           border-bottom: 0;
@@ -86,6 +86,8 @@ const CreateNodeButton = styled(Button)`
 const TableRow = styled(HeadRow)`
   height: 76px;
   border-radius: 10px;
+  margin: 5px 0px;
+  box-sizing: border-box;
   &:hover,
   &:focus {
     background-color: ${(props) => props.theme.brand.backgroundBluer};
@@ -185,35 +187,21 @@ function GlobalFilter({
 
   return (
     <ActionContainer>
-      <input
+      <SearchInput
         value={value || undefined}
         onChange={(e) => {
           setValue(e.target.value);
           onChange(e.target.value);
         }}
         placeholder={`Search`}
-        style={{
-          fontSize: '1.1rem',
-          color: theme.brand.textPrimary,
-          border: 'solid 1px #3b4045',
-          width: '223px',
-          height: '27px',
-          borderRadius: '4px',
-          backgroundColor: theme.brand.primaryDark2,
-          fontFamily: 'Lato',
-          fontStyle: 'italic',
-          opacity: '0.6',
-          lineHeight: '1.43',
-          letterSpacing: 'normal',
-          paddingLeft: '10px',
-        }}
+        disableToggle={true}
         data-cy="node_list_search"
       />
       <CreateNodeButton
         size="small"
         variant="secondary"
         text={intl.translate('create_new_node')}
-        icon={<i className="fas fa-plus-circle"></i>}
+        icon={<i className="fas fa-plus"></i>}
         onClick={() => {
           history.push('/nodes/create');
         }}

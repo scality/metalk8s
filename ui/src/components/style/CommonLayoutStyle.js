@@ -9,6 +9,11 @@ export const PageContainer = styled.div`
   padding: 0;
 `;
 
+export const CenteredPageContainer = styled.div`
+  display: flex;
+  justify-content: space-around;
+`;
+
 export const LeftSideInstanceList = styled.div`
   flex-direction: column;
   min-height: 696px;
@@ -175,4 +180,10 @@ export const GraphTitle = styled.div`
 
 export const GraphWrapper = styled.div`
   padding-left: 0px;
+`;
+
+export const TitlePage = styled.div`
+  color: ${(props) => props.theme.brand.textPrimary};
+  font-size: 24px;
+  padding: ${padding.small} 0 0 ${padding.large};
 `;

@@ -8,6 +8,7 @@ const VolumeObjectContent = styled.div`
   white-space: pre-wrap;
   font-size: ${fontSize.base};
   padding: ${padding.small};
+  height: 78vh;
 `;
 
 const ErrorText = styled.div`

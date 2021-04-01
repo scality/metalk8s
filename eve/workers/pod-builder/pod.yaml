@@ -17,10 +17,10 @@ spec:
           # There's a limit of 4 CPUs, so we assign one to `doit`, and 3 to
           # Docker.
           cpu: "1"
-          memory: 2Gi
+          memory: 4Gi
         limits:
           cpu: "1"
-          memory: 2Gi
+          memory: 4Gi
       env:
         - name: DOCKER_HOST
           value: localhost:2375
@@ -32,10 +32,10 @@ spec:
       resources:
         requests:
           cpu: "3"
-          memory: 4Gi
+          memory: 6Gi
         limits:
           cpu: "3"
-          memory: 4Gi
+          memory: 6Gi
       env:
         - name: DOCKER_TLS_CERTDIR
           value: ''
