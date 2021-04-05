@@ -63,11 +63,18 @@ def build_error_handler(build_error: BuildError) -> str:
         if "stream" in item:
             line = item["stream"]
         elif "status" in item:
-            line = "{}: {}/{}".format(
-                item["status"],
-                item["progressDetail"]["current"],
-                item["progressDetail"]["total"],
-            )
+            try:
+                line = "{0}: ".format(item["id"])
+            except KeyError:
+                line = ""
+            line += item["status"]
+            try:
+                line += ": {0}/{1}\x1b[1K\r".format(
+                    item["progressDetail"]["current"],
+                    item["progressDetail"]["total"],
+                )
+            except KeyError:
+                line += "\n"
         elif "error" in item:
             line = item["error"]
         else:
