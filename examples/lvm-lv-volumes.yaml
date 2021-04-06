@@ -1,0 +1,45 @@
+---
+apiVersion: storage.metalk8s.scality.com/v1alpha1
+kind: Volume
+metadata:
+  name: <node_name>-prometheus
+spec:
+  nodeName: <node_name>
+  storageClassName: metalk8s
+  lvmLogicalVolume:
+    vgName: <vg_name>  # Choose an existing LVM VolumeGroup
+    size: 10Gi  # Prometheus LogicalVolume should have at least 10GiB capacity
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: 'prometheus-operator-prometheus'
+---
+apiVersion: storage.metalk8s.scality.com/v1alpha1
+kind: Volume
+metadata:
+  name: <node_name>-alertmanager
+spec:
+  nodeName: <node_name>
+  storageClassName: metalk8s
+  lvmLogicalVolume:
+    vgName: <vg_name>  # Choose an existing LVM VolumeGroup
+    size: 10Gi  # Alertmanager LogicalVolume should have at least 1GiB capacity
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: 'prometheus-operator-alertmanager'
+---
+apiVersion: storage.metalk8s.scality.com/v1alpha1
+kind: Volume
+metadata:
+  name: <node_name>-loki
+spec:
+  nodeName: <node_name>
+  storageClassName: metalk8s
+  lvmLogicalVolume:
+    vgName: <vg_name>  # Choose an existing LVM VolumeGroup
+    size: 10Gi  # Loki LogicalVolume should have at least 10GiB capacity
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: 'loki'

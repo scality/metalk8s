@@ -137,6 +137,30 @@ _volumes_details: &volumes_details
         lastUpdateTime: '2020-07-11T13:55:26Z'
         status: 'True'
         type: Ready
+  my-lvm-lv-volume:
+    apiVersion: storage.metalk8s.scality.com/v1alpha1
+    kind: Volume
+    metadata:
+      name: my-lvm-lv-volume
+      uid: 6474cda7-0dbe-40fc-9842-3cb0404a725a
+    spec:
+      nodeName: bootstrap
+      storageClass:
+        metadata:
+          name: metalk8s-monitoring
+        mount_options:
+        - rw
+        - discard
+        parameters:
+          fsType: ext4
+          mkfsOptions: '["-m", "0"]'
+        provisioner: kubernetes.io/no-provisioner
+        reclaim_policy: Retain
+        volume_binding_mode: WaitForFirstConsumer
+      storageClassName: metalk8s-monitoring
+      lvmLogicalVolume:
+        vgName: my_vg
+        size: 10Gi
   my-sparse-block-volume:
     apiVersion: storage.metalk8s.scality.com/v1alpha1
     kind: Volume
@@ -258,6 +282,31 @@ _volumes_details: &volumes_details
       storageClassName: xfs-storage-class
       rawBlockDevice:
         devicePath: /dev/sda2
+  my-lvm-lv-block-volume:
+    apiVersion: storage.metalk8s.scality.com/v1alpha1
+    kind: Volume
+    metadata:
+      name: my-lvm-lv-block-volume
+      uid: 7474cda7-0dbe-40fc-9842-3cb0404a725a
+    spec:
+      nodeName: bootstrap
+      storageClass:
+        metadata:
+          name: metalk8s-monitoring
+        mount_options:
+        - rw
+        - discard
+        parameters:
+          fsType: ext4
+          mkfsOptions: '["-m", "0"]'
+        provisioner: kubernetes.io/no-provisioner
+        reclaim_policy: Retain
+        volume_binding_mode: WaitForFirstConsumer
+      storageClassName: metalk8s-monitoring
+      mode: Block
+      lvmLogicalVolume:
+        vgName: my_vg
+        size: 10Gi
   my-invalid-storage-class-volume:
     apiVersion: storage.metalk8s.scality.com/v1alpha1
     kind: Volume
@@ -391,6 +440,36 @@ exists:
     is_blkdev: False
     result: False
 
+  ## LVM LogicalVolume volumes
+  # specified LVM Logical Volume exists
+  - name: my-lvm-lv-volume
+    pillar_volumes: *volumes_details
+    lvdisplay:
+      /dev/my_vg/my-lvm-lv-volume:
+        a: lot
+        of: useful informations
+    result: True
+
+  # specified LVM Logical Volume does not exists
+  - name: my-lvm-lv-volume
+    pillar_volumes: *volumes_details
+    result: False
+
+  ## LVM LogicalVolume block volumes
+  # specified LVM Logical Volume exists
+  - name: my-lvm-lv-block-volume
+    pillar_volumes: *volumes_details
+    lvdisplay:
+      /dev/my_vg/my-lvm-lv-block-volume:
+        a: lot
+        of: useful informations
+    result: True
+
+  # specified LVM Logical Volume does not exists
+  - name: my-lvm-lv-block-volume
+    pillar_volumes: *volumes_details
+    result: False
+
   ## Invalid volumes
   # specified volume is not in the pillar
   - name: unknown-volume
@@ -453,6 +532,50 @@ create:
     pillar_volumes: *volumes_details
     # We do not need to create block device
     raise_msg: block device /dev/dm-1 does not exists
+
+  ## LVM LogicalVolume volume
+  # create a simple LVM LV volume
+  - name: my-lvm-lv-volume
+    lvcreate:
+      "/dev/my_vg/my-lvm-lv-volume":
+        a: lot
+        of: informations
+      "Output from lvcreate": All good
+    pillar_volumes: *volumes_details
+
+  # unable to create the LVM LV (raise when calling `lvcreate`)
+  - name: my-lvm-lv-volume
+    pillar_volumes: *volumes_details
+    lvcreate: null
+    raise_msg: "cannot create LVM LogicalVolume my-lvm-lv-volume in VG my_vg"
+
+  # unable to create the LVM LV (usual "vg does not exist")
+  - name: my-lvm-lv-volume
+    pillar_volumes: *volumes_details
+    lvcreate: 'Volume group "my_vg" not found Penguin'
+    raise_msg: 'cannot create LVM LogicalVolume my-lvm-lv-volume in VG my_vg: Volume group "my_vg" not found Penguin'
+
+  ## LVM LogicalVolume block volume
+  # create a simple LVM LV volume
+  - name: my-lvm-lv-block-volume
+    lvcreate:
+      "/dev/my_vg/my-lvm-lv-block-volume":
+        a: lot
+        of: informations
+      "Output from lvcreate": All good
+    pillar_volumes: *volumes_details
+
+  # unable to create the LVM LV (raise when calling `lvcreate`)
+  - name: my-lvm-lv-block-volume
+    pillar_volumes: *volumes_details
+    lvcreate: null
+    raise_msg: "cannot create LVM LogicalVolume my-lvm-lv-block-volume in VG my_vg"
+
+  # unable to create the LVM LV (usual "vg does not exist")
+  - name: my-lvm-lv-block-volume
+    pillar_volumes: *volumes_details
+    lvcreate: 'Volume group "my_vg" not found Penguin'
+    raise_msg: 'cannot create LVM LogicalVolume my-lvm-lv-block-volume in VG my_vg: Volume group "my_vg" not found Penguin'
 
   ## Invalid volumes
   # specified volume is not in the pillar
@@ -555,6 +678,25 @@ is_prepared:
     pillar_volumes: *volumes_details
     result: True
 
+  ## LVM LogicalVolume volume
+  # LVM LV already prepared - right UUID
+  - name: my-lvm-lv-volume
+    pillar_volumes: *volumes_details
+    uuid_return: 6474cda7-0dbe-40fc-9842-3cb0404a725a
+    result: True
+
+  # LVM LogicalVolume already prepared - wrong UUID
+  - name: my-lvm-lv-volume
+    pillar_volumes: *volumes_details
+    uuid_return: e1d78810-3787-4ca4-b712-50a269e42560
+    result: False
+
+  ## LVM LogicalVolume block volume
+  # block lvm volume always prepared (nothing to prepare)
+  - name: my-lvm-lv-block-volume
+    pillar_volumes: *volumes_details
+    result: True
+
   ## Invalid volumes
   # specified volume is not in the pillar
   - name: unknown-volume
@@ -645,6 +787,22 @@ prepare:
   - name: my-raw-block-device-block-lvm-volume
     pillar_volumes: *volumes_details
 
+  ## LVM LogicalVolume volume
+  # prepare the LVM LV volume in ext4
+  - name: my-lvm-lv-volume
+    pillar_volumes: *volumes_details
+    cmd_output: |
+
+  # error when formatting the LVM LV in ext4
+  - name: my-lvm-lv-volume
+    pillar_volumes: *volumes_details
+    raise_msg: "error while trying to run `mkfs.ext4 -F .* /dev/my_vg/my-lvm-lv-volume`: An error has occurred"
+
+  ## LVM LogicalVolume block lvm volume
+  # Nothing to prepare for block lvm volume
+  - name: my-lvm-lv-block-volume
+    pillar_volumes: *volumes_details
+
   ## Invalid volumes
   # volume with invalid storage class name
   - name: my-invalid-storage-class-volume
@@ -710,6 +868,18 @@ is_cleaned_up:
     pillar_volumes: *volumes_details
     result: True
 
+  ## LVM LogicalVolume volume
+  # LVM LV always cleaned up (we do not remove the LV)
+  - name: my-lvm-lv-volume
+    pillar_volumes: *volumes_details
+    result: True
+
+  ## LVM LogicalVolume block volume
+  # LVM LV block always cleaned up (we do not remove the LV)
+  - name: my-lvm-lv-block-volume
+    pillar_volumes: *volumes_details
+    result: True
+
   ## Invalid volumes
   # specified volume is not in the pillar
   - name: unknown-volume
@@ -770,6 +940,16 @@ clean_up:
   - name: my-raw-block-device-block-lvm-volume
     pillar_volumes: *volumes_details
 
+  ## LVM LogicalVolume volume
+  # nothing to clean up (we do not remove the LV)
+  - name: my-lvm-lv-volume
+    pillar_volumes: *volumes_details
+
+  ## LVM LogicalVolume block volume
+  # nothing to clean up (we do not remove the LV)
+  - name: my-lvm-lv-block-volume
+    pillar_volumes: *volumes_details
+
   ## Invalid volumes
   # specified volume is not in the pillar
   - name: unknown-volume
@@ -824,6 +1004,22 @@ device_info:
     result:
       size: 4242
       path: /dev/dm-1
+
+  ## LVM LogicalVolume volume
+  # LVM LogicalVolume info
+  - name: my-lvm-lv-volume
+    pillar_volumes: *volumes_details
+    result:
+      size: 4242
+      path: /dev/disk/by-uuid/6474cda7-0dbe-40fc-9842-3cb0404a725a
+
+  ## LVM LogicalVolume block volume
+  # LVM LogicalVolume block info
+  - name: my-lvm-lv-block-volume
+    pillar_volumes: *volumes_details
+    result:
+      size: 4242
+      path: /dev/dm-2
 
   ## Invalid volumes
   # specified volume is not in the pillar

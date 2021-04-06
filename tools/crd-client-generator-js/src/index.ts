@@ -1,4 +1,4 @@
-import { generateClient } from "./generateCLient";
+import { generateClient } from "./generateClient";
 
 const fs = require('fs');
 
