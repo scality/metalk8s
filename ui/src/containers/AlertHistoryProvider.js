@@ -22,7 +22,9 @@ export function useHistoryAlerts(filters?: FilterLabels) {
 }
 
 const AlertHistoryProvider = ({ children }: any) => {
-  const query = useQuery('alertsHistory', () => getLast7DaysAlerts());
+  const query = useQuery('alertsHistory', () => getLast7DaysAlerts(), {
+    initialData: [],
+  });
 
   return (
     <AlertHistoryContext.Provider value={{ ...query }}>

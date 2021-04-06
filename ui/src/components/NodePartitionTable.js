@@ -116,7 +116,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
   });
 
   const alertNF = alertList && alertList.alerts;
-  const { data: partitions, status } = useQuery(
+  const { data: nodeFSResult, status } = useQuery(
     ['nodeDevices', instanceIP],
     useCallback(
       () =>
@@ -130,19 +130,23 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
             nodeFSUsageResult.data.resultType === 'vector' &&
             nodeFSSizeResult.data.resultType === 'vector'
           ) {
-            return getNodePartitionsTableData(
-              nodeFSUsageResult.data.result,
-              nodeFSSizeResult.data.result,
-              alertNF,
-            );
+            return {
+              nodeFSUsage: nodeFSUsageResult.data.result,
+              nodeFSSize: nodeFSSizeResult.data.result,
+            };
           }
         }),
-      // disable the eslint checking because it requires `alertNF` to be in the dependency list,
-      // and since react is not performing a deep comparison, so useCallback would be recalled everytime useAlerts refetch the alerts.
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      [instanceIP, JSON.stringify(alertNF)],
+      [instanceIP],
     ),
   );
+
+  let partitions = [];
+  if (status === 'success')
+    partitions = getNodePartitionsTableData(
+      nodeFSResult.nodeFSUsage,
+      nodeFSResult.nodeFSSize,
+      alertNF,
+    );
 
   const {
     getTableProps,
