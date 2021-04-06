@@ -33,12 +33,12 @@ Overview:
 
 import datetime as dt
 import socket
-import subprocess
 from pathlib import Path
 from typing import Iterator, List, Tuple, Union
 
 import doit  # type: ignore
 
+from buildchain import action
 from buildchain import config
 from buildchain import constants
 from buildchain import coreutils
@@ -198,37 +198,32 @@ def task__iso_add_tree() -> Iterator[types.TaskDict]:
 def task__iso_build() -> types.TaskDict:
     """Create the ISO from the files in ISO_ROOT."""
 
-    def mkisofs() -> None:
-        """Create an ISO file (delete on error)."""
-        cmd: List[Union[str, Path]] = [
-            config.ExtCommand.MKISOFS.value,
-            "-output",
-            ISO_FILE,
-            "-quiet",
-            "-rock",
-            "-joliet",
-            "-joliet-long",
-            "-full-iso9660-filenames",
-            "-volid",
-            "{} {}".format(config.PROJECT_NAME, versions.VERSION),
-            "--iso-level",
-            "3",
-            "-gid",
-            "0",
-            "-uid",
-            "0",
-            "-input-charset",
-            "utf-8",
-            "-output-charset",
-            "utf-8",
-            constants.ISO_ROOT,
-        ]
-        try:
-            subprocess.run(cmd, check=True)
-        except:
-            utils.unlink_if_exist(ISO_FILE)
-            raise
+    def on_failure() -> None:
+        utils.unlink_if_exist(ISO_FILE)
 
+    cmd: List[Union[str, Path]] = [
+        config.ExtCommand.MKISOFS.value,
+        "-output",
+        ISO_FILE,
+        "-quiet",
+        "-rock",
+        "-joliet",
+        "-joliet-long",
+        "-full-iso9660-filenames",
+        "-volid",
+        "{} {}".format(config.PROJECT_NAME, versions.VERSION),
+        "--iso-level",
+        "3",
+        "-gid",
+        "0",
+        "-uid",
+        "0",
+        "-input-charset",
+        "utf-8",
+        "-output-charset",
+        "utf-8",
+        constants.ISO_ROOT,
+    ]
     doc = "Create the ISO from the files in {}.".format(
         utils.build_relpath(constants.ISO_ROOT)
     )
@@ -238,7 +233,7 @@ def task__iso_build() -> types.TaskDict:
     return {
         "title": utils.title_with_target1("MKISOFS"),
         "doc": doc,
-        "actions": [mkisofs],
+        "actions": [action.CmdActionOnFailure(cmd, shell=False, on_failure=on_failure)],
         "targets": [ISO_FILE],
         "file_dep": depends,
         "task_dep": ["check_for:mkisofs", "_build_root", "_iso_mkdir_root"],
@@ -249,18 +244,13 @@ def task__iso_build() -> types.TaskDict:
 def task__iso_implantisomd5() -> types.TaskDict:
     """Implant data segments checksum into the ISO."""
 
-    def implantisomd5() -> None:
-        """Implant MD5 in ISO (delete on error)."""
-        cmd: List[Union[str, Path]] = [
-            config.ExtCommand.IMPLANTISOMD5.value,
-            ISO_FILE,
-        ]
-        try:
-            subprocess.run(cmd, check=True)
-        except:
-            utils.unlink_if_exist(ISO_FILE)
-            raise
+    def on_failure() -> None:
+        utils.unlink_if_exist(ISO_FILE)
 
+    cmd: List[Union[str, Path]] = [
+        config.ExtCommand.IMPLANTISOMD5.value,
+        ISO_FILE,
+    ]
     title = lambda _: "{cmd: <{width}} {path}".format(
         cmd="IMPLANTISOMD5",
         width=constants.CMD_WIDTH,
@@ -274,7 +264,7 @@ def task__iso_implantisomd5() -> types.TaskDict:
         "doc": doc,
         "file_dep": [ISO_FILE],
         "task_dep": ["check_for:implantisomd5", "_iso_build"],
-        "actions": [implantisomd5],
+        "actions": [action.CmdActionOnFailure(cmd, shell=False, on_failure=on_failure)],
     }
 
 

@@ -6,6 +6,7 @@ Expose Docker commands (build, run, …) as Python classes, using Docker API.
 The instantiated objects are callable and can be used as doit action directly.
 """
 
+import ast
 import copy
 import functools
 import os
@@ -62,24 +63,37 @@ def build_error_handler(build_error: BuildError) -> str:
         if "stream" in item:
             line = item["stream"]
         elif "status" in item:
-            line = "{}: {}/{}".format(
-                item["status"],
-                item["progressDetail"]["current"],
-                item["progressDetail"]["total"],
-            )
+            try:
+                line = "{0}: ".format(item["id"])
+            except KeyError:
+                line = ""
+            line += item["status"]
+            try:
+                line += ": {0}/{1}\x1b[1K\r".format(
+                    item["progressDetail"]["current"],
+                    item["progressDetail"]["total"],
+                )
+            except KeyError:
+                line += "\n"
         elif "error" in item:
             line = item["error"]
         else:
             line = "buildchain: Unknown build log entry {}".format(str(item))
         output_lines.append(line)
 
-    log = "".join(output_lines)
-    return "{}:\n{}".format(str(build_error), log)
+    return "".join(output_lines)
 
 
 def container_error_handler(container_error: ContainerError) -> str:
     """String formatting exception handler for Docker API ContainerError."""
-    return "{}:\n{}".format(str(container_error), container_error.stderr)
+    try:
+        err = ast.literal_eval(str(container_error.stderr)).decode()
+    except (ValueError, SyntaxError):
+        err = str(container_error.stderr)
+    msg = "Command '{0}' in image '{1}' returned non-zero exit status {2}:\n{3}".format(
+        container_error.command, container_error.image, container_error.exit_status, err
+    )
+    return msg
 
 
 def task_error(
