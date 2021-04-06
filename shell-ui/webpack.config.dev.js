@@ -1,9 +1,15 @@
 const HtmlWebPackPlugin = require("html-webpack-plugin");
+const path = require("path");
+const {name, version} = require("./package.json");
 const {DefinePlugin} = require("webpack")
 module.exports = {
   mode: "development",
   devtool: "source-map",
   entry: "./index.js",
+  output: {
+    path: path.resolve(__dirname, "build"),
+    filename: `shell/${name}.${version}.js`,
+  },
   module: {
     // ...
     rules: [

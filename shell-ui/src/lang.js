@@ -3,7 +3,7 @@ import React, { useContext, useState, type Node, useLayoutEffect } from 'react';
 import { IntlProvider } from 'react-intl';
 import translations_en from './translations/en';
 import translations_fr from './translations/fr';
-import { LANGUAGE_CHANGED_EVENT } from '.';
+import { LANGUAGE_CHANGED_EVENT } from './events';
 
 const LanguageContext = React.createContext(null);
 

@@ -15,12 +15,8 @@ import { defaultTheme } from '@scality/core-ui/dist/style/theme';
 import { LanguageProvider } from './lang';
 import { ThemeProvider, useThemeName } from './theme';
 import { useFavicon } from './favicon';
-
-const EVENTS_PREFIX = 'solutions-navbar--';
-export const AUTHENTICATED_EVENT: string = EVENTS_PREFIX + 'authenticated';
-export const LANGUAGE_CHANGED_EVENT: string =
-  EVENTS_PREFIX + 'language-changed';
-export const THEME_CHANGED_EVENT: string = EVENTS_PREFIX + 'theme-changed';
+import { version } from '../package.json';
+import "./library";
 
 export type PathDescription = {
   en: string,
@@ -234,6 +230,7 @@ class SolutionsNavbarWebComponent extends reactToWebComponent(
   React,
   ReactDOM,
 ) {
+
   constructor() {
     super();
     this.setUserManager = (userManager: UserManager) => {
@@ -251,7 +248,10 @@ class SolutionsNavbarWebComponent extends reactToWebComponent(
     this.logOut = () => {
       logOut(window.userManager);
     };
+
+    this.dispatchEvent(new CustomEvent('ready', {detail: {version}}));
   }
+
 }
 
 customElements.define('solutions-navbar', SolutionsNavbarWebComponent);

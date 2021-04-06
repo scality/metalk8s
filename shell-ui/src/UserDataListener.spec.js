@@ -3,7 +3,7 @@ import { useAuth } from 'oidc-react';
 import { act } from 'react-dom/test-utils';
 
 import StateManager from 'react-select';
-import { AUTHENTICATED_EVENT } from '.';
+import { AUTHENTICATED_EVENT } from './events';
 
 const fakeDataChangedAfterTime = 5;
 const initialUserData = {};
