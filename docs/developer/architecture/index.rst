@@ -8,6 +8,7 @@ Architecture Documents
    monitoring
    configurations
    alerting
+   alert-grouping
    centralized-cli
    metalk8s-ui
    requirements
