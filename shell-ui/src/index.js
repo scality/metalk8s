@@ -50,6 +50,7 @@ export type SolutionsNavbarProps = {
   onThemeChanged?: (evt: CustomEvent) => void,
   logOut?: () => void,
   setUserManager?: (userManager: UserManager) => void,
+  'provider-logout'?: string,
 };
 
 type Config = {
@@ -89,6 +90,7 @@ const SolutionsNavbar = ({
   onThemeChanged,
   logOut,
   setUserManager,
+  'provider-logout': providerLogout,
 }: SolutionsNavbarProps) => {
   const { data: config, status } = useQuery<Config>('navbarConfig', () => {
     if (configUrl) {
@@ -187,6 +189,7 @@ const SolutionsNavbar = ({
                       canChangeTheme={canChangeTheme !== undefined && canChangeTheme !== null ? Boolean(canChangeTheme) : config.canChangeTheme}
                       options={computedMenuOptions}
                       userGroupsMapping={config.userGroupsMapping}
+                      providerLogout={providerLogout ? providerLogout === 'true' : config?.providerLogout || false}
                     />
                   </StyledComponentsProvider>
                 </>
@@ -212,6 +215,7 @@ SolutionsNavbar.propTypes = {
   'can-change-language': PropTypes.string,
   favicon: PropTypes.string,
   options: PropTypes.string,
+  'provider-logout': PropTypes.string,
 };
 
 const SolutionsNavbarProviderWrapper = (props: SolutionsNavbarProps) => {
@@ -245,8 +249,8 @@ class SolutionsNavbarWebComponent extends reactToWebComponent(
     this.onThemeChanged = (evt: CustomEvent) => {
       this.dispatchEvent(evt);
     };
-    this.logOut = () => {
-      logOut(window.userManager);
+    this.logOut = (providerLogout?: boolean) => {
+      logOut(window.userManager, providerLogout);
     };
 
     this.dispatchEvent(new CustomEvent('ready', {detail: {version}}));

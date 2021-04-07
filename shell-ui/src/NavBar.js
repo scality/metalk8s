@@ -130,12 +130,14 @@ export const Navbar = ({
   userGroupsMapping,
   canChangeLanguage,
   canChangeTheme,
+  providerLogout,
 }: {
   options: Options,
   logo: string,
   userGroupsMapping?: UserGroupsMapping,
   canChangeLanguage?: boolean,
   canChangeTheme?: boolean,
+  providerLogout: boolean,
 }): Node => {
   const auth = useAuth();
   const brand = useTheme();
@@ -201,7 +203,7 @@ export const Navbar = ({
             />
           ),
           onClick: () => {
-            logOut(auth.userManager);
+            logOut(auth.userManager, providerLogout);
           },
         },
       ],

@@ -1,10 +1,14 @@
 //@flow
 import { UserManager } from 'oidc-react';
 
-export function logOut(userManager?: UserManager) {
+export function logOut(userManager?: UserManager, providerLogout?: boolean) {
   if (userManager) {
     userManager.revokeAccessToken();
-    userManager.removeUser();
-    location.reload();
+    if (providerLogout) {
+      userManager.signoutRedirect();
+    } else {
+      userManager.removeUser();
+      location.reload();
+    }
   }
 }
