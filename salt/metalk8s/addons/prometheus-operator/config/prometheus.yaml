@@ -10,6 +10,7 @@ spec:
   config:
     retention_time: "10d"
     retention_size: "0"  # "0" to disable size-based retention
+    enable_admin_api: false
   rules:
     node_exporter:
       node_filesystem_space_filling_up:
