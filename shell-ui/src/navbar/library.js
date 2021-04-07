@@ -3,7 +3,7 @@ import {
   LANGUAGE_CHANGED_EVENT,
   THEME_CHANGED_EVENT,
 } from './events';
-import { version } from '../package.json';
+import { version } from '../../package.json';
 
 window.shellUINavbar = {
   ///spread shellUI to keep all versions libraries
