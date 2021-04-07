@@ -126,6 +126,8 @@ prometheus:
     ## Maximum size of metrics
     retentionSize: '__escape__({{ prometheus.spec.config.retention_size | string }})'
 
+    enableAdminAPI: '__var__(prometheus.spec.config.enable_admin_api)'
+
 grafana:
   adminPassword: admin
 
