@@ -350,6 +350,7 @@ PACKAGES: Dict[str, Any] = {
         PackageVersion(name="iproute"),
         PackageVersion(name="iptables"),
         PackageVersion(name="kubernetes-cni"),
+        PackageVersion(name="lvm2"),
         PackageVersion(name="m2crypto"),
         PackageVersion(name="python36-psutil"),
         PackageVersion(name="python36-pyOpenSSL"),

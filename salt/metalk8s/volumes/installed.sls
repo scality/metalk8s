@@ -18,6 +18,11 @@ Install gdisk:
     - require:
       - test: Repositories configured
 
+Install lvm2:
+  {{ pkg_installed('lvm2') }}
+    - require:
+      - test: Repositories configured
+
 # Needed by the sparse volume cleanup script
 Ensure Python 3 is available:
   test.fail_without_changes:
