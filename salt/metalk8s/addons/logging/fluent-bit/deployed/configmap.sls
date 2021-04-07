@@ -39,7 +39,7 @@ Create fluent-bit ConfigMap:
                 Name           tail
                 Tag            kube.*
                 Path           /var/log/containers/*.log
-                Parser         docker
+                Parser         container
                 DB             /run/fluent-bit/flb_kube.db
                 Mem_Buf_Limit  5MB
             [INPUT]
@@ -76,6 +76,10 @@ Create fluent-bit ConfigMap:
                 Remove         BOOT_ID
                 Remove         UID
                 Remove         GID
+            [FILTER]
+                Name           modify
+                Match          kube.*
+                Remove         logtag
 {%- for index in range(loki.spec.deployment.replicas) %}
             [Output]
                 Name           loki
@@ -109,7 +113,9 @@ Create fluent-bit ConfigMap:
             }
           parsers.conf: |-
             [PARSER]
-                Name        docker
-                Format      json
+                Name        container
+                Format      regex
+                Regex       ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]+) (?<message>.+)$
                 Time_Key    time
-                Time_Format %Y-%m-%dT%H:%M:%S.%L
+                Time_Format %Y-%m-%dT%H:%M:%S.%L%z
+                Time_Keep   Off
