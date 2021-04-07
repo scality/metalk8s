@@ -123,4 +123,4 @@ will handle user input when deploying / upgrading Solutions.
 
 .. note:: Open the image in a new tab to see it in full resolution.
 
-.. uml:: ../architecture/solutions-interaction.uml
+.. uml:: ../architecture/diagrams/solutions-interaction.uml

@@ -202,7 +202,7 @@ Components
 
 Our Log Centralization system can be split into several components as follows:
 
-.. uml:: logs-components-diagram.uml
+.. uml:: diagrams/logs-components-diagram.uml
 
 Collector
 ~~~~~~~~~

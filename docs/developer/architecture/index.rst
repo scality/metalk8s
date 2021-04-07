@@ -3,15 +3,16 @@ Architecture Documents
 
 .. toctree::
 
-   authentication
-   deployment
-   monitoring
-   configurations
+   alert-history
    alerting
+   authentication
    centralized-cli
+   ci
+   configurations
+   deployment
+   logs
    metalk8s-ui
+   monitoring
    requirements
    solutions
-   ci
    volume
-   logs

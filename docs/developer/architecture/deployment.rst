@@ -4,7 +4,7 @@ Deployment
 Here is a diagram representing how MetalK8s orchestrates deployment on a set of
 machines:
 
-.. uml:: deployment.uml
+.. uml:: diagrams/deployment.uml
 
 Some notes
 ----------

@@ -17,11 +17,13 @@ spec:
         group_wait: 30s
         group_interval: 5m
         repeat_interval: 12h
-        receiver: 'null'
+        receiver: 'metalk8s-alert-logger'
         routes:
-        - match:
-            alertname: Watchdog
-          receiver: 'null'
+        - receiver: 'metalk8s-alert-logger'
+          continue: True
       receivers:
-        - name: 'null'
+        - name: 'metalk8s-alert-logger'
+          webhook_configs:
+            - send_resolved: True
+              url: 'http://metalk8s-alert-logger:19094/'
       inhibit_rules: []

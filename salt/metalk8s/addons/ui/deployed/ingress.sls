@@ -51,10 +51,12 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     heritage: metalk8s
   annotations:
+    kubernetes.io/ingress.class: "nginx-control-plane"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Access-Control-Allow-Origin"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/rewrite-target: '/$2'
     nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    kubernetes.io/ingress.class: "nginx-control-plane"
 spec:
   rules:
   - http:
@@ -67,6 +69,10 @@ spec:
         backend:
           serviceName: alertmanager-api
           servicePort: 9093
+      - path: /api/loki(/|$)(.*)
+        backend:
+          serviceName: loki-api
+          servicePort: 3100
 ---
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress

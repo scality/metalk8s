@@ -130,6 +130,7 @@ STORAGE_OPERATOR_FMT_ARGS: FrozenSet[str] = frozenset(
 STORAGE_OPERATOR_SOURCES: FrozenSet[Path] = frozenset(
     filepath for filepath in STORAGE_OPERATOR_ROOT.rglob("*.go")
 )
+GO_SOURCES: FrozenSet[Path] = frozenset(filepath for filepath in ROOT.rglob("*.go"))
 
 # For mypy, see `--no-implicit-reexport` documentation.
 __all__ = ["ROOT"]

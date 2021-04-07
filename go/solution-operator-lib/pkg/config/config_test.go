@@ -21,16 +21,16 @@ func TestLoadConfigurationFromFile(t *testing.T) {
 				APIVersion: expectedAPIVersion,
 				Kind:       expectedKind,
 				Repositories: map[string][]Repository{
-					"1.0.0": []Repository{
-						Repository{
+					"1.0.0": {
+						{
 							Endpoint: "docker.io/grafana",
 							Images:   []string{"grafana:6.7.4"},
 						},
-						Repository{
+						{
 							Endpoint: "docker.io/prom",
 							Images:   []string{"prometheus:v2.16.0"},
 						},
-						Repository{
+						{
 							Endpoint: "docker.io/bitnami",
 							Images:   []string{"prometheus-operator:v0.38.1"},
 						},
@@ -45,8 +45,8 @@ func TestLoadConfigurationFromFile(t *testing.T) {
 				APIVersion: expectedAPIVersion,
 				Kind:       expectedKind,
 				Repositories: map[string][]Repository{
-					"1.0.0": []Repository{
-						Repository{
+					"1.0.0": {
+						{
 							Endpoint: "metalk8s-registry-from-config.invalid/my-solution-1.0.0",
 							Images: []string{
 								"grafana:6.7.4",
@@ -55,8 +55,8 @@ func TestLoadConfigurationFromFile(t *testing.T) {
 							},
 						},
 					},
-					"1.1.0": []Repository{
-						Repository{
+					"1.1.0": {
+						{
 							Endpoint: "metalk8s-registry-from-config.invalid/my-solution-1.1.0",
 							Images: []string{
 								"grafana:7.2.1",

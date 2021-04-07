@@ -237,6 +237,9 @@ for repo, images in IMGS_PER_REPOSITORY.items():
 # Container images to build {{{
 TO_BUILD: Tuple[targets.LocalImage, ...] = (
     _local_image(
+        name="metalk8s-alert-logger",
+    ),
+    _local_image(
         name="salt-master",
         build_args={"SALT_VERSION": versions.SALT_VERSION},
     ),
