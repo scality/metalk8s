@@ -15,7 +15,7 @@ import { defaultTheme } from '@scality/core-ui/dist/style/theme';
 import { LanguageProvider } from './lang';
 import { ThemeProvider, useThemeName } from './theme';
 import { useFavicon } from './favicon';
-import { version } from '../package.json';
+import { version } from '../../package.json';
 import "./library";
 
 export type PathDescription = {
