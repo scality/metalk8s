@@ -8,9 +8,8 @@
 # Available states
 # ================
 #
-# * running   -> Ensure salt minion running
+# * restart   -> Restart salt Minion if required `watch_in` set
 #
 
 include:
-  - .installed
-  - .running
+  - .configured
