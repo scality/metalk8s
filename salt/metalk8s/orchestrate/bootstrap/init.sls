@@ -1,23 +1,33 @@
 {# Because of the grain lookup below, the bootstrap minion *must* be available
    before invoking this SLS, otherwise rendering will fail #}
-{%- set bootstrap_control_plane_ip = salt.saltutil.cmd(
-        tgt=pillar.bootstrap_id,
-        fun='grains.get',
-        kwarg={
-            'key': 'metalk8s:control_plane_ip',
-        },
-    )[pillar.bootstrap_id]['ret']
-%}
 
-{%- set bootstrap_workload_plane_ip = salt.saltutil.cmd(
-        tgt=pillar.bootstrap_id,
-        fun='grains.get',
-        kwarg={
-            'key': 'metalk8s:workload_plane_ip',
-        },
-    )[pillar.bootstrap_id]['ret']
-%}
-
+{%- set max_try = 5 %}
+{%- set bootstrap_grains = {} %}
+{%- for _ in range(max_try) %}
+  {%- set res = salt.saltutil.cmd(
+          tgt=pillar.bootstrap_id,
+          fun='grains.get',
+          kwarg={
+              'key': 'metalk8s:control_plane_ip',
+          },
+      )
+  %}
+  {%- set control_plane_ip = res.get(pillar.bootstrap_id, {}).get('ret') %}
+  {%- if control_plane_ip %}
+    {%- do bootstrap_grains.update({'control_plane_ip': control_plane_ip}) %}
+    {%- break %}
+  {%- endif %}
+{%- endfor %}
+{%- if 'control_plane_ip' not in bootstrap_grains %}
+Get metalk8s:control_plane_ip grain:
+  test.fail_without_changes:
+    - comment: >-
+        Unable to get metalk8s:control_plane_ip grain from {{ pillar.bootstrap_id }}
+        after {{ max_try }} tries.
+    - require_in:
+      - salt: Deploy CA role on bootstrap minion
+    - failhard: True
+{%- endif %}
 
 {%- if 'metalk8s' in pillar
         and 'nodes' in pillar.metalk8s
@@ -42,13 +52,13 @@
             'volumes': None,
             'endpoints': {
                 'salt-master': {
-                    'ip': bootstrap_control_plane_ip,
+                    'ip': bootstrap_grains['control_plane_ip'],
                     'ports': {
                         'api': 4507,
                     },
                 },
                 'repositories': {
-                    'ip': bootstrap_control_plane_ip,
+                    'ip': bootstrap_grains['control_plane_ip'],
                     'ports': {
                         'http': 8080,
                     },
