@@ -368,7 +368,7 @@ class RawBlockDeviceBlock(RawBlockDevice):
         # Detect which kind of device we have: a real disk, only a partition or
         # an LVM volume.
         self._partition = self._get_partition(_device_name(self.path))
-        if self._get_lvm_path() is not None:
+        if _get_lvm_path(self.path) is not None:
             self._kind = DeviceType.LVM
         elif self._partition is not None:
             self._kind = DeviceType.PARTITION
@@ -378,7 +378,7 @@ class RawBlockDeviceBlock(RawBlockDevice):
     @property
     def persistent_path(self):
         if self._kind == DeviceType.LVM:
-            return self._get_lvm_path()
+            return _get_lvm_path(self.path)
         return "/dev/disk/by-partuuid/{}".format(self.uuid)
 
     @property
@@ -425,18 +425,6 @@ class RawBlockDeviceBlock(RawBlockDevice):
         else:
             prepare_block(self.path, name, self.uuid)
 
-    def _get_lvm_path(self):
-        """Return the persistent path for a LVM volume.
-
-        If the backing storage device is not an LVM volume, return None.
-        """
-        name = _device_name(self.path)
-        for symlink in glob.glob("/dev/disk/by-id/dm-uuid-LVM-*"):
-            realpath = os.path.realpath(symlink)
-            if os.path.basename(realpath) == name:
-                return symlink
-        return None
-
     @staticmethod
     def _get_partition(device_name):
         part_re = r"(?:(?:h|s|v|xv)d[a-z]|nvme\d+n\d+p)(?P<partition>\d+)$"
@@ -448,6 +436,77 @@ class DeviceType:
     DISK = 1
     PARTITION = 2
     LVM = 3
+
+
+class LVMLogicalVolume(RawBlockDevice):
+    @property
+    def size(self):
+        return _quantity_to_bytes(self.get("spec.lvmLogicalVolume.size"))
+
+    @property
+    def vg_name(self):
+        return self.get("spec.lvmLogicalVolume.vgName")
+
+    @property
+    def lv_name(self):
+        return self.get("metadata.name")
+
+    @property
+    def path(self):
+        return "/dev/{}/{}".format(self.vg_name, self.lv_name)
+
+    @property
+    def exists(self):
+        lv_info = __salt__["lvm.lvdisplay"](lvname=self.path, quiet=True)
+
+        return bool(lv_info and lv_info.get(self.path))
+
+    def create(self):
+        try:
+            ret = __salt__["lvm.lvcreate"](
+                lvname=self.lv_name, vgname=self.vg_name, size="{}b".format(self.size)
+            )
+        except Exception as exc:
+            raise CommandExecutionError(
+                "cannot create LVM LogicalVolume {} in VG {}".format(
+                    self.lv_name, self.vg_name
+                )
+            ) from exc
+
+        # NOTE: `lvm.lvcreate` does not properly raise if command fail
+        # Command Return : {
+        #       "/dev/<vg_name>/<lv_name>": <LVM LV infos>,
+        #       "Output from lvcreate": <stderr of lvcreate if error>
+        # }
+        if self.path not in ret:
+            raise CommandExecutionError(
+                "cannot create LVM LogicalVolume {} in VG {}: {}".format(
+                    self.lv_name, self.vg_name, ret["Output from lvcreate"]
+                )
+            )
+
+    def clean_up(self):
+        # We do not remove the LV, too dangerous
+        log.info(
+            "Volume get clean up but the backing LV '%s' does not get removed",
+            self.path,
+        )
+        return
+
+
+class LVMLogicalVolumeBlock(LVMLogicalVolume):
+    @property
+    def persistent_path(self):
+        return _get_lvm_path(self.path)
+
+    @property
+    def is_prepared(self):
+        # Nothing to prepare on LVM
+        return True
+
+    def prepare(self, force=False):
+        # Nothing to prepare on LVM
+        return
 
 
 # }}}
@@ -470,6 +529,11 @@ def _get_volume(name):
             return SparseLoopDevice(volume)
         else:
             return SparseLoopDeviceBlock(volume)
+    elif "lvmLogicalVolume" in volume["spec"]:
+        if mode == "Filesystem":
+            return LVMLogicalVolume(volume)
+        else:
+            return LVMLogicalVolumeBlock(volume)
     else:
         raise ValueError("unsupported Volume type for Volume {}".format(name))
 
@@ -537,6 +601,19 @@ def _quantity_to_bytes(quantity):
     size = int(match.groupdict()["size"])
     unit = match.groupdict().get("unit")
     return size * UNIT_FACTOR[unit]
+
+
+def _get_lvm_path(path):
+    """Return the persistent path for a LVM volume.
+
+    If the backing storage device is not an LVM volume, return None.
+    """
+    name = _device_name(path)
+    for symlink in glob.glob("/dev/disk/by-id/dm-uuid-LVM-*"):
+        realpath = os.path.realpath(symlink)
+        if os.path.basename(realpath) == name:
+            return symlink
+    return None
 
 
 @contextlib.contextmanager

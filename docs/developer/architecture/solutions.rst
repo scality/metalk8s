@@ -308,7 +308,7 @@ Interaction diagram
 We include a detailed interaction sequence diagram for describing how MetalK8s
 will handle user input when deploying / upgrading Solutions.
 
-.. uml:: solutions-interaction.uml
+.. uml:: diagrams/solutions-interaction.uml
 
 Rejected design choices
 -----------------------

@@ -42,6 +42,14 @@ const setNullModuleForOidcClient = () => (config) => {
 
   return config;
 }
+/**
+ * After getting a lot of OOM issues while building the UI, we disabled terser parallelism
+ * Refs: https://github.com/timarney/react-app-rewired/issues/391#issuecomment-571954944
+ */
+const terserDisableParallelism = () => config => {
+  config.optimization.minimizer[0].parallel=false;
+  return config;
+};
 
 module.exports = override(
   useBabelRc(),
@@ -49,4 +57,5 @@ module.exports = override(
   setNullModuleForOidcClient(),// We only use oidc-client for type definitions
   addWebpackPlugin(new CompressionPlugin()),
   setWebpackPerformance(),
+  terserDisableParallelism()
 );

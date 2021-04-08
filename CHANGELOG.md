@@ -1,6 +1,11 @@
 # CHANGELOG
 
 ## Release 2.9.0 (in development)
+### Features Added
+- [#3180](https://github.com/scality/metalk8s/issues/3180) - All alerts from
+  Alertmanager are now stored in Loki database for persistence
+  (PR[#3191](https://github.com/scality/metalk8s/pull/))
+
 ### Enhancements
 - Bump Kubernetes version to 1.20.4 (PR[#3139](https://github.com/scality/metalk8s/pull/3139))
 
@@ -10,6 +15,12 @@
 - Bump Node.js version to 14.16.0 (PR[#3214](https://github.com/scality/metalk8s/pull/3214))
 
 ## Release 2.8.1 (in development)
+### Enhancements
+
+- [#1997](https://github.com/scality/metalk8s/issues/1997) - Add support for
+  LVM LogicalVolume Volume creation using storage operator
+  (PR [#3220](https://github.com/scality/metalk8s/pull/3220))
+
 ### Bug fixes
 
 - [#3223](https://github.com/scality/metalk8s/issues/3223) - Prevent failures
@@ -88,6 +99,9 @@
   (PR [#3167](https://github.com/scality/metalk8s/pull/3167))
 
 ## Release 2.7.4 (in development)
+### Enhancements
+- Bump Salt version to 3002.6
+  (PR [#3248](https://github.com/scality/metalk8s/pull/3248))
 
 ## Release 2.7.3
 ### Enhancements
@@ -325,6 +339,16 @@ version to 1.6.5 (PR [#2582](https://github.com/scality/metalk8s/pull/2582))
   (PR[#2824](https://github.com/scality/metalk8s/pull/2824))
 
 ## Release 2.5.3 (in development)
+
+### Enhancements
+- [#3218](https://github.com/scality/metalk8s/issues/3218) - Enrich sosreport
+  plugins:
+  - Add a Prometheus snapshot
+  - Add Salt configuration
+  - Add salt-minion journal
+  - Add kubectl top nodes & pods
+  - Add bootstrap and solutions configuration files
+  (PR [#3222](https://github.com/scality/metalk8s/pull/3222))
 
 ## Release 2.5.2
 

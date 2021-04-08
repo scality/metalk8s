@@ -17,6 +17,12 @@ spec:
 {%- for user in dex.spec.config.staticPasswords | map(attribute='email') %}
     "{{ user }}": [metalk8s:admin]
 {%- endfor %}
+  logo:
+    light: /brand/assets/logo-light.svg
+    dark: /brand/assets/logo-dark.svg
+  favicon: /brand/favicon-metalk8s.svg
+  canChangeLanguage: false
+  canChangeTheme: false
   options:
     main:
       "https://{{ grains.metalk8s.control_plane_ip }}:8443/":

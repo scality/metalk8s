@@ -34,14 +34,6 @@ export type Brand = {
 
 export type Theme = {
   brand: Brand,
-  logo_path: string,
-};
-
-export type Themes = { [key: string]: Theme };
-
-export type WrappedThemes = {
-  theme: Themes,
-  default: string,
 };
 
 export type Config = {
@@ -57,10 +49,6 @@ export type Config = {
   url_navbar_config: string,
   ui_base_path?: string,
 };
-
-export function fetchTheme(): Promise<WrappedThemes> {
-  return apiClient.get('/brand/theme.json');
-}
 
 export function fetchConfig(): Promise<Config> {
   return apiClient.get('/config.json');

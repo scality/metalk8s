@@ -2,16 +2,16 @@
 import type { User } from 'oidc-react';
 import type {
   Options,
-  TranslationAndGroups,
+  PathDescription,
   UserGroupsMapping,
 } from '../index';
 
 export const isEntryAccessibleByTheUser = (
-  [path, translationAndGroup]: [string, TranslationAndGroups],
+  [path, pathDescription]: [string, PathDescription],
   userGroups: string[],
 ): boolean => {
   return (
-    translationAndGroup.groups?.every((group) => userGroups.includes(group)) ??
+    pathDescription.groups?.every((group) => userGroups.includes(group)) ??
     true
   );
 };
@@ -22,8 +22,8 @@ export const getAccessiblePathsFromOptions = (
 ): string[] => {
   return (
     [...Object.entries(options.main), ...Object.entries(options.subLogin)]
-      //$FlowIssue - flow typing for Object.entries incorrectly typing values as [string, mixed] instead of [string, TranslationAndGroups]
-      .filter((entry: [string, TranslationAndGroups]) =>
+      //$FlowIssue - flow typing for Object.entries incorrectly typing values as [string, mixed] instead of [string, PathDescription]
+      .filter((entry: [string, PathDescription]) =>
         isEntryAccessibleByTheUser(entry, userGroups),
       )
       .map(([path]) => path)

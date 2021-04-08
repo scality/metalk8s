@@ -116,9 +116,9 @@ system) through the Salt API. Authentication to the Salt API will be done
 though a dedicated Salt account (with limited privileges) using credentials
 from a dedicated cluster **Service Account**.
 
-.. uml:: volume-creation_seqdiag.uml
+.. uml:: diagrams/volume-creation_seqdiag.uml
 
-.. uml:: volume-deletion_seqdiag.uml
+.. uml:: diagrams/volume-deletion_seqdiag.uml
 
 
 Implementation Details
@@ -198,7 +198,7 @@ Once pre-checks are done, there are four cases:
 4. the backing **PersistentVolume** exists: the operator will check its status
    to update the volume's status accordingly.
 
-.. uml:: volume-main_loop_flowchart.uml
+.. uml:: diagrams/volume-main_loop_flowchart.uml
 
 
 .. _volume-deployment:
@@ -232,7 +232,7 @@ Once the **PersistentVolume** is successfuly created, the operator will move
 the **Volume** to the `Available` state and reschedule the request (the next
 iteration will check the health of the **PersistentVolume** just created).
 
-.. uml:: volume-deploy_volume_flowchart.uml
+.. uml:: diagrams/volume-deploy_volume_flowchart.uml
 
 Steady state
 ~~~~~~~~~~~~
@@ -262,7 +262,7 @@ becomes unused (this is done by rescheduling). Once the backing
 **PersistentVolume** becomes unused, the operator will reclaim its storage and
 remove the finalizers to let the object be deleted.
 
-.. uml:: volume-finalize_volume_flowchart.uml
+.. uml:: diagrams/volume-finalize_volume_flowchart.uml
 
 
 Volume Deletion Criteria
@@ -291,7 +291,7 @@ In the end, a **Volume** can be deleted in two cases:
 - the backing **PersistentVolume** is not bound (**Available**, **Released** or
   **Failed**)
 
-.. uml:: volume-deletion_decision_tree.uml
+.. uml:: diagrams/volume-deletion_decision_tree.uml
 
 
 Documentation

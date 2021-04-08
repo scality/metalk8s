@@ -16,17 +16,6 @@ include:
     )
 %}
 
-
-{%- set metalk8s_theme_defaults = salt.slsutil.renderer(
-        'salt://metalk8s/addons/ui/config/metalk8s-theme.yaml', saltenv=saltenv
-    )
-%}
-
-{%- set metalk8s_theme = salt.metalk8s_service_configuration.get_service_conf(
-        'metalk8s-ui', 'metalk8s-theme', metalk8s_theme_defaults
-    )
-%}
-
 {%- set metalk8s_shell_ui_defaults = salt.slsutil.renderer(
         'salt://metalk8s/addons/ui/config/metalk8s-shell-ui-config.yaml.j2', saltenv=saltenv
     )
@@ -94,15 +83,3 @@ Create shell-ui ConfigMap:
         data:
           config.json: |-
             {{ metalk8s_shell_ui_config.spec | tojson }}
-
-Create ui-branding ConfigMap:
-  metalk8s_kubernetes.object_present:
-    - manifest:
-        apiVersion: v1
-        kind: ConfigMap
-        metadata:
-          name: ui-branding
-          namespace: metalk8s-ui
-        data:
-          theme.json: |-
-            {{metalk8s_theme.spec.theme | indent(12, False) }}

@@ -74,10 +74,19 @@ with open("../salt/metalk8s/defaults.yaml", "r") as fd:
 if not salt_defaults["metalk8s"]["downgrade"]["enabled"]:
     tags.add("downgrade_not_supported")
 
+# Read volume examples
+with open("_infos/volumes.yaml", "r") as fd:
+    volumes_values = yaml.safe_load(fd)
+
+for infos in volumes_values["volume_types"].values():
+    with open(infos["example"]["path"]) as fd:
+        infos["example"]["content"] = fd.read()
+
 jinja_contexts = {
     "salt_values": {
         "listening_processes": salt_defaults["networks"]["listening_process_per_role"]
-    }
+    },
+    "volume_values": volumes_values,
 }
 
 # -- General configuration ---------------------------------------------------

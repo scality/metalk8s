@@ -16,55 +16,31 @@ node`, or later on other nodes joining the cluster. It is even recommended to
 separate :ref:`Bootstrap services <node-role-bootstrap>` from :ref:`Infra
 services <node-role-infra>`.
 
-To create the required *Volume* objects, write a YAML file with the following
-contents, replacing ``<node_name>`` with the name of the :term:`Node` on which
-to run Prometheus, AlertManager and Loki, and ``<device_path[3]>`` with the
-``/dev`` path for the partitions to use:
+To create the required *Volume* objects, use one of the following volume
+type depending on the platform.
 
-.. code-block:: yaml
+.. jinja:: volume_values
 
-   ---
-   apiVersion: storage.metalk8s.scality.com/v1alpha1
-   kind: Volume
-   metadata:
-     name: <node_name>-prometheus
-   spec:
-     nodeName: <node_name>
-     storageClassName: metalk8s
-     rawBlockDevice:  # Choose a device with at least 10GiB capacity
-       devicePath: <device_path>
-     template:
-       metadata:
-         labels:
-           app.kubernetes.io/name: 'prometheus-operator-prometheus'
-   ---
-   apiVersion: storage.metalk8s.scality.com/v1alpha1
-   kind: Volume
-   metadata:
-     name: <node_name>-alertmanager
-   spec:
-     nodeName: <node_name>
-     storageClassName: metalk8s
-     rawBlockDevice:  # Choose a device with at least 1GiB capacity
-       devicePath: <device_path2>
-     template:
-       metadata:
-         labels:
-           app.kubernetes.io/name: 'prometheus-operator-alertmanager'
-   ---
-   apiVersion: storage.metalk8s.scality.com/v1alpha1
-   kind: Volume
-   metadata:
-     name: <node_name>-loki
-   spec:
-     nodeName: <node_name>
-     storageClassName: metalk8s
-     rawBlockDevice:  # Choose a device with at least 10GiB capacity
-       devicePath: <device_path3>
-     template:
-       metadata:
-         labels:
-           app.kubernetes.io/name: 'loki'
+   {%- for volume_type, volume_info in volume_types.items() %}
+
+   {{ volume_type }} Volumes
+   """""""""""""""""""""""""
+
+   Write a YAML file with the following contents, replacing:
+
+   - ``<node_name>`` with the name of the :term:`Node` on which
+   {% for variable, info in volume_info["example"]["variables"].items() %}
+   - ``<{{ variable }}>`` {{ info }}
+   {% endfor %}
+
+   .. code-block:: yaml
+
+   {{ volume_info["example"]["content"] | indent(6, first=true) }}
+
+   {% endfor %}
+
+Create Volumes objects
+""""""""""""""""""""""
 
 Once this file is created with the right values filled in, run the following
 command to create the *Volume* objects (replacing ``<file_path>`` with the path

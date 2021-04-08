@@ -26,6 +26,8 @@ const AlertProvider = ({ children }: any) => {
   const query = useQuery('activeAlerts', () => getAlerts(), {
     // refetch the alerts every 10 seconds
     refetchInterval: 10000,
+    // avoid stucking at the hard loading state before alertmanager is ready
+    initialData: [],
   });
   if (query.status === 'loading') {
     return (

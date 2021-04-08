@@ -23,9 +23,18 @@ type RawBlockDeviceVolumeSource struct {
 	DevicePath string `json:"devicePath"`
 }
 
+type LVMLVSource struct {
+	// Name of the LVM VolumeGroup on the node to create the LVM LogicalVolume to back
+	// the PersistentVolume
+	VGName string `json:"vgName"`
+	// Size of the created LVM LogicalVolume backing the PersistentVolume
+	Size resource.Quantity `json:"size"`
+}
+
 type VolumeSource struct {
 	SparseLoopDevice *SparseLoopDeviceVolumeSource `json:"sparseLoopDevice,omitempty"`
 	RawBlockDevice   *RawBlockDeviceVolumeSource   `json:"rawBlockDevice,omitempty"`
+	LVMLogicalVolume *LVMLVSource                  `json:"lvmLogicalVolume,omitempty"`
 }
 
 // VolumeSpec defines the desired state of Volume
@@ -263,7 +272,8 @@ func (self *Volume) SetTerminatingStatus(job string) {
 func (self *Volume) IsValid() error {
 	// Check if a type is specified.
 	if self.Spec.SparseLoopDevice == nil &&
-		self.Spec.RawBlockDevice == nil {
+		self.Spec.RawBlockDevice == nil &&
+		self.Spec.LVMLogicalVolume == nil {
 		return errors.New("volume type not found in Volume Spec")
 	}
 	// Check if the size is strictly positive.
@@ -272,6 +282,13 @@ func (self *Volume) IsValid() error {
 			return fmt.Errorf(
 				"invalid SparseLoopDevice size (should be greater than 0): %s",
 				self.Spec.SparseLoopDevice.Size.String(),
+			)
+		}
+	} else if self.Spec.LVMLogicalVolume != nil {
+		if self.Spec.LVMLogicalVolume.Size.Sign() <= 0 {
+			return fmt.Errorf(
+				"invalid LVM LogicalVolume size (should be greater than 0): %s",
+				self.Spec.LVMLogicalVolume.Size.String(),
 			)
 		}
 	}
