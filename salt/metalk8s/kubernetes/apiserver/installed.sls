@@ -96,6 +96,7 @@ Create kube-apiserver Pod manifest:
           - --oidc-groups-claim=groups
           - '"--oidc-groups-prefix=oidc:"'
           - --v={{ 2 if metalk8s.debug else 0 }}
+          - --feature-gates=RemoveSelfLink=false
         requested_cpu: 250m
         volumes:
           - path: {{ encryption_k8s_path }}
