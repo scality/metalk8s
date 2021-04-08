@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { Formik, Form, FieldArray, useFormikContext, useField } from 'formik';
@@ -234,9 +234,6 @@ const CreateVolume = (props) => {
     (state) => state.app.volumes.isSCLoading,
   );
 
-  const [labelName, setLabelName] = useState('');
-  const [labelValue, setLabelValue] = useState('');
-
   // Hardcoded
   const types = [
     {
@@ -258,6 +255,8 @@ const CreateVolume = (props) => {
     selectedUnit: sizeUnits[3].value,
     sizeInput: '',
     labels: {},
+    labelName: '',
+    labelValue: '',
     multiVolumeCreation: false,
     // When the multi-volume creation mode is active, the default/min number is 1.
     numberOfVolumes: 1,
@@ -311,6 +310,10 @@ const CreateVolume = (props) => {
   };
 
   const volumeNameRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
+  // Valid label keys have two segments: an optional prefix and name, separated by a slash (/).
+  const labelFullNameRegex = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*\/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$/;
+  const labelNamePrefixRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
+  const labelValueRegex = /^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$/;
   const positiveIntegerRegex = /^[1-9][0-9]*$/;
 
   const validationSchema = yup.object().shape({
@@ -352,6 +355,12 @@ const CreateVolume = (props) => {
       then: yup.string(),
     }),
     labels: yup.object(),
+    labelName: yup
+      .string()
+      .max(63, intl.translate('n_character_or_less', { n: 63 })),
+    labelValue: yup
+      .string()
+      .max(63, intl.translate('n_character_or_less', { n: 63 })),
     numberOfVolumes: yup
       .number()
       .positive()
@@ -412,6 +421,7 @@ const CreateVolume = (props) => {
                 errors,
                 touched,
                 setFieldTouched,
+                setFieldError,
                 dirty,
                 setFieldValue,
               } = formikProps;
@@ -441,12 +451,63 @@ const CreateVolume = (props) => {
                 }
               };
 
+              const handleErrorLabel = () => {
+                const isLabelNameMatched = labelFullNameRegex.test(
+                  values.labelName,
+                );
+                const isLabelValueMatched = labelValueRegex.test(
+                  values.labelValue,
+                );
+
+                if (!isLabelNameMatched) {
+                  const hasLabelPrefix = values.labelName.includes('/');
+
+                  if (hasLabelPrefix) {
+                    const prefix = values.labelName.split('/')[0];
+                    const isLabelPrefixMatched = labelNamePrefixRegex.test(
+                      prefix,
+                    );
+                    setFieldError(
+                      'labelName',
+                      intl.translate(
+                        isLabelPrefixMatched
+                          ? 'label_name_error'
+                          : 'label_prefix_name_error',
+                      ),
+                    );
+                  } else {
+                    setFieldError(
+                      'labelName',
+                      intl.translate('label_name_error'),
+                    );
+                  }
+                }
+                if (!isLabelValueMatched)
+                  setFieldError(
+                    'labelValue',
+                    intl.translate('label_value_error'),
+                  );
+              };
+
               const addLabel = () => {
-                const labels = values.labels;
-                labels[labelName] = labelValue;
-                setFieldValue('labels', labels);
-                setLabelName('');
-                setLabelValue('');
+                if (!errors.labelName && !errors.labelValue) {
+                  const labels = values.labels;
+                  const isLabelNameMatched = labelFullNameRegex.test(
+                    values.labelName,
+                  );
+                  const isLabelValueMatched = labelValueRegex.test(
+                    values.labelValue,
+                  );
+
+                  if (isLabelNameMatched && isLabelValueMatched) {
+                    labels[values.labelName] = values.labelValue;
+                    setFieldValue('labels', labels);
+                  } else {
+                    handleErrorLabel();
+                  }
+                  setFieldValue('labelName', '');
+                  setFieldValue('labelValue', '');
+                }
               };
 
               const removeLabel = (key) => {
@@ -561,20 +622,18 @@ const CreateVolume = (props) => {
                           <Input
                             name="labelName"
                             placeholder={intl.translate('enter_label_name')}
-                            value={labelName}
-                            onChange={(e) => {
-                              setLabelName(e.target.value);
-                            }}
+                            value={values.labelName}
+                            error={touched.labelName && errors.labelName}
                             onBlur={handleOnBlur}
+                            onChange={handleChange('labelName')}
                           />
                           <Input
                             name="labelValue"
                             placeholder={intl.translate('enter_label_value')}
-                            value={labelValue}
-                            onChange={(e) => {
-                              setLabelValue(e.target.value);
-                            }}
+                            value={values.labelValue}
+                            error={touched.labelValue && errors.labelValue}
                             onBlur={handleOnBlur}
+                            onChange={handleChange('labelValue')}
                           />
                           {touched.labelName && touched.labelValue ? (
                             <Button
