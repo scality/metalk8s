@@ -36,11 +36,12 @@ $ npm run build
  - client-id : string, required  
  
  - redirect-url : string, customized redirect uri
+ - provider-logout: boolean, if true, redirect to the provider logout endpoint.
  - options : {[url: string]: {en: string, fr: string, roles: string[]}} -- eg : {"/": {en: "Overview", fr: "Vue generale", roles: ["admin"]}, "/platform": {en: "Platform", fr: "Infrastructure"}, ...} - by default we display the full navbar in static mode, this attribute can be used if we want to extends the menu in a specific context
 
 ## Methods 
 
- - logOut(): void - force logOut, might be called when an UI receive a 401 or 403 status code for example
+ - logOut(providerLogout: boolean): void - force logOut, might be called when an UI receive a 401 or 403 status code for example. If providerLogout true, redirect to the provider logout endpoint.
  - getClaims(): Promise<Claims>
  - getIdToken(): Promise<string> - jwtToken
  - getLanguage(): "en" | "fr"
