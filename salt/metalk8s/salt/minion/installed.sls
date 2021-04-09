@@ -2,7 +2,7 @@
 
 include :
   - .dependencies
-  - .running
+  - .restart
 
 Install salt-minion:
   {{ pkg_installed('salt-minion') }}
@@ -11,5 +11,11 @@ Install salt-minion:
     - order: last
     - require:
       - test: Repositories configured
-    - require_in:
+    - watch_in:
       - cmd: Restart salt-minion
+
+Enable Salt minion:
+  service.enabled:
+    - name: salt-minion
+    - require:
+      - metalk8s_package_manager: Install salt-minion
