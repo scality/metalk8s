@@ -1,4 +1,4 @@
-import 'whatwg-fetch';
+import fetch from 'node-fetch';
 import 'regenerator-runtime/runtime';
 import '@testing-library/jest-dom/extend-expect';
 import 'jest-localstorage-mock';
@@ -9,3 +9,8 @@ window.crypto = {
     return nodeCrypto.randomFillSync(buffer);
   },
 };
+
+window.fetch = (url, ...rest) => fetch(
+	/^https?:/.test(url) ? url : new URL(url, 'http://localhost'),
+	...rest
+);
