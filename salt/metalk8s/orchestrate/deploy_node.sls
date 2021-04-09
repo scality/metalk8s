@@ -87,7 +87,7 @@ Accept key:
     - require:
       - salt: Deploy salt-minion on a new node
 
-Wait minion available:
+Wait minion available ssh:
   salt.runner:
     - name: metalk8s_saltutil.wait_minions
     - tgt: {{ node_name }}
@@ -139,8 +139,6 @@ Drain the node:
 
 {%- endif %}
 
-{%- if node_name in salt.saltutil.runner('manage.up') %}
-
 Check pillar before salt-minion configuration:
   salt.function:
     - name: metalk8s.check_pillar_keys
@@ -175,15 +173,19 @@ Reconfigure salt-minion:
       - salt: Check pillar before salt-minion configuration
 
 Wait minion available:
+  test.configurable_test_state:
+    - changes: False
+    - result: __slot__:salt:test.sleep(10)
+    - comment: Wait a bit for 'salt-minion' to restart before checking status
+    - onchanges:
+      - salt: Reconfigure salt-minion
   salt.runner:
     - name: metalk8s_saltutil.wait_minions
     - tgt: {{ node_name }}
     - require:
-      - salt: Reconfigure salt-minion
+      - test: Wait minion available
     - require_in:
       - http: Wait for API server to be available before highstate
-
-{%- endif %}
 
 {%- if 'etcd' in roles and 'etcd' not in skip_roles %}
 
