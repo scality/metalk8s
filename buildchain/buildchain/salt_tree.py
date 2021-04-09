@@ -593,7 +593,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/salt/minion/init.sls"),
     Path("salt/metalk8s/salt/minion/installed.sls"),
     Path("salt/metalk8s/salt/minion/local.sls"),
-    Path("salt/metalk8s/salt/minion/running.sls"),
+    Path("salt/metalk8s/salt/minion/restart.sls"),
     Path("salt/metalk8s/solutions/available.sls"),
     Path("salt/metalk8s/solutions/init.sls"),
     Path("salt/metalk8s/utils/init.sls"),

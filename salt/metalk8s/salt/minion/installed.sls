@@ -2,7 +2,7 @@
 
 include :
   - .dependencies
-  - .running
+  - .restart
 
 # Make sure `python36-psutil` is installed on every minions as it's used
 # in some MetalK8s custom execution modules
@@ -18,5 +18,11 @@ Install salt-minion:
     - order: last
     - require:
       - test: Repositories configured
-    - require_in:
+    - watch_in:
       - cmd: Restart salt-minion
+
+Enable Salt minion:
+  service.enabled:
+    - name: salt-minion
+    - require:
+      - metalk8s_package_manager: Install salt-minion
