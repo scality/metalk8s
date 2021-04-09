@@ -2,13 +2,11 @@ const HtmlWebPackPlugin = require('html-webpack-plugin');
 const path = require('path');
 const { version } = require('./package.json');
 const { DefinePlugin } = require('webpack');
-module.exports = {
+
+module.exports = (env) => ({
   mode: 'development',
   devtool: 'source-map',
-  entry: {
-    'solution-ui-navbar': './index.navbar.js',
-    alerts: './index.alerts.js',
-  },
+  entry: env.entry === 'navbar' ? {'solution-ui-navbar': './index.navbar.js'} : {alerts: './index.alerts.js'},
   output: {
     path: path.resolve(__dirname, 'build'),
     filename: `shell/[name].${version}.js`,
@@ -44,4 +42,4 @@ module.exports = {
       template: './index-template.html',
     }),
   ],
-};
+});
