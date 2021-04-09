@@ -23,7 +23,7 @@ Accept key:
     - require:
       - salt: Deploy salt-minion on a new node
 
-Wait minion available:
+Wait minion available ssh:
   salt.runner:
     - name: metalk8s_saltutil.wait_minions
     - tgt: {{ node_name }}
@@ -73,8 +73,6 @@ Sync module on the node:
     - kwarg:
         saltenv: {{ saltenv }}
 
-{%- if node_name in salt.saltutil.runner('manage.up') %}
-
 Check pillar before salt-minion configuration:
   salt.function:
     - name: metalk8s.check_pillar_keys
@@ -122,8 +120,6 @@ Wait minion available:
       - test: Wait minion available
     - require_in:
       - http: Wait for API server to be available before highstate
-
-{%- endif %}
 
 {%- if 'etcd' in roles and 'etcd' not in skip_roles %}
 
