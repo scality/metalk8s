@@ -2,7 +2,7 @@
 
 include:
   - .installed
-  - .running
+  - .restart
 
 Configure salt minion:
   file.managed:

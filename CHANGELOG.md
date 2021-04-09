@@ -79,6 +79,11 @@ version to 1.6.5 (PR [#2582](https://github.com/scality/metalk8s/pull/2582))
   - Add bootstrap and solutions configuration files
   (PR [#3222](https://github.com/scality/metalk8s/pull/3222))
 
+### Bug fixes
+- [#3247](https://github.com/scality/metalk8s/issues/3247) - Fix a bug where
+  Salt minion process may fail to restart during upgrade or downgrade process
+  (PR [#3281](https://github.com/scality/metalk8s/pull/3281))
+
 ## Release 2.5.2
 
 ### Enhancements
