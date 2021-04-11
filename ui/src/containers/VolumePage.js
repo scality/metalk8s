@@ -1,3 +1,4 @@
+/*eslint no-unused-vars: "warn"*/
 import React, { useEffect } from 'react';
 import { useRouteMatch } from 'react-router';
 import { useDispatch } from 'react-redux';

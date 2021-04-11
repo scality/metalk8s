@@ -1,3 +1,4 @@
+/*eslint no-unused-vars: "warn"*/
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';

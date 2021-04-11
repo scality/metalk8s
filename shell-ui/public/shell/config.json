@@ -1,8 +1,8 @@
 {
   "docUrl": "/docs",
   "oidc": {
-    "providerUrl": "https://{ip}:8443/oidc",
-    "redirectUrl": "https://{ip}:8443",
+    "providerUrl": "https://10.200.6.201:8443/oidc",
+    "redirectUrl": "http://localhost:3000/",
     "clientId": "metalk8s-ui",
     "responseType": "id_token",
     "scopes": "openid profile email groups offline_access audience:server:client_id:oidc-auth-client"

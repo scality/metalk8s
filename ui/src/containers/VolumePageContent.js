@@ -75,7 +75,7 @@ const VolumePageContent = (props) => {
         search: query.toString(),
       });
     }
-  }, [volumeListData, currentVolumeName, query, history, alerts.list, pVCList]);
+  }, [JSON.stringify(volumeListData), currentVolumeName, query.toString(), history, JSON.stringify(alerts.list), JSON.stringify(pVCList)]);
 
   const volume = volumes?.find(
     (volume) => volume.metadata.name === currentVolumeName,

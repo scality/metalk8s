@@ -8,6 +8,16 @@ module.exports = {
     'solution-ui-navbar': './src/navbar/index.js',
     alerts: './src/alerts/index.js',
   },
+//   externals: [({ context, request }, callback) => {
+//     // Do not bundle react nor react-query within alerts library (they should be imported as peer dependencies)
+//     if (/\/alerts/.test(context) && /^react/.test(request)) {
+//       return callback(null, 'commonjs ' + request)
+//     }
+
+//     // Continue without externalizing the import
+//     callback();
+//   },
+// ],
   output: {
     path: path.resolve(__dirname, 'build'),
     filename: `[name].${version}.js`,

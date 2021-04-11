@@ -15,6 +15,7 @@ export const UserDataListener = ({
 
   useLayoutEffect(() => {
     if (onAuthenticated) {
+      console.log({...auth.userData, groups: getUserGroups(auth.userData, userGroupsMapping) })
       onAuthenticated(
         new CustomEvent(AUTHENTICATED_EVENT, { detail: {...auth.userData, groups: getUserGroups(auth.userData, userGroupsMapping) } }),
       );

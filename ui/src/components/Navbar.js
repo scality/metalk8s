@@ -215,6 +215,7 @@ function InternalNavbar() {
   const navbarRef = useRef<NavbarWebComponent | null>(null);
 
   const version = useNavbarVersion(navbarRef);
+  console.log('version', version)
   const { isAuthenticated } = useLoginEffect(navbarRef, version);
   useLogoutEffect(navbarRef, isAuthenticated);
   useLanguageEffect(navbarRef, version);

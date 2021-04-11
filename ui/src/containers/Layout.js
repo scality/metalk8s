@@ -1,9 +1,9 @@
 //@flow
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { ThemeProvider } from 'styled-components';
-import { useRouteMatch, useHistory } from 'react-router';
-import { Switch } from 'react-router-dom';
+import { matchPath, RouteProps } from 'react-router';
+import { useHistory, useLocation, Switch } from 'react-router-dom';
 import {
   Layout as CoreUILayout,
   Notifications,
@@ -18,6 +18,7 @@ import { fetchClusterVersionAction } from '../ducks/app/nodes';
 import { useTypedSelector } from '../hooks';
 import { Navbar } from '../components/Navbar';
 import { Suspense } from 'react';
+import AlertProvider from './AlertProvider';
 
 const NodeCreateForm = React.lazy(() => import('./NodeCreateForm'));
 const NodePage = React.lazy(() => import('./NodePage'));
@@ -44,9 +45,21 @@ const Layout = () => {
   const toggleSidebar = () => dispatch(toggleSideBarAction());
   const history = useHistory();
 
+  console.log(useLocation())
+
   useEffect(() => {
     dispatch(fetchClusterVersionAction());
   }, [dispatch]);
+
+  useEffect(() => {
+    console.log(history.location.pathname)
+  }, [history])
+  
+
+  const doesRouteMatch = useCallback((path: RouteProps) => {
+    const location = history.location;
+    return matchPath(location.pathname, path);
+  }, [history.location])
 
   const sidebarConfig = {
     onToggleClick: toggleSidebar,
@@ -60,7 +73,7 @@ const Layout = () => {
         onClick: () => {
           history.push('/dashboard');
         },
-        active: useRouteMatch({
+        active: doesRouteMatch({
           path: '/dashboard',
           exact: true,
           strict: true,
@@ -74,7 +87,7 @@ const Layout = () => {
         onClick: () => {
           history.push('/');
         },
-        active: useRouteMatch({
+        active: doesRouteMatch({
           path: '/',
           exact: true,
           strict: true,
@@ -87,7 +100,7 @@ const Layout = () => {
         onClick: () => {
           history.push('/nodes');
         },
-        active: useRouteMatch({
+        active: doesRouteMatch({
           path: '/nodes',
           exact: false,
           strict: true,
@@ -100,7 +113,7 @@ const Layout = () => {
         onClick: () => {
           history.push('/volumes');
         },
-        active: useRouteMatch({
+        active: doesRouteMatch({
           path: '/volumes',
           exact: false,
           strict: true,
@@ -125,45 +138,47 @@ const Layout = () => {
           sidebar={isUserLoaded && sidebarConfig}
           navbarElement={<Navbar />}
         >
-          <Notifications
-            notifications={notifications}
-            onDismiss={removeNotification}
-          />
-          <Suspense fallback={<Loader size="massive" centered={true} />}>
-            <Switch>
-              <PrivateRoute
-                exact
-                path="/nodes/create"
-                component={NodeCreateForm}
-              />
-              <PrivateRoute
-                exact
-                path="/nodes/:id/deploy"
-                component={NodeDeployment}
-              />
-              <PrivateRoute
-                path={`/nodes/:id/createVolume`}
-                component={CreateVolume}
-              />
-              <PrivateRoute
-                exact
-                path="/volumes/createVolume"
-                component={CreateVolume}
-              />
-              <PrivateRoute path="/nodes" component={NodePage} />
-              <PrivateRoute path="/volumes/:name?" component={VolumePage} />
-              <PrivateRoute exact path="/about" component={About} />
-
-              {api && api.flags && api.flags.includes('dashboard') && (
+          <AlertProvider>
+            <Notifications
+              notifications={notifications}
+              onDismiss={removeNotification}
+            />
+            <Suspense fallback={<Loader size="massive" centered={true} />}>
+              <Switch>
                 <PrivateRoute
                   exact
-                  path="/dashboard"
-                  component={DashboardPage}
+                  path="/nodes/create"
+                  component={NodeCreateForm}
                 />
-              )}
-              <PrivateRoute exact path="/" component={ClusterMonitoring} />
-            </Switch>
-          </Suspense>
+                <PrivateRoute
+                  exact
+                  path="/nodes/:id/deploy"
+                  component={NodeDeployment}
+                />
+                <PrivateRoute
+                  path={`/nodes/:id/createVolume`}
+                  component={CreateVolume}
+                />
+                <PrivateRoute
+                  exact
+                  path="/volumes/createVolume"
+                  component={CreateVolume}
+                />
+                <PrivateRoute path="/nodes" component={NodePage} />
+                <PrivateRoute path="/volumes/:name?" component={VolumePage} />
+                <PrivateRoute exact path="/about" component={About} />
+
+                {api && api.flags && api.flags.includes('dashboard') && (
+                  <PrivateRoute
+                    exact
+                    path="/dashboard"
+                    component={DashboardPage}
+                  />
+                )}
+                <PrivateRoute exact path="/" component={ClusterMonitoring} />
+              </Switch>
+            </Suspense>
+          </AlertProvider>
         </CoreUILayout>
       </ScrollbarWrapper>
     </ThemeProvider>

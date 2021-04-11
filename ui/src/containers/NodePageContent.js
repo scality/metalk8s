@@ -44,12 +44,15 @@ const NodePageContent = (props) => {
   useRefreshEffect(refreshAlertManagerAction, stopRefreshAlertManagerAction);
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
+  const prevAlerts = usePrevious(alerts)
+  const prevNodeTableDate = usePrevious(nodeTableData)
+
   // Making sure the alerts have been retrieved (mandatory for health sorting) before selecting the first node
   useEffect(() => {
-    if (alerts.list.length && !defaultSelectNodeName) {
+    if (alerts.list.length && !defaultSelectNodeName && nodeTableData[0]?.name?.name) {
       setDefaultSelectNodeName(nodeTableData[0]?.name?.name);
     }
-  }, [alerts, nodeTableData, defaultSelectNodeName]);
+  }, [JSON.stringify(alerts), JSON.stringify(nodeTableData), defaultSelectNodeName]);
 
   return (
     <PageContentContainer>

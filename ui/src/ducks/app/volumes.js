@@ -1,4 +1,5 @@
 //@flow
+/*eslint no-unused-vars: "warn"*/
 import {
   Effect,
   takeLatest,
