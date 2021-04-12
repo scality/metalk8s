@@ -89,10 +89,11 @@ describe('alerts', () => {
   afterEach(() => server.resetHandlers());
 
   const alertLibrary = window.shellUIAlerts[version];
+  alertLibrary.createAlertContext(createContext)
 
   it('should export a renderable AlertProvider', () => {
     //S
-    const AlertProvider = alertLibrary.AlertProvider(createContext, useQuery);
+    const AlertProvider = alertLibrary.AlertProvider(useQuery);
 
     //E
     const { queryByText } = render(
@@ -109,7 +110,7 @@ describe('alerts', () => {
     //S
     const queryClient = new QueryClient();
 
-    const AlertProvider = alertLibrary.AlertProvider(createContext, useQuery);
+    const AlertProvider = alertLibrary.AlertProvider(useQuery);
     const useAlerts = alertLibrary.useAlerts(useContext);
 
     const wrapper = ({ children }) => (

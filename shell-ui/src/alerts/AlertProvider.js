@@ -27,11 +27,16 @@ export function useAlerts(useContext: typeof useContext) {
   };
 }
 
+export const createAlertContext = (createContext: typeof createContext) => {
+    contextStore.AlertContext = createContext<null>(null);
+}
+
 export const AlertProvider = (
-  createContext: typeof createContext,
   useQuery: typeof useQuery,
 ) => {
-  contextStore.AlertContext = createContext<null>(null);
+  if (!contextStore.AlertContext) {
+      throw new Error("createAlertContext should be called before rendering AlertProvider")
+  }
   return ({
     alertManagerUrl,
     children,
