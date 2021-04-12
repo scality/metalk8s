@@ -8,10 +8,6 @@ import {
   useHistory,
 } from 'react-router-dom';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
-import {
-  refreshAlertManagerAction,
-  stopRefreshAlertManagerAction,
-} from '../ducks/app/alerts';
 import { useRefreshEffect } from '../services/utils';
 import NodeListTable from '../components/NodeListTable';
 import NodePageRSP from './NodePageRSP';
@@ -25,7 +21,7 @@ import { EmptyState } from '@scality/core-ui';
 
 // <NodePageContent> get the current selected node and pass it to <NodeListTable> and <NodePageRSP>
 const NodePageContent = (props) => {
-  const { nodeTableData, alerts, loading } = props;
+  const { nodeTableData, loading } = props;
   const { path } = useRouteMatch();
   const [defaultSelectNodeName, setDefaultSelectNodeName] = useState(null);
   const [isFirstLoadingDone, setIsFirstLoadingDone] = useState(false);
@@ -41,15 +37,15 @@ const NodePageContent = (props) => {
       setIsFirstLoadingDone(true);
   }, [previousLoading, loading, isFirstLoadingDone]);
 
-  useRefreshEffect(refreshAlertManagerAction, stopRefreshAlertManagerAction);
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
-  // Making sure the alerts have been retrieved (mandatory for health sorting) before selecting the first node
+  const prevNodeTableDate = usePrevious(nodeTableData)
+
   useEffect(() => {
-    if (alerts.list.length && !defaultSelectNodeName) {
+    if (!defaultSelectNodeName && nodeTableData[0]?.name?.name) {
       setDefaultSelectNodeName(nodeTableData[0]?.name?.name);
     }
-  }, [alerts, nodeTableData, defaultSelectNodeName]);
+  }, [JSON.stringify(nodeTableData), defaultSelectNodeName]);
 
   return (
     <PageContentContainer>

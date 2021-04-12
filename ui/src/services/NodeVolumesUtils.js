@@ -154,7 +154,6 @@ export const volumeGetError = (
 
 const getPVList = (state) => state?.app?.volumes?.pVList;
 const getPVCList = (state) => state?.app?.volumes?.pVCList;
-const getAlerts = (state) => state?.app?.alerts;
 const getNodes = (state) => state?.app?.nodes?.list;
 
 const getVolumeLatencyCurrent = (state) =>
@@ -164,13 +163,12 @@ const getVolumeUsedCurrent = (state) =>
 const getVolumeCapacityCurrent = (state) =>
   state?.app?.monitoring?.volumeCurrentStats?.metrics?.volumeCapacityCurrent;
 
-export const getVolumeListData = createSelector(
+export const getVolumeListData = (alerts) => createSelector(
   getNodeNameFromUrl,
   getVolumes,
   getPVList,
   getPVCList,
   getVolumeUsedCurrent,
-  getAlerts,
   getNodes,
   getVolumeLatencyCurrent,
   getVolumeCapacityCurrent,
@@ -180,7 +178,6 @@ export const getVolumeListData = createSelector(
     pVList,
     pVCList,
     volumeUsedCurrentList,
-    alerts,
     nodeList,
     volumeLatencyCurrent,
     volumeCapacityCurrentList,
@@ -222,7 +219,7 @@ export const getVolumeListData = createSelector(
             volCap.metric.persistentvolumeclaim === volumePVC.metadata.name,
         );
 
-        volumeAlerts = filterAlerts(alerts.list, {
+        volumeAlerts = filterAlerts(alerts, {
           persistentvolumeclaim: volumePVC.metadata.name,
         });
         volumeHealth = getHealthStatus(volumeAlerts);

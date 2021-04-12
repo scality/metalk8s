@@ -15,9 +15,8 @@ import { compareHealth } from './utils';
 import type { IPInterfaces } from './salt/api';
 import type { RootState } from '../ducks/reducer';
 import type { NodesState } from '../ducks/app/nodes';
-import type { AlertsState } from '../ducks/app/alerts';
 import type { Brand } from '../services/api';
-import { getHealthStatus, filterAlerts } from '../services/alertUtils';
+import { getHealthStatus, filterAlerts, type Alert } from '../services/alertUtils';
 
 const METALK8S_CONTROL_PLANE_IP = 'metalk8s:control_plane_ip';
 const METALK8S_WORKLOAD_PLANE_IP = 'metalk8s:workload_plane_ip';
@@ -56,15 +55,13 @@ type NodetableList = {
 const IPsInfoSelector = (state) => state.app.nodes.IPsInfo;
 const nodesSelector = (state) => state.app.nodes.list;
 const brandSelector = (state) => state.config.theme.brand;
-const alertsSelector = (state) => state.app.alerts.list;
 
 // Return the data used by the Node list table
-export const getNodeListData = createTypedSelector<NodetableList>(
+export const getNodeListData = (alerts: Array<Alert>) => createTypedSelector<NodetableList>(
   (
     nodes: $PropertyType<NodesState, 'list'>,
     nodeIPsInfo: NodesState,
     brand: Brand,
-    alerts: $PropertyType<AlertsState, 'list'>,
   ) => {
     const mapped =
       nodes.map((node) => {
@@ -147,7 +144,6 @@ export const getNodeListData = createTypedSelector<NodetableList>(
   nodesSelector,
   IPsInfoSelector,
   brandSelector,
-  alertsSelector,
 );
 
 /*

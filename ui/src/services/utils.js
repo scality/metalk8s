@@ -382,8 +382,9 @@ export const formatSizeForDisplay = (value) => {
  */
 export const useTableSortURLSync = (sorted, desc, data) => {
   const history = useHistory();
+  const location = useLocation();
   useEffect(() => {
-    const query = new URLSearchParams(window.location.search);
+    const query = new URLSearchParams(location.search);
     const querySort = query.get('sort');
     const queryDesc = query.get('desc');
     if (data.length && (sorted !== querySort || desc !== queryDesc)) {
@@ -399,9 +400,12 @@ export const useTableSortURLSync = (sorted, desc, data) => {
         query.delete('sort');
         query.delete('desc');
       }
-      history.replace(`?${query.toString()}`);
+      
+      if (query.toString() !== new URLSearchParams(location.search).toString()) {
+        history.replace(`?${query.toString()}`);
+      }
     }
-  }, [sorted, desc, data.length, history]);
+  }, [sorted, desc, data.length, history, location]);
 };
 
 /*

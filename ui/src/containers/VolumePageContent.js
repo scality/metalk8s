@@ -46,7 +46,6 @@ const VolumePageContent = (props) => {
     pVList,
     pVCList,
     pods,
-    alerts,
     volumeStats,
     currentVolumeObject,
     loading,
@@ -66,7 +65,6 @@ const VolumePageContent = (props) => {
   useEffect(() => {
     if (
       volumeListData[0]?.name &&
-      alerts.list?.length &&
       pVCList.length &&
       !currentVolumeName
     ) {
@@ -75,7 +73,7 @@ const VolumePageContent = (props) => {
         search: query.toString(),
       });
     }
-  }, [volumeListData, currentVolumeName, query, history, alerts.list, pVCList]);
+  }, [JSON.stringify(volumeListData), currentVolumeName, query.toString(), history, JSON.stringify(pVCList)]);
 
   const volume = volumes?.find(
     (volume) => volume.metadata.name === currentVolumeName,

@@ -1,45 +1,90 @@
 //@flow
-import React, { createContext, useContext } from 'react';
+import React, {
+  type Node,
+  useLayoutEffect,
+  createContext,
+  useContext,
+  useState,
+} from 'react';
 import { useQuery } from 'react-query';
-import { Loader } from '@scality/core-ui';
-import { getAlerts } from '../services/alertmanager/api';
-import { filterAlerts } from '../services/alertUtils';
-import type { FilterLabels } from '../services/alertUtils';
+import { useTypedSelector } from '../hooks';
+import { ErrorBoundary } from 'react-error-boundary';
 
-const AlertContext = createContext<null>(null);
+export const useAlerts = (...args: any[]) => {
+  const alertsVersion = useTypedSelector(
+    (state) => state.config.api?.alerts_lib_version,
+  );
 
-export function useAlerts(filters: FilterLabels) {
-  const query = useContext(AlertContext);
-  if (!query) {
-    throw new Error(
-      'The useAlerts hook can only be used within AlertProvider.',
-    );
-  } else if (query.status === 'success') {
-    const newQuery = { ...query, alerts: filterAlerts(query.data, filters) };
-    delete newQuery.data;
-    return newQuery;
+  if (window.shellUIAlerts && window.shellUIAlerts[alertsVersion]) {
+    return window.shellUIAlerts[alertsVersion].useAlerts(useContext)(...args);
   }
-  return query;
+};
+
+function useLibrary(src?: string) {
+  const [hasFailed, setHasFailed] = useState(false);
+  useLayoutEffect(() => {
+    const body = document.body;
+    // $flow-disable-line
+    const element = [...(body?.querySelectorAll('script') || [])].find(
+      // $flow-disable-line
+      (scriptElement) => scriptElement.attributes.src?.value === src,
+    );
+
+    if (!element && body && src) {
+      const scriptElement = document.createElement('script');
+      scriptElement.src = src;
+      scriptElement.onerror = () => {
+        setHasFailed(true);
+      };
+      body.appendChild(scriptElement);
+    }
+  }, [src]);
+
+  if (hasFailed) {
+    throw new Error(`Failed to load library ${src || ''}`);
+  }
 }
 
-const AlertProvider = ({ children }: any) => {
-  const query = useQuery('activeAlerts', () => getAlerts(), {
-    // refetch the alerts every 10 seconds
-    refetchInterval: 10000,
-    // avoid stucking at the hard loading state before alertmanager is ready
-    initialData: [],
-  });
-  if (query.status === 'loading') {
+const InternalAlertProvider = ({ children }: { children: Node }): Node => {
+  const alertsUrl = useTypedSelector((state) => state.config.api?.url_alerts);
+  const alertsVersion = useTypedSelector(
+    (state) => state.config.api?.alerts_lib_version,
+  );
+  const alertManagerUrl = useTypedSelector(
+    (state) => state.config.api?.url_alertmanager,
+  );
+
+  useLibrary(alertsUrl);
+
+  if (window.shellUIAlerts && window.shellUIAlerts[alertsVersion]) {
+    const AlertProvider = window.shellUIAlerts[alertsVersion].AlertProvider(createContext, useQuery);
+
     return (
-      <AlertContext.Provider value={{ ...query }}>
-        <Loader size="massive" centered={true} aria-label="loading" />
-      </AlertContext.Provider>
-    );
-  } else
-    return (
-      <AlertContext.Provider value={{ ...query }}>
+      <AlertProvider alertManagerUrl={alertManagerUrl}>
         {children}
-      </AlertContext.Provider>
+      </AlertProvider>
     );
+  }
+
+  return <>{children}</>;
 };
+
+function ErrorFallback({ error, resetErrorBoundary }) {
+  //Todo redirect to a beautiful error page
+  return (
+    <div role="alert">
+      <p>Something went wrong:</p>
+      <pre>{error.message}</pre>
+    </div>
+  );
+}
+
+const AlertProvider = ({ children }: { children: Node }): Node => {
+  return (
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <InternalAlertProvider>{children}</InternalAlertProvider>
+    </ErrorBoundary>
+  );
+};
+
 export default AlertProvider;

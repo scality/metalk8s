@@ -68,8 +68,10 @@ Create metalk8s-ui ConfigMap:
               "url_doc": "/docs",
               "url_alertmanager": "/api/alertmanager",
               "url_navbar": "/shell/solution-ui-navbar.@@ShellUIVersion.js",
+              "url_alerts": "/shell/alerts.@@ShellUIVersion.js",
               "url_navbar_config": "/shell/config.json",
-              "ui_base_path": "{{ metalk8s_ui_config.spec.basePath }}"
+              "ui_base_path": "{{ metalk8s_ui_config.spec.basePath }}",
+              "alerts_lib_version": "@@ShellUIVersion"
             }
 
 Create shell-ui ConfigMap:
