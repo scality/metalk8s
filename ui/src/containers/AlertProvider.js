@@ -5,6 +5,7 @@ import React, {
   createContext,
   useContext,
   useState,
+  useRef,
 } from 'react';
 import { useQuery } from 'react-query';
 import { useTypedSelector } from '../hooks';
@@ -20,7 +21,7 @@ export const useAlerts = (...args: any[]) => {
   }
 };
 
-function useLibrary(src?: string) {
+function useAlertLibrary(src?: string, version?: string) {
   const [hasFailed, setHasFailed] = useState(false);
   useLayoutEffect(() => {
     const body = document.body;
@@ -30,15 +31,18 @@ function useLibrary(src?: string) {
       (scriptElement) => scriptElement.attributes.src?.value === src,
     );
 
-    if (!element && body && src) {
+    if (!element && body && src && version) {
       const scriptElement = document.createElement('script');
       scriptElement.src = src;
       scriptElement.onerror = () => {
         setHasFailed(true);
       };
+      scriptElement.onload = () => {
+        window.shellUIAlerts[version].createAlertContext(createContext)
+      }
       body.appendChild(scriptElement);
     }
-  }, [src]);
+  }, [src, version]);
 
   if (hasFailed) {
     throw new Error(`Failed to load library ${src || ''}`);
@@ -54,15 +58,19 @@ const InternalAlertProvider = ({ children }: { children: Node }): Node => {
     (state) => state.config.api?.url_alertmanager,
   );
 
-  useLibrary(alertsUrl);
+  useAlertLibrary(alertsUrl, alertsVersion);
 
-  if (window.shellUIAlerts && window.shellUIAlerts[alertsVersion]) {
-    const AlertProvider = window.shellUIAlerts[alertsVersion].AlertProvider(createContext, useQuery);
+  const AlertProviderRef = useRef(null);
 
+  if (window.shellUIAlerts && window.shellUIAlerts[alertsVersion] && !AlertProviderRef.current) {
+    AlertProviderRef.current = window.shellUIAlerts[alertsVersion].AlertProvider(useQuery);
+  }
+
+  if (AlertProviderRef.current) {
     return (
-      <AlertProvider alertManagerUrl={alertManagerUrl}>
+      <AlertProviderRef.current alertManagerUrl={alertManagerUrl}>
         {children}
-      </AlertProvider>
+      </AlertProviderRef.current>
     );
   }
 
