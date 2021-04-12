@@ -1,13 +1,17 @@
 import './index';
 import { version } from '../../package.json';
-import {QueryClientProvider, QueryClient} from 'react-query';
+import { useContext, createContext } from 'react';
+import {useQuery, QueryClientProvider, QueryClient} from 'react-query';
+
+export const alertLibrary = window.shellUIAlerts[version];
+alertLibrary.createAlertContext(createContext);
 
 export const TestAlert = () => {
-    const alerts = window.shellUIAlerts[version].useAlerts({alertname: 'KubeCPUOvercommit'});
+    const alerts = alertLibrary.useAlerts(useContext)({alertname: 'KubeCPUOvercommit'});
     return <>{JSON.stringify(alerts)}</>
 }
 
-export const AlertProvider = window.shellUIAlerts[version].AlertProvider;
+export const AlertProvider = alertLibrary.AlertProvider(useQuery);
 
 <QueryClientProvider client={new QueryClient()}>
     <AlertProvider alertManagerUrl='https://10.200.6.201:8443/api/alertmanager'>

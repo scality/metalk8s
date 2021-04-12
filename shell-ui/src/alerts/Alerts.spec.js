@@ -6,6 +6,8 @@ import { renderHook } from '@testing-library/react-hooks';
 import { setupServer } from 'msw/node';
 import { rest } from 'msw';
 import { afterAll, beforeAll, jest } from '@jest/globals';
+import { createContext, useContext } from 'react';
+import { useQuery } from 'react-query';
 
 const testService = 'http://10.0.0.1/api/alertmanager';
 
@@ -86,9 +88,12 @@ describe('alerts', () => {
   beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
   afterEach(() => server.resetHandlers());
 
+  const alertLibrary = window.shellUIAlerts[version];
+  alertLibrary.createAlertContext(createContext)
+
   it('should export a renderable AlertProvider', () => {
     //S
-    const AlertProvider = window.shellUIAlerts[version].AlertProvider;
+    const AlertProvider = alertLibrary.AlertProvider(useQuery);
 
     //E
     const { queryByText } = render(
@@ -105,8 +110,8 @@ describe('alerts', () => {
     //S
     const queryClient = new QueryClient();
 
-    const AlertProvider = window.shellUIAlerts[version].AlertProvider;
-    const useAlerts = window.shellUIAlerts[version].useAlerts;
+    const AlertProvider = alertLibrary.AlertProvider(useQuery);
+    const useAlerts = alertLibrary.useAlerts(useContext);
 
     const wrapper = ({ children }) => (
       <QueryClientProvider client={queryClient}>
