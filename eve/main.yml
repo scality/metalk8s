@@ -103,24 +103,10 @@ models:
             ssh eve@$IP
         END
   - ShellCommand: &check_iso_checksum
-      name: Check image with checksum
+      name: Check image with checksums
       command: |
         sha256sum -c SHA256SUM
-        # Check the embedded MD5, but only if one is found (i.e.,
-        # MetalK8s >= 2.8)
-        # We optimistically assume the checksum section is always found
-        # within the first 64kB of the ISO, which is not guaranteed. If
-        # this ever becomes an issue in CI, we'll need to find a better way.
-        # Hopefully by then we don't need this check anymore anyway (MetalK8s
-        # >= 2.9).
-        dd if=metalk8s.iso bs=1k count=64 | strings | grep "THIS IS NOT THE SAME AS RUNNING MD5SUM ON THIS ISO"
-        if [ $? -eq 0 ]; then
-          echo "Found signs of an embedded MD5 checksum, validating as well"
-          sudo yum install --assumeyes isomd5sum
-          checkisomd5 metalk8s.iso
-        else
-          echo "No embedded MD5 checksum detected, skipping validation"
-        fi
+        checkisomd5 metalk8s.iso
       haltOnFailure: true
   - Upload: &upload_artifacts
       name: Upload artifacts
@@ -1738,6 +1724,7 @@ stages:
       type: openstack
       image: CentOS-7-x86_64-GenericCloud-1809.qcow2
       flavor: m1.medium
+      path: eve/workers/openstack-basic
     steps:
       - Git: *git_pull
       - ShellCommand:

@@ -18,6 +18,7 @@ PACKAGES=(
     gcc-c++
     make
     nodejs
+    isomd5sum
 )
 
 yum install -y "${PACKAGES[@]}"
