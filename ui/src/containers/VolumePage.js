@@ -4,10 +4,6 @@ import { useDispatch } from 'react-redux';
 import VolumeContent from './VolumePageContent';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
-import {
-  refreshAlertManagerAction,
-  stopRefreshAlertManagerAction,
-} from '../ducks/app/alerts';
 import { makeGetNodeFromUrl, useRefreshEffect } from '../services/utils';
 import { fetchNodesAction } from '../ducks/app/nodes';
 import {
@@ -27,6 +23,7 @@ import {
 import { getVolumeListData } from '../services/NodeVolumesUtils';
 import { PageContainer } from '../components/style/CommonLayoutStyle';
 import { useTypedSelector } from '../hooks';
+import { useAlerts } from './AlertProvider';
 
 // <VolumePage> component fetchs all the data used by volume page from redux store.
 // the data for <VolumeMetricGraphCard>: get the default metrics time span `last 24 hours`, and the component itself can change the time span base on the dropdown selection.
@@ -60,8 +57,6 @@ const VolumePage = (props) => {
     dispatch(fetchPersistentVolumeClaimAction());
   }, [dispatch]);
 
-  useRefreshEffect(refreshAlertManagerAction, stopRefreshAlertManagerAction);
-
   // get all the pods for all the nodes
   const pods = useTypedSelector((state) => state.app.pods.list);
   const node = useTypedSelector((state) => makeGetNodeFromUrl(state, props));
@@ -81,14 +76,14 @@ const VolumePage = (props) => {
    ** in order to auto select the volume when all the data are there.
    */
   const pVCList = useTypedSelector((state) => state?.app?.volumes?.pVCList);
-  const alerts = useTypedSelector((state) => state.app.alerts);
 
   const volumeStats = useTypedSelector(
     (state) => state.app.monitoring.volumeStats.metrics,
   );
   // get all the volumes maybe filter by node
+  const {alerts} = useAlerts();
   const volumeListData = useTypedSelector((state) =>
-    getVolumeListData(state, props),
+    getVolumeListData(alerts)(state, props),
   );
 
   return (
@@ -101,7 +96,6 @@ const VolumePage = (props) => {
         pVList={pVList}
         pVCList={pVCList}
         pods={pods}
-        alerts={alerts}
         volumeStats={volumeStats}
         currentVolumeObject={currentVolumeObject}
         loading={volumesLoading}

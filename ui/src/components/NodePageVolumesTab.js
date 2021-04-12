@@ -21,6 +21,7 @@ import { getVolumeListData } from '../services/NodeVolumesUtils';
 import { useRefreshEffect } from '../services/utils';
 import { fontSize } from '@scality/core-ui/dist/style/theme';
 import { NodeTab } from './style/CommonLayoutStyle';
+import { useAlerts } from '../containers/AlertProvider';
 
 // Overriding overflow for the Tab since the table components has inner scroll
 export const NodesVolumesTab = styled(NodeTab)`
@@ -38,8 +39,9 @@ const NodePageVolumesTab = (props) => {
   const { name } = useParams();
   const dispatch = useDispatch();
 
+  const {alerts} = useAlerts()
   const volumeListData = useSelector((state) =>
-    getVolumeListData(state, null, name),
+    getVolumeListData(alerts)(state, null, name),
   );
 
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
