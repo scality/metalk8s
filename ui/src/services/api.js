@@ -48,6 +48,8 @@ export type Config = {
   url_navbar: string,
   url_navbar_config: string,
   ui_base_path?: string,
+  url_alerts: string,
+  alerts_lib_version: string,
 };
 
 export function fetchConfig(): Promise<Config> {

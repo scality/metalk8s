@@ -245,12 +245,19 @@ it('should return 1d1m instead of 1d1m1s or 1d1s', () => {
 
 // Mocking history from react-router to test the URL sync hook
 const mockHistoryReplace = jest.fn();
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useHistory: () => ({
-    replace: mockHistoryReplace,
-  }),
-}));
+jest.mock('react-router-dom', () => {
+  let location = new URL('http://test.test')
+  return {
+    ...jest.requireActual('react-router-dom'),
+    useHistory: () => ({
+      replace: (newLocation) => {
+        location = new URL('http://test.test' + newLocation)
+        mockHistoryReplace(newLocation)
+      },
+    }),
+    useLocation: () => location,
+  }
+});
 
 describe('useTableSortURLSync hook', () => {
   it('should not set anything in the URL if data is not ready', () => {
@@ -269,7 +276,15 @@ describe('useTableSortURLSync hook', () => {
   });
 
   it('should clear the URL params if status goes back to default (health)', () => {
-    renderHook(() => useTableSortURLSync('health', false, ['foo']));
+    let status = 'status';
+    const { rerender } = renderHook((props) =>{
+      return useTableSortURLSync(status, false, ['foo'])
+    },
+      
+    );
+    expect(mockHistoryReplace).toHaveBeenCalledWith('?sort=status');
+    status = 'health'
+    rerender();
     expect(mockHistoryReplace).toHaveBeenCalledWith('?');
   });
 });
