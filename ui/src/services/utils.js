@@ -401,6 +401,9 @@ export const useTableSortURLSync = (sorted, desc, data) => {
         query.delete('desc');
       }
       
+      // We replace the current url only if expected current query params are different
+      // than the expected one. This avoid triggering redirection loop if one of consumer
+      // of this hooks get frequently renderred.
       if (query.toString() !== new URLSearchParams(location.search).toString()) {
         history.replace(`?${query.toString()}`);
       }
