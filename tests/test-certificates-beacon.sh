@@ -92,7 +92,8 @@ apply_new_beacon_conf() {
         "    'certificates': {"
         "        'beacon': {"
         "            'notify_days': $BEACON_NOTIFY_DAYS,"
-        "            'interval': $BEACON_INTERVAL"
+        "            'interval': $BEACON_INTERVAL",
+        "            'run_once': True,"
         "        }"
         "    }"
         "}"
