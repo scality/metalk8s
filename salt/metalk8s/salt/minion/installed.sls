@@ -21,8 +21,14 @@ Install salt-minion:
     - watch_in:
       - cmd: Restart salt-minion
 
-Enable Salt minion:
-  service.enabled:
+Start and enable Salt minion:
+  # NOTE: We use `service.running` but do not put any `watch` as
+  # we do not want this state to restart salt-minion process just
+  # start it if not yet started and enable the service
+  service.running:
     - name: salt-minion
+    - enable: True
     - require:
       - metalk8s_package_manager: Install salt-minion
+    - require_in:
+      - cmd: Restart salt-minion
