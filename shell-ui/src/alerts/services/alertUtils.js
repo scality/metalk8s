@@ -171,37 +171,6 @@ export const filterAlerts = (
   });
 };
 
-// check if the given time is between the start and end
-export const dateIsBetween = (start: string, end: string, date: string) => {
-  const dateTS = new Date(date).getTime();
-  const startTS = new Date(start).getTime();
-  const endTS = new Date(end).getTime();
-  if (startTS <= dateTS && endTS >= dateTS) {
-    return true;
-  } else return false;
-};
-
-export const getHealthStatus = (
-  alerts: Alert[],
-  activeOn?: string = new Date().toISOString(),
-): Health => {
-  if (!alerts.length) return STATUS_HEALTH;
-
-  const severityArr = alerts.map((alert) => {
-    if (dateIsBetween(alert.startsAt, alert.endsAt, activeOn)) {
-      return alert.labels.severity;
-    }
-    return '';
-  });
-
-  if (severityArr.every((item) => item === '')) return STATUS_HEALTH;
-  if (severityArr.find((severity) => severity === 'critical'))
-    return STATUS_CRITICAL;
-  else if (severityArr.find((severity) => severity === 'warning'))
-    return STATUS_WARNING;
-  return STATUS_NONE;
-};
-
 /*
   Format the alerts from Loki.
   We need to remove the alerts with the same ID, because the same alert may be retriggered by multiple times.
