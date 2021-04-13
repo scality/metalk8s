@@ -10,17 +10,27 @@ import React, {
 import { useQuery } from 'react-query';
 import { useTypedSelector } from '../hooks';
 import { ErrorBoundary } from 'react-error-boundary';
+import type { FilterLabels } from '../services/alertUtils';
 
-export const useAlerts = (...args: any[]) => {
+export const useAlerts = (filters: FilterLabels) => {
   const alertsVersion = useTypedSelector(
     (state) => state.config.api?.alerts_lib_version,
   );
 
   if (window.shellUIAlerts && window.shellUIAlerts[alertsVersion]) {
-    return window.shellUIAlerts[alertsVersion].useAlerts(useContext)(...args);
+    return window.shellUIAlerts[alertsVersion].useAlerts(useContext)(filters);
   }
 };
 
+/**
+ * This hook dynamically load Alert library.
+ * 
+ * It first creates a script entry if none exists referring the given library src
+ *  and then initiates the library by calling `createAlertContext`
+ * 
+ * @param {string} src library bundle url
+ * @param {string?} version library version
+ */
 function useAlertLibrary(src?: string, version?: string) {
   const [hasFailed, setHasFailed] = useState(false);
   useLayoutEffect(() => {
@@ -62,6 +72,8 @@ const InternalAlertProvider = ({ children }: { children: Node }): Node => {
 
   const AlertProviderRef = useRef(null);
 
+  // In order to avoid react to uselessly rerender children every time we move
+  // the AlertProvider to a ref and renders it only a single time once the library is ready.
   if (window.shellUIAlerts && window.shellUIAlerts[alertsVersion] && !AlertProviderRef.current) {
     AlertProviderRef.current = window.shellUIAlerts[alertsVersion].AlertProvider(useQuery);
   }
