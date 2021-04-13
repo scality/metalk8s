@@ -8,6 +8,20 @@ import type { FilterLabels } from './services/alertUtils';
 
 const contextStore = {};
 
+/**
+ * Hooks that enables retrieval of alerts fetched by <AlertProvider />
+ * 
+ * Host UIs have to inject React.useContext when using it. This design has several advantages :
+ *  - It avoids having to bundle react with this alerts provider and hence allow substential bundle size reduction
+ *  - It avoids react dependency conflicts with hosting applications
+ * 
+ * Calling useAlerts(useContext) actually returns a hook allowing alert filtering thanks to selector object.
+ * Example: In order to retrieve alerts with name "KubeCPUOvercommit", a host UI will have to call 
+ * useAlerts(useContext)({alertname: 'KubeCPUOvercommit'})
+ * 
+ * @param {typeof React.useContext} useContext, host React.useContext 
+ * @returns useAlerts(alertSelectors) hook.
+ */
 export function useAlerts(useContext: typeof useContext) {
   return (filters: FilterLabels) => {
     const query = useContext(contextStore.AlertContext);
@@ -27,10 +41,29 @@ export function useAlerts(useContext: typeof useContext) {
   };
 }
 
+/**
+ * It initiates internal context and is necessary to be called before the first render of <AlertProvider />
+ * We recommend calling this function as soon as alert library is ready on the host application.
+ * 
+ * A reference implementation can be found here : ${metalk8sRoot}/ui/src/containers/AlertProvider.js
+ * 
+ * Similarly as useAlerts hook, host applications have to inject React.createContext for the same reasons as above.
+ * 
+ * @param {typeof createContext} createContext 
+ */
 export const createAlertContext = (createContext: typeof createContext) => {
     contextStore.AlertContext = createContext<null>(null);
 }
 
+/**
+ * A wrapper fetching alerts and ensuring their accuracy via a polling refresh strategy.
+ * 
+ * Similary as above, host applications have to inject reqct-query.useQuery to avoid any
+ * dependency conflicts and limit the bundle size.
+ * 
+ * @param {typeof useQuery} useQuery 
+ * @returns 
+ */
 export const AlertProvider = (
   useQuery: typeof useQuery,
 ) => {
