@@ -6,7 +6,7 @@ import time
 
 import kubernetes
 import pytest
-from pytest_bdd import given, parsers, then
+from pytest_bdd import given, parsers, then, when
 import yaml
 
 from tests import kube_utils
@@ -293,6 +293,33 @@ def check_service(host):
 @given(_COUNT_RUNNING_PODS_PARSER, converters=dict(pods_count=int))
 def given_count_running_pods(request, k8s_client, pods_count, label, namespace, node):
     return count_running_pods(request, k8s_client, pods_count, label, namespace, node)
+
+
+# }}}
+# When {{{
+
+
+@when(
+    parsers.parse(
+        "we wait for the rollout of '{resource}' in namespace '{namespace}' to complete"
+    )
+)
+def wait_rollout_status(host, resource, namespace):
+    # NOTE: we set a default timeout of 5 minutes, because anything higher would be
+    # symptomatic of a really bad situation (the default being to never timeout, this
+    # could cause issues in CI).
+    with host.sudo():
+        result = host.run(
+            "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
+            "rollout status %s --namespace %s --timeout 5m",
+            resource,
+            namespace,
+        )
+
+    assert result.succeeded, (
+        f"Rollout of '{resource}' in namespace '{namespace}' failed [{result.rc}]:\n"
+        f"    stdout: {result.stdout}\n    stderr: {result.stderr}"
+    )
 
 
 # }}}
