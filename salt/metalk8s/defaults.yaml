@@ -130,6 +130,7 @@ certificates:
   beacon:
     interval: 86400  # once a day
     notify_days: 45
+    run_once: False
   client:
     days_remaining: 90
     days_valid: 365
