@@ -4,7 +4,7 @@ import { defaultTheme } from '@scality/core-ui/dist/style/theme';
 import { THEME_CHANGED_EVENT } from "./events";
 
 
-type ThemeName = 'dark' | 'light' | 'custom';
+type ThemeName = 'darkRebrand' | 'light' | 'custom';
 type ThemeContextValues = {
   themeName: ThemeName,
   theme: Theme,
@@ -13,9 +13,9 @@ type ThemeContextValues = {
 };
 const ThemeContext = React.createContext<ThemeContextValues | null>(null);
 
-const themes = ['dark', 'light'];
+const themes = ['darkRebrand', 'light'];
 
-type Theme = { brand: typeof defaultTheme.dark };
+type Theme = { brand: typeof defaultTheme.darkRebrand };
 
 export function useThemeName(): ThemeContextValues {
   const themeContext = useContext(ThemeContext);
@@ -33,7 +33,7 @@ export function ThemeProvider({
   onThemeChanged?: (evt: CustomEvent) => void,
 }): Node {
   const [themeName, setTheme] = useState<ThemeName>(
-    (localStorage.getItem('theme'): any) || 'dark',
+    (localStorage.getItem('theme'): any) || 'darkRebrand',
   );
 
   const theme: Theme = {
