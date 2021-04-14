@@ -69,7 +69,12 @@ def csc(host, ssh_config, version, k8s_client, name, namespace):
 def update_csc(csc, path, value):
     csc_content = csc.get()
     utils.set_dict_element(csc_content, path, value)
-    csc.update(csc_content)
+    csc.update(csc_content, apply_config=False)
+
+
+@when(parsers.parse("we apply the '{state}' state"))
+def apply_csc(csc, state):
+    csc.apply(state)
 
 
 # }}}
@@ -202,11 +207,11 @@ class ClusterServiceConfiguration:
 
         return self.csc
 
-    def apply(self):
+    def apply(self, state="metalk8s.deployed"):
         cmd = [
             "salt-run",
             "state.sls",
-            "metalk8s.deployed",
+            state,
             "saltenv=metalk8s-{}".format(self.version),
             "--log-level=warning",
             "--out=json",
