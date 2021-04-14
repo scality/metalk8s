@@ -7,8 +7,6 @@ metadata:
   labels:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/part-of: metalk8s
-  annotations:
-    storageclass.kubernetes.io/is-default-class: 'true'
 provisioner: kubernetes.io/no-provisioner
 reclaimPolicy: Retain
 volumeBindingMode: WaitForFirstConsumer
