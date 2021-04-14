@@ -252,6 +252,9 @@ class SolutionsNavbarWebComponent extends reactToWebComponent(
     this.logOut = (providerLogout?: boolean) => {
       logOut(window.userManager, providerLogout);
     };
+    this.getIdToken = () => {
+      return (window.userManager: UserManager).getUser().then(user => user.id_token);
+    }
 
     this.dispatchEvent(new CustomEvent('ready', {detail: {version}}));
   }
