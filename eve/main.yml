@@ -695,7 +695,9 @@ models:
       command: |
         ssh -F ssh_config bootstrap <<ENDSSH
         sudo kubectl --kubeconfig /etc/kubernetes/admin.conf \
-        patch node "$NODE_NAME" --patch '{"spec": {"taints": []}}'
+        patch node "$NODE_NAME" --patch '{"spec": {"taints": []}}' &&
+        sudo kubectl --kubeconfig /etc/kubernetes/admin.conf \
+        label node --overwrite  "$NODE_NAME" "node-role.kubernetes.io/node="
         ENDSSH
       workdir: *terraform_workdir
       haltOnFailure: true
