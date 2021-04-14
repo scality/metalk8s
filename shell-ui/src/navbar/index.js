@@ -107,7 +107,7 @@ const SolutionsNavbar = ({
 
   useFavicon(favicon || config?.favicon || '/brand/favicon-metalk8s.svg');
 
-  const logos = {dark: logoDark, light: logoLight};
+  const logos = {dark: logoDark, darkRebrand: logoDark, light: logoLight};
 
   useLayoutEffect(() => {
     const savedRedirectUri = localStorage.getItem('redirectUrl');
