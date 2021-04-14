@@ -1,9 +1,10 @@
 import { setupServer } from 'msw/node';
 import { rest } from 'msw';
 import { screen, render, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event'
+import userEvent from '@testing-library/user-event';
 import './index';
 import { waitForLoadingToFinish } from './__TESTS__/utils';
+import { jest } from '@jest/globals';
 
 const server = setupServer(
   rest.get(
@@ -43,6 +44,25 @@ const server = setupServer(
   ),
 );
 
+function mockOidcReact() {
+  const {jest} = require('@jest/globals');
+  
+  const original = jest.requireActual('oidc-react');
+  return {
+    ...original, //Pass down all the exported objects
+    useAuth: () => ({
+      userData: {
+        profile: {
+          groups: ['group1'],
+          email: 'test@test.invalid',
+          name: 'user',
+        },
+      },
+    })
+  }
+}
+jest.mock('oidc-react', () => mockOidcReact());
+
 const mockOIDCProvider = () => {
   // This is a hack to workarround the following issue : MSW return lower cased content-type header,
   // oidc-client is internally using XMLHttpRequest to perform queries and retrieve response header Content-Type using 'XMLHttpRequest.prototype.getResponseHeader'.
@@ -62,6 +82,9 @@ describe('navbar', () => {
   jest.useFakeTimers();
 
   beforeAll(() => server.listen());
+  beforeEach(() => {
+    jest.resetModules();
+  });
   afterEach(() => server.resetHandlers());
 
   it('should display a loading state when resolving its configuration', () => {
@@ -87,7 +110,7 @@ describe('navbar', () => {
         return res(ctx.status(500));
       }),
     );
-
+    
     render(
       <solutions-navbar
         oidc-provider-url="https://mocked.ingress/oidc"
@@ -109,6 +132,7 @@ describe('navbar', () => {
   it('should display expected selected menu when it matches by exact loaction (default behavior)', async () => {
     //S
     mockOIDCProvider();
+
     //E
     render(
       <solutions-navbar
@@ -138,6 +162,7 @@ describe('navbar', () => {
   it('should display expected selected menu when it matches by regex', async () => {
     //S
     mockOIDCProvider();
+
     //E
     render(
       <solutions-navbar
@@ -171,6 +196,7 @@ describe('navbar', () => {
   it('should set the language of the navbar', async () => {
     //S
     mockOIDCProvider();
+
     //E
     render(
       <solutions-navbar
@@ -208,7 +234,7 @@ describe('navbar', () => {
     });
     expect(platformEntry).toBeInTheDocument();
     expect(localStorage.setItem).toBeCalledWith('lang', 'fr');
-    
+
     //C
     userEvent.click(screen.getByText('en'));
   });
@@ -223,6 +249,7 @@ describe('navbar', () => {
     );
 
     mockOIDCProvider();
+
 
     render(
       <solutions-navbar
@@ -252,6 +279,7 @@ describe('navbar', () => {
 
     mockOIDCProvider();
 
+
     render(
       <solutions-navbar
         oidc-provider-url="https://mocked.ingress/oidc"
@@ -277,6 +305,38 @@ describe('navbar', () => {
     //V
     expect(screen.queryByText(/Platform/i)).toBeInTheDocument();
     expect(screen.queryByText(/Test/i)).not.toBeInTheDocument();
+  });
+
+  it('should display a restrained menu when an user is authorized', async () => {
+    //S
+
+    mockOIDCProvider();
+
+    render(
+      <solutions-navbar
+        oidc-provider-url="https://mocked.ingress/oidc"
+        client-id="metalk8s-ui"
+        response-type="id_token"
+        redirect-url="http://localhost:8082"
+        scopes="openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
+        options={JSON.stringify({
+          main: {
+            'http://localhost:8082/': { en: 'Platform', fr: 'Plateforme' },
+            'http://localhost:8082/test': {
+              en: 'Test',
+              fr: 'Test',
+              groups: ['group1', 'group2'],
+            },
+          },
+          subLogin: {},
+        })}
+      />,
+    );
+    //E
+    await waitForLoadingToFinish();
+    //V
+    expect(screen.queryByText(/Platform/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Test/i)).toBeInTheDocument();
   });
 
   afterAll(() => server.close());

@@ -2,6 +2,20 @@
 
 {%- set dex_defaults = salt.slsutil.renderer('salt://metalk8s/addons/dex/config/dex.yaml.j2', saltenv=saltenv) %}
 {%- set dex = salt.metalk8s_service_configuration.get_service_conf('metalk8s-auth', 'metalk8s-dex-config', dex_defaults) %}
+{%- set metalk8s_ui_defaults = salt.slsutil.renderer(
+        'salt://metalk8s/addons/ui/config/metalk8s-ui-config.yaml', saltenv=saltenv
+    )
+%}
+
+{%- set metalk8s_ui_config = salt.metalk8s_service_configuration.get_service_conf(
+        'metalk8s-ui', 'metalk8s-ui-config', metalk8s_ui_defaults
+    )
+%}
+
+{%- set normalized_base_path = metalk8s_ui_config.spec.basePath.strip('/') %}
+
+{%- set metalk8s_ui_url = "https://" ~ grains.metalk8s.control_plane_ip ~
+                          ":8443" ~ ('/' ~ normalized_base_path if normalized_base_path else '') ~ '/' %}
 
 # Defaults for shell UI configuration
 apiVersion: addons.metalk8s.scality.com/v1alpha1
@@ -9,7 +23,7 @@ kind: ShellUIConfig
 spec:
   oidc:
     providerUrl: "/oidc"
-    redirectUrl: "https://{{ grains.metalk8s.control_plane_ip }}:8443/"
+    redirectUrl: "https://{{ grains.metalk8s.control_plane_ip }}:8443/{{ metalk8s_ui_config.spec.basePath.lstrip('/') }}"
     clientId: "metalk8s-ui"
     responseType: "id_token"
     scopes: "openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
@@ -25,17 +39,16 @@ spec:
   canChangeTheme: false
   options:
     main:
-      "https://{{ grains.metalk8s.control_plane_ip }}:8443/":
+      "{{ metalk8s_ui_url }}":
         en: "Platform"
         fr: "Plateforme"
         groups: [metalk8s:admin]
-        activeIfMatches: "https://{{ grains.metalk8s.control_plane_ip }}:8443/(?!alerts).*"
-      "https://{{ grains.metalk8s.control_plane_ip }}:8443/alerts":
+        activeIfMatches: "{{ metalk8s_ui_url }}(?!alerts|docs).*"
+      "{{ metalk8s_ui_url }}alerts":
         en: "Alerts"
         fr: "Alertes"
         groups: [metalk8s:admin]
     subLogin:
-      "https://{{ grains.metalk8s.control_plane_ip }}:8443/docs":
+      "{{ metalk8s_ui_url }}docs":
         en: "Documentation"
         fr: "Documentation"
-      

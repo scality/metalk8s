@@ -11,7 +11,7 @@ export const isEntryAccessibleByTheUser = (
   userGroups: string[],
 ): boolean => {
   return (
-    pathDescription.groups?.every((group) => userGroups.includes(group)) ??
+    pathDescription.groups?.some((group) => userGroups.includes(group)) ??
     true
   );
 };

@@ -14,6 +14,16 @@
 
 - Bump Node.js version to 14.16.0 (PR[#3214](https://github.com/scality/metalk8s/pull/3214))
 
+- Introduces a `shell-ui` project that groups various UI components to be reused by
+solutions UIs (PR[#3106](https://github.com/scality/metalk8s/pull/3106))
+
+- Move the navbar component to `shell-ui` to enable its reuse by solutions UIs
+(PR[#3110](https://github.com/scality/metalk8s/pull/3110))
+
+- Add a static user/groups mapping configuration as part of `shell-ui` configuration to 
+allow solutions UIs displaying features according to some user groups
+(PR[#3154](https://github.com/scality/metalk8s/pull/3154))
+
 ## Release 2.8.1 (in development)
 ### Enhancements
 

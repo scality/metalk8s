@@ -10,6 +10,9 @@
     )
 %}
 
+{%- set stripped_base_path = metalk8s_ui_config.spec.basePath.strip('/') %}
+{%- set normalized_base_path = '/' ~ stripped_base_path %}
+
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
@@ -92,23 +95,16 @@ spec:
   rules:
   - http:
       paths:
-      - path: {{ metalk8s_ui_config.spec.basePath }}
+{% for path in [
+    "/brand",
+    "/config.json",
+    "/manifest.json",
+    "/shell",
+    "/static",
+    normalized_base_path
+] %}
+      - path: {{ path }}
         backend:
           serviceName: metalk8s-ui
           servicePort: 80
-      - path: /config.json
-        backend:
-          serviceName: metalk8s-ui
-          servicePort: 80
-      - path: /brand
-        backend:
-          serviceName: metalk8s-ui
-          servicePort: 80
-      - path: /static
-        backend:
-          serviceName: metalk8s-ui
-          servicePort: 80
-      - path: /manifest.json
-        backend:
-          serviceName: metalk8s-ui
-          servicePort: 80
+{% endfor %}

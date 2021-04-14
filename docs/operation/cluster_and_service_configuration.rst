@@ -39,7 +39,7 @@ The default configuration values for Dex are specified below:
 
 .. literalinclude:: ../../salt/metalk8s/addons/dex/config/dex.yaml.j2
    :language: yaml
-   :lines: 3-42,45-
+   :lines: 14-42,45-
 
 See :ref:`csc-dex-customization` for Dex configuration customizations.
 
