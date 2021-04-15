@@ -107,9 +107,10 @@ def check_cp_ingress_pod_and_container(request, host, k8s_client, control_plane_
         "we perform a request on '{path}' with port '{port}' on control-plane IP"
     )
 )
-def perform_request(request_retry_session, host, context, control_plane_ip, path, port):
+def perform_request(host, context, control_plane_ip, path, port):
+    session = utils.requests_retry_session()
     try:
-        context["response"] = request_retry_session.get(
+        context["response"] = session.get(
             "https://{ip}:{port}{path}".format(
                 ip=control_plane_ip, port=port, path=path
             ),
@@ -124,13 +125,19 @@ def perform_request(request_retry_session, host, context, control_plane_ip, path
 
 
 @then("we can reach the OIDC openID configuration")
-def reach_openid_config(request_retry_session, host, control_plane_ip):
+def reach_openid_config(host, control_plane_ip):
+    session = utils.requests_retry_session(
+        # Both Dex and the ingress controller may fail with one of the following codes
+        status_forcelist=(500, 502, 503, 504),
+        retries=10,
+        backoff_factor=2,
+    )
+    ingress_url = "https://{}:{}".format(control_plane_ip, INGRESS_PORT)
+
     def _get_openID_config():
         try:
-            response = request_retry_session.get(
-                "https://{}:{}/oidc/.well-known/openid-configuration".format(
-                    control_plane_ip, INGRESS_PORT
-                ),
+            response = session.get(
+                ingress_url + "/oidc/.well-known/openid-configuration",
                 verify=False,
             )
         except requests.exceptions.ConnectionError as exc:
@@ -140,14 +147,9 @@ def reach_openid_config(request_retry_session, host, control_plane_ip):
 
         assert response.status_code == 200
         response_body = response.json()
-        # check for the existence of  keys[issuer, authorization_endpoint]
-        assert "issuer" and "authorization_endpoint" in response_body
-        assert response_body.get("issuer") == "https://{}:{}/oidc".format(
-            control_plane_ip, INGRESS_PORT
-        )
-        assert response_body.get(
-            "authorization_endpoint"
-        ) == "https://{}:{}/oidc/auth".format(control_plane_ip, INGRESS_PORT)
+        assert all(key in response_body for key in ["issuer", "authorization_endpoint"])
+        assert response_body["issuer"] == ingress_url + "/oidc"
+        assert response_body["authorization_endpoint"] == ingress_url + "/oidc/auth"
 
     utils.retry(_get_openID_config, times=10, wait=5)
 
