@@ -27,10 +27,14 @@ export const getServicesAlertName = (): FilterLabels => {
 
 /**
  *
- * @param {FilterLabels} filterss
+ * @param {useContext} useContext
+ * @param {FilterLabels} filters
  * @returns An array of alerts with the highest severity
  */
-export const useHighestSeverityAlerts = (filters: FilterLabels): Alert[] => {
+export const useHighestSeverityAlerts = (
+  useContext: typeof useContext,
+  filters: FilterLabels,
+): Alert[] => {
   const query = useAlerts(useContext)(filters);
   const filteredAlerts = query && query.alerts;
 
