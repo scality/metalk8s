@@ -67,8 +67,8 @@ describe('useHighestSeverityAlerts hook', () => {
   afterEach(() => server.resetHandlers());
 
   const alertLibrary = window.shellUIAlerts[version];
-  console.log('window.shellUIAlerts', window.shellUIAlerts);
   alertLibrary.createAlertContext(createContext);
+
   const wrapper = ({ children }) => (
     <QueryClientProvider client={new QueryClient()}>
       <AlertProvider alertManagerUrl={testService}>{children}</AlertProvider>
@@ -80,7 +80,7 @@ describe('useHighestSeverityAlerts hook', () => {
   it('should only get the VolumeAtRisk alert when both VolumeAtRisk and VolumeDegraded are active', async () => {
     const { result, waitForNextUpdate } = renderHook(
       () =>
-        useHighestSeverityAlerts({
+        useHighestSeverityAlerts(useContext, {
           alertname: ['VolumeAtRisk', 'VolumeDegraded'],
         }),
       { wrapper },
@@ -95,7 +95,7 @@ describe('useHighestSeverityAlerts hook', () => {
   it('should get empty array', async () => {
     const { result, waitForNextUpdate } = renderHook(
       () =>
-        useHighestSeverityAlerts({
+        useHighestSeverityAlerts(useContext, {
           alertname: ['NodeAtRisk', 'NodeDegraded'],
         }),
       { wrapper },
