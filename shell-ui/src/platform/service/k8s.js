@@ -1,7 +1,6 @@
 //@flow
 import { useState, useEffect } from 'react';
 import { useQuery } from 'react-query';
-import axios from 'axios';
 import { AUTHENTICATED_EVENT } from '../../navbar/events';
 
 const useGetNodesCount = (useQuery: typeof useQuery, k8sUrl: string) => {
@@ -64,40 +63,13 @@ export const getNodesCountQuery = (
   k8sUrl: string,
   token?: string | null,
 ): typeof useQuery => {
-  if (!token) {
-    console.error('K8s API Not authenticated');
-    return;
-  }
   return {
-    cacheKey: 'countNodes',
+    queryKey: 'countNodes',
     queryFn: () =>
-      fetch(`${k8sUrl}/api/v1/nodes`)
-        .then((r) => {
-          if (r.ok) {
-            return r.json();
-          }
-        })
-        .then((res) => {
-          return res.items.length;
-        }),
-    options: { refetchInterval: 10000 },
-  };
-};
-
-export const getVolumesCountQuery = (
-  k8sUrl: string,
-  token?: string | null,
-): typeof useQuery => {
-  if (!token) {
-    console.error('K8s API Not authenticated');
-    return;
-  }
-  return {
-    cacheKey: 'countVolumes',
-    queryFn: () =>
-      fetch(`${k8sUrl}/api/v1/persistentvolumes`, {
+      fetch(`${k8sUrl}/api/v1/nodes`, {
         headers: {
-          authorisation: `bearer ${token}`,
+          // $FlowFixMe - if token is null, the query will not perform
+          authorization: `bearer ${token}`,
         },
       })
         .then((r) => {
@@ -108,6 +80,33 @@ export const getVolumesCountQuery = (
         .then((res) => {
           return res.items.length;
         }),
-    options: { refetchInterval: 10000 },
+    refetchInterval: 10000,
+    enabled: token ? true : false,
+  };
+};
+
+export const getVolumesCountQuery = (
+  k8sUrl: string,
+  token?: string | null,
+): typeof useQuery => {
+  return {
+    queryKey: 'countVolumes',
+    queryFn: () =>
+      fetch(`${k8sUrl}/api/v1/persistentvolumes`, {
+        headers: {
+          // $FlowFixMe - if token is null, the query will not perform
+          authorization: `bearer ${token}`,
+        },
+      })
+        .then((r) => {
+          if (r.ok) {
+            return r.json();
+          }
+        })
+        .then((res) => {
+          return res.items.length;
+        }),
+    refetchInterval: 10000,
+    enabled: token ? true : false,
   };
 };
