@@ -5,21 +5,25 @@ import { useAlerts } from '../AlertProvider';
 import type { FilterLabels, Alert } from './alertUtils';
 import { getHealthStatus } from './alertUtils';
 
+export const getPlatformAlertSelectors = (): FilterLabels => {
+  return { alertname: ['PlatformAtRisk', 'PlatformDegraded'] };
+};
+
 export const getNodesAlertSelectors = (): FilterLabels => {
   return { alertname: ['NodeAtRisk', 'NodeDegraded'] };
 };
 
-export const getVolumesAlertName = (): FilterLabels => {
+export const getVolumesAlertSelectors = (): FilterLabels => {
   return { alertname: ['VolumeAtRisk', 'VolumeDegraded'] };
 };
 
-export const getNetworksAlertName = (): FilterLabels => {
+export const getNetworksAlertSelectors = (): FilterLabels => {
   return {
     alertname: ['ControlPlaneNetworkDegraded', 'WorkloadPlaneNetworkDegraded'],
   };
 };
 
-export const getServicesAlertName = (): FilterLabels => {
+export const getServicesAlertSelectors = (): FilterLabels => {
   return {
     alertname: ['PlatformServicesAtRisk', 'PlatformServicesDegraded'],
   };

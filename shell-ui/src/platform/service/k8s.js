@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { AUTHENTICATED_EVENT } from '../../navbar/events';
 
-const useGetNodesCount = (useQuery: typeof useQuery, k8sUrl: string) => {
+export const useGetNodesCount = (useEffect: typeof useEffect, useQuery: typeof useQuery, k8sUrl: string): {status: 'idle'|'loading' | 'success' | 'error', nodesCount: number} => {
   const navbarElement = document.querySelector('solutions-navbar');
   const [token, setToken] = useState(null);
   // $FlowFixMe
@@ -31,7 +31,7 @@ const useGetNodesCount = (useQuery: typeof useQuery, k8sUrl: string) => {
   return queryNodesResult;
 };
 
-const useGetVolumesCount = (useQuery: typeof useQuery, k8sUrl: string) => {
+export const useGetVolumesCount = (useEffect: typeof useEffect, useQuery: typeof useQuery, k8sUrl: string): {status: 'idle'|'loading' | 'success' | 'error', volumesCount: number} => {
   const navbarElement = document.querySelector('solutions-navbar');
   const [token, setToken] = useState(null);
   // $FlowFixMe
