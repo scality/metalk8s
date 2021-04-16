@@ -7,6 +7,7 @@ module.exports = {
   entry: {
     'solution-ui-navbar': './src/navbar/index.js',
     alerts: './src/alerts/index.js',
+    platform: './src/platform/library.js',
   },
   output: {
     path: path.resolve(__dirname, 'build'),
