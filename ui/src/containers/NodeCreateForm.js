@@ -57,7 +57,7 @@ const ActionContainer = styled.div`
 
 const ErrorMessage = styled.span`
   visibility: ${(props) => (props.visible ? 'visible' : 'hidden')};
-  color: ${(props) => props.theme.brand.danger};
+  color: ${(props) => props.theme.brand.statusCritical};
   font-size: ${fontSize.small};
 `;
 
@@ -303,7 +303,7 @@ const NodeCreateForm = () => {
                         />
                         <Button
                           text={intl.translate('create')}
-                          variant={'secondary'}
+                          variant={'buttonSecondary'}
                           type="submit"
                           disabled={
                             !dirty ||

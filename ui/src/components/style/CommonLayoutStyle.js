@@ -12,6 +12,7 @@ export const PageContainer = styled.div`
 export const CenteredPageContainer = styled.div`
   display: flex;
   justify-content: space-around;
+  background-color: ${(props) => props.theme.brand.backgroundLevel1};
 `;
 
 export const LeftSideInstanceList = styled.div`

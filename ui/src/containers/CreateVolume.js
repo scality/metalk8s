@@ -195,7 +195,7 @@ const SingleVolumeForm = styled.div`
 
 const InputQuestionMark = styled.i`
   padding-left: ${padding.small};
-  color: ${(props) => props.theme.brand.info};
+  color: ${(props) => props.theme.brand.infoPrimary};
 `;
 
 const RequiredText = styled.div`
@@ -785,7 +785,7 @@ const CreateVolume = (props) => {
                     <Button
                       text={intl.translate('create')}
                       type="submit"
-                      variant={'secondary'}
+                      variant={'buttonSecondary'}
                       disabled={!dirty || !isEmpty(errors)}
                       data-cy="submit-create-volume"
                     />
