@@ -166,15 +166,6 @@ const LabelsName = styled(LabelsValue)`
   color: ${(props) => props.theme.brand.textPrimary};
 `;
 
-const DocumentationIcon = styled.div`
-  margin: ${padding.base};
-  button {
-    :hover {
-      cursor: pointer;
-    }
-  }
-`;
-
 const CheckboxContainer = styled.div`
   padding: ${padding.base} 0 0 ${padding.small};
   .text {
@@ -380,20 +371,6 @@ const CreateVolume = (props) => {
       <CreateVolumeFormContainer>
         <TitleWrapper>
           <TitlePage>Create New Volume</TitlePage>
-          <DocumentationIcon>
-            <Tooltip placement="left" overlay={intl.translate('documentation')}>
-              <Button
-                icon={<i className="fas fa-book-reader fa-lg" />}
-                inverted={true}
-                type="button"
-                onClick={() =>
-                  window.open(
-                    `${api.url_doc}/operation/volume_management/volume_creation_deletion_gui.html#volume-creation`,
-                  )
-                }
-              />
-            </Tooltip>
-          </DocumentationIcon>
         </TitleWrapper>
         {isStorageClassExist ? null : (
           <Banner
