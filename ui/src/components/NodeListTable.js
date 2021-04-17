@@ -29,8 +29,7 @@ const NodeListContainer = styled.div`
   padding: ${padding.base};
   font-family: 'Lato';
   font-size: 1rem;
-  border-color: ${(props) => props.theme.brand.borderLight};
-  background-color: ${(props) => props.theme.brand.primary};
+  background-color: ${(props) => props.theme.brand.backgroundLevel2};
   .sc-progressbarcontainer {
     width: 100%;
   }
@@ -69,6 +68,12 @@ const NodeListContainer = styled.div`
         border-right: 0;
       }
     }
+    .sc-emptytable {
+      background-color: ${(props) => props.theme.brand.backgroundLevel2};
+      > * {
+        background-color: ${(props) => props.theme.brand.backgroundLevel2};
+      }
+    }
   }
 `;
 
@@ -77,6 +82,7 @@ const HeadRow = styled.tr`
   /* To display scroll bar on the table */
   display: table;
   table-layout: fixed;
+  border-bottom: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
 `;
 
 const CreateNodeButton = styled(Button)`
@@ -85,22 +91,23 @@ const CreateNodeButton = styled(Button)`
 
 const TableRow = styled(HeadRow)`
   height: 76px;
-  border-radius: 10px;
-  margin: 5px 0px;
   box-sizing: border-box;
   &:hover,
   &:focus {
-    background-color: ${(props) => props.theme.brand.backgroundBluer};
-    border-top: 1px solid ${(props) => props.theme.brand.secondary};
-    border-bottom: 1px solid ${(props) => props.theme.brand.secondary};
+    background-color: ${(props) => props.theme.brand.highlight};
     outline: none;
     cursor: pointer;
   }
 
+  border-right: 4px solid
+    ${(props) =>
+      props.selectedNodeName === props.row.values.name.name
+        ? props.theme.brand.selectedActive
+        : props.theme.brand.backgroundLevel2};
   background-color: ${(props) =>
     props.selectedNodeName === props.row.values.name.name
-      ? props.theme.brand.backgroundBluer
-      : props.theme.brand.background};
+      ? props.theme.brand.highlight
+      : props.theme.brand.backgroundLevel2};
 `;
 
 // * table body
@@ -109,7 +116,6 @@ const Body = styled.tbody`
   display: block;
   height: calc(100vh - 171px);
   overflow: auto;
-  overflow-y: auto;
 `;
 
 const Cell = styled.td`
@@ -198,8 +204,8 @@ function GlobalFilter({
         data-cy="node_list_search"
       />
       <CreateNodeButton
-        size="small"
-        variant="secondary"
+        size="base"
+        variant="buttonPrimary"
         text={intl.translate('create_new_node')}
         icon={<i className="fas fa-plus"></i>}
         onClick={() => {
