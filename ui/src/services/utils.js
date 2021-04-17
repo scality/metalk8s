@@ -258,7 +258,6 @@ export function computeVolumeCondition(status, isBound) {
   } else if (status === STATUS_READY && isBound === intl.translate('yes')) {
     return VOLUME_CONDITION_LINK;
   } else {
-    console.error('Unknown volume condition');
     return STATUS_UNKNOWN;
   }
 }
@@ -400,11 +399,13 @@ export const useTableSortURLSync = (sorted, desc, data) => {
         query.delete('sort');
         query.delete('desc');
       }
-      
+
       // We replace the current url only if expected current query params are different
       // than the expected one. This avoid triggering redirection loop if one of consumer
       // of this hooks get frequently renderred.
-      if (query.toString() !== new URLSearchParams(location.search).toString()) {
+      if (
+        query.toString() !== new URLSearchParams(location.search).toString()
+      ) {
         history.replace(`?${query.toString()}`);
       }
     }
