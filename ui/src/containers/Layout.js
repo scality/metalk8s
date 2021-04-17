@@ -22,7 +22,6 @@ import AlertProvider from './AlertProvider';
 
 const NodeCreateForm = React.lazy(() => import('./NodeCreateForm'));
 const NodePage = React.lazy(() => import('./NodePage'));
-const NodeDeployment = React.lazy(() => import('./NodeDeployment'));
 const ClusterMonitoring = React.lazy(() => import('./ClusterMonitoring'));
 const About = React.lazy(() => import('./About'));
 const PrivateRoute = React.lazy(() => import('./PrivateRoute'));
@@ -50,10 +49,13 @@ const Layout = () => {
     dispatch(fetchClusterVersionAction());
   }, [dispatch]);
 
-  const doesRouteMatch = useCallback((path: RouteProps) => {
-    const location = history.location;
-    return matchPath(location.pathname, path);
-  }, [location])
+  const doesRouteMatch = useCallback(
+    (path: RouteProps) => {
+      const location = history.location;
+      return matchPath(location.pathname, path);
+    },
+    [location],
+  );
 
   const sidebarConfig = {
     onToggleClick: toggleSidebar,
@@ -143,11 +145,6 @@ const Layout = () => {
                   exact
                   path="/nodes/create"
                   component={NodeCreateForm}
-                />
-                <PrivateRoute
-                  exact
-                  path="/nodes/:id/deploy"
-                  component={NodeDeployment}
                 />
                 <PrivateRoute
                   path={`/nodes/:id/createVolume`}
