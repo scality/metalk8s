@@ -6,7 +6,6 @@ import {
   Loader as LoaderCoreUI,
   Table,
   Tooltip,
-  Button,
   Banner,
 } from '@scality/core-ui';
 import { padding, fontWeight } from '@scality/core-ui/dist/style/theme';
@@ -38,13 +37,11 @@ const PageContainer = styled.div`
   .sc-loader {
     padding: 0 ${padding.smaller};
   }
-  background-color: ${(props) => props.theme.brand.primary};
 `;
 
 const TableContainer = styled.div`
   height: 80%;
   flex-grow: 1;
-
   .sc-table-column-cell-container-severity {
     justify-content: center;
   }
@@ -82,11 +79,11 @@ const ClusterStatusValue = styled.span`
   color: ${(props) => {
     switch (props.value) {
       case CLUSTER_STATUS_UNKNOWN:
-        return props.theme.brand.warning;
+        return props.theme.brand.statusWarning;
       case CLUSTER_STATUS_UP:
-        return props.theme.brand.success;
+        return props.theme.brand.statusHealthy;
       default:
-        return props.theme.brand.danger;
+        return props.theme.brand.statusCritical;
     }
   }};
 `;
@@ -102,6 +99,10 @@ const TooltipContent = styled.div`
 
 const ControlPlaneStatusLabel = styled.span`
   margin-left: ${padding.smaller};
+`;
+
+const ExternalLink = styled.a`
+  color: ${(props) => props.theme.brand.textSecondary};
 `;
 
 const ClusterMonitoring = (props) => {
@@ -223,7 +224,7 @@ const ClusterMonitoring = (props) => {
               </TooltipContent>
             }
           >
-            <InformationMarkIcon className="fas fa-info-circle" />
+            <InformationMarkIcon className="fas fa-question-circle" />
           </Tooltip>
           {clusterStatus.isLoading ? <LoaderCoreUI size="small" /> : null}
         </LeftClusterStatusContainer>
@@ -236,14 +237,13 @@ const ClusterMonitoring = (props) => {
               </TooltipContent>
             }
           >
-            <Button
-              icon={<i className="fas fa-chart-line" />}
-              onClick={() => {
-                window.open(config.api.url_grafana, '_blank');
-              }}
-              size="larger"
-              inverted={true}
-            ></Button>
+            <ExternalLink
+              href={`${config.api.url_grafana}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <i className="fas fa-chart-line" />
+            </ExternalLink>
           </Tooltip>
         </RightClusterStatusContainer>
       </ClusterStatusTitleContainer>
@@ -262,6 +262,7 @@ const ClusterMonitoring = (props) => {
         {intl.translate('alerts')}
         {alerts.isLoading ? <LoaderCoreUI size="small" /> : null}
       </PageSubtitle>
+      {/* table color of the table should be backgroundLevel3 // size of the header should be greater  */}
       <TableContainer>
         <Table
           list={sortedAlerts}

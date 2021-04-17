@@ -18,22 +18,22 @@ const Circle = styled.i`
 
     switch (props.status) {
       case STATUS_SUCCESS:
-        color = theme.success;
+        color = theme.statusHealthy;
         break;
       case STATUS_WARNING:
-        color = theme.alert;
+        color = theme.statusWarning;
         break;
       case STATUS_CRITICAL:
-        color = theme.danger;
+        color = theme.statusCritical;
         break;
       case STATUS_NONE:
-        color = theme.base;
+        color = theme.textTertiary;
         break;
       case STATUS_HEALTH:
-        color = theme.healthyLight;
+        color = theme.statusHealthy;
         break;
       default:
-        color = theme.textPrimary;
+        color = theme.textTertiary;
     }
     return color;
   }};

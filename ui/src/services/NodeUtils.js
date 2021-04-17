@@ -89,30 +89,30 @@ export const getNodeListData = (alerts: Array<Alert>) => createTypedSelector<Nod
          <yellow> when status.conditions['Ready'] == True and some other conditions are true
          <red>    when status.conditions['Ready'] == False
          <grey>   when there is no status.conditions */
-        if (node.status === API_STATUS_READY && conditions.length === 0) {
-          statusTextColor = brand.healthy;
-          computedStatus.push(API_STATUS_READY);
-        } else if (
-          node.status === API_STATUS_READY &&
-          conditions.length !== 0
-        ) {
-          statusTextColor = brand.warning;
-          conditions.map((cond) => {
-            return computedStatus.push(cond);
-          });
-        } else if (node.deploying && node.status === API_STATUS_UNKNOWN) {
-          statusTextColor = brand.textSecondary;
-          computedStatus.push(API_STATUS_DEPLOYING);
-          health = STATUS_NONE;
-        } else if (node.status !== API_STATUS_READY) {
-          statusTextColor = brand.critical;
-          computedStatus.push(API_STATUS_NOT_READY);
-          health = STATUS_NONE;
-        } else {
-          statusTextColor = brand.textSecondary;
-          computedStatus.push(API_STATUS_UNKNOWN);
-          health = STATUS_NONE;
-        }
+          if (node.status === API_STATUS_READY && conditions.length === 0) {
+            statusTextColor = brand.statusHealthy;
+            computedStatus.push(API_STATUS_READY);
+          } else if (
+            node.status === API_STATUS_READY &&
+            conditions.length !== 0
+          ) {
+            statusTextColor = brand.statusWarning;
+            conditions.map((cond) => {
+              return computedStatus.push(cond);
+            });
+          } else if (node.deploying && node.status === API_STATUS_UNKNOWN) {
+            statusTextColor = brand.textSecondary;
+            computedStatus.push(API_STATUS_DEPLOYING);
+            health = STATUS_NONE;
+          } else if (node.status !== API_STATUS_READY) {
+            statusTextColor = brand.statusCritical;
+            computedStatus.push(API_STATUS_NOT_READY);
+            health = STATUS_NONE;
+          } else {
+            statusTextColor = brand.textSecondary;
+            computedStatus.push(API_STATUS_UNKNOWN);
+            health = STATUS_NONE;
+          }
 
         return {
           // According to the design, the IPs of Control Plane and Workload Plane are in the same Cell with Name
