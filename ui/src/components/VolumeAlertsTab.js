@@ -37,7 +37,7 @@ const ActiveAlertsTableContainer = styled.div`
   padding: 1rem;
   font-family: 'Lato';
   font-size: ${fontSize.base};
-  border-color: ${(props) => props.theme.brand.borderLight};
+
   table {
     border-spacing: 0;
 
@@ -65,6 +65,13 @@ const ActiveAlertsTableContainer = styled.div`
       height: 30px;
       :last-child {
         border-right: 0;
+      }
+    }
+
+    .sc-emptytable {
+      background-color: ${(props) => props.theme.brand.backgroundLevel4};
+      > * {
+        background-color: ${(props) => props.theme.brand.backgroundLevel4};
       }
     }
   }

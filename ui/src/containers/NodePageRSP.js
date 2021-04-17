@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Switch, Route } from 'react-router-dom';
 import { useHistory, useLocation, useRouteMatch } from 'react-router';
 import { Tabs } from '@scality/core-ui';
+import { useTheme } from 'styled-components';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { getPodsListData } from '../services/PodUtils';
 import { useQuery, useRefreshEffect } from '../services/utils';
@@ -49,7 +50,7 @@ const NodePageRSP = (props) => {
 
   const { path, url } = useRouteMatch();
   const { name } = useParams();
-
+  const theme = useTheme();
   // Initialize the `metricsTimeSpan` in saga state base on the URL query.
   // In order to keep the selected timespan for metrics tab when switch between the tabs.
   const query = useQuery();
@@ -196,7 +197,7 @@ const NodePageRSP = (props) => {
 
   return name && currentNode ? (
     <TabsItemsStyle>
-      <Tabs items={items}>
+      <Tabs items={items} activeTabColor={theme.brand.backgroundLevel4}>
         <Switch>
           <Route
             path={`${path}/overview`}

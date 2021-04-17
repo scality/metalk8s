@@ -21,7 +21,7 @@ const PodTableContainer = styled.div`
   padding: ${padding.large};
   font-family: 'Lato';
   font-size: ${fontSize.base};
-  border-color: ${(props) => props.theme.brand.borderLight};
+
   .ReactTable .rt-thead {
     overflow-y: auto;
   }
@@ -58,7 +58,8 @@ const Body = styled.tbody`
 
 const Cell = styled.td`
   overflow-wrap: break-word;
-  border-top: 1px solid #424242;
+  // seperation line color
+  border-top: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
 `;
 
 // Color specification:
@@ -72,11 +73,11 @@ const StatusText = styled.div`
   color: ${(props) => {
     const { status, numContainer, numContainerRunning } = props;
     if (status === STATUS_RUNNING && numContainer === numContainerRunning) {
-      return props.theme.brand.healthy;
+      return props.theme.brand.statusHealthy;
     } else if (status === STATUS_RUNNING || status === STATUS_PENDING) {
-      return props.theme.brand.warning;
+      return props.theme.brand.statusWarning;
     } else if (status === STATUS_FAILED || status === STATUS_UNKNOWN) {
-      return props.theme.brand.danger;
+      return props.theme.brand.statusCritical;
     }
   }}};
 `;

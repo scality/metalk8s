@@ -26,13 +26,13 @@ export const LeftSideInstanceList = styled.div`
 export const RightSidePanel = styled.div`
   flex-direction: column;
   width: 51%;
-  margin: 0 ${padding.small} ${padding.small} 8px;
+  margin: 0 ${padding.small} ${padding.small} 1px;
 `;
 
 export const NoInstanceSelectedContainer = styled.div`
   width: 51%;
   min-height: 700px;
-  background-color: ${(props) => props.theme.brand.primaryDark1};
+  background-color: ${(props) => props.theme.brand.backgroundLevel4};
   margin: ${padding.small};
 `;
 
@@ -49,7 +49,6 @@ export const PageContentContainer = styled.div`
   flex-direction: row;
   height: 100%;
   width: 100%;
-  background-color: ${(props) => props.theme.brand.background};
 `;
 
 export const TabsItemsStyle = styled.div`
@@ -65,7 +64,7 @@ export const TabsItemsStyle = styled.div`
   }
   .sc-tabs-item {
     margin-right: 0.3rem;
-    background-color: ${(props) => props.theme.brand.border};
+    background-color: ${(props) => props.theme.brand.backgroundLevel3};
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
     height: 2.8rem;
@@ -80,15 +79,16 @@ export const TabsItemsStyle = styled.div`
   .sc-tabs-item-content {
     padding: 0;
     flex: 1;
+    background-color: ${(props) => props.theme.brand.backgroundLevel4};
   }
 `;
 
 export const TextBadge = styled.span`
-  background-color: ${(props) => props.theme.brand.info};
-  color: ${(props) => props.theme.brand.textPrimary};
+  background-color: ${(props) => props.theme.brand.infoPrimary};
+  color: ${(props) => props.theme.brand.textReverse};
   padding: 2px 0.6rem;
   border-radius: 4px;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: ${fontWeight.bold};
   margin-left: ${padding.smaller};
 `;
@@ -97,15 +97,13 @@ export const VolumeTab = styled.div`
   height: 100%;
   overflow: auto;
   color: ${(props) => props.theme.brand.textPrimary};
-  background-color: ${(props) => props.theme.brand.primary};
 `;
 
 // Common styles for the tabs in NodePageRSP
 export const NodeTab = styled.div`
   height: 100%;
-  background-color: ${(props) => props.theme.brand.primary};
-  color: ${(props) => props.theme.brand.textPrimary};
   overflow: auto;
+  color: ${(props) => props.theme.brand.textPrimary};
 `;
 
 export const SortCaretWrapper = styled.span`
@@ -135,20 +133,16 @@ export const MetricsActionContainer = styled.div`
   position: sticky;
   top: 0px;
   z-index: 100;
-  background-color: ${(props) => props.theme.brand.primary};
+  background-color: ${(props) => props.theme.brand.backgroundLevel4};
 
   .sc-dropdown {
     padding-left: 25px;
   }
 
   .sc-dropdown > div {
-    background-color: ${(props) => props.theme.brand.primary};
-    border: 1px solid ${(props) => props.theme.brand.borderLight};
+    background-color: ${(props) => props.theme.brand.backgroundLevel4};
+    border: 1px solid ${(props) => props.theme.brand.textTertiary};
     border-radius: 3px;
-  }
-
-  .sc-button {
-    background-color: ${(props) => props.theme.brand.info};
   }
 `;
 

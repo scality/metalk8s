@@ -39,14 +39,13 @@ const SystemDeviceTableContainer = styled.div`
   padding: 1rem;
   font-family: 'Lato';
   font-size: ${fontSize.base};
-  border-color: ${(props) => props.theme.brand.borderLight};
   table {
     border-spacing: 0;
 
     th {
       font-weight: bold;
       height: 56px;
-      border-bottom: 1px solid ${(props) => props.theme.brand.border};
+      border-bottom: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
     }
 
     td {
@@ -55,13 +54,10 @@ const SystemDeviceTableContainer = styled.div`
       text-align: left;
       padding: 5px;
       height: 48px;
-      border-bottom: 1px solid ${(props) => props.theme.brand.border};
+      border-bottom: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
       :last-child {
         border-right: 0;
       }
-    }
-    .sc-progressbarcontainer > div {
-      background-color: ${(props) => props.theme.brand.secondaryDark1};
     }
   }
 `;
@@ -233,9 +229,12 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
                       <Cell {...cellProps}>
                         <ProgressBar
                           size="large"
+                          // todo: check the height
+                          height="16px"
+                          color={theme.brand.infoSecondary}
                           percentage={cell.value}
                           buildinLabel={`${cell.value}%`}
-                          backgroundColor={theme.brand.primaryDark1}
+                          backgroundColor={theme.brand.buttonSecondary}
                           aria-label={`${cell.value}%`}
                         />
                       </Cell>

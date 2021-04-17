@@ -61,7 +61,7 @@ const InformationValue = styled.span`
 `;
 
 const ClickableInformationValue = styled.span`
-  color: ${(props) => props.theme.brand.secondary};
+  color: ${(props) => props.theme.brand.selectedActive};
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.semibold};
   cursor: pointer;
@@ -69,7 +69,6 @@ const ClickableInformationValue = styled.span`
 
 const DeleteButton = styled(Button)`
   height: 30px;
-  background-color: ${(props) => props.theme.brand.critical};
   font-size: ${fontSize.small};
   margin: 0px ${padding.base} ${padding.base} 0;
   ${(props) => {
@@ -81,11 +80,11 @@ const VolumeGraph = styled.div`
   display: flex;
   flex-direction: column;
   margin-left: 2%;
+  padding-right: ${padding.larger};
 `;
 
 const VolumeUsage = styled.div`
   min-height: 94px;
-  background-color: ${(props) => props.theme.brand.primary};
   margin: ${padding.large} ${padding.small} ${padding.large} 0;
   padding: 0 ${padding.base} 0 0;
 `;
@@ -99,9 +98,6 @@ const VolumeSectionTitle = styled.div`
 
 const ProgressBarContainer = styled.div`
   margin: ${padding.small};
-  .sc-progressbarcontainer > div {
-    background-color: ${(props) => props.theme.brand.secondaryDark1};
-  }
 `;
 
 const NotificationButtonGroup = styled.div`
@@ -224,7 +220,7 @@ const VolumeDetailCard = (props) => {
           <VolumeName>{name}</VolumeName>
         </div>
         <DeleteButton
-          variant="danger"
+          variant="buttonDelete"
           icon={<i className="fas fa-sm fa-trash" />}
           text={intl.translate('delete_volume')}
           onClick={(e) => {
@@ -346,7 +342,8 @@ const VolumeDetailCard = (props) => {
                     topRightLabel={`${volumeUsagePercentage}%`}
                     bottomLeftLabel={`${volumeUsageBytes} USED`}
                     bottomRightLabel={`${storageCapacity} TOTAL`}
-                    backgroundColor={theme.brand.base}
+                    color={theme.brand.infoSecondary}
+                    backgroundColor={theme.brand.buttonSecondary}
                   />
                 </ProgressBarContainer>
               ) : (
@@ -367,7 +364,7 @@ const VolumeDetailCard = (props) => {
                 onClick={onClickCancelButton}
               />
               <Button
-                variant="danger"
+                variant="buttonDelete"
                 text={intl.translate('delete')}
                 onClick={() => {
                   onClickDeleteButton(name, nodeName);

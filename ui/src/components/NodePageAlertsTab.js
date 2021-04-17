@@ -25,24 +25,30 @@ const ActiveAlertsTableContainer = styled.div`
   padding: 1rem;
   font-family: 'Lato';
   font-size: ${fontSize.base};
-  border-color: ${(props) => props.theme.brand.borderLight};
   table {
     border-spacing: 0;
 
     th {
       font-weight: bold;
       height: 56px;
+      border-bottom: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
     }
 
     td {
       margin: 0;
       padding: 0.5rem;
-      border-bottom: 1px solid black;
+      border-bottom: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
       text-align: left;
       padding: 5px;
 
       :last-child {
         border-right: 0;
+      }
+    }
+    .sc-emptytable {
+      background-color: ${(props) => props.theme.brand.backgroundLevel4};
+      > * {
+        background-color: ${(props) => props.theme.brand.backgroundLevel4};
       }
     }
   }
@@ -165,7 +171,7 @@ const NodePageAlertsTab = (props) => {
                         <td {...cellProps}>
                           <Chips
                             text={cell.render('Cell')}
-                            variant={STATUS_WARNING}
+                            variant={'statusWarning'}
                           />
                         </td>
                       );
@@ -174,7 +180,7 @@ const NodePageAlertsTab = (props) => {
                         <td {...cellProps}>
                           <Chips
                             text={cell.render('Cell')}
-                            variant={STATUS_CRITICAL}
+                            variant={'statusCritical'}
                           />
                         </td>
                       );

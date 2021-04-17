@@ -7,7 +7,7 @@ import { intl } from '../translations/IntlGlobalProvider';
 const TableRowStyle = styled.div`
   &:hover,
   &:focus {
-    background-color: ${(props) => props.theme.brand.backgroundBluer};
+    background-color: ${(props) => props.theme.brand.highlight};
     outline: none;
     cursor: pointer;
   }
@@ -15,11 +15,17 @@ const TableRowStyle = styled.div`
   &:last-child {
     border: none;
   }
+  box-sizing: border-box;
+  border-right: 4px solid
+    ${(props) =>
+      props.isSelected
+        ? props.theme.brand.selectedActive
+        : props.theme.brand.backgroundLevel2};
 
   background-color: ${(props) =>
     props.isSelected
-      ? props.theme.brand.backgroundBluer
-      : props.theme.brand.primary};
+      ? props.theme.brand.highlight
+      : props.theme.brand.backgroundLevel2};
 `;
 
 export const TooltipContent = styled.div`
@@ -66,7 +72,6 @@ const TableRow = (props) => {
             <div {...cellProps} data-cy="volume_table_name_cell" className="td">
               <ConstrainedText
                 text={cell.value}
-                tooltipStyle={{ width: '150px' }}
                 tooltipPlacement={cell.row.index === 0 ? 'bottom' : 'top'}
               ></ConstrainedText>
             </div>

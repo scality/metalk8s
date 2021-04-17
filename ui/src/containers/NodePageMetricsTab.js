@@ -525,7 +525,7 @@ const NodePageMetricsTab = ({
         {api && api.url_grafana && (
           <Button
             text={intl.translate('advanced_metrics')}
-            variant={'base'}
+            variant={'buttonSecondary'}
             icon={<i className="fas fa-external-link-alt" />}
             size={'small'}
             href={`${api.url_grafana}/dashboard/db/nodes-detailed?var-DS_PROMETHEUS=Prometheus&var-job=node-exporter&var-name=${hostnameLabel}`}

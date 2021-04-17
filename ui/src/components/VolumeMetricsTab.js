@@ -314,7 +314,7 @@ const MetricsTab = (props) => {
           {config.api?.url_grafana && volumeNamespace && volumePVCName && (
             <Button
               text={intl.translate('advanced_metrics')}
-              variant={'base'}
+              variant={'buttonSecondary'}
               onClick={() => {}}
               icon={<i className="fas fa-external-link-alt" />}
               size={'small'}

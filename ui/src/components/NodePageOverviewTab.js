@@ -74,7 +74,7 @@ const ActiveAlertTitle = styled.div`
 const ActiveAlertWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding-left: ${padding.base};
+  padding: 0 ${padding.larger} 0 ${padding.base};
   width: 200px;
 `;
 
@@ -84,9 +84,8 @@ const DeployButton = styled(Button)`
 
 const NodeDeploymentWrapper = styled.div`
   padding: ${padding.smaller} 0 0 ${padding.small};
-
   margin: ${padding.base} ${padding.base} 0 ${padding.base};
-  background-color: ${(props) => props.theme.brand.primaryDark1};
+  background-color: ${(props) => props.theme.brand.backgroundLevel3};
 `;
 
 const NodeDeploymentTitle = styled.div`
@@ -111,7 +110,7 @@ const NodeDeploymentContent = styled.div`
 `;
 
 const ErrorLabel = styled.span`
-  color: ${(props) => props.theme.brand.critical};
+  color: ${(props) => props.theme.brand.statusCritical};
 `;
 
 const NodePageOverviewTab = (props) => {
@@ -200,7 +199,7 @@ const NodePageOverviewTab = (props) => {
             !currentNodeReturnByK8S?.deploying ? (
               <DeployButton
                 text={intl.translate('deploy')}
-                variant="secondary"
+                variant="buttonSecondary"
                 onClick={() => {
                   dispatch(deployNodeAction({ name }));
                 }}

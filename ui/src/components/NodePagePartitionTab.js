@@ -14,7 +14,6 @@ const TitleContainer = styled.div`
   position: sticky;
   z-index: 100;
   top: 0;
-  background-color: ${(props) => props.theme.brand.primary};
   justify-content: flex-end;
   padding: ${padding.large} ${padding.base} 0 ${padding.larger};
 `;
@@ -38,7 +37,7 @@ const NodePagePartitionTab = (props: Object) => {
         {api && api.url_grafana && (
           <Button
             text={intl.translate('advanced_metrics')}
-            variant={'base'}
+            variant={'buttonSecondary'}
             onClick={() => {}}
             icon={<i className="fas fa-external-link-alt" />}
             size={'small'}

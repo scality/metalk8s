@@ -38,7 +38,6 @@ const VolumeListContainer = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
   font-family: 'Lato';
   font-size: ${fontSize.base};
-  background-color: ${(props) => props.theme.brand.primary};
 
   .table {
     display: block;
@@ -50,7 +49,8 @@ const VolumeListContainer = styled.div`
     }
 
     .thead > div[role='row'] {
-      border-bottom: 1px solid ${(props) => props.theme.brand.border};
+      // seperation line between header and content
+      border-bottom: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
 
       div[role='columnheader'] {
         color: ${(props) => props.theme.brand.textPrimary} !important;
@@ -61,18 +61,23 @@ const VolumeListContainer = styled.div`
     .td {
       margin: 0;
       text-align: left;
-      border-bottom: 1px solid ${(props) => props.theme.brand.border};
+      // speration lines between rows
+      border-bottom: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
       :last-child {
         border-right: 0;
+      }
+    }
+
+    .sc-emptytable {
+      background-color: ${(props) => props.theme.brand.backgroundLevel4};
+      > * {
+        background-color: ${(props) => props.theme.brand.backgroundLevel4};
       }
     }
   }
 
   .sc-progressbarcontainer {
     width: 100%;
-  }
-  .sc-progressbarcontainer > div {
-    background-color: ${(props) => props.theme.brand.secondaryDark1};
   }
 `;
 
@@ -242,7 +247,7 @@ function Table({ columns, data, nodeName, volumeName, theme }) {
               <ActionContainer>
                 <CreateVolumeButton
                   size="small"
-                  variant={'secondary'}
+                  variant={'buttonSecondary'}
                   text={intl.translate('create_new_volume')}
                   icon={<i className="fas fa-plus"></i>}
                   onClick={() => {
@@ -355,7 +360,7 @@ const VolumeListTable = (props) => {
           textAlign: 'left',
           flex: 1,
           minWidth: '95px',
-          color: theme.brand.secondary,
+          color: theme.brand.selectedActive,
         },
         Cell: ({ value, row }) => {
           return (
@@ -387,7 +392,8 @@ const VolumeListTable = (props) => {
               size="large"
               percentage={value}
               buildinLabel={`${value}%`}
-              backgroundColor={theme.brand.primaryDark1}
+              color={theme.brand.infoSecondary}
+              backgroundColor={theme.brand.buttonSecondary}
             />
           );
         },

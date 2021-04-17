@@ -63,17 +63,19 @@ const VolumePageContent = (props) => {
 
   // If data has been retrieved and no volume is selected yet we select the first one
   useEffect(() => {
-    if (
-      volumeListData[0]?.name &&
-      pVCList.length &&
-      !currentVolumeName
-    ) {
+    if (volumeListData[0]?.name && pVCList.length && !currentVolumeName) {
       history.replace({
         pathname: `/volumes/${volumeListData[0]?.name}/overview`,
         search: query.toString(),
       });
     }
-  }, [JSON.stringify(volumeListData), currentVolumeName, query.toString(), history, JSON.stringify(pVCList)]);
+  }, [
+    JSON.stringify(volumeListData),
+    currentVolumeName,
+    query.toString(),
+    history,
+    JSON.stringify(pVCList),
+  ]);
 
   const volume = volumes?.find(
     (volume) => volume.metadata.name === currentVolumeName,
@@ -236,7 +238,10 @@ const VolumePageContent = (props) => {
           {currentVolumeName && volume ? (
             <RightSidePanel>
               <TabsItemsStyle>
-                <Tabs activeColor={theme.brand.primary} items={tabsItems}>
+                <Tabs
+                  activeTabColor={theme.brand.backgroundLevel4}
+                  items={tabsItems}
+                >
                   <Switch>
                     <Route
                       path={`${match.url}/overview`}
