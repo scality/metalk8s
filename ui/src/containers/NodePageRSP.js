@@ -151,7 +151,9 @@ const NodePageRSP = (props) => {
       title: (
         <span>
           {intl.translate('alerts')}
-          <TextBadge>{alertsNode?.length}</TextBadge>
+          {alertsNode.length ? (
+            <TextBadge>{alertsNode.length}</TextBadge>
+          ) : null}
         </span>
       ),
       onClick: () =>

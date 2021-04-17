@@ -86,7 +86,7 @@ export const TabsItemsStyle = styled.div`
 export const TextBadge = styled.span`
   background-color: ${(props) => props.theme.brand.infoPrimary};
   color: ${(props) => props.theme.brand.textReverse};
-  padding: 2px 0.6rem;
+  padding: 2px ${padding.smaller};
   border-radius: 4px;
   font-size: 0.8rem;
   font-weight: ${fontWeight.bold};
