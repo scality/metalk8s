@@ -105,6 +105,7 @@ export const formatActiveAlerts = (alerts: Array<PrometheusAlert>): Alert[] => {
         (alert.annotations && alert.annotations.runbook_url) || '',
       labels: {
         ...alert.labels,
+        ...alert.annotations,
         parents:
           (alert.annotations.parents && alert.annotations.parents.split(',')) ||
           [],

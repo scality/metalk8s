@@ -137,6 +137,7 @@
   "advanced_metrics": "Advanced Metrics",
   "volume_is_not_bound": "The volume is not bound yet",
   "no_active_alerts": "No active alerts",
+  "active_alerts": "Active Alerts",
   "not_used": "Not used",
   "no_volume_selected": "No Volume Selected",
   "no_node_selected": "No Node Selected",
