@@ -390,8 +390,8 @@ export const useTableSortURLSync = (sorted, desc, data) => {
       if (sorted) {
         sorted ? query.set('sort', sorted) : query.delete('sort');
         desc ? query.set('desc', desc) : query.delete('desc');
-        // Remove the default sorting `sort=health` from the query string
-        if (sorted === 'health' && desc === false) {
+        // Remove the default sorting `sort=health` and `sort=severity` from the query string
+        if ((sorted === 'health' || sorted === 'severity') && desc === false) {
           query.delete('sort');
           query.delete('desc');
         }
