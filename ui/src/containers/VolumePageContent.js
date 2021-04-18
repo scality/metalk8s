@@ -176,7 +176,9 @@ const VolumePageContent = (props) => {
       title: (
         <span>
           {intl.translate('alerts')}
-          {alertlist.length ? <TextBadge>{alertlist.length}</TextBadge> : null}
+          {alertlist.length ? (
+            <TextBadge variant={'infoPrimary'}>{alertlist.length}</TextBadge>
+          ) : null}
         </span>
       ),
       onClick: () =>

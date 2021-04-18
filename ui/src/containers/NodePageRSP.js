@@ -152,7 +152,7 @@ const NodePageRSP = (props) => {
         <span>
           {intl.translate('alerts')}
           {alertsNode.length ? (
-            <TextBadge>{alertsNode.length}</TextBadge>
+            <TextBadge variant={'infoPrimary'}>{alertsNode.length}</TextBadge>
           ) : null}
         </span>
       ),
