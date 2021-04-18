@@ -57,6 +57,12 @@ const Layout = () => {
     [location],
   );
 
+  const isAlertsPage = doesRouteMatch({
+    path: '/alerts',
+    exact: true,
+    strict: true,
+  });
+
   const sidebarConfig = {
     onToggleClick: toggleSidebar,
     hoverable: true,
@@ -77,19 +83,6 @@ const Layout = () => {
         'data-cy': 'sidebar_item_dashboard',
       },
       // TODO: Will move to the global navbar
-      {
-        label: intl.translate('alerts'),
-        icon: <i className="fas fa-bell" />,
-        onClick: () => {
-          history.push('/');
-        },
-        active: doesRouteMatch({
-          path: '/',
-          exact: true,
-          strict: true,
-        }),
-        'data-cy': 'sidebar_item_alerts',
-      },
       {
         label: intl.translate('nodes'),
         icon: <i className="fas fa-server" />,
@@ -131,7 +124,7 @@ const Layout = () => {
     <ThemeProvider theme={theme}>
       <ScrollbarWrapper>
         <CoreUILayout
-          sidebar={isUserLoaded && sidebarConfig}
+          sidebar={isUserLoaded && !isAlertsPage ? sidebarConfig : undefined}
           navbarElement={<Navbar />}
         >
           <AlertProvider>
