@@ -63,7 +63,8 @@ type Config = {
   },
   logo?: {
     light?: string,
-    dark?: string
+    dark?: string,
+    darkRebrand?: string,
   },
   favicon?: string,
   options?: Options,
