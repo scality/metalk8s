@@ -12,12 +12,6 @@ describe('Sidebar', () => {
   });
 
   // TODO: Remove the interaction from the E2E test as much as possible
-  it('brings me to the monitoring page', () => {
-    cy.get('[data-cy="sidebar_item_alerts"]').click();
-
-    cy.get('@historyPush').should('be.calledWith', '/');
-  });
-
   it('brings me to the node page', () => {
     cy.get('[data-cy="sidebar_item_nodes"]').click();
 
