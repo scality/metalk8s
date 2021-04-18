@@ -22,11 +22,11 @@ import AlertProvider from './AlertProvider';
 
 const NodeCreateForm = React.lazy(() => import('./NodeCreateForm'));
 const NodePage = React.lazy(() => import('./NodePage'));
-const ClusterMonitoring = React.lazy(() => import('./ClusterMonitoring'));
 const About = React.lazy(() => import('./About'));
 const PrivateRoute = React.lazy(() => import('./PrivateRoute'));
 const VolumePage = React.lazy(() => import('./VolumePage'));
 const DashboardPage = React.lazy(() => import('./DashboardPage'));
+const AlertPage = React.lazy(() => import('./AlertPage'));
 
 const Layout = () => {
   const sidebar = useTypedSelector((state) => state.app.layout.sidebar);
@@ -158,6 +158,7 @@ const Layout = () => {
                 <PrivateRoute path="/nodes" component={NodePage} />
                 <PrivateRoute path="/volumes/:name?" component={VolumePage} />
                 <PrivateRoute exact path="/about" component={About} />
+                <PrivateRoute exact path="/alerts" component={AlertPage} />
 
                 {api && api.flags && api.flags.includes('dashboard') && (
                   <PrivateRoute
@@ -166,7 +167,6 @@ const Layout = () => {
                     component={DashboardPage}
                   />
                 )}
-                <PrivateRoute exact path="/" component={ClusterMonitoring} />
               </Switch>
             </Suspense>
           </AlertProvider>
