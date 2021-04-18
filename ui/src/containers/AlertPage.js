@@ -2,8 +2,16 @@
 import React from 'react';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import styled, { useTheme } from 'styled-components';
-import { useTable, useSortBy } from 'react-table';
-import { EmptyTable } from '@scality/core-ui';
+import { useHistory } from 'react-router';
+import { useLocation } from 'react-router-dom';
+import {
+  useTable,
+  useSortBy,
+  useAsyncDebounce,
+  useFilters,
+  useGlobalFilter,
+} from 'react-table';
+import { EmptyTable, SearchInput } from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import { useAlerts } from './AlertProvider';
 import CircleStatus from '../components/CircleStatus';
@@ -121,7 +129,8 @@ const AlertContent = styled.div`
       height: 56px;
       text-align: left;
       // the seperation line between table head and table content
-      border-bottom: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
+      /* border-bottom: 1px solid ${(props) =>
+        props.theme.brand.backgroundLevel1}; */
       padding: 0.5rem;
     }
     td {
@@ -140,6 +149,10 @@ const AlertContent = styled.div`
       > * {
         background-color: ${(props) => props.theme.brand.backgroundLevel3};
       }
+    }
+
+    .sc-searchinput {
+      width: 240px;
     }
   }
 `;
@@ -197,7 +210,7 @@ const HeadRow = styled.tr`
 
 const Body = styled.tbody`
   display: block;
-  height: calc(100vh - 335px);
+  height: calc(100vh - 400px);
   overflow: auto;
 `;
 
@@ -218,6 +231,220 @@ export const TableHeader = styled.th`
     }
   }
 `;
+const SearchBarContainer = styled.div`
+  padding-left: ${padding.base};
+`;
+function GlobalFilter({
+  preGlobalFilteredRows,
+  globalFilter,
+  setGlobalFilter,
+}) {
+  const [value, setValue] = React.useState(globalFilter);
+  const history = useHistory();
+  const location = useLocation();
+  const onChange = useAsyncDebounce((value) => {
+    setGlobalFilter(value || undefined);
+
+    // update the URL with the content of search
+    const searchParams = new URLSearchParams(location.search);
+    const isSearch = searchParams.has('search');
+    if (!isSearch) {
+      searchParams.append('search', value);
+    } else {
+      searchParams.set('search', value);
+    }
+    history.push(`?${searchParams.toString()}`);
+  }, 500);
+
+  return (
+    <SearchBarContainer>
+      <SearchInput
+        value={value || undefined}
+        onChange={(e) => {
+          setValue(e.target.value);
+          onChange(e.target.value);
+        }}
+        placeholder={`Search`}
+        disableToggle={true}
+      />
+    </SearchBarContainer>
+  );
+}
+
+function ActiveAlertTab({ columns, data }) {
+  const query = useQuery();
+  const querySearch = query.get('search');
+  const querySort = query.get('sort');
+  const queryDesc = query.get('desc');
+
+  // Use the state and functions returned from useTable to build your UI
+  const defaultColumn = React.useMemo(
+    () => ({
+      Filter: GlobalFilter,
+    }),
+    [],
+  );
+
+  const sortTypes = React.useMemo(() => {
+    return {
+      severity: (row1, row2) => {
+        return compareHealth(row2?.values?.severity, row1?.values?.severity);
+      },
+      name: (row1, row2) => {
+        const a = row1?.values['labels.alertname'];
+        const b = row2.values['labels.alertname'];
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+      },
+      description: (row1, row2) => {
+        const a = row1?.values?.description;
+        const b = row2.values?.description;
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+      },
+      startsAt: (row1, row2) => {
+        const a = row1?.values?.startsAt;
+        const b = row2.values?.startsAt;
+        return new Date(a) - new Date(b);
+      },
+    };
+  }, []);
+
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+    state,
+    visibleColumns,
+    preGlobalFilteredRows,
+    setGlobalFilter,
+  } = useTable(
+    {
+      columns,
+      data,
+      defaultColumn,
+      initialState: {
+        globalFilter: querySearch,
+        sortBy: [
+          {
+            id: querySort || 'severity',
+            desc: queryDesc || false,
+          },
+        ],
+      },
+      disableMultiSort: true,
+      autoResetSortBy: false,
+      sortTypes,
+    },
+    useFilters,
+    useGlobalFilter,
+    useSortBy,
+  );
+
+  // Synchronizes the params query with the Table sort state
+  const sorted = headerGroups[0].headers.find((item) => item.isSorted === true)
+    ?.id;
+  const desc = headerGroups[0].headers.find((item) => item.isSorted === true)
+    ?.isSortedDesc;
+  useTableSortURLSync(sorted, desc, data);
+
+  return (
+    <table {...getTableProps()}>
+      <thead>
+        <tr>
+          <th
+            colSpan={visibleColumns.length}
+            style={{
+              textAlign: 'left',
+            }}
+          >
+            <GlobalFilter
+              preGlobalFilteredRows={preGlobalFilteredRows}
+              globalFilter={state.globalFilter}
+              setGlobalFilter={setGlobalFilter}
+            />
+          </th>
+        </tr>
+
+        {headerGroups.map((headerGroup) => {
+          return (
+            <HeadRow {...headerGroup.getHeaderGroupProps()}>
+              {headerGroup.headers.map((column) => {
+                const headerStyleProps = column.getHeaderProps(
+                  Object.assign(column.getSortByToggleProps(), {
+                    style: column.cellStyle,
+                  }),
+                );
+                return (
+                  <TableHeader {...headerStyleProps} className="th">
+                    {column.render('Header')}
+                    <SortCaretWrapper>
+                      {column.isSorted ? (
+                        column.isSortedDesc ? (
+                          <i className="fas fa-sort-down" />
+                        ) : (
+                          <i className="fas fa-sort-up" />
+                        )
+                      ) : (
+                        <SortIncentive>
+                          <i className="fas fa-sort" />
+                        </SortIncentive>
+                      )}
+                    </SortCaretWrapper>
+                  </TableHeader>
+                );
+              })}
+            </HeadRow>
+          );
+        })}
+      </thead>
+
+      <Body {...getTableBodyProps()}>
+        {!data.length && (
+          <EmptyTable>{intl.translate('no_active_alerts')}</EmptyTable>
+        )}
+        {rows.map((row, i) => {
+          prepareRow(row);
+          return (
+            <HeadRow {...row.getRowProps()}>
+              {row.cells.map((cell) => {
+                let cellProps = cell.getCellProps({
+                  style: {
+                    ...cell.column.cellStyle,
+                  },
+                });
+                if (cell.column.Header === 'Active since') {
+                  return (
+                    <td {...cellProps}>
+                      <span>
+                        <FormattedDate value={cell.value} />{' '}
+                        <FormattedTime
+                          hour="2-digit"
+                          minute="2-digit"
+                          second="2-digit"
+                          value={cell.value}
+                        />
+                      </span>
+                    </td>
+                  );
+                } else if (cell.column.Header === 'Severity') {
+                  return (
+                    <td {...cellProps}>
+                      <CircleStatus status={cell.value} />
+                    </td>
+                  );
+                } else {
+                  return <td {...cellProps}>{cell.render('Cell')}</td>;
+                }
+              })}
+            </HeadRow>
+          );
+        })}
+      </Body>
+    </table>
+  );
+}
+
 export default function AlertPage() {
   const alerts = useAlerts({});
   const leafAlerts =
@@ -254,150 +481,6 @@ export default function AlertPage() {
     ],
     [],
   );
-
-  function ActiveAlertTab({ columns, data }) {
-    const query = useQuery();
-    const querySearch = query.get('search');
-    const querySort = query.get('sort');
-    const queryDesc = query.get('desc');
-    const sortTypes = React.useMemo(() => {
-      return {
-        severity: (row1, row2) => {
-          return compareHealth(row2?.values?.severity, row1?.values?.severity);
-        },
-        name: (row1, row2) => {
-          const a = row1?.values?.labels.alertname;
-          const b = row2.values?.labels.alertname;
-          return a.toLowerCase().localeCompare(b.toLowerCase());
-        },
-        description: (row1, row2) => {
-          const a = row1?.values?.description;
-          const b = row2.values?.description;
-          return a.toLowerCase().localeCompare(b.toLowerCase());
-        },
-        startsAt: (row1, row2) => {
-          const a = row1?.values?.startsAt;
-          const b = row2.values?.startsAt;
-          return new Date(a) - new Date(b);
-        },
-      };
-    }, []);
-
-    const {
-      getTableProps,
-      getTableBodyProps,
-      headerGroups,
-      rows,
-      prepareRow,
-    } = useTable(
-      {
-        columns,
-        data,
-        initialState: {
-          globalFilter: querySearch,
-          sortBy: [
-            {
-              id: querySort || 'severity',
-              desc: queryDesc || false,
-            },
-          ],
-        },
-        disableMultiSort: true,
-        autoResetSortBy: false,
-        sortTypes,
-      },
-      useSortBy,
-    );
-
-    // Synchronizes the params query with the Table sort state
-    const sorted = headerGroups[0].headers.find(
-      (item) => item.isSorted === true,
-    )?.id;
-    const desc = headerGroups[0].headers.find((item) => item.isSorted === true)
-      ?.isSortedDesc;
-    useTableSortURLSync(sorted, desc, data);
-
-    return (
-      <table {...getTableProps()}>
-        <thead>
-          {headerGroups.map((headerGroup) => {
-            return (
-              <HeadRow {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column) => {
-                  const headerStyleProps = column.getHeaderProps(
-                    Object.assign(column.getSortByToggleProps(), {
-                      style: column.cellStyle,
-                    }),
-                  );
-                  return (
-                    <TableHeader {...headerStyleProps} className="th">
-                      {column.render('Header')}
-                      <SortCaretWrapper>
-                        {column.isSorted ? (
-                          column.isSortedDesc ? (
-                            <i className="fas fa-sort-down" />
-                          ) : (
-                            <i className="fas fa-sort-up" />
-                          )
-                        ) : (
-                          <SortIncentive>
-                            <i className="fas fa-sort" />
-                          </SortIncentive>
-                        )}
-                      </SortCaretWrapper>
-                    </TableHeader>
-                  );
-                })}
-              </HeadRow>
-            );
-          })}
-        </thead>
-
-        <Body {...getTableBodyProps()}>
-          {!data.length && (
-            <EmptyTable>{intl.translate('no_active_alerts')}</EmptyTable>
-          )}
-          {rows?.map((row, i) => {
-            prepareRow(row);
-            return (
-              <HeadRow {...row.getRowProps()}>
-                {row.cells.map((cell) => {
-                  let cellProps = cell.getCellProps({
-                    style: {
-                      ...cell.column.cellStyle,
-                    },
-                  });
-                  if (cell.column.Header === 'Active since') {
-                    return (
-                      <td {...cellProps}>
-                        <span>
-                          <FormattedDate value={cell.value} />{' '}
-                          <FormattedTime
-                            hour="2-digit"
-                            minute="2-digit"
-                            second="2-digit"
-                            value={cell.value}
-                          />
-                        </span>
-                      </td>
-                    );
-                  } else if (cell.column.Header === 'Severity') {
-                    return (
-                      <td {...cellProps}>
-                        <CircleStatus status={cell.value} />
-                      </td>
-                    );
-                  } else {
-                    return <td {...cellProps}>{cell.render('Cell')}</td>;
-                  }
-                })}
-              </HeadRow>
-            );
-          })}
-        </Body>
-      </table>
-    );
-  }
 
   return (
     <AlertPageContainer>
