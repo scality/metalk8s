@@ -1,5 +1,5 @@
 //@flow
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import styled, { useTheme } from 'styled-components';
 import { useHistory } from 'react-router';
@@ -11,7 +11,7 @@ import {
   useFilters,
   useGlobalFilter,
 } from 'react-table';
-import { EmptyTable, SearchInput } from '@scality/core-ui';
+import { EmptyTable, SearchInput, Toggle } from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import { useAlerts } from './AlertProvider';
 import CircleStatus from '../components/CircleStatus';
@@ -233,6 +233,7 @@ export const TableHeader = styled.th`
 `;
 const SearchBarContainer = styled.div`
   padding-left: ${padding.base};
+  flex: 1;
 `;
 function GlobalFilter({
   preGlobalFilteredRows,
@@ -271,7 +272,7 @@ function GlobalFilter({
   );
 }
 
-function ActiveAlertTab({ columns, data }) {
+function ActiveAlertTab({ columns, data, displayLogical, setDisplayLogical }) {
   const query = useQuery();
   const querySearch = query.get('search');
   const querySort = query.get('sort');
@@ -324,7 +325,7 @@ function ActiveAlertTab({ columns, data }) {
       data,
       defaultColumn,
       initialState: {
-        globalFilter: querySearch,
+        globalFilter: querySearch || undefined,
         sortBy: [
           {
             id: querySort || 'severity',
@@ -356,6 +357,9 @@ function ActiveAlertTab({ columns, data }) {
             colSpan={visibleColumns.length}
             style={{
               textAlign: 'left',
+              display: 'flex',
+              justifyItems: 'stretch',
+              alignItems: 'center'
             }}
           >
             <GlobalFilter
@@ -363,6 +367,8 @@ function ActiveAlertTab({ columns, data }) {
               globalFilter={state.globalFilter}
               setGlobalFilter={setGlobalFilter}
             />
+
+            <Toggle label={'View logical alerts'} toggle={displayLogical} onChange={(evt) => setDisplayLogical(evt.target.checked)}/>
           </th>
         </tr>
 
@@ -400,7 +406,7 @@ function ActiveAlertTab({ columns, data }) {
       </thead>
 
       <Body {...getTableBodyProps()}>
-        {!data.length && (
+        {!rows.length && (
           <EmptyTable>{intl.translate('no_active_alerts')}</EmptyTable>
         )}
         {rows.map((row, i) => {
@@ -447,14 +453,17 @@ function ActiveAlertTab({ columns, data }) {
 
 export default function AlertPage() {
   const alerts = useAlerts({});
+  const [displayLogical, setDisplayLogical] = useState(false);
   const leafAlerts =
     // $flow-disable-line
-    alerts?.alerts.filter((alert) => !alert.labels.children) || [];
+    useMemo(() => alerts?.alerts.filter((alert) => !alert.labels.children) || [], [JSON.stringify(alerts?.alerts)]);
 
-  const criticalAlerts = leafAlerts.filter(
+  const displayedAlerts = useMemo(() => (displayLogical ? alerts?.alerts : leafAlerts) || [], [JSON.stringify(alerts?.alerts), displayLogical]);
+
+  const criticalAlerts = displayedAlerts.filter(
     (alert) => alert.severity === 'critical',
   );
-  const wariningAlerts = leafAlerts.filter(
+  const wariningAlerts = displayedAlerts.filter(
     (alert) => alert.severity === 'warning',
   );
 
@@ -485,12 +494,12 @@ export default function AlertPage() {
   return (
     <AlertPageContainer>
       <AlertPageHeader
-        activeAlerts={leafAlerts.length}
+        activeAlerts={displayedAlerts.length}
         critical={criticalAlerts.length}
         warning={wariningAlerts.length}
       />
       <AlertContent>
-        <ActiveAlertTab data={leafAlerts} columns={columns} />
+        <ActiveAlertTab data={displayedAlerts} columns={columns} displayLogical={displayLogical} setDisplayLogical={setDisplayLogical} />
       </AlertContent>
     </AlertPageContainer>
   );

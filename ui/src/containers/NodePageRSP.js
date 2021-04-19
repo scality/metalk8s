@@ -126,7 +126,7 @@ const NodePageRSP = (props) => {
     instance: `${instanceIP}:${PORT_NODE_EXPORTER}`,
   });
 
-  const alertsNode = alertList && alertList.alerts;
+  const alertsNode = alertList && alertList.alerts || [];
 
   const isHealthTabActive = location.pathname.endsWith('/overview');
   const isAlertsTabActive = location.pathname.endsWith('/alerts');
