@@ -481,7 +481,7 @@ export default function AlertPage() {
         cellStyle: { width: '300px' },
         sortType: 'name',
       },
-      { Header: 'Description', accessor: 'description' },
+      { Header: 'Description', accessor: (row) => row.description || row.summary },
       {
         Header: 'Active since',
         accessor: 'startsAt',
