@@ -108,3 +108,28 @@ spec:
           serviceName: metalk8s-ui
           servicePort: 80
 {% endfor %}
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx-control-plane
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: '/docs/$2'
+  labels:
+    app: metalk8s-docs
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: metalk8s-docs
+    app.kubernetes.io/part-of: metalk8s
+    heritage: metalk8s
+  name: metalk8s-docs
+  namespace: metalk8s-ui
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /docs/{{ stripped_base_path }}(/|$)(.*)
+        backend:
+          serviceName: metalk8s-ui
+          servicePort: 80
