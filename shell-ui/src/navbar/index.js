@@ -173,7 +173,7 @@ const SolutionsNavbar = ({
 
       return (
         <AuthProvider {...oidcConfig}>
-          <LanguageProvider onLanguageChanged={onLanguageChanged}>
+          <LanguageProvider onLanguageChanged={onLanguageChanged} canChangeLanguage={canChangeLanguage !== undefined && canChangeLanguage !== null ? Boolean(canChangeLanguage) : config.canChangeLanguage}>
             <ThemeProvider onThemeChanged={onThemeChanged}>
               {(theme, themeName) => (
                 <>

@@ -38,14 +38,18 @@ export function useLanguage(): {
 
 export function LanguageProvider({
   children,
+  canChangeLanguage,
   onLanguageChanged,
 }: {
   children: Node,
+  canChangeLanguage: boolean,
   onLanguageChanged?: (evt: CustomEvent) => void,
 }): Node {
   const [language, setLang] = useState<Language>(
-    ((localStorage.getItem('lang'): any): Language) ||
-      (navigator.language.startsWith('fr') ? 'fr' : 'en'),
+    canChangeLanguage
+      ? ((localStorage.getItem('lang'): any): Language) ||
+          (navigator.language.startsWith('fr') ? 'fr' : 'en')
+      : 'en',
   );
 
   useLayoutEffect(() => {
