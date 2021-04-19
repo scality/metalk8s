@@ -5,6 +5,7 @@ Architecture Documents
 
    alert-history
    alerting
+   alert-grouping
    authentication
    centralized-cli
    ci
