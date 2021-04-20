@@ -1933,6 +1933,10 @@ stages:
           name: Set environment name to 3 nodes
           property: environment_name
           value: "3 nodes"
+      - SetProperty:
+          name: Enable certificates renewal test
+          property: check_certs_renewal
+          value: "true"
       - TriggerStages:
           name: Trigger 3 node upgrade stage
           stage_names:
@@ -1949,6 +1953,7 @@ stages:
   # - os                        (Operating system, default: centos-7)
   # - promoted_version_type     ("patch" or "minor", default: unknown)
   # - nodes_count               (Number of nodes to spawn, default: 0)
+  # - check_certs_renewal       (Whether to test certificate renewal, default: false)
   # Snapshot need to be named:
   # - "metalk8s-<product_promoted_version>-<os>-<environement_type>-<environment_name>-bootstrap"
   # - "metalk8s-<product_promoted_version>-<os>-<environement_type>-<environment_name>-node-X"
@@ -2050,6 +2055,26 @@ stages:
           env:
             <<: *_env_bastion_fast_tests
             ISO_MOUNTPOINT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
+      # --- Check certs renewal in version N ---
+      - ShellCommand:
+          name: Certificates expiration beacons test
+          command: |
+              scp -F ssh_config %(prop:builddir)s/build/tests/test-certificates-beacon.sh bootstrap:
+              ssh -F ssh_config bootstrap "sudo ./test-certificates-beacon.sh /var/tmp/metalk8s"
+          workdir: *terraform_workdir
+          haltOnFailure: true
+          doStepIf: "%(prop:check_certs_renewal:-false)s"
+      - ShellCommand:
+          <<: *wait_pods_stable_ssh
+          name: Wait for pods after certificates renewal
+          doStepIf: "%(prop:check_certs_renewal:-false)s"
+      - ShellCommand:
+          <<: *bastion_fast_tests
+          name: Run fast tests on Bastion after certificates renewal
+          env:
+            <<: *_env_bastion_fast_tests
+            ISO_MOUNTPOINT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
+          doStepIf: "%(prop:check_certs_renewal:-false)s"
       # --- Collect logs ---
       - ShellCommand: *generate_report_over_ssh
       - ShellCommand:
@@ -2288,17 +2313,6 @@ stages:
             PYTEST_ARGS: "--suppress-no-test-exit-code"
             PYTEST_FILTERS: >
               post and ci and slow and not bootstrap and not restore
-      - ShellCommand:
-          name: Certificates expiration beacons test
-          command: |
-              scp -F ssh_config %(prop:builddir)s/build/tests/test-certificates-beacon.sh bootstrap:
-              ssh -F ssh_config bootstrap "sudo ./test-certificates-beacon.sh /var/tmp/metalk8s"
-          workdir: *terraform_workdir
-          haltOnFailure: true
-      - ShellCommand: *wait_pods_stable_ssh
-      - ShellCommand:
-          <<: *multi_node_fast_tests
-          name: Run fast tests on Bastion after certificates renewal
       - ShellCommand: *generate_report_over_ssh
       - ShellCommand:
           <<: *collect_report_over_ssh
