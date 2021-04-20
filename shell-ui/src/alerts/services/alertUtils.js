@@ -43,9 +43,9 @@ const isSameAlertWithDiffSeverity = (
   alert1: AlertLabels,
   alert2: AlertLabels,
 ): boolean => {
-  // filter out the `severity` and `summary` property
+  // filter out the `severity`, `summary` and `children`property
   function replacer(key, value) {
-    if (key === 'severity' || key === 'summary') {
+    if (key === 'severity' || key === 'summary' || key === 'children') {
       return undefined;
     }
     return value;
