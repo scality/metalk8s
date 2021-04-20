@@ -27,13 +27,14 @@ const AlertPageContainer = styled.div`
   display: flex;
   flex-direction: column;
   margin: ${padding.base};
+  background-color: ${(props) => props.theme.brand.backgroundLevel1};
 `;
 
 const AlertPageHeaderContainer = styled.div`
   display: flex;
   align-items: center;
   background: ${(props) => props.theme.brand.backgroundLevel2};
-  margin: 48px 0 ${padding.base};
+  margin: 36px 0 ${padding.small};
   padding: ${padding.base} 0 ${padding.base} ${padding.larger};
 `;
 
@@ -101,62 +102,6 @@ function AlertLogo({
   );
 }
 
-const AlertContent = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
-  padding: 1rem;
-  font-family: 'Lato';
-  font-size: ${fontSize.base};
-  background-color: ${(props) => props.theme.brand.backgroundLevel3};
-  height: 100%;
-
-  table {
-    border-spacing: 0;
-
-    tr {
-      :last-child {
-        td {
-          border-bottom: 0;
-          font-weight: normal;
-          // the ending line
-          border-bottom: 1px solid
-            ${(props) => props.theme.brand.backgroundLevel1};
-        }
-      }
-    }
-
-    th {
-      font-weight: bold;
-      height: 56px;
-      text-align: left;
-      // the seperation line between table head and table content
-      /* border-bottom: 1px solid ${(props) =>
-        props.theme.brand.backgroundLevel1}; */
-      padding: 0.5rem;
-    }
-    td {
-      height: 80px;
-      margin: 0;
-      padding: 0.5rem;
-      border-bottom: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
-      height: 30px;
-      :last-child {
-        border-right: 0;
-      }
-    }
-
-    .sc-emptytable {
-      background-color: ${(props) => props.theme.brand.backgroundLevel3};
-      > * {
-        background-color: ${(props) => props.theme.brand.backgroundLevel3};
-      }
-    }
-
-    .sc-searchinput {
-      width: 240px;
-    }
-  }
-`;
-
 function AlertPageHeader({
   activeAlerts,
   critical,
@@ -206,11 +151,12 @@ const HeadRow = styled.tr`
   width: 100%;
   display: table;
   table-layout: fixed;
+  border-bottom: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
 `;
 
 const Body = styled.tbody`
   display: block;
-  height: calc(100vh - 400px);
+  height: calc(100vh - 335px);
   overflow: auto;
 `;
 
@@ -231,10 +177,52 @@ export const TableHeader = styled.th`
     }
   }
 `;
+
 const SearchBarContainer = styled.div`
   padding-left: ${padding.base};
   flex: 1;
 `;
+
+const AlertContent = styled.div`
+  color: ${(props) => props.theme.brand.textPrimary};
+  padding: 1rem;
+  font-family: 'Lato';
+  font-size: ${fontSize.base};
+  background-color: ${(props) => props.theme.brand.backgroundLevel3};
+  height: 100%;
+
+  table {
+    border-spacing: 0;
+
+    th {
+      font-weight: bold;
+      height: 56px;
+      text-align: left;
+      padding: 0.5rem;
+      // cursor should be the action cursor
+      cursor: pointer;
+    }
+
+    td {
+      height: 80px;
+      margin: 0;
+      padding: 0.5rem;
+      height: 30px;
+    }
+
+    .sc-emptytable {
+      background-color: ${(props) => props.theme.brand.backgroundLevel3};
+      > * {
+        background-color: ${(props) => props.theme.brand.backgroundLevel3};
+      }
+    }
+
+    .sc-searchinput {
+      width: 240px;
+    }
+  }
+`;
+
 function GlobalFilter({
   preGlobalFilteredRows,
   globalFilter,
@@ -352,24 +340,26 @@ function ActiveAlertTab({ columns, data, displayLogical, setDisplayLogical }) {
   return (
     <table {...getTableProps()}>
       <thead>
-        <tr>
-          <th
-            colSpan={visibleColumns.length}
-            style={{
-              textAlign: 'left',
-              display: 'flex',
-              justifyItems: 'stretch',
-              alignItems: 'center'
-            }}
-          >
-            <GlobalFilter
-              preGlobalFilteredRows={preGlobalFilteredRows}
-              globalFilter={state.globalFilter}
-              setGlobalFilter={setGlobalFilter}
-            />
+        <tr
+          colSpan={visibleColumns.length}
+          style={{
+            textAlign: 'left',
+            display: 'flex',
+            justifyItems: 'stretch',
+            alignItems: 'center',
+          }}
+        >
+          <GlobalFilter
+            preGlobalFilteredRows={preGlobalFilteredRows}
+            globalFilter={state.globalFilter}
+            setGlobalFilter={setGlobalFilter}
+          />
 
-            <Toggle label={'View logical alerts'} toggle={displayLogical} onChange={(evt) => setDisplayLogical(evt.target.checked)}/>
-          </th>
+          <Toggle
+            label={'View logical alerts'}
+            toggle={displayLogical}
+            onChange={(evt) => setDisplayLogical(evt.target.checked)}
+          />
         </tr>
 
         {headerGroups.map((headerGroup) => {
@@ -454,11 +444,15 @@ function ActiveAlertTab({ columns, data, displayLogical, setDisplayLogical }) {
 export default function AlertPage() {
   const alerts = useAlerts({});
   const [displayLogical, setDisplayLogical] = useState(false);
-  const leafAlerts =
-    // $flow-disable-line
-    useMemo(() => alerts?.alerts.filter((alert) => !alert.labels.children) || [], [JSON.stringify(alerts?.alerts)]);
+  const leafAlerts = useMemo(
+    () => alerts?.alerts.filter((alert) => !alert.labels.children) || [],
+    [JSON.stringify(alerts?.alerts)],
+  );
 
-  const displayedAlerts = useMemo(() => (displayLogical ? alerts?.alerts : leafAlerts) || [], [JSON.stringify(alerts?.alerts), displayLogical]);
+  const displayedAlerts = useMemo(
+    () => (displayLogical ? alerts?.alerts : leafAlerts) || [],
+    [JSON.stringify(alerts?.alerts), displayLogical],
+  );
 
   const criticalAlerts = displayedAlerts.filter(
     (alert) => alert.severity === 'critical',
@@ -481,11 +475,14 @@ export default function AlertPage() {
         cellStyle: { width: '300px' },
         sortType: 'name',
       },
-      { Header: 'Description', accessor: (row) => row.description || row.summary },
+      {
+        Header: 'Description',
+        accessor: (row) => row.description || row.summary,
+      },
       {
         Header: 'Active since',
         accessor: 'startsAt',
-        cellStyle: { width: '200px' },
+        cellStyle: { textAlign: 'right', width: '200px' },
       },
     ],
     [],
@@ -499,7 +496,12 @@ export default function AlertPage() {
         warning={wariningAlerts.length}
       />
       <AlertContent>
-        <ActiveAlertTab data={displayedAlerts} columns={columns} displayLogical={displayLogical} setDisplayLogical={setDisplayLogical} />
+        <ActiveAlertTab
+          data={displayedAlerts}
+          columns={columns}
+          displayLogical={displayLogical}
+          setDisplayLogical={setDisplayLogical}
+        />
       </AlertContent>
     </AlertPageContainer>
   );
