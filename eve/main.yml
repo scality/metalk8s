@@ -810,25 +810,25 @@ stages:
           # Set premerge_artifacts_name to current artifacts name
           # as we are in premerge so we can use same step to retrieve ISO
           # in pre-merge and post-merge
-          name: Set premerge artifacts name to current artifacts_name
+          name: Set premerge artifacts name to fixed success
           property: premerge_artifacts_name
-          value: "%(prop:artifacts_name)s"
+          value: "github:scality:metalk8s:staging-2.9.0.r210419182614.22605fc.pre-merge.00033882"
       - SetProperty: *set_premerge_url
-      - TriggerStages:
-          name: Trigger build, docs and lint stages simultaneously
-          stage_names:
-            - build
-            - docs
-            - lint
-            - unit_tests
-            - integration_tests_ui
-          haltOnFailure: true
+      # - TriggerStages:
+      #     name: Trigger build, docs and lint stages simultaneously
+      #     stage_names:
+      #       - build
+      #       - docs
+      #       - lint
+      #       - unit_tests
+      #       - integration_tests_ui
+      #     haltOnFailure: true
       - SetPropertyFromCommand: *set_version_prop
       - SetPropertyFromCommand: *set_short_version_prop
       - TriggerStages:
           name: Trigger multiple-nodes step with built ISO
           stage_names:
-            - single-node-install-rhel
+            # - single-node-install-rhel
             - multiple-nodes
       - ShellCommand: *add_final_status_artifact_success
       - Upload: *upload_final_status_artifact
