@@ -126,7 +126,7 @@ const NodePageRSP = (props) => {
     instance: `${instanceIP}:${PORT_NODE_EXPORTER}`,
   });
 
-  const alertsNode = alertList && alertList.alerts || [];
+  const alertsNode = (alertList && alertList.alerts) || [];
 
   const isHealthTabActive = location.pathname.endsWith('/overview');
   const isAlertsTabActive = location.pathname.endsWith('/alerts');
@@ -151,7 +151,7 @@ const NodePageRSP = (props) => {
       title: (
         <span>
           {intl.translate('alerts')}
-          {alertsNode.length ? (
+          {alertsNode && alertsNode.length ? (
             <TextBadge variant={'infoPrimary'}>{alertsNode.length}</TextBadge>
           ) : null}
         </span>
