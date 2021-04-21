@@ -337,11 +337,13 @@ const VolumeDetailCard = (props) => {
               {volumeUsagePercentage !== intl.translate('unknown') ? (
                 <ProgressBarContainer>
                   <ProgressBar
-                    size="base"
+                    size="large"
                     percentage={volumeUsagePercentage}
                     topRightLabel={`${volumeUsagePercentage}%`}
                     bottomLeftLabel={`${volumeUsageBytes} USED`}
-                    bottomRightLabel={`${storageCapacity} TOTAL`}
+                    bottomRightLabel={`${formatSizeForDisplay(
+                      storageCapacity,
+                    )} TOTAL`}
                     color={theme.brand.infoSecondary}
                     backgroundColor={theme.brand.buttonSecondary}
                   />

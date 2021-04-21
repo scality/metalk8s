@@ -12,7 +12,6 @@ import {
 import { initialize as initializeProm } from '../services/prometheus/api';
 import { initialize as initializeAM } from '../services/alertmanager/api';
 import { initialize as initializeLoki } from '../services/loki/api';
-import AlertProvider from '../containers/AlertProvider';
 
 jest.mock('../containers/AlertProvider', () => ({
   __esModule: true, // this property makes it work
@@ -67,7 +66,7 @@ jest.mock('../containers/AlertProvider', () => ({
         },
       },
     ];
-    return {alerts};
+    return { alerts };
   },
 }));
 
@@ -131,7 +130,7 @@ describe('the system partition table', () => {
     expect(screen.getByLabelText('97%')).toBeInTheDocument();
     expect(screen.getByText('/mnt/testpart')).toBeInTheDocument();
     // since we use the same query, so the number of global size is the same as usage
-    expect(screen.getByText('97Bytes')).toBeInTheDocument();
+    expect(screen.getByText('96.9 Bytes')).toBeInTheDocument();
   });
 
   afterEach(() => server.resetHandlers());

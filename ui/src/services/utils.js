@@ -243,7 +243,7 @@ export function bytesToSize(bytes) {
   let sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
   if (bytes === 0) return '0 Byte';
   let i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-  return Math.round(bytes / Math.pow(1024, i), 2) + sizes[i];
+  return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
 }
 
 // The rules to compute the volume condition
@@ -370,9 +370,10 @@ export const compareHealth = (status1, status2) => {
   return weights[status1] - weights[status2];
 };
 
-// Adds a space between size value and its unit since the API returns this as a string
+// Add a space between size value and its unit since the API returns this as a string
+// Add the unit B
 export const formatSizeForDisplay = (value) => {
-  return value.replace(/^(\d+)(\D+)$/, '$1 $2');
+  return value.replace(/^(\d+)(\D+)$/, '$1 $2') + 'B';
 };
 
 /**
