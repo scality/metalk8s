@@ -229,8 +229,6 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
                       <Cell {...cellProps}>
                         <ProgressBar
                           size="large"
-                          // todo: check the height
-                          height="16px"
                           color={theme.brand.infoSecondary}
                           percentage={cell.value}
                           buildinLabel={`${cell.value}%`}
