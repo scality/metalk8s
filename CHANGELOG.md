@@ -7,7 +7,8 @@
   (PR[#3191](https://github.com/scality/metalk8s/pull/))
 
 ### Enhancements
-- Bump Kubernetes version to 1.20.4 (PR[#3139](https://github.com/scality/metalk8s/pull/3139))
+- Bump Kubernetes version to 1.20.6
+  (PR[#3311](https://github.com/scality/metalk8s/pull/3311))
 
 - Include [qperf](https://github.com/linux-rdma/qperf) in the `metalk8s-utils`
   container image (PR [#3174](https://github.com/scality/metalk8s/pull/3174))
