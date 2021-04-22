@@ -296,7 +296,7 @@ function ActiveAlertTab({ columns, data, displayLogical, setDisplayLogical }) {
       },
     };
   }, []);
-
+  const DEFAULT_SORTING_KEY = 'severity';
   const {
     getTableProps,
     getTableBodyProps,
@@ -316,7 +316,7 @@ function ActiveAlertTab({ columns, data, displayLogical, setDisplayLogical }) {
         globalFilter: querySearch || undefined,
         sortBy: [
           {
-            id: querySort || 'severity',
+            id: querySort || DEFAULT_SORTING_KEY,
             desc: queryDesc || false,
           },
         ],
@@ -335,7 +335,7 @@ function ActiveAlertTab({ columns, data, displayLogical, setDisplayLogical }) {
     ?.id;
   const desc = headerGroups[0].headers.find((item) => item.isSorted === true)
     ?.isSortedDesc;
-  useTableSortURLSync(sorted, desc, data);
+  useTableSortURLSync(sorted, desc, data, DEFAULT_SORTING_KEY);
 
   return (
     <table {...getTableProps()}>
