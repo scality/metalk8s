@@ -2,13 +2,14 @@
 import React, { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { ThemeProvider } from 'styled-components';
-import { matchPath, RouteProps } from 'react-router';
+import { matchPath, RouteProps, Route, Redirect } from 'react-router';
 import { useHistory, useLocation, Switch } from 'react-router-dom';
 import {
   Layout as CoreUILayout,
   Notifications,
   Loader,
   ScrollbarWrapper,
+  ErrorPage404,
 } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
 import { toggleSideBarAction } from '../ducks/app/layout';
@@ -30,14 +31,13 @@ const AlertPage = React.lazy(() => import('./AlertPage'));
 
 const Layout = () => {
   const sidebar = useTypedSelector((state) => state.app.layout.sidebar);
-  const { theme } = useTypedSelector((state) => state.config);
+  const { theme, language } = useTypedSelector((state) => state.config);
   const notifications = useTypedSelector(
     (state) => state.app.notifications.list,
   );
 
   const isUserLoaded = useTypedSelector((state) => !!state.oidc?.user);
   const api = useTypedSelector((state) => state.config.api);
-
   const dispatch = useDispatch();
 
   const removeNotification = (uid) => dispatch(removeNotificationAction(uid));
@@ -136,6 +136,11 @@ const Layout = () => {
               <Switch>
                 <PrivateRoute
                   exact
+                  path="/"
+                  component={() => <Redirect to="/nodes" />}
+                />
+                <PrivateRoute
+                  exact
                   path="/nodes/create"
                   component={NodeCreateForm}
                 />
@@ -160,6 +165,14 @@ const Layout = () => {
                     component={DashboardPage}
                   />
                 )}
+                <Route
+                  component={() => (
+                    <ErrorPage404
+                      data-cy="sc-error-page404"
+                      locale={language}
+                    />
+                  )}
+                />
               </Switch>
             </Suspense>
           </AlertProvider>
