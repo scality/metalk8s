@@ -274,7 +274,7 @@ type Volume = {
   name: string,
   node: string,
   storageClass: string,
-  type: string, // TODO we might want to constraint it to 'sparseLoopDevice' | 'rawBlockDevice'
+  type: string, // TODO we might want to constraint it to 'sparseLoopDevice' | 'rawBlockDevice' | 'lvmLogicalVolume'
   size: string,
   labels: { [key: string]: string },
   path: string,
@@ -366,7 +366,7 @@ export function* createVolumes({
         body,
       );
       if (!result.error) {
-        const {history} = yield select((state: RootState) => state.history);
+        const { history } = yield select((state: RootState) => state.history);
         yield call(
           history.push,
           `/volumes/${newVolumes[i].name}/overview?node=${newVolumes[i].node}`,

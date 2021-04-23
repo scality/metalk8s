@@ -29,6 +29,7 @@ export const STATUS_SUCCEEDED = 'Succeeded';
 
 export const SPARSE_LOOP_DEVICE = 'sparseLoopDevice';
 export const RAW_BLOCK_DEVICE = 'rawBlockDevice';
+export const LVM_LOGICAL_VOLUME = 'LVMLogicalVolume';
 
 export const VOLUME_CONDITION_EXCLAMATION = 'exclamation';
 export const VOLUME_CONDITION_UNLINK = 'unlink';
