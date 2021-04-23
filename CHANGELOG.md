@@ -5,7 +5,11 @@
 
 - [#3180](https://github.com/scality/metalk8s/issues/3180) - All alerts from
   Alertmanager are now stored in Loki database for persistence
-  (PR[#3191](https://github.com/scality/metalk8s/pull/))
+  (PR[#3191](https://github.com/scality/metalk8s/pull/3191))
+
+- [#3294](https://github.com/scality/metalk8s/issues/3294) - Allow to manage
+  `kube-apiserver` feature gates from Bootstrap Configuration file
+  (PR[#3318](https://github.com/scality/metalk8s/pull/3318))
 
 - Complete rebranding of MetalK8s UI (PR[#3295](https://github.com/scality/metalk8s/pull/3295))
 

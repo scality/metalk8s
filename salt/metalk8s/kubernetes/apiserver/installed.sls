@@ -26,6 +26,16 @@ include:
 {%- endif %}
 {%- set etcd_servers = etcd_servers | unique %}
 
+{%- set feature_gates = [] %}
+{%- for feature, value in pillar.kubernetes.get("apiServer", {}).get("featureGates", {}).items() %}
+{%-   if value is sameas True %}
+{%-     set value = "true" %}
+{%-   elif value is sameas False %}
+{%-     set value = "false" %}
+{%-   endif %}
+{%-   do feature_gates.append(feature ~ "=" ~ value) %}
+{%- endfor %}
+
 Create kube-apiserver Pod manifest:
   metalk8s.static_pod_managed:
     - name: /etc/kubernetes/manifests/kube-apiserver.yaml
@@ -96,6 +106,9 @@ Create kube-apiserver Pod manifest:
           - --oidc-groups-claim=groups
           - '"--oidc-groups-prefix=oidc:"'
           - --v={{ 2 if metalk8s.debug else 0 }}
+          {% if feature_gates %}
+          - --feature-gates={{ feature_gates | join(",") }}
+          {%- endif %}
         requested_cpu: 250m
         volumes:
           - path: {{ encryption_k8s_path }}
