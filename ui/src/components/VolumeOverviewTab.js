@@ -291,10 +291,12 @@ const VolumeDetailCard = (props) => {
           <InformationSpan>
             {volumeType !== LVM_LOGICAL_VOLUME ? (
               <>
-                <InformationLabel>
+                <InformationLabel data-cy="backend_disk_label">
                   {intl.translate('backend_disk')}
                 </InformationLabel>
-                <InformationValue>{devicePath}</InformationValue>
+                <InformationValue data-cy="backend_disk_value">
+                  {devicePath}
+                </InformationValue>
               </>
             ) : (
               <>

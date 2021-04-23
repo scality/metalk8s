@@ -1144,6 +1144,118 @@
           ],
           "deviceName": "loop3"
         }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+            "annotations": {
+                "kubectl.kubernetes.io/last-applied-configuration": ""
+            },
+            "creationTimestamp": "2021-04-21T07:51:02Z",
+            "finalizers": [
+                "storage.metalk8s.scality.com/volume-protection"
+            ],
+            "generation": 2,
+            "managedFields": [
+                {
+                    "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+                    "fieldsType": "FieldsV1",
+                    "fieldsV1": {
+                        "f:metadata": {
+                            "f:annotations": {
+                                ".": {},
+                                "f:kubectl.kubernetes.io/last-applied-configuration": {}
+                            }
+                        },
+                        "f:spec": {
+                            ".": {},
+                            "f:lvmLogicalVolume": {
+                                ".": {},
+                                "f:size": {},
+                                "f:vgName": {}
+                            },
+                            "f:nodeName": {},
+                            "f:storageClassName": {},
+                            "f:template": {
+                                ".": {},
+                                "f:metadata": {
+                                    ".": {},
+                                    "f:labels": {
+                                        ".": {},
+                                        "f:app.kubernetes.io/name": {},
+                                        "f:app.kubernetes.io/part-of": {}
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "manager": "kubectl-client-side-apply",
+                    "operation": "Update",
+                    "time": "2021-04-21T07:51:02Z"
+                },
+                {
+                    "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+                    "fieldsType": "FieldsV1",
+                    "fieldsV1": {
+                        "f:metadata": {
+                            "f:finalizers": {}
+                        },
+                        "f:spec": {
+                            "f:mode": {},
+                            "f:template": {
+                                "f:metadata": {
+                                    "f:creationTimestamp": {}
+                                },
+                                "f:spec": {}
+                            }
+                        },
+                        "f:status": {
+                            ".": {},
+                            "f:conditions": {},
+                            "f:deviceName": {}
+                        }
+                    },
+                    "manager": "storage-operator",
+                    "operation": "Update",
+                    "time": "2021-04-21T07:52:07Z"
+                }
+            ],
+            "name": "mongodb-volume",
+            "resourceVersion": "1924",
+            "selfLink": "/apis/storage.metalk8s.scality.com/v1alpha1/volumes/mongodb-volume",
+            "uid": "dc189646-bc56-419d-b1d6-9b558b392edf"
+        },
+        "spec": {
+            "lvmLogicalVolume": {
+                "size": "50Gi",
+                "vgName": "my-vg"
+            },
+            "mode": "Filesystem",
+            "nodeName": "installer.novalocal",
+            "storageClassName": "ssd-raid1-ext4",
+            "template": {
+                "metadata": {
+                    "creationTimestamp": null,
+                    "labels": {
+                        "app.kubernetes.io/name": "mongodb",
+                        "app.kubernetes.io/part-of": "zenko"
+                    }
+                },
+                "spec": {}
+            }
+        },
+        "status": {
+            "conditions": [
+                {
+                  "lastTransitionTime": "2021-04-21T07:52:04Z",
+                  "lastUpdateTime": "2021-04-21T07:52:04Z",
+                    "status": "True",
+                    "type": "Ready"
+                }
+            ],
+            "deviceName": "dm-1"
+        }
       }
     ],
     "kind": "VolumeList",
