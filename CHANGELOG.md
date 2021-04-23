@@ -2,9 +2,12 @@
 
 ## Release 2.9.0 (in development)
 ### Features Added
+
 - [#3180](https://github.com/scality/metalk8s/issues/3180) - All alerts from
   Alertmanager are now stored in Loki database for persistence
   (PR[#3191](https://github.com/scality/metalk8s/pull/))
+
+- Complete rebranding of MetalK8s UI (PR[#3295](https://github.com/scality/metalk8s/pull/3295))
 
 ### Enhancements
 - Bump Kubernetes version to 1.20.6
@@ -15,7 +18,7 @@
 
 - Bump Node.js version to 14.16.0 (PR[#3214](https://github.com/scality/metalk8s/pull/3214))
 
-- Introduces a `shell-ui` project that groups various UI components to be reused by
+- Introduce a `shell-ui` project that groups various UI components to be reused by
 solutions UIs (PR[#3106](https://github.com/scality/metalk8s/pull/3106))
 
 - Move the navbar component to `shell-ui` to enable its reuse by solutions UIs
@@ -24,6 +27,14 @@ solutions UIs (PR[#3106](https://github.com/scality/metalk8s/pull/3106))
 - Add a static user/groups mapping configuration as part of `shell-ui` configuration to 
 allow solutions UIs displaying features according to some user groups
 (PR[#3154](https://github.com/scality/metalk8s/pull/3154))
+
+- Enrich `sosreport` output (PR[#3222](https://github.com/scality/metalk8s/pull/3222))
+
+### Bug fixes
+
+- Ensure MetalK8s UI can be exposed behind a non-root path
+  (PR[#3254](https://github.com/scality/metalk8s/pull/3254),
+  PR[#3299](https://github.com/scality/metalk8s/pull/3299))
 
 ## Release 2.8.1 (in development)
 ### Enhancements
