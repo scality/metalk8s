@@ -4,6 +4,7 @@ import { useTypedSelector } from '../hooks';
 import { setThemeAction, updateAPIConfigAction, setLanguageAction } from '../ducks/config';
 import { useDispatch } from 'react-redux';
 import { ErrorBoundary } from 'react-error-boundary';
+import { ErrorPage500 } from '@scality/core-ui';
 
 function useWebComponent(src?: string, customElementName: string) {
   const [hasFailed, setHasFailed] = useState(false);
@@ -31,7 +32,7 @@ function useWebComponent(src?: string, customElementName: string) {
   }, [src]);
 
   if (hasFailed) {
-    throw new Error(`Failed to load component ${customElementName}`);
+    throw new Error(`Failed to load component ${ customElementName }`);
   }
 }
 
@@ -49,8 +50,8 @@ function useNavbarVersion(navbarRef: { current: NavbarWebComponent | null }): st
 
     const onReady = (evt: Event) => {
       // $flow-disable-line
-      setVersion(evt.detail.version)
-    }
+      setVersion(evt.detail.version);
+    };
 
     navbarElement.addEventListener(
       'ready',
@@ -63,7 +64,7 @@ function useNavbarVersion(navbarRef: { current: NavbarWebComponent | null }): st
         onReady,
       );
     };
-  }, [navbarRef])
+  }, [navbarRef]);
 
   return version;
 }
@@ -187,19 +188,15 @@ function useLogoutEffect(
   }, [navbarRef, !user, isAuthenticated]);
 }
 
-function ErrorFallback({ error, resetErrorBoundary }) {
-  //Todo redirect to a beautiful error page
-  return (
-    <div role="alert">
-      <p>Something went wrong:</p>
-      <pre>{error.message}</pre>
-    </div>
-  );
+function ErrorFallback() {
+  const { language, api } = useTypedSelector((state) => state.config);
+  const url_support = api?.url_support;
+  return <ErrorPage500 data-cy='sc-error-page500' locale={ language } supportLink={ url_support }/>;
 }
 
 export function Navbar() {
   return (
-    <ErrorBoundary FallbackComponent={ErrorFallback}>
+    <ErrorBoundary FallbackComponent={ ErrorFallback }>
       <InternalNavbar />
     </ErrorBoundary>
   );
@@ -226,7 +223,7 @@ function InternalNavbar() {
         // $flow-disable-line -- flow considers solutions-navbar as a row HTMLElement, TODO find if it is possible to extends JSX flow native definitions with custom element types
         navbarRef
       }
-      config-url={navbarConfigUrl}
+      config-url={ navbarConfigUrl }
     />
   );
 }
