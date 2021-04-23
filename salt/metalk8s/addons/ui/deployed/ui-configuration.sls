@@ -41,6 +41,23 @@ metalk8s-ui-config ConfigMap already exist:
 {%- endif %}
 
 {%- if metalk8s_shell_ui_config is none %}
+  {%- set metalk8s_ui_defaults = salt.slsutil.renderer(
+          'salt://metalk8s/addons/ui/config/metalk8s-ui-config.yaml',
+          saltenv=saltenv
+      )
+  %}
+  {%- if metalk8s_ui_config is none %}
+    {%- set metalk8s_ui = metalk8s_ui_defaults %}
+  {%- else %}
+    {%- set metalk8s_ui = salt.metalk8s_service_configuration.get_service_conf(
+        'metalk8s-ui', 'metalk8s-ui-config', metalk8s_ui_defaults
+    ) %}
+  {%- endif %}
+
+  {%- set stripped_base_path = metalk8s_ui.spec.basePath.strip('/') %}
+  {%- set cp_ingress_url = "https://" ~ grains.metalk8s.control_plane_ip ~ ":8443" %}
+  {%- set metalk8s_ui_url = cp_ingress_url ~ '/' ~ stripped_base_path ~
+                            ('/' if stripped_base_path else '') %}
 
 Create metalk8s-shell-ui-config ConfigMap:
   metalk8s_kubernetes.object_present:
@@ -54,7 +71,22 @@ Create metalk8s-shell-ui-config ConfigMap:
           config.yaml: |-
             apiVersion: addons.metalk8s.scality.com/v1alpha1
             kind: ShellUIConfig
-            spec: {}
+            spec:
+              options:
+                main:
+                  "{{ metalk8s_ui_url }}":
+                    en: "Platform"
+                    fr: "Plateforme"
+                    groups: [metalk8s:admin]
+                    activeIfMatches: "{{ metalk8s_ui_url }}(?!alerts|docs).*"
+                  "{{ metalk8s_ui_url }}alerts":
+                    en: "Alerts"
+                    fr: "Alertes"
+                    groups: [metalk8s:admin]
+                subLogin:
+                  "{{ cp_ingress_url }}/docs/{{ stripped_base_path }}":
+                    en: "Documentation"
+                    fr: "Documentation"
 
 {%- else %}
 
