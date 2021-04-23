@@ -124,7 +124,7 @@ describe('navbar', () => {
     //E
     await waitForLoadingToFinish();
     //V
-    expect(screen.getByLabelText('unexpected error')).toBeInTheDocument();
+    expect(screen.queryByText('Unexpected Error')).toBeInTheDocument();
   });
 
   it('should display expected selected menu when it matches by exact loaction (default behavior)', async () => {
