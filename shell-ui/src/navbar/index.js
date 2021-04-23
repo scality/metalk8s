@@ -1,5 +1,5 @@
 //@flow
-import React, { useEffect, useLayoutEffect, useRef } from 'react';
+import React, { useLayoutEffect } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import reactToWebComponent from 'react-to-webcomponent';
@@ -11,12 +11,12 @@ import { LoadingNavbar, Navbar } from './NavBar';
 import { UserDataListener } from './UserDataListener';
 import { logOut } from './auth/logout';
 import { prefetch } from 'quicklink';
-import { defaultTheme } from '@scality/core-ui/dist/style/theme';
 import { LanguageProvider } from './lang';
-import { ThemeProvider, useThemeName } from './theme';
+import { ThemeProvider } from './theme';
 import { useFavicon } from './favicon';
 import { version } from '../../package.json';
 import "./library";
+import ErrorPage500 from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 
 export type PathDescription = {
   en: string,
@@ -123,7 +123,7 @@ const SolutionsNavbar = ({
     default:
       return <LoadingNavbar logo={logos.dark || `/brand/assets/logo-dark.svg`} />;
     case 'error':
-      return <>Failed to load navbar configuration</>; // TODO redirects to a beautiful error page
+      return ReactDOM.render(<ErrorPage500 data-cy='sc-error-page500'/>, document.body);
     case 'success': {
       const userManager = new UserManager({
         authority: oidcProviderUrl || config.oidc?.providerUrl,
