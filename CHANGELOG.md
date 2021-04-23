@@ -6,6 +6,10 @@
   Alertmanager are now stored in Loki database for persistence
   (PR[#3191](https://github.com/scality/metalk8s/pull/3191))
 
+- [#3294](https://github.com/scality/metalk8s/issues/3294) - Allow to manage
+  `kube-apiserver` feature gates from Bootstrap Configuration file
+  (PR[#3318](https://github.com/scality/metalk8s/pull/3318))
+
 ### Enhancements
 - Bump Kubernetes version to 1.20.6
   (PR[#3311](https://github.com/scality/metalk8s/pull/3311))
