@@ -12,10 +12,6 @@
     )
 %}
 
-{%- set normalized_base_path = metalk8s_ui_config.spec.basePath.strip('/') %}
-
-{%- set metalk8s_ui_url = "https://" ~ grains.metalk8s.control_plane_ip ~
-                          ":8443" ~ ('/' ~ normalized_base_path if normalized_base_path else '') ~ '/' %}
 
 # Defaults for shell UI configuration
 apiVersion: addons.metalk8s.scality.com/v1alpha1
@@ -38,18 +34,3 @@ spec:
   favicon: /brand/favicon-metalk8s.svg
   canChangeLanguage: false
   canChangeTheme: false
-  options:
-    main:
-      "{{ metalk8s_ui_url }}":
-        en: "Platform"
-        fr: "Plateforme"
-        groups: [metalk8s:admin]
-        activeIfMatches: "{{ metalk8s_ui_url }}(?!alerts|docs).*"
-      "{{ metalk8s_ui_url }}alerts":
-        en: "Alerts"
-        fr: "Alertes"
-        groups: [metalk8s:admin]
-    subLogin:
-      "{{ metalk8s_ui_url }}docs":
-        en: "Documentation"
-        fr: "Documentation"
