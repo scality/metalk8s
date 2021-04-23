@@ -113,7 +113,7 @@ Platform
    :widths: 50,200
 
    "Severity", "Critical"
-   "Summary", "The Platform is at risk"
+   "Summary", "The Platform is at risk."
    "Parent", "*none*"
 
 .. csv-table::
@@ -129,7 +129,7 @@ Platform
    :widths: 50,200
 
    "Severity", "Warning"
-   "Summary", "The Platform is degraded"
+   "Summary", "The Platform is degraded."
    "Parent", "*none*"
 
 .. csv-table::
@@ -151,7 +151,7 @@ Nodes
    :widths: 50,200
 
    "Severity", "Critical"
-   "Summary", "Node <nodename> is at risk"
+   "Summary", "Node <nodename> is at risk."
    "Parent", "none"
 
 .. csv-table::
@@ -169,7 +169,7 @@ Nodes
    :widths: 50,200
 
    "Severity", "Warning"
-   "Summary", "Node <nodename> is degraded"
+   "Summary", "Node <nodename> is degraded."
    "Parent", "none"
 
 .. csv-table::
@@ -210,8 +210,8 @@ System Partitions
    :align: left
    :widths: 50,200
 
-   "Severity", "Warning"
-   "Summary", "The partition <mountpoint> on node <nodename> is at risk"
+   "Severity", "Critical"
+   "Summary", "The partition <mountpoint> on node <nodename> is at risk."
    "Parent", "`NodeAtRisk`_"
 
 .. csv-table::
@@ -231,7 +231,7 @@ System Partitions
    :widths: 50,200
 
    "Severity", "Warning"
-   "Summary", "The partition <mountpoint> on node <nodename> is degraded"
+   "Summary", "The partition <mountpoint> on node <nodename> is degraded."
    "Parent", "`NodeDegraded`_"
 
 .. csv-table::
@@ -254,7 +254,7 @@ Volumes
    :widths: 50,200
 
    "Severity", "Critical"
-   "Summary", "The volume <volumename> on node <nodename> is at risk"
+   "Summary", "The volume <volumename> on node <nodename> is at risk."
    "Parent", "*multiple parents*"
 
 .. csv-table::
@@ -272,7 +272,7 @@ Volumes
    :widths: 50,200
 
    "Severity", "Warning"
-   "Summary", "The volume <volumename> on node <nodename> is degraded"
+   "Summary", "The volume <volumename> on node <nodename> is degraded."
    "Parent", "*multiple parents*"
 
 .. csv-table::
@@ -292,7 +292,7 @@ Platform Services
    :widths: 50,200
 
    "Severity", "Critical"
-   "Summary", "The Platform services are at risk"
+   "Summary", "The Platform services are at risk."
    "Parent", "`PlatformAtRisk`_"
 
 .. csv-table::
@@ -310,7 +310,7 @@ Platform Services
    :widths: 50,200
 
    "Severity", "Warning"
-   "Summary", "The Platform services are degraded"
+   "Summary", "The Platform services are degraded."
    "Parent", "`PlatformDegraded`_"
 
 .. csv-table::
@@ -332,7 +332,7 @@ Core
    :widths: 50,200
 
    "Severity", "Critical"
-   "Summary", "The Core services are at risk"
+   "Summary", "The Core services are at risk."
    "Parent", "`PlatformServicesAtRisk`_"
 
 .. csv-table::
@@ -349,7 +349,7 @@ Core
    :widths: 50,200
 
    "Severity", "Warning"
-   "Summary", "The Core services are degraded"
+   "Summary", "The Core services are degraded."
    "Parent", "`PlatformServicesDegraded`_"
 
 .. csv-table::
@@ -365,8 +365,8 @@ Core
    :align: left
    :widths: 50,200
 
-   "Severity", "Warning"
-   "Summary", "The kubernetes master services are at risk"
+   "Severity", "Critical"
+   "Summary", "The kubernetes master services are at risk."
    "Parent", "`CoreServicesAtRisk`_"
 
 .. csv-table::
@@ -396,7 +396,7 @@ Core
    :widths: 50,200
 
    "Severity", "Warning"
-   "Summary", "The kubernetes master services are degraded"
+   "Summary", "The kubernetes master services are degraded."
    "Parent", "`CoreServicesDegraded`_"
 
 .. csv-table::
@@ -420,8 +420,11 @@ Core
    KubeClientErrors, Warning,
    KubeVersionMismatch, Warning,
    KubeDeploymentReplicasMismatch, Warning,kube-system/coredns
+   KubeDeploymentGenerationMismatch, Warning,kube-system/coredns
    KubeDeploymentReplicasMismatch, Warning,metalk8s-monitoring/prometheus-adapter
+   KubeDeploymentGenerationMismatch, Warning,kube-system/coredns
    KubeDeploymentReplicasMismatch, Warning,metalk8s-monitoring/prometheus-operator-kube-state-metrics
+   KubeDeploymentGenerationMismatch, Warning,kube-system/coredns
 
 
 .. _BootstrapServicesDegraded:
@@ -431,7 +434,7 @@ Core
    :widths: 50,200
 
    "Severity", "Warning"
-   "Summary", "The bootstrap services are degraded"
+   "Summary", "The bootstrap services are degraded."
    "Parent", "`CoreServicesDegraded`_"
 
 .. csv-table::
@@ -441,7 +444,9 @@ Core
    KubePodNotReady, Warning, kube-system/repositories-<bootstrapname>
    KubePodNotReady, Warning, kube-system/salt-master-<bootstrapname>
    KubeDeploymentReplicasMismatch, Warning, kube-system/storage-operator
+   KubeDeploymentGenerationMismatch, Warning, kube-system/storage-operator
    KubeDeploymentReplicasMismatch, Warning, metalk8s-ui/metalk8s-ui
+   KubeDeploymentGenerationMismatch, Warning, metalk8s-ui/metalk8s-ui
 
 .. note::
 
@@ -461,7 +466,7 @@ Observability
    :widths: 50,200
 
    "Severity", "Critical"
-   "Summary", "The observability services are at risk"
+   "Summary", "The observability services are at risk."
    "Parent", "`PlatformServicesAtRisk`_"
 
 .. csv-table::
@@ -470,8 +475,6 @@ Observability
 
    `MonitoringServiceAtRisk`_, Critical,
    `AlertingServiceAtRisk`_, Critical,
-   `LoggingServiceAtRisk`_, Critical,
-
 
 .. _ObservabilityServicesDegraded:
 
@@ -480,7 +483,7 @@ Observability
    :widths: 50,200
 
    "Severity", "Warning"
-   "Summary", "The observability services are degraded"
+   "Summary", "The observability services are degraded."
    "Parent", "`PlatformServicesDegraded`_"
 
 .. csv-table::
@@ -498,8 +501,8 @@ Observability
    :align: left
    :widths: 50,200
 
-   "Severity", "Warning"
-   "Summary", "The monitoring service is at risk"
+   "Severity", "Critical"
+   "Summary", "The monitoring service is at risk."
    "Parent", `ObservabilityServicesAtRisk`_
 
 .. csv-table::
@@ -520,7 +523,7 @@ Observability
    :widths: 50,200
 
    "Severity", "Warning"
-   "Summary", "The monitoring service is degraded"
+   "Summary", "The monitoring service is degraded."
    "Parent", `ObservabilityServicesDegraded`_
 
 .. csv-table::
@@ -549,26 +552,13 @@ Observability
    PrometheusOperatorNodeLookupErrors, Warning,
    PrometheusOperatorListErrors, Warning,
    KubeStatefulSetReplicasMismatch, Warning, metalk8s-monitoring/prometheus-prometheus-operator-prometheus
+   KubeStatefulSetGenerationMismatch, Warning, metalk8s-monitoring/prometheus-prometheus-operator-prometheus
+   KubeStatefulSetUpdateNotRolledOut, Warning, metalk8s-monitoring/prometheus-prometheus-operator-prometheus
    KubeDeploymentReplicasMismatch, Warning, metalk8s-monitoring/prometheus-operator-operator
+   KubeDeploymentGenerationMismatch, Warning, metalk8s-monitoring/prometheus-operator-operator
    KubeDaemonSetNotScheduled, Warning, metalk8s-monitoring/prometheus-operator-prometheus-node-exporter
-
-.. _LoggingServiceAtRisk:
-
-.. csv-table:: LoggingServiceAtRisk
-   :align: left
-   :widths: 50,200
-
-   "Severity", "Critcal"
-   "Summary", "The logging service is at risk"
-   "Parent", `ObservabilityServicesAtRisk`_
-
-.. csv-table::
-   :header: "Sub Alert", "Severity", "Filter"
-   :widths: 200,50,250
-
-   AlertmanagerConfigInconsistent, Critical,
-   AlertmanagerMembersInconsistent , Critical,
-   AlertmanagerFailedReload, Critical,
+   KubeDaemonSetMisScheduled, Warning, metalk8s-monitoring/prometheus-operator-prometheus-node-exporter
+   KubeDaemonSetRolloutStuck, Warning, metalk8s-monitoring/prometheus-operator-prometheus-node-exporter
 
 .. _LoggingServiceDegraded:
 
@@ -577,7 +567,7 @@ Observability
    :widths: 50,200
 
    "Severity", "Warning"
-   "Summary", "The logging service is degraded"
+   "Summary", "The logging service is degraded."
    "Parent", `ObservabilityServicesDegraded`_
 
 .. csv-table::
@@ -588,7 +578,11 @@ Observability
    `VolumeAtRisk`_, Critical, app.kubernetes.io/name=loki
    TargetDown, Warning, To be defined
    KubeStatefulSetReplicasMismatch , Warning, metalk8s-logging/loki
-   KubeDaemonSetNotScheduled, Warning,metalk8s-logging/fluentbit
+   KubeStatefulSetGenerationMismatch, Warning, metalk8s-logging/loki
+   KubeStatefulSetUpdateNotRolledOut, Warning, metalk8s-logging/loki
+   KubeDaemonSetNotScheduled, Warning, metalk8s-logging/fluentbit
+   KubeDaemonSetMisScheduled, Warning, metalk8s-logging/fluentbit
+   KubeDaemonSetRolloutStuck, Warning,metalk8s-logging/fluentbit
 
 .. _AlertingServiceAtRisk:
 
@@ -597,7 +591,7 @@ Observability
    :widths: 50,200
 
    "Severity", "Critcal"
-   "Summary", "The alerting service is at risk"
+   "Summary", "The alerting service is at risk."
    "Parent", `ObservabilityServicesAtRisk`_
 
 .. csv-table::
@@ -615,7 +609,7 @@ Observability
    :widths: 50,200
 
    "Severity", "Warning"
-   "Summary", "The alerting service is degraded"
+   "Summary", "The alerting service is degraded."
    "Parent", `ObservabilityServicesDegraded`_
 
 .. csv-table::
@@ -626,6 +620,8 @@ Observability
    `VolumeAtRisk`_, Critical, app.kubernetes.io/name=prometheus-operator-alertmanager
    TargetDown, Warning, To be defined
    KubeStatefulSetReplicasMismatch , Warning, metalk8s-monitoring/alertmanager-prometheus-operator-alertmanager
+   KubeStatefulSetGenerationMismatch, Warning, metalk8s-monitoring/alertmanager-prometheus-operator-alertmanager
+   KubeStatefulSetUpdateNotRolledOut, Warning, metalk8s-monitoring/alertmanager-prometheus-operator-alertmanager
    AlertmanagerFailedReload, Warning,
 
 .. _DashboardingServiceDegraded:
@@ -635,7 +631,7 @@ Observability
    :widths: 50,200
 
    "Severity", "Warning"
-   "Summary", "The dashboarding service is degraded"
+   "Summary", "The dashboarding service is degraded."
    "Parent", `ObservabilityServicesDegraded`_
 
 .. csv-table::
@@ -643,7 +639,8 @@ Observability
    :align: left
    :widths: 200,50,250
 
-   "KubeStatefulSetReplicasMismatch", "Warning", "metalk8s-monitoring/prometheus-operator-grafana"
+   "KubeDeploymentReplicasMismatch", "Warning", "metalk8s-monitoring/prometheus-operator-grafana"
+   "KubeDeploymentGenerationMismatch", "Warning", "metalk8s-monitoring/prometheus-operator-grafana"
    "TargetDown", "Warning", "To be defined"
 
 
@@ -657,7 +654,7 @@ Network
    :widths: 50,200
 
    "Severity", "Warning"
-   "Summary", "The Control Plane Network is degraded"
+   "Summary", "The Control Plane Network is degraded."
    "Parent", `PlatformDegraded`_
 
 .. csv-table::
@@ -678,7 +675,7 @@ Network
    :widths: 50,200
 
    "Severity", "Warning"
-   "Summary", "The Workload Plane Network is degraded"
+   "Summary", "The Workload Plane Network is degraded."
    "Parent", `PlatformDegraded`_
 
 .. csv-table::
@@ -713,7 +710,7 @@ Access
    :widths: 50,200
 
    "Severity", "Warning"
-   "Summary", "The Access services are degraded"
+   "Summary", "The Access services are degraded."
    "Parent", `PlatformServicesDegraded`_
 
 .. csv-table::
@@ -731,7 +728,7 @@ Access
    :widths: 50,200
 
    "Severity", "Warning"
-   "Summary", "The Ingress Controllers for CP and WP are degraded"
+   "Summary", "The Ingress Controllers for CP and WP are degraded."
    "Parent", `AccessServicesDegraded`_
 
 .. csv-table::
@@ -740,8 +737,13 @@ Access
    :widths: 200,50,250
 
    "KubeDeploymentReplicasMismatch", "Warning", "metalk8s-ingress/ingress-nginx-defaultbackend"
+   "KubeDeploymentGenerationMismatch", "Warning", "metalk8s-ingress/ingress-nginx-defaultbackend"
    "KubeDaemonSetNotScheduled", "Warning", "metalk8s-system/ingress-nginx-controller"
+   "KubeDaemonSetMisScheduled", "Warning", "metalk8s-system/ingress-nginx-controller"
+   "KubeDaemonSetRolloutStuck", "Warning", "metalk8s-system/ingress-nginx-controller"
    "KubeDaemonSetNotScheduled", "Warning", "metalk8s-system/ingress-nginx-control-plane-controller"
+   "KubeDaemonSetMisScheduled", "Warning", "metalk8s-system/ingress-nginx-control-plane-controller"
+   "KubeDaemonSetRolloutStuck", "Warning", "metalk8s-system/ingress-nginx-control-plane-controller"
 
 .. _AuthenticationDegraded:
 
@@ -750,7 +752,7 @@ Access
    :widths: 50,200
 
    "Severity", "Warning"
-   "Summary", "The Authentication service for K8S API is degraded"
+   "Summary", "The Authentication service for K8S API is degraded."
    "Parent", `AccessServicesDegraded`_
 
 .. csv-table::
@@ -759,3 +761,4 @@ Access
    :widths: 200,50,250
 
    "KubeDeploymentReplicasMismatch", "Warning", "metalk8s-auth/dex"
+   "KubeDeploymentGenerationMismatch", "Warning", "metalk8s-auth/dex"
