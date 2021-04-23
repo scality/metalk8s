@@ -789,7 +789,7 @@ models:
         DEST_DIR: "%(prop:builddir)s/build/sosreport/sosreport"
         STEP_NAME: ''
       command: >
-        HOSTS_LIST=${HOSTS_LIST:-bootstrap$(seq -s '' --format ' node-%%g' 1 %(prop:nodes_count:-0)s)}
+        HOSTS_LIST=${HOSTS_LIST:-bootstrap$(seq -s '' --format ' node-%%g' 1 %(prop:nodes_count:-0)s)};
         mkdir -p "$DEST_DIR/$STEP_NAME" &&
         for host in $HOSTS_LIST; do
           scp -F "$SSH_CONFIG" \
