@@ -33,12 +33,19 @@ import {
   genValues,
 } from './mockUtils';
 
-Cypress.Commands.add('setupMocks', () => {
+Cypress.Commands.add('setupMocks', (
+  config = 'config.json',
+  shellConfig = 'shell-config.json',
+) => {
   // Static files
-  cy.route2('GET', '/shell/config.json', {
-    fixture: 'shell-config.json',
-  });
-  cy.route2('GET', '/config.json', { fixture: 'config.json' });
+
+  const stubConfig = typeof config === 'string' ? { fixture: config } : config;
+  const stubShellConfig = typeof config === 'string' ? { fixture: shellConfig } : config;
+
+  if (stubShellConfig)
+    cy.route2('GET', '/shell/config.json', stubShellConfig);
+  if (stubConfig)
+    cy.route2('GET', '/config.json', stubConfig);
   cy.route2('GET', '/oidc/.well-known/openid-configuration', {
     fixture: 'openid-config.json',
   });
@@ -179,6 +186,28 @@ Cypress.Commands.add('login', () => {
         'oidc.user:/oidc:metalk8s-ui',
         JSON.stringify({
           ...ADMIN_JWT,
+          expires_at: Date.now() + 30000,
+        }),
+      );
+    });
+});
+
+const BAD_ADMIN_JWT = {
+  id_token: 'bad_token_id',
+  access_token: 'bad_token_access',
+  token_type: 'bearer',
+  scope: 'openid profile email groups offline_access audience:server:client_id:oidc-auth-client',
+  profile: null,
+};
+
+Cypress.Commands.add('badLogin', () => {
+  cy.window()
+    .its('localStorage')
+    .then((localStorage) => {
+      localStorage.setItem(
+        'oidc.user:/oidc:metalk8s-ui',
+        JSON.stringify({
+          ...BAD_ADMIN_JWT,
           expires_at: Date.now() + 30000,
         }),
       );
