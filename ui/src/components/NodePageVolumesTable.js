@@ -5,7 +5,6 @@ import styled from 'styled-components';
 import { useTable, useFilters, useSortBy, useBlockLayout } from 'react-table';
 import { FixedSizeList as List } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { useQuery } from '../services/utils';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
 import {
@@ -25,7 +24,6 @@ import {
   allSizeUnitsToBytes,
   compareHealth,
   formatSizeForDisplay,
-  useTableSortURLSync,
 } from '../services/utils';
 import {
   SortCaretWrapper,
@@ -158,9 +156,6 @@ const TableRow = (props) => {
 
 function Table({ columns, data, nodeName, volumeName, theme }) {
   const history = useHistory();
-  const query = useQuery();
-  const querySort = query.get('sort');
-  const queryDesc = query.get('desc');
 
   const sortTypes = React.useMemo(() => {
     return {
@@ -169,7 +164,6 @@ function Table({ columns, data, nodeName, volumeName, theme }) {
       size: (row1, row2) => {
         const size1 = row1?.values?.storageCapacity;
         const size2 = row2?.values?.storageCapacity;
-
         if (size1 && size2) {
           return allSizeUnitsToBytes(size1) - allSizeUnitsToBytes(size2);
         } else return !size1 ? -1 : 1;
@@ -179,11 +173,12 @@ function Table({ columns, data, nodeName, volumeName, theme }) {
         weights[VOLUME_CONDITION_LINK] = 2;
         weights[VOLUME_CONDITION_UNLINK] = 1;
         weights[VOLUME_CONDITION_EXCLAMATION] = 0;
-
         return weights[row1?.values?.status] - weights[row2?.values?.status];
       },
     };
   }, []);
+
+  const DEFAULT_SORTING_KEY = 'health';
 
   const {
     getTableProps,
@@ -191,7 +186,6 @@ function Table({ columns, data, nodeName, volumeName, theme }) {
     headerGroups,
     rows,
     prepareRow,
-    // visibleColumns,
   } = useTable(
     {
       columns,
@@ -199,8 +193,8 @@ function Table({ columns, data, nodeName, volumeName, theme }) {
       initialState: {
         sortBy: [
           {
-            id: querySort || 'health',
-            desc: queryDesc || false,
+            id: DEFAULT_SORTING_KEY,
+            desc: false,
           },
         ],
       },
@@ -212,13 +206,6 @@ function Table({ columns, data, nodeName, volumeName, theme }) {
     useSortBy,
     useBlockLayout,
   );
-
-  // Synchronizes the params query with the Table sort state
-  const sorted = headerGroups[0].headers.find((item) => item.isSorted === true)
-    ?.id;
-  const desc = headerGroups[0].headers.find((item) => item.isSorted === true)
-    ?.isSortedDesc;
-  useTableSortURLSync(sorted, desc, data);
 
   const RenderRow = React.useCallback(
     ({ index, style }) => {

@@ -192,6 +192,7 @@ function Table({
     };
   }, []);
 
+  const DEFAULT_SORTING_KEY = 'health';
   const {
     getTableProps,
     getTableBodyProps,
@@ -211,7 +212,7 @@ function Table({
         globalFilter: querySearch,
         sortBy: [
           {
-            id: querySort || 'health',
+            id: querySort || DEFAULT_SORTING_KEY,
             desc: queryDesc || false,
           },
         ],
@@ -231,7 +232,7 @@ function Table({
     ?.id;
   const desc = headerGroups[0].headers.find((item) => item.isSorted === true)
     ?.isSortedDesc;
-  useTableSortURLSync(sorted, desc, data);
+  useTableSortURLSync(sorted, desc, data, DEFAULT_SORTING_KEY);
 
   const RenderRow = React.useCallback(
     ({ index, style }) => {

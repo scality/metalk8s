@@ -375,11 +375,15 @@ export const formatSizeForDisplay = (value) => {
   return value.replace(/^(\d+)(\D+)$/, '$1 $2');
 };
 
-/*
- ** Custom hook that stores table sorting choice in the URL queries
- ** Defaults to health sorting (used on Nodes and Volumes tables)
+/**
+ * Custom hook that stores table sorting choice in the URL queries
+ *
+ * @param {string} sorted
+ * @param {boolean} desc
+ * @param {array} data
+ * @param {string} defaultSortKey default sorting key
  */
-export const useTableSortURLSync = (sorted, desc, data) => {
+export const useTableSortURLSync = (sorted, desc, data, defaultSortKey) => {
   const history = useHistory();
   const location = useLocation();
   useEffect(() => {
@@ -390,8 +394,8 @@ export const useTableSortURLSync = (sorted, desc, data) => {
       if (sorted) {
         sorted ? query.set('sort', sorted) : query.delete('sort');
         desc ? query.set('desc', desc) : query.delete('desc');
-        // Remove the default sorting `sort=health` and `sort=severity` from the query string
-        if ((sorted === 'health' || sorted === 'severity') && desc === false) {
+        // if the current sorting is the default sorting, remove the query parameter
+        if (sorted === defaultSortKey && desc === false) {
           query.delete('sort');
           query.delete('desc');
         }
@@ -409,7 +413,7 @@ export const useTableSortURLSync = (sorted, desc, data) => {
         history.replace(`?${query.toString()}`);
       }
     }
-  }, [sorted, desc, data.length, history, location]);
+  }, [sorted, desc, data.length, history, location, defaultSortKey]);
 };
 
 /*
