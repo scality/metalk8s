@@ -45,8 +45,8 @@ const server = setupServer(
 );
 
 function mockOidcReact() {
-  const {jest} = require('@jest/globals');
-  
+  const { jest } = require('@jest/globals');
+
   const original = jest.requireActual('oidc-react');
   return {
     ...original, //Pass down all the exported objects
@@ -58,8 +58,8 @@ function mockOidcReact() {
           name: 'user',
         },
       },
-    })
-  }
+    }),
+  };
 }
 jest.mock('oidc-react', () => mockOidcReact());
 
@@ -110,7 +110,7 @@ describe('navbar', () => {
         return res(ctx.status(500));
       }),
     );
-    
+
     render(
       <solutions-navbar
         oidc-provider-url="https://mocked.ingress/oidc"
@@ -124,9 +124,7 @@ describe('navbar', () => {
     //E
     await waitForLoadingToFinish();
     //V
-    expect(
-      screen.queryByText(/Failed to load navbar configuration/i),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText('unexpected error')).toBeInTheDocument();
   });
 
   it('should display expected selected menu when it matches by exact loaction (default behavior)', async () => {
@@ -250,7 +248,6 @@ describe('navbar', () => {
 
     mockOIDCProvider();
 
-
     render(
       <solutions-navbar
         oidc-provider-url="https://mocked.ingress/oidc"
@@ -278,7 +275,6 @@ describe('navbar', () => {
     //S
 
     mockOIDCProvider();
-
 
     render(
       <solutions-navbar
