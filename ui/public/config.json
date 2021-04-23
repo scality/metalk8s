@@ -1,13 +1,14 @@
 {
-    "url": "https://{ip}:8443/api/kubernetes",
-    "url_salt": "https://{ip}:8443/api/salt",
-    "url_prometheus": "https://{ip}:8443/api/prometheus",
-    "url_grafana": "https://{ip}:8443/grafana",
-    "url_doc": "https://{ip}:8443/docs",
-    "url_alertmanager": "https://{ip}:8443/api/alertmanager",
-    "flags": [],
-    "url_navbar": "/shell/solution-ui-navbar.1.0.0.js",
-    "url_alerts": "/shell/alerts.1.0.0.js",
-    "url_navbar_config": "/shell/config.json",
-    "alerts_lib_version": "1.0.0"
+  "url": "https://{ip}:8443/api/kubernetes",
+  "url_salt": "https://{ip}:8443/api/salt",
+  "url_prometheus": "https://{ip}:8443/api/prometheus",
+  "url_grafana": "https://{ip}:8443/grafana",
+  "url_doc": "https://{ip}:8443/docs",
+  "url_alertmanager": "https://{ip}:8443/api/alertmanager",
+  "flags": [],
+  "url_navbar": "/shell/solution-ui-navbar.1.0.0.js",
+  "url_alerts": "/shell/alerts.1.0.0.js",
+  "url_navbar_config": "/shell/config.json",
+  "alerts_lib_version": "1.0.0",
+  "url_support": "https://github.com/scality/metalk8s/discussions/new"
 }
