@@ -4,7 +4,7 @@
 ### Features Added
 - [#3180](https://github.com/scality/metalk8s/issues/3180) - All alerts from
   Alertmanager are now stored in Loki database for persistence
-  (PR[#3191](https://github.com/scality/metalk8s/pull/))
+  (PR[#3191](https://github.com/scality/metalk8s/pull/3191))
 
 ### Enhancements
 - Bump Kubernetes version to 1.20.6
