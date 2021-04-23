@@ -11,7 +11,7 @@ Supported Versions
 
 .. note::
 
-    MetalK8 supports downgrade of **at most** one minor version at a time.
+    MetalK8s supports downgrade of **at most** one minor version at a time.
     For example:
 
     - from 2.4.4 to 2.4.1,
