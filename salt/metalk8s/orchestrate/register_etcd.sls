@@ -22,6 +22,8 @@ Check etcd cluster health:
   metalk8s.module_run:
     - metalk8s_etcd.check_etcd_health:
       - minion_id: {{ nodename }}
-    - attempts: 5
+    # Wait at most (31 - 1) * 10s = 300s = 5mn
+    - attempts: 31
+    - sleep_time: 10
     - require:
       - metalk8s_etcd: Register host as part of etcd cluster
