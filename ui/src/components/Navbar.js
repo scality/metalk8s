@@ -72,6 +72,14 @@ function useNavbarVersion(navbarRef: { current: NavbarWebComponent | null }): st
 function useLoginEffect(navbarRef: { current: NavbarWebComponent | null }, version: string | null) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const dispatch = useDispatch();
+  const user = useTypedSelector((state) => state.oidc?.user);
+  const userStoredInRedux = useRef(false);
+
+  useEffect(() => {
+    if (user) {
+      userStoredInRedux.current = true;
+    }
+  }, [!!user])
 
   useEffect(() => {
     if (!navbarRef.current || !version) {
@@ -103,7 +111,7 @@ function useLoginEffect(navbarRef: { current: NavbarWebComponent | null }, versi
     };
   }, [navbarRef, version, dispatch]);
 
-  return { isAuthenticated };
+  return { isAuthenticated: isAuthenticated && userStoredInRedux.current };
 }
 
 function useLanguageEffect(navbarRef: { current: NavbarWebComponent | null }, version: string | null) {
