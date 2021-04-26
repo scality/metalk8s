@@ -135,11 +135,11 @@ def static_pod_managed(
             return _error(ret, "Unable to manage file: {}".format(exc))
 
 
-def module_run(name, attemps=1, sleep_time=10, **kwargs):
+def module_run(name, attempts=1, sleep_time=10, **kwargs):
     """Classic module.run with a retry logic as it's buggy in salt version
     https://github.com/saltstack/salt/issues/44639
     """
-    retry = attemps
+    retry = attempts
     ret = {"name": name, "changes": {}, "result": False, "comment": ""}
     while retry > 0 and not ret["result"]:
         try:

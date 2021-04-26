@@ -51,7 +51,9 @@ Deploy etcd {{ node }} to {{ dest_version }}:
 Check etcd cluster health for {{ node }}:
   metalk8s.module_run:
     - metalk8s_etcd.check_etcd_health: []
-    - attemps: 5
+    # Wait at most (31 - 1) * 10s = 300s = 5mn
+    - attempts: 31
+    - sleep_time: 10
     - require:
       - salt: Deploy etcd {{ node }} to {{ dest_version }}
 
