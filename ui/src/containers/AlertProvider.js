@@ -11,6 +11,7 @@ import { useQuery } from 'react-query';
 import { useTypedSelector } from '../hooks';
 import { ErrorBoundary } from 'react-error-boundary';
 import type { FilterLabels } from '../services/alertUtils';
+import { ErrorPage500 } from '@scality/core-ui';
 
 export const useAlerts = (filters: FilterLabels) => {
   const alertsVersion = useTypedSelector(
@@ -24,10 +25,10 @@ export const useAlerts = (filters: FilterLabels) => {
 
 /**
  * This hook dynamically load Alert library.
- * 
+ *
  * It first creates a script entry if none exists referring the given library src
  *  and then initiates the library by calling `createAlertContext`
- * 
+ *
  * @param {string} src library bundle url
  * @param {string?} version library version
  */
@@ -89,14 +90,10 @@ const InternalAlertProvider = ({ children }: { children: Node }): Node => {
   return <>{children}</>;
 };
 
-function ErrorFallback({ error, resetErrorBoundary }) {
-  //Todo redirect to a beautiful error page
-  return (
-    <div role="alert">
-      <p>Something went wrong:</p>
-      <pre>{error.message}</pre>
-    </div>
-  );
+function ErrorFallback() {
+  const { language, api } = useTypedSelector((state) => state.config);
+  const url_support = api?.url_support;
+  return <ErrorPage500 data-cy='sc-error-page500' locale={ language } supportLink={ url_support }/>;
 }
 
 const AlertProvider = ({ children }: { children: Node }): Node => {
