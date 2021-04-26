@@ -44,6 +44,19 @@ describe('Volume page overview tab', () => {
       );
     });
   });
+
+  it('displays the LVMLogicalVolume type and VG name for LVM volume', () => {
+    cy.visit('/volumes/mongodb-volume/overview');
+    cy.get('[data-cy="vg_name_label"]').should('have.length', 1);
+    cy.get('[data-cy="vg_name_value"]').should('contain', 'my-vg');
+    cy.get('[data-cy="backend_disk_label"]').should('not.exist');
+  });
+
+  it('displays backend disk for sparse device', () => {
+    cy.visit('/volumes/master-1-prometheus/overview');
+    cy.get('[data-cy="backend_disk_label"]').should('have.length', 1);
+    cy.get('[data-cy="vg_name_label"]').should('not.exist');
+  });
 });
 
 describe('Volume page alerts tab', () => {

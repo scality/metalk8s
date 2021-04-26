@@ -12,6 +12,7 @@ import VolumeDetailsTab from '../components/VolumeDetailsTab';
 import {
   SPARSE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
+  LVM_LOGICAL_VOLUME,
   PORT_NODE_EXPORTER,
 } from '../constants';
 import { computeVolumeGlobalStatus } from '../services/NodeVolumesUtils';
@@ -261,8 +262,18 @@ const VolumePageContent = (props) => {
                             volume?.metadata?.creationTimestamp
                           }
                           volumeType={
-                            volume?.spec?.rawBlockDevice
+                            volume.spec &&
+                            Object.prototype.hasOwnProperty.call(
+                              volume.spec,
+                              'rawBlockDevice',
+                            )
                               ? RAW_BLOCK_DEVICE
+                              : volume.spec &&
+                                Object.prototype.hasOwnProperty.call(
+                                  volume.spec,
+                                  'lvmLogicalVolume',
+                                )
+                              ? LVM_LOGICAL_VOLUME
                               : SPARSE_LOOP_DEVICE
                           }
                           usedPodName={
@@ -270,6 +281,10 @@ const VolumePageContent = (props) => {
                           }
                           devicePath={
                             volume?.spec?.rawBlockDevice?.devicePath ??
+                            intl.translate('not_applicable')
+                          }
+                          vgName={
+                            volume?.spec?.lvmLogicalVolume?.vgName ??
                             intl.translate('not_applicable')
                           }
                           volumeUsagePercentage={currentVolume?.usage}

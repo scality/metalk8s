@@ -17,6 +17,7 @@ import {
   VOLUME_CONDITION_LINK,
   STATUS_CRITICAL,
   STATUS_WARNING,
+  LVM_LOGICAL_VOLUME,
 } from '../constants';
 import { Button, Modal, ProgressBar, Loader } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
@@ -143,6 +144,7 @@ const VolumeDetailCard = (props) => {
     volumeType,
     usedPodName,
     devicePath,
+    vgName,
     volumeUsagePercentage,
     volumeUsageBytes,
     storageCapacity,
@@ -287,10 +289,25 @@ const VolumeDetailCard = (props) => {
             <InformationValue>{usedPodName}</InformationValue>
           </InformationSpan>
           <InformationSpan>
-            <InformationLabel>
-              {intl.translate('backend_disk')}
-            </InformationLabel>
-            <InformationValue>{devicePath}</InformationValue>
+            {volumeType !== LVM_LOGICAL_VOLUME ? (
+              <>
+                <InformationLabel data-cy="backend_disk_label">
+                  {intl.translate('backend_disk')}
+                </InformationLabel>
+                <InformationValue data-cy="backend_disk_value">
+                  {devicePath}
+                </InformationValue>
+              </>
+            ) : (
+              <>
+                <InformationLabel data-cy="vg_name_label">
+                  VG Name
+                </InformationLabel>
+                <InformationValue data-cy="vg_name_value">
+                  {vgName}
+                </InformationValue>
+              </>
+            )}
           </InformationSpan>
           <InformationSpan>
             <InformationLabel>{intl.translate('labels')}</InformationLabel>
