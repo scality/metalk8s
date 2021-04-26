@@ -34,6 +34,10 @@ allow solutions UIs displaying features according to some user groups
 
 - Enrich `sosreport` output (PR[#3222](https://github.com/scality/metalk8s/pull/3222))
 
+- [#1997](https://github.com/scality/metalk8s/issues/1997) - Add support for
+  LVM LogicalVolume Volume creation using storage operator
+  (PR [#3220](https://github.com/scality/metalk8s/pull/3220))
+
 ### Bug fixes
 
 - Ensure MetalK8s UI can be exposed behind a non-root path
@@ -42,10 +46,6 @@ allow solutions UIs displaying features according to some user groups
 
 ## Release 2.8.1 (in development)
 ### Enhancements
-
-- [#1997](https://github.com/scality/metalk8s/issues/1997) - Add support for
-  LVM LogicalVolume Volume creation using storage operator
-  (PR [#3220](https://github.com/scality/metalk8s/pull/3220))
 
 ### Bug fixes
 
