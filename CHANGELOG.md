@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Release 2.9.0 (in development)
+## Release 2.9.0
 ### Features Added
 
 - [#3180](https://github.com/scality/metalk8s/issues/3180) - All alerts from
