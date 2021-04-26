@@ -767,8 +767,8 @@ models:
       command: |-
         HOSTS_LIST=${HOSTS_LIST:-bootstrap$(seq -s '' --format ' node-%%g' 1 %(prop:nodes_count:-0)s)}
         case "%(prop:os:-centos-7)s" in
-          "centos-7") REPORT_OWNER=${REPORT_OWNER:-centos} REPORT_GROUP=${REPORT_GROUP:-centos};;
-          "rhel-7") REPORT_OWNER=${REPORT_OWNER:-cloud-user} REPORT_GROUP=${REPORT_GROUP:-cloud-user};;
+          centos-*) REPORT_OWNER=${REPORT_OWNER:-centos} REPORT_GROUP=${REPORT_GROUP:-centos};;
+          rhel-*) REPORT_OWNER=${REPORT_OWNER:-cloud-user} REPORT_GROUP=${REPORT_GROUP:-cloud-user};;
         esac
         for host in $HOSTS_LIST; do
           ssh -F "$SSH_CONFIG" $host \
