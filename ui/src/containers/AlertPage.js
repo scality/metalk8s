@@ -1,6 +1,5 @@
 //@flow
 import React, { useMemo, useState } from 'react';
-import { FormattedDate, FormattedTime } from 'react-intl';
 import styled, { useTheme } from 'styled-components';
 import { useHistory } from 'react-router';
 import { useLocation } from 'react-router-dom';
@@ -20,6 +19,7 @@ import {
   compareHealth,
   useQuery,
   useTableSortURLSync,
+  formatDateToMid1,
 } from '../services/utils';
 import { intl } from '../translations/IntlGlobalProvider';
 
@@ -412,15 +412,7 @@ function ActiveAlertTab({ columns, data, displayLogical, setDisplayLogical }) {
                 if (cell.column.Header === 'Active since') {
                   return (
                     <td {...cellProps}>
-                      <span>
-                        <FormattedDate value={cell.value} />{' '}
-                        <FormattedTime
-                          hour="2-digit"
-                          minute="2-digit"
-                          second="2-digit"
-                          value={cell.value}
-                        />
-                      </span>
+                      <span>{formatDateToMid1(cell.value)}</span>
                     </td>
                   );
                 } else if (cell.column.Header === 'Severity') {

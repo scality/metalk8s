@@ -170,6 +170,7 @@ def ext_pillar(minion_id, pillar, bootstrap_config):  # pylint: disable=unused-a
             "networks": _load_networks(config),
             "metalk8s": metal_data,
             "proxies": config.get("proxies", {}),
+            "kubernetes": config.get("kubernetes", {}),
         }
 
         if not isinstance(metal_data["archives"], list):

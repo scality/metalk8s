@@ -27,7 +27,7 @@ import { useIntl } from 'react-intl';
 
 const Logo = styled.img`
   height: 30px;
-`
+`;
 
 export const LoadingNavbar = ({ logo }: { logo: string }): Node => (
   <CoreUINavbar
@@ -168,8 +168,8 @@ export const Navbar = ({
       type: 'dropdown',
       text: auth.userData?.profile.name || '',
       icon: (
-        <span style={{ color: brand.textPrimary }}>
-          <i className="fas fa-user" />
+        <span style={{ color: brand.textTertiary }}>
+          <i className="fas fa-user-cog"></i>
         </span>
       ),
       items: [

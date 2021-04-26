@@ -1,6 +1,5 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
 import { Chips, EmptyTable } from '@scality/core-ui';
 import {
@@ -10,7 +9,7 @@ import {
 } from '@scality/core-ui/dist/style/theme';
 import { useTable } from 'react-table';
 import ActiveAlertsFilter from './ActiveAlertsFilters';
-import { useQuery } from '../services/utils';
+import { useQuery, formatDateToMid1 } from '../services/utils';
 import { NodeTab } from './style/CommonLayoutStyle';
 import { STATUS_WARNING, STATUS_CRITICAL } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
@@ -154,15 +153,7 @@ const NodePageAlertsTab = (props) => {
                   if (cell.column.Header === 'Active since') {
                     return (
                       <td {...cellProps}>
-                        <span>
-                          <FormattedDate value={cell.value} />{' '}
-                          <FormattedTime
-                            hour="2-digit"
-                            minute="2-digit"
-                            second="2-digit"
-                            value={cell.value}
-                          />
-                        </span>
+                        <span>{formatDateToMid1(cell.value)}</span>
                       </td>
                     );
                   } else if (cell.column.Header === 'Severity') {

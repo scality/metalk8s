@@ -459,7 +459,7 @@ const VolumeListTable = (props) => {
         Header: 'Latency',
         accessor: 'latency',
         cellStyle: {
-          textAlign: 'center',
+          textAlign: 'right',
           width: '75px',
           paddingRight: '6px',
         },

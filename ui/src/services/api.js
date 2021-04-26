@@ -48,6 +48,7 @@ export type Config = {
   ui_base_path?: string,
   url_alerts: string,
   alerts_lib_version: string,
+  url_support?: string,
 };
 
 export function fetchConfig(): Promise<Config> {

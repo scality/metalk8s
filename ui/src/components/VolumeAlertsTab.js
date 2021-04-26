@@ -1,5 +1,4 @@
 import React from 'react';
-import { FormattedDate, FormattedTime } from 'react-intl';
 import { useLocation } from 'react-router';
 import styled from 'styled-components';
 import {
@@ -12,6 +11,7 @@ import { Chips, EmptyTable } from '@scality/core-ui';
 import { useTable } from 'react-table';
 import { intl } from '../translations/IntlGlobalProvider';
 import { VolumeTab } from './style/CommonLayoutStyle';
+import { formatDateToMid1 } from '../services/utils';
 
 // Overriding overflow for the Tab since the table components has inner scroll
 const VolumeAlertTab = styled(VolumeTab)`
@@ -165,15 +165,7 @@ const ActiveAlertsCard = (props) => {
                   if (cell.column.Header === 'Active since') {
                     return (
                       <td {...cellProps}>
-                        <span>
-                          <FormattedDate value={cell.value} />{' '}
-                          <FormattedTime
-                            hour="2-digit"
-                            minute="2-digit"
-                            second="2-digit"
-                            value={cell.value}
-                          />
-                        </span>
+                        <span>{formatDateToMid1(cell.value)}</span>
                       </td>
                     );
                   } else if (cell.column.Header === 'Severity') {

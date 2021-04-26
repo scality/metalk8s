@@ -243,7 +243,7 @@ export function bytesToSize(bytes) {
   let sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
   if (bytes === 0) return '0 Byte';
   let i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-  return Math.round(bytes / Math.pow(1024, i), 2) + sizes[i];
+  return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
 }
 
 // The rules to compute the volume condition
@@ -370,9 +370,10 @@ export const compareHealth = (status1, status2) => {
   return weights[status1] - weights[status2];
 };
 
-// Adds a space between size value and its unit since the API returns this as a string
+// Add a space between size value and its unit since the API returns this as a string
+// Add the unit B
 export const formatSizeForDisplay = (value) => {
-  return value.replace(/^(\d+)(\D+)$/, '$1 $2');
+  return value.replace(/^(\d+)(\D+)$/, '$1 $2') + 'B';
 };
 
 /**
@@ -496,4 +497,33 @@ export const linuxDrivesNamingIncrement = (devicePath, increment) => {
   } else {
     return '';
   }
+};
+
+/*
+Following the design system, we should have 6 types of date.
+| Alias   | code                     | Example                  | Length | Context                                                |
+| ------- | ------------------------ | ------------------------ | ------ | ------------------------------------------------------ |
+| Short#1 | DD MMM                   | 20 Jul                   | 5      | Chart time axis                                        |
+| Short#2 | DDMMM HH:mm              | 20Jul 09:00              | 11     | Limited space, year not needed                         |
+| Short#3 | YYYY-MM-DD               | 2020-07-20               | 10     | Tables                                                 |
+| Mid#1   | YYYY-MM-DD HH:mm         | 2020-07-20 09:00         | 16     | Tables (creation/modification dates)                   |
+| Mid#2   | YYYY-MM-DD HH:mm:ss      | 2020-07-20 09:00:00      | 19     | When the seconds are needed                            |
+| Full#1  | EEE MMM DD YYYY HH:mm:ss | Mon Jul 20 2020 09:00:00 | 24     | When a lot of space (hover) - When precision is needed |
+*/
+export const formatDateToMid1 = (isoDate: string): string => {
+  const date = new Date(isoDate);
+  /*
+  Year: 4-digit year.
+  Month: Month of the year (0-11). Month is zero-indexed.
+  Day: Day of the month (1-31).
+  Hour: Hour of the day (0-23).
+  Minutes: Minutes (0-59).
+  Seconds: Seconds (0-59).
+*/
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1 < 10 ? '0' : '') + (date.getMonth() + 1);
+  const day = (date.getDate() < 10 ? '0' : '') + date.getDate();
+  const hour = (date.getHours() < 10 ? '0' : '') + date.getHours();
+  const minute = (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
+  return `${year}-${month}-${day} ${hour}:${minute}`;
 };

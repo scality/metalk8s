@@ -413,7 +413,7 @@ const VolumeListTable = (props) => {
         accessor: 'storageCapacity',
         cellStyle: {
           textAlign: 'right',
-          width: isNodeColumn ? '55px' : '110px',
+          width: isNodeColumn ? '70px' : '110px',
           paddingRight: '5px',
         },
         sortType: 'size',
@@ -499,7 +499,7 @@ const VolumeListTable = (props) => {
       textAlign: 'left',
       flex: 1,
       paddingLeft: '12px',
-      minWidth: '80px',
+      minWidth: '50px',
     },
   };
   if (isNodeColumn) {

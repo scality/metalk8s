@@ -12,6 +12,7 @@ import sagas from './ducks/sagas';
 import { createBrowserHistory } from 'history';
 import { useTypedSelector } from './hooks';
 import { setHistory as setReduxHistory } from './ducks/history';
+import { ErrorPage500 } from '@scality/core-ui';
 
 const composeEnhancers =
   typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
@@ -26,31 +27,35 @@ if (window.Cypress) window.__store__ = store;
 
 sagaMiddleware.run(sagas);
 
-const RouterWithBaseName = ({children}) => {
-  const configStatus = useTypedSelector(state => state.config.status);
-  const basename = useTypedSelector(state => state.config.api?.ui_base_path);
+const RouterWithBaseName = ({ children }) => {
+  const configStatus = useTypedSelector((state) => state.config.status);
+  const basename = useTypedSelector((state) => state.config.api?.ui_base_path);
   const [history, setHistory] = useState(createBrowserHistory({}));
   const dispatch = useDispatch();
-  useLayoutEffect(() =>{
+  useLayoutEffect(() => {
     if (basename) {
-      const historyWithBasename = createBrowserHistory({basename});
+      const historyWithBasename = createBrowserHistory({ basename });
       setHistory(historyWithBasename);
       if (window.Cypress) window.__history__ = historyWithBasename;
       dispatch(setReduxHistory(historyWithBasename));
     }
     if (window.Cypress) window.__history__ = history;
   }, [basename]);
- 
+
   if (configStatus === 'error') {
-    return <>An error occurred, please try to refresh the page</>//Todo display an error page
+    return <ErrorPage500 data-cy="sc-error-page500" />;
   }
 
   if (configStatus === 'idle' || configStatus === 'loading') {
-    return <>{children}</>
+    return <>{children}</>;
   }
 
-  return <Router key={basename} history={history}>{children}</Router>
-}
+  return (
+    <Router key={basename} history={history}>
+      {children}
+    </Router>
+  );
+};
 
 ReactDOM.render(
   <Provider store={store}>
