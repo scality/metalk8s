@@ -4,9 +4,11 @@ import { Effect, call, takeEvery, put, select } from 'redux-saga/effects';
 import * as ApiSalt from '../services/salt/api';
 
 import type { Config } from '../services/api';
-import { apiConfigSelector, logoutAction } from './config';
+import { apiConfigSelector } from './config';
 import { connectSaltApiAction } from './app/salt';
 import { User } from 'oidc-client';
+import { addNotificationErrorAction } from './app/notifications';
+import { intl } from '../translations/IntlGlobalProvider';
 
 // Actions
 const AUTHENTICATE_SALT_API = 'AUTHENTICATE_SALT_API';
@@ -68,7 +70,7 @@ export function* authenticateSaltApi(): Generator<Effect, void, any> {
       }),
     );
   } else {
-    yield put(logoutAction());
+    yield put(addNotificationErrorAction({title: intl.translate('salt_login_error_title'), message: intl.translate('salt_login_error_message')}))
   }
 }
 

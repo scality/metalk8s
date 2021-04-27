@@ -6,6 +6,12 @@ jest.mock('../index.js', () => {
   };
 });
 
+import uuidv1 from 'uuid/v1';
+jest.mock('uuid/v1', () => ({
+  __esModule: true,
+  default: () => 'uuidv1',
+}));
+
 import { call, put } from 'redux-saga/effects';
 import {
   SALT_AUTHENTICATION_FAILED,
@@ -68,6 +74,17 @@ it('Salt authentication failed', () => {
     error: 'error',
   };
 
-  expect(gen.next(result).value).toEqual(put({ type: LOGOUT }));
+  expect(gen.next(result).value).toEqual(
+    put({
+      payload: {
+        message:
+          'Some features of the UI may not work as expected (cluster expansion and displaying nodes IPs). Please try to logout and login again or contact your support if this error persist.',
+        title: 'An error occurred when authenticating on salt API',
+        uid: 'uuidv1',
+        variant: 'danger',
+      },
+      type: 'ADD_NOTIFICATION_ERROR',
+    }),
+  );
   expect(gen.next().done).toEqual(true);
 });

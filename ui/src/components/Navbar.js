@@ -72,15 +72,7 @@ function useNavbarVersion(navbarRef: { current: NavbarWebComponent | null }): st
 function useLoginEffect(navbarRef: { current: NavbarWebComponent | null }, version: string | null) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const dispatch = useDispatch();
-  const user = useTypedSelector((state) => state.oidc?.user);
-  const userStoredInRedux = useRef(false);
-
-  useEffect(() => {
-    if (user) {
-      userStoredInRedux.current = true;
-    }
-  }, [!!user])
-
+  
   useEffect(() => {
     if (!navbarRef.current || !version) {
       return;
@@ -111,7 +103,7 @@ function useLoginEffect(navbarRef: { current: NavbarWebComponent | null }, versi
     };
   }, [navbarRef, version, dispatch]);
 
-  return { isAuthenticated: isAuthenticated && userStoredInRedux.current };
+  return { isAuthenticated };
 }
 
 function useLanguageEffect(navbarRef: { current: NavbarWebComponent | null }, version: string | null) {
@@ -180,22 +172,6 @@ function useThemeEffect(navbarRef: { current: NavbarWebComponent | null }, versi
   }, [navbarRef, version, dispatch]);
 }
 
-function useLogoutEffect(
-  navbarRef: { current: NavbarWebComponent | null },
-  isAuthenticated: boolean,
-) {
-  const user = useTypedSelector((state) => state.oidc?.user);
-  useLayoutEffect(() => {
-    if (!navbarRef.current) {
-      return;
-    }
-
-    if (isAuthenticated && !user) {
-      navbarRef.current.logOut();
-    }
-  }, [navbarRef, !user, isAuthenticated]);
-}
-
 function ErrorFallback() {
   const { language, api } = useTypedSelector((state) => state.config);
   const url_support = api?.url_support;
@@ -220,8 +196,7 @@ function InternalNavbar() {
   const navbarRef = useRef<NavbarWebComponent | null>(null);
 
   const version = useNavbarVersion(navbarRef);
-  const { isAuthenticated } = useLoginEffect(navbarRef, version);
-  useLogoutEffect(navbarRef, isAuthenticated);
+  useLoginEffect(navbarRef, version);
   useLanguageEffect(navbarRef, version);
   useThemeEffect(navbarRef, version);
 
