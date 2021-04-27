@@ -70,7 +70,5 @@ tox -e docs
 
 ---
 
-MetalK8s version 1 is still maintained in this repository. See the
-`development/1.*` branches, e. g.
-[MetalK8s 1.3](https://github.com/scality/metalk8s/tree/development/1.3) in the
-same repository.
+MetalK8s version 1 is still hosted in this repository but is no longer maintained.
+The last release is [MetalK8s 1.3](https://github.com/scality/metalk8s/tree/development/1.3).
