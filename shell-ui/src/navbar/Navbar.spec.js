@@ -335,5 +335,82 @@ describe('navbar', () => {
     expect(screen.queryByText(/Test/i)).toBeInTheDocument();
   });
 
+  it('should display navbar in the expected order', async () => {
+    //S
+
+    mockOIDCProvider();
+
+    render(
+      <solutions-navbar
+        oidc-provider-url="https://mocked.ingress/oidc"
+        client-id="metalk8s-ui"
+        response-type="id_token"
+        redirect-url="http://localhost:8082"
+        scopes="openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
+        options={JSON.stringify({
+          main: {
+            'http://localhost:8082/': { en: 'Third', fr: 'Plateforme', order: 3 },
+            'http://localhost:8082/test': {
+              en: 'First',
+              fr: 'Test',
+              groups: ['group1', 'group2'],
+              order: 1
+            },
+            'http://localhost:8082/test3': {
+              en: 'Second',
+              fr: 'Test3',
+              groups: ['group1', 'group2'],
+              order: 2
+            },
+          },
+          subLogin: {},
+        })}
+      />,
+    );
+    //E
+    await waitForLoadingToFinish();
+    //V
+    const entries = [...screen.queryByText(/First/i).parentElement.parentElement.children].map(e => e.querySelector('a').innerHTML)
+    expect(entries).toStrictEqual(['First', 'Second', 'Third'])
+  });
+
+  it('should enqueue unordered entries', async () => {
+    //S
+
+    mockOIDCProvider();
+
+    render(
+      <solutions-navbar
+        oidc-provider-url="https://mocked.ingress/oidc"
+        client-id="metalk8s-ui"
+        response-type="id_token"
+        redirect-url="http://localhost:8082"
+        scopes="openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
+        options={JSON.stringify({
+          main: {
+            'http://localhost:8082/': { en: 'Third', fr: 'Plateforme', order: 3 },
+            'http://localhost:8082/test': {
+              en: 'First',
+              fr: 'Test',
+              groups: ['group1', 'group2'],
+              order: 1
+            },
+            'http://localhost:8082/test3': {
+              en: 'Second',
+              fr: 'Test3',
+              groups: ['group1', 'group2'],
+            },
+          },
+          subLogin: {},
+        })}
+      />,
+    );
+    //E
+    await waitForLoadingToFinish();
+    //V
+    const entries = [...screen.queryByText(/First/i).parentElement.parentElement.children].map(e => e.querySelector('a').innerHTML)
+    expect(entries).toStrictEqual(['First', 'Third', 'Second'])
+  });
+
   afterAll(() => server.close());
 });

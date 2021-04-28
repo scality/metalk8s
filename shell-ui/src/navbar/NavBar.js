@@ -47,33 +47,30 @@ const translateOptionsToMenu = (
   userGroups: string[],
 ) => {
   const normalizedLocation = normalizePath(location.href);
-  return (
-    Object.entries(options[section])
-      //$FlowIssue - flow typing for Object.entries incorrectly typing values as [string, mixed] instead of [string, PathDescription]
-      .filter((entry: [string, PathDescription]) =>
-        isEntryAccessibleByTheUser(entry, userGroups),
-      )
-      .map(
-        //$FlowIssue - flow typing for Object.entries incorrectly typing values as [string, mixed] instead of [string, PathDescription]
-        ([path, pathDescription]: [string, PathDescription], i) => {
-          try {
-            return {
-              ...renderer(path, pathDescription),
-              selected: pathDescription.activeIfMatches
-                ? new RegExp(pathDescription.activeIfMatches).test(
-                    location.href,
-                  )
-                : normalizedLocation === normalizePath(path),
-            };
-          } catch (e) {
-            throw new Error(
-              `[navbar][config] Invalid path specified in "options.${section}": "${path}" ` +
-                '(keys must be defined as fully qualified URLs, ' +
-                'such as "{protocol}://{host}{path}?{queryParams}")',
-            );
-          }
-        },
-      )
+  const entries = Object.entries(options[section])
+    //$FlowIssue - flow typing for Object.entries incorrectly typing values as [string, mixed] instead of [string, PathDescription]
+    .filter((entry: [string, PathDescription]) =>
+      isEntryAccessibleByTheUser(entry, userGroups),
+    );
+  entries.sort(([_, entryA], [__, entryB]) => (entryA.order - entryB.order));
+  return entries.map(
+    //$FlowIssue - flow typing for Object.entries incorrectly typing values as [string, mixed] instead of [string, PathDescription]
+    ([path, pathDescription]: [string, PathDescription], i) => {
+      try {
+        return {
+          ...renderer(path, pathDescription),
+          selected: pathDescription.activeIfMatches
+            ? new RegExp(pathDescription.activeIfMatches).test(location.href)
+            : normalizedLocation === normalizePath(path),
+        };
+      } catch (e) {
+        throw new Error(
+          `[navbar][config] Invalid path specified in "options.${section}": "${path}" ` +
+            '(keys must be defined as fully qualified URLs, ' +
+            'such as "{protocol}://{host}{path}?{queryParams}")',
+        );
+      }
+    },
   );
 };
 

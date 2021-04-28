@@ -25,6 +25,7 @@ export type PathDescription = {
   activeIfMatches?: string,
   icon?: string,
   isExternal?: boolean,
+  order?: number
 };
 export type MenuItems = { [path: string]: PathDescription };
 
