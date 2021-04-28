@@ -388,17 +388,17 @@ describe('navbar', () => {
         scopes="openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
         options={JSON.stringify({
           main: {
-            'http://localhost:8082/': { en: 'Third', fr: 'Plateforme', order: 3 },
+            'http://localhost:8082/': { en: 'Second', fr: 'Plateforme', order: 3 },
             'http://localhost:8082/test': {
-              en: 'First',
+              en: 'Third',
               fr: 'Test',
-              groups: ['group1', 'group2'],
-              order: 1
+              groups: ['group1', 'group2']
             },
             'http://localhost:8082/test3': {
-              en: 'Second',
+              en: 'First',
               fr: 'Test3',
               groups: ['group1', 'group2'],
+              order: 1
             },
           },
           subLogin: {},
@@ -409,7 +409,7 @@ describe('navbar', () => {
     await waitForLoadingToFinish();
     //V
     const entries = [...screen.queryByText(/First/i).parentElement.parentElement.children].map(e => e.querySelector('a').innerHTML)
-    expect(entries).toStrictEqual(['First', 'Third', 'Second'])
+    expect(entries).toStrictEqual(['First', 'Second', 'Third'])
   });
 
   afterAll(() => server.close());

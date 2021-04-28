@@ -52,7 +52,7 @@ const translateOptionsToMenu = (
     .filter((entry: [string, PathDescription]) =>
       isEntryAccessibleByTheUser(entry, userGroups),
     );
-  entries.sort(([_, entryA], [__, entryB]) => (entryA.order - entryB.order));
+  entries.sort(([_, entryA], [__, entryB]) => ((entryA.order || Infinity) < (entryB.order || Infinity) ? -1 : 1));
   return entries.map(
     //$FlowIssue - flow typing for Object.entries incorrectly typing values as [string, mixed] instead of [string, PathDescription]
     ([path, pathDescription]: [string, PathDescription], i) => {
