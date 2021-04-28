@@ -545,7 +545,7 @@ models:
       name: Init terraform
       command: |-
         for try in $(seq 1 $MAX_RETRIES); do
-          if terraform init --verify-plugins=false; then
+          if terraform init; then
             break
           elif [ $try -lt $MAX_RETRIES ]; then
             rm -rf .terraform/
