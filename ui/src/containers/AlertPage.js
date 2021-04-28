@@ -1,5 +1,5 @@
 //@flow
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import styled, { useTheme } from 'styled-components';
 import { useHistory } from 'react-router';
 import { useLocation } from 'react-router-dom';
@@ -10,7 +10,7 @@ import {
   useFilters,
   useGlobalFilter,
 } from 'react-table';
-import { EmptyTable, SearchInput, Toggle } from '@scality/core-ui';
+import { EmptyTable, SearchInput } from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import { useAlerts } from './AlertProvider';
 import CircleStatus from '../components/CircleStatus';
@@ -260,7 +260,7 @@ function GlobalFilter({
   );
 }
 
-function ActiveAlertTab({ columns, data, displayLogical, setDisplayLogical }) {
+function ActiveAlertTab({ columns, data }) {
   const query = useQuery();
   const querySearch = query.get('search');
   const querySort = query.get('sort');
@@ -344,21 +344,12 @@ function ActiveAlertTab({ columns, data, displayLogical, setDisplayLogical }) {
           colSpan={visibleColumns.length}
           style={{
             textAlign: 'left',
-            display: 'flex',
-            justifyItems: 'stretch',
-            alignItems: 'center',
           }}
         >
           <GlobalFilter
             preGlobalFilteredRows={preGlobalFilteredRows}
             globalFilter={state.globalFilter}
             setGlobalFilter={setGlobalFilter}
-          />
-
-          <Toggle
-            label={'View logical alerts'}
-            toggle={displayLogical}
-            onChange={(evt) => setDisplayLogical(evt.target.checked)}
           />
         </tr>
 
@@ -435,21 +426,15 @@ function ActiveAlertTab({ columns, data, displayLogical, setDisplayLogical }) {
 
 export default function AlertPage() {
   const alerts = useAlerts({});
-  const [displayLogical, setDisplayLogical] = useState(false);
   const leafAlerts = useMemo(
     () => alerts?.alerts.filter((alert) => !alert.labels.children) || [],
     [JSON.stringify(alerts?.alerts)],
   );
 
-  const displayedAlerts = useMemo(
-    () => (displayLogical ? alerts?.alerts : leafAlerts) || [],
-    [JSON.stringify(alerts?.alerts), displayLogical],
-  );
-
-  const criticalAlerts = displayedAlerts.filter(
+  const criticalAlerts = leafAlerts.filter(
     (alert) => alert.severity === 'critical',
   );
-  const wariningAlerts = displayedAlerts.filter(
+  const wariningAlerts = leafAlerts.filter(
     (alert) => alert.severity === 'warning',
   );
 
@@ -483,16 +468,14 @@ export default function AlertPage() {
   return (
     <AlertPageContainer>
       <AlertPageHeader
-        activeAlerts={displayedAlerts.length}
+        activeAlerts={leafAlerts.length}
         critical={criticalAlerts.length}
         warning={wariningAlerts.length}
       />
       <AlertContent>
         <ActiveAlertTab
-          data={displayedAlerts}
+          data={leafAlerts}
           columns={columns}
-          displayLogical={displayLogical}
-          setDisplayLogical={setDisplayLogical}
         />
       </AlertContent>
     </AlertPageContainer>
