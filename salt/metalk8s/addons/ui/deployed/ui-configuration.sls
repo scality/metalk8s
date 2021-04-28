@@ -87,6 +87,8 @@ Create metalk8s-shell-ui-config ConfigMap:
                   "{{ cp_ingress_url }}/docs/{{ stripped_base_path }}":
                     en: "Documentation"
                     fr: "Documentation"
+                    icon: "fas fa-clipboard-list"
+                    isExternal: true
 
 {%- else %}
 
