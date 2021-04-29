@@ -332,7 +332,7 @@ const VolumeDetailCard = (props) => {
           {alertlist && (
             <AlertsCounterContainer>
               <VolumeSectionTitle>
-                {intl.translate('active_alert')}
+                {intl.translate('active_alerts')}
               </VolumeSectionTitle>
               <ActiveAlertsCounter
                 criticalCounter={

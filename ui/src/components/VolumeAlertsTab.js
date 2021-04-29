@@ -227,7 +227,7 @@ const ActiveAlertsCard = (props) => {
     <VolumeAlertTab>
       <ActiveAlertsCardContainer>
         <ActiveAlertsTitle>
-          <div>{intl.translate('active_alert')}</div>
+          <div>{intl.translate('active_alerts')}</div>
           {PVCName && activeAlertListData?.length !== 0 && (
             <ActiveAlertsFilters />
           )}

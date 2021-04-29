@@ -216,7 +216,7 @@ const NodePageAlertsTab = (props) => {
     <NodeAlertsTab>
       <TitleContainer>
         <ActiveAlertsText theme={theme}>
-          {intl.translate('active_alert')}
+          {intl.translate('active_alerts')}
         </ActiveAlertsText>
         <ActiveAlertsFilter />
       </TitleContainer>
