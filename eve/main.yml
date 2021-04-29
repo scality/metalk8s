@@ -812,7 +812,7 @@ stages:
           # in pre-merge and post-merge
           name: Set premerge artifacts name to fixed success
           property: premerge_artifacts_name
-          value: "github:scality:metalk8s:staging-2.9.2.r210429092949.da13e92.pre-merge.00034227"
+          value: "github:scality:metalk8s:staging-2.9.0.r210428081116.74f024e.pre-merge.00034148"
       - SetProperty: *set_premerge_url
       # - TriggerStages:
       #     name: Trigger build, docs and lint stages simultaneously
