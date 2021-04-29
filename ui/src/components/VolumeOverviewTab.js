@@ -184,9 +184,9 @@ const VolumeDetailCard = (props) => {
       hightvolumeName = volumeListData[0]?.name;
     }
     if (isAddNodefilter && hightvolumeName) {
-      history.push(`/volumes/${hightvolumeName}?node=${nodeName}`);
+      history.push(`/volumes/${hightvolumeName}/overview?node=${nodeName}`);
     } else if (!isAddNodefilter && hightvolumeName) {
-      history.push(`/volumes/${hightvolumeName}`);
+      history.push(`/volumes/${hightvolumeName}/overview`);
     } else if (isAddNodefilter && !hightvolumeName) {
       history.push(`/volumes/?node=${nodeName}`);
     } else {
