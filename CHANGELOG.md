@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Release 2.9.1 (in development)
+## Release 2.9.1
 ## Enhancements
 
 - Add an optional order property to manage ordering of navbar entries
