@@ -171,6 +171,9 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "calico-node",
         "calico-kube-controllers",
     ],
+    constants.COREDNS_REPOSITORY: [
+        "coredns",
+    ],
     constants.COREOS_REPOSITORY: [
         "kube-state-metrics",
     ],
@@ -181,7 +184,6 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "nginx",
     ],
     constants.GOOGLE_REPOSITORY: [
-        "coredns",
         "etcd",
         "kube-apiserver",
         "kube-controller-manager",
