@@ -10,6 +10,7 @@ import isEmpty from 'lodash.isempty';
 import {
   createNodeAction,
   clearCreateNodeErrorAction,
+  fetchClusterVersionAction,
 } from '../ducks/app/nodes';
 import { intl } from '../translations/IntlGlobalProvider';
 import {
@@ -135,6 +136,7 @@ const NodeCreateForm = () => {
   const history = useHistory();
 
   useEffect(() => {
+    dispatch(fetchClusterVersionAction());
     return () => {
       dispatch(clearCreateNodeErrorAction());
     };
