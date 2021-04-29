@@ -1,13 +1,18 @@
 # CHANGELOG
 
 ## Release 2.9.1 (in development)
+## Enhancements
+
+- Add an optional order property to manage ordering of navbar entries
+  (PR[#3334](https://github.com/scality/metalk8s/pull/3334))
+
 ### Bug fixes
 
 - Re-support MetalK8s UI on Firefox
-  (PR[#3399](https://github.com/scality/metalk8s/pull/3330),
+  (PR[#3399](https://github.com/scality/metalk8s/pull/3330))
 
 - Remove unnecessary `View logical alerts` toggle in the Alert page
-  (PR[#3399](https://github.com/scality/metalk8s/pull/3330),
+  (PR[#3399](https://github.com/scality/metalk8s/pull/3330))
 
 ## Release 2.9.0
 ### Features Added
