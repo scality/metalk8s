@@ -785,7 +785,7 @@ const CreateVolume = (props) => {
                     <Button
                       text={intl.translate('create')}
                       type="submit"
-                      variant={'buttonSecondary'}
+                      variant={'buttonPrimary'}
                       disabled={!dirty || !isEmpty(errors)}
                       data-cy="submit-create-volume"
                     />

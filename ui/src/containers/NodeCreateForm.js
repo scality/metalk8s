@@ -303,7 +303,7 @@ const NodeCreateForm = () => {
                         />
                         <Button
                           text={intl.translate('create')}
-                          variant={'buttonSecondary'}
+                          variant={'buttonPrimary'}
                           type="submit"
                           disabled={
                             !dirty ||
