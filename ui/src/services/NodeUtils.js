@@ -162,14 +162,19 @@ Return
    controlPlane: { ip: '10.0.1.42', interface: 'eth1'}
    workloadPlane: { ip: '10.100.0.2', interface: 'eth3'},
   }
+
+Note: the ipsInterfacesObject maybe also be a string with error message
+
+ipsInterfacesObject =
+  "nodename": "Minion did not return. [No response]\nThe minions may not have all finished running and any remaining minions will return upon completion. To look up the return data for this job later, run the following command:\n\nsalt-run jobs.lookup_jid 20210429184411623617"
 */
 export const nodesCPWPIPsInterface = (
-  IPsInterfacesObject: IPInterfaces | false,
+  IPsInterfacesObject: IPInterfaces | false | string,
 ): {
   controlPlane: { ip: string, interface: string },
   workloadPlane: { ip: string, interface: string },
 } => {
-  if (!IPsInterfacesObject) {
+  if (!IPsInterfacesObject || typeof IPsInterfacesObject === 'string') {
     return {
       controlPlane: { ip: '', interface: '' },
       workloadPlane: { ip: '', interface: '' },
