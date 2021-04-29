@@ -1,6 +1,10 @@
 # CHANGELOG
 
 ## Release 2.10.0 (in development)
+## Enhancements
+
+- Bump Kubernetes version to 1.21.0
+  (PR[#3354](https://github.com/scality/metalk8s/pull/3354))
 
 ## Release 2.9.2 (in development)
 
