@@ -151,9 +151,10 @@ const LabelsKeyValue = styled.div`
 
 const LabelsValue = styled.div`
   width: 200px;
-  padding: ${padding.small} 0;
-  margin-right: ${padding.small};
+  padding-top: ${padding.small};
+  margin-right: 12px;
   color: ${(props) => props.theme.brand.textPrimary};
+  word-wrap: break-word;
 `;
 
 const TitleWrapper = styled.div`
@@ -164,12 +165,16 @@ const TitleWrapper = styled.div`
 const LabelsName = styled(LabelsValue)`
   font-weight: ${fontWeight.bold};
   color: ${(props) => props.theme.brand.textPrimary};
+  word-wrap: break-word;
 `;
 
 const CheckboxContainer = styled.div`
   padding: ${padding.base} 0 0 ${padding.small};
   .text {
     font-size: ${fontSize.base};
+  }
+  .sc-checkbox {
+    display: flex;
   }
 `;
 
@@ -560,6 +565,7 @@ const CreateVolume = (props) => {
                             onChange={(e) => {
                               setLabelName(e.target.value);
                             }}
+                            onBlur={handleOnBlur}
                           />
                           <Input
                             name="labelValue"
@@ -568,14 +574,25 @@ const CreateVolume = (props) => {
                             onChange={(e) => {
                               setLabelValue(e.target.value);
                             }}
+                            onBlur={handleOnBlur}
                           />
-                          <Button
-                            text={intl.translate('add')}
-                            type="button"
-                            onClick={addLabel}
-                            data-cy="add-volume-labels-button"
-                            outlined
-                          />
+                          {touched.labelName && touched.labelValue ? (
+                            <Button
+                              text={intl.translate('add')}
+                              type="button"
+                              onClick={addLabel}
+                              data-cy="add-volume-labels-button"
+                              variant={'buttonSecondary'}
+                            />
+                          ) : (
+                            <Button
+                              text={intl.translate('add')}
+                              type="button"
+                              onClick={addLabel}
+                              data-cy="add-volume-labels-button"
+                              outlined
+                            />
+                          )}
                         </LabelsForm>
                         {!!Object.keys(values.labels).length && (
                           <LabelsList>
