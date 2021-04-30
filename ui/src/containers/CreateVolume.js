@@ -588,9 +588,9 @@ const CreateVolume = (props) => {
                             <Button
                               text={intl.translate('add')}
                               type="button"
-                              onClick={addLabel}
                               data-cy="add-volume-labels-button"
                               outlined
+                              disabled
                             />
                           )}
                         </LabelsForm>
