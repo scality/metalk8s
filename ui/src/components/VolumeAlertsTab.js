@@ -25,9 +25,9 @@ const ActiveAlertsCardContainer = styled.div`
 
 const ActiveAlertsTitle = styled.div`
   color: ${(props) => props.theme.brand.textPrimary};
-  font-size: ${fontSize.base};
+  font-size: ${fontSize.large};
   font-weight: ${fontWeight.bold};
-  padding: ${padding.small} 0 0 ${padding.large};
+  padding: ${padding.small} 0 0 0;
   display: flex;
   justify-content: space-between;
 `;

@@ -69,15 +69,15 @@ const Body = styled.tbody`
 `;
 
 const ActiveAlertsText = styled.div`
-  color: ${(props) => props.theme.brand.textTertiary};
+  color: ${(props) => props.theme.brand.textPrimary};
   font-weight: ${fontWeight.bold};
-  font-size: ${fontSize.base};
+  font-size: ${fontSize.large};
 `;
 
 const TitleContainer = styled.div`
   display: flex;
   justify-content: space-between;
-  padding: ${padding.large} ${padding.base} 0 ${padding.larger};
+  padding: ${padding.large} ${padding.base} 0 ${padding.base};
 `;
 
 const NodePageAlertsTab = (props) => {
