@@ -191,16 +191,6 @@ install_packages() {
     esac
 }
 
-pre_minion_checks() {
-    test "x$(whoami)" = "xroot" || die "Script must run as root"
-    test -n "${RPM}" || die "rpm not found"
-    test -x "${RPM}" || die "rpm at '${RPM}' is not executable"
-    test -n "${SYSTEMCTL}" || die "systemctl not found"
-    test -x "${SYSTEMCTL}" || die "systemctl at '${SYSTEMCTL}' is not executable"
-    test -n "${YUM}" || die "yum not found"
-    test -x "${YUM}" || die "yum at '${YUM}' is not executable"
-}
-
 disable_salt_minion_service() {
     ${SYSTEMCTL} disable salt-minion.service 2>/dev/null || true
 }
