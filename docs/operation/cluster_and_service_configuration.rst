@@ -379,6 +379,7 @@ In order to add Alert rules, a new ``PrometheusRule`` manifest must be created.
      labels:
        app: prometheus-operator
        app.kubernetes.io/name: prometheus-operator
+       release: prometheus-operator
      name: <prometheus-rule-name>
      namespace: <namespace-name>
    spec:
@@ -393,6 +394,11 @@ In order to add Alert rules, a new ``PrometheusRule`` manifest must be created.
          for: 1h
          labels:
            severity: warning
+
+.. note::
+
+   All the labels in the example above are mandatory for Prometheus
+   to take the new rules into account.
 
 Then this manifest must be applied.
 
