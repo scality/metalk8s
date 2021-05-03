@@ -191,16 +191,6 @@ install_packages() {
     esac
 }
 
-pre_minion_checks() {
-    test "x$(whoami)" = "xroot" || die "Script must run as root"
-    test -n "${RPM}" || die "rpm not found"
-    test -x "${RPM}" || die "rpm at '${RPM}' is not executable"
-    test -n "${SYSTEMCTL}" || die "systemctl not found"
-    test -x "${SYSTEMCTL}" || die "systemctl at '${SYSTEMCTL}' is not executable"
-    test -n "${YUM}" || die "yum not found"
-    test -x "${YUM}" || die "yum at '${YUM}' is not executable"
-}
-
 disable_salt_minion_service() {
     ${SYSTEMCTL} disable salt-minion.service 2>/dev/null || true
 }
@@ -380,7 +370,7 @@ get_salt_env() {
 }
 
 get_salt_minion_id() {
-    "$SALT_CALL" --out txt grains.get id | cut -c 8-
+    "$SALT_CALL" --local --out txt grains.get id | cut -c 8-
 }
 
 get_salt_minion_ids() {
@@ -413,4 +403,25 @@ retry() {
     done
 
     echo "$stdout"
+}
+
+check_minion_id() {
+    # Minion ID is used as the Kubernetes Node name, so it must follow the
+    # RFC1123 (https://tools.ietf.org/html/rfc1123).
+    # This means the name must:
+    #   - contain no more than 253 characters
+    #   - contain only lowercase alphanumeric characters, '-' or '.'
+    #   - start with an alphanumeric character
+    #   - end with an alphanumeric character
+    # NB: It is only needed for bootstrap node, as it will be automatically
+    # done by K8s APIServer for expansion, when applying new node manifests.
+    minion_id=$(get_salt_minion_id)
+
+    if ! [[ $minion_id =~ ^(([0-9a-z][0-9a-z.-]{0,251}[0-9a-z])|[0-9a-z])$ ]]; then
+        echo "Invalid Salt minion ID '$minion_id': The ID must be compliant" \
+             "with RFC1123, which means it must contain no more than 253" \
+             "characters, contain only lowercase alphanumeric characters, '-'" \
+             "or '.' and start and end with an alphanumeric character."
+        return 1
+    fi
 }
