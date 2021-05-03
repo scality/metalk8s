@@ -17,8 +17,6 @@ import notifications from './app/notifications';
 import type { NotificationsState } from './app/notifications';
 import salt, { SaltState } from './app/salt';
 import monitoring, { MonitoringState } from './app/monitoring';
-import alerts from './app/alerts';
-import type { AlertsState } from './app/alerts';
 import { oidcReducer, type UserState } from './oidc';
 import { historyReducer, type HistoryState } from './history';
 
@@ -33,7 +31,6 @@ const rootReducer = combineReducers({
     salt,
     monitoring,
     volumes,
-    alerts,
   }),
   oidc: oidcReducer,
   history: historyReducer,
@@ -52,7 +49,6 @@ export type RootState = {
     layout: LayoutState,
     salt: SaltState,
     monitoring: MonitoringState,
-    alerts: AlertsState,
   },
 };
 

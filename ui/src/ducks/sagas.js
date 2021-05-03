@@ -7,7 +7,6 @@ import { saltSaga } from './app/salt';
 import { volumesSaga } from './app/volumes';
 import { authenticateSaga } from './login';
 import { configSaga } from './config';
-import { alertsSaga } from './app/alerts';
 
 export default function* rootSaga() {
   yield all([
@@ -19,6 +18,5 @@ export default function* rootSaga() {
     fork(podsSaga),
     fork(saltSaga),
     fork(volumesSaga),
-    fork(alertsSaga),
   ]);
 }
