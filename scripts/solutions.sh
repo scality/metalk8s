@@ -138,6 +138,10 @@ while :; do
     case $1 in
         -a|--archive)
             shift
+            if [ ! -e "$1" ]; then
+                echo 1>&2 "No such file or directory '$1'"
+                exit 1
+            fi
             ARCHIVES+=("$(readlink -f "$1")")
             ;;
         -d|--description)
