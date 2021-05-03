@@ -167,7 +167,6 @@ check_ca_minion() {
     fi
 }
 
-
 main() {
     run "Determine the OS" determine_os
     if [ -z "${PYTHON:-}" ]; then
@@ -181,6 +180,7 @@ main() {
     run "Disabling Salt minion service" disable_salt_minion_service
     run "Stopping Salt minion service" stop_salt_minion_service
     run "Installing mandatory packages" install_packages "${PACKAGES[@]}"
+    run "Checking Salt minion ID" check_minion_id
     run "Configuring Salt minion to run in local mode" configure_salt_minion_local_mode
     run "Ensure archive is available" ensure_archives_mounted
     run "Calculating Salt grains in local mode" set_local_grains
