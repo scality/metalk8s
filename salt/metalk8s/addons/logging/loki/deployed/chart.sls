@@ -271,7 +271,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: loki-2.1.0
     heritage: metalk8s
-    release: prometheus-operator
+    metalk8s.scality.com/monitor: ''
   name: loki
   namespace: metalk8s-logging
 spec:
