@@ -87,6 +87,7 @@ extensions = [
     'sphinxcontrib.spelling',
     'sphinxcontrib.plantuml',
     'sphinxcontrib_github_alt',
+    'sphinxcontrib.jinja',
 ]
 
 if ON_RTD:
@@ -98,10 +99,7 @@ if ON_RTD:
 templates_path = ['_templates']
 
 # The master toctree document.
-if RELEASE_BUILD and not ON_RTD:
-    master_doc = 'index-release'
-else:
-    master_doc = 'index'
+master_doc = 'index'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -109,9 +107,7 @@ else:
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 if RELEASE_BUILD and not ON_RTD:
-    exclude_patterns.extend(['index.rst', 'index-latex.rst', 'developer/*'])
-else:
-    exclude_patterns.append('index-release*')
+    exclude_patterns.append('developer/*')
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -268,3 +264,14 @@ github_project_url = 'https://github.com/scality/metalk8s'
 # -- Options for sphinx.ext.intersphinx --------------------------------------
 # See http://www.sphinx-doc.org/en/stable/ext/intersphinx.html
 intersphinx_mapping = {}
+
+# -- Options for sphinxcontrib.jinja -----------------------------------------
+# See https://pypi.org/project/sphinx-jinja/
+jinja_contexts = {
+    'base': {
+        'metadata': {
+            'mode': 'release' if RELEASE_BUILD else 'development',
+            'git_revision': constants.GIT_REF,
+        },
+    },
+}
