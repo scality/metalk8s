@@ -193,7 +193,7 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
         network_routes_mock = MagicMock(return_value=routes_ret)
 
         patch_dict = {
-            "network.routes": network_routes_mock,
+            "metalk8s_network.routes": network_routes_mock,
         }
 
         with patch.dict(metalk8s_checks.__salt__, patch_dict):
