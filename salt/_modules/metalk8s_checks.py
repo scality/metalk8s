@@ -408,7 +408,7 @@ def route_exists(destination, raises=True):
     error = None
     route_exists = False
 
-    all_routes = __salt__["network.routes"](family="inet")
+    all_routes = __salt__["metalk8s_network.routes"]()
 
     for route in all_routes:
         # Check if our destination network is fully included in this route.
