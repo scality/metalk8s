@@ -17,65 +17,16 @@ import operator
 import os
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Match, Optional, Union
-
-from doit.exceptions import TaskError # type: ignore
+from typing import Any, Dict, List, Optional, Union
 
 from buildchain import config
+from buildchain import constants
 from buildchain import coreutils
 from buildchain import docker_command
 from buildchain import types
 
+from . import base
 from . import image
-
-
-class DockerFileDep:
-    """A Dockerfile directive line creating external file dependencies."""
-
-    def __init__(
-        self,
-        line_no: int,
-        line_contents: str,
-        line_match: Match[str],
-        dockerfile_path: Path
-    ):
-        self.line_no = line_no
-        self.line_contents = line_contents
-        self.match = line_match
-        self.dockerfile_path = dockerfile_path
-
-    def expand_dep(self) -> List[Path]:
-        """Expand the Dockerfile path dependency to regular files."""
-        source = self.match.group('src')
-        path = self.dockerfile_path.parent/Path(source)
-        # Simple file
-        if path.is_file():
-            return [path]
-        # Directory or `.`
-        if path.is_dir():
-            return list(coreutils.ls_files_rec(path))
-        # Globs - `*` or specific e.g. `*.py`, `*.repo`
-        return [
-            sub_path
-            for sub_path in path.parent.glob(path.name)
-            if sub_path.is_file()
-        ]
-
-    def format_errors(self, error_paths: List[Path]) -> List[str]:
-        """Format paths in error with relevant information."""
-        error_line = "l.{}: '{}' - missing {}"
-        return [
-            error_line.format(self.line_no, self.line_contents, error_path)
-            for error_path in error_paths
-        ]
-
-    def verify(self, file_deps: List[Path]) -> List[str]:
-        """Verify Dockerfile dependencies against external dependency list."""
-        missing_deps = []
-        for dependency in self.expand_dep():
-            if not dependency in file_deps:
-                missing_deps.append(dependency)
-        return self.format_errors(missing_deps)
 
 
 class LocalImage(image.ContainerImage):
@@ -112,6 +63,9 @@ class LocalImage(image.ContainerImage):
         self._build_args = build_args or {}
         kwargs.setdefault('file_dep', []).append(self.dockerfile)
         kwargs.setdefault('task_dep', []).append('check_for:skopeo')
+        kwargs.setdefault('calc_dep', []).append(
+            f'_image_calc_build_deps:{self.dockerfile}'
+        )
         super().__init__(
             name=name, version=version, destination=destination, **kwargs
         )
@@ -124,49 +78,27 @@ class LocalImage(image.ContainerImage):
         r'^\s*(COPY|ADD)( --[^ ]+)* (?P<src>[^ ]+) (?P<dst>[^ ]+)\s*$'
     )
 
-    def load_deps_from_dockerfile(self) -> List[DockerFileDep]:
+    def load_deps_from_dockerfile(self) -> Dict[str, Any]:
         """Compute file dependencies from Dockerfile."""
         dep_keywords = ('COPY', 'ADD')
 
         with self.dockerfile.open('r', encoding='utf8') as dockerfile:
             docker_lines = dockerfile.readlines()
 
-        dep_lines = [
-            (pos, line.strip(), self.dep_re.match(line.strip()))
-            for (pos, line) in enumerate(docker_lines, 1)
+        dep_matches = [
+            self.dep_re.match(line.strip())
+            for line in docker_lines
             if line.lstrip().startswith(dep_keywords)
         ]
         deps = []
-        for (pos, line, match) in dep_lines:
+        for match in dep_matches:
             if match is None:
                 continue
-            deps.append(
-                DockerFileDep(
-                    line_no=pos,
-                    line_contents=line,
-                    line_match=match,
-                    dockerfile_path=self.dockerfile
-                )
-            )
-        return deps
+            deps.extend(self._expand_dep(self.build_context / match.group('src')))
 
-    def check_dockerfile_dependencies(self) -> Union[TaskError, bool]:
-        """Verify task file dependencies against computed file dependencies."""
-        error_tplt = (
-            'Missing Dockerfile file dependencies in'
-            ' build target: \n{dockerfile}:\n\t{errors}'
-        )
-        deps = self.load_deps_from_dockerfile()
-        errors: List[str] = []
-        for dep in deps:
-            errors.extend(dep.verify(self.file_dep))
-        if errors:
-            error_message = error_tplt.format(
-                dockerfile=self.dockerfile,
-                errors='\n\t'.join(errors)
-            )
-            return TaskError(msg=error_message)
-        return None
+        # NOTE: we **must** convert to string here, otherwise the serialization
+        # fails and the build exits with return code 3.
+        return {"file_dep": list(map(str, deps))}
 
     @property
     def task(self) -> types.TaskDict:
@@ -184,10 +116,25 @@ class LocalImage(image.ContainerImage):
             })
         return task
 
+    @property
+    def calc_deps_task(self) -> types.TaskDict:
+        """A task used to compute dependencies from the Dockerfile."""
+        task = base.Target(
+            task_name=str(self.dockerfile),
+            file_dep=[self.dockerfile],
+            task_dep=self.task_dep,
+        ).basic_task
+        task["title"] = lambda _: "{cmd: <{width}} {path}".format(
+            cmd="CALC DEPS",
+            width=constants.CMD_WIDTH,
+            path=self.dockerfile.relative_to(constants.ROOT),
+        )
+        task["actions"] = [self.load_deps_from_dockerfile]
+        return task
+
     def _build_actions(self) -> List[types.Action]:
         """Build a container image locally."""
-        actions: List[types.Action] = [self.check_dockerfile_dependencies]
-        actions.extend(self._do_build())
+        actions = self._do_build()
         if self.save_on_disk:
             actions.extend(self._do_save())
         return actions
@@ -212,3 +159,19 @@ class LocalImage(image.ContainerImage):
         cmd.append('docker-daemon:{}'.format(self.tag))
         cmd.append('dir:{}'.format(str(self.dirname)))
         return [self.mkdirs, cmd]
+
+    @staticmethod
+    def _expand_dep(dep: Path) -> List[Path]:
+        """Expand a Dockerfile dependency path to regular files."""
+        # Simple file
+        if dep.is_file():
+            return [dep]
+        # Directory or `.`
+        if dep.is_dir():
+            return list(coreutils.ls_files_rec(dep))
+        # Globs - `*` or specific e.g. `*.py`, `*.repo`
+        return [
+            sub_path
+            for sub_path in dep.parent.glob(dep.name)
+            if sub_path.is_file()
+        ]
