@@ -1,7 +1,14 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { Formik, Form, FieldArray, useFormikContext, useField } from 'formik';
+import {
+  Formik,
+  Form,
+  FieldArray,
+  useFormikContext,
+  useField,
+  Field,
+} from 'formik';
 import * as yup from 'yup';
 import styled from 'styled-components';
 import {
@@ -356,10 +363,6 @@ const CreateVolume = (props) => {
       then: yup.string(),
     }),
     labels: yup.object(),
-    labelName: yup
-      .string()
-      .matches(labelFullNameRegex, intl.translate('label_name_error'))
-      .max(63, intl.translate('n_character_or_less', { n: 63 })),
     labelValue: yup
       .string()
       .matches(labelValueRegex, intl.translate('label_value_error'))
@@ -424,7 +427,6 @@ const CreateVolume = (props) => {
                 errors,
                 touched,
                 setFieldTouched,
-                setFieldError,
                 dirty,
                 setFieldValue,
               } = formikProps;
@@ -453,64 +455,40 @@ const CreateVolume = (props) => {
                   }
                 }
               };
-              // TODO: Apply this function as `labelName` field validation function, for the moment we only have one error message.
-              const handleErrorLabel = () => {
-                const isLabelNameMatched = labelFullNameRegex.test(
-                  values.labelName,
-                );
-                const isLabelValueMatched = labelValueRegex.test(
-                  values.labelValue,
-                );
 
+              const validataLabelName = (value) => {
+                if (!value) return false;
+
+                let error;
+                const isLabelNameMatched = labelFullNameRegex.test(value);
                 if (!isLabelNameMatched) {
-                  const hasLabelPrefix = values.labelName.includes('/');
+                  const hasLabelPrefix = value.includes('/');
 
                   if (hasLabelPrefix) {
-                    const prefix = values.labelName.split('/')[0];
+                    const prefix = value.split('/')[0];
                     const isLabelPrefixMatched = labelNamePrefixRegex.test(
                       prefix,
                     );
-                    setFieldError(
-                      'labelName',
-                      intl.translate(
-                        isLabelPrefixMatched
-                          ? 'label_name_error'
-                          : 'label_prefix_name_error',
-                      ),
+                    error = intl.translate(
+                      isLabelPrefixMatched
+                        ? 'label_name_error'
+                        : 'label_prefix_name_error',
                     );
                   } else {
-                    setFieldError(
-                      'labelName',
-                      intl.translate('label_name_error'),
-                    );
+                    error = intl.translate('label_name_error');
                   }
                 }
-                if (!isLabelValueMatched)
-                  setFieldError(
-                    'labelValue',
-                    intl.translate('label_value_error'),
-                  );
+                return error;
               };
 
               const addLabel = () => {
-                if (!errors.labelName && !errors.labelValue) {
-                  const labels = values.labels;
-                  const isLabelNameMatched = labelFullNameRegex.test(
-                    values.labelName,
-                  );
-                  const isLabelValueMatched = labelValueRegex.test(
-                    values.labelValue,
-                  );
+                const labels = values.labels;
 
-                  if (isLabelNameMatched && isLabelValueMatched) {
-                    labels[values.labelName] = values.labelValue;
-                    setFieldValue('labels', labels);
-                  } else {
-                    handleErrorLabel();
-                  }
-                  setFieldValue('labelName', '');
-                  setFieldValue('labelValue', '');
-                }
+                labels[values.labelName] = values.labelValue;
+                setFieldValue('labels', labels);
+
+                setFieldValue('labelName', '');
+                setFieldValue('labelValue', '');
               };
 
               const removeLabel = (key) => {
@@ -622,13 +600,15 @@ const CreateVolume = (props) => {
                       </InputLabel>
                       <LabelsContainer>
                         <LabelsForm>
-                          <Input
+                          <Field
+                            as={Input}
                             name="labelName"
                             placeholder={intl.translate('enter_label_name')}
                             value={values.labelName}
                             error={touched.labelName && errors.labelName}
                             onBlur={handleOnBlur}
                             onChange={handleChange('labelName')}
+                            validate={validataLabelName}
                           />
                           <Input
                             name="labelValue"
@@ -860,7 +840,7 @@ const CreateVolume = (props) => {
                       text={intl.translate('create')}
                       type="submit"
                       variant={'buttonPrimary'}
-                      disabled={!dirty || !isEmpty(errors)}
+                      disabled={!dirty || !isEmpty(errors) || values.labelName}
                       data-cy="submit-create-volume"
                     />
                   </ActionContainer>
