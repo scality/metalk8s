@@ -571,7 +571,7 @@ For Fluent Bit, we will need to define a ``ServiceMonitor`` object:
   metadata:
     labels:
       app: fluent-bit
-      release: prometheus-operator
+      metalk8s.scality.com/monitor: ''
     name: fluent-bit
     namespace: metalk8s-logging
   spec:
@@ -595,7 +595,7 @@ Namespace:
   kind: PrometheusRule
   metadata:
     labels:
-      release: prometheus-operator
+      metalk8s.scality.com/monitor: ''
     name: loki.rules
     namespace: metalk8s-logging
   spec:
