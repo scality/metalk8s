@@ -122,13 +122,19 @@ def task_error(
 })
 def docker_build(image: 'LocalImage') -> None:
     """Build a Docker image using Docker API."""
-    DOCKER_CLIENT.images.build(
+    kwargs = dict(
         tag=image.tag,
-        path=str(image.build_context),
-        dockerfile=str(image.dockerfile),
         buildargs=image.build_args,
         forcerm=True,
     )
+    if image.custom_context:
+        kwargs["fileobj"] = image.build_context.build_tar()
+        kwargs["custom_context"] = True
+    else:
+        kwargs["path"] = str(image.build_context)
+        kwargs["dockerfile"] = str(image.dockerfile)
+
+    DOCKER_CLIENT.images.build(**kwargs)
 
 
 class DockerRun:

@@ -12,11 +12,12 @@ keep track of it.
 All of these actions are done by a single task.
 """
 
-
+from io import BytesIO
 import operator
 import os
 import re
 from pathlib import Path
+import tarfile
 from typing import Any, Dict, List, Optional, Union
 
 from buildchain import config
@@ -29,16 +30,36 @@ from . import base
 from . import image
 
 
+class ExplicitContext:  # pylint: disable=too-few-public-methods
+    """An explicit build context, to pass to a `LocalImage` target."""
+    def __init__(
+        self, dockerfile: Path, base_dir: Path, contents: List[Union[str, Path]]
+    ) -> None:
+        self.dockerfile = dockerfile
+        self.base_dir = base_dir
+        self.contents = contents
+
+    def build_tar(self) -> BytesIO:
+        """Build a tar archive in memory for this `docker build` context."""
+        fileobj = BytesIO()
+        with tarfile.open(fileobj=fileobj, mode='w') as tar:
+            tar.add(str(self.dockerfile), arcname="Dockerfile")
+            for item in self.contents:
+                tar.add(str(self.base_dir / item), arcname=str(item))
+        fileobj.seek(0)
+        return fileobj
+
+
 class LocalImage(image.ContainerImage):
     """A locally built container image."""
     def __init__(
         self,
         name: str,
         version: str,
-        dockerfile: Path,
         destination: Path,
         save_on_disk: bool,
-        build_context: Optional[Path]=None,
+        dockerfile: Optional[Path]=None,
+        build_context: Optional[Union[Path, ExplicitContext]]=None,
         build_args: Optional[Dict[str, Any]]=None,
         **kwargs: Any
     ):
@@ -50,16 +71,30 @@ class LocalImage(image.ContainerImage):
             dockerfile:    path to the Dockerfile
             destination:   where to save the result
             save_on_disk:  save the image on disk?
-            build_context: path to the build context
-                           (default to the directory containing the Dockerfile)
+            build_context: path to the build context, or an ExplicitContext
+                           instance (defaults to the directory containing the
+                           Dockerfile)
             build_args:    build arguments
 
         Keyword Arguments:
             They are passed to `Target` init method.
         """
-        self._dockerfile = dockerfile
+        self._build_context : Union[Path, ExplicitContext]
+        if isinstance(build_context, ExplicitContext):
+            self._custom_context = True
+            self._dockerfile = build_context.dockerfile
+            self._build_context = build_context
+        else:
+            self._custom_context = False
+            if dockerfile is None:
+                raise ValueError(
+                    "Must provide a `dockerfile` if `build_context` is not "
+                    "an `ExplicitContext`"
+                )
+            self._dockerfile = dockerfile
+            self._build_context = build_context or self.dockerfile.parent
+
         self._save = save_on_disk
-        self._build_context = build_context or self.dockerfile.parent
         self._build_args = build_args or {}
         kwargs.setdefault('file_dep', []).append(self.dockerfile)
         kwargs.setdefault('task_dep', []).append('check_for:skopeo')
@@ -73,6 +108,7 @@ class LocalImage(image.ContainerImage):
     dockerfile    = property(operator.attrgetter('_dockerfile'))
     save_on_disk  = property(operator.attrgetter('_save'))
     build_context = property(operator.attrgetter('_build_context'))
+    custom_context = property(operator.attrgetter('_custom_context'))
     build_args    = property(operator.attrgetter('_build_args'))
     dep_re = re.compile(
         r'^\s*(COPY|ADD)( --[^ ]+)* (?P<src>[^ ]+) (?P<dst>[^ ]+)\s*$'
@@ -85,6 +121,11 @@ class LocalImage(image.ContainerImage):
         with self.dockerfile.open('r', encoding='utf8') as dockerfile:
             docker_lines = dockerfile.readlines()
 
+        if self.custom_context:
+            search_path = self.build_context.base_dir
+        else:
+            search_path = self.build_context
+
         dep_matches = [
             self.dep_re.match(line.strip())
             for line in docker_lines
@@ -94,7 +135,7 @@ class LocalImage(image.ContainerImage):
         for match in dep_matches:
             if match is None:
                 continue
-            deps.extend(self._expand_dep(self.build_context / match.group('src')))
+            deps.extend(self._expand_dep(search_path / match.group('src')))
 
         # NOTE: we **must** convert to string here, otherwise the serialization
         # fails and the build exits with return code 3.

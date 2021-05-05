@@ -241,7 +241,15 @@ TO_BUILD : Tuple[targets.LocalImage, ...] = (
     ),
     _local_image(
         name='metalk8s-ui',
-        build_context=config.BUILD_ROOT,
+        build_context=targets.ExplicitContext(
+            dockerfile=constants.ROOT/"images/metalk8s-ui/Dockerfile",
+            base_dir=config.BUILD_ROOT,
+            contents=[
+                constants.UI_BUILD_ROOT.relative_to(config.BUILD_ROOT),
+                constants.DOCS_BUILD_ROOT.relative_to(config.BUILD_ROOT),
+                "metalk8s-ui-nginx.conf",
+            ],
+        ),
         build_args={
             'NGINX_IMAGE_VERSION': versions.NGINX_IMAGE_VERSION,
         },
