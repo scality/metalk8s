@@ -135,7 +135,11 @@ spec:
         - /usr/local/bin/dex
         - serve
         - /etc/dex/cfg/config.yaml
-        env: []
+        env:
+        - name: KUBERNETES_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.27.0
         imagePullPolicy: IfNotPresent
         name: main

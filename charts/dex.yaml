@@ -61,6 +61,14 @@ certs:
   grpc:
     create: false
 
+# Explicitly set namespace from env since it's needed for Dex in K8s 1.21
+# Sees: https://github.com/dexidp/dex/issues/2082
+env:
+  - name: KUBERNETES_POD_NAMESPACE
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.namespace
+
 # NOTE: Ignore these values, the configuration is computed from
 #       - salt/metalk8s/addons/dex/config/dex.yaml
 #       - salt/metalk8s/addons/dex/deployed/service-configuration.sls
