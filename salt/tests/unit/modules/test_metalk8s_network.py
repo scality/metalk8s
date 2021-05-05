@@ -1,3 +1,4 @@
+import ipaddress
 import os.path
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
@@ -266,3 +267,26 @@ class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
             "psutil.Process", process_mock
         ):
             self.assertEqual(metalk8s_network.get_listening_processes(), result)
+
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["routes"])
+    def test_routes(self, ip_route_output, result):
+        """
+        Tests the return of `routes` function
+        """
+
+        def _mock_convert_cidr(cidr):
+            ret = {"network": None, "netmask": None, "broadcast": None}
+            network_info = ipaddress.ip_network(cidr, strict=False)
+            ret["network"] = str(network_info.network_address)
+            ret["netmask"] = str(network_info.netmask)
+            ret["broadcast"] = str(network_info.broadcast_address)
+            return ret
+
+        mock_convert_cidr = MagicMock(side_effect=_mock_convert_cidr)
+        mock_ip_cmd = MagicMock(return_value=ip_route_output)
+        with patch.dict(
+            metalk8s_network.__salt__,
+            {"cmd.run": mock_ip_cmd, "network.convert_cidr": mock_convert_cidr},
+        ):
+            self.assertEqual(metalk8s_network.routes(), result)
+            mock_ip_cmd.assert_called_once_with("ip -4 route show table main")

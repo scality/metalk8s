@@ -167,3 +167,62 @@ def get_listening_processes():
         )
 
     return all_listen_connections
+
+
+def routes():
+    """
+    Return currently configured IPv4 routes from routing table
+
+    CLI Example:
+
+    .. code-block:: bash
+
+        salt '*' metalk8s_network.routes
+    """
+    ret = []
+    cmd = "ip -4 route show table main"
+    out = __salt__["cmd.run"](cmd)
+    for line in out.splitlines():
+        comps = line.split()
+
+        if comps[0] in ("unreachable", "blackhole"):
+            continue
+
+        if comps[0] == "default":
+            ip_interface = ""
+            if comps[3] == "dev":
+                ip_interface = comps[4]
+
+            ret.append(
+                {
+                    "addr_family": "inet",
+                    "destination": "0.0.0.0",
+                    "gateway": comps[2],
+                    "netmask": "0.0.0.0",
+                    "flags": "UG",
+                    "interface": ip_interface,
+                }
+            )
+        else:
+            try:
+                address_mask = __salt__["network.convert_cidr"](comps[0])
+            except ValueError:
+                log.warning("Unsupported route type or format: %s", line)
+                continue
+
+            ip_interface = ""
+            if comps[1] == "dev":
+                ip_interface = comps[2]
+
+            ret.append(
+                {
+                    "addr_family": "inet",
+                    "destination": address_mask["network"],
+                    "gateway": "0.0.0.0",
+                    "netmask": address_mask["netmask"],
+                    "flags": "U",
+                    "interface": ip_interface,
+                }
+            )
+
+    return ret

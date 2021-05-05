@@ -37,3 +37,49 @@ get_listening_processes:
         127.0.0.1:
           pid: 123
           name: likely-something
+
+routes:
+  # 0. Default route
+  - ip_route_output: |-
+      default via 10.200.0.1 dev eth0
+    result:
+      - &default_route
+        addr_family: inet
+        destination: 0.0.0.0
+        flags: UG
+        gateway: 10.200.0.1
+        interface: eth0
+        netmask: 0.0.0.0
+  # 1. A simple route
+  - ip_route_output: |-
+      10.200.0.0/16 dev eth0 proto kernel scope link src 10.200.2.41
+    result:
+      - &simple_route
+        addr_family: inet
+        destination: 10.200.0.0
+        flags: U
+        gateway: 0.0.0.0
+        interface: eth0
+        netmask: 255.255.0.0
+  # 2. A blackhole route
+  - ip_route_output: |-
+      blackhole 10.233.162.0/26 proto bird
+    result: []
+  # 3. Multiple routes
+  - ip_route_output: |-
+      default via 10.200.0.1 dev eth0
+      10.200.0.0/16 dev eth0 proto kernel scope link src 10.200.2.41
+      blackhole 10.233.162.0/26 proto bird
+    result:
+      - *default_route
+      - *simple_route
+  # 4. No routes
+  - ip_route_output: ''
+    result: []
+  # 5. Unsupported type or format
+  - ip_route_output: |-
+      banana route via foo
+      this is not a valid input
+      10.200.0.0/16 dev eth0 proto kernel scope link src 10.200.2.41
+    result:
+      - *simple_route
