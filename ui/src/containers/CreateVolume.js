@@ -310,7 +310,8 @@ const CreateVolume = (props) => {
   };
 
   const volumeNameRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
-  // Valid label keys have two segments: an optional prefix and name, separated by a slash (/).
+  /* Valid label keys have two segments: an optional prefix and name, separated by a slash (/).
+    https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set  */
   const labelFullNameRegex = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*\/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$/;
   const labelNamePrefixRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
   const labelValueRegex = /^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$/;
@@ -357,9 +358,11 @@ const CreateVolume = (props) => {
     labels: yup.object(),
     labelName: yup
       .string()
+      .matches(labelFullNameRegex, intl.translate('label_name_error'))
       .max(63, intl.translate('n_character_or_less', { n: 63 })),
     labelValue: yup
       .string()
+      .matches(labelValueRegex, intl.translate('label_value_error'))
       .max(63, intl.translate('n_character_or_less', { n: 63 })),
     numberOfVolumes: yup
       .number()
@@ -450,7 +453,7 @@ const CreateVolume = (props) => {
                   }
                 }
               };
-
+              // TODO: Apply this function as `labelName` field validation function, for the moment we only have one error message.
               const handleErrorLabel = () => {
                 const isLabelNameMatched = labelFullNameRegex.test(
                   values.labelName,
@@ -635,23 +638,18 @@ const CreateVolume = (props) => {
                             onBlur={handleOnBlur}
                             onChange={handleChange('labelValue')}
                           />
-                          {touched.labelName && touched.labelValue ? (
-                            <Button
-                              text={intl.translate('add')}
-                              type="button"
-                              onClick={addLabel}
-                              data-cy="add-volume-labels-button"
-                              variant={'buttonSecondary'}
-                            />
-                          ) : (
-                            <Button
-                              text={intl.translate('add')}
-                              type="button"
-                              data-cy="add-volume-labels-button"
-                              outlined
-                              disabled
-                            />
-                          )}
+                          <Button
+                            text={intl.translate('add')}
+                            type="button"
+                            onClick={addLabel}
+                            data-cy="add-volume-labels-button"
+                            variant={'buttonSecondary'}
+                            disabled={
+                              errors.labelValue ||
+                              errors.labelName ||
+                              !values.labelName // disable the Add button if no label key specified
+                            }
+                          />
                         </LabelsForm>
                         {!!Object.keys(values.labels).length && (
                           <LabelsList>
