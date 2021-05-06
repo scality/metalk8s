@@ -3,10 +3,10 @@
 from os import path
 
 import requests
-from sos.plugins import Plugin, RedHatPlugin, UbuntuPlugin
+from sos.plugins import Plugin, RedHatPlugin
 
 
-class metalk8s(Plugin, RedHatPlugin, UbuntuPlugin):
+class metalk8s(Plugin, RedHatPlugin):
 
     """Metalk8s plugin"""
 

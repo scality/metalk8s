@@ -1,9 +1,9 @@
 #! /bin/env python3
 
-from sos.plugins import Plugin, RedHatPlugin, UbuntuPlugin
+from sos.plugins import Plugin, RedHatPlugin
 
 
-class containerd(Plugin, RedHatPlugin, UbuntuPlugin):
+class containerd(Plugin, RedHatPlugin):
 
     """containerd engine"""
 
