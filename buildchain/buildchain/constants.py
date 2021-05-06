@@ -39,8 +39,6 @@ ISO_ROOT: Path = config.BUILD_ROOT / "root"
 REPO_ROOT: Path = ISO_ROOT / "packages"
 # Root of the RedHat repositories on the ISO.
 REPO_REDHAT_ROOT: Path = REPO_ROOT / "redhat"
-# Root of the Debian repositories on the ISO.
-REPO_DEB_ROOT: Path = REPO_ROOT / "debian"
 # Root for the images on the ISO.
 ISO_IMAGE_ROOT: Path = ISO_ROOT / "images"
 # Root for the documentation on the ISO.
@@ -51,8 +49,6 @@ DOCS_BUILD_ROOT: Path = config.BUILD_ROOT / "docs"
 PKG_ROOT: Path = config.BUILD_ROOT / "packages"
 # Root for the RedHat packages that we build ourselves.
 PKG_REDHAT_ROOT: Path = PKG_ROOT / "redhat"
-# Root for the Debian packages that we build ourselves.
-PKG_DEB_ROOT: Path = PKG_ROOT / "debian"
 # Root of the Vagrant environment folder.
 VAGRANT_ROOT: Path = ROOT / ".vagrant"
 # Path to the static-container-registry module.
@@ -63,11 +59,8 @@ STORAGE_OPERATOR_ROOT: Path = ROOT / "storage-operator"
 UI_BUILD_ROOT: Path = config.BUILD_ROOT / "ui"
 # Path to the shell-ui build root directory.
 SHELL_UI_BUILD_ROOT: Path = config.BUILD_ROOT / "shell-ui"
-# Root for the source Debian package
-SRC_DEB_ROOT: Path = ROOT / "packages" / "debian"
 
 # Docker entrypoints.
-DEBIAN_ENTRYPOINT: Path = ROOT / "packages/debian/common/entrypoint.sh"
 REDHAT_ENTRYPOINT: Path = ROOT / "packages/redhat/common/entrypoint.sh"
 
 # Path to UI static files.

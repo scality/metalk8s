@@ -10,14 +10,14 @@ from buildchain.targets.directory import Mkdir
 from buildchain.targets.file_tree import FileTree
 from buildchain.targets.local_image import LocalImage, ExplicitContext
 from buildchain.targets.operator_image import OperatorImage
-from buildchain.targets.package import Package, RPMPackage, DEBPackage
+from buildchain.targets.package import Package, RPMPackage
 from buildchain.targets.remote_image import (
     ImageSaveFormat,
     RemoteImage,
     SaveAsLayers,
     SaveAsTar,
 )
-from buildchain.targets.repository import Repository, RPMRepository, DEBRepository
+from buildchain.targets.repository import Repository, RPMRepository
 from buildchain.targets.serialize import (
     Renderer,
     SerializedData,
@@ -39,14 +39,12 @@ __all__ = [
     "OperatorImage",
     "Package",
     "RPMPackage",
-    "DEBPackage",
     "ImageSaveFormat",
     "RemoteImage",
     "SaveAsLayers",
     "SaveAsTar",
     "Repository",
     "RPMRepository",
-    "DEBRepository",
     "Renderer",
     "SerializedData",
     "SaltState",

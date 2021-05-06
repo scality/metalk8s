@@ -74,14 +74,6 @@ RPM_BUILDER: Dict[str, LocalImage] = {
     ),
 }
 
-DEB_BUILDER: Dict[str, LocalImage] = {
-    "18.04": _builder_image(
-        name="ubuntu-18.04-deb",
-        dockerfile=constants.ROOT / "packages/debian/18.04/Dockerfile",
-        build_context=constants.ROOT / "packages/debian",
-    ),
-}
-
 DOC_BUILDER: LocalImage = _builder_image(
     name="doc",
     dockerfile=constants.ROOT / "docs/Dockerfile",
@@ -123,15 +115,11 @@ SHELL_UI_BUILDER: LocalImage = _builder_image(
 
 
 BUILDERS: Tuple[LocalImage, ...] = (
-    (
-        DOC_BUILDER,
-        GO_BUILDER,
-        UI_BUILDER,
-        SHELL_UI_BUILDER,
-    )
-    + tuple(RPM_BUILDER.values())
-    + tuple(DEB_BUILDER.values())
-)
+    DOC_BUILDER,
+    GO_BUILDER,
+    UI_BUILDER,
+    SHELL_UI_BUILDER,
+) + tuple(RPM_BUILDER.values())
 
 
 __all__ = utils.export_only_tasks(__name__)

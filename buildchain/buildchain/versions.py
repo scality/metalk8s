@@ -305,13 +305,6 @@ class PackageVersion:
             return "{}-{}".format(self.name, self.full_version)
         return cast(str, self.name)
 
-    @property
-    def deb_full_name(self) -> str:
-        """The package's full name in DEB conventions."""
-        if self.full_version:
-            return "{}={}".format(self.name, self.full_version)
-        return cast(str, self.name)
-
 
 # The authoritative list of packages required.
 #
@@ -347,6 +340,7 @@ PACKAGES: Dict[str, Any] = {
         PackageVersion(name="ethtool"),
         PackageVersion(name="gdisk"),
         PackageVersion(name="genisoimage"),
+        PackageVersion(name="httpd-tools"),
         PackageVersion(name="iproute"),
         PackageVersion(name="iptables"),
         PackageVersion(name="kubernetes-cni"),
@@ -359,6 +353,7 @@ PACKAGES: Dict[str, Any] = {
         PackageVersion(name="socat"),
         PackageVersion(name="sos"),  # TODO download built package dependencies
         PackageVersion(name="util-linux"),
+        PackageVersion(name="yum-utils"),
         PackageVersion(name="xfsprogs"),
     ),
     "redhat": {
@@ -374,14 +369,12 @@ PACKAGES: Dict[str, Any] = {
                 release="{0}.el7".format(CONTAINERD_RELEASE),
             ),
             PackageVersion(name="container-selinux"),  # TODO #1710
-            PackageVersion(name="httpd-tools"),
             PackageVersion(
                 name="metalk8s-sosreport",
                 version=SHORT_VERSION,
                 release="{0}.el7".format(SOSREPORT_RELEASE),
             ),
             PackageVersion(name="yum-plugin-versionlock"),
-            PackageVersion(name="yum-utils"),
         ),
         "8": (
             PackageVersion(
@@ -396,7 +389,6 @@ PACKAGES: Dict[str, Any] = {
             ),
             PackageVersion(name="container-selinux"),
             PackageVersion(name="iptables-ebtables", override="ebtables"),
-            PackageVersion(name="httpd-tools"),
             PackageVersion(
                 name="metalk8s-sosreport",
                 version=SHORT_VERSION,
@@ -406,26 +398,6 @@ PACKAGES: Dict[str, Any] = {
             PackageVersion(name="python3-dnf-plugin-versionlock"),
             PackageVersion(name="python3-psutil", override="python36-psutil"),
             PackageVersion(name="python3-pyOpenSSL", override="python36-pyOpenSSL"),
-            PackageVersion(name="yum-utils"),
-        ),
-    },
-    "debian": {
-        "18.04": (
-            PackageVersion(
-                name="calico-cni-plugin",
-                version=CALICO_VERSION,
-                release=CALICO_RELEASE,
-            ),
-            PackageVersion(name="iproute2", override="iproute"),
-            PackageVersion(
-                name="metalk8s-sosreport",
-                version=SHORT_VERSION,
-                release=SOSREPORT_RELEASE,
-            ),
-            PackageVersion(name="python-m2crypto", override="m2crypto"),
-            PackageVersion(name="python3-psutil", override="python36-psutil"),
-            PackageVersion(name="python3-openssl", override="python36-pyOpenSSL"),
-            PackageVersion(name="sosreport", override="sos"),
         ),
     },
 }
@@ -464,12 +436,6 @@ REDHAT_PACKAGES_MAP = {
     for version, pkgs in REDHAT_PACKAGES.items()
 }
 
-DEB_PACKAGES = _list_pkgs_for_os_family("debian")
-
-DEB_PACKAGES_MAP = {
-    version: {pkg.name: pkg for pkg in pkgs} for version, pkgs in DEB_PACKAGES.items()
-}
-
 # }}}
 
 # This variables holds the contents of the rendered
@@ -484,10 +450,6 @@ SALT_VERSIONS_JSON = {
         "redhat": {
             version: {pkg.name: {"version": pkg.full_version} for pkg in pkgs}
             for version, pkgs in REDHAT_PACKAGES.items()
-        },
-        "ubuntu": {
-            version: {pkg.name: {"version": pkg.full_version} for pkg in pkgs}
-            for version, pkgs in DEB_PACKAGES.items()
         },
     },
     "images": {img.name: {"version": img.version} for img in CONTAINER_IMAGES},

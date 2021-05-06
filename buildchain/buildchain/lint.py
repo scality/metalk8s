@@ -59,7 +59,6 @@ def lint_python() -> types.TaskDict:
         buildchain / "dodo.py",
         *buildchain.glob("buildchain/*.py"),
         *buildchain.glob("buildchain/targets/*.py"),
-        constants.ROOT / "packages/debian/common/download_packages.py",
         constants.ROOT / "salt/metalk8s/volumes/files/sparse_volume_cleanup.py",
         *constants.ROOT.glob("salt/_modules/*.py"),
         *constants.ROOT.glob("salt/_states/*.py"),
