@@ -34,7 +34,10 @@ def task_make_mod():
 
 def get_dep(mod):
     # fake implementation
-    return {"file_dep": [BUILD_DIR / dep for dep in MOD_IMPORTS[mod]]}
+    return {
+        "file_dep": [BUILD_DIR / dep for dep in MOD_IMPORTS[mod]],
+        "task_dep": [f"make_mod:{dep}" for dep in MOD_IMPORTS[mod]],
+    }
 
 
 def task_get_dep():
