@@ -40,78 +40,52 @@ Create kubelet config file:
     - dir_mode: '0750'
     - formatter: yaml
     - dataset:
-        address: {{ grains['metalk8s']['control_plane_ip'] }}
-        kind: KubeletConfiguration
+      # kubeadm config {
         apiVersion: kubelet.config.k8s.io/v1beta1
-        staticPodPath: /etc/kubernetes/manifests
         authentication:
           anonymous:
             enabled: false
           webhook:
-            cacheTTL: 2m0s
+            cacheTTL: 0s
             enabled: true
           x509:
             clientCAFile: /etc/kubernetes/pki/ca.crt
         authorization:
           mode: Webhook
           webhook:
-            cacheAuthorizedTTL: 5m0s
-            cacheUnauthorizedTTL: 30s
-        cgroupDriver: cgroupfs
-        cgroupsPerQOS: true
+            cacheAuthorizedTTL: 0s
+            cacheUnauthorizedTTL: 0s
+        # NOTE: we use cgroupfs for the moment
+        # cgroupDriver: systemd
         clusterDNS:
           - {{ cluster_dns_ip }}
         clusterDomain: cluster.local
-        configMapAndSecretChangeDetectionStrategy: Watch
-        containerLogMaxFiles: 5
-        containerLogMaxSize: 10Mi
-        contentType: application/vnd.kubernetes.protobuf
-        cpuCFSQuota: true
-        cpuCFSQuotaPeriod: 100ms
-        cpuManagerPolicy: none
-        cpuManagerReconcilePeriod: 10s
-        enableControllerAttachDetach: true
-        enableDebuggingHandlers: true
-        enforceNodeAllocatable:
-          - pods
-        eventBurst: 10
-        eventRecordQPS: 5
-        evictionHard:
-          imagefs.available: 15%
-          memory.available: 100Mi
-          nodefs.available: 10%
-          nodefs.inodesFree: 5%
-        evictionPressureTransitionPeriod: 5m0s
-        failSwapOn: true
-        fileCheckFrequency: 20s
-        hairpinMode: promiscuous-bridge
+        cpuManagerReconcilePeriod: 0s
+        evictionPressureTransitionPeriod: 0s
+        fileCheckFrequency: 0s
         healthzBindAddress: 127.0.0.1
         healthzPort: 10248
-        httpCheckFrequency: 20s
-        imageGCHighThresholdPercent: 85
-        imageGCLowThresholdPercent: 80
-        imageMinimumGCAge: 2m0s
-        iptablesDropBit: 15
-        iptablesMasqueradeBit: 14
-        kubeAPIBurst: 10
-        kubeAPIQPS: 5
-        makeIPTablesUtilChains: true
-        maxOpenFiles: 1000000
-        maxPods: 110
-        nodeLeaseDurationSeconds: 40
-        nodeStatusReportFrequency: 1m0s
-        nodeStatusUpdateFrequency: 10s
-        oomScoreAdj: -999
-        podPidsLimit: -1
-        port: 10250
-        registryBurst: 10
-        registryPullQPS: 5
+        httpCheckFrequency: 0s
+        imageMinimumGCAge: 0s
+        kind: KubeletConfiguration
+        logging: {}
+        nodeStatusReportFrequency: 0s
+        nodeStatusUpdateFrequency: 0s
+        # Disable rotate Certificates as we manage certificate rotation ourself
+        # with salt
+        # rotateCertificates: true
+        runtimeRequestTimeout: 0s
+        shutdownGracePeriod: 0s
+        shutdownGracePeriodCriticalPods: 0s
+        staticPodPath: /etc/kubernetes/manifests
+        streamingConnectionIdleTimeout: 0s
+        syncFrequency: 0s
+        volumeStatsAggPeriod: 0s
+      # }
+        address: {{ grains['metalk8s']['control_plane_ip'] }}
+        cgroupDriver: cgroupfs
         rotateCertificates: false
-        runtimeRequestTimeout: 2m0s
-        serializeImagePulls: true
-        streamingConnectionIdleTimeout: 4h0m0s
-        syncFrequency: 1m0s
-        volumeStatsAggPeriod: 1m0s
+        port: 10250
 {%- for key, value in kubelet.config.items() %}
         {{ key }}: {{ value }}
 {%- endfor %}
