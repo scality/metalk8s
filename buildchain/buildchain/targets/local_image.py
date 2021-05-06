@@ -20,7 +20,6 @@ from pathlib import Path
 import tarfile
 from typing import Any, Dict, List, Optional, Union
 
-from buildchain import config
 from buildchain import constants
 from buildchain import coreutils
 from buildchain import docker_command
@@ -100,9 +99,7 @@ class LocalImage(image.ContainerImage):
         self._build_args = build_args or {}
         kwargs.setdefault("file_dep", []).append(self.dockerfile)
         kwargs.setdefault("task_dep", []).append("check_for:skopeo")
-        kwargs.setdefault("calc_dep", []).append(
-            f"_image_calc_build_deps:{self.dockerfile}"
-        )
+        kwargs.setdefault("calc_dep", []).append(f"_image_calc_build_deps:{name}")
         super().__init__(name=name, version=version, destination=destination, **kwargs)
 
     dockerfile = property(operator.attrgetter("_dockerfile"))
@@ -161,16 +158,14 @@ class LocalImage(image.ContainerImage):
 
     @property
     def calc_deps_task(self) -> types.TaskDict:
-        """A task used to compute dependencies from the Dockerfile."""
+        """A task used to compute dependencies from the Dockerfile and build context."""
         task = base.Target(
-            task_name=str(self.dockerfile),
+            task_name=self.name,
             file_dep=[self.dockerfile],
             task_dep=self.task_dep,
         ).basic_task
-        task["title"] = lambda _: "{cmd: <{width}} {path}".format(
-            cmd="CALC DEPS",
-            width=constants.CMD_WIDTH,
-            path=self.dockerfile.relative_to(constants.ROOT),
+        task["title"] = lambda _: "{cmd: <{width}} {name}".format(
+            cmd="CALC DEPS", width=constants.CMD_WIDTH, name=self.name
         )
         task["actions"] = [self.load_deps_from_dockerfile]
         return task
