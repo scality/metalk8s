@@ -16,7 +16,7 @@ from buildchain.targets.local_image import LocalImage  # Avoid circular importâ€
 
 def task__build_builder() -> Iterator[types.TaskDict]:
     """Build the builder containers."""
-    for builder in _BUILDERS:
+    for builder in BUILDERS:
         yield builder.task
 
 
@@ -122,7 +122,7 @@ SHELL_UI_BUILDER: LocalImage = _builder_image(
 )
 
 
-_BUILDERS: Tuple[LocalImage, ...] = (
+BUILDERS: Tuple[LocalImage, ...] = (
     (
         DOC_BUILDER,
         GO_BUILDER,
