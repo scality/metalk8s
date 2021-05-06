@@ -9,19 +9,8 @@ declare -A GPGCHECK_YUM_REPOSITORIES=(
     [metalk8s-scality]=0
 )
 
-declare -A GPGCHECK_APT_REPOSITORIES=(
-    [metalk8s-bionic]=no
-    [metalk8s-bionic-backports]=no
-    [metalk8s-bionic-updates]=no
-    [metalk8s-kubernetes-xenial]=no
-    [metalk8s-salt_ubuntu1804]=no
-    [metalk8s-scality]=no
-)
-
 RPM=${RPM:-$(command -v rpm || true)}
-DPKG=${DPKG:-$(command -v dpkg || true)}
 YUM=${YUM:-$(command -v yum || true)}
-APT=${APT:-$(command -v apt || true)}
 SYSTEMCTL=${SYSTEMCTL:-$(command -v systemctl)}
 PYTHON=${PYTHON:-$(command -v python3 || command -v python || true)}
 
@@ -36,8 +25,6 @@ determine_os() {
         [[ $OS = rhel ]] && OS=redhat
         if [[ $OS =~ ^(redhat|centos)$ ]]; then
             OS_FAMILY=redhat
-        elif [[ $OS =~ ^(debian|ubuntu)$ ]]; then
-            OS_FAMILY=debian
         fi
     else
         die "Impossible to determine the OS"
@@ -45,15 +32,13 @@ determine_os() {
 }
 
 configure_repositories() {
-    case "$OS_FAMILY" in
+    case "${OS_FAMILY:-}" in
         redhat)
             configure_yum_repositories
             ;;
-        debian)
-            configure_apt_repositories
-            ;;
         *)
-            die "OS $OS not supported";;
+            die "OS $OS not supported"
+            ;;
     esac
 }
 
@@ -63,22 +48,10 @@ configure_yum_repositories() {
     "$YUM" clean all
 }
 
-configure_apt_repositories() {
-    configure_apt_local_repositories
-
-    "$APT" clean all
-}
-
 configure_yum_local_repositories() {
     for repository in "${!GPGCHECK_YUM_REPOSITORIES[@]}"; do
         configure_yum_local_repository "$repository" \
             "${GPGCHECK_YUM_REPOSITORIES[$repository]}"
-    done
-}
-
-configure_apt_local_repositories() {
-    for repository in "${!GPGCHECK_APT_REPOSITORIES[@]}"; do
-        configure_apt_local_repository "$repository"
     done
 }
 
@@ -104,13 +77,6 @@ ${gpg_keys:+gpgkey=${gpg_keys%?}}
 EOF
 }
 
-configure_apt_local_repository() {
-    local -r repo_name=$1
-    local -r repo_path="$BASE_DIR/packages/debian/$OS_VERSION/$repo_name"
-    echo "deb [trusted=yes] file://$repo_path bionic $repo_name" \
-        > /etc/apt/sources.list.d/"$repo_name".list
-}
-
 get_packages_list() {
     "$PYTHON" -c "
 import json
@@ -130,7 +96,7 @@ check_packages_presence() {
     local -a packages
     local -a pkg_manager_opts=()
 
-    case "$OS_FAMILY" in
+    case "${OS_FAMILY:-}" in
         redhat)
             pkg_manager_opts=(
                 "$YUM"
@@ -140,12 +106,8 @@ check_packages_presence() {
                 --setopt 'skip_missing_names_on_install=False'
             )
             ;;
-        debian)
-            pkg_manager_opts=(
-                "$APT"
-                install
-                --dry-run
-            )
+        *)
+            die "OS $OS not supported"
             ;;
     esac
 
@@ -158,9 +120,8 @@ check_packages_presence() {
 
 install_packages() {
     local -ra packages=("$@")
-    local -a repo_list=(/etc/apt/sources.list)
 
-    case "$OS_FAMILY" in
+    case "${OS_FAMILY:-}" in
         redhat)
             local -a yum_opts=(
                 '--assumeyes'
@@ -168,26 +129,9 @@ install_packages() {
             )
             "$YUM" install "${yum_opts[@]}" "${packages[@]}"
             ;;
-        debian)
-            mapfile -O 1 -t repo_list < <(find \
-                /etc/apt/sources.list.d/ \
-                ! -name 'metalk8s-*' -a -name '*.list')
-
-            for source_list in "${repo_list[@]}"; do
-                mv "$source_list"{,.disabled}
-            done
-            "$APT" update
-            DEBIAN_FRONTEND=noninteractive "$APT" -y install "${packages[@]}" \
-                || exit_code=$?
-
-            for source_list in "${repo_list[@]}"; do
-                mv "$source_list"{.disabled,}
-            done
-
-            return ${exit_code:-0}
-            ;;
         *)
-            die "OS $OS not supported";;
+            die "OS $OS not supported"
+            ;;
     esac
 }
 
@@ -270,13 +214,6 @@ check_package_manager_yum() {
     test -x "$YUM" || die "yum at '$YUM' is not executable"
 }
 
-check_package_manager_apt() {
-    test -n "$DPKG" || die "dpkg not found"
-    test -x "$DPKG" || die "dpkg at '$DPKG' is not executable"
-    test -n "$APT" || die "apt not found"
-    test -x "$APT" || die "apt '$APT' is not executable"
-}
-
 check_dist_centos() {
     check_package_manager_yum
 }
@@ -287,10 +224,6 @@ check_dist_redhat() {
     subscription-manager status || \
         echo "Warning: system does not seem to be registered to any" \
              "subscription management service" >&2
-}
-
-check_dist_ubuntu() {
-    check_package_manager_apt
 }
 
 pre_minion_checks() {
