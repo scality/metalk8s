@@ -203,6 +203,10 @@ class LocalImage(image.ContainerImage):
         if dep.is_dir():
             return list(coreutils.ls_files_rec(dep))
         # Globs - `*` or specific e.g. `*.py`, `*.repo`
-        return [
-            sub_path for sub_path in dep.parent.glob(dep.name) if sub_path.is_file()
-        ]
+        all_deps = []
+        for sub_path in dep.parent.glob(dep.name):
+            if sub_path.is_file():
+                all_deps.append(sub_path)
+            elif sub_path.is_dir():
+                all_deps.extend(coreutils.ls_files_rec(sub_path))
+        return all_deps
