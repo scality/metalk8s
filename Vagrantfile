@@ -158,9 +158,6 @@ if ! grep -Fxq "$(cat .ssh/#{PRESHARED_SSH_KEY_NAME}.pub)" .ssh/authorized_keys 
 fi
 SCRIPT
 
-UPDATE_REPO = 'DEBIAN_FRONTEND=noninteractive apt update -yq'
-INSTALL_PYTHON = 'DEBIAN_FRONTEND=noninteractive apt install python -yq'
-
 RHSM_REGISTER = <<-SCRIPT
 #!/bin/bash
 
@@ -257,22 +254,6 @@ Vagrant.configure("2") do |config|
       name: 'centos/8',
       version: '2011.0'
     },
-    ubuntu: {
-      name: 'ubuntu/bionic64',
-      version: '20190514.0.0',
-      scripts: [
-        {
-          name: 'update-repository-list',
-          type: 'shell',
-          data: UPDATE_REPO,
-        },
-        {
-          name: 'install-python',
-          type: 'shell',
-          data: INSTALL_PYTHON
-        }
-      ]
-    },
     redhat_7: {
       name: 'generic/rhel7',
       version: '1.9.36',
@@ -337,10 +318,6 @@ Vagrant.configure("2") do |config|
 
   config.vm.define :bootstrap_centos_8, autostart: false do |machine|
     declare_bootstrap machine, os_data[:centos_8]
-  end
-
-  config.vm.define :bootstrap_ubuntu, autostart: false do |machine|
-    declare_bootstrap machine, os_data[:ubuntu]
   end
 
   config.vm.define :bootstrap_redhat_7, autostart: false do |machine|
