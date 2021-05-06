@@ -8,7 +8,7 @@ from buildchain.targets.base import Target, AtomicTarget, CompositeTarget
 from buildchain.targets.checksum import Sha256Sum
 from buildchain.targets.directory import Mkdir
 from buildchain.targets.file_tree import FileTree
-from buildchain.targets.local_image import LocalImage
+from buildchain.targets.local_image import LocalImage, ExplicitContext
 from buildchain.targets.operator_image import OperatorImage
 from buildchain.targets.package import Package, RPMPackage, DEBPackage
 from buildchain.targets.remote_image import (
@@ -35,6 +35,7 @@ __all__ = [
     "Mkdir",
     "FileTree",
     "LocalImage",
+    "ExplicitContext",
     "OperatorImage",
     "Package",
     "RPMPackage",

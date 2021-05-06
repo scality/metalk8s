@@ -12,6 +12,7 @@ from typing import List, Optional, Sequence
 from buildchain import types
 
 
+# pylint: disable=too-many-instance-attributes
 class Target:
     """Base class for target that generate tasks."""
 
@@ -20,6 +21,7 @@ class Target:
         targets: Optional[Sequence[Path]] = None,
         file_dep: Optional[Sequence[Path]] = None,
         task_dep: Optional[Sequence[str]] = None,
+        calc_dep: Optional[Sequence[str]] = None,
         basename: Optional[str] = None,
         task_name: Optional[str] = None,
         uptodate: Optional[Sequence[types.UpToDateCheck]] = None,
@@ -38,6 +40,7 @@ class Target:
         self._targets = targets or []
         self._file_dep = file_dep or []
         self._task_dep = task_dep or []
+        self._calc_dep = calc_dep or []
         self._basename = basename
         self._task_name = task_name
         self._uptodate = uptodate or []
@@ -46,6 +49,7 @@ class Target:
     targets = property(operator.attrgetter("_targets"))
     file_dep = property(operator.attrgetter("_file_dep"))
     task_dep = property(operator.attrgetter("_task_dep"))
+    calc_dep = property(operator.attrgetter("_calc_dep"))
     task_name = property(operator.attrgetter("_task_name"))
     uptodate = property(operator.attrgetter("_uptodate"))
 
@@ -62,6 +66,7 @@ class Target:
             "targets": self.targets.copy(),
             "file_dep": self.file_dep.copy(),
             "task_dep": self.task_dep.copy(),
+            "calc_dep": self.calc_dep.copy(),
             "uptodate": self.uptodate.copy(),
             "clean": True,
         }

@@ -32,14 +32,13 @@ Overview:
 import datetime
 from typing import Any, Dict, Iterator, List, Tuple
 
+from buildchain import builder
 from buildchain import config
 from buildchain import constants
-from buildchain import coreutils
 from buildchain import targets
 from buildchain import types
 from buildchain import utils
 from buildchain import versions
-from buildchain import ROOT
 
 
 def task_images() -> types.TaskDict:
@@ -69,9 +68,17 @@ def task__image_pull() -> Iterator[types.TaskDict]:
 
 
 def task__image_build() -> Iterator[types.TaskDict]:
-    """Download the container images."""
+    """Build the container images."""
     for image in TO_BUILD:
         yield image.task
+
+
+def task__image_calc_build_deps() -> Iterator[types.TaskDict]:
+    """Compute dependencies from the Dockerfile of locally built images."""
+    for image in TO_BUILD:
+        yield image.calc_deps_task
+    for builder_image in builder.BUILDERS:
+        yield builder_image.calc_deps_task
 
 
 def task__image_dedup_layers() -> types.TaskDict:
@@ -242,15 +249,18 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
     ),
     _local_image(
         name="metalk8s-ui",
-        build_context=config.BUILD_ROOT,
+        build_context=targets.ExplicitContext(
+            dockerfile=constants.ROOT / "images/metalk8s-ui/Dockerfile",
+            base_dir=config.BUILD_ROOT,
+            contents=[
+                constants.UI_BUILD_ROOT.relative_to(config.BUILD_ROOT),
+                constants.DOCS_BUILD_ROOT.relative_to(config.BUILD_ROOT),
+                "metalk8s-ui-nginx.conf",
+            ],
+        ),
         build_args={
             "NGINX_IMAGE_VERSION": versions.NGINX_IMAGE_VERSION,
         },
-        file_dep=(
-            list(coreutils.ls_files_rec(constants.UI_BUILD_ROOT))
-            + list(coreutils.ls_files_rec(constants.DOCS_BUILD_ROOT))
-            + [config.BUILD_ROOT / "metalk8s-ui-nginx.conf"]
-        ),
         task_dep=["ui", "doc"],
     ),
     _local_image(
@@ -266,9 +276,6 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
             "SALT_VERSION": versions.SALT_VERSION,
             "KUBERNETES_VERSION": versions.K8S_VERSION,
         },
-        file_dep=[
-            ROOT / "images" / "metalk8s-utils" / "configure-repos.sh",
-        ],
     ),
     _operator_image(
         name="storage-operator", file_dep=list(constants.STORAGE_OPERATOR_SOURCES)
