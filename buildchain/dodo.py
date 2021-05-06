@@ -11,20 +11,21 @@ import sys
 import doit  # type: ignore
 
 from buildchain import constants
-from buildchain.build import *
-from buildchain.builder import *
-from buildchain.codegen import *
-from buildchain.deps import *
-from buildchain.docs import *
-from buildchain.image import *
-from buildchain.iso import *
-from buildchain.format import *
-from buildchain.lint import *
-from buildchain.packaging import *
-from buildchain.salt_tree import *
-from buildchain.ui import *
-from buildchain.shell_ui import *
-from buildchain.vagrant import *
+# from buildchain.build import *
+# from buildchain.builder import *
+# from buildchain.codegen import *
+# from buildchain.deps import *
+# from buildchain.docs import *
+# from buildchain.image import *
+# from buildchain.iso import *
+# from buildchain.format import *
+# from buildchain.lint import *
+# from buildchain.packaging import *
+# from buildchain.salt_tree import *
+# from buildchain.ui import *
+# from buildchain.shell_ui import *
+# from buildchain.vagrant import *
+from buildchain.calc_deps import *
 
 
 # mypy doesn't know the type of `doit.reporter.JsonReporter`.
