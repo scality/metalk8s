@@ -80,8 +80,6 @@ configured Volumes, here is how we could use these in a configuration file:
          os: RHEL/7
        "RHEL 8":
          os: RHEL/8
-       "Ubuntu 18":
-         os: Ubuntu/18
 
    volumes:
      prepared.sls:
