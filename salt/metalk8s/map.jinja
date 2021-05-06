@@ -36,15 +36,6 @@
         },
       },
     },
-    'Ubuntu': {
-      18: {
-        'kubernetes': versions.kubernetes,
-        'repo': {
-          'packages': versions.packages.ubuntu['18.04'],
-          'images': versions.images,
-        },
-      },
-    },
   }, grain='os'),
   grain='osmajorrelease', merge=defaults.get('version_defaults'),
 ) %}
@@ -61,14 +52,6 @@
         'ebtables': 'iptables-ebtables',
         'yum-plugin-versionlock': 'python3-dnf-plugin-versionlock',
       }
-    },
-    'Debian': {
-      18: {
-        'iproute': 'iproute2',
-        'm2crypto': 'python-m2crypto',
-        'python36-psutil': 'python3-psutil',
-        'python36-pyOpenSSL': 'python3-openssl',
-      },
     },
   }, grain='os_family'),
   grain='osmajorrelease',
@@ -177,66 +160,6 @@
         }
       },
     },
-    'Debian': {
-      18: {
-        'repositories': {
-          'metalk8s-bionic': {
-            'type': 'deb',
-            'options': {
-              'trusted': 'yes',
-            },
-            'components': [
-              'metalk8s-bionic',
-            ],
-          },
-          'metalk8s-bionic-updates': {
-            'type': 'deb',
-            'options': {
-              'trusted': 'yes',
-            },
-            'components': [
-              'metalk8s-bionic-updates',
-            ],
-          },
-          'metalk8s-bionic-backports':{
-            'type': 'deb',
-            'options': {
-              'trusted': 'yes',
-            },
-            'components': [
-              'metalk8s-bionic-backports',
-            ],
-          },
-          'metalk8s-salt_ubuntu1804': {
-            'type': 'deb',
-            'options': {
-              'trusted': 'yes',
-            },
-            'components': [
-              'metalk8s-salt_ubuntu1804',
-            ],
-          },
-          'metalk8s-kubernetes-xenial': {
-            'type': 'deb',
-            'options': {
-              'trusted': 'yes',
-            },
-            'components': [
-              'metalk8s-kubernetes-xenial',
-            ],
-          },
-          'metalk8s-scality': {
-            'type': 'deb',
-            'options': {
-              'trusted': 'yes',
-            },
-            'components': [
-              'metalk8s-scality',
-            ],
-          }
-        }
-      }
-    }
   }, grain='os_family'),
   grain='osmajorrelease', merge=defaults.get('repo')
 ) %}
@@ -254,11 +177,6 @@
 }, merge=defaults.get('containerd')) %}
 
 {% set kubelet = salt['grains.filter_by']({
-  'Debian': {
-    'config': {
-      'resolvConf': '/run/systemd/resolve/resolv.conf'
-    }
-  },
   'RedHat': {
     'config': {
       'resolvConf': '/etc/resolv.conf'

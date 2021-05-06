@@ -22,8 +22,6 @@ metalk8s:
         os: RedHat/7
       "RHEL 8":
         os: RedHat/8
-      "Ubuntu 18":
-        os: Ubuntu/18
 
   addons:
     dex:
@@ -713,17 +711,6 @@ metalk8s:
 
   repo:
     files:
-      apt.sources.list.j2:
-        _cases:
-          "From metalk8s.repo.debian":
-            extra_context:
-              type: deb
-              options:
-                trusted: "yes"
-              url: http://10.0.0.1:8080/metalk8s-2.7.1/debian/metalk8s-bionic
-              distribution: Ubuntu 18.04 Bionic Beaver
-              components: ["metalk8s-bionic"]
-
       metalk8s-registry-config.inc.j2:
         _cases:
           "From metalk8s.repo.configured":
@@ -759,10 +746,6 @@ metalk8s:
               metalk8s_version: "2.7.1"
               config_digest: abcdefgh12345
 
-    debian.sls:
-      _cases:
-        "Ubuntu 18":
-          os: "Ubuntu/18"
     redhat.sls:
       _cases:
         "CentOS 7":
@@ -880,8 +863,6 @@ metalk8s:
     httpd-tools:
       installed.sls:
         _cases:
-          "Debian family":
-            os: Ubuntu/18
           "RedHat family":
             os: CentOS/7
 

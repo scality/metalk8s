@@ -12,9 +12,9 @@ __virtualname__ = "metalk8s_package_manager"
 
 
 def __virtual__():
-    if __grains__["os_family"].lower() in ("redhat", "debian"):
+    if __grains__["os_family"].lower() == "redhat":
         return __virtualname__
-    return (False, "metalk8s_package_manager: no RPM or DEB-based system detected")
+    return (False, "metalk8s_package_manager: no RPM system detected")
 
 
 def installed(name, version=None, fromrepo=None, pkgs_info=None, **kwargs):

@@ -42,7 +42,6 @@ repos:
         additional_dependencies: ['saltpylint==2020.9.28', 'six==1.15.0']
         args:
           - --rcfile=salt/.pylintrc
-          - --ignore=metalk8s_package_manager_apt.py
       - id: pylint
         name: Lint Salt Formulas tests
         files: salt/tests/unit/formulas/.*\.py
