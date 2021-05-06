@@ -24,6 +24,7 @@ Create kubelet service environment file:
       {%- endfor %}
           node-ip: {{ grains['metalk8s']['control_plane_ip'] }}
           hostname-override: {{ grains['id'] }}
+          cgroup-driver: systemd
           v: {{ 2 if metalk8s.debug else 0 }}
     - require:
       - metalk8s_package_manager: Install kubelet
@@ -55,8 +56,7 @@ Create kubelet config file:
           webhook:
             cacheAuthorizedTTL: 0s
             cacheUnauthorizedTTL: 0s
-        # NOTE: we use cgroupfs for the moment
-        # cgroupDriver: systemd
+        cgroupDriver: systemd
         clusterDNS:
           - {{ cluster_dns_ip }}
         clusterDomain: cluster.local
@@ -83,7 +83,6 @@ Create kubelet config file:
         volumeStatsAggPeriod: 0s
       # }
         address: {{ grains['metalk8s']['control_plane_ip'] }}
-        cgroupDriver: cgroupfs
         rotateCertificates: false
         port: 10250
 {%- for key, value in kubelet.config.items() %}

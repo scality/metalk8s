@@ -99,8 +99,15 @@ Configure registry IP in containerd conf:
     - name: /etc/containerd/config.toml
     - makedirs: true
     - contents: |
-        [plugins.cri.registry.mirrors."{{ repo.registry_endpoint }}"]
+        version = 2
+
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ repo.registry_endpoint }}"]
         endpoint = ["http://{{ registry_ip }}:{{ registry_port }}"]
+
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+        runtime_type = "io.containerd.runc.v2"
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+        SystemdCgroup = true
 
         [debug]
         level = "{{ 'debug' if metalk8s.debug else 'info' }}"

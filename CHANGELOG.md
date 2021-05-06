@@ -49,6 +49,10 @@
   Calico version from 3.17.0 to 3.19.0
   (PR [#](https://github.com/scality/metalk8s/pull/))
 
+- [#3366](https://github.com/scality/metalk8s/issues/3366) - Use
+  `systemd` cgroupDriver for Kubelet and containerd
+  (PR[#3377](https://github.com/scality/metalk8s/pull/3377))
+
 ### Breaking changes
 
 - [#2199](https://github.com/scality/metalk8s/issues/2199) - Prometheus label
