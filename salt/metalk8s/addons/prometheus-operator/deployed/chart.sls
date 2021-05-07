@@ -16,13 +16,15 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.2.4
+    controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
   name: alertmanagerconfigs.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
   group: monitoring.coreos.com
   names:
+    categories:
+    - prometheus-operator
     kind: AlertmanagerConfig
     listKind: AlertmanagerConfigList
     plural: alertmanagerconfigs
@@ -33,7 +35,7 @@ spec:
     schema:
       openAPIV3Schema:
         description: AlertmanagerConfig defines a namespaced AlertmanagerConfig to
-          be aggregated across multiple namespaces configuring one Alertmanager.
+          be aggregated across multiple namespaces configuring one Alertmanager cluster.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -48,54 +50,315 @@ spec:
           metadata:
             type: object
           spec:
+            description: AlertmanagerConfigSpec is a specification of the desired
+              behavior of the Alertmanager configuration. By definition, the Alertmanager
+              configuration only applies to alerts for which the `namespace` label
+              is equal to the namespace of the AlertmanagerConfig resource.
             properties:
               inhibitRules:
+                description: "List of inhibition rules. The rules will only apply\
+                  \ to alerts matching the resource\u2019s namespace."
                 items:
+                  description: InhibitRule defines an inhibition rule that allows
+                    to mute alerts when other alerts are already firing. See https://prometheus.io/docs/alerting/latest/configuration/#inhibit_rule
                   properties:
                     equal:
+                      description: Labels that must have an equal value in the source
+                        and target alert for the inhibition to take effect.
                       items:
                         type: string
                       type: array
                     sourceMatch:
+                      description: "Matchers for which one or more alerts have to\
+                        \ exist for the inhibition to take effect. The operator enforces\
+                        \ that the alert matches the resource\u2019s namespace."
                       items:
+                        description: Matcher defines how to match on alert's labels.
                         properties:
                           name:
+                            description: Label to match.
+                            minLength: 1
                             type: string
                           regex:
+                            description: Whether to match on equality (false) or regular-expression
+                              (true).
                             type: boolean
                           value:
+                            description: Label value to match.
                             type: string
                         required:
                         - name
-                        - value
                         type: object
                       type: array
                     targetMatch:
+                      description: "Matchers that have to be fulfilled in the alerts\
+                        \ to be muted. The operator enforces that the alert matches\
+                        \ the resource\u2019s namespace."
                       items:
+                        description: Matcher defines how to match on alert's labels.
                         properties:
                           name:
+                            description: Label to match.
+                            minLength: 1
                             type: string
                           regex:
+                            description: Whether to match on equality (false) or regular-expression
+                              (true).
                             type: boolean
                           value:
+                            description: Label value to match.
                             type: string
                         required:
                         - name
-                        - value
                         type: object
                       type: array
                   type: object
                 type: array
               receivers:
+                description: List of receivers.
                 items:
+                  description: Receiver defines one or more notification integrations.
                   properties:
+                    emailConfigs:
+                      description: List of Email configurations.
+                      items:
+                        description: EmailConfig configures notifications via Email.
+                        properties:
+                          authIdentity:
+                            description: The identity to use for authentication.
+                            type: string
+                          authPassword:
+                            description: The secret's key that contains the password
+                              to use for authentication. The secret needs to be in
+                              the same namespace as the AlertmanagerConfig object
+                              and accessible by the Prometheus Operator.
+                            properties:
+                              key:
+                                description: The key of the secret to select from.  Must
+                                  be a valid secret key.
+                                type: string
+                              name:
+                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                  TODO: Add other useful fields. apiVersion, kind,
+                                  uid?'
+                                type: string
+                              optional:
+                                description: Specify whether the Secret or its key
+                                  must be defined
+                                type: boolean
+                            required:
+                            - key
+                            type: object
+                          authSecret:
+                            description: The secret's key that contains the CRAM-MD5
+                              secret. The secret needs to be in the same namespace
+                              as the AlertmanagerConfig object and accessible by the
+                              Prometheus Operator.
+                            properties:
+                              key:
+                                description: The key of the secret to select from.  Must
+                                  be a valid secret key.
+                                type: string
+                              name:
+                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                  TODO: Add other useful fields. apiVersion, kind,
+                                  uid?'
+                                type: string
+                              optional:
+                                description: Specify whether the Secret or its key
+                                  must be defined
+                                type: boolean
+                            required:
+                            - key
+                            type: object
+                          authUsername:
+                            description: The username to use for authentication.
+                            type: string
+                          from:
+                            description: The sender address.
+                            type: string
+                          headers:
+                            description: Further headers email header key/value pairs.
+                              Overrides any headers previously set by the notification
+                              implementation.
+                            items:
+                              description: KeyValue defines a (key, value) tuple.
+                              properties:
+                                key:
+                                  description: Key of the tuple.
+                                  minLength: 1
+                                  type: string
+                                value:
+                                  description: Value of the tuple.
+                                  type: string
+                              required:
+                              - key
+                              - value
+                              type: object
+                            type: array
+                          hello:
+                            description: The hostname to identify to the SMTP server.
+                            type: string
+                          html:
+                            description: The HTML body of the email notification.
+                            type: string
+                          requireTLS:
+                            description: The SMTP TLS requirement. Note that Go does
+                              not support unencrypted connections to remote SMTP endpoints.
+                            type: boolean
+                          sendResolved:
+                            description: Whether or not to notify about resolved alerts.
+                            type: boolean
+                          smarthost:
+                            description: The SMTP host through which emails are sent.
+                            type: string
+                          text:
+                            description: The text body of the email notification.
+                            type: string
+                          tlsConfig:
+                            description: TLS configuration
+                            properties:
+                              ca:
+                                description: Struct containing the CA cert to use
+                                  for the targets.
+                                properties:
+                                  configMap:
+                                    description: ConfigMap containing data to use
+                                      for the targets.
+                                    properties:
+                                      key:
+                                        description: The key to select.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the ConfigMap
+                                          or its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  secret:
+                                    description: Secret containing data to use for
+                                      the targets.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                type: object
+                              cert:
+                                description: Struct containing the client cert file
+                                  for the targets.
+                                properties:
+                                  configMap:
+                                    description: ConfigMap containing data to use
+                                      for the targets.
+                                    properties:
+                                      key:
+                                        description: The key to select.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the ConfigMap
+                                          or its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  secret:
+                                    description: Secret containing data to use for
+                                      the targets.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                type: object
+                              insecureSkipVerify:
+                                description: Disable target certificate validation.
+                                type: boolean
+                              keySecret:
+                                description: Secret containing the client key file
+                                  for the targets.
+                                properties:
+                                  key:
+                                    description: The key of the secret to select from.  Must
+                                      be a valid secret key.
+                                    type: string
+                                  name:
+                                    description: 'Name of the referent. More info:
+                                      https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                      TODO: Add other useful fields. apiVersion, kind,
+                                      uid?'
+                                    type: string
+                                  optional:
+                                    description: Specify whether the Secret or its
+                                      key must be defined
+                                    type: boolean
+                                required:
+                                - key
+                                type: object
+                              serverName:
+                                description: Used to verify the hostname for the targets.
+                                type: string
+                            type: object
+                          to:
+                            description: The email address to send notifications to.
+                            type: string
+                        type: object
+                      type: array
                     name:
+                      description: Name of the receiver. Must be unique across all
+                        items from the list.
+                      minLength: 1
                       type: string
                     opsgenieConfigs:
+                      description: List of OpsGenie configurations.
                       items:
+                        description: OpsGenieConfig configures notifications via OpsGenie.
+                          See https://prometheus.io/docs/alerting/latest/configuration/#opsgenie_config
                         properties:
                           apiKey:
-                            description: SecretKeySelector selects a key of a Secret.
+                            description: The secret's key that contains the OpsGenie
+                              API key. The secret needs to be in the same namespace
+                              as the AlertmanagerConfig object and accessible by the
+                              Prometheus Operator.
                             properties:
                               key:
                                 description: The key of the secret to select from.  Must
@@ -114,15 +377,23 @@ spec:
                             - key
                             type: object
                           apiURL:
+                            description: The URL to send OpsGenie API requests to.
                             type: string
                           description:
+                            description: Description of the incident.
                             type: string
                           details:
+                            description: A set of arbitrary key/value pairs that provide
+                              further detail about the incident.
                             items:
+                              description: KeyValue defines a (key, value) tuple.
                               properties:
                                 key:
+                                  description: Key of the tuple.
+                                  minLength: 1
                                   type: string
                                 value:
+                                  description: Value of the tuple.
                                   type: string
                               required:
                               - key
@@ -130,10 +401,10 @@ spec:
                               type: object
                             type: array
                           httpConfig:
+                            description: HTTP client configuration.
                             properties:
                               basicAuth:
-                                description: 'BasicAuth allow an endpoint to authenticate
-                                  over basic authentication More info: https://prometheus.io/docs/operating/configuration/#endpoints'
+                                description: BasicAuth for the client.
                                 properties:
                                   password:
                                     description: The secret in the service monitor
@@ -179,8 +450,11 @@ spec:
                                     type: object
                                 type: object
                               bearerTokenSecret:
-                                description: SecretKeySelector selects a key of a
-                                  Secret.
+                                description: The secret's key that contains the bearer
+                                  token to be used by the client for authentication.
+                                  The secret needs to be in the same namespace as
+                                  the AlertmanagerConfig object and accessible by
+                                  the Prometheus Operator.
                                 properties:
                                   key:
                                     description: The key of the secret to select from.  Must
@@ -200,10 +474,10 @@ spec:
                                 - key
                                 type: object
                               proxyURL:
+                                description: Optional proxy URL.
                                 type: string
                               tlsConfig:
-                                description: SafeTLSConfig specifies safe TLS configuration
-                                  parameters.
+                                description: TLS configuration for the client.
                                 properties:
                                   ca:
                                     description: Struct containing the CA cert to
@@ -330,51 +604,85 @@ spec:
                                 type: object
                             type: object
                           message:
+                            description: Alert text limited to 130 characters.
                             type: string
                           note:
+                            description: Additional alert note.
                             type: string
                           priority:
+                            description: Priority level of alert. Possible values
+                              are P1, P2, P3, P4, and P5.
                             type: string
                           responders:
+                            description: List of responders responsible for notifications.
                             items:
+                              description: OpsGenieConfigResponder defines a responder
+                                to an incident. One of `id`, `name` or `username`
+                                has to be defined.
                               properties:
                                 id:
+                                  description: ID of the responder.
                                   type: string
                                 name:
+                                  description: Name of the responder.
                                   type: string
                                 type:
+                                  description: Type of responder.
+                                  minLength: 1
                                   type: string
                                 username:
+                                  description: Username of the responder.
                                   type: string
+                              required:
+                              - type
                               type: object
                             type: array
                           sendResolved:
+                            description: Whether or not to notify about resolved alerts.
                             type: boolean
                           source:
+                            description: Backlink to the sender of the notification.
                             type: string
                           tags:
+                            description: Comma separated list of tags attached to
+                              the notifications.
                             type: string
                         type: object
                       type: array
-                    pagerDutyConfigs:
+                    pagerdutyConfigs:
+                      description: List of PagerDuty configurations.
                       items:
+                        description: PagerDutyConfig configures notifications via
+                          PagerDuty. See https://prometheus.io/docs/alerting/latest/configuration/#pagerduty_config
                         properties:
                           class:
+                            description: The class/type of the event.
                             type: string
                           client:
+                            description: Client identification.
                             type: string
                           clientURL:
+                            description: Backlink to the sender of notification.
                             type: string
                           component:
+                            description: The part or component of the affected system
+                              that is broken.
                             type: string
                           description:
+                            description: Description of the incident.
                             type: string
                           details:
+                            description: Arbitrary key/value pairs that provide further
+                              detail about the incident.
                             items:
+                              description: KeyValue defines a (key, value) tuple.
                               properties:
                                 key:
+                                  description: Key of the tuple.
+                                  minLength: 1
                                   type: string
                                 value:
+                                  description: Value of the tuple.
                                   type: string
                               required:
                               - key
@@ -382,12 +690,13 @@ spec:
                               type: object
                             type: array
                           group:
+                            description: A cluster or grouping of sources.
                             type: string
                           httpConfig:
+                            description: HTTP client configuration.
                             properties:
                               basicAuth:
-                                description: 'BasicAuth allow an endpoint to authenticate
-                                  over basic authentication More info: https://prometheus.io/docs/operating/configuration/#endpoints'
+                                description: BasicAuth for the client.
                                 properties:
                                   password:
                                     description: The secret in the service monitor
@@ -433,8 +742,11 @@ spec:
                                     type: object
                                 type: object
                               bearerTokenSecret:
-                                description: SecretKeySelector selects a key of a
-                                  Secret.
+                                description: The secret's key that contains the bearer
+                                  token to be used by the client for authentication.
+                                  The secret needs to be in the same namespace as
+                                  the AlertmanagerConfig object and accessible by
+                                  the Prometheus Operator.
                                 properties:
                                   key:
                                     description: The key of the secret to select from.  Must
@@ -454,10 +766,10 @@ spec:
                                 - key
                                 type: object
                               proxyURL:
+                                description: Optional proxy URL.
                                 type: string
                               tlsConfig:
-                                description: SafeTLSConfig specifies safe TLS configuration
-                                  parameters.
+                                description: TLS configuration for the client.
                                 properties:
                                   ca:
                                     description: Struct containing the CA cert to
@@ -584,7 +896,11 @@ spec:
                                 type: object
                             type: object
                           routingKey:
-                            description: SecretKeySelector selects a key of a Secret.
+                            description: The secret's key that contains the PagerDuty
+                              integration key (when using Events API v2). Either this
+                              field or `serviceKey` needs to be defined. The secret
+                              needs to be in the same namespace as the AlertmanagerConfig
+                              object and accessible by the Prometheus Operator.
                             properties:
                               key:
                                 description: The key of the secret to select from.  Must
@@ -603,9 +919,15 @@ spec:
                             - key
                             type: object
                           sendResolved:
+                            description: Whether or not to notify about resolved alerts.
                             type: boolean
                           serviceKey:
-                            description: SecretKeySelector selects a key of a Secret.
+                            description: The secret's key that contains the PagerDuty
+                              service key (when using integration type "Prometheus").
+                              Either this field or `routingKey` needs to be defined.
+                              The secret needs to be in the same namespace as the
+                              AlertmanagerConfig object and accessible by the Prometheus
+                              Operator.
                             properties:
                               key:
                                 description: The key of the secret to select from.  Must
@@ -624,19 +946,33 @@ spec:
                             - key
                             type: object
                           severity:
+                            description: Severity of the incident.
                             type: string
                           url:
+                            description: The URL to send requests to.
                             type: string
                         type: object
                       type: array
-                    webhookConfigs:
+                    pushoverConfigs:
+                      description: List of Pushover configurations.
                       items:
+                        description: PushoverConfig configures notifications via Pushover.
+                          See https://prometheus.io/docs/alerting/latest/configuration/#pushover_config
                         properties:
+                          expire:
+                            description: How long your notification will continue
+                              to be retried for, unless the user acknowledges the
+                              notification.
+                            type: string
+                          html:
+                            description: Whether notification message is HTML or plain
+                              text.
+                            type: boolean
                           httpConfig:
+                            description: HTTP client configuration.
                             properties:
                               basicAuth:
-                                description: 'BasicAuth allow an endpoint to authenticate
-                                  over basic authentication More info: https://prometheus.io/docs/operating/configuration/#endpoints'
+                                description: BasicAuth for the client.
                                 properties:
                                   password:
                                     description: The secret in the service monitor
@@ -682,8 +1018,11 @@ spec:
                                     type: object
                                 type: object
                               bearerTokenSecret:
-                                description: SecretKeySelector selects a key of a
-                                  Secret.
+                                description: The secret's key that contains the bearer
+                                  token to be used by the client for authentication.
+                                  The secret needs to be in the same namespace as
+                                  the AlertmanagerConfig object and accessible by
+                                  the Prometheus Operator.
                                 properties:
                                   key:
                                     description: The key of the secret to select from.  Must
@@ -703,10 +1042,915 @@ spec:
                                 - key
                                 type: object
                               proxyURL:
+                                description: Optional proxy URL.
                                 type: string
                               tlsConfig:
-                                description: SafeTLSConfig specifies safe TLS configuration
-                                  parameters.
+                                description: TLS configuration for the client.
+                                properties:
+                                  ca:
+                                    description: Struct containing the CA cert to
+                                      use for the targets.
+                                    properties:
+                                      configMap:
+                                        description: ConfigMap containing data to
+                                          use for the targets.
+                                        properties:
+                                          key:
+                                            description: The key to select.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the ConfigMap
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                      secret:
+                                        description: Secret containing data to use
+                                          for the targets.
+                                        properties:
+                                          key:
+                                            description: The key of the secret to
+                                              select from.  Must be a valid secret
+                                              key.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                    type: object
+                                  cert:
+                                    description: Struct containing the client cert
+                                      file for the targets.
+                                    properties:
+                                      configMap:
+                                        description: ConfigMap containing data to
+                                          use for the targets.
+                                        properties:
+                                          key:
+                                            description: The key to select.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the ConfigMap
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                      secret:
+                                        description: Secret containing data to use
+                                          for the targets.
+                                        properties:
+                                          key:
+                                            description: The key of the secret to
+                                              select from.  Must be a valid secret
+                                              key.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                    type: object
+                                  insecureSkipVerify:
+                                    description: Disable target certificate validation.
+                                    type: boolean
+                                  keySecret:
+                                    description: Secret containing the client key
+                                      file for the targets.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  serverName:
+                                    description: Used to verify the hostname for the
+                                      targets.
+                                    type: string
+                                type: object
+                            type: object
+                          message:
+                            description: Notification message.
+                            type: string
+                          priority:
+                            description: Priority, see https://pushover.net/api#priority
+                            type: string
+                          retry:
+                            description: How often the Pushover servers will send
+                              the same notification to the user. Must be at least
+                              30 seconds.
+                            type: string
+                          sendResolved:
+                            description: Whether or not to notify about resolved alerts.
+                            type: boolean
+                          sound:
+                            description: The name of one of the sounds supported by
+                              device clients to override the user's default sound
+                              choice
+                            type: string
+                          title:
+                            description: Notification title.
+                            type: string
+                          token:
+                            description: "The secret's key that contains the registered\
+                              \ application\u2019s API token, see https://pushover.net/apps.\
+                              \ The secret needs to be in the same namespace as the\
+                              \ AlertmanagerConfig object and accessible by the Prometheus\
+                              \ Operator."
+                            properties:
+                              key:
+                                description: The key of the secret to select from.  Must
+                                  be a valid secret key.
+                                type: string
+                              name:
+                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                  TODO: Add other useful fields. apiVersion, kind,
+                                  uid?'
+                                type: string
+                              optional:
+                                description: Specify whether the Secret or its key
+                                  must be defined
+                                type: boolean
+                            required:
+                            - key
+                            type: object
+                          url:
+                            description: A supplementary URL shown alongside the message.
+                            type: string
+                          urlTitle:
+                            description: A title for supplementary URL, otherwise
+                              just the URL is shown
+                            type: string
+                          userKey:
+                            description: "The secret's key that contains the recipient\
+                              \ user\u2019s user key. The secret needs to be in the\
+                              \ same namespace as the AlertmanagerConfig object and\
+                              \ accessible by the Prometheus Operator."
+                            properties:
+                              key:
+                                description: The key of the secret to select from.  Must
+                                  be a valid secret key.
+                                type: string
+                              name:
+                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                  TODO: Add other useful fields. apiVersion, kind,
+                                  uid?'
+                                type: string
+                              optional:
+                                description: Specify whether the Secret or its key
+                                  must be defined
+                                type: boolean
+                            required:
+                            - key
+                            type: object
+                        type: object
+                      type: array
+                    slackConfigs:
+                      description: List of Slack configurations.
+                      items:
+                        description: SlackConfig configures notifications via Slack.
+                          See https://prometheus.io/docs/alerting/latest/configuration/#slack_config
+                        properties:
+                          actions:
+                            description: A list of Slack actions that are sent with
+                              each notification.
+                            items:
+                              description: SlackAction configures a single Slack action
+                                that is sent with each notification. See https://api.slack.com/docs/message-attachments#action_fields
+                                and https://api.slack.com/docs/message-buttons for
+                                more information.
+                              properties:
+                                confirm:
+                                  description: SlackConfirmationField protect users
+                                    from destructive actions or particularly distinguished
+                                    decisions by asking them to confirm their button
+                                    click one more time. See https://api.slack.com/docs/interactive-message-field-guide#confirmation_fields
+                                    for more information.
+                                  properties:
+                                    dismissText:
+                                      type: string
+                                    okText:
+                                      type: string
+                                    text:
+                                      minLength: 1
+                                      type: string
+                                    title:
+                                      type: string
+                                  required:
+                                  - text
+                                  type: object
+                                name:
+                                  type: string
+                                style:
+                                  type: string
+                                text:
+                                  minLength: 1
+                                  type: string
+                                type:
+                                  minLength: 1
+                                  type: string
+                                url:
+                                  type: string
+                                value:
+                                  type: string
+                              required:
+                              - text
+                              - type
+                              type: object
+                            type: array
+                          apiURL:
+                            description: The secret's key that contains the Slack
+                              webhook URL. The secret needs to be in the same namespace
+                              as the AlertmanagerConfig object and accessible by the
+                              Prometheus Operator.
+                            properties:
+                              key:
+                                description: The key of the secret to select from.  Must
+                                  be a valid secret key.
+                                type: string
+                              name:
+                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                  TODO: Add other useful fields. apiVersion, kind,
+                                  uid?'
+                                type: string
+                              optional:
+                                description: Specify whether the Secret or its key
+                                  must be defined
+                                type: boolean
+                            required:
+                            - key
+                            type: object
+                          callbackId:
+                            type: string
+                          channel:
+                            description: The channel or user to send notifications
+                              to.
+                            type: string
+                          color:
+                            type: string
+                          fallback:
+                            type: string
+                          fields:
+                            description: A list of Slack fields that are sent with
+                              each notification.
+                            items:
+                              description: SlackField configures a single Slack field
+                                that is sent with each notification. Each field must
+                                contain a title, value, and optionally, a boolean
+                                value to indicate if the field is short enough to
+                                be displayed next to other fields designated as short.
+                                See https://api.slack.com/docs/message-attachments#fields
+                                for more information.
+                              properties:
+                                short:
+                                  type: boolean
+                                title:
+                                  minLength: 1
+                                  type: string
+                                value:
+                                  minLength: 1
+                                  type: string
+                              required:
+                              - title
+                              - value
+                              type: object
+                            type: array
+                          footer:
+                            type: string
+                          httpConfig:
+                            description: HTTP client configuration.
+                            properties:
+                              basicAuth:
+                                description: BasicAuth for the client.
+                                properties:
+                                  password:
+                                    description: The secret in the service monitor
+                                      namespace that contains the password for authentication.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  username:
+                                    description: The secret in the service monitor
+                                      namespace that contains the username for authentication.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                type: object
+                              bearerTokenSecret:
+                                description: The secret's key that contains the bearer
+                                  token to be used by the client for authentication.
+                                  The secret needs to be in the same namespace as
+                                  the AlertmanagerConfig object and accessible by
+                                  the Prometheus Operator.
+                                properties:
+                                  key:
+                                    description: The key of the secret to select from.  Must
+                                      be a valid secret key.
+                                    type: string
+                                  name:
+                                    description: 'Name of the referent. More info:
+                                      https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                      TODO: Add other useful fields. apiVersion, kind,
+                                      uid?'
+                                    type: string
+                                  optional:
+                                    description: Specify whether the Secret or its
+                                      key must be defined
+                                    type: boolean
+                                required:
+                                - key
+                                type: object
+                              proxyURL:
+                                description: Optional proxy URL.
+                                type: string
+                              tlsConfig:
+                                description: TLS configuration for the client.
+                                properties:
+                                  ca:
+                                    description: Struct containing the CA cert to
+                                      use for the targets.
+                                    properties:
+                                      configMap:
+                                        description: ConfigMap containing data to
+                                          use for the targets.
+                                        properties:
+                                          key:
+                                            description: The key to select.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the ConfigMap
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                      secret:
+                                        description: Secret containing data to use
+                                          for the targets.
+                                        properties:
+                                          key:
+                                            description: The key of the secret to
+                                              select from.  Must be a valid secret
+                                              key.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                    type: object
+                                  cert:
+                                    description: Struct containing the client cert
+                                      file for the targets.
+                                    properties:
+                                      configMap:
+                                        description: ConfigMap containing data to
+                                          use for the targets.
+                                        properties:
+                                          key:
+                                            description: The key to select.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the ConfigMap
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                      secret:
+                                        description: Secret containing data to use
+                                          for the targets.
+                                        properties:
+                                          key:
+                                            description: The key of the secret to
+                                              select from.  Must be a valid secret
+                                              key.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                    type: object
+                                  insecureSkipVerify:
+                                    description: Disable target certificate validation.
+                                    type: boolean
+                                  keySecret:
+                                    description: Secret containing the client key
+                                      file for the targets.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  serverName:
+                                    description: Used to verify the hostname for the
+                                      targets.
+                                    type: string
+                                type: object
+                            type: object
+                          iconEmoji:
+                            type: string
+                          iconURL:
+                            type: string
+                          imageURL:
+                            type: string
+                          linkNames:
+                            type: boolean
+                          mrkdwnIn:
+                            items:
+                              type: string
+                            type: array
+                          pretext:
+                            type: string
+                          sendResolved:
+                            description: Whether or not to notify about resolved alerts.
+                            type: boolean
+                          shortFields:
+                            type: boolean
+                          text:
+                            type: string
+                          thumbURL:
+                            type: string
+                          title:
+                            type: string
+                          titleLink:
+                            type: string
+                          username:
+                            type: string
+                        type: object
+                      type: array
+                    victoropsConfigs:
+                      description: List of VictorOps configurations.
+                      items:
+                        description: VictorOpsConfig configures notifications via
+                          VictorOps. See https://prometheus.io/docs/alerting/latest/configuration/#victorops_config
+                        properties:
+                          apiKey:
+                            description: The secret's key that contains the API key
+                              to use when talking to the VictorOps API. The secret
+                              needs to be in the same namespace as the AlertmanagerConfig
+                              object and accessible by the Prometheus Operator.
+                            properties:
+                              key:
+                                description: The key of the secret to select from.  Must
+                                  be a valid secret key.
+                                type: string
+                              name:
+                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                  TODO: Add other useful fields. apiVersion, kind,
+                                  uid?'
+                                type: string
+                              optional:
+                                description: Specify whether the Secret or its key
+                                  must be defined
+                                type: boolean
+                            required:
+                            - key
+                            type: object
+                          apiUrl:
+                            description: The VictorOps API URL.
+                            type: string
+                          customFields:
+                            description: Additional custom fields for notification.
+                            items:
+                              description: KeyValue defines a (key, value) tuple.
+                              properties:
+                                key:
+                                  description: Key of the tuple.
+                                  minLength: 1
+                                  type: string
+                                value:
+                                  description: Value of the tuple.
+                                  type: string
+                              required:
+                              - key
+                              - value
+                              type: object
+                            type: array
+                          entityDisplayName:
+                            description: Contains summary of the alerted problem.
+                            type: string
+                          httpConfig:
+                            description: The HTTP client's configuration.
+                            properties:
+                              basicAuth:
+                                description: BasicAuth for the client.
+                                properties:
+                                  password:
+                                    description: The secret in the service monitor
+                                      namespace that contains the password for authentication.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  username:
+                                    description: The secret in the service monitor
+                                      namespace that contains the username for authentication.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                type: object
+                              bearerTokenSecret:
+                                description: The secret's key that contains the bearer
+                                  token to be used by the client for authentication.
+                                  The secret needs to be in the same namespace as
+                                  the AlertmanagerConfig object and accessible by
+                                  the Prometheus Operator.
+                                properties:
+                                  key:
+                                    description: The key of the secret to select from.  Must
+                                      be a valid secret key.
+                                    type: string
+                                  name:
+                                    description: 'Name of the referent. More info:
+                                      https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                      TODO: Add other useful fields. apiVersion, kind,
+                                      uid?'
+                                    type: string
+                                  optional:
+                                    description: Specify whether the Secret or its
+                                      key must be defined
+                                    type: boolean
+                                required:
+                                - key
+                                type: object
+                              proxyURL:
+                                description: Optional proxy URL.
+                                type: string
+                              tlsConfig:
+                                description: TLS configuration for the client.
+                                properties:
+                                  ca:
+                                    description: Struct containing the CA cert to
+                                      use for the targets.
+                                    properties:
+                                      configMap:
+                                        description: ConfigMap containing data to
+                                          use for the targets.
+                                        properties:
+                                          key:
+                                            description: The key to select.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the ConfigMap
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                      secret:
+                                        description: Secret containing data to use
+                                          for the targets.
+                                        properties:
+                                          key:
+                                            description: The key of the secret to
+                                              select from.  Must be a valid secret
+                                              key.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                    type: object
+                                  cert:
+                                    description: Struct containing the client cert
+                                      file for the targets.
+                                    properties:
+                                      configMap:
+                                        description: ConfigMap containing data to
+                                          use for the targets.
+                                        properties:
+                                          key:
+                                            description: The key to select.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the ConfigMap
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                      secret:
+                                        description: Secret containing data to use
+                                          for the targets.
+                                        properties:
+                                          key:
+                                            description: The key of the secret to
+                                              select from.  Must be a valid secret
+                                              key.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                    type: object
+                                  insecureSkipVerify:
+                                    description: Disable target certificate validation.
+                                    type: boolean
+                                  keySecret:
+                                    description: Secret containing the client key
+                                      file for the targets.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  serverName:
+                                    description: Used to verify the hostname for the
+                                      targets.
+                                    type: string
+                                type: object
+                            type: object
+                          messageType:
+                            description: Describes the behavior of the alert (CRITICAL,
+                              WARNING, INFO).
+                            type: string
+                          monitoringTool:
+                            description: The monitoring tool the state message is
+                              from.
+                            type: string
+                          routingKey:
+                            description: A key used to map the alert to a team.
+                            type: string
+                          sendResolved:
+                            description: Whether or not to notify about resolved alerts.
+                            type: boolean
+                          stateMessage:
+                            description: Contains long explanation of the alerted
+                              problem.
+                            type: string
+                        type: object
+                      type: array
+                    webhookConfigs:
+                      description: List of webhook configurations.
+                      items:
+                        description: WebhookConfig configures notifications via a
+                          generic receiver supporting the webhook payload. See https://prometheus.io/docs/alerting/latest/configuration/#webhook_config
+                        properties:
+                          httpConfig:
+                            description: HTTP client configuration.
+                            properties:
+                              basicAuth:
+                                description: BasicAuth for the client.
+                                properties:
+                                  password:
+                                    description: The secret in the service monitor
+                                      namespace that contains the password for authentication.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  username:
+                                    description: The secret in the service monitor
+                                      namespace that contains the username for authentication.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                type: object
+                              bearerTokenSecret:
+                                description: The secret's key that contains the bearer
+                                  token to be used by the client for authentication.
+                                  The secret needs to be in the same namespace as
+                                  the AlertmanagerConfig object and accessible by
+                                  the Prometheus Operator.
+                                properties:
+                                  key:
+                                    description: The key of the secret to select from.  Must
+                                      be a valid secret key.
+                                    type: string
+                                  name:
+                                    description: 'Name of the referent. More info:
+                                      https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                      TODO: Add other useful fields. apiVersion, kind,
+                                      uid?'
+                                    type: string
+                                  optional:
+                                    description: Specify whether the Secret or its
+                                      key must be defined
+                                    type: boolean
+                                required:
+                                - key
+                                type: object
+                              proxyURL:
+                                description: Optional proxy URL.
+                                type: string
+                              tlsConfig:
+                                description: TLS configuration for the client.
                                 properties:
                                   ca:
                                     description: Struct containing the CA cert to
@@ -833,14 +2077,26 @@ spec:
                                 type: object
                             type: object
                           maxAlerts:
+                            description: Maximum number of alerts to be sent per webhook
+                              message. When 0, all alerts are included.
                             format: int32
+                            minimum: 0
                             type: integer
                           sendResolved:
+                            description: Whether or not to notify about resolved alerts.
                             type: boolean
                           url:
+                            description: The URL to send HTTP POST requests to. `urlSecret`
+                              takes precedence over `url`. One of `urlSecret` and
+                              `url` should be defined.
                             type: string
                           urlSecret:
-                            description: SecretKeySelector selects a key of a Secret.
+                            description: The secret's key that contains the webhook
+                              URL to send HTTP requests to. `urlSecret` takes precedence
+                              over `url`. One of `urlSecret` and `url` should be defined.
+                              The secret needs to be in the same namespace as the
+                              AlertmanagerConfig object and accessible by the Prometheus
+                              Operator.
                             properties:
                               key:
                                 description: The key of the secret to select from.  Must
@@ -860,43 +2116,327 @@ spec:
                             type: object
                         type: object
                       type: array
+                    wechatConfigs:
+                      description: List of WeChat configurations.
+                      items:
+                        description: WeChatConfig configures notifications via WeChat.
+                          See https://prometheus.io/docs/alerting/latest/configuration/#wechat_config
+                        properties:
+                          agentID:
+                            type: string
+                          apiSecret:
+                            description: The secret's key that contains the WeChat
+                              API key. The secret needs to be in the same namespace
+                              as the AlertmanagerConfig object and accessible by the
+                              Prometheus Operator.
+                            properties:
+                              key:
+                                description: The key of the secret to select from.  Must
+                                  be a valid secret key.
+                                type: string
+                              name:
+                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                  TODO: Add other useful fields. apiVersion, kind,
+                                  uid?'
+                                type: string
+                              optional:
+                                description: Specify whether the Secret or its key
+                                  must be defined
+                                type: boolean
+                            required:
+                            - key
+                            type: object
+                          apiURL:
+                            description: The WeChat API URL.
+                            type: string
+                          corpID:
+                            description: The corp id for authentication.
+                            type: string
+                          httpConfig:
+                            description: HTTP client configuration.
+                            properties:
+                              basicAuth:
+                                description: BasicAuth for the client.
+                                properties:
+                                  password:
+                                    description: The secret in the service monitor
+                                      namespace that contains the password for authentication.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  username:
+                                    description: The secret in the service monitor
+                                      namespace that contains the username for authentication.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                type: object
+                              bearerTokenSecret:
+                                description: The secret's key that contains the bearer
+                                  token to be used by the client for authentication.
+                                  The secret needs to be in the same namespace as
+                                  the AlertmanagerConfig object and accessible by
+                                  the Prometheus Operator.
+                                properties:
+                                  key:
+                                    description: The key of the secret to select from.  Must
+                                      be a valid secret key.
+                                    type: string
+                                  name:
+                                    description: 'Name of the referent. More info:
+                                      https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                      TODO: Add other useful fields. apiVersion, kind,
+                                      uid?'
+                                    type: string
+                                  optional:
+                                    description: Specify whether the Secret or its
+                                      key must be defined
+                                    type: boolean
+                                required:
+                                - key
+                                type: object
+                              proxyURL:
+                                description: Optional proxy URL.
+                                type: string
+                              tlsConfig:
+                                description: TLS configuration for the client.
+                                properties:
+                                  ca:
+                                    description: Struct containing the CA cert to
+                                      use for the targets.
+                                    properties:
+                                      configMap:
+                                        description: ConfigMap containing data to
+                                          use for the targets.
+                                        properties:
+                                          key:
+                                            description: The key to select.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the ConfigMap
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                      secret:
+                                        description: Secret containing data to use
+                                          for the targets.
+                                        properties:
+                                          key:
+                                            description: The key of the secret to
+                                              select from.  Must be a valid secret
+                                              key.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                    type: object
+                                  cert:
+                                    description: Struct containing the client cert
+                                      file for the targets.
+                                    properties:
+                                      configMap:
+                                        description: ConfigMap containing data to
+                                          use for the targets.
+                                        properties:
+                                          key:
+                                            description: The key to select.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the ConfigMap
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                      secret:
+                                        description: Secret containing data to use
+                                          for the targets.
+                                        properties:
+                                          key:
+                                            description: The key of the secret to
+                                              select from.  Must be a valid secret
+                                              key.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                    type: object
+                                  insecureSkipVerify:
+                                    description: Disable target certificate validation.
+                                    type: boolean
+                                  keySecret:
+                                    description: Secret containing the client key
+                                      file for the targets.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  serverName:
+                                    description: Used to verify the hostname for the
+                                      targets.
+                                    type: string
+                                type: object
+                            type: object
+                          message:
+                            description: API request data as defined by the WeChat
+                              API.
+                            type: string
+                          messageType:
+                            type: string
+                          sendResolved:
+                            description: Whether or not to notify about resolved alerts.
+                            type: boolean
+                          toParty:
+                            type: string
+                          toTag:
+                            type: string
+                          toUser:
+                            type: string
+                        type: object
+                      type: array
                   required:
                   - name
                   type: object
                 type: array
               route:
+                description: "The Alertmanager route definition for alerts matching\
+                  \ the resource\u2019s namespace. If present, it will be added to\
+                  \ the generated Alertmanager configuration as a first-level route."
                 properties:
                   continue:
+                    description: Boolean indicating whether an alert should continue
+                      matching subsequent sibling nodes. It will always be overridden
+                      to true for the first-level route by the Prometheus operator.
                     type: boolean
                   groupBy:
+                    description: List of labels to group by.
                     items:
                       type: string
                     type: array
                   groupInterval:
+                    description: How long to wait before sending an updated notification.
+                      Must match the regular expression `[0-9]+(ms|s|m|h)` (milliseconds
+                      seconds minutes hours).
                     type: string
                   groupWait:
+                    description: How long to wait before sending the initial notification.
+                      Must match the regular expression `[0-9]+(ms|s|m|h)` (milliseconds
+                      seconds minutes hours).
                     type: string
                   matchers:
+                    description: "List of matchers that the alert\u2019s labels should\
+                      \ match. For the first level route, the operator removes any\
+                      \ existing equality and regexp matcher on the `namespace` label\
+                      \ and adds a `namespace: <object namespace>` matcher."
                     items:
+                      description: Matcher defines how to match on alert's labels.
                       properties:
                         name:
+                          description: Label to match.
+                          minLength: 1
                           type: string
                         regex:
+                          description: Whether to match on equality (false) or regular-expression
+                            (true).
                           type: boolean
                         value:
+                          description: Label value to match.
                           type: string
                       required:
                       - name
-                      - value
                       type: object
                     type: array
                   receiver:
+                    description: Name of the receiver for this route. If not empty,
+                      it should be listed in the `receivers` field.
                     type: string
                   repeatInterval:
+                    description: How long to wait before repeating the last notification.
+                      Must match the regular expression `[0-9]+(ms|s|m|h)` (milliseconds
+                      seconds minutes hours).
                     type: string
                   routes:
+                    description: Child routes.
                     items:
-                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
                     type: array
                 type: object
             type: object
@@ -916,13 +2456,15 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.2.4
+    controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
   name: alertmanagers.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
   group: monitoring.coreos.com
   names:
+    categories:
+    - prometheus-operator
     kind: Alertmanager
     listKind: AlertmanagerList
     plural: alertmanagers
@@ -1658,6 +3200,15 @@ spec:
                   in cluster. Needs to be provided for non RFC1918 [1] (public) addresses.
                   [1] RFC1918: https://tools.ietf.org/html/rfc1918'
                 type: string
+              clusterGossipInterval:
+                description: Interval between gossip attempts.
+                type: string
+              clusterPeerTimeout:
+                description: Timeout for cluster peering.
+                type: string
+              clusterPushpullInterval:
+                description: Interval between pushpull attempts.
+                type: string
               configMaps:
                 description: ConfigMaps is a list of ConfigMaps in the same namespace
                   as the Alertmanager object, which shall be mounted into the Alertmanager
@@ -1781,9 +3332,13 @@ spec:
                                       optional for env vars'
                                     type: string
                                   divisor:
+                                    anyOf:
+                                    - type: integer
+                                    - type: string
                                     description: Specifies the output format of the
                                       exposed resources, defaults to "1"
-                                    type: string
+                                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                    x-kubernetes-int-or-string: true
                                   resource:
                                     description: 'Required: resource to select'
                                     type: string
@@ -2218,6 +3773,7 @@ spec:
                               be referred to by services.
                             type: string
                           protocol:
+                            default: TCP
                             description: Protocol for port. Must be UDP, TCP, or SCTP.
                               Defaults to "TCP".
                             type: string
@@ -2225,6 +3781,10 @@ spec:
                         - containerPort
                         type: object
                       type: array
+                      x-kubernetes-list-map-keys:
+                      - containerPort
+                      - protocol
+                      x-kubernetes-list-type: map
                     readinessProbe:
                       description: 'Periodic probe of container service readiness.
                         Container will be removed from service endpoints if the probe
@@ -2348,13 +3908,21 @@ spec:
                       properties:
                         limits:
                           additionalProperties:
-                            type: string
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
                           description: 'Limits describes the maximum amount of compute
                             resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                           type: object
                         requests:
                           additionalProperties:
-                            type: string
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
                           description: 'Requests describes the minimum amount of compute
                             resources required. If Requests is omitted for a container,
                             it defaults to Limits if that is explicitly specified,
@@ -2864,9 +4432,13 @@ spec:
                                       optional for env vars'
                                     type: string
                                   divisor:
+                                    anyOf:
+                                    - type: integer
+                                    - type: string
                                     description: Specifies the output format of the
                                       exposed resources, defaults to "1"
-                                    type: string
+                                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                    x-kubernetes-int-or-string: true
                                   resource:
                                     description: 'Required: resource to select'
                                     type: string
@@ -3301,6 +4873,7 @@ spec:
                               be referred to by services.
                             type: string
                           protocol:
+                            default: TCP
                             description: Protocol for port. Must be UDP, TCP, or SCTP.
                               Defaults to "TCP".
                             type: string
@@ -3308,6 +4881,10 @@ spec:
                         - containerPort
                         type: object
                       type: array
+                      x-kubernetes-list-map-keys:
+                      - containerPort
+                      - protocol
+                      x-kubernetes-list-type: map
                     readinessProbe:
                       description: 'Periodic probe of container service readiness.
                         Container will be removed from service endpoints if the probe
@@ -3431,13 +5008,21 @@ spec:
                       properties:
                         limits:
                           additionalProperties:
-                            type: string
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
                           description: 'Limits describes the maximum amount of compute
                             resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                           type: object
                         requests:
                           additionalProperties:
-                            type: string
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
                           description: 'Requests describes the minimum amount of compute
                             resources required. If Requests is omitted for a container,
                             it defaults to Limits if that is explicitly specified,
@@ -3822,7 +5407,7 @@ spec:
                 description: Define which Nodes the Pods are scheduled on.
                 type: object
               paused:
-                description: If set to true all actions on the underlaying managed
+                description: If set to true all actions on the underlying managed
                   objects are not goint to be performed, except for delete actions.
                 type: boolean
               podMetadata:
@@ -3871,13 +5456,21 @@ spec:
                 properties:
                   limits:
                     additionalProperties:
-                      type: string
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
                     description: 'Limits describes the maximum amount of compute resources
                       allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                     type: object
                   requests:
                     additionalProperties:
-                      type: string
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
                     description: 'Requests describes the minimum amount of compute
                       resources required. If Requests is omitted for a container,
                       it defaults to Limits if that is explicitly specified, otherwise
@@ -4058,6 +5651,9 @@ spec:
                           More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir'
                         type: string
                       sizeLimit:
+                        anyOf:
+                        - type: integer
+                        - type: string
                         description: 'Total amount of local storage required for this
                           EmptyDir volume. The size limit is also applicable for memory
                           medium. The maximum usage on memory medium EmptyDir would
@@ -4065,7 +5661,8 @@ spec:
                           and the sum of memory limits of all containers in a pod.
                           The default is nil which means that the limit is undefined.
                           More info: http://kubernetes.io/docs/user-guide/volumes#emptydir'
-                        type: string
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
                     type: object
                   volumeClaimTemplate:
                     description: A PVC spec to be used by the Prometheus StatefulSets.
@@ -4161,13 +5758,21 @@ spec:
                             properties:
                               limits:
                                 additionalProperties:
-                                  type: string
+                                  anyOf:
+                                  - type: integer
+                                  - type: string
+                                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                  x-kubernetes-int-or-string: true
                                 description: 'Limits describes the maximum amount
                                   of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                                 type: object
                               requests:
                                 additionalProperties:
-                                  type: string
+                                  anyOf:
+                                  - type: integer
+                                  - type: string
+                                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                  x-kubernetes-int-or-string: true
                                 description: 'Requests describes the minimum amount
                                   of compute resources required. If Requests is omitted
                                   for a container, it defaults to Limits if that is
@@ -4247,7 +5852,11 @@ spec:
                             type: array
                           capacity:
                             additionalProperties:
-                              type: string
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
                             description: Represents the actual resources of the underlying
                               volume.
                             type: object
@@ -4808,9 +6417,13 @@ spec:
                                       optional for env vars'
                                     type: string
                                   divisor:
+                                    anyOf:
+                                    - type: integer
+                                    - type: string
                                     description: Specifies the output format of the
                                       exposed resources, defaults to "1"
-                                    type: string
+                                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                    x-kubernetes-int-or-string: true
                                   resource:
                                     description: 'Required: resource to select'
                                     type: string
@@ -4833,6 +6446,9 @@ spec:
                             More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir'
                           type: string
                         sizeLimit:
+                          anyOf:
+                          - type: integer
+                          - type: string
                           description: 'Total amount of local storage required for
                             this EmptyDir volume. The size limit is also applicable
                             for memory medium. The maximum usage on memory medium
@@ -4840,7 +6456,8 @@ spec:
                             specified here and the sum of memory limits of all containers
                             in a pod. The default is nil which means that the limit
                             is undefined. More info: http://kubernetes.io/docs/user-guide/volumes#emptydir'
-                          type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
                       type: object
                     fc:
                       description: FC represents a Fibre Channel resource that is
@@ -5303,10 +6920,14 @@ spec:
                                                 for volumes, optional for env vars'
                                               type: string
                                             divisor:
+                                              anyOf:
+                                              - type: integer
+                                              - type: string
                                               description: Specifies the output format
                                                 of the exposed resources, defaults
                                                 to "1"
-                                              type: string
+                                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                              x-kubernetes-int-or-string: true
                                             resource:
                                               description: 'Required: resource to
                                                 select'
@@ -5691,7 +7312,7 @@ spec:
                 format: int32
                 type: integer
               paused:
-                description: Represents whether any actions on the underlaying managed
+                description: Represents whether any actions on the underlying managed
                   objects are being performed. Only delete actions will be performed.
                 type: boolean
               replicas:
@@ -5733,13 +7354,15 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.2.4
+    controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
   name: podmonitors.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
   group: monitoring.coreos.com
   names:
+    categories:
+    - prometheus-operator
     kind: PodMonitor
     listKind: PodMonitorList
     plural: podmonitors
@@ -5929,8 +7552,10 @@ spec:
                         to proxy through this endpoint.
                       type: string
                     relabelings:
-                      description: 'RelabelConfigs to apply to samples before ingestion.
-                        More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config'
+                      description: 'RelabelConfigs to apply to samples before scraping.
+                        Prometheus Operator automatically adds relabelings for a few
+                        standard Kubernetes fields and replaces original scrape job
+                        name with __tmp_prometheus_job_name. More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config'
                       items:
                         description: 'RelabelConfig allows dynamic rewriting of the
                           label set, being applied to samples before ingestion. It
@@ -6183,13 +7808,15 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.2.4
+    controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
   name: probes.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
   group: monitoring.coreos.com
   names:
+    categories:
+    - prometheus-operator
     kind: Probe
     listKind: ProbeList
     plural: probes
@@ -6217,6 +7844,68 @@ spec:
             description: Specification of desired Ingress selection for target discovery
               by Prometheus.
             properties:
+              basicAuth:
+                description: 'BasicAuth allow an endpoint to authenticate over basic
+                  authentication. More info: https://prometheus.io/docs/operating/configuration/#endpoint'
+                properties:
+                  password:
+                    description: The secret in the service monitor namespace that
+                      contains the password for authentication.
+                    properties:
+                      key:
+                        description: The key of the secret to select from.  Must be
+                          a valid secret key.
+                        type: string
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                      optional:
+                        description: Specify whether the Secret or its key must be
+                          defined
+                        type: boolean
+                    required:
+                    - key
+                    type: object
+                  username:
+                    description: The secret in the service monitor namespace that
+                      contains the username for authentication.
+                    properties:
+                      key:
+                        description: The key of the secret to select from.  Must be
+                          a valid secret key.
+                        type: string
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                      optional:
+                        description: Specify whether the Secret or its key must be
+                          defined
+                        type: boolean
+                    required:
+                    - key
+                    type: object
+                type: object
+              bearerTokenSecret:
+                description: Secret to mount to read bearer token for scraping targets.
+                  The secret needs to be in the same namespace as the probe and accessible
+                  by the Prometheus Operator.
+                properties:
+                  key:
+                    description: The key of the secret to select from.  Must be a
+                      valid secret key.
+                    type: string
+                  name:
+                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                      TODO: Add other useful fields. apiVersion, kind, uid?'
+                    type: string
+                  optional:
+                    description: Specify whether the Secret or its key must be defined
+                    type: boolean
+                required:
+                - key
+                type: object
               interval:
                 description: Interval at which targets are probed using the configured
                   prober. If not specified Prometheus' global scrape interval is used.
@@ -6372,6 +8061,52 @@ spec:
                         description: Labels assigned to all metrics scraped from the
                           targets.
                         type: object
+                      relabelingConfigs:
+                        description: 'RelabelConfigs to apply to samples before ingestion.
+                          More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config'
+                        items:
+                          description: 'RelabelConfig allows dynamic rewriting of
+                            the label set, being applied to samples before ingestion.
+                            It defines `<metric_relabel_configs>`-section of Prometheus
+                            configuration. More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs'
+                          properties:
+                            action:
+                              description: Action to perform based on regex matching.
+                                Default is 'replace'
+                              type: string
+                            modulus:
+                              description: Modulus to take of the hash of the source
+                                label values.
+                              format: int64
+                              type: integer
+                            regex:
+                              description: Regular expression against which the extracted
+                                value is matched. Default is '(.*)'
+                              type: string
+                            replacement:
+                              description: Replacement value against which a regex
+                                replace is performed if the regular expression matches.
+                                Regex capture groups are available. Default is '$1'
+                              type: string
+                            separator:
+                              description: Separator placed between concatenated source
+                                label values. default is ';'.
+                              type: string
+                            sourceLabels:
+                              description: The source labels select values from existing
+                                labels. Their content is concatenated using the configured
+                                separator and matched against the configured regular
+                                expression for the replace, keep, and drop actions.
+                              items:
+                                type: string
+                              type: array
+                            targetLabel:
+                              description: Label to which the resulting value is written
+                                in a replace action. It is mandatory for replace actions.
+                                Regex capture groups are available.
+                              type: string
+                          type: object
+                        type: array
                       static:
                         description: Targets is a list of URLs to probe using the
                           configured prober.
@@ -6379,6 +8114,112 @@ spec:
                           type: string
                         type: array
                     type: object
+                type: object
+              tlsConfig:
+                description: TLS configuration to use when scraping the endpoint.
+                properties:
+                  ca:
+                    description: Struct containing the CA cert to use for the targets.
+                    properties:
+                      configMap:
+                        description: ConfigMap containing data to use for the targets.
+                        properties:
+                          key:
+                            description: The key to select.
+                            type: string
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            type: string
+                          optional:
+                            description: Specify whether the ConfigMap or its key
+                              must be defined
+                            type: boolean
+                        required:
+                        - key
+                        type: object
+                      secret:
+                        description: Secret containing data to use for the targets.
+                        properties:
+                          key:
+                            description: The key of the secret to select from.  Must
+                              be a valid secret key.
+                            type: string
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            type: string
+                          optional:
+                            description: Specify whether the Secret or its key must
+                              be defined
+                            type: boolean
+                        required:
+                        - key
+                        type: object
+                    type: object
+                  cert:
+                    description: Struct containing the client cert file for the targets.
+                    properties:
+                      configMap:
+                        description: ConfigMap containing data to use for the targets.
+                        properties:
+                          key:
+                            description: The key to select.
+                            type: string
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            type: string
+                          optional:
+                            description: Specify whether the ConfigMap or its key
+                              must be defined
+                            type: boolean
+                        required:
+                        - key
+                        type: object
+                      secret:
+                        description: Secret containing data to use for the targets.
+                        properties:
+                          key:
+                            description: The key of the secret to select from.  Must
+                              be a valid secret key.
+                            type: string
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            type: string
+                          optional:
+                            description: Specify whether the Secret or its key must
+                              be defined
+                            type: boolean
+                        required:
+                        - key
+                        type: object
+                    type: object
+                  insecureSkipVerify:
+                    description: Disable target certificate validation.
+                    type: boolean
+                  keySecret:
+                    description: Secret containing the client key file for the targets.
+                    properties:
+                      key:
+                        description: The key of the secret to select from.  Must be
+                          a valid secret key.
+                        type: string
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                      optional:
+                        description: Specify whether the Secret or its key must be
+                          defined
+                        type: boolean
+                    required:
+                    - key
+                    type: object
+                  serverName:
+                    description: Used to verify the hostname for the targets.
+                    type: string
                 type: object
             type: object
         required:
@@ -6397,13 +8238,15 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.2.4
+    controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
   name: prometheuses.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
   group: monitoring.coreos.com
   names:
+    categories:
+    - prometheus-operator
     kind: Prometheus
     listKind: PrometheusList
     plural: prometheuses
@@ -7625,9 +9468,13 @@ spec:
                                       optional for env vars'
                                     type: string
                                   divisor:
+                                    anyOf:
+                                    - type: integer
+                                    - type: string
                                     description: Specifies the output format of the
                                       exposed resources, defaults to "1"
-                                    type: string
+                                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                    x-kubernetes-int-or-string: true
                                   resource:
                                     description: 'Required: resource to select'
                                     type: string
@@ -8062,6 +9909,7 @@ spec:
                               be referred to by services.
                             type: string
                           protocol:
+                            default: TCP
                             description: Protocol for port. Must be UDP, TCP, or SCTP.
                               Defaults to "TCP".
                             type: string
@@ -8069,6 +9917,10 @@ spec:
                         - containerPort
                         type: object
                       type: array
+                      x-kubernetes-list-map-keys:
+                      - containerPort
+                      - protocol
+                      x-kubernetes-list-type: map
                     readinessProbe:
                       description: 'Periodic probe of container service readiness.
                         Container will be removed from service endpoints if the probe
@@ -8192,13 +10044,21 @@ spec:
                       properties:
                         limits:
                           additionalProperties:
-                            type: string
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
                           description: 'Limits describes the maximum amount of compute
                             resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                           type: object
                         requests:
                           additionalProperties:
-                            type: string
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
                           description: 'Requests describes the minimum amount of compute
                             resources required. If Requests is omitted for a container,
                             it defaults to Limits if that is explicitly specified,
@@ -8578,6 +10438,15 @@ spec:
                   only clients authorized to perform these actions can do so. For
                   more information see https://prometheus.io/docs/prometheus/latest/querying/api/#tsdb-admin-apis'
                 type: boolean
+              enableFeatures:
+                description: Enable access to Prometheus disabled features. By default,
+                  no features are enabled. Enabling disabled features is entirely
+                  outside the scope of what the maintainers will support and by doing
+                  so, you accept that this behaviour may break at any time without
+                  notice. For more information see https://prometheus.io/docs/prometheus/latest/disabled_features/
+                items:
+                  type: string
+                type: array
               enforcedNamespaceLabel:
                 description: EnforcedNamespaceLabel enforces adding a namespace label
                   of origin for each alert and metric that is user created. The label
@@ -8752,9 +10621,13 @@ spec:
                                       optional for env vars'
                                     type: string
                                   divisor:
+                                    anyOf:
+                                    - type: integer
+                                    - type: string
                                     description: Specifies the output format of the
                                       exposed resources, defaults to "1"
-                                    type: string
+                                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                    x-kubernetes-int-or-string: true
                                   resource:
                                     description: 'Required: resource to select'
                                     type: string
@@ -9189,6 +11062,7 @@ spec:
                               be referred to by services.
                             type: string
                           protocol:
+                            default: TCP
                             description: Protocol for port. Must be UDP, TCP, or SCTP.
                               Defaults to "TCP".
                             type: string
@@ -9196,6 +11070,10 @@ spec:
                         - containerPort
                         type: object
                       type: array
+                      x-kubernetes-list-map-keys:
+                      - containerPort
+                      - protocol
+                      x-kubernetes-list-type: map
                     readinessProbe:
                       description: 'Periodic probe of container service readiness.
                         Container will be removed from service endpoints if the probe
@@ -9319,13 +11197,21 @@ spec:
                       properties:
                         limits:
                           additionalProperties:
-                            type: string
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
                           description: 'Limits describes the maximum amount of compute
                             resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                           type: object
                         requests:
                           additionalProperties:
-                            type: string
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
                           description: 'Requests describes the minimum amount of compute
                             resources required. If Requests is omitted for a container,
                             it defaults to Limits if that is explicitly specified,
@@ -9750,8 +11636,8 @@ spec:
                     type: string
                 type: object
               podMonitorNamespaceSelector:
-                description: Namespaces to be selected for PodMonitor discovery. If
-                  nil, only check own namespace.
+                description: Namespace's labels to match for PodMonitor discovery.
+                  If nil, only check own namespace.
                 properties:
                   matchExpressions:
                     description: matchExpressions is a list of label selector requirements.
@@ -10044,7 +11930,7 @@ spec:
                           type: object
                       type: object
                     bearerToken:
-                      description: bearer token for remote read.
+                      description: Bearer token for remote read.
                       type: string
                     bearerTokenFile:
                       description: File to read bearer token for remote read.
@@ -10255,11 +12141,32 @@ spec:
                           type: object
                       type: object
                     bearerToken:
-                      description: File to read bearer token for remote write.
+                      description: Bearer token for remote write.
                       type: string
                     bearerTokenFile:
                       description: File to read bearer token for remote write.
                       type: string
+                    headers:
+                      additionalProperties:
+                        type: string
+                      description: Custom HTTP headers to be sent along with each
+                        remote write request. Be aware that headers that are set by
+                        Prometheus itself can't be overwritten. Only valid in Prometheus
+                        versions 2.25.0 and newer.
+                      type: object
+                    metadataConfig:
+                      description: MetadataConfig configures the sending of series
+                        metadata to remote storage.
+                      properties:
+                        send:
+                          description: Whether metric metadata is sent to remote storage
+                            or not.
+                          type: boolean
+                        sendInterval:
+                          description: How frequently metric metadata is sent to remote
+                            storage.
+                          type: string
+                      type: object
                     name:
                       description: The name of the remote write queue, must be unique
                         if specified. The name is used in metrics and logging in order
@@ -10493,7 +12400,9 @@ spec:
                   will _not_ be added when value is set to empty string (`""`).
                 type: string
               replicas:
-                description: Number of instances to deploy for a Prometheus deployment.
+                description: Number of replicas of each shard to deploy for a Prometheus
+                  deployment. Number of replicas multiplied by shards is the total
+                  number of Pods created.
                 format: int32
                 type: integer
               resources:
@@ -10501,13 +12410,21 @@ spec:
                 properties:
                   limits:
                     additionalProperties:
-                      type: string
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
                     description: 'Limits describes the maximum amount of compute resources
                       allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                     type: object
                   requests:
                     additionalProperties:
-                      type: string
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
                     description: 'Requests describes the minimum amount of compute
                       resources required. If Requests is omitted for a container,
                       it defaults to Limits if that is explicitly specified, otherwise
@@ -10520,7 +12437,8 @@ spec:
                   (milliseconds seconds minutes hours days weeks years).
                 type: string
               retentionSize:
-                description: Maximum amount of disk space used by blocks.
+                description: 'Maximum amount of disk space used by blocks. Supported
+                  units: B, KB, MB, GB, TB, PB, EB. Ex: `512MB`.'
                 type: string
               routePrefix:
                 description: The route prefix Prometheus registers HTTP handlers for.
@@ -10787,7 +12705,7 @@ spec:
                   to use to run the Prometheus Pods.
                 type: string
               serviceMonitorNamespaceSelector:
-                description: Namespaces to be selected for ServiceMonitor discovery.
+                description: Namespace's labels to match for ServiceMonitor discovery.
                   If nil, only check own namespace.
                 properties:
                   matchExpressions:
@@ -10884,6 +12802,17 @@ spec:
                   if SHA is set. Deprecated: use ''image'' instead.  The image digest
                   can be specified as part of the image URL.'
                 type: string
+              shards:
+                description: 'EXPERIMENTAL: Number of shards to distribute targets
+                  onto. Number of replicas multiplied by shards is the total number
+                  of Pods created. Note that scaling down shards will not reshard
+                  data onto remaining instances, it must be manually moved. Increasing
+                  shards will not reshard data either but it will continue to be available
+                  from the same instances. To query globally use Thanos sidecar and
+                  Thanos querier or remote write data to a central location. Sharding
+                  is done on the content of the `__address__` target meta-label.'
+                format: int32
+                type: integer
               storage:
                 description: Storage spec to specify how storage shall be used.
                 properties:
@@ -10904,6 +12833,9 @@ spec:
                           More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir'
                         type: string
                       sizeLimit:
+                        anyOf:
+                        - type: integer
+                        - type: string
                         description: 'Total amount of local storage required for this
                           EmptyDir volume. The size limit is also applicable for memory
                           medium. The maximum usage on memory medium EmptyDir would
@@ -10911,7 +12843,8 @@ spec:
                           and the sum of memory limits of all containers in a pod.
                           The default is nil which means that the limit is undefined.
                           More info: http://kubernetes.io/docs/user-guide/volumes#emptydir'
-                        type: string
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
                     type: object
                   volumeClaimTemplate:
                     description: A PVC spec to be used by the Prometheus StatefulSets.
@@ -11007,13 +12940,21 @@ spec:
                             properties:
                               limits:
                                 additionalProperties:
-                                  type: string
+                                  anyOf:
+                                  - type: integer
+                                  - type: string
+                                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                  x-kubernetes-int-or-string: true
                                 description: 'Limits describes the maximum amount
                                   of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                                 type: object
                               requests:
                                 additionalProperties:
-                                  type: string
+                                  anyOf:
+                                  - type: integer
+                                  - type: string
+                                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                  x-kubernetes-int-or-string: true
                                 description: 'Requests describes the minimum amount
                                   of compute resources required. If Requests is omitted
                                   for a container, it defaults to Limits if that is
@@ -11093,7 +13034,11 @@ spec:
                             type: array
                           capacity:
                             additionalProperties:
-                              type: string
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
                             description: Represents the actual resources of the underlying
                               volume.
                             type: object
@@ -11313,7 +13258,8 @@ spec:
                     type: string
                   objectStorageConfig:
                     description: ObjectStorageConfig configures object storage in
-                      Thanos.
+                      Thanos. Alternative to ObjectStorageConfigFile, and lower order
+                      priority.
                     properties:
                       key:
                         description: The key of the secret to select from.  Must be
@@ -11330,6 +13276,11 @@ spec:
                     required:
                     - key
                     type: object
+                  objectStorageConfigFile:
+                    description: ObjectStorageConfigFile specifies the path of the
+                      object storage configuration file. When used alongside with
+                      ObjectStorageConfig, ObjectStorageConfigFile takes precedence.
+                    type: string
                   resources:
                     description: Resources defines the resource requirements for the
                       Thanos sidecar. If not provided, no requests/limits will be
@@ -11337,13 +13288,21 @@ spec:
                     properties:
                       limits:
                         additionalProperties:
-                          type: string
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
                         description: 'Limits describes the maximum amount of compute
                           resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                         type: object
                       requests:
                         additionalProperties:
-                          type: string
+                          anyOf:
+                          - type: integer
+                          - type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
                         description: 'Requests describes the minimum amount of compute
                           resources required. If Requests is omitted for a container,
                           it defaults to Limits if that is explicitly specified, otherwise
@@ -11383,6 +13342,11 @@ spec:
                     required:
                     - key
                     type: object
+                  tracingConfigFile:
+                    description: TracingConfig specifies the path of the tracing configuration
+                      file. When used alongside with TracingConfig, TracingConfigFile
+                      takes precedence.
+                    type: string
                   version:
                     description: Version describes the version of Thanos to use.
                     type: string
@@ -11893,9 +13857,13 @@ spec:
                                       optional for env vars'
                                     type: string
                                   divisor:
+                                    anyOf:
+                                    - type: integer
+                                    - type: string
                                     description: Specifies the output format of the
                                       exposed resources, defaults to "1"
-                                    type: string
+                                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                    x-kubernetes-int-or-string: true
                                   resource:
                                     description: 'Required: resource to select'
                                     type: string
@@ -11918,6 +13886,9 @@ spec:
                             More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir'
                           type: string
                         sizeLimit:
+                          anyOf:
+                          - type: integer
+                          - type: string
                           description: 'Total amount of local storage required for
                             this EmptyDir volume. The size limit is also applicable
                             for memory medium. The maximum usage on memory medium
@@ -11925,7 +13896,8 @@ spec:
                             specified here and the sum of memory limits of all containers
                             in a pod. The default is nil which means that the limit
                             is undefined. More info: http://kubernetes.io/docs/user-guide/volumes#emptydir'
-                          type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
                       type: object
                     fc:
                       description: FC represents a Fibre Channel resource that is
@@ -12388,10 +14360,14 @@ spec:
                                                 for volumes, optional for env vars'
                                               type: string
                                             divisor:
+                                              anyOf:
+                                              - type: integer
+                                              - type: string
                                               description: Specifies the output format
                                                 of the exposed resources, defaults
                                                 to "1"
-                                              type: string
+                                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                              x-kubernetes-int-or-string: true
                                             resource:
                                               description: 'Required: resource to
                                                 select'
@@ -12788,7 +14764,7 @@ spec:
                 format: int32
                 type: integer
               paused:
-                description: Represents whether any actions on the underlaying managed
+                description: Represents whether any actions on the underlying managed
                   objects are being performed. Only delete actions will be performed.
                 type: boolean
               replicas:
@@ -12830,7 +14806,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.2.4
+    controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
   name: prometheusrules.monitoring.coreos.com
   namespace: metalk8s-monitoring
@@ -12846,7 +14822,8 @@ spec:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: PrometheusRule defines alerting rules for a Prometheus instance
+        description: PrometheusRule defines recording and alerting rules for a Prometheus
+          instance
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -12926,13 +14903,15 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.2.4
+    controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
   name: servicemonitors.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
   group: monitoring.coreos.com
   names:
+    categories:
+    - prometheus-operator
     kind: ServiceMonitor
     listKind: ServiceMonitorList
     plural: servicemonitors
@@ -13109,7 +15088,9 @@ spec:
                       type: string
                     relabelings:
                       description: 'RelabelConfigs to apply to samples before scraping.
-                        More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config'
+                        Prometheus Operator automatically adds relabelings for a few
+                        standard Kubernetes fields and replaces original scrape job
+                        name with __tmp_prometheus_job_name. More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config'
                       items:
                         description: 'RelabelConfig allows dynamic rewriting of the
                           label set, being applied to samples before ingestion. It
@@ -13399,13 +15380,15 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.2.4
+    controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
   name: thanosrulers.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
   group: monitoring.coreos.com
   names:
+    categories:
+    - prometheus-operator
     kind: ThanosRuler
     listKind: ThanosRulerList
     plural: thanosrulers
@@ -14175,9 +16158,13 @@ spec:
                                       optional for env vars'
                                     type: string
                                   divisor:
+                                    anyOf:
+                                    - type: integer
+                                    - type: string
                                     description: Specifies the output format of the
                                       exposed resources, defaults to "1"
-                                    type: string
+                                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                    x-kubernetes-int-or-string: true
                                   resource:
                                     description: 'Required: resource to select'
                                     type: string
@@ -14612,6 +16599,7 @@ spec:
                               be referred to by services.
                             type: string
                           protocol:
+                            default: TCP
                             description: Protocol for port. Must be UDP, TCP, or SCTP.
                               Defaults to "TCP".
                             type: string
@@ -14619,6 +16607,10 @@ spec:
                         - containerPort
                         type: object
                       type: array
+                      x-kubernetes-list-map-keys:
+                      - containerPort
+                      - protocol
+                      x-kubernetes-list-type: map
                     readinessProbe:
                       description: 'Periodic probe of container service readiness.
                         Container will be removed from service endpoints if the probe
@@ -14742,13 +16734,21 @@ spec:
                       properties:
                         limits:
                           additionalProperties:
-                            type: string
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
                           description: 'Limits describes the maximum amount of compute
                             resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                           type: object
                         requests:
                           additionalProperties:
-                            type: string
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
                           description: 'Requests describes the minimum amount of compute
                             resources required. If Requests is omitted for a container,
                             it defaults to Limits if that is explicitly specified,
@@ -15377,9 +17377,13 @@ spec:
                                       optional for env vars'
                                     type: string
                                   divisor:
+                                    anyOf:
+                                    - type: integer
+                                    - type: string
                                     description: Specifies the output format of the
                                       exposed resources, defaults to "1"
-                                    type: string
+                                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                    x-kubernetes-int-or-string: true
                                   resource:
                                     description: 'Required: resource to select'
                                     type: string
@@ -15814,6 +17818,7 @@ spec:
                               be referred to by services.
                             type: string
                           protocol:
+                            default: TCP
                             description: Protocol for port. Must be UDP, TCP, or SCTP.
                               Defaults to "TCP".
                             type: string
@@ -15821,6 +17826,10 @@ spec:
                         - containerPort
                         type: object
                       type: array
+                      x-kubernetes-list-map-keys:
+                      - containerPort
+                      - protocol
+                      x-kubernetes-list-type: map
                     readinessProbe:
                       description: 'Periodic probe of container service readiness.
                         Container will be removed from service endpoints if the probe
@@ -15944,13 +17953,21 @@ spec:
                       properties:
                         limits:
                           additionalProperties:
-                            type: string
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
                           description: 'Limits describes the maximum amount of compute
                             resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                           type: object
                         requests:
                           additionalProperties:
-                            type: string
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
                           description: 'Requests describes the minimum amount of compute
                             resources required. If Requests is omitted for a container,
                             it defaults to Limits if that is explicitly specified,
@@ -16342,6 +18359,7 @@ spec:
                 type: object
               objectStorageConfig:
                 description: ObjectStorageConfig configures object storage in Thanos.
+                  Alternative to ObjectStorageConfigFile, and lower order priority.
                 properties:
                   key:
                     description: The key of the secret to select from.  Must be a
@@ -16357,6 +18375,11 @@ spec:
                 required:
                 - key
                 type: object
+              objectStorageConfigFile:
+                description: ObjectStorageConfigFile specifies the path of the object
+                  storage configuration file. When used alongside with ObjectStorageConfig,
+                  ObjectStorageConfigFile takes precedence.
+                type: string
               paused:
                 description: When a ThanosRuler deployment is paused, no actions except
                   for deletion will be performed on the underlying objects.
@@ -16453,13 +18476,21 @@ spec:
                 properties:
                   limits:
                     additionalProperties:
-                      type: string
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
                     description: 'Limits describes the maximum amount of compute resources
                       allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                     type: object
                   requests:
                     additionalProperties:
-                      type: string
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                      x-kubernetes-int-or-string: true
                     description: 'Requests describes the minimum amount of compute
                       resources required. If Requests is omitted for a container,
                       it defaults to Limits if that is explicitly specified, otherwise
@@ -16712,6 +18743,9 @@ spec:
                           More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir'
                         type: string
                       sizeLimit:
+                        anyOf:
+                        - type: integer
+                        - type: string
                         description: 'Total amount of local storage required for this
                           EmptyDir volume. The size limit is also applicable for memory
                           medium. The maximum usage on memory medium EmptyDir would
@@ -16719,7 +18753,8 @@ spec:
                           and the sum of memory limits of all containers in a pod.
                           The default is nil which means that the limit is undefined.
                           More info: http://kubernetes.io/docs/user-guide/volumes#emptydir'
-                        type: string
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
                     type: object
                   volumeClaimTemplate:
                     description: A PVC spec to be used by the Prometheus StatefulSets.
@@ -16815,13 +18850,21 @@ spec:
                             properties:
                               limits:
                                 additionalProperties:
-                                  type: string
+                                  anyOf:
+                                  - type: integer
+                                  - type: string
+                                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                  x-kubernetes-int-or-string: true
                                 description: 'Limits describes the maximum amount
                                   of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                                 type: object
                               requests:
                                 additionalProperties:
-                                  type: string
+                                  anyOf:
+                                  - type: integer
+                                  - type: string
+                                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                  x-kubernetes-int-or-string: true
                                 description: 'Requests describes the minimum amount
                                   of compute resources required. If Requests is omitted
                                   for a container, it defaults to Limits if that is
@@ -16901,7 +18944,11 @@ spec:
                             type: array
                           capacity:
                             additionalProperties:
-                              type: string
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
                             description: Represents the actual resources of the underlying
                               volume.
                             type: object
@@ -17430,9 +19477,13 @@ spec:
                                       optional for env vars'
                                     type: string
                                   divisor:
+                                    anyOf:
+                                    - type: integer
+                                    - type: string
                                     description: Specifies the output format of the
                                       exposed resources, defaults to "1"
-                                    type: string
+                                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                    x-kubernetes-int-or-string: true
                                   resource:
                                     description: 'Required: resource to select'
                                     type: string
@@ -17455,6 +19506,9 @@ spec:
                             More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir'
                           type: string
                         sizeLimit:
+                          anyOf:
+                          - type: integer
+                          - type: string
                           description: 'Total amount of local storage required for
                             this EmptyDir volume. The size limit is also applicable
                             for memory medium. The maximum usage on memory medium
@@ -17462,7 +19516,8 @@ spec:
                             specified here and the sum of memory limits of all containers
                             in a pod. The default is nil which means that the limit
                             is undefined. More info: http://kubernetes.io/docs/user-guide/volumes#emptydir'
-                          type: string
+                          pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                          x-kubernetes-int-or-string: true
                       type: object
                     fc:
                       description: FC represents a Fibre Channel resource that is
@@ -17925,10 +19980,14 @@ spec:
                                                 for volumes, optional for env vars'
                                               type: string
                                             divisor:
+                                              anyOf:
+                                              - type: integer
+                                              - type: string
                                               description: Specifies the output format
                                                 of the exposed resources, defaults
                                                 to "1"
-                                              type: string
+                                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                              x-kubernetes-int-or-string: true
                                             resource:
                                               description: 'Required: resource to
                                                 select'
@@ -18363,43 +20422,39 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 7.3.5
-    helm.sh/chart: grafana-5.8.16
+    app.kubernetes.io/version: 7.5.5
+    helm.sh/chart: grafana-6.8.3
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
 spec:
   allowPrivilegeEscalation: false
   fsGroup:
-    rule: RunAsAny
+    ranges:
+    - max: 65535
+      min: 1
+    rule: MustRunAs
   hostIPC: false
   hostNetwork: false
   hostPID: false
   privileged: false
   readOnlyRootFilesystem: false
   requiredDropCapabilities:
-  - FOWNER
-  - FSETID
-  - KILL
-  - SETGID
-  - SETUID
-  - SETPCAP
-  - NET_BIND_SERVICE
-  - NET_RAW
-  - SYS_CHROOT
-  - MKNOD
-  - AUDIT_WRITE
-  - SETFCAP
+  - ALL
   runAsUser:
-    rule: RunAsAny
+    rule: MustRunAsNonRoot
   seLinux:
     rule: RunAsAny
   supplementalGroups:
-    rule: RunAsAny
+    ranges:
+    - max: 65535
+      min: 1
+    rule: MustRunAs
   volumes:
   - configMap
   - emptyDir
   - projected
+  - csi
   - secret
   - downwardAPI
   - persistentVolumeClaim
@@ -18412,7 +20467,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-2.9.4
+    helm.sh/chart: kube-state-metrics-2.13.2
     heritage: metalk8s
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -18447,7 +20502,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-1.12.0
+    chart: prometheus-node-exporter-1.17.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -18490,10 +20545,12 @@ kind: PodSecurityPolicy
 metadata:
   labels:
     app: prometheus-operator-alertmanager
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -18532,10 +20589,12 @@ kind: PodSecurityPolicy
 metadata:
   labels:
     app: prometheus-operator-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -18574,10 +20633,12 @@ kind: PodSecurityPolicy
 metadata:
   labels:
     app: prometheus-operator-prometheus
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -18619,8 +20680,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 7.3.5
-    helm.sh/chart: grafana-5.8.16
+    app.kubernetes.io/version: 7.5.5
+    helm.sh/chart: grafana-6.8.3
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -18634,7 +20695,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-2.9.4
+    helm.sh/chart: kube-state-metrics-2.13.2
     heritage: metalk8s
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -18643,27 +20704,30 @@ apiVersion: v1
 imagePullSecrets: []
 kind: ServiceAccount
 metadata:
+  annotations: {}
   labels:
     app: prometheus-node-exporter
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-1.12.0
+    chart: prometheus-node-exporter-1.17.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus-node-exporter
   namespace: metalk8s-monitoring
 ---
 apiVersion: v1
-imagePullSecrets: []
 kind: ServiceAccount
 metadata:
   labels:
     app: prometheus-operator-alertmanager
+    app.kubernetes.io/component: alertmanager
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -18671,15 +20735,17 @@ metadata:
   namespace: metalk8s-monitoring
 ---
 apiVersion: v1
-imagePullSecrets: []
 kind: ServiceAccount
 metadata:
   labels:
     app: prometheus-operator-operator
+    app.kubernetes.io/component: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -18687,15 +20753,17 @@ metadata:
   namespace: metalk8s-monitoring
 ---
 apiVersion: v1
-imagePullSecrets: []
 kind: ServiceAccount
 metadata:
   labels:
     app: prometheus-operator-prometheus
+    app.kubernetes.io/component: prometheus
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -18714,8 +20782,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 7.3.5
-    helm.sh/chart: grafana-5.8.16
+    app.kubernetes.io/version: 7.5.5
+    helm.sh/chart: grafana-6.8.3
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -18732,6 +20800,7 @@ data:
       type: file
       disableDeletion: false
       allowUiUpdates: false
+      updateIntervalSeconds: 30
       options:
         foldersFromFilesStructure: false
         path: /tmp/dashboards
@@ -18742,8 +20811,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 7.3.5
-    helm.sh/chart: grafana-5.8.16
+    app.kubernetes.io/version: 7.5.5
+    helm.sh/chart: grafana-6.8.3
     heritage: metalk8s
   name: prometheus-operator-grafana-config-dashboards
   namespace: metalk8s-monitoring
@@ -18784,8 +20853,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 7.3.5
-    helm.sh/chart: grafana-5.8.16
+    app.kubernetes.io/version: 7.5.5
+    helm.sh/chart: grafana-6.8.3
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -18800,14 +20869,18 @@ data:
       url: http://prometheus-operator-prometheus:9090/
       access: proxy
       isDefault: true
+      jsonData:
+        timeInterval: 30s
 kind: ConfigMap
 metadata:
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_datasource: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -18950,8 +21023,9 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "decimals": 3,
-                        "description": "How much error budget is left looking at our 0.990% availability gurantees?",
+                        "description": "How much error budget is left looking at our 0.990% availability guarantees?",
                         "fill": 10,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 4,
@@ -19138,6 +21212,7 @@ data:
                         "datasource": "$datasource",
                         "description": "How many read requests (LIST,GET) per second do the apiservers get by code?",
                         "fill": 10,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 6,
@@ -19241,6 +21316,7 @@ data:
                         "datasource": "$datasource",
                         "description": "How many percent of read requests (LIST,GET) per second are returned with errors (5xx)?",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 7,
@@ -19328,6 +21404,7 @@ data:
                         "datasource": "$datasource",
                         "description": "How many seconds is the 99th percentile for reading (LIST|GET) a given resource?",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 8,
@@ -19512,6 +21589,7 @@ data:
                         "datasource": "$datasource",
                         "description": "How many write requests (POST|PUT|PATCH|DELETE) per second do the apiservers get by code?",
                         "fill": 10,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 10,
@@ -19615,6 +21693,7 @@ data:
                         "datasource": "$datasource",
                         "description": "How many percent of write requests (POST|PUT|PATCH|DELETE) per second are returned with errors (5xx)?",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 11,
@@ -19702,6 +21781,7 @@ data:
                         "datasource": "$datasource",
                         "description": "How many seconds is the 99th percentile for writing (POST|PUT|PATCH|DELETE) a given resource?",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 12,
@@ -19801,6 +21881,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 13,
@@ -19887,6 +21968,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 14,
@@ -19973,6 +22055,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 15,
@@ -20072,6 +22155,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 16,
@@ -20158,6 +22242,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 17,
@@ -20244,6 +22329,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 18,
@@ -20441,10 +22527,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -20509,6 +22597,7 @@ data:
                 "dashes": false,
                 "datasource": "$datasource",
                 "fill": 2,
+                "fillGradient": 0,
                 "gridPos": {
                     "h": 9,
                     "w": 12,
@@ -20552,7 +22641,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
+                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{namespace}}",
@@ -20607,6 +22696,7 @@ data:
                 "dashes": false,
                 "datasource": "$datasource",
                 "fill": 2,
+                "fillGradient": 0,
                 "gridPos": {
                     "h": 9,
                     "w": 12,
@@ -20650,7 +22740,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{namespace}}",
@@ -20929,7 +23019,7 @@ data:
                 ],
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
+                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -20938,7 +23028,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -20947,7 +23037,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(avg(irate(container_network_receive_bytes_total{namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
+                        "expr": "sort_desc(avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -20956,7 +23046,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(avg(irate(container_network_transmit_bytes_total{namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
+                        "expr": "sort_desc(avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -20965,7 +23055,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_packets_total{namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
+                        "expr": "sort_desc(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -20974,7 +23064,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_packets_total{namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -20983,7 +23073,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_packets_dropped_total{namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
+                        "expr": "sort_desc(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -20992,7 +23082,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_packets_dropped_total{namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -21025,6 +23115,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 12,
@@ -21068,7 +23159,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(avg(irate(container_network_receive_bytes_total{namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
+                                "expr": "sort_desc(avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{namespace}}",
@@ -21123,6 +23214,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 12,
@@ -21166,7 +23258,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(avg(irate(container_network_transmit_bytes_total{namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
+                                "expr": "sort_desc(avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{namespace}}",
@@ -21250,6 +23342,7 @@ data:
                 "dashes": false,
                 "datasource": "$datasource",
                 "fill": 2,
+                "fillGradient": 0,
                 "gridPos": {
                     "h": 9,
                     "w": 24,
@@ -21291,7 +23384,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
+                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{namespace}}",
@@ -21345,6 +23438,7 @@ data:
                 "dashes": false,
                 "datasource": "$datasource",
                 "fill": 2,
+                "fillGradient": 0,
                 "gridPos": {
                     "h": 9,
                     "w": 24,
@@ -21386,7 +23480,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{namespace}}",
@@ -21451,6 +23545,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 24,
@@ -21492,7 +23587,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_receive_packets_total{namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
+                                "expr": "sort_desc(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{namespace}}",
@@ -21546,6 +23641,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 24,
@@ -21587,7 +23683,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_total{namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
+                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{namespace}}",
@@ -21661,6 +23757,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 24,
@@ -21702,7 +23799,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_receive_packets_dropped_total{namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
+                                "expr": "sort_desc(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{namespace}}",
@@ -21756,6 +23853,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 24,
@@ -21797,7 +23895,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_dropped_total{namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
+                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=~\".+\"}[$interval:$resolution])) by (namespace))",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{namespace}}",
@@ -21851,6 +23949,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 24,
@@ -21897,7 +23996,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(rate(node_netstat_Tcp_RetransSegs[$interval:$resolution]) / rate(node_netstat_Tcp_OutSegs[$interval:$resolution])) by (instance))",
+                                "expr": "sort_desc(sum(rate(node_netstat_Tcp_RetransSegs{cluster=\"$cluster\"}[$interval:$resolution]) / rate(node_netstat_Tcp_OutSegs{cluster=\"$cluster\"}[$interval:$resolution])) by (instance))",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{instance}}",
@@ -21951,6 +24050,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 24,
@@ -21997,7 +24097,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(rate(node_netstat_TcpExt_TCPSynRetrans[$interval:$resolution]) / rate(node_netstat_Tcp_RetransSegs[$interval:$resolution])) by (instance))",
+                                "expr": "sort_desc(sum(rate(node_netstat_TcpExt_TCPSynRetrans{cluster=\"$cluster\"}[$interval:$resolution]) / rate(node_netstat_Tcp_RetransSegs{cluster=\"$cluster\"}[$interval:$resolution])) by (instance))",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{instance}}",
@@ -22155,6 +24255,29 @@ data:
                     "refresh": 1,
                     "regex": "",
                     "type": "datasource"
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                    },
+                    "datasource": "$datasource",
+                    "hide": 2,
+                    "includeAll": false,
+                    "label": null,
+                    "multi": false,
+                    "name": "cluster",
+                    "options": [
+                    ],
+                    "query": "label_values(kube_pod_info, cluster)",
+                    "refresh": 1,
+                    "regex": "",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [
+                    ],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
                 }
             ]
         },
@@ -22197,10 +24320,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -22323,6 +24448,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 3,
@@ -22422,6 +24548,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 4,
@@ -22521,6 +24648,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 5,
@@ -22620,6 +24748,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 6,
@@ -22727,6 +24856,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 7,
@@ -22826,6 +24956,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 8,
@@ -22925,6 +25056,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 9,
@@ -23011,6 +25143,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 10,
@@ -23097,6 +25230,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 11,
@@ -23271,10 +25405,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -24325,7 +26461,7 @@ data:
                         "value": "prod"
                     },
                     "datasource": "$datasource",
-                    "hide": 0,
+                    "hide": 2,
                     "includeAll": false,
                     "label": "cluster",
                     "multi": false,
@@ -24383,10 +26519,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -25914,10 +28052,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -25982,7 +28122,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "1 - avg(rate(node_cpu_seconds_total{mode=\"idle\", cluster=\"$cluster\"}[$__interval]))",
+                                "expr": "1 - avg(rate(node_cpu_seconds_total{mode=\"idle\", cluster=\"$cluster\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -27412,7 +29552,7 @@ data:
                         ],
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\".+\"}[$__interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -27421,7 +29561,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\".+\"}[$__interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -27430,7 +29570,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\".+\"}[$__interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -27439,7 +29579,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\".+\"}[$__interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -27448,7 +29588,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\".+\"}[$__interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -27457,7 +29597,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\".+\"}[$__interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -27552,7 +29692,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\".+\"}[$__interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -27645,7 +29785,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\".+\"}[$__interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -27738,7 +29878,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\".+\"}[$__interval])) by (namespace)",
+                                "expr": "avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -27831,7 +29971,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\".+\"}[$__interval])) by (namespace)",
+                                "expr": "avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -27924,7 +30064,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\".+\"}[$__interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -28017,7 +30157,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\".+\"}[$__interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -28110,7 +30250,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\".+\"}[$__interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -28203,7 +30343,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\".+\"}[$__interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -28346,10 +30486,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -29729,7 +31871,7 @@ data:
                         ],
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -29738,7 +31880,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -29747,7 +31889,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -29756,7 +31898,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -29765,7 +31907,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -29774,7 +31916,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -29869,7 +32011,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -29962,7 +32104,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -30055,7 +32197,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -30148,7 +32290,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -30241,7 +32383,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -30334,7 +32476,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -30502,10 +32644,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -31415,10 +33559,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -32425,7 +34571,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_bytes_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$__interval])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_bytes_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -32519,7 +34665,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_bytes_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$__interval])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_bytes_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -32613,7 +34759,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_packets_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$__interval])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_packets_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -32707,7 +34853,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$__interval])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_packets_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -32801,7 +34947,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_packets_dropped_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$__interval])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_packets_dropped_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -32895,7 +35041,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$__interval])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -33088,10 +35234,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -33989,7 +36137,7 @@ data:
                         ],
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -33998,7 +36146,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34007,7 +36155,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34016,7 +36164,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34025,7 +36173,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34034,7 +36182,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34129,7 +36277,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -34222,7 +36370,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -34315,7 +36463,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -34408,7 +36556,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -34501,7 +36649,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -34594,7 +36742,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -34687,7 +36835,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -34780,7 +36928,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -34998,10 +37146,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -36074,7 +38224,7 @@ data:
                         ],
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -36083,7 +38233,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -36092,7 +38242,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -36101,7 +38251,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -36110,7 +38260,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -36119,7 +38269,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -36214,7 +38364,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{workload}}",
@@ -36307,7 +38457,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{workload}}",
@@ -36400,7 +38550,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{workload}}",
@@ -36493,7 +38643,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{workload}}",
@@ -36586,7 +38736,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{workload}}",
@@ -36679,7 +38829,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{workload}}",
@@ -36772,7 +38922,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{workload}}",
@@ -36865,7 +39015,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{workload}}",
@@ -37063,10 +39213,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -37240,7 +39392,7 @@ data:
                         "tableColumn": "",
                         "targets": [
                             {
-                                "expr": "sum(kubelet_running_pods{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"})",
+                                "expr": "sum(kubelet_running_pods{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"}) OR sum(kubelet_running_pod_count{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"})",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}}",
@@ -37322,7 +39474,7 @@ data:
                         "tableColumn": "",
                         "targets": [
                             {
-                                "expr": "sum(kubelet_running_containers{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"})",
+                                "expr": "sum(kubelet_running_containers{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"}) OR sum(kubelet_running_container_count{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"})",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}}",
@@ -37612,6 +39764,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 8,
@@ -37698,6 +39851,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 9,
@@ -37797,6 +39951,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 10,
@@ -37896,6 +40051,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 11,
@@ -37989,6 +40145,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 12,
@@ -38095,6 +40252,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 13,
@@ -38183,6 +40341,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 14,
@@ -38284,6 +40443,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 15,
@@ -38385,6 +40545,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 16,
@@ -38471,6 +40632,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 17,
@@ -38571,6 +40733,7 @@ data:
                         "datasource": "$datasource",
                         "description": "Pod lifecycle event generator",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 18,
@@ -38657,6 +40820,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 19,
@@ -38756,6 +40920,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 20,
@@ -38855,6 +41020,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 21,
@@ -38975,6 +41141,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 22,
@@ -39074,6 +41241,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 23,
@@ -39160,6 +41328,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 24,
@@ -39246,6 +41415,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 25,
@@ -39443,10 +41613,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -39604,7 +41776,7 @@ data:
                 "tableColumn": "",
                 "targets": [
                     {
-                        "expr": "sum(irate(container_network_receive_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution]))",
+                        "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution]))",
                         "format": "time_series",
                         "instant": null,
                         "intervalFactor": 1,
@@ -39728,7 +41900,7 @@ data:
                 "tableColumn": "",
                 "targets": [
                     {
-                        "expr": "sum(irate(container_network_transmit_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution]))",
+                        "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution]))",
                         "format": "time_series",
                         "instant": null,
                         "intervalFactor": 1,
@@ -39943,7 +42115,7 @@ data:
                 ],
                 "targets": [
                     {
-                        "expr": "sum(irate(container_network_receive_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
+                        "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -39952,7 +42124,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sum(irate(container_network_transmit_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
+                        "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -39961,7 +42133,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sum(irate(container_network_receive_packets_total{namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
+                        "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -39970,7 +42142,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sum(irate(container_network_transmit_packets_total{namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
+                        "expr": "sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -39979,7 +42151,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sum(irate(container_network_receive_packets_dropped_total{namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
+                        "expr": "sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -39988,7 +42160,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sum(irate(container_network_transmit_packets_dropped_total{namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
+                        "expr": "sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -40030,6 +42202,7 @@ data:
                 "dashes": false,
                 "datasource": "$datasource",
                 "fill": 2,
+                "fillGradient": 0,
                 "gridPos": {
                     "h": 9,
                     "w": 12,
@@ -40071,7 +42244,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sum(irate(container_network_receive_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
+                        "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{pod}}",
@@ -40125,6 +42298,7 @@ data:
                 "dashes": false,
                 "datasource": "$datasource",
                 "fill": 2,
+                "fillGradient": 0,
                 "gridPos": {
                     "h": 9,
                     "w": 12,
@@ -40166,7 +42340,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sum(irate(container_network_transmit_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
+                        "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{pod}}",
@@ -40231,6 +42405,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 10,
                             "w": 12,
@@ -40272,7 +42447,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_packets_total{namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{pod}}",
@@ -40326,6 +42501,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 10,
                             "w": 12,
@@ -40367,7 +42543,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_total{namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{pod}}",
@@ -40441,6 +42617,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 10,
                             "w": 12,
@@ -40482,7 +42659,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_packets_dropped_total{namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{pod}}",
@@ -40536,6 +42713,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 10,
                             "w": 12,
@@ -40577,7 +42755,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{pod}}",
@@ -40659,6 +42837,29 @@ data:
                     "type": "datasource"
                 },
                 {
+                    "allValue": null,
+                    "current": {
+                    },
+                    "datasource": "$datasource",
+                    "hide": 2,
+                    "includeAll": false,
+                    "label": null,
+                    "multi": false,
+                    "name": "cluster",
+                    "options": [
+                    ],
+                    "query": "label_values(kube_pod_info, cluster)",
+                    "refresh": 1,
+                    "regex": "",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [
+                    ],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
                     "allValue": ".+",
                     "auto": false,
                     "auto_count": 30,
@@ -40668,7 +42869,7 @@ data:
                         "value": "kube-system"
                     },
                     "datasource": "$datasource",
-                    "definition": "label_values(container_network_receive_packets_total, namespace)",
+                    "definition": "label_values(container_network_receive_packets_total{cluster=\"$cluster\"}, namespace)",
                     "hide": 0,
                     "includeAll": true,
                     "label": null,
@@ -40676,7 +42877,7 @@ data:
                     "name": "namespace",
                     "options": [
                     ],
-                    "query": "label_values(container_network_receive_packets_total, namespace)",
+                    "query": "label_values(container_network_receive_packets_total{cluster=\"$cluster\"}, namespace)",
                     "refresh": 1,
                     "regex": "",
                     "skipUrlSync": false,
@@ -40807,10 +43008,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -40875,6 +43078,7 @@ data:
                 "dashes": false,
                 "datasource": "$datasource",
                 "fill": 2,
+                "fillGradient": 0,
                 "gridPos": {
                     "h": 9,
                     "w": 12,
@@ -40918,7 +43122,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{ workload }}",
@@ -40973,6 +43177,7 @@ data:
                 "dashes": false,
                 "datasource": "$datasource",
                 "fill": 2,
+                "fillGradient": 0,
                 "gridPos": {
                     "h": 9,
                     "w": 12,
@@ -41016,7 +43221,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{ workload }}",
@@ -41295,7 +43500,7 @@ data:
                 ],
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -41304,7 +43509,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -41313,7 +43518,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(avg(irate(container_network_receive_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -41322,7 +43527,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(avg(irate(container_network_transmit_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -41331,7 +43536,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_packets_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -41340,7 +43545,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_packets_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -41349,7 +43554,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_packets_dropped_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -41358,7 +43563,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_packets_dropped_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -41391,6 +43596,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 12,
@@ -41434,7 +43640,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(avg(irate(container_network_receive_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "sort_desc(avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{ workload }}",
@@ -41489,6 +43695,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 12,
@@ -41532,7 +43739,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(avg(irate(container_network_transmit_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "sort_desc(avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{ workload }}",
@@ -41604,7 +43811,7 @@ data:
                 "repeatIteration": null,
                 "repeatRowId": null,
                 "showTitle": true,
-                "title": "Bandwidth History",
+                "title": "Bandwidth HIstory",
                 "titleSize": "h6",
                 "type": "row"
             },
@@ -41616,6 +43823,7 @@ data:
                 "dashes": false,
                 "datasource": "$datasource",
                 "fill": 2,
+                "fillGradient": 0,
                 "gridPos": {
                     "h": 9,
                     "w": 12,
@@ -41657,7 +43865,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{workload}}",
@@ -41711,6 +43919,7 @@ data:
                 "dashes": false,
                 "datasource": "$datasource",
                 "fill": 2,
+                "fillGradient": 0,
                 "gridPos": {
                     "h": 9,
                     "w": 12,
@@ -41752,7 +43961,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{workload}}",
@@ -41817,6 +44026,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 12,
@@ -41858,7 +44068,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_receive_packets_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "sort_desc(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{workload}}",
@@ -41912,6 +44122,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 12,
@@ -41953,7 +44164,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{workload}}",
@@ -42027,6 +44238,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 12,
@@ -42068,7 +44280,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_receive_packets_dropped_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "sort_desc(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{workload}}",
@@ -42122,6 +44334,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 12,
@@ -42163,7 +44376,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_dropped_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{workload}}",
@@ -42246,6 +44459,29 @@ data:
                 },
                 {
                     "allValue": null,
+                    "current": {
+                    },
+                    "datasource": "$datasource",
+                    "hide": 2,
+                    "includeAll": false,
+                    "label": null,
+                    "multi": false,
+                    "name": "cluster",
+                    "options": [
+                    ],
+                    "query": "label_values(kube_pod_info, cluster)",
+                    "refresh": 1,
+                    "regex": "",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [
+                    ],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
+                    "allValue": null,
                     "auto": false,
                     "auto_count": 30,
                     "auto_min": "10s",
@@ -42254,7 +44490,7 @@ data:
                         "value": "kube-system"
                     },
                     "datasource": "$datasource",
-                    "definition": "label_values(container_network_receive_packets_total, namespace)",
+                    "definition": "label_values(container_network_receive_packets_total{cluster=\"$cluster\"}, namespace)",
                     "hide": 0,
                     "includeAll": false,
                     "label": null,
@@ -42262,7 +44498,7 @@ data:
                     "name": "namespace",
                     "options": [
                     ],
-                    "query": "label_values(container_network_receive_packets_total, namespace)",
+                    "query": "label_values(container_network_receive_packets_total{cluster=\"$cluster\"}, namespace)",
                     "refresh": 1,
                     "regex": "",
                     "skipUrlSync": false,
@@ -42284,7 +44520,7 @@ data:
                         "value": "deployment"
                     },
                     "datasource": "$datasource",
-                    "definition": "label_values(namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\"}, workload_type)",
+                    "definition": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\"}, workload_type)",
                     "hide": 0,
                     "includeAll": false,
                     "label": null,
@@ -42292,7 +44528,7 @@ data:
                     "name": "type",
                     "options": [
                     ],
-                    "query": "label_values(namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\".+\"}, workload_type)",
+                    "query": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\"}, workload_type)",
                     "refresh": 1,
                     "regex": "",
                     "skipUrlSync": false,
@@ -42423,10 +44659,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -42503,7 +44741,7 @@ data:
                         "timeShift": null,
                         "title": "CPU Utilisation",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -42584,7 +44822,7 @@ data:
                         "timeShift": null,
                         "title": "CPU Saturation (load1 per CPU)",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -42677,7 +44915,7 @@ data:
                         "timeShift": null,
                         "title": "Memory Utilisation",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -42758,7 +44996,7 @@ data:
                         "timeShift": null,
                         "title": "Memory Saturation (Major Page Faults)",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -42868,7 +45106,7 @@ data:
                         "timeShift": null,
                         "title": "Net Utilisation (Bytes Receive/Transmit)",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -42966,7 +45204,7 @@ data:
                         "timeShift": null,
                         "title": "Net Saturation (Drops Receive/Transmit)",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -43059,7 +45297,7 @@ data:
                         "timeShift": null,
                         "title": "Disk IO Utilisation",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -43140,7 +45378,7 @@ data:
                         "timeShift": null,
                         "title": "Disk IO Saturation",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -43233,7 +45471,7 @@ data:
                         "timeShift": null,
                         "title": "Disk Space Utilisation",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -43326,9 +45564,9 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "USE Method / Cluster",
-        "uid": "3e97d1d02672cdd0861f4c97c64f89b2",
+        "uid": "",
         "version": 0
     }
 kind: ConfigMap
@@ -43336,10 +45574,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -43416,7 +45656,7 @@ data:
                         "timeShift": null,
                         "title": "CPU Utilisation",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -43497,7 +45737,7 @@ data:
                         "timeShift": null,
                         "title": "CPU Saturation (Load1 per CPU)",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -43590,7 +45830,7 @@ data:
                         "timeShift": null,
                         "title": "Memory Utilisation",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -43671,7 +45911,7 @@ data:
                         "timeShift": null,
                         "title": "Memory Saturation (Major Page Faults)",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -43781,7 +46021,7 @@ data:
                         "timeShift": null,
                         "title": "Net Utilisation (Bytes Receive/Transmit)",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -43879,7 +46119,7 @@ data:
                         "timeShift": null,
                         "title": "Net Saturation (Drops Receive/Transmit)",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -43972,7 +46212,7 @@ data:
                         "timeShift": null,
                         "title": "Disk IO Utilisation",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -44053,7 +46293,7 @@ data:
                         "timeShift": null,
                         "title": "Disk IO Saturation",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -44146,7 +46386,7 @@ data:
                         "timeShift": null,
                         "title": "Disk Space Utilisation",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -44264,9 +46504,9 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "USE Method / Node",
-        "uid": "fac67cfbe174d3ef53eb473d73d9212f",
+        "uid": "",
         "version": 0
     }
 kind: ConfigMap
@@ -44274,10 +46514,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44318,6 +46560,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 2,
@@ -44365,7 +46608,7 @@ data:
                         "timeShift": null,
                         "title": "CPU Usage",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -44405,6 +46648,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 0,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 3,
@@ -44472,7 +46716,7 @@ data:
                         "timeShift": null,
                         "title": "Load Average",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -44525,6 +46769,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 4,
@@ -44592,7 +46837,7 @@ data:
                         "timeShift": null,
                         "title": "Memory Usage",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -44692,9 +46937,6 @@ data:
                         ],
                         "thresholds": "80, 90",
                         "title": "Memory Usage",
-                        "tooltip": {
-                            "shared": false
-                        },
                         "type": "singlestat",
                         "valueFontSize": "80%",
                         "valueMaps": [
@@ -44727,6 +46969,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 0,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 6,
@@ -44768,7 +47011,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "rate(node_disk_read_bytes_total{job=\"node-exporter\", instance=\"$instance\", device=~\"nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+\"}[$__interval])",
+                                "expr": "rate(node_disk_read_bytes_total{job=\"node-exporter\", instance=\"$instance\", device=~\"mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+\"}[$__interval])",
                                 "format": "time_series",
                                 "interval": "1m",
                                 "intervalFactor": 2,
@@ -44776,7 +47019,7 @@ data:
                                 "refId": "A"
                             },
                             {
-                                "expr": "rate(node_disk_written_bytes_total{job=\"node-exporter\", instance=\"$instance\", device=~\"nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+\"}[$__interval])",
+                                "expr": "rate(node_disk_written_bytes_total{job=\"node-exporter\", instance=\"$instance\", device=~\"mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+\"}[$__interval])",
                                 "format": "time_series",
                                 "interval": "1m",
                                 "intervalFactor": 2,
@@ -44784,7 +47027,7 @@ data:
                                 "refId": "B"
                             },
                             {
-                                "expr": "rate(node_disk_io_time_seconds_total{job=\"node-exporter\", instance=\"$instance\", device=~\"nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+\"}[$__interval])",
+                                "expr": "rate(node_disk_io_time_seconds_total{job=\"node-exporter\", instance=\"$instance\", device=~\"mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+\"}[$__interval])",
                                 "format": "time_series",
                                 "interval": "1m",
                                 "intervalFactor": 2,
@@ -44798,7 +47041,7 @@ data:
                         "timeShift": null,
                         "title": "Disk I/O",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -44838,6 +47081,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 7,
@@ -44899,7 +47143,7 @@ data:
                         "timeShift": null,
                         "title": "Disk Space Usage",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -44952,6 +47196,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 0,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 8,
@@ -44999,7 +47244,7 @@ data:
                         "timeShift": null,
                         "title": "Network Received",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -45039,6 +47284,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 0,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 9,
@@ -45086,7 +47332,7 @@ data:
                         "timeShift": null,
                         "title": "Network Transmitted",
                         "tooltip": {
-                            "shared": false,
+                            "shared": true,
                             "sort": 0,
                             "value_type": "individual"
                         },
@@ -45203,9 +47449,8 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "browser",
         "title": "Nodes",
-        "uid": "fa49a4706d07a042595b664c87fb33ea",
         "version": 0
     }
 kind: ConfigMap
@@ -45213,10 +47458,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -45257,6 +47504,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 2,
@@ -45401,7 +47649,7 @@ data:
                         "tableColumn": "",
                         "targets": [
                             {
-                                "expr": "(\n  kubelet_volume_stats_capacity_bytes{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"}\n  -\n  kubelet_volume_stats_available_bytes{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"}\n)\n/\nkubelet_volume_stats_capacity_bytes{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"}\n* 100\n",
+                                "expr": "max without(instance,node) (\n(\n  kubelet_volume_stats_capacity_bytes{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"}\n  -\n  kubelet_volume_stats_available_bytes{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"}\n)\n/\nkubelet_volume_stats_capacity_bytes{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"}\n* 100)\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "",
@@ -45445,6 +47693,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 4,
@@ -45589,7 +47838,7 @@ data:
                         "tableColumn": "",
                         "targets": [
                             {
-                                "expr": "kubelet_volume_stats_inodes_used{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"}\n/\nkubelet_volume_stats_inodes{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"}\n* 100\n",
+                                "expr": "max without(instance,node) (\nkubelet_volume_stats_inodes_used{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"}\n/\nkubelet_volume_stats_inodes{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"}\n* 100)\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "",
@@ -45754,10 +48003,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -45915,7 +48166,7 @@ data:
                 "tableColumn": "",
                 "targets": [
                     {
-                        "expr": "sum(irate(container_network_receive_bytes_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$interval:$resolution]))",
+                        "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\", pod=~\"$pod\"}[$interval:$resolution]))",
                         "format": "time_series",
                         "instant": null,
                         "intervalFactor": 1,
@@ -46039,7 +48290,7 @@ data:
                 "tableColumn": "",
                 "targets": [
                     {
-                        "expr": "sum(irate(container_network_transmit_bytes_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$interval:$resolution]))",
+                        "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\", pod=~\"$pod\"}[$interval:$resolution]))",
                         "format": "time_series",
                         "instant": null,
                         "intervalFactor": 1,
@@ -46090,6 +48341,7 @@ data:
                 "dashes": false,
                 "datasource": "$datasource",
                 "fill": 2,
+                "fillGradient": 0,
                 "gridPos": {
                     "h": 9,
                     "w": 12,
@@ -46131,7 +48383,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sum(irate(container_network_receive_bytes_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$interval:$resolution])) by (pod)",
+                        "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\", pod=~\"$pod\"}[$interval:$resolution])) by (pod)",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{pod}}",
@@ -46185,6 +48437,7 @@ data:
                 "dashes": false,
                 "datasource": "$datasource",
                 "fill": 2,
+                "fillGradient": 0,
                 "gridPos": {
                     "h": 9,
                     "w": 12,
@@ -46226,7 +48479,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sum(irate(container_network_transmit_bytes_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$interval:$resolution])) by (pod)",
+                        "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\", pod=~\"$pod\"}[$interval:$resolution])) by (pod)",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{pod}}",
@@ -46291,6 +48544,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 10,
                             "w": 12,
@@ -46332,7 +48586,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_packets_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$interval:$resolution])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\", pod=~\"$pod\"}[$interval:$resolution])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{pod}}",
@@ -46386,6 +48640,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 10,
                             "w": 12,
@@ -46427,7 +48682,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$interval:$resolution])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\", pod=~\"$pod\"}[$interval:$resolution])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{pod}}",
@@ -46501,6 +48756,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 10,
                             "w": 12,
@@ -46542,7 +48798,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_packets_dropped_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$interval:$resolution])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\", pod=~\"$pod\"}[$interval:$resolution])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{pod}}",
@@ -46596,6 +48852,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 10,
                             "w": 12,
@@ -46637,7 +48894,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{namespace=~\"$namespace\", pod=~\"$pod\"}[$interval:$resolution])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\", pod=~\"$pod\"}[$interval:$resolution])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{pod}}",
@@ -46719,6 +48976,29 @@ data:
                     "type": "datasource"
                 },
                 {
+                    "allValue": null,
+                    "current": {
+                    },
+                    "datasource": "$datasource",
+                    "hide": 2,
+                    "includeAll": false,
+                    "label": null,
+                    "multi": false,
+                    "name": "cluster",
+                    "options": [
+                    ],
+                    "query": "label_values(kube_pod_info, cluster)",
+                    "refresh": 1,
+                    "regex": "",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [
+                    ],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
                     "allValue": ".+",
                     "auto": false,
                     "auto_count": 30,
@@ -46728,7 +49008,7 @@ data:
                         "value": "kube-system"
                     },
                     "datasource": "$datasource",
-                    "definition": "label_values(container_network_receive_packets_total, namespace)",
+                    "definition": "label_values(container_network_receive_packets_total{cluster=\"$cluster\"}, namespace)",
                     "hide": 0,
                     "includeAll": true,
                     "label": null,
@@ -46736,7 +49016,7 @@ data:
                     "name": "namespace",
                     "options": [
                     ],
-                    "query": "label_values(container_network_receive_packets_total, namespace)",
+                    "query": "label_values(container_network_receive_packets_total{cluster=\"$cluster\"}, namespace)",
                     "refresh": 1,
                     "regex": "",
                     "skipUrlSync": false,
@@ -46758,7 +49038,7 @@ data:
                         "value": ""
                     },
                     "datasource": "$datasource",
-                    "definition": "label_values(container_network_receive_packets_total{namespace=~\"$namespace\"}, pod)",
+                    "definition": "label_values(container_network_receive_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}, pod)",
                     "hide": 0,
                     "includeAll": false,
                     "label": null,
@@ -46766,7 +49046,7 @@ data:
                     "name": "pod",
                     "options": [
                     ],
-                    "query": "label_values(container_network_receive_packets_total{namespace=~\"$namespace\"}, pod)",
+                    "query": "label_values(container_network_receive_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}, pod)",
                     "refresh": 1,
                     "regex": "",
                     "skipUrlSync": false,
@@ -46897,10 +49177,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -46922,7 +49204,7 @@ data:
         "hideControls": false,
         "links": [
         ],
-        "refresh": "10s",
+        "refresh": "60s",
         "rows": [
             {
                 "collapse": false,
@@ -47939,6 +50221,7 @@ data:
         "schemaVersion": 14,
         "style": "dark",
         "tags": [
+            "prometheus-mixin"
         ],
         "templating": {
             "list": [
@@ -48041,7 +50324,7 @@ data:
             ]
         },
         "timezone": "utc",
-        "title": "Prometheus Overview",
+        "title": "Prometheus / Overview",
         "uid": "",
         "version": 0
     }
@@ -48050,10 +50333,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -48176,6 +50461,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 3,
@@ -48262,6 +50548,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 4,
@@ -48361,6 +50648,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 5,
@@ -48447,6 +50735,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 6,
@@ -48546,6 +50835,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 7,
@@ -48653,6 +50943,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 8,
@@ -48752,6 +51043,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 9,
@@ -48851,6 +51143,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 10,
@@ -48937,6 +51230,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 11,
@@ -49023,6 +51317,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 12,
@@ -49197,10 +51492,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -49323,6 +51620,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 3,
@@ -49430,6 +51728,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 4,
@@ -49550,6 +51849,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 5,
@@ -49657,6 +51957,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 6,
@@ -49756,6 +52057,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 7,
@@ -49855,6 +52157,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 8,
@@ -49941,6 +52244,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 9,
@@ -50027,6 +52331,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 10,
@@ -50201,10 +52506,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -50295,7 +52602,7 @@ data:
                         "tableColumn": "",
                         "targets": [
                             {
-                                "expr": "sum(rate(container_cpu_usage_seconds_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$statefulset.*\"}[3m]))",
+                                "expr": "sum(rate(container_cpu_usage_seconds_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", container!=\"\", namespace=\"$namespace\", pod=~\"$statefulset.*\"}[3m]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "",
@@ -50376,7 +52683,7 @@ data:
                         "tableColumn": "",
                         "targets": [
                             {
-                                "expr": "sum(container_memory_usage_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$statefulset.*\"}) / 1024^3",
+                                "expr": "sum(container_memory_usage_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", container!=\"\", namespace=\"$namespace\", pod=~\"$statefulset.*\"}) / 1024^3",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "",
@@ -50457,7 +52764,7 @@ data:
                         "tableColumn": "",
                         "targets": [
                             {
-                                "expr": "sum(rate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$statefulset.*\"}[3m])) + sum(rate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=\"$namespace\",pod=~\"$statefulset.*\"}[3m]))",
+                                "expr": "sum(rate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$statefulset.*\"}[3m])) + sum(rate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",pod=~\"$statefulset.*\"}[3m]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "",
@@ -50843,6 +53150,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 1,
+                        "fillGradient": 0,
                         "gridPos": {
                         },
                         "id": 9,
@@ -51090,10 +53398,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -51158,6 +53468,7 @@ data:
                 "dashes": false,
                 "datasource": "$datasource",
                 "fill": 2,
+                "fillGradient": 0,
                 "gridPos": {
                     "h": 9,
                     "w": 12,
@@ -51201,7 +53512,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{ pod }}",
@@ -51256,6 +53567,7 @@ data:
                 "dashes": false,
                 "datasource": "$datasource",
                 "fill": 2,
+                "fillGradient": 0,
                 "gridPos": {
                     "h": 9,
                     "w": 12,
@@ -51299,7 +53611,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{ pod }}",
@@ -51365,6 +53677,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 12,
@@ -51408,7 +53721,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(avg(irate(container_network_receive_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "sort_desc(avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{ pod }}",
@@ -51463,6 +53776,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 12,
@@ -51506,7 +53820,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(avg(irate(container_network_transmit_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "sort_desc(avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{ pod }}",
@@ -51578,7 +53892,7 @@ data:
                 "repeatIteration": null,
                 "repeatRowId": null,
                 "showTitle": true,
-                "title": "Bandwidth History",
+                "title": "Bandwidth HIstory",
                 "titleSize": "h6",
                 "type": "row"
             },
@@ -51590,6 +53904,7 @@ data:
                 "dashes": false,
                 "datasource": "$datasource",
                 "fill": 2,
+                "fillGradient": 0,
                 "gridPos": {
                     "h": 9,
                     "w": 12,
@@ -51631,7 +53946,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{pod}}",
@@ -51685,6 +54000,7 @@ data:
                 "dashes": false,
                 "datasource": "$datasource",
                 "fill": 2,
+                "fillGradient": 0,
                 "gridPos": {
                     "h": 9,
                     "w": 12,
@@ -51726,7 +54042,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{pod}}",
@@ -51791,6 +54107,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 12,
@@ -51832,7 +54149,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_receive_packets_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "sort_desc(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{pod}}",
@@ -51886,6 +54203,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 12,
@@ -51927,7 +54245,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{pod}}",
@@ -52001,6 +54319,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 12,
@@ -52042,7 +54361,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_receive_packets_dropped_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "sort_desc(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{pod}}",
@@ -52096,6 +54415,7 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 2,
+                        "fillGradient": 0,
                         "gridPos": {
                             "h": 9,
                             "w": 12,
@@ -52137,7 +54457,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_dropped_total{namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{pod}}",
@@ -52219,6 +54539,29 @@ data:
                     "type": "datasource"
                 },
                 {
+                    "allValue": null,
+                    "current": {
+                    },
+                    "datasource": "$datasource",
+                    "hide": 2,
+                    "includeAll": false,
+                    "label": null,
+                    "multi": false,
+                    "name": "cluster",
+                    "options": [
+                    ],
+                    "query": "label_values(kube_pod_info, cluster)",
+                    "refresh": 1,
+                    "regex": "",
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tags": [
+                    ],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
                     "allValue": ".+",
                     "auto": false,
                     "auto_count": 30,
@@ -52228,7 +54571,7 @@ data:
                         "value": "kube-system"
                     },
                     "datasource": "$datasource",
-                    "definition": "label_values(container_network_receive_packets_total, namespace)",
+                    "definition": "label_values(container_network_receive_packets_total{cluster=\"$cluster\"}, namespace)",
                     "hide": 0,
                     "includeAll": true,
                     "label": null,
@@ -52236,7 +54579,7 @@ data:
                     "name": "namespace",
                     "options": [
                     ],
-                    "query": "label_values(container_network_receive_packets_total, namespace)",
+                    "query": "label_values(container_network_receive_packets_total{cluster=\"$cluster\"}, namespace)",
                     "refresh": 1,
                     "regex": "",
                     "skipUrlSync": false,
@@ -52258,7 +54601,7 @@ data:
                         "value": ""
                     },
                     "datasource": "$datasource",
-                    "definition": "label_values(namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\"}, workload)",
+                    "definition": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\"}, workload)",
                     "hide": 0,
                     "includeAll": false,
                     "label": null,
@@ -52266,7 +54609,7 @@ data:
                     "name": "workload",
                     "options": [
                     ],
-                    "query": "label_values(namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\"}, workload)",
+                    "query": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\"}, workload)",
                     "refresh": 1,
                     "regex": "",
                     "skipUrlSync": false,
@@ -52288,7 +54631,7 @@ data:
                         "value": "deployment"
                     },
                     "datasource": "$datasource",
-                    "definition": "label_values(namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\"$workload\"}, workload_type)",
+                    "definition": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\"}, workload_type)",
                     "hide": 0,
                     "includeAll": false,
                     "label": null,
@@ -52296,7 +54639,7 @@ data:
                     "name": "type",
                     "options": [
                     ],
-                    "query": "label_values(namespace_workload_pod:kube_pod_owner:relabel{namespace=~\"$namespace\", workload=~\"$workload\"}, workload_type)",
+                    "query": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\"}, workload_type)",
                     "refresh": 1,
                     "regex": "",
                     "skipUrlSync": false,
@@ -52427,10 +54770,12 @@ metadata:
   annotations: {}
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -52446,8 +54791,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 7.3.5
-    helm.sh/chart: grafana-5.8.16
+    app.kubernetes.io/version: 7.5.5
+    helm.sh/chart: grafana-6.8.3
     heritage: metalk8s
   name: prometheus-operator-grafana-clusterrole
   namespace: metalk8s-monitoring
@@ -52470,7 +54815,29 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-2.9.4
+    helm.sh/chart: kube-state-metrics-2.13.2
+    heritage: metalk8s
+  name: psp-prometheus-operator-kube-state-metrics
+  namespace: metalk8s-monitoring
+rules:
+- apiGroups:
+  - policy
+  resourceNames:
+  - prometheus-operator-kube-state-metrics
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/instance: prometheus-operator
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: kube-state-metrics
+    app.kubernetes.io/part-of: metalk8s
+    helm.sh/chart: kube-state-metrics-2.13.2
     heritage: metalk8s
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -52673,33 +55040,11 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: kube-state-metrics
-    app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-2.9.4
-    heritage: metalk8s
-  name: psp-prometheus-operator-kube-state-metrics
-  namespace: metalk8s-monitoring
-rules:
-- apiGroups:
-  - policy
-  resourceNames:
-  - prometheus-operator-kube-state-metrics
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  labels:
     app: prometheus-node-exporter
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-1.12.0
+    chart: prometheus-node-exporter-1.17.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -52720,10 +55065,12 @@ kind: ClusterRole
 metadata:
   labels:
     app: prometheus-operator-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52806,10 +55153,12 @@ kind: ClusterRole
 metadata:
   labels:
     app: prometheus-operator-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52830,10 +55179,12 @@ kind: ClusterRole
 metadata:
   labels:
     app: prometheus-operator-prometheus
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52871,10 +55222,12 @@ kind: ClusterRole
 metadata:
   labels:
     app: prometheus-operator-prometheus
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52898,8 +55251,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 7.3.5
-    helm.sh/chart: grafana-5.8.16
+    app.kubernetes.io/version: 7.5.5
+    helm.sh/chart: grafana-6.8.3
     heritage: metalk8s
   name: prometheus-operator-grafana-clusterrolebinding
   namespace: metalk8s-monitoring
@@ -52920,7 +55273,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-2.9.4
+    helm.sh/chart: kube-state-metrics-2.13.2
     heritage: metalk8s
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -52941,7 +55294,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-2.9.4
+    helm.sh/chart: kube-state-metrics-2.13.2
     heritage: metalk8s
   name: psp-prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -52962,7 +55315,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-1.12.0
+    chart: prometheus-node-exporter-1.17.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -52982,10 +55335,12 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     app: prometheus-operator-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53005,10 +55360,12 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     app: prometheus-operator-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53028,10 +55385,12 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     app: prometheus-operator-prometheus
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53051,10 +55410,12 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     app: prometheus-operator-prometheus
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53069,7 +55430,7 @@ subjects:
   name: prometheus-operator-prometheus
   namespace: metalk8s-monitoring
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   labels:
@@ -53077,8 +55438,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 7.3.5
-    helm.sh/chart: grafana-5.8.16
+    app.kubernetes.io/version: 7.5.5
+    helm.sh/chart: grafana-6.8.3
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -53097,10 +55458,12 @@ kind: Role
 metadata:
   labels:
     app: prometheus-operator-alertmanager
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53116,7 +55479,7 @@ rules:
   verbs:
   - use
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   labels:
@@ -53124,8 +55487,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 7.3.5
-    helm.sh/chart: grafana-5.8.16
+    app.kubernetes.io/version: 7.5.5
+    helm.sh/chart: grafana-6.8.3
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -53143,10 +55506,12 @@ kind: RoleBinding
 metadata:
   labels:
     app: prometheus-operator-alertmanager
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53169,8 +55534,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 7.3.5
-    helm.sh/chart: grafana-5.8.16
+    app.kubernetes.io/version: 7.5.5
+    helm.sh/chart: grafana-6.8.3
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -53195,7 +55560,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-2.9.4
+    helm.sh/chart: kube-state-metrics-2.13.2
     heritage: metalk8s
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -53220,7 +55585,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-1.12.0
+    chart: prometheus-node-exporter-1.17.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -53242,10 +55607,12 @@ kind: Service
 metadata:
   labels:
     app: prometheus-operator-alertmanager
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53268,10 +55635,12 @@ kind: Service
 metadata:
   labels:
     app: prometheus-operator-coredns
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     jobLabel: coredns
     metalk8s.scality.com/monitor: ''
@@ -53293,10 +55662,12 @@ kind: Service
 metadata:
   labels:
     app: prometheus-operator-kube-controller-manager
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     jobLabel: kube-controller-manager
     metalk8s.scality.com/monitor: ''
@@ -53319,10 +55690,12 @@ kind: Service
 metadata:
   labels:
     app: prometheus-operator-kube-etcd
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     jobLabel: kube-etcd
     metalk8s.scality.com/monitor: ''
@@ -53345,10 +55718,12 @@ kind: Service
 metadata:
   labels:
     app: prometheus-operator-kube-proxy
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     jobLabel: kube-proxy
     metalk8s.scality.com/monitor: ''
@@ -53371,10 +55746,12 @@ kind: Service
 metadata:
   labels:
     app: prometheus-operator-kube-scheduler
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     jobLabel: kube-scheduler
     metalk8s.scality.com/monitor: ''
@@ -53397,10 +55774,12 @@ kind: Service
 metadata:
   labels:
     app: prometheus-operator-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53421,10 +55800,12 @@ kind: Service
 metadata:
   labels:
     app: prometheus-operator-prometheus
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53449,7 +55830,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-1.12.0
+    chart: prometheus-node-exporter-1.17.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -53462,12 +55843,14 @@ spec:
       release: prometheus-operator
   template:
     metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: 'true'
       labels:
         app: prometheus-node-exporter
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-node-exporter
         app.kubernetes.io/part-of: metalk8s
-        chart: prometheus-node-exporter-1.12.0
+        chart: prometheus-node-exporter-1.17.0
         heritage: metalk8s
         jobLabel: node-exporter
         release: prometheus-operator
@@ -53484,7 +55867,7 @@ spec:
         env:
         - name: HOST_IP
           value: 0.0.0.0
-        image: {% endraw -%}{{ build_image_name("node-exporter", False) }}{%- raw %}:v1.0.1
+        image: {% endraw -%}{{ build_image_name("node-exporter", False) }}{%- raw %}:v1.1.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -53545,8 +55928,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 7.3.5
-    helm.sh/chart: grafana-5.8.16
+    app.kubernetes.io/version: 7.5.5
+    helm.sh/chart: grafana-6.8.3
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -53566,8 +55949,8 @@ spec:
           apiVersion="v1", namespace="metalk8s-monitoring", name="prometheus-operator-grafana",
           path="data:grafana.ini")
         checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
-        checksum/sc-dashboard-provider-config: 17700f61718b97880099e76e17b572f81e76ca8d993efce281f5187b514f9c55
-        checksum/secret: 7ac5e16f07f2ce71a66e5450c04dfb617778e7294a4c8400e653dd797acd6b03
+        checksum/sc-dashboard-provider-config: 46ac8d1a40db8fbce04a7da8b284bd517053e468534a5f64c0d671777be82574
+        checksum/secret: e2bd6e1021d2f448aeb36d04122e4efb343466de2fafbf7be9bdb8507ab4bf5a
       labels:
         app.kubernetes.io/instance: prometheus-operator
         app.kubernetes.io/name: grafana
@@ -53582,7 +55965,7 @@ spec:
           value: /tmp/dashboards
         - name: RESOURCE
           value: both
-        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.1.0
+        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.10.7
         imagePullPolicy: IfNotPresent
         name: grafana-sc-dashboard
         resources: {}
@@ -53600,7 +55983,7 @@ spec:
             secretKeyRef:
               key: admin-password
               name: prometheus-operator-grafana
-        image: {% endraw -%}{{ build_image_name("grafana", False) }}{%- raw %}:7.3.5
+        image: {% endraw -%}{{ build_image_name("grafana", False) }}{%- raw %}:7.5.5
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 10
@@ -53645,7 +56028,7 @@ spec:
           value: /etc/grafana/provisioning/datasources
         - name: RESOURCE
           value: both
-        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.1.0
+        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.10.7
         imagePullPolicy: IfNotPresent
         name: grafana-sc-datasources
         resources: {}
@@ -53688,7 +56071,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-2.9.4
+    app.kubernetes.io/version: 1.9.8
+    helm.sh/chart: kube-state-metrics-2.13.2
     heritage: metalk8s
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -53732,7 +56116,8 @@ spec:
         - --collectors=storageclasses
         - --collectors=validatingwebhookconfigurations
         - --collectors=volumeattachments
-        image: {% endraw -%}{{ build_image_name("kube-state-metrics", False) }}{%- raw %}:v1.9.7
+        - --telemetry-port=8081
+        image: {% endraw -%}{{ build_image_name("kube-state-metrics", False) }}{%- raw %}:v1.9.8
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -53770,10 +56155,12 @@ kind: Deployment
 metadata:
   labels:
     app: prometheus-operator-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53789,10 +56176,12 @@ spec:
     metadata:
       labels:
         app: prometheus-operator-operator
+        app.kubernetes.io/instance: prometheus-operator
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-operator-operator
         app.kubernetes.io/part-of: metalk8s
-        chart: kube-prometheus-stack-12.2.3
+        app.kubernetes.io/version: 15.4.4
+        chart: kube-prometheus-stack-15.4.4
         heritage: metalk8s
         metalk8s.scality.com/monitor: ''
         release: prometheus-operator
@@ -53800,12 +56189,11 @@ spec:
       containers:
       - args:
         - --kubelet-service=kube-system/prometheus-operator-kubelet
-        - --logtostderr=true
         - --localhost=127.0.0.1
-        - --prometheus-config-reloader={% endraw -%}{{ build_image_name("prometheus-config-reloader", False) }}{%- raw %}:v0.43.2
+        - --prometheus-config-reloader={% endraw -%}{{ build_image_name("prometheus-config-reloader", False) }}{%- raw %}:v0.47.0
         - --config-reloader-cpu=100m
-        - --config-reloader-memory=25Mi
-        image: {% endraw -%}{{ build_image_name("prometheus-operator", False) }}{%- raw %}:v0.43.2
+        - --config-reloader-memory=50Mi
+        image: {% endraw -%}{{ build_image_name("prometheus-operator", False) }}{%- raw %}:v0.47.0
         imagePullPolicy: IfNotPresent
         name: prometheus-operator
         ports:
@@ -53831,7 +56219,7 @@ spec:
         key: node-role.kubernetes.io/infra
         operator: Exists
 ---
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   annotations:
@@ -53842,8 +56230,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 7.3.5
-    helm.sh/chart: grafana-5.8.16
+    app.kubernetes.io/version: 7.5.5
+    helm.sh/chart: grafana-6.8.3
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -53862,10 +56250,12 @@ kind: Alertmanager
 metadata:
   labels:
     app: prometheus-operator-alertmanager
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53877,11 +56267,19 @@ spec:
       preferredDuringSchedulingIgnoredDuringExecution:
       - podAffinityTerm:
           labelSelector:
-            matchLabels:
-              alertmanager: prometheus-operator-alertmanager
-              app: alertmanager
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - alertmanager
+            - key: prometheus
+              operator: In
+              values:
+              - prometheus-operator-alertmanager
           topologyKey: kubernetes.io/hostname
         weight: 100
+  alertmanagerConfigNamespaceSelector: {}
+  alertmanagerConfigSelector: {}
   externalUrl: http://prometheus-operator-alertmanager.metalk8s-monitoring:9093
   image: {% endraw -%}{{ build_image_name("alertmanager", False) }}{%- raw %}:v0.21.0
   listenLocal: false
@@ -53933,10 +56331,12 @@ kind: Prometheus
 metadata:
   labels:
     app: prometheus-operator-prometheus
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53948,9 +56348,15 @@ spec:
       preferredDuringSchedulingIgnoredDuringExecution:
       - podAffinityTerm:
           labelSelector:
-            matchLabels:
-              app: prometheus
-              prometheus: prometheus-operator-prometheus
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - prometheus
+            - key: prometheus
+              operator: In
+              values:
+              - prometheus-operator-prometheus
           topologyKey: kubernetes.io/hostname
         weight: 100
   alerting:
@@ -53962,7 +56368,7 @@ spec:
       port: web
   enableAdminAPI: {% endraw -%}{{ prometheus.spec.config.enable_admin_api }}{%- raw %}
   externalUrl: http://prometheus-operator-prometheus.metalk8s-monitoring:9090
-  image: {% endraw -%}{{ build_image_name("prometheus", False) }}{%- raw %}:v2.22.1
+  image: {% endraw -%}{{ build_image_name("prometheus", False) }}{%- raw %}:v2.26.0
   listenLocal: false
   logFormat: logfmt
   logLevel: info
@@ -53996,6 +56402,7 @@ spec:
   serviceMonitorSelector:
     matchLabels:
       metalk8s.scality.com/monitor: ''
+  shards: 1
   storage:
     volumeClaimTemplate:
       spec:
@@ -54015,17 +56422,19 @@ spec:
   - effect: NoSchedule
     key: node-role.kubernetes.io/infra
     operator: Exists
-  version: v2.22.1
+  version: v2.26.0
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54073,10 +56482,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54086,21 +56497,6 @@ spec:
   groups:
   - name: etcd
     rules:
-    - alert: etcdMembersDown
-      annotations:
-        message: 'etcd cluster "{{ $labels.job }}": members are down ({{ $value }}).'
-      expr: |-
-        max by (job) (
-          sum by (job) (up{job=~".*etcd.*"} == bool 0)
-        or
-          count by (job,endpoint) (
-            sum by (job,endpoint,To) (rate(etcd_network_peer_sent_failures_total{job=~".*etcd.*"}[3m])) > 0.01
-          )
-        )
-        > 0
-      for: 3m
-      labels:
-        severity: critical
     - alert: etcdInsufficientMembers
       annotations:
         message: 'etcd cluster "{{ $labels.job }}": insufficient members ({{ $value
@@ -54120,13 +56516,10 @@ spec:
         severity: critical
     - alert: etcdHighNumberOfLeaderChanges
       annotations:
-        message: 'etcd cluster "{{ $labels.job }}": {{ $value }} leader changes within
-          the last 15 minutes. Frequent elections may be a sign of insufficient resources,
-          high network latency, or disruptions by other components and should be investigated.'
-      expr: increase((max by (job) (etcd_server_leader_changes_seen_total{job=~".*etcd.*"})
-        or 0*absent(etcd_server_leader_changes_seen_total{job=~".*etcd.*"}))[15m:1m])
-        >= 3
-      for: 5m
+        message: 'etcd cluster "{{ $labels.job }}": instance {{ $labels.instance }}
+          has seen {{ $value }} leader changes within the last hour.'
+      expr: rate(etcd_server_leader_changes_seen_total{job=~".*etcd.*"}[15m]) > 3
+      for: 15m
       labels:
         severity: warning
     - alert: etcdHighNumberOfFailedGRPCRequests
@@ -54176,7 +56569,7 @@ spec:
     - alert: etcdHighNumberOfFailedProposals
       annotations:
         message: 'etcd cluster "{{ $labels.job }}": {{ $value }} proposal failures
-          within the last 30 minutes on etcd instance {{ $labels.instance }}.'
+          within the last hour on etcd instance {{ $labels.instance }}.'
       expr: rate(etcd_server_proposals_failed_total{job=~".*etcd.*"}[15m]) > 5
       for: 15m
       labels:
@@ -54237,10 +56630,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54276,10 +56671,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54289,12 +56686,9 @@ spec:
   groups:
   - name: k8s.rules
     rules:
-    - expr: sum(rate(container_cpu_usage_seconds_total{job="kubelet", metrics_path="/metrics/cadvisor",
-        image!="", container!="POD"}[5m])) by (namespace)
-      record: namespace:container_cpu_usage_seconds_total:sum_rate
     - expr: |-
         sum by (cluster, namespace, pod, container) (
-          rate(container_cpu_usage_seconds_total{job="kubelet", metrics_path="/metrics/cadvisor", image!="", container!="POD"}[5m])
+          rate(container_cpu_usage_seconds_total{job="kubelet", metrics_path="/metrics/cadvisor", image!=""}[5m])
         ) * on (cluster, namespace, pod) group_left(node) topk by (cluster, namespace, pod) (
           1, max by(cluster, namespace, pod, node) (kube_pod_info{node!=""})
         )
@@ -54323,31 +56717,28 @@ spec:
           max by(namespace, pod, node) (kube_pod_info{node!=""})
         )
       record: node_namespace_pod_container:container_memory_swap
-    - expr: sum(container_memory_usage_bytes{job="kubelet", metrics_path="/metrics/cadvisor",
-        image!="", container!="POD"}) by (namespace)
-      record: namespace:container_memory_usage_bytes:sum
     - expr: |-
-        sum by (namespace) (
-            sum by (namespace, pod) (
-                max by (namespace, pod, container) (
-                    kube_pod_container_resource_requests_memory_bytes{job="kube-state-metrics"}
-                ) * on(namespace, pod) group_left() max by (namespace, pod) (
-                    kube_pod_status_phase{phase=~"Pending|Running"} == 1
-                )
-            )
-        )
-      record: namespace:kube_pod_container_resource_requests_memory_bytes:sum
-    - expr: |-
-        sum by (namespace) (
-            sum by (namespace, pod) (
-                max by (namespace, pod, container) (
-                    kube_pod_container_resource_requests_cpu_cores{job="kube-state-metrics"}
-                ) * on(namespace, pod) group_left() max by (namespace, pod) (
+        sum by (namespace, cluster) (
+            sum by (namespace, pod, cluster) (
+                max by (namespace, pod, container, cluster) (
+                  kube_pod_container_resource_requests{resource="memory",job="kube-state-metrics"}
+                ) * on(namespace, pod, cluster) group_left() max by (namespace, pod) (
                   kube_pod_status_phase{phase=~"Pending|Running"} == 1
                 )
             )
         )
-      record: namespace:kube_pod_container_resource_requests_cpu_cores:sum
+      record: namespace_memory:kube_pod_container_resource_requests:sum
+    - expr: |-
+        sum by (namespace, cluster) (
+            sum by (namespace, pod, cluster) (
+                max by (namespace, pod, container, cluster) (
+                  kube_pod_container_resource_requests{resource="cpu",job="kube-state-metrics"}
+                ) * on(namespace, pod, cluster) group_left() max by (namespace, pod) (
+                  kube_pod_status_phase{phase=~"Pending|Running"} == 1
+                )
+            )
+        )
+      record: namespace_cpu:kube_pod_container_resource_requests:sum
     - expr: |-
         max by (cluster, namespace, workload, pod) (
           label_replace(
@@ -54391,10 +56782,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54479,54 +56872,57 @@ spec:
       labels:
         verb: write
       record: apiserver_request:availability30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="LIST",code=~"2.."}[30d]))
+    - expr: avg_over_time(code_verb:apiserver_request_total:increase1h[30d]) * 24
+        * 30
       record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="GET",code=~"2.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="POST",code=~"2.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="PUT",code=~"2.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="PATCH",code=~"2.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="DELETE",code=~"2.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="LIST",code=~"3.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="GET",code=~"3.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="POST",code=~"3.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="PUT",code=~"3.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="PATCH",code=~"3.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="DELETE",code=~"3.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="LIST",code=~"4.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="GET",code=~"4.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="POST",code=~"4.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="PUT",code=~"4.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="PATCH",code=~"4.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="DELETE",code=~"4.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="LIST",code=~"5.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="GET",code=~"5.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="POST",code=~"5.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="PUT",code=~"5.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="PATCH",code=~"5.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="DELETE",code=~"5.."}[30d]))
-      record: code_verb:apiserver_request_total:increase30d
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="LIST",code=~"2.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="GET",code=~"2.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="POST",code=~"2.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="PUT",code=~"2.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="PATCH",code=~"2.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="DELETE",code=~"2.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="LIST",code=~"3.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="GET",code=~"3.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="POST",code=~"3.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="PUT",code=~"3.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="PATCH",code=~"3.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="DELETE",code=~"3.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="LIST",code=~"4.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="GET",code=~"4.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="POST",code=~"4.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="PUT",code=~"4.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="PATCH",code=~"4.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="DELETE",code=~"4.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="LIST",code=~"5.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="GET",code=~"5.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="POST",code=~"5.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="PUT",code=~"5.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="PATCH",code=~"5.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (code, verb) (increase(apiserver_request_total{job="apiserver",verb="DELETE",code=~"5.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
     - expr: sum by (code) (code_verb:apiserver_request_total:increase30d{verb=~"LIST|GET"})
       labels:
         verb: read
@@ -54541,10 +56937,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54616,10 +57014,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54950,11 +57350,6 @@ spec:
         quantile: '0.99'
         verb: write
       record: cluster_quantile:apiserver_request_duration_seconds:histogram_quantile
-    - expr: |-
-        sum(rate(apiserver_request_duration_seconds_sum{subresource!="log",verb!~"LIST|WATCH|WATCHLIST|DELETECOLLECTION|PROXY|CONNECT"}[5m])) without(instance, pod)
-        /
-        sum(rate(apiserver_request_duration_seconds_count{subresource!="log",verb!~"LIST|WATCH|WATCHLIST|DELETECOLLECTION|PROXY|CONNECT"}[5m])) without(instance, pod)
-      record: cluster:apiserver_request_duration_seconds:mean5m
     - expr: histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{job="apiserver",subresource!="log",verb!~"LIST|WATCH|WATCHLIST|DELETECOLLECTION|PROXY|CONNECT"}[5m]))
         without(instance, pod))
       labels:
@@ -54976,10 +57371,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54999,10 +57396,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55012,18 +57411,18 @@ spec:
   groups:
   - name: kube-prometheus-node-recording.rules
     rules:
-    - expr: sum(rate(node_cpu_seconds_total{mode!="idle",mode!="iowait"}[3m])) BY
-        (instance)
+    - expr: sum(rate(node_cpu_seconds_total{mode!="idle",mode!="iowait",mode!="steal"}[3m]))
+        BY (instance)
       record: instance:node_cpu:rate:sum
     - expr: sum(rate(node_network_receive_bytes_total[3m])) BY (instance)
       record: instance:node_network_receive_bytes:rate:sum
     - expr: sum(rate(node_network_transmit_bytes_total[3m])) BY (instance)
       record: instance:node_network_transmit_bytes:rate:sum
-    - expr: sum(rate(node_cpu_seconds_total{mode!="idle",mode!="iowait"}[5m])) WITHOUT
-        (cpu, mode) / ON(instance) GROUP_LEFT() count(sum(node_cpu_seconds_total)
+    - expr: sum(rate(node_cpu_seconds_total{mode!="idle",mode!="iowait",mode!="steal"}[5m]))
+        WITHOUT (cpu, mode) / ON(instance) GROUP_LEFT() count(sum(node_cpu_seconds_total)
         BY (instance, cpu)) BY (instance)
       record: instance:node_cpu:ratio
-    - expr: sum(rate(node_cpu_seconds_total{mode!="idle",mode!="iowait"}[5m]))
+    - expr: sum(rate(node_cpu_seconds_total{mode!="idle",mode!="iowait",mode!="steal"}[5m]))
       record: cluster:node_cpu:sum_rate5m
     - expr: cluster:node_cpu_seconds_total:rate5m / count(sum(node_cpu_seconds_total)
         BY (instance, cpu))
@@ -55034,10 +57433,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55098,10 +57499,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55147,10 +57550,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55184,10 +57589,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55200,11 +57607,11 @@ spec:
     - alert: KubePodCrashLooping
       annotations:
         description: Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container
-          }}) is restarting {{ printf "%.2f" $value }} times / 5 minutes.
+          }}) is restarting {{ printf "%.2f" $value }} times / 10 minutes.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepodcrashlooping
         summary: Pod is crash looping.
       expr: rate(kube_pod_container_status_restarts_total{job="kube-state-metrics",
-        namespace=~".*"}[5m]) * 60 * 5 > 0
+        namespace=~".*"}[10m]) * 60 * 5 > 0
       for: 15m
       labels:
         severity: warning
@@ -55251,7 +57658,7 @@ spec:
             !=
           kube_deployment_status_replicas_available{job="kube-state-metrics", namespace=~".*"}
         ) and (
-          changes(kube_deployment_status_replicas_updated{job="kube-state-metrics", namespace=~".*"}[5m])
+          changes(kube_deployment_status_replicas_updated{job="kube-state-metrics", namespace=~".*"}[10m])
             ==
           0
         )
@@ -55270,7 +57677,7 @@ spec:
             !=
           kube_statefulset_status_replicas{job="kube-state-metrics", namespace=~".*"}
         ) and (
-          changes(kube_statefulset_status_replicas_updated{job="kube-state-metrics", namespace=~".*"}[5m])
+          changes(kube_statefulset_status_replicas_updated{job="kube-state-metrics", namespace=~".*"}[10m])
             ==
           0
         )
@@ -55418,7 +57825,15 @@ spec:
           !=
         kube_hpa_status_current_replicas{job="kube-state-metrics", namespace=~".*"})
           and
-        changes(kube_hpa_status_current_replicas[15m]) == 0
+        (kube_hpa_status_current_replicas{job="kube-state-metrics", namespace=~".*"}
+          >
+        kube_hpa_spec_min_replicas{job="kube-state-metrics", namespace=~".*"})
+          and
+        (kube_hpa_status_current_replicas{job="kube-state-metrics", namespace=~".*"}
+          <
+        kube_hpa_spec_max_replicas{job="kube-state-metrics", namespace=~".*"})
+          and
+        changes(kube_hpa_status_current_replicas{job="kube-state-metrics", namespace=~".*"}[15m]) == 0
       for: 15m
       labels:
         severity: warning
@@ -55441,10 +57856,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55461,11 +57878,11 @@ spec:
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubecpuovercommit
         summary: Cluster has overcommitted CPU resource requests.
       expr: |-
-        sum(namespace:kube_pod_container_resource_requests_cpu_cores:sum{})
+        sum(namespace_cpu:kube_pod_container_resource_requests:sum{})
           /
-        sum(kube_node_status_allocatable_cpu_cores)
+        sum(kube_node_status_allocatable{resource="cpu"})
           >
-        (count(kube_node_status_allocatable_cpu_cores)-1) / count(kube_node_status_allocatable_cpu_cores)
+        ((count(kube_node_status_allocatable{resource="cpu"}) > 1) - 1) / count(kube_node_status_allocatable{resource="cpu"})
       for: 5m
       labels:
         severity: warning
@@ -55476,13 +57893,13 @@ spec:
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubememoryovercommit
         summary: Cluster has overcommitted memory resource requests.
       expr: |-
-        sum(namespace:kube_pod_container_resource_requests_memory_bytes:sum{})
+        sum(namespace_memory:kube_pod_container_resource_requests:sum{})
           /
-        sum(kube_node_status_allocatable_memory_bytes)
+        sum(kube_node_status_allocatable{resource="memory"})
           >
-        (count(kube_node_status_allocatable_memory_bytes)-1)
+        ((count(kube_node_status_allocatable{resource="memory"}) > 1) - 1)
           /
-        count(kube_node_status_allocatable_memory_bytes)
+        count(kube_node_status_allocatable{resource="memory"})
       for: 5m
       labels:
         severity: warning
@@ -55494,7 +57911,7 @@ spec:
       expr: |-
         sum(kube_resourcequota{job="kube-state-metrics", type="hard", resource="cpu"})
           /
-        sum(kube_node_status_allocatable_cpu_cores)
+        sum(kube_node_status_allocatable{resource="cpu"})
           > 1.5
       for: 5m
       labels:
@@ -55507,7 +57924,7 @@ spec:
       expr: |-
         sum(kube_resourcequota{job="kube-state-metrics", type="hard", resource="memory"})
           /
-        sum(kube_node_status_allocatable_memory_bytes{job="node-exporter"})
+        sum(kube_node_status_allocatable{resource="memory",job="kube-state-metrics"})
           > 1.5
       for: 5m
       labels:
@@ -55575,10 +57992,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55639,10 +58058,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55677,13 +58098,12 @@ spec:
     - alert: AggregatedAPIErrors
       annotations:
         description: An aggregated API {{ $labels.name }}/{{ $labels.namespace }}
-          has reported errors. The number of errors have increased for it in the past
-          five minutes. High values indicate that the availability of the service
-          changes too often.
+          has reported errors. It has appeared unavailable {{ $value | humanize }}
+          times averaged over the past 10m.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-aggregatedapierrors
         summary: An aggregated API has reported errors.
-      expr: sum by(name, namespace)(increase(aggregator_unavailable_apiservice_count[5m]))
-        > 2
+      expr: sum by(name, namespace)(increase(aggregator_unavailable_apiservice_total[10m]))
+        > 4
       labels:
         severity: warning
     - alert: AggregatedAPIDown
@@ -55706,16 +58126,31 @@ spec:
       for: 15m
       labels:
         severity: critical
+    - alert: KubeAPITerminatedRequests
+      annotations:
+        description: The apiserver has terminated {{ $value | humanizePercentage }}
+          of its incoming requests.
+        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapiterminatedrequests
+        summary: The apiserver has terminated {{ $value | humanizePercentage }} of
+          its incoming requests.
+      expr: sum(rate(apiserver_request_terminations_total{job="apiserver"}[10m]))  /
+        (  sum(rate(apiserver_request_total{job="apiserver"}[10m])) + sum(rate(apiserver_request_terminations_total{job="apiserver"}[10m]))
+        ) > 0.20
+      for: 5m
+      labels:
+        severity: warning
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55741,10 +58176,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55788,7 +58225,7 @@ spec:
         )
         /
         max by(node) (
-          kube_node_status_capacity_pods{job="kube-state-metrics"} != 1
+          kube_node_status_capacity{job="kube-state-metrics",resource="pods"} != 1
         ) > 0.95
       for: 15m
       labels:
@@ -55899,10 +58336,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55927,10 +58366,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -55946,7 +58387,7 @@ spec:
           components running.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeversionmismatch
         summary: Different semantic versions of Kubernetes components running.
-      expr: count(count by (gitVersion) (label_replace(kubernetes_build_info{job!~"kube-dns|coredns"},"gitVersion","$1","gitVersion","(v[0-9]*.[0-9]*).*")))
+      expr: count(count by (git_version) (label_replace(kubernetes_build_info{job!~"kube-dns|coredns"},"git_version","$1","git_version","(v[0-9]*.[0-9]*).*")))
         > 1
       for: 15m
       labels:
@@ -55971,10 +58412,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56042,10 +58485,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56069,10 +58514,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56082,8 +58529,6 @@ spec:
   groups:
   - name: node.rules
     rules:
-    - expr: sum(min(kube_pod_info{node!=""}) by (cluster, node))
-      record: ':kube_pod_info_node_count:'
     - expr: |-
         topk by(namespace, pod) (1,
           max by (node, namespace, pod) (
@@ -56094,7 +58539,7 @@ spec:
         count by (cluster, node) (sum by (node, cpu) (
           node_cpu_seconds_total{job="node-exporter"}
         * on (namespace, pod) group_left(node)
-          node_namespace_pod:kube_pod_info:
+          topk by(namespace, pod) (1, node_namespace_pod:kube_pod_info:)
         ))
       record: node:node_num_cpu:sum
     - expr: |-
@@ -56114,10 +58559,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56215,10 +58662,12 @@ kind: PrometheusRule
 metadata:
   labels:
     app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56450,10 +58899,12 @@ kind: ServiceMonitor
 metadata:
   labels:
     app: prometheus-operator-alertmanager
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56477,10 +58928,12 @@ kind: ServiceMonitor
 metadata:
   labels:
     app: prometheus-operator-coredns
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56504,10 +58957,12 @@ kind: ServiceMonitor
 metadata:
   labels:
     app: prometheus-operator-apiserver
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-apiserver
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56536,10 +58991,12 @@ kind: ServiceMonitor
 metadata:
   labels:
     app: prometheus-operator-kube-controller-manager
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56567,10 +59024,12 @@ kind: ServiceMonitor
 metadata:
   labels:
     app: prometheus-operator-kube-etcd
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56594,10 +59053,12 @@ kind: ServiceMonitor
 metadata:
   labels:
     app: prometheus-operator-kube-proxy
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56621,10 +59082,12 @@ kind: ServiceMonitor
 metadata:
   labels:
     app: prometheus-operator-kube-scheduler
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56652,10 +59115,12 @@ kind: ServiceMonitor
 metadata:
   labels:
     app: prometheus-operator-kube-state-metrics
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56676,10 +59141,12 @@ kind: ServiceMonitor
 metadata:
   labels:
     app: prometheus-operator-kubelet
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kubelet
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56728,6 +59195,7 @@ spec:
     - kube-system
   selector:
     matchLabels:
+      app.kubernetes.io/managed-by: prometheus-operator
       k8s-app: kubelet
 ---
 apiVersion: monitoring.coreos.com/v1
@@ -56735,10 +59203,12 @@ kind: ServiceMonitor
 metadata:
   labels:
     app: prometheus-operator-node-exporter
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56758,10 +59228,12 @@ kind: ServiceMonitor
 metadata:
   labels:
     app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56784,10 +59256,12 @@ kind: ServiceMonitor
 metadata:
   labels:
     app: prometheus-operator-operator
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56810,10 +59284,12 @@ kind: ServiceMonitor
 metadata:
   labels:
     app: prometheus-operator-prometheus
+    app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    chart: kube-prometheus-stack-12.2.3
+    app.kubernetes.io/version: 15.4.4
+    chart: kube-prometheus-stack-15.4.4
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
