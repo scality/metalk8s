@@ -244,8 +244,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="fluent-bit-plugin-loki",
-        version="1.6.0-amd64",
-        digest="sha256:cb1cd95d0fcf76b626623684f0c8b204a9f773443650c7b3d243b96c29ff7020",
+        version="2.1.0-amd64",
+        digest="sha256:bedd17176ced6106404606d31f6d6bfa56b10d769074c0b624fb0bc470b081c2",
     ),
 )
 
