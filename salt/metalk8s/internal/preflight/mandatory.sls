@@ -51,11 +51,11 @@ Disable swap device {{ swap_device }}:
 Prevent swap mount from fstab:
   file.comment:
     - name: /etc/fstab
-    - regex: .+\s+.+\s+swap\s+.+
-    - onlyif:
+    - regex: '^[^#].+\s+.+\s+swap\s+.+$'
+    - unless:
       # Add a condition to avoid the state failure
       # in case we don t have swap in /etc/fstab
-      - test -n "$(awk '$3=="swap" {print}' /etc/fstab)"
+      - awk '$3 == "swap" { exit 1 }' /etc/fstab
 
 Check that the crictl socket answer:
   # use test.succeed_without_changes instead of cmd.run for idempotency
