@@ -1,7 +1,7 @@
 # CHANGELOG
 
 ## Release 2.10.0 (in development)
-## Enhancements
+### Enhancements
 
 - Bump Kubernetes version to 1.21.0
   (PR[#3354](https://github.com/scality/metalk8s/pull/3354))
@@ -9,10 +9,18 @@
 - Bump CoreDNS version to 1.8.0
   (PR[#3354](https://github.com/scality/metalk8s/pull/3354))
 
+### Breaking changes
+
+- [#2199](https://github.com/scality/metalk8s/issues/2199) - Prometheus label
+  selector for `ServiceMonitor` and `PrometheusRule` objects has changed from
+  `release: prometheus-operator` + `app: prometheus-operator` to
+  `metalk8s.scality.com/monitor: ''`
+  (PR[#3356](https://github.com/scality/metalk8s/pull/3356))
+
 ## Release 2.9.2 (in development)
 
 ## Release 2.9.1
-## Enhancements
+### Enhancements
 
 - Add an optional order property to manage ordering of navbar entries
   (PR[#3334](https://github.com/scality/metalk8s/pull/3334))
