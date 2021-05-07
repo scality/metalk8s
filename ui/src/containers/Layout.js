@@ -1,5 +1,5 @@
 //@flow
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { ThemeProvider } from 'styled-components';
 import { matchPath, RouteProps, Route, Redirect } from 'react-router';
@@ -15,7 +15,6 @@ import { intl } from '../translations/IntlGlobalProvider';
 import { toggleSideBarAction } from '../ducks/app/layout';
 import { removeNotificationAction } from '../ducks/app/notifications';
 import CreateVolume from './CreateVolume';
-import { fetchClusterVersionAction } from '../ducks/app/nodes';
 import { useTypedSelector } from '../hooks';
 import { Navbar } from '../components/Navbar';
 import { Suspense } from 'react';
@@ -44,10 +43,6 @@ const Layout = () => {
   const toggleSidebar = () => dispatch(toggleSideBarAction());
   const history = useHistory();
   const location = useLocation();
-
-  useEffect(() => {
-    dispatch(fetchClusterVersionAction());
-  }, [dispatch]);
 
   const doesRouteMatch = useCallback(
     (path: RouteProps) => {
@@ -82,7 +77,6 @@ const Layout = () => {
         }),
         'data-cy': 'sidebar_item_dashboard',
       },
-      // TODO: Will move to the global navbar
       {
         label: intl.translate('nodes'),
         icon: <i className="fas fa-server" />,

@@ -68,10 +68,36 @@ export type IPInterfaces = {
   'metalk8s:workload_plane_ip': string,
   ip_interfaces: { [interface: string]: string[] },
 };
+
+/*
+We may get error message instead of IPInterfaces Object
+{
+  "return": [
+    {
+      "bootstrap": {
+        "metalk8s:control_plane_ip": "10.200.6.201",
+        "metalk8s:workload_plane_ip": "10.200.6.201",
+        "ip_interfaces": {
+          "lo": [
+            "127.0.0.1",
+            "::1"
+          ],
+          "eth0": [
+            "10.200.6.201",
+            "fe80::f816:3eff:fec3:b710"
+          ]
+        }
+      },
+      "nodename": "Minion did not return. [No response]\nThe minions may not have all finished running and any remaining minions will return upon completion. To look up the return data for this job later, run the following command:\n\nsalt-run jobs.lookup_jid 20210429184803777520"
+    }
+  ]
+}
+*/
+
 export async function getNodesIPsInterfaces(
   nodeNames: string[],
 ): Promise<{
-  return: [{ [nodeName: string]: boolean | IPInterfaces }],
+  return: [{ [nodeName: string]: boolean | IPInterfaces | string }],
 }> {
   if (!saltApiClient) {
     throw new Error('Salt api client should be defined.');
