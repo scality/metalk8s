@@ -18,12 +18,6 @@
         "severity": "critical"
     },
     {
-        "message": "etcd cluster \"{{ $labels.job }}\": members are down ({{ $value }}).",
-        "name": "etcdMembersDown",
-        "query": "max by(job) (sum by(job) (up{job=~\".*etcd.*\"} == bool 0) or count by(job, endpoint) (sum by(job, endpoint, To) (rate(etcd_network_peer_sent_failures_total{job=~\".*etcd.*\"}[3m])) > 0.01)) > 0",
-        "severity": "critical"
-    },
-    {
         "message": "etcd cluster \"{{ $labels.job }}\": insufficient members ({{ $value }}).",
         "name": "etcdInsufficientMembers",
         "query": "sum by(job) (up{job=~\".*etcd.*\"} == bool 1) < ((count by(job) (up{job=~\".*etcd.*\"}) + 1) / 2)",
@@ -36,9 +30,9 @@
         "severity": "critical"
     },
     {
-        "message": "etcd cluster \"{{ $labels.job }}\": {{ $value }} leader changes within the last 15 minutes. Frequent elections may be a sign of insufficient resources, high network latency, or disruptions by other components and should be investigated.",
+        "message": "etcd cluster \"{{ $labels.job }}\": instance {{ $labels.instance }} has seen {{ $value }} leader changes within the last hour.",
         "name": "etcdHighNumberOfLeaderChanges",
-        "query": "increase((max by(job) (etcd_server_leader_changes_seen_total{job=~\".*etcd.*\"}) or 0 * absent(etcd_server_leader_changes_seen_total{job=~\".*etcd.*\"}))[15m:1m]) >= 3",
+        "query": "rate(etcd_server_leader_changes_seen_total{job=~\".*etcd.*\"}[15m]) > 3",
         "severity": "warning"
     },
     {
@@ -66,7 +60,7 @@
         "severity": "warning"
     },
     {
-        "message": "etcd cluster \"{{ $labels.job }}\": {{ $value }} proposal failures within the last 30 minutes on etcd instance {{ $labels.instance }}.",
+        "message": "etcd cluster \"{{ $labels.job }}\": {{ $value }} proposal failures within the last hour on etcd instance {{ $labels.instance }}.",
         "name": "etcdHighNumberOfFailedProposals",
         "query": "rate(etcd_server_proposals_failed_total{job=~\".*etcd.*\"}[15m]) > 5",
         "severity": "warning"
@@ -152,7 +146,7 @@
     {
         "message": "Pod is crash looping.",
         "name": "KubePodCrashLooping",
-        "query": "rate(kube_pod_container_status_restarts_total{job=\"kube-state-metrics\",namespace=~\".*\"}[5m]) * 60 * 5 > 0",
+        "query": "rate(kube_pod_container_status_restarts_total{job=\"kube-state-metrics\",namespace=~\".*\"}[10m]) * 60 * 5 > 0",
         "severity": "warning"
     },
     {
@@ -170,13 +164,13 @@
     {
         "message": "Deployment has not matched the expected number of replicas.",
         "name": "KubeDeploymentReplicasMismatch",
-        "query": "(kube_deployment_spec_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_deployment_status_replicas_available{job=\"kube-state-metrics\",namespace=~\".*\"}) and (changes(kube_deployment_status_replicas_updated{job=\"kube-state-metrics\",namespace=~\".*\"}[5m]) == 0)",
+        "query": "(kube_deployment_spec_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_deployment_status_replicas_available{job=\"kube-state-metrics\",namespace=~\".*\"}) and (changes(kube_deployment_status_replicas_updated{job=\"kube-state-metrics\",namespace=~\".*\"}[10m]) == 0)",
         "severity": "warning"
     },
     {
         "message": "Deployment has not matched the expected number of replicas.",
         "name": "KubeStatefulSetReplicasMismatch",
-        "query": "(kube_statefulset_status_replicas_ready{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_statefulset_status_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}) and (changes(kube_statefulset_status_replicas_updated{job=\"kube-state-metrics\",namespace=~\".*\"}[5m]) == 0)",
+        "query": "(kube_statefulset_status_replicas_ready{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_statefulset_status_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}) and (changes(kube_statefulset_status_replicas_updated{job=\"kube-state-metrics\",namespace=~\".*\"}[10m]) == 0)",
         "severity": "warning"
     },
     {
@@ -230,7 +224,7 @@
     {
         "message": "HPA has not matched descired number of replicas.",
         "name": "KubeHpaReplicasMismatch",
-        "query": "(kube_hpa_status_desired_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_hpa_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}) and changes(kube_hpa_status_current_replicas[15m]) == 0",
+        "query": "(kube_hpa_status_desired_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_hpa_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}) and (kube_hpa_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} > kube_hpa_spec_min_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}) and (kube_hpa_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} < kube_hpa_spec_max_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}) and changes(kube_hpa_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}[15m]) == 0",
         "severity": "warning"
     },
     {
@@ -242,25 +236,25 @@
     {
         "message": "Cluster has overcommitted CPU resource requests.",
         "name": "KubeCPUOvercommit",
-        "query": "sum(namespace:kube_pod_container_resource_requests_cpu_cores:sum) / sum(kube_node_status_allocatable_cpu_cores) > (count(kube_node_status_allocatable_cpu_cores) - 1) / count(kube_node_status_allocatable_cpu_cores)",
+        "query": "sum(namespace_cpu:kube_pod_container_resource_requests:sum) / sum(kube_node_status_allocatable{resource=\"cpu\"}) > ((count(kube_node_status_allocatable{resource=\"cpu\"}) > 1) - 1) / count(kube_node_status_allocatable{resource=\"cpu\"})",
         "severity": "warning"
     },
     {
         "message": "Cluster has overcommitted memory resource requests.",
         "name": "KubeMemoryOvercommit",
-        "query": "sum(namespace:kube_pod_container_resource_requests_memory_bytes:sum) / sum(kube_node_status_allocatable_memory_bytes) > (count(kube_node_status_allocatable_memory_bytes) - 1) / count(kube_node_status_allocatable_memory_bytes)",
+        "query": "sum(namespace_memory:kube_pod_container_resource_requests:sum) / sum(kube_node_status_allocatable{resource=\"memory\"}) > ((count(kube_node_status_allocatable{resource=\"memory\"}) > 1) - 1) / count(kube_node_status_allocatable{resource=\"memory\"})",
         "severity": "warning"
     },
     {
         "message": "Cluster has overcommitted CPU resource requests.",
         "name": "KubeCPUQuotaOvercommit",
-        "query": "sum(kube_resourcequota{job=\"kube-state-metrics\",resource=\"cpu\",type=\"hard\"}) / sum(kube_node_status_allocatable_cpu_cores) > 1.5",
+        "query": "sum(kube_resourcequota{job=\"kube-state-metrics\",resource=\"cpu\",type=\"hard\"}) / sum(kube_node_status_allocatable{resource=\"cpu\"}) > 1.5",
         "severity": "warning"
     },
     {
         "message": "Cluster has overcommitted memory resource requests.",
         "name": "KubeMemoryQuotaOvercommit",
-        "query": "sum(kube_resourcequota{job=\"kube-state-metrics\",resource=\"memory\",type=\"hard\"}) / sum(kube_node_status_allocatable_memory_bytes{job=\"node-exporter\"}) > 1.5",
+        "query": "sum(kube_resourcequota{job=\"kube-state-metrics\",resource=\"memory\",type=\"hard\"}) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"}) > 1.5",
         "severity": "warning"
     },
     {
@@ -320,7 +314,7 @@
     {
         "message": "An aggregated API has reported errors.",
         "name": "AggregatedAPIErrors",
-        "query": "sum by(name, namespace) (increase(aggregator_unavailable_apiservice_count[5m])) > 2",
+        "query": "sum by(name, namespace) (increase(aggregator_unavailable_apiservice_total[10m])) > 4",
         "severity": "warning"
     },
     {
@@ -334,6 +328,12 @@
         "name": "KubeAPIDown",
         "query": "absent(up{job=\"apiserver\"} == 1)",
         "severity": "critical"
+    },
+    {
+        "message": "The apiserver has terminated {{ $value | humanizePercentage }} of its incoming requests.",
+        "name": "KubeAPITerminatedRequests",
+        "query": "sum(rate(apiserver_request_terminations_total{job=\"apiserver\"}[10m])) / (sum(rate(apiserver_request_total{job=\"apiserver\"}[10m])) + sum(rate(apiserver_request_terminations_total{job=\"apiserver\"}[10m]))) > 0.2",
+        "severity": "warning"
     },
     {
         "message": "Target disappeared from Prometheus target discovery.",
@@ -356,7 +356,7 @@
     {
         "message": "Kubelet is running at capacity.",
         "name": "KubeletTooManyPods",
-        "query": "count by(node) ((kube_pod_status_phase{job=\"kube-state-metrics\",phase=\"Running\"} == 1) * on(instance, pod, namespace, cluster) group_left(node) topk by(instance, pod, namespace, cluster) (1, kube_pod_info{job=\"kube-state-metrics\"})) / max by(node) (kube_node_status_capacity_pods{job=\"kube-state-metrics\"} != 1) > 0.95",
+        "query": "count by(node) ((kube_pod_status_phase{job=\"kube-state-metrics\",phase=\"Running\"} == 1) * on(instance, pod, namespace, cluster) group_left(node) topk by(instance, pod, namespace, cluster) (1, kube_pod_info{job=\"kube-state-metrics\"})) / max by(node) (kube_node_status_capacity{job=\"kube-state-metrics\",resource=\"pods\"} != 1) > 0.95",
         "severity": "warning"
     },
     {
@@ -428,7 +428,7 @@
     {
         "message": "Different semantic versions of Kubernetes components running.",
         "name": "KubeVersionMismatch",
-        "query": "count(count by(gitVersion) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"gitVersion\", \"$1\", \"gitVersion\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
+        "query": "count(count by(git_version) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
         "severity": "warning"
     },
     {

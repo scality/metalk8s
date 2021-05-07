@@ -4,15 +4,14 @@ Configuration hash for pod {{ .Labels.pod }} is ""{{ printf ""%.f"" .Value }}""
 {{ end }}"
 AlertmanagerFailedReload,warning,Reloading Alertmanager's configuration has failed for {{ $labels.namespace }}/{{ $labels.pod}}.
 AlertmanagerMembersInconsistent,critical,Alertmanager has not found all other members of the cluster.
-etcdMembersDown,critical,"etcd cluster ""{{ $labels.job }}"": members are down ({{ $value }})."
 etcdInsufficientMembers,critical,"etcd cluster ""{{ $labels.job }}"": insufficient members ({{ $value }})."
 etcdNoLeader,critical,"etcd cluster ""{{ $labels.job }}"": member {{ $labels.instance }} has no leader."
-etcdHighNumberOfLeaderChanges,warning,"etcd cluster ""{{ $labels.job }}"": {{ $value }} leader changes within the last 15 minutes. Frequent elections may be a sign of insufficient resources, high network latency, or disruptions by other components and should be investigated."
+etcdHighNumberOfLeaderChanges,warning,"etcd cluster ""{{ $labels.job }}"": instance {{ $labels.instance }} has seen {{ $value }} leader changes within the last hour."
 etcdHighNumberOfFailedGRPCRequests,warning,"etcd cluster ""{{ $labels.job }}"": {{ $value }}% of requests for {{ $labels.grpc_method }} failed on etcd instance {{ $labels.instance }}."
 etcdHighNumberOfFailedGRPCRequests,critical,"etcd cluster ""{{ $labels.job }}"": {{ $value }}% of requests for {{ $labels.grpc_method }} failed on etcd instance {{ $labels.instance }}."
 etcdGRPCRequestsSlow,critical,"etcd cluster ""{{ $labels.job }}"": gRPC requests to {{ $labels.grpc_method }} are taking {{ $value }}s on etcd instance {{ $labels.instance }}."
 etcdMemberCommunicationSlow,warning,"etcd cluster ""{{ $labels.job }}"": member communication with {{ $labels.To }} is taking {{ $value }}s on etcd instance {{ $labels.instance }}."
-etcdHighNumberOfFailedProposals,warning,"etcd cluster ""{{ $labels.job }}"": {{ $value }} proposal failures within the last 30 minutes on etcd instance {{ $labels.instance }}."
+etcdHighNumberOfFailedProposals,warning,"etcd cluster ""{{ $labels.job }}"": {{ $value }} proposal failures within the last hour on etcd instance {{ $labels.instance }}."
 etcdHighFsyncDurations,warning,"etcd cluster ""{{ $labels.job }}"": 99th percentile fync durations are {{ $value }}s on etcd instance {{ $labels.instance }}."
 etcdHighCommitDurations,warning,"etcd cluster ""{{ $labels.job }}"": 99th percentile commit durations {{ $value }}s on etcd instance {{ $labels.instance }}."
 etcdHighNumberOfFailedHTTPRequests,warning,{{ $value }}% of requests for {{ $labels.method }} failed on etcd instance {{ $labels.instance }}
@@ -61,6 +60,7 @@ KubeClientCertificateExpiration,critical,Client certificate is about to expire.
 AggregatedAPIErrors,warning,An aggregated API has reported errors.
 AggregatedAPIDown,warning,An aggregated API is down.
 KubeAPIDown,critical,Target disappeared from Prometheus target discovery.
+KubeAPITerminatedRequests,warning,The apiserver has terminated {{ $value | humanizePercentage }} of its incoming requests.
 KubeControllerManagerDown,critical,Target disappeared from Prometheus target discovery.
 KubeNodeNotReady,warning,Node is not ready.
 KubeNodeUnreachable,warning,Node is unreachable.
