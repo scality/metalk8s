@@ -289,6 +289,7 @@ jinja_contexts = {
         "metadata": {
             "mode": "release" if RELEASE_BUILD else "development",
             "git_revision": constants.GIT_REF,
+            "on_readthedocs": ON_RTD,
         },
     },
     "salt_values": {

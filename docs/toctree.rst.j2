@@ -4,7 +4,7 @@
 
    installation/index
    operation/index
-{%- if metadata.mode == "development" %}
+{%- if metadata.mode == "development" or metadata.on_readthedocs %}
    developer/index
 {%- endif %}
    glossary
