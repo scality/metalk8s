@@ -7,6 +7,7 @@ commonLabels:
   #heritage: 'metalk8s'
   app.kubernetes.io/part-of: 'metalk8s'
   app.kubernetes.io/managed-by: 'metalk8s'
+  metalk8s.scality.com/monitor: ''
 
 alertmanager:
   alertmanagerSpec:
@@ -105,6 +106,18 @@ prometheus:
 
     nodeSelector:
       node-role.kubernetes.io/infra: ''
+
+    serviceMonitorSelector:
+      matchLabels:
+        metalk8s.scality.com/monitor: ''
+
+    probeSelector:
+      matchLabels:
+        metalk8s.scality.com/monitor: ''
+
+    ruleSelector:
+      matchLabels:
+        metalk8s.scality.com/monitor: ''
 
     podAntiAffinity: 'soft'
 

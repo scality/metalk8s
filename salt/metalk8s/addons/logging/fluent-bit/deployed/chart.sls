@@ -268,7 +268,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: fluent-bit-2.0.1
     heritage: metalk8s
-    release: prometheus-operator
+    metalk8s.scality.com/monitor: ''
   name: fluent-bit
   namespace: metalk8s-logging
 spec:

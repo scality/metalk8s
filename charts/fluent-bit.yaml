@@ -123,6 +123,6 @@ serviceMonitor:
   enabled: true
   interval: ""
   additionalLabels:
-    release: prometheus-operator
+    metalk8s.scality.com/monitor: ''
   annotations: {}
   # scrapeTimeout: 10s

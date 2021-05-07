@@ -18495,6 +18495,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-alertmanager
   namespace: metalk8s-monitoring
@@ -18536,6 +18537,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-operator
   namespace: metalk8s-monitoring
@@ -18577,6 +18579,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-prometheus
   namespace: metalk8s-monitoring
@@ -18662,6 +18665,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-alertmanager
   namespace: metalk8s-monitoring
@@ -18677,6 +18681,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-operator
   namespace: metalk8s-monitoring
@@ -18692,6 +18697,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-prometheus
   namespace: metalk8s-monitoring
@@ -18804,6 +18810,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_datasource: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-grafana-datasource
   namespace: metalk8s-monitoring
@@ -20440,6 +20447,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-apiserver
   namespace: metalk8s-monitoring
@@ -22195,6 +22203,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-cluster-total
   namespace: metalk8s-monitoring
@@ -23268,6 +23277,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-controller-manager
   namespace: metalk8s-monitoring
@@ -24379,6 +24389,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-etcd
   namespace: metalk8s-monitoring
@@ -25909,6 +25920,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-k8s-coredns
   namespace: metalk8s-monitoring
@@ -28340,6 +28352,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-k8s-resources-cluster
   namespace: metalk8s-monitoring
@@ -30495,6 +30508,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-k8s-resources-namespace
   namespace: metalk8s-monitoring
@@ -31407,6 +31421,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-k8s-resources-node
   namespace: metalk8s-monitoring
@@ -33079,6 +33094,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-k8s-resources-pod
   namespace: metalk8s-monitoring
@@ -34988,6 +35004,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-k8s-resources-workload
   namespace: metalk8s-monitoring
@@ -37052,6 +37069,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-k8s-resources-workloads-namespace
   namespace: metalk8s-monitoring
@@ -39431,6 +39449,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kubelet
   namespace: metalk8s-monitoring
@@ -40794,6 +40813,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-namespace-by-pod
   namespace: metalk8s-monitoring
@@ -42409,6 +42429,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-namespace-by-workload
   namespace: metalk8s-monitoring
@@ -43321,6 +43342,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-node-cluster-rsrc-use
   namespace: metalk8s-monitoring
@@ -44258,6 +44280,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-node-rsrc-use
   namespace: metalk8s-monitoring
@@ -45196,6 +45219,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-nodes
   namespace: metalk8s-monitoring
@@ -45736,6 +45760,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-persistentvolumesusage
   namespace: metalk8s-monitoring
@@ -46878,6 +46903,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-pod-total
   namespace: metalk8s-monitoring
@@ -48030,6 +48056,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-prometheus
   namespace: metalk8s-monitoring
@@ -49176,6 +49203,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-proxy
   namespace: metalk8s-monitoring
@@ -50179,6 +50207,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-scheduler
   namespace: metalk8s-monitoring
@@ -51067,6 +51096,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-statefulset
   namespace: metalk8s-monitoring
@@ -52403,6 +52433,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     grafana_dashboard: '1'
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-workload-total
   namespace: metalk8s-monitoring
@@ -52694,6 +52725,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-operator
   namespace: metalk8s-monitoring
@@ -52779,6 +52811,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-operator-psp
   namespace: metalk8s-monitoring
@@ -52802,6 +52835,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-prometheus
   namespace: metalk8s-monitoring
@@ -52842,6 +52876,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-prometheus-psp
   namespace: metalk8s-monitoring
@@ -52952,6 +52987,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-operator
   namespace: metalk8s-monitoring
@@ -52974,6 +53010,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-operator-psp
   namespace: metalk8s-monitoring
@@ -52996,6 +53033,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-prometheus
   namespace: metalk8s-monitoring
@@ -53018,6 +53056,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-prometheus-psp
   namespace: metalk8s-monitoring
@@ -53063,6 +53102,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-alertmanager
   namespace: metalk8s-monitoring
@@ -53108,6 +53148,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-alertmanager
   namespace: metalk8s-monitoring
@@ -53206,6 +53247,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
     self-monitor: 'true'
   name: prometheus-operator-alertmanager
@@ -53232,6 +53274,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
     jobLabel: coredns
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-coredns
   namespace: kube-system
@@ -53256,6 +53299,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
     jobLabel: kube-controller-manager
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kube-controller-manager
   namespace: kube-system
@@ -53281,6 +53325,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
     jobLabel: kube-etcd
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kube-etcd
   namespace: kube-system
@@ -53306,6 +53351,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
     jobLabel: kube-proxy
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kube-proxy
   namespace: kube-system
@@ -53331,6 +53377,7 @@ metadata:
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
     jobLabel: kube-scheduler
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kube-scheduler
   namespace: kube-system
@@ -53355,6 +53402,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-operator
   namespace: metalk8s-monitoring
@@ -53378,6 +53426,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
     self-monitor: 'true'
   name: prometheus-operator-prometheus
@@ -53726,6 +53775,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-operator
   namespace: metalk8s-monitoring
@@ -53744,6 +53794,7 @@ spec:
         app.kubernetes.io/part-of: metalk8s
         chart: kube-prometheus-stack-12.2.3
         heritage: metalk8s
+        metalk8s.scality.com/monitor: ''
         release: prometheus-operator
     spec:
       containers:
@@ -53816,6 +53867,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-alertmanager
   namespace: metalk8s-monitoring
@@ -53886,6 +53938,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-prometheus
   namespace: metalk8s-monitoring
@@ -53924,7 +53977,7 @@ spec:
   probeNamespaceSelector: {}
   probeSelector:
     matchLabels:
-      release: prometheus-operator
+      metalk8s.scality.com/monitor: ''
   replicas: {% endraw -%}{{ prometheus.spec.deployment.replicas }}{%- raw %}
   retention: {% endraw -%}{{ prometheus.spec.config.retention_time }}{%- raw %}
   retentionSize: "{% endraw -%}{{ prometheus.spec.config.retention_size | string }}{%- raw %}"
@@ -53932,8 +53985,7 @@ spec:
   ruleNamespaceSelector: {}
   ruleSelector:
     matchLabels:
-      app: prometheus-operator
-      release: prometheus-operator
+      metalk8s.scality.com/monitor: ''
   securityContext:
     fsGroup: 2000
     runAsGroup: 2000
@@ -53943,7 +53995,7 @@ spec:
   serviceMonitorNamespaceSelector: {}
   serviceMonitorSelector:
     matchLabels:
-      release: prometheus-operator
+      metalk8s.scality.com/monitor: ''
   storage:
     volumeClaimTemplate:
       spec:
@@ -53975,6 +54027,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-alertmanager.rules
   namespace: metalk8s-monitoring
@@ -54025,6 +54078,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-etcd
   namespace: metalk8s-monitoring
@@ -54188,6 +54242,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-general.rules
   namespace: metalk8s-monitoring
@@ -54226,6 +54281,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-k8s.rules
   namespace: metalk8s-monitoring
@@ -54340,6 +54396,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kube-apiserver-availability.rules
   namespace: metalk8s-monitoring
@@ -54489,6 +54546,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kube-apiserver-slos
   namespace: metalk8s-monitoring
@@ -54563,6 +54621,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kube-apiserver.rules
   namespace: metalk8s-monitoring
@@ -54922,6 +54981,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kube-prometheus-general.rules
   namespace: metalk8s-monitoring
@@ -54944,6 +55004,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kube-prometheus-node-recording.rules
   namespace: metalk8s-monitoring
@@ -54978,6 +55039,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kube-scheduler.rules
   namespace: metalk8s-monitoring
@@ -55041,6 +55103,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -55089,6 +55152,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kubelet.rules
   namespace: metalk8s-monitoring
@@ -55125,6 +55189,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kubernetes-apps
   namespace: metalk8s-monitoring
@@ -55381,6 +55446,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kubernetes-resources
   namespace: metalk8s-monitoring
@@ -55514,6 +55580,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kubernetes-storage
   namespace: metalk8s-monitoring
@@ -55577,6 +55644,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kubernetes-system-apiserver
   namespace: metalk8s-monitoring
@@ -55649,6 +55717,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kubernetes-system-controller-manager
   namespace: metalk8s-monitoring
@@ -55677,6 +55746,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kubernetes-system-kubelet
   namespace: metalk8s-monitoring
@@ -55834,6 +55904,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kubernetes-system-scheduler
   namespace: metalk8s-monitoring
@@ -55861,6 +55932,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kubernetes-system
   namespace: metalk8s-monitoring
@@ -55904,6 +55976,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-node-exporter.rules
   namespace: metalk8s-monitoring
@@ -55974,6 +56047,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-node-network
   namespace: metalk8s-monitoring
@@ -56000,6 +56074,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-node.rules
   namespace: metalk8s-monitoring
@@ -56044,6 +56119,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-prometheus-operator
   namespace: metalk8s-monitoring
@@ -56144,6 +56220,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-prometheus
   namespace: metalk8s-monitoring
@@ -56378,6 +56455,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-alertmanager
   namespace: metalk8s-monitoring
@@ -56404,6 +56482,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-coredns
   namespace: metalk8s-monitoring
@@ -56430,6 +56509,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-apiserver
   namespace: metalk8s-monitoring
@@ -56461,6 +56541,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kube-controller-manager
   namespace: metalk8s-monitoring
@@ -56491,6 +56572,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kube-etcd
   namespace: metalk8s-monitoring
@@ -56517,6 +56599,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kube-proxy
   namespace: metalk8s-monitoring
@@ -56543,6 +56626,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kube-scheduler
   namespace: metalk8s-monitoring
@@ -56573,6 +56657,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -56596,6 +56681,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-kubelet
   namespace: metalk8s-monitoring
@@ -56654,6 +56740,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-node-exporter
   namespace: metalk8s-monitoring
@@ -56676,6 +56763,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -56701,6 +56789,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-operator
   namespace: metalk8s-monitoring
@@ -56726,6 +56815,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     chart: kube-prometheus-stack-12.2.3
     heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-prometheus
   namespace: metalk8s-monitoring

@@ -22,8 +22,8 @@ metadata:
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
     chart: prometheus-operator-8.1.2
+    metalk8s.scality.com/monitor: ''
     heritage: metalk8s
-    release: prometheus-operator
   name: prometheus-operator-node-exporter
   namespace: metalk8s-monitoring
 spec:
