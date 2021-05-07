@@ -17,7 +17,19 @@
   `metalk8s.scality.com/monitor: ''`
   (PR[#3356](https://github.com/scality/metalk8s/pull/3356))
 
-## Release 2.9.2 (in development)
+## Release 2.9.3 (in development)
+
+## Release 2.9.2
+### Bug fixes
+- Fixed bug in display when adding a new disk with long labels
+  (PR[#3328](https://github.com/scality/metalk8s/issues/3328))
+
+## Enhancements
+- Check on minion ID / Kubernetes node name match constraints
+  (PR[#3258](https://github.com/scality/metalk8s/issues/3258))
+
+- Add custom metalk8s_network.routes execution module
+  (PR[#3352](https://github.com/scality/metalk8s/pull/3352))
 
 ## Release 2.9.1
 ### Enhancements
