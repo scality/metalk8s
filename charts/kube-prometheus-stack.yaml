@@ -146,12 +146,6 @@ grafana:
 
   image:
     repository: '__image__(grafana)'
-    # NOTE: We do not use the image version in the helm chart as currently
-    # helm chart use version 7.2.1 and this version have the following bug
-    # https://github.com/grafana/grafana/issues/28621 which get fixed in
-    # 7.3.1
-    # Set the version to 7.3.5
-    tag: 7.3.5
 
   sidecar:
     image:
