@@ -105,11 +105,6 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest="sha256:78a6e7648e22b2c87fcc06db610d753e49c6f9b3cf622ab23fdc3a63c1563fc8",
     ),
     Image(
-        name="configmap-reload",
-        version="v0.4.0",
-        digest="sha256:17d34fd73f9e8a78ba7da269d96822ce8972391c2838e08d92a990136adb8e4a",
-    ),
-    Image(
         name="coredns",
         version="v1.8.0",
         digest="sha256:cc8fb77bc2a0541949d1d9320a641b82fd392b0d3d8145469ca4709ae769980e",

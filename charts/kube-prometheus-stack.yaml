@@ -82,9 +82,6 @@ prometheusOperator:
   image:
     repository: '__image__(prometheus-operator)'
 
-  configmapReloadImage:
-    repository: '__image__(configmap-reload)'
-
   prometheusConfigReloaderImage:
     repository: '__image__(prometheus-config-reloader)'
 

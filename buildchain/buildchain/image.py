@@ -206,9 +206,6 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     constants.INGRESS_REPOSITORY: [
         "nginx-ingress-controller",
     ],
-    constants.JIMMIDYSON_REPOSITORY: [
-        "configmap-reload",
-    ],
     constants.KIWIGRID_REPOSITORY: [
         "k8s-sidecar",
     ],
