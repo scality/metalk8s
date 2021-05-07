@@ -181,11 +181,11 @@ grafana:
       nginx.ingress.kubernetes.io/rewrite-target: /$2
     path: /grafana(/|$)(.*)
     hosts:
-      - null
+      - 'null'
 
   grafana.ini:
     server:
-      root_url: '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana)'
+      root_url: '__escape__(https://{{ "{{ grains.metalk8s.control_plane_ip }}" }}:8443/grafana)'
     analytics:
       reporting_enabled: false
       check_for_updates: false
@@ -197,11 +197,11 @@ grafana:
       scopes: "openid profile email groups"
       client_id: "grafana-ui"
       client_secret: "4lqK98NcsWG5qBRHJUqYM1"
-      auth_url: '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/auth)'
-      token_url:  '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/token)'
-      api_url: '__escape__(https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/userinfo)'
+      auth_url: '__escape__(https://{{ "{{ grains.metalk8s.control_plane_ip }}" }}:8443/oidc/auth)'
+      token_url:  '__escape__(https://{{ "{{ grains.metalk8s.control_plane_ip }}" }}:8443/oidc/token)'
+      api_url: '__escape__(https://{{ "{{ grains.metalk8s.control_plane_ip }}" }}:8443/oidc/userinfo)'
       role_attribute_path: >-
-        contains(`{% endraw %}{{ dex.spec.config.staticPasswords | map(attribute='email') | list | tojson }}{% raw %}`, email) && 'Admin'
+        contains(`{% endraw %}{{ "{{ dex.spec.config.staticPasswords | map(attribute='email') | list | tojson }}" }}{% raw %}`, email) && 'Admin'
 
   testFramework:
     enabled: false
