@@ -14,7 +14,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-2.10.1
+    chart: prometheus-adapter-2.12.2
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter
@@ -93,10 +93,8 @@ data:
     resourceRules:
       cpu:
         containerLabel: container_name
-        containerQuery: sum(rate(container_cpu_usage_seconds_total{<<.LabelMatchers>>}[3m]))
-          by (<<.GroupBy>>)
-        nodeQuery: sum(rate(container_cpu_usage_seconds_total{<<.LabelMatchers>>, id='/'}[3m]))
-          by (<<.GroupBy>>)
+        containerQuery: sum(rate(container_cpu_usage_seconds_total{<<.LabelMatchers>>}[3m])) by (<<.GroupBy>>)
+        nodeQuery: sum(rate(container_cpu_usage_seconds_total{<<.LabelMatchers>>, id='/'}[3m])) by (<<.GroupBy>>)
         resources:
           overrides:
             namespace:
@@ -108,8 +106,7 @@ data:
       memory:
         containerLabel: container_name
         containerQuery: sum(container_memory_working_set_bytes{<<.LabelMatchers>>}) by (<<.GroupBy>>)
-        nodeQuery: sum(container_memory_working_set_bytes{<<.LabelMatchers>>,id='/'}) by
-          (<<.GroupBy>>)
+        nodeQuery: sum(container_memory_working_set_bytes{<<.LabelMatchers>>,id='/'}) by (<<.GroupBy>>)
         resources:
           overrides:
             namespace:
@@ -126,7 +123,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-2.10.1
+    chart: prometheus-adapter-2.12.2
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter
@@ -140,7 +137,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-2.10.1
+    chart: prometheus-adapter-2.12.2
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter-resource-reader
@@ -166,7 +163,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-2.10.1
+    chart: prometheus-adapter-2.12.2
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter-server-resources
@@ -187,7 +184,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-2.10.1
+    chart: prometheus-adapter-2.12.2
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter-metrics
@@ -212,7 +209,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-2.10.1
+    chart: prometheus-adapter-2.12.2
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter-system-auth-delegator
@@ -234,7 +231,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-2.10.1
+    chart: prometheus-adapter-2.12.2
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter-resource-reader
@@ -256,7 +253,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-2.10.1
+    chart: prometheus-adapter-2.12.2
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter-hpa-controller
@@ -278,7 +275,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-2.10.1
+    chart: prometheus-adapter-2.12.2
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter-hpa-controller-metrics
@@ -300,7 +297,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-2.10.1
+    chart: prometheus-adapter-2.12.2
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter-auth-reader
@@ -323,7 +320,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-2.10.1
+    chart: prometheus-adapter-2.12.2
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter
@@ -346,7 +343,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-2.10.1
+    chart: prometheus-adapter-2.12.2
     heritage: metalk8s
     release: prometheus-adapter
   name: prometheus-adapter
@@ -360,13 +357,13 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: ed5cebb9ba2d709cae2d5c161407360d40d4f2aebfc068e246f17331916ae7e0
+        checksum/config: 78db41895b530d031fc6986d06be80739327f0d2777cb46288a7923ea5211e63
       labels:
         app: prometheus-adapter
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-adapter
         app.kubernetes.io/part-of: metalk8s
-        chart: prometheus-adapter-2.10.1
+        chart: prometheus-adapter-2.12.2
         heritage: metalk8s
         release: prometheus-adapter
       name: prometheus-adapter
@@ -383,7 +380,7 @@ spec:
         - --v=4
         - --config=/etc/adapter/config.yaml
         image: '{%- endraw -%}{{ build_image_name("k8s-prometheus-adapter-amd64",
-          False) }}{%- raw -%}:v0.8.2'
+          False) }}{%- raw -%}:v0.8.4'
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -441,7 +438,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-2.10.1
+    chart: prometheus-adapter-2.12.2
     heritage: metalk8s
     release: prometheus-adapter
   name: v1beta1.custom.metrics.k8s.io
@@ -464,7 +461,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-adapter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-adapter-2.10.1
+    chart: prometheus-adapter-2.12.2
     heritage: metalk8s
     release: prometheus-adapter
   name: v1beta1.metrics.k8s.io
