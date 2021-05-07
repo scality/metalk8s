@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchClusterVersionAction } from '../ducks/app/nodes';
 import { intl } from '../translations/IntlGlobalProvider';
 
 const Title = styled.h3`
@@ -18,6 +19,11 @@ const AboutContainer = styled.div`
 
 const About = (props) => {
   const clusterVersion = useSelector((state) => state.app.nodes.clusterVersion);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(fetchClusterVersionAction());
+  }, [dispatch]);
+
   return (
     <AboutContainer>
       <Title>{intl.translate('product_name')}</Title>

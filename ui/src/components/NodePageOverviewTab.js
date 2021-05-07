@@ -293,7 +293,7 @@ const NodePageOverviewTab = (props) => {
           </div>
           <ActiveAlertWrapper>
             <ActiveAlertTitle>
-              {intl.translate('active_alert')}
+              {intl.translate('active_alerts')}
             </ActiveAlertTitle>
             <ActiveAlertsCounter
               criticalCounter={currentNode?.health?.criticalAlertsCounter}

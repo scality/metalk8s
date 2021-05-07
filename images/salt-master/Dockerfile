@@ -4,6 +4,7 @@ MAINTAINER moonshot-platform <moonshot-platform@scality.com>
 
 # Versions to use
 ARG SALT_VERSION
+ENV LC_ALL=en_US.UTF-8
 
 # Install saltstack
 RUN printf "[saltstack-repo]\n\

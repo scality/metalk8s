@@ -1,7 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { Formik, Form, FieldArray, useFormikContext, useField } from 'formik';
+import {
+  Formik,
+  Form,
+  FieldArray,
+  useFormikContext,
+  useField,
+  Field,
+} from 'formik';
 import * as yup from 'yup';
 import styled from 'styled-components';
 import {
@@ -151,9 +158,10 @@ const LabelsKeyValue = styled.div`
 
 const LabelsValue = styled.div`
   width: 200px;
-  padding: ${padding.small} 0;
-  margin-right: ${padding.small};
+  padding-top: ${padding.small};
+  margin-right: 12px;
   color: ${(props) => props.theme.brand.textPrimary};
+  word-wrap: break-word;
 `;
 
 const TitleWrapper = styled.div`
@@ -164,12 +172,16 @@ const TitleWrapper = styled.div`
 const LabelsName = styled(LabelsValue)`
   font-weight: ${fontWeight.bold};
   color: ${(props) => props.theme.brand.textPrimary};
+  word-wrap: break-word;
 `;
 
 const CheckboxContainer = styled.div`
   padding: ${padding.base} 0 0 ${padding.small};
   .text {
     font-size: ${fontSize.base};
+  }
+  .sc-checkbox {
+    display: flex;
   }
 `;
 
@@ -229,9 +241,6 @@ const CreateVolume = (props) => {
     (state) => state.app.volumes.isSCLoading,
   );
 
-  const [labelName, setLabelName] = useState('');
-  const [labelValue, setLabelValue] = useState('');
-
   // Hardcoded
   const types = [
     {
@@ -253,6 +262,8 @@ const CreateVolume = (props) => {
     selectedUnit: sizeUnits[3].value,
     sizeInput: '',
     labels: {},
+    labelName: '',
+    labelValue: '',
     multiVolumeCreation: false,
     // When the multi-volume creation mode is active, the default/min number is 1.
     numberOfVolumes: 1,
@@ -306,6 +317,11 @@ const CreateVolume = (props) => {
   };
 
   const volumeNameRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
+  /* Valid label keys have two segments: an optional prefix and name, separated by a slash (/).
+    https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set  */
+  const labelFullNameRegex = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*\/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$/;
+  const labelNamePrefixRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
+  const labelValueRegex = /^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$/;
   const positiveIntegerRegex = /^[1-9][0-9]*$/;
 
   const validationSchema = yup.object().shape({
@@ -347,6 +363,10 @@ const CreateVolume = (props) => {
       then: yup.string(),
     }),
     labels: yup.object(),
+    labelValue: yup
+      .string()
+      .matches(labelValueRegex, intl.translate('label_value_error'))
+      .max(63, intl.translate('n_character_or_less', { n: 63 })),
     numberOfVolumes: yup
       .number()
       .positive()
@@ -436,12 +456,39 @@ const CreateVolume = (props) => {
                 }
               };
 
+              const validataLabelName = (value) => {
+                if (!value) return false;
+
+                let error;
+                const isLabelNameMatched = labelFullNameRegex.test(value);
+                if (!isLabelNameMatched) {
+                  const hasLabelPrefix = value.includes('/');
+
+                  if (hasLabelPrefix) {
+                    const prefix = value.split('/')[0];
+                    const isLabelPrefixMatched = labelNamePrefixRegex.test(
+                      prefix,
+                    );
+                    error = intl.translate(
+                      isLabelPrefixMatched
+                        ? 'label_name_error'
+                        : 'label_prefix_name_error',
+                    );
+                  } else {
+                    error = intl.translate('label_name_error');
+                  }
+                }
+                return error;
+              };
+
               const addLabel = () => {
                 const labels = values.labels;
-                labels[labelName] = labelValue;
+
+                labels[values.labelName] = values.labelValue;
                 setFieldValue('labels', labels);
-                setLabelName('');
-                setLabelValue('');
+
+                setFieldValue('labelName', '');
+                setFieldValue('labelValue', '');
               };
 
               const removeLabel = (key) => {
@@ -553,28 +600,35 @@ const CreateVolume = (props) => {
                       </InputLabel>
                       <LabelsContainer>
                         <LabelsForm>
-                          <Input
+                          <Field
+                            as={Input}
                             name="labelName"
                             placeholder={intl.translate('enter_label_name')}
-                            value={labelName}
-                            onChange={(e) => {
-                              setLabelName(e.target.value);
-                            }}
+                            value={values.labelName}
+                            error={touched.labelName && errors.labelName}
+                            onBlur={handleOnBlur}
+                            onChange={handleChange('labelName')}
+                            validate={validataLabelName}
                           />
                           <Input
                             name="labelValue"
                             placeholder={intl.translate('enter_label_value')}
-                            value={labelValue}
-                            onChange={(e) => {
-                              setLabelValue(e.target.value);
-                            }}
+                            value={values.labelValue}
+                            error={touched.labelValue && errors.labelValue}
+                            onBlur={handleOnBlur}
+                            onChange={handleChange('labelValue')}
                           />
                           <Button
                             text={intl.translate('add')}
                             type="button"
                             onClick={addLabel}
                             data-cy="add-volume-labels-button"
-                            outlined
+                            variant={'buttonSecondary'}
+                            disabled={
+                              errors.labelValue ||
+                              errors.labelName ||
+                              !values.labelName // disable the Add button if no label key specified
+                            }
                           />
                         </LabelsForm>
                         {!!Object.keys(values.labels).length && (
@@ -785,8 +839,8 @@ const CreateVolume = (props) => {
                     <Button
                       text={intl.translate('create')}
                       type="submit"
-                      variant={'buttonSecondary'}
-                      disabled={!dirty || !isEmpty(errors)}
+                      variant={'buttonPrimary'}
+                      disabled={!dirty || !isEmpty(errors) || values.labelName}
                       data-cy="submit-create-volume"
                     />
                   </ActionContainer>

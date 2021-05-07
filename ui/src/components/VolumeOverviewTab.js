@@ -184,9 +184,9 @@ const VolumeDetailCard = (props) => {
       hightvolumeName = volumeListData[0]?.name;
     }
     if (isAddNodefilter && hightvolumeName) {
-      history.push(`/volumes/${hightvolumeName}?node=${nodeName}`);
+      history.push(`/volumes/${hightvolumeName}/overview?node=${nodeName}`);
     } else if (!isAddNodefilter && hightvolumeName) {
-      history.push(`/volumes/${hightvolumeName}`);
+      history.push(`/volumes/${hightvolumeName}/overview`);
     } else if (isAddNodefilter && !hightvolumeName) {
       history.push(`/volumes/?node=${nodeName}`);
     } else {
@@ -332,7 +332,7 @@ const VolumeDetailCard = (props) => {
           {alertlist && (
             <AlertsCounterContainer>
               <VolumeSectionTitle>
-                {intl.translate('active_alert')}
+                {intl.translate('active_alerts')}
               </VolumeSectionTitle>
               <ActiveAlertsCounter
                 criticalCounter={
