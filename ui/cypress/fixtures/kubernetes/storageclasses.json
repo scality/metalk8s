@@ -1,0 +1,34 @@
+{
+  "apiVersion": "storage.k8s.io/v1",
+  "items": [
+      {
+          "metadata": {
+              "creationTimestamp": "2020-09-02T14:49:50.000Z",
+              "labels": {
+                  "app.kubernetes.io/managed-by": "salt",
+                  "app.kubernetes.io/part-of": "metalk8s",
+                  "heritage": "salt",
+                  "metalk8s.scality.com/version": "2.9.1"
+              },
+              "name": "metalk8s",
+              "resourceVersion": "68956515",
+              "uid": "8d3bfe4f-2c5f-46c5-8223-66a774bc9aaf"
+          },
+          "mountOptions": [
+              "rw",
+              "discard"
+          ],
+          "parameters": {
+              "fsType": "ext4",
+              "mkfsOptions": "[\"-m\", \"0\"]"
+          },
+          "provisioner": "kubernetes.io/no-provisioner",
+          "reclaimPolicy": "Retain",
+          "volumeBindingMode": "WaitForFirstConsumer"
+      }
+  ],
+  "kind": "StorageClassList",
+  "metadata": {
+      "resourceVersion": "69885684"
+  }
+}

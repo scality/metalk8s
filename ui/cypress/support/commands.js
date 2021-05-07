@@ -102,6 +102,10 @@ Cypress.Commands.add('setupMocks', (
     fixture: 'kubernetes/persistentvolumeclaims.json',
   });
 
+  cy.route2('GET', 'api/kubernetes/apis/storage.k8s.io/v1/storageclasses', {
+     fixture: 'kubernetes/storageclasses.json',
+  });
+
   // Prometheus
   cy.route2(
     {

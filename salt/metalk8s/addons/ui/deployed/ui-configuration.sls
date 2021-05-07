@@ -89,6 +89,10 @@ Create metalk8s-shell-ui-config ConfigMap:
                     fr: "Documentation"
                     icon: "fas fa-clipboard-list"
                     isExternal: true
+                  "{{ cp_ingress_url }}/about":
+                    en: "About"
+                    fr: "À propos"
+                    icon: "fas fa-question-circle"
 
 {%- else %}
 

@@ -501,6 +501,7 @@ export function* fetchNodesIPsInterface() {
       timeout: delay(5000),
     });
     if (success) {
+      // TODO: We should fetch the IPsInterfaces through k8s API instead of Salt API
       result = yield call(ApiSalt.getNodesIPsInterfaces, nodeNames);
     }
     //TODO: We're missing proper error-handling here.
