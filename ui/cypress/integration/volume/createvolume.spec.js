@@ -17,8 +17,8 @@ beforeEach(() => {
   cy.findByText(/node\*/i)
     .next('.sc-input-wrapper')
     .click();
-  cy.findByText(NODE_NAME).click();
 
+  cy.get('.sc-select__menu').find(`[data-cy=node-${NODE_NAME}]`).click();
   cy.findByText(/storage class\*/i)
     .next('.sc-input-wrapper')
     .click();
