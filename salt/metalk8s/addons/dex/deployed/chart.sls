@@ -140,7 +140,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.27.0
+        image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.28.1
         imagePullPolicy: IfNotPresent
         name: main
         ports:
