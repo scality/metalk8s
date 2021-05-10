@@ -3,7 +3,7 @@ image: '__image__(dex)'
 # NOTE: We do not use the new Helm3 chart for the moment as it's not yet part
 # of stable repo, but since Dex 2.24 is affected by CVE (CVE-2020-15216) use
 # the newest 2.27 image even if we still use the deprecated chart
-imageTag: 'v2.27.0'
+imageTag: 'v2.28.1'
 
 nodeSelector:
   node-role.kubernetes.io/infra: ''
