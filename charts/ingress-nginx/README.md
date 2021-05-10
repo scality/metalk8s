@@ -171,9 +171,13 @@ controller:
     internal:
       enabled: true
       annotations:
-        # Create internal LB
-        cloud.google.com/load-balancer-type: "Internal"
-        # Any other annotation can be declared here.
+        # Create internal LB. More informations: https://cloud.google.com/kubernetes-engine/docs/how-to/internal-load-balancing
+        # For GKE versions 1.17 and later
+        networking.gke.io/load-balancer-type: "Internal"
+        # For earlier versions
+        # cloud.google.com/load-balancer-type: "Internal"
+        
+        # Any other annotation can be declared here. 
 ```
 
 Example for Azure:
@@ -187,7 +191,20 @@ controller:
         # Any other annotation can be declared here.
 ```
 
+Example for Oracle Cloud Infrastructure:
+
+```yaml
+controller:
+  service:
+      annotations:
+        # Create internal LB
+        service.beta.kubernetes.io/oci-load-balancer-internal: "true"
+        # Any other annotation can be declared here.
+```
+
 An use case for this scenario is having a split-view DNS setup where the public zone CNAME records point to the external balancer URL while the private zone CNAME records point to the internal balancer URL. This way, you only need one ingress kubernetes object.
+
+Optionally you can set `controller.service.loadBalancerIP` if you need a static IP for the resulting `LoadBalancer`.
 
 ### Ingress Admission Webhooks
 

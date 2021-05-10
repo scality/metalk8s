@@ -1,15 +1,25 @@
 ## nginx configuration
-## Ref: https://github.com/kubernetes/ingress-nginx/blob/master/controllers/nginx/configuration.md
+## Ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/index.md
 ##
+
+## Overrides for generated resource names
+# See templates/_helpers.tpl
+# nameOverride:
+# fullnameOverride:
+
 controller:
+  name: controller
   image:
     repository: k8s.gcr.io/ingress-nginx/controller
-    tag: "v0.41.2"
-    digest: sha256:1f4f402b9c14f3ae92b11ada1dfe9893a88f0faeb0b2f4b903e2c67a0c3bf0de
+    tag: "v0.46.0"
+    digest: sha256:52f0058bed0a17ab0fb35628ba97e8d52b5d32299fbc03cc0f6c7b9ff036b61a
     pullPolicy: IfNotPresent
     # www-data -> uid 101
     runAsUser: 101
     allowPrivilegeEscalation: true
+
+  # Use an existing PSP instead of creating one
+  existingPsp: ""
 
   # Configures the ports the nginx-controller listens on
   containerPort:
@@ -112,6 +122,10 @@ controller:
     configMapNamespace: ""   # defaults to .Release.Namespace
     ## Annotations to be added to the udp config configmap
     annotations: {}
+
+  # Maxmind license key to download GeoLite2 Databases
+  # https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases
+  maxmindLicenseKey: ""
 
   ## Additional command line arguments to pass to nginx-ingress-controller
   ## E.g. to specify the default SSL certificate you can use
@@ -304,6 +318,11 @@ controller:
     pollingInterval: 30
     cooldownPeriod: 300
     restoreToOriginalReplicaCount: false
+    scaledObject:
+      annotations: {}
+      # Custom annotations for ScaledObject resource
+      #  annotations:
+      # key: value
     triggers: []
  #     - type: prometheus
  #       metadata:
@@ -396,6 +415,8 @@ controller:
       enabled: false
       annotations: {}
 
+      # loadBalancerIP: ""
+
       ## Restrict access For LoadBalancer service. Defaults to 0.0.0.0/0.
       loadBalancerSourceRanges: []
 
@@ -455,6 +476,9 @@ controller:
     namespaceSelector: {}
     objectSelector: {}
 
+    # Use an existing PSP instead of creating one
+    existingPsp: ""
+
     service:
       annotations: {}
       # clusterIP: ""
@@ -468,7 +492,7 @@ controller:
       enabled: true
       image:
         repository: docker.io/jettech/kube-webhook-certgen
-        tag: v1.5.0
+        tag: v1.5.1
         pullPolicy: IfNotPresent
       ## Provide a priority class name to the webhook patching job
       ##
@@ -497,7 +521,7 @@ controller:
 
       # loadBalancerIP: ""
       loadBalancerSourceRanges: []
-      servicePort: 9913
+      servicePort: 10254
       type: ClusterIP
       # externalTrafficPolicy: ""
       # nodePort: ""
@@ -505,6 +529,8 @@ controller:
     serviceMonitor:
       enabled: false
       additionalLabels: {}
+      # The label to use to retrieve the job name from.
+      # jobLabel: "app.kubernetes.io/name"
       namespace: ""
       namespaceSelector: {}
       # Default: scrape .Release.Namespace only
@@ -574,16 +600,13 @@ controller:
 ##
 revisionHistoryLimit: 10
 
-# Maxmind license key to download GeoLite2 Databases
-# https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases
-maxmindLicenseKey: ""
-
 ## Default 404 backend
 ##
 defaultBackend:
   ##
   enabled: false
 
+  name: defaultbackend
   image:
     repository: k8s.gcr.io/defaultbackend-amd64
     tag: "1.5"
@@ -594,11 +617,15 @@ defaultBackend:
     readOnlyRootFilesystem: true
     allowPrivilegeEscalation: false
 
+  # Use an existing PSP instead of creating one
+  existingPsp: ""
+
   extraArgs: {}
 
   serviceAccount:
     create: true
-    name:
+    name: ""
+    automountServiceAccountToken: true
   ## Additional environment variables to set for defaultBackend pods
   extraEnvs: []
 
@@ -662,6 +689,16 @@ defaultBackend:
   #   cpu: 10m
   #   memory: 20Mi
 
+  extraVolumeMounts: []
+  ## Additional volumeMounts to the default backend container.
+  #  - name: copy-portal-skins
+  #   mountPath: /var/lib/lemonldap-ng/portal/skins
+
+  extraVolumes: []
+  ## Additional volumes to the default backend pod.
+  #  - name: copy-portal-skins
+  #    emptyDir: {}
+
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -698,7 +735,8 @@ podSecurityPolicy:
 
 serviceAccount:
   create: true
-  name:
+  name: ""
+  automountServiceAccountToken: true
 
 ## Optional array of imagePullSecrets containing private registry credentials
 ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
@@ -716,3 +754,8 @@ tcp: {}
 ##
 udp: {}
 #  53: "kube-system/kube-dns:53"
+
+# A base64ed Diffie-Hellman parameter
+# This can be generated with: openssl dhparam 4096 2> /dev/null | base64
+# Ref: https://github.com/krmichel/ingress-nginx/blob/master/docs/examples/customization/ssl-dh-param
+dhParam:
