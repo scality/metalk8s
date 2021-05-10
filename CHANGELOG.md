@@ -9,6 +9,11 @@
 - Bump CoreDNS version to 1.8.0
   (PR[#3354](https://github.com/scality/metalk8s/pull/3354))
 
+- [#3279](https://github.com/scality/metalk8s/issues/3279) - Bump
+  loki chart version from 2.1.0 to 2.5.0.
+  loki image has been bump accordingly from 2.0.0 to 2.2.0
+  (PR[#3363](https://github.com/scality/metalk8s/pull/3363))
+
 ### Breaking changes
 
 - [#2199](https://github.com/scality/metalk8s/issues/2199) - Prometheus label
