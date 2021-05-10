@@ -9,7 +9,7 @@ This modules provides several services:
 - building local packages from sources
 - building local repositories from local packages
 
-Note that for now, it only works for CentOS 7 x86_64.
+Note that for now, it only works for CentOS/RedHat 7 and 8 x86_64.
 
 Overview;
 
@@ -91,7 +91,6 @@ def task__build_packages() -> types.TaskDict:
         "task_dep": [
             "_build_redhat_7_packages",
             "_build_redhat_8_packages",
-            "_build_ubuntu_18_04_packages",
         ],
     }
 
@@ -103,7 +102,6 @@ def task__download_packages() -> types.TaskDict:
         "task_dep": [
             "_download_redhat_7_packages",
             "_download_redhat_8_packages",
-            "_download_ubuntu_18_04_packages",
         ],
     }
 
@@ -115,7 +113,6 @@ def task__build_repositories() -> types.TaskDict:
         "task_dep": [
             "_build_redhat_7_repositories",
             "_build_redhat_8_repositories",
-            "_build_ubuntu_18_04_repositories",
         ],
     }
 
@@ -151,27 +148,6 @@ def task__package_mkdir_redhat_8_root() -> types.TaskDict:
     return _package_mkdir_redhat_release_root("8")
 
 
-def task__package_mkdir_deb_root() -> types.TaskDict:
-    """Create the Debian packages root directory."""
-    return targets.Mkdir(
-        directory=constants.PKG_DEB_ROOT,
-        task_dep=["_package_mkdir_root"],
-    ).task
-
-
-def _package_mkdir_deb_release_root(releasever: str) -> types.TaskDict:
-    """Create the Debian packages root directory for a given release."""
-    return targets.Mkdir(
-        directory=constants.PKG_DEB_ROOT / releasever,
-        task_dep=["_package_mkdir_deb_root"],
-    ).task
-
-
-def task__package_mkdir_ubuntu_18_04_root() -> types.TaskDict:
-    """Create the Ubuntu 18.04 packages root directory."""
-    return _package_mkdir_deb_release_root("18.04")
-
-
 def task__package_mkdir_iso_root() -> types.TaskDict:
     """Create the packages root directory on the ISO."""
     return targets.Mkdir(
@@ -205,29 +181,6 @@ def task__package_mkdir_redhat_7_iso_root() -> types.TaskDict:
 def task__package_mkdir_redhat_8_iso_root() -> types.TaskDict:
     """Create the RedHat 8 packages root directory on the ISO."""
     return _package_mkdir_redhat_release_iso_root("8")
-
-
-def task__package_mkdir_deb_iso_root() -> types.TaskDict:
-    """Create the Debian packages root directory on the ISO."""
-    return targets.Mkdir(
-        directory=constants.REPO_DEB_ROOT,
-        task_dep=["_package_mkdir_iso_root"],
-    ).task
-
-
-def _package_mkdir_deb_release_iso_root(releasever: str) -> types.TaskDict:
-    """
-    Create the Debian packages root directory on the ISO for a given release.
-    """
-    return targets.Mkdir(
-        directory=constants.REPO_DEB_ROOT / releasever,
-        task_dep=["_package_mkdir_deb_iso_root"],
-    ).task
-
-
-def task__package_mkdir_ubuntu_18_04_iso_root() -> types.TaskDict:
-    """Create the Ubuntu 18.04 packages root directory on the ISO."""
-    return _package_mkdir_deb_release_iso_root("18.04")
 
 
 def _download_rpm_packages(releasever: str) -> types.TaskDict:
@@ -291,64 +244,6 @@ def task__download_redhat_8_packages() -> types.TaskDict:
     return _download_rpm_packages("8")
 
 
-def _download_deb_packages(releasever: str) -> types.TaskDict:
-    """Download Debian packages locally."""
-    witness = constants.PKG_DEB_ROOT / releasever / ".witness"
-
-    def clean() -> None:
-        """Delete downloaded Debian packages."""
-        for repository in DEB_REPOSITORIES[releasever]:
-            # Repository with an explicit list of packages are created by a
-            # dedicated task that will also handle their cleaning, so we skip
-            # them here.
-            if repository.packages:
-                continue
-            coreutils.rm_rf(repository.pkgdir)
-        utils.unlink_if_exist(witness)
-
-    def mkdirs() -> None:
-        """Create directories for the repositories."""
-        for repository in DEB_REPOSITORIES[releasever]:
-            repository.pkgdir.mkdir(exist_ok=True)
-
-    mounts = [
-        utils.bind_ro_mount(
-            source=constants.SRC_DEB_ROOT / "common" / "download_packages.py",
-            target=Path("/download_packages.py"),
-        ),
-        utils.bind_mount(
-            source=constants.PKG_DEB_ROOT / releasever, target=Path("/repositories")
-        ),
-    ]
-    dl_packages_callable = docker_command.DockerRun(
-        command=["/download_packages.py", *DEB_TO_DOWNLOAD[releasever]],
-        builder=builder.DEB_BUILDER[releasever],
-        mounts=mounts,
-        environment={"SALT_VERSION": versions.SALT_VERSION},
-        run_config=docker_command.default_run_config(constants.DEBIAN_ENTRYPOINT),
-    )
-    _releasever = releasever.replace(".", "_")
-    return {
-        "title": utils.title_with_target1("GET DEB PKGS"),
-        "actions": [mkdirs, dl_packages_callable],
-        "targets": [constants.PKG_DEB_ROOT / releasever / ".witness"],
-        "task_dep": [
-            "_package_mkdir_ubuntu_{0}_root".format(_releasever),
-            "_package_mkdir_ubuntu_{0}_iso_root".format(_releasever),
-            "_build_builder:{}".format(builder.DEB_BUILDER[releasever].name),
-        ],
-        "clean": [clean],
-        "uptodate": [doit.tools.config_changed(_TO_DOWNLOAD_DEB_CONFIG[releasever])],
-        # Prevent Docker from polluting our output.
-        "verbosity": 0,
-    }
-
-
-def task__download_ubuntu_18_04_packages() -> types.TaskDict:
-    """Download Ubuntu 18.04 packages locally."""
-    return _download_deb_packages("18.04")
-
-
 def _build_rpm_packages(releasever: str) -> Iterator[types.TaskDict]:
     """Build RPM packages."""
     for repo_pkgs in RPM_TO_BUILD.values():
@@ -366,18 +261,6 @@ def task__build_redhat_8_packages() -> Iterator[types.TaskDict]:
     return _build_rpm_packages("8")
 
 
-def _build_deb_packages(releasever: str) -> Iterator[types.TaskDict]:
-    """Build DEB packages."""
-    for repo_pkgs in DEB_TO_BUILD.values():
-        for package in repo_pkgs[releasever]:
-            yield from package.execution_plan
-
-
-def task__build_ubuntu_18_04_packages() -> Iterator[types.TaskDict]:
-    """Build Ubuntu 18.04 packages."""
-    return _build_deb_packages("18.04")
-
-
 def _build_redhat_repositories(releasever: str) -> Iterator[types.TaskDict]:
     """Build a RPM repository."""
     for repository in REDHAT_REPOSITORIES[releasever]:
@@ -392,19 +275,6 @@ def task__build_redhat_7_repositories() -> Iterator[types.TaskDict]:
 def task__build_redhat_8_repositories() -> Iterator[types.TaskDict]:
     """Build RedHat 8 repositories."""
     return _build_redhat_repositories("8")
-
-
-def _build_deb_repositories(releasever: str) -> Iterator[types.TaskDict]:
-    """Build a DEB repository."""
-    for repository in DEB_REPOSITORIES[releasever]:
-        if next(repository.pkgdir.glob("*.deb"), False):
-            yield from repository.execution_plan
-
-
-@doit.create_after(executed="_download_ubuntu_18_04_packages")  # type: ignore
-def task__build_ubuntu_18_04_repositories() -> Iterator[types.TaskDict]:
-    """Build Ubuntu 18.04 repositories."""
-    return _build_deb_repositories("18.04")
 
 
 # }}}
@@ -562,114 +432,6 @@ REDHAT_REPOSITORIES: Dict[str, Tuple[targets.RPMRepository, ...]] = {
         _rpm_repository(name="epel", releasever="8"),
         _rpm_repository(name="kubernetes", releasever="8"),
         _rpm_repository(name="saltstack", releasever="8"),
-    ),
-}
-
-# }}}
-# Debian packages and repositories {{{
-
-
-def _deb_package(name: str, releasever: str, sources: Path) -> targets.DEBPackage:
-    try:
-        pkg_info = versions.DEB_PACKAGES_MAP[releasever][name]
-    except KeyError as exc:
-        raise ValueError(
-            'Missing version for package "{}" for release "{}"'.format(name, releasever)
-        ) from exc
-
-    _releasever = releasever.replace(".", "_")
-    return targets.DEBPackage(
-        basename="_build_ubuntu_{0}_packages".format(_releasever),
-        name=name,
-        version=pkg_info.version,
-        build_id=int(pkg_info.release),
-        sources=sources,
-        builder=builder.DEB_BUILDER[releasever],
-        releasever=releasever,
-        task_dep=[
-            "_package_mkdir_ubuntu_{0}_root".format(_releasever),
-            "_build_builder:{}".format(builder.DEB_BUILDER[releasever].name),
-        ],
-    )
-
-
-def _deb_repository(
-    name: str, releasever: str, packages: Optional[Sequence[targets.DEBPackage]] = None
-) -> targets.DEBRepository:
-    """Return a DEB repository object.
-
-    Arguments:
-        name:     repository name
-        packages: list of locally built packages
-    """
-    _releasever = releasever.replace(".", "_")
-    mkdir_task = "_package_mkdir_ubuntu_{0}_iso_root".format(_releasever)
-    download_task = "_download_ubuntu_{0}_packages".format(_releasever)
-    return targets.DEBRepository(
-        basename="_build_ubuntu_{0}_repositories".format(_releasever),
-        name=name,
-        builder=builder.DEB_BUILDER[releasever],
-        releasever=releasever,
-        packages=packages,
-        task_dep=[download_task if packages is None else mkdir_task],
-    )
-
-
-DEB_TO_BUILD: Dict[str, Dict[str, Tuple[targets.DEBPackage, ...]]] = {
-    "scality": {
-        "18.04": (
-            # SOS report custom plugins.
-            _deb_package(
-                name="metalk8s-sosreport",
-                releasever="18.04",
-                sources=constants.ROOT / "packages/common/metalk8s-sosreport",
-            ),
-            _deb_package(
-                name="calico-cni-plugin",
-                releasever="18.04",
-                sources=SCALITY_REDHAT_7_REPOSITORY.get_rpm_path(
-                    _rpm_package_calico("7")
-                ),
-            ),
-        )
-    }
-}
-
-
-_DEB_TO_BUILD_PKG_NAMES: Dict[str, List[str]] = _list_packages_to_build(DEB_TO_BUILD)
-
-
-# Store these versions in a dict to use with doit.tools.config_changed
-_TO_DOWNLOAD_DEB_CONFIG: Dict[
-    str, Dict[str, Optional[str]]
-] = _list_packages_to_download(
-    versions.DEB_PACKAGES,
-    _DEB_TO_BUILD_PKG_NAMES,
-)
-
-DEB_TO_DOWNLOAD: Dict[str, FrozenSet[str]] = {
-    version: frozenset(
-        package.deb_full_name
-        for package in pkgs
-        if package.name not in _DEB_TO_BUILD_PKG_NAMES[version]
-    )
-    for version, pkgs in versions.DEB_PACKAGES.items()
-}
-
-
-DEB_REPOSITORIES: Dict[str, Tuple[targets.DEBRepository, ...]] = {
-    "18.04": (
-        _deb_repository(
-            name="scality",
-            packages=DEB_TO_BUILD["scality"]["18.04"],
-            releasever="18.04",
-        ),
-        _deb_repository(name="bionic", releasever="18.04"),
-        _deb_repository(name="bionic-backports", releasever="18.04"),
-        _deb_repository(name="bionic-security", releasever="18.04"),
-        _deb_repository(name="bionic-updates", releasever="18.04"),
-        _deb_repository(name="kubernetes-xenial", releasever="18.04"),
-        _deb_repository(name="salt_ubuntu1804", releasever="18.04"),
     ),
 }
 

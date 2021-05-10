@@ -15,9 +15,6 @@
     - ignore_epoch: True
     {%- endif %}
     - reload_modules: True
-    {%- if grains['os_family'].lower() == 'debian' %}
-    - refresh: True
-    {%- endif %}
     {%- if package_exclude_list %}
     - setopt:
         - exclude={{ package_exclude_list | join(',') }}

@@ -1,2 +1,0 @@
-src/metalk8s.py /usr/share/sosreport/sos/plugins/
-src/containerd.py /usr/share/sosreport/sos/plugins/
