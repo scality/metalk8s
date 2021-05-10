@@ -2,7 +2,92 @@
 
 This file documents all notable changes to [ingress-nginx](https://github.com/kubernetes/ingress-nginx) Helm Chart. The release numbering uses [semantic versioning](http://semver.org).
 
-### Unreleased
+### 3.30.0
+
+- [#7092](https://github.com/kubernetes/ingress-nginx/pull/7092) Removes the possibility of using localhost in ExternalNames as endpoints
+
+
+### 3.29.0
+
+- [X] [#6945](https://github.com/kubernetes/ingress-nginx/pull/7020) Add option to specify job label for ServiceMonitor
+
+### 3.28.0
+
+- [ ] [#6900](https://github.com/kubernetes/ingress-nginx/pull/6900) Support existing PSPs
+
+### 3.27.0
+
+- Update ingress-nginx v0.45.0
+
+### 3.26.0
+
+- [X] [#6979](https://github.com/kubernetes/ingress-nginx/pull/6979) Changed servicePort value for metrics
+
+### 3.25.0
+
+- [X] [#6957](https://github.com/kubernetes/ingress-nginx/pull/6957) Add ability to specify automountServiceAccountToken
+
+### 3.24.0
+
+- [X] [#6908](https://github.com/kubernetes/ingress-nginx/pull/6908) Add volumes to default-backend deployment
+
+### 3.23.0
+
+- Update ingress-nginx v0.44.0
+
+### 3.22.0
+
+- [X] [#6802](https://github.com/kubernetes/ingress-nginx/pull/6802) Add value for configuring a custom Diffie-Hellman parameters file
+- [X] [#6815](https://github.com/kubernetes/ingress-nginx/pull/6815) Allow use of numeric namespaces in helm chart
+
+### 3.21.0
+
+- [X] [#6783](https://github.com/kubernetes/ingress-nginx/pull/6783) Add custom annotations to ScaledObject
+- [X] [#6761](https://github.com/kubernetes/ingress-nginx/pull/6761) Adding quotes in the serviceAccount name in Helm values
+- [X] [#6767](https://github.com/kubernetes/ingress-nginx/pull/6767) Remove ClusterRole when scope option is enabled
+- [X] [#6785](https://github.com/kubernetes/ingress-nginx/pull/6785) Update kube-webhook-certgen image to v1.5.1
+
+### 3.20.1
+
+- Do not create KEDA in case of DaemonSets.
+- Fix KEDA v2 definition
+
+### 3.20.0
+
+- [X] [#6730](https://github.com/kubernetes/ingress-nginx/pull/6730) Do not create HPA for defaultBackend if not enabled.
+
+### 3.19.0
+
+- Update ingress-nginx v0.43.0
+
+### 3.18.0
+
+- [X] [#6688](https://github.com/kubernetes/ingress-nginx/pull/6688) Allow volume-type emptyDir in controller podsecuritypolicy
+- [X] [#6691](https://github.com/kubernetes/ingress-nginx/pull/6691) Improve parsing of helm parameters
+
+### 3.17.0
+
+- Update ingress-nginx v0.42.0
+
+### 3.16.1
+
+- Fix chart-releaser action
+
+### 3.16.0
+
+- [X] [#6646](https://github.com/kubernetes/ingress-nginx/pull/6646) Added LoadBalancerIP value for internal service
+
+### 3.15.1
+
+- Fix chart-releaser action
+
+### 3.15.0
+
+- [X] [#6586](https://github.com/kubernetes/ingress-nginx/pull/6586) Fix 'maxmindLicenseKey' location in values.yaml
+
+### 3.14.0
+
+- [X] [#6469](https://github.com/kubernetes/ingress-nginx/pull/6469) Allow custom service names for controller and backend
 
 ### 3.13.0
 
