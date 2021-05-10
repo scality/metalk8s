@@ -82,7 +82,7 @@ Create fluent-bit ConfigMap:
                 Remove         logtag
 {%- for index in range(loki.spec.deployment.replicas) %}
             [Output]
-                Name           loki
+                Name           grafana-loki
                 Match          *
                 Url            http://loki-{{ index }}:3100/loki/api/v1/push
                 TenantID       ""
