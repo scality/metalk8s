@@ -10,6 +10,11 @@
   (PR[#3354](https://github.com/scality/metalk8s/pull/3354))
 
 - [#3279](https://github.com/scality/metalk8s/issues/3279) - Bump
+  prometheus-adapter chart version from 2.10.1 to 2.12.2.
+  k8s-prometheus-adapter-amd64 image has been bump accordingly from v0.8.2
+  to v0.8.4 (PR[#3362](https://github.com/scality/metalk8s/pull/3362))
+
+- [#3279](https://github.com/scality/metalk8s/issues/3279) - Bump
   fluent-bit chart version from 2.0.1 to 2.2.0
   fluent-bit-plugin-loki image has been bump accordingly from v1.6.0-amd64
   to v2.1.0-amd64 (PR[#3364](https://github.com/scality/metalk8s/pull/3364))
