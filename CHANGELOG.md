@@ -40,6 +40,11 @@
    - prometheus-operator from v0.43.2 to v0.47.0
   (PR[#3360](https://github.com/scality/metalk8s/pull/3360))
 
+- [#3279](https://github.com/scality/metalk8s/issues/3279) - Bump
+  ingress-nginx chart version from 3.13.0 to 3.30.0
+  nginx-ingress-controller image has been bump accordingly from v0.41.2
+  to v0.46.0 (PR[#3371](https://github.com/scality/metalk8s/pull/3371))
+
 ### Breaking changes
 
 - [#2199](https://github.com/scality/metalk8s/issues/2199) - Prometheus label
