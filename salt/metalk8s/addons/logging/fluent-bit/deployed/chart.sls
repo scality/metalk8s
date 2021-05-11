@@ -14,7 +14,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    chart: fluent-bit-2.0.1
+    chart: fluent-bit-2.2.0
     heritage: metalk8s
     release: fluent-bit
   name: fluent-bit
@@ -51,7 +51,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    chart: fluent-bit-2.0.1
+    chart: fluent-bit-2.2.0
     heritage: metalk8s
     release: fluent-bit
   name: fluent-bit
@@ -65,7 +65,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    chart: fluent-bit-2.0.1
+    chart: fluent-bit-2.2.0
     heritage: metalk8s
     release: fluent-bit
   name: fluent-bit-clusterrole
@@ -89,7 +89,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    chart: fluent-bit-2.0.1
+    chart: fluent-bit-2.2.0
     heritage: metalk8s
     release: fluent-bit
   name: fluent-bit-clusterrolebinding
@@ -111,7 +111,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    chart: fluent-bit-2.0.1
+    chart: fluent-bit-2.2.0
     heritage: metalk8s
     release: fluent-bit
   name: fluent-bit
@@ -134,7 +134,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    chart: fluent-bit-2.0.1
+    chart: fluent-bit-2.2.0
     heritage: metalk8s
     release: fluent-bit
   name: fluent-bit
@@ -155,7 +155,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    chart: fluent-bit-2.0.1
+    chart: fluent-bit-2.2.0
     heritage: metalk8s
     release: fluent-bit
   name: fluent-bit-headless
@@ -180,7 +180,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    chart: fluent-bit-2.0.1
+    chart: fluent-bit-2.2.0
     heritage: metalk8s
     release: fluent-bit
   name: fluent-bit
@@ -193,7 +193,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 3bed338de62965258211f9a86544e9b6437e23d31787a38f9051656e4a6e68c9
+        checksum/config: 7f6f78193f3a6250a31fdc23769553e5afb6a6831286b03f617c2853a535ff75
         prometheus.io/path: /api/v1/metrics/prometheus
         prometheus.io/port: '2020'
         prometheus.io/scrape: 'true'
@@ -203,7 +203,7 @@ spec:
     spec:
       affinity: {}
       containers:
-      - image: {% endraw -%}{{ build_image_name("fluent-bit-plugin-loki", False) }}{%- raw %}:1.6.0-amd64
+      - image: {% endraw -%}{{ build_image_name("fluent-bit-plugin-loki", False) }}{%- raw %}:2.1.0-amd64
         imagePullPolicy: IfNotPresent
         name: fluent-bit-loki
         ports:
@@ -266,7 +266,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    chart: fluent-bit-2.0.1
+    chart: fluent-bit-2.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
   name: fluent-bit
