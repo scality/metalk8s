@@ -14,7 +14,8 @@ gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg\n\
     && yum clean all
 
 RUN kubeadm init phase control-plane all \
-    && kubeadm init phase etcd local
+    && kubeadm init phase etcd local \
+    && kubeadm init phase kubelet-start
 
 CMD echo -e "\e[32m#### Apiserver manifest ####\e[39m" \
     && cat /etc/kubernetes/manifests/kube-apiserver.yaml \
@@ -23,4 +24,6 @@ CMD echo -e "\e[32m#### Apiserver manifest ####\e[39m" \
     && echo -e "\e[32m#### Scheduler manifest ####\e[39m" \
     && cat /etc/kubernetes/manifests/kube-scheduler.yaml \
     && echo -e "\e[32m#### Etcd manifest ####\e[39m" \
-    && cat /etc/kubernetes/manifests/etcd.yaml
+    && cat /etc/kubernetes/manifests/etcd.yaml \
+    && echo -e "\e[32m#### Kubelet config file ####\e[39m" \
+    && cat /var/lib/kubelet/config.yaml
