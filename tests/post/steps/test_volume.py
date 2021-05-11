@@ -141,8 +141,8 @@ def storage_class_exist(name, sc_client):
 
 
 @when(parsers.parse("I create the following Volume:\n{body}"))
-def create_volume(body, volume_client):
-    volume_client.create_from_yaml(body)
+def create_volume(context, body, volume_client):
+    volume_client.create_from_yaml(body.format(**context))
 
 
 @when(parsers.parse("I delete the Volume '{name}'"))
@@ -242,7 +242,9 @@ def check_pv_label(name, key, value, pv_client):
 
 
 @then(parsers.parse("the Volume '{name}' has device name '{value}'"))
-def check_device_name(name, value, volume_client):
+def check_device_name(context, name, value, volume_client):
+    value = value.format(**context)
+
     def _check_device_name():
         volume = volume_client.get(name)
         assert volume is not None, "Volume {} not found".format(name)
