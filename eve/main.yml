@@ -40,13 +40,6 @@ models:
       name: Set premerge artifacts private_url as Property
       property: premerge_artifacts_private_url
       value: "http://artifacts/builds/%(prop:premerge_artifacts_name)s"
-  - ShellCommand: &docker_login
-      name: Login to docker registry
-      command: docker login -u "${HARBOR_LOGIN}" -p "${HARBOR_PASSWORD}" registry.scality.com
-      usePTY: true
-      env:
-        HARBOR_LOGIN: '%(secret:harbor_login)s'
-        HARBOR_PASSWORD: '%(secret:harbor_password)s'
   - ShellCommand: &wait_for_docker
       name: Wait for Docker daemon to be ready
       command: |
@@ -209,6 +202,15 @@ models:
         bash -c '
           . <(curl -s "${BASE_URL}/product.txt") &&
           echo $SHORT_VERSION'
+  - SetPropertyFromCommand: &set_short_commit_hash_prop
+      name: Set git short commit hash as property from built artifacts
+      property: metalk8s_short_commit_hash
+      env:
+        BASE_URL: "%(prop:premerge_artifacts_private_url)s"
+      command: >
+        bash -c '
+        . <(curl -s "${BASE_URL}/product.txt") &&
+        echo "$GIT" | sed -En "s/^.+-g([0-9a-z]+)$/\1/p"'
   - ShellCommand: &copy_artifacts
       name: Put the artifacts to upload in a separate directory
       env: &_env_copy_artifacts
@@ -2700,62 +2702,96 @@ stages:
             - multiple-nodes
 
   publish:
-    worker: *build_worker
+    worker:
+      type: openstack
+      image: CentOS-7-x86_64-GenericCloud-1809.qcow2
+      flavor: m1.medium
+      path: eve/workers/openstack-publish-node
     steps:
       # Dev purposes
       - SetProperty:
           name: Set artifacts name
           property: premerge_artifacts_name
-          value: "github:scality:metalk8s:staging-2.10.0.r210512073629.496fcdd.pre-merge.00034632"
+          value: "github:scality:metalk8s:staging-2.10.0.r210525075026.bb8f434.pre-merge.00034918"
       #! Dev purposes
-
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: publish
       - ShellCommand: *ssh_ip_setup
       - SetProperty: *set_premerge_url
-      - ShellCommand: *retrieve_iso
       - ShellCommand: *retrieve_iso_checksum
+      - ShellCommand: *retrieve_iso
       - ShellCommand: *check_iso_checksum
-      - SetProperty:
-          name: Set archive mounpoint as a property
-          property: archive_mountpoint
-          value: /var/tmp/metalk8s
+      - SetPropertyFromCommand: *set_short_commit_hash_prop
+      - SetPropertyFromCommand: *set_version_prop
+      - ShellCommand: *create_mountpoint
+      - ShellCommand: *mount_iso
       - ShellCommand:
-          name: Mount MetalK8s archive ISO
-          command: |
-            sudo mkdir -p "%(prop:archive_mountpoint)s"
-            sudo mount -o loop metalk8s.iso "%(prop:archive_mountpoint)s"
-      - ShellCommand: *wait_for_docker
-      - ShellCommand: *docker_login
-      - ShellCommand: &push_images_to_registry
           name: Push container images to the registry
           command: |
             bash -c '
-            [[ "$IMAGES" ]] || exit 0
-
             if [ "$IMAGES" = "*" ]; then
                 readarray -t IMAGES_LIST < <(
-                  find "%(prop:archive_mountpoint)s/images/" \
-                    -mindepth 1 -maxdepth 1 -type d -printf "%f\n"
+                  find "$ARCHIVE_MOUNTPOINT/images/" -mindepth 1 -maxdepth 1 \
+                      -type d -printf "%%f\n"
                 )
             else
-                IFS=";" read -ra IMAGES_LIST <<< "$IMAGES"
+                IFS=, read -ra IMAGES_LIST <<< "$IMAGES"
             fi
-
+            EXTRA_TAGS=()
+            if [[ "${REGISTRY_PROD,,}" =~ ^(yes|true|on|1)$ ]]; then
+                REGISTRY_CREDS='"'"'%(secret:harbor_prod_login)s:%(secret:harbor_prod_token)s'"'"'
+                PROJECT="%(secret:harbor_prod_project)s"
+                LATEST_STABLE_RELEASE=$(
+                    git ls-remote --tags --refs "%(prop:git_reference)s" | \
+                    awk -F/ "\$3 ~ /^[0-9]+\.[0-9]+\.[0-9]+$/ { print \$3 }" | sort -V | tail -n 1
+                )
+                [[ "%(prop:metalk8s_version)s" = "$LATEST_STABLE_RELEASE" ]] && EXTRA_TAG=stable
+            else
+                REGISTRY_CREDS='"'"'%(secret:harbor_dev_login)s:%(secret:harbor_dev_token)s'"'"'
+                PROJECT="%(secret:harbor_dev_project)s"
+                LATEST_DEV_BRANCH=$(
+                    git ls-remote --heads "%(prop:git_reference)s" | \
+                    awk -F/ "\$3 == \"development\" { print \$4 }" | sort -V | tail -n 1
+                )
+                [[ "%(prop:branch)s" = "development/$LATEST_DEV_BRANCH" ]] && EXTRA_TAG=latest
+            fi
             for IMAGE in "${IMAGES_LIST[@]}"; do
-                IMG_DIR=%(prop:archive_mountpoint)s/images/$IMAGE
+                IMG_DIR=$ARCHIVE_MOUNTPOINT/images/$IMAGE
                 IMG_VERSION=$(ls -1 "$IMG_DIR")
-
-                echo skopeo copy "dir:/$IMG_DIR/$IMG_VERSION" \
-                  "docker://registry.scality.com/metalk8s/$IMAGE/$IMG_VERSION"
+                [[ ${IMG_VERSION::1} =~ [0-9] ]] && TAG_PREFIX=v || TAG_PREFIX=""
+                IMG_TAG=$TAG_PREFIX$IMG_VERSION
+                echo skopeo copy --dest-creds "$REGISTRY_CREDS" \
+                    "dir:/$IMG_DIR/$IMG_VERSION" \
+                    "docker://$REGISTRY_HOSTNAME/$PROJECT/$IMAGE/$IMG_TAG"
+                if ! [[ "${REGISTRY_PROD,,}" =~ ^(yes|true|on|1)$ ]]; then
+                    echo skopeo copy --src-creds "$REGISTRY_CREDS" --dest-creds "$REGISTRY_CREDS" \
+                        "docker://$REGISTRY_HOSTNAME/$PROJECT/$IMAGE/$IMG_TAG" \
+                        "docker://$REGISTRY_HOSTNAME/$PROJECT/$IMAGE/$IMG_TAG-%(prop:metalk8s_short_commit_hash)s"
+                fi
+                if [[ "${EXTRA_TAG:-}" ]]; then
+                    echo skopeo copy --src-creds "$REGISTRY_CREDS" --dest-creds "$REGISTRY_CREDS" \
+                        "docker://$REGISTRY_HOSTNAME/$PROJECT/$IMAGE/$IMG_TAG" \
+                        "docker://$REGISTRY_HOSTNAME/$PROJECT/$IMAGE/$EXTRA_TAG"
+                fi
             done
             '
           env:
-            IMAGES: shell-ui
+            ARCHIVE_MOUNTPOINT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
+            # images is a comma separated list of images or * for all images.
+            IMAGES: "%(prop:publish_images:-*)s"
+            REGISTRY_HOSTNAME: registry.scality.com
+            REGISTRY_PROD: "%(prop:registry_prod:-false)s"
           haltOnFailure: true
       - ShellCommand:
-          <<: *push_images_to_registry
+          <<: *add_final_status_artifact_success
           env:
-            IMAGES: '*'
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: publish
+      - Upload: *upload_final_status_artifact
       - ShellCommand:
-          name: debug
-          command: sleep 3600
-          alwaysRun: true
+          <<: *wait_debug
+          env:
+            STEP_NAME: publish

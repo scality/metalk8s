@@ -19,6 +19,7 @@ PACKAGES=(
     make
     nodejs
     isomd5sum
+    skopeo
 )
 
 yum install -y "${PACKAGES[@]}"
