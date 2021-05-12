@@ -15,7 +15,7 @@ Feature: Volume management
             apiVersion: storage.metalk8s.scality.com/v1alpha1
             kind: Volume
             metadata:
-              name: test-volume1
+              name: test-volume1-sparse
             spec:
               nodeName: bootstrap
               storageClassName: metalk8s
@@ -25,18 +25,15 @@ Feature: Volume management
                 metadata:
                   labels:
                     random-key: random-value
-        Then the Volume 'test-volume1' is 'Available'
-        And the PersistentVolume 'test-volume1' has size '10Gi'
-        And the PersistentVolume 'test-volume1' has label 'random-key' with value 'random-value'
-        And the Volume 'test-volume1' has device name 'loop\d+'
-        And the backing storage for Volume 'test-volume1' is created
-
-    Scenario: Test volume deletion (sparseLoopDevice)
-        Given a Volume 'test-volume2' exist
-        When I delete the Volume 'test-volume2'
-        Then the Volume 'test-volume2' does not exist
-        And the PersistentVolume 'test-volume2' does not exist
-        And the backing storage for Volume 'test-volume2' is deleted
+        Then the Volume 'test-volume1-sparse' is 'Available'
+        And the PersistentVolume 'test-volume1-sparse' has size '10Gi'
+        And the PersistentVolume 'test-volume1-sparse' has label 'random-key' with value 'random-value'
+        And the Volume 'test-volume1-sparse' has device name 'loop\d+'
+        And the backing storage for Volume 'test-volume1-sparse' is created
+        When I delete the Volume 'test-volume1-sparse'
+        Then the Volume 'test-volume1-sparse' does not exist
+        And the PersistentVolume 'test-volume1-sparse' does not exist
+        And the backing storage for Volume 'test-volume1-sparse' is deleted
 
     Scenario: Test PersistentVolume protection
         Given a Volume 'test-volume3' exist

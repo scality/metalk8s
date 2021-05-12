@@ -45,11 +45,6 @@ def test_volume_creation(host, teardown):
     pass
 
 
-@scenario("../features/volume.feature", "Test volume deletion (sparseLoopDevice)")
-def test_volume_deletion(host, teardown):
-    pass
-
-
 @scenario("../features/volume.feature", "Test PersistentVolume protection")
 def test_pv_protection(host, teardown):
     pass
