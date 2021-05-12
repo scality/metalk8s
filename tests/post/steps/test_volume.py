@@ -194,11 +194,16 @@ def check_volume_status(context, name, status, volume_client):
 
 @then(parsers.parse("the PersistentVolume '{name}' has size '{size}'"))
 def check_pv_size(name, size, pv_client):
+    # Convert size in bytes
+    size_bytes = _quantity_to_bytes(size)
+
     def _check_pv_size():
         pv = pv_client.get(name)
         assert pv is not None, "PersistentVolume {} not found".format(name)
+        # Check size to the nearest 0.1%
         assert (
-            pv.spec.capacity["storage"] == size
+            abs(_quantity_to_bytes(pv.spec.capacity["storage"]) - size_bytes)
+            < 0.1 * size_bytes / 100
         ), "Unexpected PersistentVolume size: expected {}, got {}".format(
             size, pv.spec.capacity["storage"]
         )
