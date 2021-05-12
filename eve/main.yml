@@ -38,6 +38,13 @@ models:
       name: Set premerge artifacts private_url as Property
       property: premerge_artifacts_private_url
       value: "http://artifacts/builds/%(prop:premerge_artifacts_name)s"
+  - ShellCommand: &docker_login
+      name: Login to docker registry
+      command: docker login -u "${HARBOR_LOGIN}" -p "${HARBOR_PASSWORD}" registry.scality.com
+      usePTY: true
+      env:
+        HARBOR_LOGIN: '%(secret:harbor_login)s'
+        HARBOR_PASSWORD: '%(secret:harbor_password)s'
   - ShellCommand: &wait_for_docker
       name: Wait for Docker daemon to be ready
       command: |
@@ -2689,3 +2696,57 @@ stages:
           name: Trigger multiple-nodes step with snapshot enabled
           stage_names:
             - multiple-nodes
+
+  publish:
+    worker: *build_worker
+    steps:
+      - ShellCommand: *ssh_ip_setup
+      - SetProperty: *set_premerge_url
+      - ShellCommand: *retrieve_iso
+      - ShellCommand: *retrieve_iso_checksum
+      - ShellCommand: *check_iso_checksum
+      - SetProperty:
+          name: Set archive mounpoint as a property
+          property: archive_mountpoint
+          value: /var/tmp/metalk8s
+      - ShellCommand:
+          name: Mount MetalK8s archive ISO
+          command: |
+            sudo mkdir -p "%(prop:archive_mountpoint)s"
+            sudo mount -o loop metalk8s.iso "%(prop:archive_mountpoint)s"
+      - ShellCommand: *wait_for_docker
+      - ShellCommand: *docker_login
+      - ShellCommand: &push_images_to_registry
+          name: Push container images to the registry
+          command: |
+            bash -c '
+            [[ "$IMAGES" ]] || exit 0
+
+            if [ "$IMAGES" = "*" ]; then
+                readarray -t IMAGES_LIST < <(
+                  find "%(prop:archive_mountpoint)s/images/" \
+                    -mindepth 1 -maxdepth 1 -type d -printf "%f\n"
+                )
+            else
+                IFS=";" read -ra IMAGES_LIST <<< "$IMAGES"
+            fi
+
+            for IMAGE in "${IMAGES_LIST[@]}"; do
+                IMG_DIR=%(prop:archive_mountpoint)s/images/$IMAGE
+                IMG_VERSION=$(ls -1 "$IMG_DIR")
+
+                echo skopeo copy "dir:/$IMG_DIR/$IMG_VERSION" \
+                  "docker://registry.scality.com/metalk8s/$IMAGE/$IMG_VERSION"
+            done
+            '
+          env:
+            IMAGES: shell-ui
+          haltOnFailure: true
+      - ShellCommand:
+          <<: *push_images_to_registry
+          env:
+            IMAGES: '*'
+      - ShellCommand:
+          name: debug
+          command: sleep 3600
+          alwaysRun: true
