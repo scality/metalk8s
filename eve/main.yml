@@ -3,8 +3,10 @@ version: "0.2"
 
 branches:
   # yamllint disable rule:line-length
-  user/*, feature/*, improvement/*, bugfix/*, w/*, q/*, hotfix/*, dependabot/*, documentation/*, release/*:
+  feature/*, improvement/*, bugfix/*, w/*, q/*, hotfix/*, dependabot/*, documentation/*, release/*:
     stage: pre-merge
+  user/*:
+    stage: test-prop
 
 models:
   # --- Re-usable steps (no parameters) ---
@@ -801,6 +803,23 @@ models:
       alwaysRun: true
 
 stages:
+  test-prop:
+    worker:
+      type: local
+    steps:
+      - SetPropertyFromCommand:
+          name: from_command
+          property: from_command
+          command: echo "default"
+      - SetProperty:
+          name: my_prop
+          property: my_prop
+          value: my_default
+      - ShellCommand:
+          name: debug
+          command: >
+              echo 'my_prop: %(prop:my_prop)s :: from_command: %(prop:from_command)s'
+
   pre-merge:
     worker:
       type: local
