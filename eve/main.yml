@@ -3,8 +3,10 @@ version: "0.2"
 
 branches:
   # yamllint disable rule:line-length
-  user/*, feature/*, improvement/*, bugfix/*, w/*, q/*, hotfix/*, dependabot/*, documentation/*, release/*:
+  user/*, improvement/*, bugfix/*, w/*, q/*, hotfix/*, dependabot/*, documentation/*, release/*:
     stage: pre-merge
+  feature/*:
+    stage: publish
 
 models:
   # --- Re-usable steps (no parameters) ---
@@ -2700,6 +2702,13 @@ stages:
   publish:
     worker: *build_worker
     steps:
+      # Dev purposes
+      - SetProperty:
+          name: Set artifacts name
+          property: premerge_artifacts_name
+          value: "github:scality:metalk8s:staging-2.10.0.r210512073629.496fcdd.pre-merge.00034632"
+      #! Dev purposes
+
       - ShellCommand: *ssh_ip_setup
       - SetProperty: *set_premerge_url
       - ShellCommand: *retrieve_iso
