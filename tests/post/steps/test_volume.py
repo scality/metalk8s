@@ -92,6 +92,13 @@ def test_volume_delete_while_pending(host, teardown):
     pass
 
 
+@scenario(
+    "../features/volume.feature", "Test volume creation (sparseLoopDevice Block mode)"
+)
+def test_volume_creation_loop_block(host, teardown):
+    pass
+
+
 # }}}
 # Given {{{
 
