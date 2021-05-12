@@ -1,3 +1,5 @@
+import json
+import os.path
 import re
 
 import kubernetes as k8s
@@ -41,7 +43,12 @@ def test_deploy_operator(host):
 
 
 @scenario("../features/volume.feature", "Test volume creation (sparseLoopDevice)")
-def test_volume_creation(host, teardown):
+def test_volume_creation_loop(host, teardown):
+    pass
+
+
+@scenario("../features/volume.feature", "Test volume creation (rawBlockDevice)")
+def test_volume_creation_rawblock(host, teardown):
     pass
 
 
@@ -99,8 +106,42 @@ def test_volume_creation_loop_block(host, teardown):
     pass
 
 
+@scenario(
+    "../features/volume.feature", "Test volume creation (rawBlockDevice Block mode)"
+)
+def test_volume_creation_rawblock_block(host, teardown):
+    pass
+
+
 # }}}
 # Given {{{
+
+
+@given("a device exists")
+def device_exists(context, host):
+    context["device_size"] = "20Gi"
+
+    with host.sudo():
+        cmd_ret = host.check_output("salt-call --out json --local temp.file")
+
+    sparse_file = json.loads(cmd_ret)["local"]
+
+    with host.sudo():
+        host.check_output(
+            "salt-call --local file.truncate {} {}".format(
+                sparse_file, _quantity_to_bytes(context["device_size"])
+            )
+        )
+        cmd_ret = host.check_output("losetup -fP --show {}".format(sparse_file))
+
+    context["device_path"] = cmd_ret
+    context["device_name"] = os.path.basename(context["device_path"])
+
+    yield
+
+    with host.sudo():
+        host.check_output("losetup -d '{}'".format(context["device_path"]))
+        host.check_output("rm -f '{}'".format(sparse_file))
 
 
 @given(parsers.parse("a Volume '{name}' exist"))
@@ -377,6 +418,18 @@ def check_storage_is_deleted(context, host, name):
     host.run_test("test ! -f {}".format(path))
     # Check that the loop device is not mounted.
     host.run_test("test ! -b /dev/disk/by-uuid/{}".format(uuid))
+
+
+@then(parsers.parse("the backing storage for Volume '{name}' still exists"))
+def check_storage_still_exists(context, host, name):
+    volume = context.get(name)
+    assert volume is not None, "volume {} not found in context".format(name)
+    assert "rawBlockDevice" in volume["spec"], "unsupported volume type for this step"
+    uuid = volume["metadata"]["uid"]
+    # Check that the device is not mounted
+    host.run_test("test ! -b /dev/disk/by-uuid/{}".format(uuid))
+    # Check that the device still exist
+    host.run_test("test -f /dev/disk/by-uuid/{}".format(uuid))
 
 
 # }}}

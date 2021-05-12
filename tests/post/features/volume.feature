@@ -35,6 +35,31 @@ Feature: Volume management
         And the PersistentVolume 'test-volume1-sparse' does not exist
         And the backing storage for Volume 'test-volume1-sparse' is deleted
 
+    Scenario: Test volume creation (rawBlockDevice)
+        Given the Kubernetes API is available
+        And a device exists
+        When I create the following Volume:
+            apiVersion: storage.metalk8s.scality.com/v1alpha1
+            kind: Volume
+            metadata:
+              name: test-volume1-rawblock
+            spec:
+              nodeName: bootstrap
+              storageClassName: metalk8s
+              rawBlockDevice:
+                devicePath: {device_path}
+              template:
+                metadata:
+                  labels:
+                    random-key: random-value
+        Then the Volume 'test-volume1-rawblock' is 'Available'
+        And the PersistentVolume 'test-volume1-rawblock' has size '{device_size}'
+        And the PersistentVolume 'test-volume1-rawblock' has label 'random-key' with value 'random-value'
+        And the Volume 'test-volume1-rawblock' has device name '{device_name}'
+        When I delete the Volume 'test-volume1-rawblock'
+        Then the Volume 'test-volume1-rawblock' does not exist
+        And the backing storage for Volume 'test-volume1-rawblock' still exists
+
     Scenario: Test PersistentVolume protection
         Given a Volume 'test-volume3' exist
         When I delete the PersistentVolume 'test-volume3'
@@ -170,13 +195,30 @@ Feature: Volume management
             apiVersion: storage.metalk8s.scality.com/v1alpha1
             kind: Volume
             metadata:
-              name: test-volume12
+              name: test-volume12-loop
             spec:
               nodeName: bootstrap
               storageClassName: metalk8s
               mode: Block
               sparseLoopDevice:
                 size: 10Gi
-        Then the Volume 'test-volume12' is 'Available'
-        And the PersistentVolume 'test-volume12' has size '10Gi'
-        And the backing storage for Volume 'test-volume12' is created
+        Then the Volume 'test-volume12-loop' is 'Available'
+        And the PersistentVolume 'test-volume12-loop' has size '10Gi'
+        And the backing storage for Volume 'test-volume12-loop' is created
+
+    Scenario: Test volume creation (rawBlockDevice Block mode)
+        Given the Kubernetes API is available
+        And a device exists
+        When I create the following Volume:
+            apiVersion: storage.metalk8s.scality.com/v1alpha1
+            kind: Volume
+            metadata:
+              name: test-volume12-rawblock
+            spec:
+              nodeName: bootstrap
+              storageClassName: metalk8s
+              mode: Block
+              rawBlockDevice:
+                devicePath: {device_path}
+        Then the Volume 'test-volume12-rawblock' is 'Available'
+        And the PersistentVolume 'test-volume12-rawblock' has size '{device_size}'
