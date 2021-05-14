@@ -6,6 +6,7 @@
   "url_doc": "/docs",
   "url_alertmanager": "/api/alertmanager",
   "url_navbar": "/shell/solution-ui-navbar.1.0.0.js",
+  "ui_base_path":"/",
   "url_alerts": "/shell/alerts.1.0.0.js",
   "alerts_lib_version": "1.0.0",
   "url_navbar_config": "/shell/config.json",

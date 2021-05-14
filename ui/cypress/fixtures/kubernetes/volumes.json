@@ -1256,6 +1256,97 @@
             ],
             "deviceName": "dm-1"
         }
+      },
+      {
+        "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+        "kind": "Volume",
+        "metadata": {
+          "creationTimestamp": "2021-05-14T08:57:16Z",
+          "finalizers": [
+            "storage.metalk8s.scality.com/volume-protection"
+          ],
+          "generation": 2,
+          "managedFields": [
+            {
+              "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+              "fieldsType": "FieldsV1",
+              "fieldsV1": {
+                "f:metadata": {
+                  "f:finalizers": {}
+                },
+                "f:spec": {
+                  "f:mode": {},
+                  "f:template": {
+                    "f:metadata": {
+                      "f:creationTimestamp": {}
+                    },
+                    "f:spec": {}
+                  }
+                },
+                "f:status": {
+                  ".": {},
+                  "f:conditions": {},
+                  "f:job": {}
+                }
+              },
+              "manager": "storage-operator",
+              "operation": "Update",
+              "time": "2021-05-14T08:57:03Z"
+            },
+            {
+              "apiVersion": "storage.metalk8s.scality.com/v1alpha1",
+              "fieldsType": "FieldsV1",
+              "fieldsV1": {
+                "f:spec": {
+                  ".": {},
+                  "f:nodeName": {},
+                  "f:sparseLoopDevice": {
+                    ".": {},
+                    "f:size": {}
+                  },
+                  "f:storageClassName": {},
+                  "f:template": {
+                    ".": {},
+                    "f:metadata": {}
+                  }
+                }
+              },
+              "manager": "Mozilla",
+              "operation": "Update",
+              "time": "2021-05-14T08:57:16Z"
+            }
+          ],
+          "name": "test-volume-sparse",
+          "resourceVersion": "71841509",
+          "uid": "3f28c1c9-156d-45bc-bb38-dbe146f6b53a"
+        },
+        "spec": {
+          "mode": "Filesystem",
+          "nodeName": "bootstrap",
+          "sparseLoopDevice": {
+            "size": "1"
+          },
+          "storageClassName": "metalk8s",
+          "template": {
+            "metadata": {
+              "creationTimestamp": null
+            },
+            "spec": {}
+          }
+        },
+        "status": {
+          "conditions": [
+            {
+              "lastTransitionTime": "2021-05-14T08:57:28Z",
+              "lastUpdateTime": "2021-05-14T08:57:28Z",
+              "message": "Salt job 'PrepareVolume' failed with: Failed to prepare volume test-volume-sparse: error while trying to run `mkfs.ext4 -F -U 3f28c1c9-156d-45bc-bb38-dbe146f6b53a -m 0 /var/lib/metalk8s/storage/sparse/3f28c1c9-156d-45bc-bb38-dbe146f6b53a`: mke2fs 1.42.9 (28-Dec-2013)\nmkfs.ext4: Device size reported to be zero.  Invalid partition specified, or\n\tpartition table wasn't reread after running fdisk, due to\n\ta modified partition being busy and in use.  You may need to reboot\n\tto re-read your partition table..",
+              "reason": "CreationError",
+              "status": "False",
+              "type": "Ready"
+            }
+          ],
+          "job": "PrepareVolume/20210514085716836500"
+        }
       }
     ],
     "kind": "VolumeList",

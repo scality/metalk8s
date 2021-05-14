@@ -1,0 +1,120 @@
+  {
+    "apiVersion":"storage.metalk8s.scality.com/v1alpha1",
+    "kind":"Volume",
+    "metadata":{
+       "creationTimestamp":"2021-05-12T09:22:40Z",
+       "finalizers":[
+          "storage.metalk8s.scality.com/volume-protection"
+       ],
+       "generation":2,
+       "managedFields":[
+          {
+             "apiVersion":"storage.metalk8s.scality.com/v1alpha1",
+             "fieldsType":"FieldsV1",
+             "fieldsV1":{
+                "f:spec":{
+                   ".":{
+                      
+                   },
+                   "f:nodeName":{
+                      
+                   },
+                   "f:rawBlockDevice":{
+                      ".":{
+                         
+                      },
+                      "f:devicePath":{
+                         
+                      }
+                   },
+                   "f:storageClassName":{
+                      
+                   },
+                   "f:template":{
+                      ".":{
+                         
+                      },
+                      "f:metadata":{
+                         
+                      }
+                   }
+                }
+             },
+             "manager":"Mozilla",
+             "operation":"Update",
+             "time":"2021-05-12T09:22:40Z"
+          },
+          {
+             "apiVersion":"storage.metalk8s.scality.com/v1alpha1",
+             "fieldsType":"FieldsV1",
+             "fieldsV1":{
+                "f:metadata":{
+                   "f:finalizers":{
+                      
+                   }
+                },
+                "f:spec":{
+                   "f:mode":{
+                      
+                   },
+                   "f:template":{
+                      "f:metadata":{
+                         "f:creationTimestamp":{
+                            
+                         }
+                      },
+                      "f:spec":{
+                         
+                      }
+                   }
+                },
+                "f:status":{
+                   ".":{
+                      
+                   },
+                   "f:conditions":{
+                      
+                   },
+                   "f:job":{
+                      
+                   }
+                }
+             },
+             "manager":"storage-operator",
+             "operation":"Update",
+             "time":"2021-05-12T09:22:47Z"
+          }
+       ],
+       "name":"d",
+       "resourceVersion":"71330993",
+       "uid":"2ef6fd7c-c9b6-4d98-bfa7-a61245e41d15"
+    },
+    "spec":{
+       "mode":"Filesystem",
+       "nodeName":"master-0",
+       "rawBlockDevice":{
+          "devicePath":"/sddsf"
+       },
+       "storageClassName":"hyperdrive-data",
+       "template":{
+          "metadata":{
+             "creationTimestamp":null
+          },
+          "spec":{
+             
+          }
+       }
+    },
+    "status":{
+       "conditions":[
+          {
+             "lastTransitionTime":"2021-05-12T09:22:47Z",
+             "lastUpdateTime":"2021-05-12T09:22:47Z",
+             "reason":"Pending",
+             "status":"Unknown",
+             "type":"Ready"
+          }
+       ],
+       "job":"PrepareVolume/20210512092247547064"
+    }
+ }

@@ -163,10 +163,8 @@ const VolumeDetailCard = (props) => {
 
   const deleteVolume = (deleteVolumeName) =>
     dispatch(deleteVolumeAction(deleteVolumeName));
-  const [
-    isDeleteConfirmationModalOpen,
-    setisDeleteConfirmationModalOpen,
-  ] = useState(false);
+  const [isDeleteConfirmationModalOpen, setisDeleteConfirmationModalOpen] =
+    useState(false);
 
   // Confirm the deletion
   const onClickDeleteButton = (deleteVolumeName, nodeName) => {
@@ -243,7 +241,9 @@ const VolumeDetailCard = (props) => {
           </InformationSpan>
           <InformationSpan>
             <InformationLabel>{intl.translate('size')}</InformationLabel>
-            <InformationValue>{formatSizeForDisplay(storage)}</InformationValue>
+            <InformationValue data-cy="volume_size_value">
+              {formatSizeForDisplay(storage)}
+            </InformationValue>
           </InformationSpan>
           <InformationSpan>
             <InformationLabel>{intl.translate('status')}</InformationLabel>
