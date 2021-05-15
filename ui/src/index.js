@@ -39,6 +39,8 @@ const RouterWithBaseName = ({ children }) => {
       setHistory(historyWithBasename);
       if (window.Cypress) window.__history__ = historyWithBasename;
       dispatch(setReduxHistory(historyWithBasename));
+    } else {
+      dispatch(setReduxHistory(history));
     }
     if (window.Cypress) window.__history__ = history;
     // eslint-disable-next-line react-hooks/exhaustive-deps
