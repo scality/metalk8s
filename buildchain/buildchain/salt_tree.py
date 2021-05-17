@@ -33,7 +33,7 @@ import importlib
 from pathlib import Path
 import sys
 import textwrap
-from typing import Any, Iterator, Tuple, Union
+from typing import Any, Dict, Iterator, Tuple, Union
 
 from buildchain import config
 from buildchain import constants
@@ -186,6 +186,14 @@ OPERATOR_DEPLOYMENT: Path = OPERATOR_YAML_ROOT / "operator.yaml"
 LOKI_DASHBOARD: Path = constants.ROOT / "charts/loki-dashboard.json"
 LOGS_DASHBOARD: Path = constants.ROOT / "charts/logs-dashboard.json"
 FLUENT_BIT_DASHBOARD: Path = constants.ROOT.joinpath("charts/fluent-bit-dashboard.json")
+NGINX_INGRESS_DASHBOARDS: Dict[str, Path] = {
+    "NginxIngressDashboard": constants.ROOT.joinpath(
+        "charts/ingress-nginx-dashboard.json"
+    ),
+    "NginxIngressPerformanceDashboard": constants.ROOT.joinpath(
+        "charts/ingress-nginx-performance-dashboard.json"
+    ),
+}
 
 SCALITY_LOGO: Path = constants.UI_ASSETS / "login/logo.png"
 SCALITY_FAVICON: Path = constants.UI_ASSETS / "login/favicon.png"
@@ -400,6 +408,20 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/nginx-ingress/deployed/chart.sls"),
     Path("salt/metalk8s/addons/nginx-ingress/deployed/namespace.sls"),
     Path("salt/metalk8s/addons/nginx-ingress/deployed/tls-secret.sls"),
+    targets.TemplateFile(
+        task_name="nginx-ingress dashboard.sls",
+        source=constants.ROOT.joinpath(
+            "salt/metalk8s/addons/nginx-ingress/deployed/dashboard.sls.in"
+        ),
+        destination=constants.ISO_ROOT.joinpath(
+            "salt/metalk8s/addons/nginx-ingress/deployed/dashboard.sls"
+        ),
+        context={
+            key: textwrap.indent(dashboard.read_text(encoding="utf-8"), 12 * " ")
+            for key, dashboard in NGINX_INGRESS_DASHBOARDS.items()
+        },
+        file_dep=list(NGINX_INGRESS_DASHBOARDS.values()),
+    ),
     Path("salt/metalk8s/addons/nginx-ingress-control-plane/certs/init.sls"),
     Path("salt/metalk8s/addons/nginx-ingress-control-plane/certs/server.sls"),
     Path("salt/metalk8s/addons/nginx-ingress-control-plane/deployed/init.sls"),
