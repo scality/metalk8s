@@ -24,6 +24,14 @@ controller:
 
   extraArgs:
     default-ssl-certificate: "metalk8s-ingress/ingress-workload-plane-default-certificate"
+    metrics-per-host: false
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        metalk8s.scality.com/monitor: ''
 
 defaultBackend:
   enabled: true
