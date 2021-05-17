@@ -1,4 +1,4 @@
-#!jinja | metalk8s_kubernetes
+#!metalk8s_kubernetes
 
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

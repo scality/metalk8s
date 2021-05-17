@@ -1,4 +1,4 @@
-#!jinja | metalk8s_kubernetes
+#!metalk8s_kubernetes
 
 apiVersion: v1
 kind: Namespace
