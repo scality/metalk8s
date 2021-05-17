@@ -88,6 +88,9 @@ spec:
   - name: https
     port: 32000
     targetPort: https
+  - name: telemetry
+    port: 37000
+    targetPort: telemetry
   selector:
     app.kubernetes.io/instance: dex
     app.kubernetes.io/name: dex
@@ -146,6 +149,9 @@ spec:
         ports:
         - containerPort: 5556
           name: https
+          protocol: TCP
+        - containerPort: 5558
+          name: telemetry
           protocol: TCP
         resources: null
         volumeMounts:

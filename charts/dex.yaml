@@ -94,3 +94,6 @@ config:
 
   enablePasswordDB: true
   staticPasswords: []
+
+# Expose metrics for Prometheus
+telemetry: true
