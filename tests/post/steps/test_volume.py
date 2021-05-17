@@ -193,9 +193,9 @@ def check_volume_status(context, name, status, volume_client):
 
 
 @then(parsers.parse("the PersistentVolume '{name}' has size '{size}'"))
-def check_pv_size(name, size, pv_client):
+def check_pv_size(context, name, size, pv_client):
     # Convert size in bytes
-    size_bytes = _quantity_to_bytes(size)
+    size_bytes = _quantity_to_bytes(size.format(**context))
 
     def _check_pv_size():
         pv = pv_client.get(name)
