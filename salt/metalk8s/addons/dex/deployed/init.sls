@@ -18,3 +18,4 @@ include:
 - .secret
 - .chart
 - .clusterrolebinding
+- .servicemonitor

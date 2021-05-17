@@ -258,6 +258,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
         renderer=targets.Renderer.SLS,
     ),
     Path("salt/metalk8s/addons/dex/deployed/nginx-ingress-ca-cert-configmap.sls"),
+    Path("salt/metalk8s/addons/dex/deployed/servicemonitor.sls"),
     Path("salt/metalk8s/addons/logging/deployed/init.sls"),
     targets.TemplateFile(
         task_name="logs dashboard.sls",
