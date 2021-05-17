@@ -52,6 +52,11 @@ def test_volume_creation_rawblock(host, teardown):
     pass
 
 
+@scenario("../features/volume.feature", "Test volume creation (lvmLogicalVolume)")
+def test_volume_creation_lvmlv(host, teardown):
+    pass
+
+
 @scenario("../features/volume.feature", "Test PersistentVolume protection")
 def test_pv_protection(host, teardown):
     pass
@@ -113,6 +118,13 @@ def test_volume_creation_rawblock_block(host, teardown):
     pass
 
 
+@scenario(
+    "../features/volume.feature", "Test volume creation (lvmLogicalVolume Block mode)"
+)
+def test_volume_creation_lvmlv_block(host, teardown):
+    pass
+
+
 # }}}
 # Given {{{
 
@@ -142,6 +154,21 @@ def device_exists(context, host):
     with host.sudo():
         host.check_output("losetup -d '{}'".format(context["device_path"]))
         host.check_output("rm -f '{}'".format(sparse_file))
+
+
+@given(parsers.parse("a LVM VG '{name}' exists"))
+def lvm_vg_exists(context, device_exists, host, name):
+    device_path = context["device_path"]
+
+    with host.sudo():
+        host.check_output("pvcreate -y '{}'".format(device_path))
+        host.check_output("vgcreate -y '{}' '{}'".format(name, device_path))
+
+    yield
+
+    with host.sudo():
+        host.check_output("vgremove -y '{}'".format(name))
+        host.check_output("pvremove -y '{}'".format(device_path))
 
 
 @given(parsers.parse("a Volume '{name}' exist"))
@@ -424,12 +451,19 @@ def check_storage_is_deleted(context, host, name):
 def check_storage_still_exists(context, host, name):
     volume = context.get(name)
     assert volume is not None, "volume {} not found in context".format(name)
-    assert "rawBlockDevice" in volume["spec"], "unsupported volume type for this step"
+    assert set(["rawBlockDevice", "lvmLogicalVolume"]) & set(
+        volume["spec"].keys()
+    ), "unsupported volume type for this step"
     uuid = volume["metadata"]["uid"]
     # Check that the device is not mounted
     host.run_test("test ! -b /dev/disk/by-uuid/{}".format(uuid))
     # Check that the device still exist
     host.run_test("test -f /dev/disk/by-uuid/{}".format(uuid))
+
+
+@then(parsers.parse("the device '{name}' exists"))
+def check_device_exists(context, host, name):
+    host.run_test("test -f {}".format(name))
 
 
 # }}}

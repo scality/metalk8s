@@ -60,6 +60,34 @@ Feature: Volume management
         Then the Volume 'test-volume1-rawblock' does not exist
         And the backing storage for Volume 'test-volume1-rawblock' still exists
 
+    Scenario: Test volume creation (lvmLogicalVolume)
+        Given the Kubernetes API is available
+        And a LVM VG 'test-vg-1' exists
+        When I create the following Volume:
+            apiVersion: storage.metalk8s.scality.com/v1alpha1
+            kind: Volume
+            metadata:
+              name: test-volume1-lvmlv
+            spec:
+              nodeName: bootstrap
+              storageClassName: metalk8s
+              lvmLogicalVolume:
+                vgName: test-vg-1
+                size: 10Gi
+              template:
+                metadata:
+                  labels:
+                    random-key: random-value
+        Then the Volume 'test-volume1-lvmlv' is 'Available'
+        And the PersistentVolume 'test-volume1-lvmlv' has size '10Gi'
+        And the PersistentVolume 'test-volume1-lvmlv' has label 'random-key' with value 'random-value'
+        And the device '/dev/test-vg-1/test-volume1-lvmlv' exists
+        And the Volume 'test-volume1-lvmlv' has device name 'dm-\d+'
+        When I delete the Volume 'test-volume1-lvmlv'
+        Then the Volume 'test-volume1-lvmlv' does not exist
+        And the device '/dev/test-vg-1/test-volume1-lvmlv' exists
+        And the backing storage for Volume 'test-volume1-lvmlv' still exists
+
     Scenario: Test PersistentVolume protection
         Given a Volume 'test-volume3' exist
         When I delete the PersistentVolume 'test-volume3'
@@ -222,3 +250,22 @@ Feature: Volume management
                 devicePath: {device_path}
         Then the Volume 'test-volume12-rawblock' is 'Available'
         And the PersistentVolume 'test-volume12-rawblock' has size '{device_size}'
+
+    Scenario: Test volume creation (lvmLogicalVolume Block mode)
+        Given the Kubernetes API is available
+        And a LVM VG 'test-vg-12' exists
+        When I create the following Volume:
+            apiVersion: storage.metalk8s.scality.com/v1alpha1
+            kind: Volume
+            metadata:
+              name: test-volume12-lvmlv
+            spec:
+              nodeName: bootstrap
+              storageClassName: metalk8s
+              mode: Block
+              lvmLogicalVolume:
+                vgName: test-vg-12
+                size: 10Gi
+        Then the Volume 'test-volume12-lvmlv' is 'Available'
+        And the PersistentVolume 'test-volume12-lvmlv' has size '10Gi'
+        And the device '/dev/test-vg-12/test-volume12-lvmlv' exists
