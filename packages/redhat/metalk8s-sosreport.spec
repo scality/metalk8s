@@ -5,7 +5,8 @@ Summary: 	Metalk8s SOS report custom plugins
 
 
 Requires: python >= 2.6, python < 2.8
-Requires: sos >= 3.1
+# Does not work with 4.0.0 and later
+Requires: sos >= 3.1, sos < 4.0
 # NameError on FileNotFoundError in sos 3.5 python2.7
 Conflicts: sos = 3.5
 
