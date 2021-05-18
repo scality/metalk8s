@@ -2047,7 +2047,14 @@ stages:
             <<: *_env_provision_volumes
             PRODUCT_MOUNT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
             PRODUCT_TXT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s/product.txt"
-      - ShellCommand: *wait_pods_stable_ssh
+      - ShellCommand:
+          <<: *wait_pods_stable_ssh
+          env:
+            <<: *_env_wait_pods_stable_ssh
+            # NOTE: We increase stabilization time after upgrade it may take some
+            # time to stabilize (e.g.: Rolling update of some DaemonSet that may take
+            # some times, especially in multi node context)
+            STABILIZATION_TIME: "240"
       # --- Test version N ---
       - ShellCommand: *git_pull_ssh
       - ShellCommand:
