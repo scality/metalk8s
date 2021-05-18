@@ -20828,11 +20828,11 @@ data:
     [auth.generic_oauth]
     api_url = "{% endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/userinfo{%- raw %}"
     auth_url = "{% endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/auth{%- raw %}"
-    client_id = grafana-ui
-    client_secret = 4lqK98NcsWG5qBRHJUqYM1
+    client_id = metalk8s-ui
+    client_secret = ybrMJpVMQxsiZw26MhJzCjA2ut
     enabled = true
     role_attribute_path = contains(`{% endraw %}{{ dex.spec.config.staticPasswords | map(attribute='email') | list | tojson }}{% raw %}`, email) && 'Admin'
-    scopes = openid profile email groups
+    scopes = openid profile email groups offline_access audience:server:client_id:oidc-auth-client
     tls_skip_verify_insecure = true
     token_url = "{% endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/token{%- raw %}"
     [grafana_net]
