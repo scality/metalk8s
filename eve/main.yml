@@ -1992,6 +1992,17 @@ stages:
             <<: *_env_terraform
             TF_VAR_restore_env: "%(prop:product_promoted_version)s-%(prop:os:-centos-7)s-%(prop:environment_type)s-%(prop:environment_name)s"
       # --- Wait for all pods to be running ---
+      - ShellCommand:
+          name: Ensure all Salt minion running
+          command: |
+            ssh -F ssh_config bootstrap <<ENDSSH
+            for _ in \$(seq 10); do
+                sudo crictl exec \$(sudo crictl ps --label="io.kubernetes.container.name=salt-master" -q) salt '*' test.ping && exit 0
+                sleep 5
+            done
+            ENDSSH
+          workdir: *terraform_workdir
+          haltOnFailure: true
       - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand:
           # NOTE: We remove all "NodeAffinity" pods as, when restoring an environment
