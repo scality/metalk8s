@@ -61,17 +61,12 @@ spec:
       secret: lkfa9jaf3kfakqyeoikfjakf93k2l
       trustedPeers:
       - metalk8s-ui
-      - grafana-ui
     - id: metalk8s-ui
       name: MetalK8s UI
       redirectURIs:
       - https://{{ grains.metalk8s.control_plane_ip }}:8443/{{ metalk8s_ui_config.spec.basePath.lstrip('/') }}
-      secret: ybrMJpVMQxsiZw26MhJzCjA2ut
-    - id: grafana-ui
-      name: Grafana UI
-      redirectURIs:
       - https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana/login/generic_oauth
-      secret: 4lqK98NcsWG5qBRHJUqYM1
+      secret: ybrMJpVMQxsiZw26MhJzCjA2ut
 
     enablePasswordDB: true
     staticPasswords: []
