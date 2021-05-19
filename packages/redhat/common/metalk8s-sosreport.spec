@@ -5,7 +5,8 @@ Summary: 	Metalk8s SOS report custom plugins
 
 BuildRequires: /usr/bin/pathfix.py
 
-Requires: sos >= 3.1
+# Does not work with 4.0.0 and later
+Requires: sos >= 3.1, sos < 4.0
 %if 0%{rhel} >= 8
 Requires: python3 >= 3.6
 %else

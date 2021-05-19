@@ -21,6 +21,7 @@ CALICO_VERSION: str = "3.17.0"
 K8S_VERSION: str = "1.19.8"
 SALT_VERSION: str = "3002.6"
 CONTAINERD_VERSION: str = "1.4.3"
+SOS_VERSION: str = "< 4.0"
 
 CALICO_RELEASE: str = "1"
 CONTAINERD_RELEASE: str = "3"
@@ -339,7 +340,8 @@ PACKAGES: Dict[str, Any] = {
         PackageVersion(name="runc"),
         PackageVersion(name="salt-minion", version=SALT_VERSION),
         PackageVersion(name="socat"),
-        PackageVersion(name="sos"),  # TODO download built package dependencies
+        # TODO download built package dependencies
+        PackageVersion(name="sos", version=SOS_VERSION),
         PackageVersion(name="util-linux"),
         PackageVersion(name="xfsprogs"),
     ),

@@ -159,14 +159,20 @@ check_pkg_availability:
   - pkgs_info:
       nonexistent_pkg: {}
     yum_install_retcode: 1
-    raise_msg: "Check availability of package nonexistent_pkg failed: Oh ! No ! An ErRoR"
+    raise_msg: |-
+      Check availability of package nonexistent_pkg failed:
+      Some output
+      Oh ! No ! An ErRoR
 
   # check 1 package not available with version - error when retrieving it
   - pkgs_info:
       nonexistent_pkg:
         version: "3.11.12"
     yum_install_retcode: 1
-    raise_msg: "Check availability of package nonexistent_pkg-3.11.12 failed: Oh ! No ! An ErRoR"
+    raise_msg: |-
+      Check availability of package nonexistent_pkg-3.11.12 failed:
+      Some output
+      Oh ! No ! An ErRoR
 
   # check 3 package (2 available, 1 not available) - error when retrieving it
   - pkgs_info:
@@ -177,4 +183,12 @@ check_pkg_availability:
         version: null
     yum_install_retcode:
       nonexistent_pkg: 1
-    raise_msg: "Check availability of package nonexistent_pkg failed: Oh ! No ! An ErRoR"
+    raise_msg: |-
+      Check availability of package nonexistent_pkg failed:
+      Some output
+      Oh ! No ! An ErRoR
+
+  # check 1 package with a version constraint
+  - pkgs_info:
+      my_package:
+        version: "< 3.11.12"
