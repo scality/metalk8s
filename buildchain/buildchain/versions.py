@@ -22,6 +22,7 @@ K8S_VERSION        : str = '1.18.16'
 SALT_VERSION       : str = '3002.6'
 CONTAINERD_VERSION : str = '1.4.3'
 CONTAINERD_RELEASE : str = '2.el7'
+SOS_VERSION        : str = '< 4.0'
 
 def load_version_information() -> None:
     """Load version information from `VERSION`."""
@@ -331,7 +332,8 @@ PACKAGES: Dict[str, Tuple[PackageVersion, ...]] = {
         PackageVersion(name='runc'),
         PackageVersion(name='salt-minion', version=SALT_VERSION),
         PackageVersion(name='socat'),
-        PackageVersion(name='sos'),  # TODO download built package dependencies
+        # TODO download built package dependencies
+        PackageVersion(name='sos', version=SOS_VERSION),
         PackageVersion(name='util-linux'),
         PackageVersion(name='xfsprogs'),
     ),
