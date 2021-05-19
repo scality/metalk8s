@@ -164,9 +164,13 @@ def check_pkg_availability(pkgs_info, exclude=None):
         List of package to exclude (e.g.: containerd.io)
     """
     for name, info in pkgs_info.items():
-        pkg_name = name
         if info.get("version"):
-            pkg_name += "-" + str(info["version"])
+            pkg_version = str(info["version"])
+            pkg_name = "{}{}{}".format(
+                name, "-" if pkg_version[0].isdigit() else " ", pkg_version
+            )
+        else:
+            pkg_name = name
 
         cmd = [
             "yum",
@@ -186,7 +190,9 @@ def check_pkg_availability(pkgs_info, exclude=None):
 
         if ret["retcode"] != 0:
             raise CommandExecutionError(
-                "Check availability of package {} failed: {}".format(
-                    pkg_name, ret["stdout"]
+                "Check availability of package {} failed:\n{}\n{}".format(
+                    pkg_name,
+                    ret["stdout"],
+                    ret["stderr"],
                 )
             )
