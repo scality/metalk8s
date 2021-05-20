@@ -136,7 +136,8 @@ class Metalk8sPackageManagerYumTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 out_kwargs["retcode"] = yum_install_retcode.get(command[2], 0)
 
             if out_kwargs.get("retcode"):
-                out_kwargs["stdout"] = "Oh ! No ! An ErRoR"
+                out_kwargs["stdout"] = "Some output"
+                out_kwargs["stderr"] = "Oh ! No ! An ErRoR"
 
             return utils.cmd_output(**out_kwargs)
 
