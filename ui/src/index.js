@@ -40,6 +40,7 @@ const RouterWithBaseName = ({ children }) => {
       dispatch(setReduxHistory(historyWithBasename));
     }
     if (window.Cypress) window.__history__ = history;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [basename]);
 
   if (configStatus === 'error') {

@@ -39,12 +39,13 @@ const NodePageContent = (props) => {
 
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
-  const prevNodeTableDate = usePrevious(nodeTableData)
+  const prevNodeTableDate = usePrevious(nodeTableData);
 
   useEffect(() => {
     if (!defaultSelectNodeName && nodeTableData[0]?.name?.name) {
       setDefaultSelectNodeName(nodeTableData[0]?.name?.name);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(nodeTableData), defaultSelectNodeName]);
 
   return (

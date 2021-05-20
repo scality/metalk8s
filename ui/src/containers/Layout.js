@@ -49,6 +49,8 @@ const Layout = () => {
       const location = history.location;
       return matchPath(location.pathname, path);
     },
+    // the history object is mutable
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [location],
   );
 

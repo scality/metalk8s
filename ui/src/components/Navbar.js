@@ -1,7 +1,11 @@
 //@flow
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTypedSelector } from '../hooks';
-import { setThemeAction, updateAPIConfigAction, setLanguageAction } from '../ducks/config';
+import {
+  setThemeAction,
+  updateAPIConfigAction,
+  setLanguageAction,
+} from '../ducks/config';
 import { useDispatch } from 'react-redux';
 import { ErrorBoundary } from 'react-error-boundary';
 import { ErrorPage500 } from '@scality/core-ui';
@@ -29,16 +33,19 @@ function useWebComponent(src?: string, customElementName: string) {
       };
       body.appendChild(scriptElement);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [src]);
 
   if (hasFailed) {
-    throw new Error(`Failed to load component ${ customElementName }`);
+    throw new Error(`Failed to load component ${customElementName}`);
   }
 }
 
 type NavbarWebComponent = HTMLElement & { logOut: () => void };
 
-function useNavbarVersion(navbarRef: { current: NavbarWebComponent | null }): string | null {
+function useNavbarVersion(navbarRef: {
+  current: NavbarWebComponent | null,
+}): string | null {
   const [version, setVersion] = useState(null);
 
   useEffect(() => {
@@ -53,26 +60,23 @@ function useNavbarVersion(navbarRef: { current: NavbarWebComponent | null }): st
       setVersion(evt.detail.version);
     };
 
-    navbarElement.addEventListener(
-      'ready',
-      onReady,
-    );
+    navbarElement.addEventListener('ready', onReady);
 
     return () => {
-      navbarElement.removeEventListener(
-        'ready',
-        onReady,
-      );
+      navbarElement.removeEventListener('ready', onReady);
     };
   }, [navbarRef]);
 
   return version;
 }
 
-function useLoginEffect(navbarRef: { current: NavbarWebComponent | null }, version: string | null) {
+function useLoginEffect(
+  navbarRef: { current: NavbarWebComponent | null },
+  version: string | null,
+) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const dispatch = useDispatch();
-  
+
   useEffect(() => {
     if (!navbarRef.current || !version) {
       return;
@@ -106,7 +110,10 @@ function useLoginEffect(navbarRef: { current: NavbarWebComponent | null }, versi
   return { isAuthenticated };
 }
 
-function useLanguageEffect(navbarRef: { current: NavbarWebComponent | null }, version: string | null) {
+function useLanguageEffect(
+  navbarRef: { current: NavbarWebComponent | null },
+  version: string | null,
+) {
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -139,7 +146,10 @@ function useLanguageEffect(navbarRef: { current: NavbarWebComponent | null }, ve
   }, [navbarRef, version, dispatch]);
 }
 
-function useThemeEffect(navbarRef: { current: NavbarWebComponent | null }, version: string | null) {
+function useThemeEffect(
+  navbarRef: { current: NavbarWebComponent | null },
+  version: string | null,
+) {
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -175,12 +185,18 @@ function useThemeEffect(navbarRef: { current: NavbarWebComponent | null }, versi
 function ErrorFallback() {
   const { language, api } = useTypedSelector((state) => state.config);
   const url_support = api?.url_support;
-  return <ErrorPage500 data-cy='sc-error-page500' locale={ language } supportLink={ url_support }/>;
+  return (
+    <ErrorPage500
+      data-cy="sc-error-page500"
+      locale={language}
+      supportLink={url_support}
+    />
+  );
 }
 
 export function Navbar() {
   return (
-    <ErrorBoundary FallbackComponent={ ErrorFallback }>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
       <InternalNavbar />
     </ErrorBoundary>
   );
@@ -206,7 +222,7 @@ function InternalNavbar() {
         // $flow-disable-line -- flow considers solutions-navbar as a row HTMLElement, TODO find if it is possible to extends JSX flow native definitions with custom element types
         navbarRef
       }
-      config-url={ navbarConfigUrl }
+      config-url={navbarConfigUrl}
     />
   );
 }

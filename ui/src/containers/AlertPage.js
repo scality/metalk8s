@@ -428,6 +428,7 @@ export default function AlertPage() {
   const alerts = useAlerts({});
   const leafAlerts = useMemo(
     () => alerts?.alerts.filter((alert) => !alert.labels.children) || [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [JSON.stringify(alerts?.alerts)],
   );
 
@@ -473,10 +474,7 @@ export default function AlertPage() {
         warning={wariningAlerts.length}
       />
       <AlertContent>
-        <ActiveAlertTab
-          data={leafAlerts}
-          columns={columns}
-        />
+        <ActiveAlertTab data={leafAlerts} columns={columns} />
       </AlertContent>
     </AlertPageContainer>
   );
