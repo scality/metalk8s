@@ -297,7 +297,7 @@ def count_running_pods(
     if node:
         error_msg += "on node '{node}'".format(node=node)
 
-    utils.retry(_check_pods_count, times=20, wait=3, error_msg=error_msg)
+    utils.retry(_check_pods_count, times=40, wait=3, error_msg=error_msg)
 
 
 _COUNT_RUNNING_PODS_PARSER = parsers.re(
