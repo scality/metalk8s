@@ -22,3 +22,4 @@ do not have a working MetalK8s_ setup.
    metalk8s-utils
    listening_processes
    troubleshooting/index
+   sosreport

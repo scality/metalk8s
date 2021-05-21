@@ -289,6 +289,8 @@ This value can be overriden:
    Supported time units are y, w, d, h, m s and ms
    (years, weeks, days, hours, minutes, seconds and milliseconds).
 
+Then :ref:`apply the configuration<csc-prometheus-apply-cfg>`.
+
 Set Retention Size
 """"""""""""""""""
 
@@ -324,6 +326,8 @@ This functionality can be actived:
 
 Both size and time based retentions can be activated at the same time.
 
+Then :ref:`apply the configuration<csc-prometheus-apply-cfg>`.
+
 Predefined Alert Rules Customization
 """"""""""""""""""""""""""""""""""""
 
@@ -352,15 +356,33 @@ For example, to change the threshold for the disk space alert
                warning:
                  available: 10
 
-The new configuration must then be applied with Salt.
+Then :ref:`apply the configuration<csc-prometheus-apply-cfg>`.
 
-.. parsed-literal::
+.. _csc-enable-prometheus-admin-api:
 
-   root\@bootstrap $ kubectl exec --kubeconfig /etc/kubernetes/admin.conf \\
-                      -n kube-system -c salt-master salt-master-bootstrap -- \\
-                      salt-run state.sls \\
-                      metalk8s.addons.prometheus-operator.deployed \\
-                      saltenv=metalk8s-|version|
+Enable Prometheus Admin API
+"""""""""""""""""""""""""""
+
+For security reasons, Prometheus Admin API is disabled by default.
+It can be enabled with the following:
+
+.. code-block:: yaml
+
+   ---
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: metalk8s-prometheus-config
+     namespace: metalk8s-monitoring
+   data:
+     config.yaml: |-
+       apiVersion: addons.metalk8s.scality.com
+       kind: PrometheusConfig
+       spec:
+         config:
+           enable_admin_api: true
+
+Then :ref:`apply the configuration<csc-prometheus-apply-cfg>`.
 
 Adding New Rules
 """"""""""""""""
@@ -409,6 +431,8 @@ For more details on Alert Rules, see the official
 `Prometheus alerting rules documentation`_
 
 .. _Prometheus alerting rules documentation: https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/
+
+.. _csc-prometheus-apply-cfg:
 
 Applying configuration
 """"""""""""""""""""""
