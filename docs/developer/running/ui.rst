@@ -17,36 +17,81 @@ Procedure
 ---------
 
 
-1. Connect to the boostrap node of your cluster, and execute the following
+#. Connect to the boostrap node of your cluster, and execute the following
    command as root:
+
 
 .. code-block:: console
 
-   python - <<EOF
-   import subprocess
-   import json
+    kubectl --kubeconfig /etc/kubernetes/admin.conf \
+        edit cm -n metalk8s-auth metalk8s-dex-config
 
-   output = subprocess.check_output([
-       'salt-call', 'pillar.get', 'metalk8s', '--out', 'json'
-   ])
-   pillar = json.loads(output)['local']
-   output = subprocess.check_output([
-       'salt-call', 'grains.get', 'metalk8s:control_plane_ip', '--out', 'json'
-   ])
-   control_plane_ip = json.loads(output)['local']
-   ui_conf = {
-       'url': 'https://{}:6443'.format(control_plane_ip),
-       'url_salt': 'https://{salt[ip]}:{salt[ports][api]}'.format(
-           salt=pillar['endpoints']['salt-master']
-       ),
-       'url_prometheus': 'http://{prom[ip]}:{prom[ports][web][node_port]}'.format(
-           prom=pillar['endpoints']['prometheus']
-       ),
-   }
-   print(json.dumps(ui_conf, indent=4))
-   EOF
+This will allow you to register localhost:3000 as a valid authentication
+ target. To do so add the following sections under config.yaml:
+
+.. code-block:: yaml
+
+    web:
+      allowedOrigins: ["*"]
+    staticClients:
+      - id: metalk8s-ui
+        name: MetalK8s UI
+        redirectURIs:
+          - https://<bootstrap_control_plane_ip>:8443/
+          - http://localhost:3000/
+        secret: ybrMJpVMQxsiZw26MhJzCjA2ut
+
+You can retrieve the ``bootstrap_control_plane_ip`` by running:
+
+.. code-block:: console
+
+    salt-call grains.get metalk8s:control_plane_ip
+
+#. Apply the changes using Salt:
+
+.. code-block:: console
+
+    VERSION="your version (e.g. 2.9.1-dev)"
+    SALT_MASTER=$(kubectl \
+        --kubeconfig /etc/kubernetes/admin.conf get pods \
+        -n kube-system -l app=salt-master \
+        -o jsonpath='{.items[0].metadata.name}')
+    kubectl --kubeconfig /etc/kubernetes/admin.conf exec \
+        "$SALT_MASTER" -c salt-master -n kube-system -- \
+        salt-run state.sls metalk8s.addons.dex.deployed saltenv=metalk8s-$VERSION
+
+#. Enable CORS requests:
+
+.. code-block:: console
+
+    kubectl --kubeconfig /etc/kubernetes/admin.conf patch ingress \
+        -n metalk8s-ui \
+        metalk8s-ui-proxies-https \
+        --patch '{
+            "metadata": {
+                "annotations": {
+                    "nginx.ingress.kubernetes.io/enable-cors": "true",
+                    "nginx.ingress.kubernetes.io/cors-allow-headers":
+                    "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,x-auth-token"
+                }
+            }
+        }'
+
+    kubectl --kubeconfig /etc/kubernetes/admin.conf patch ingress \
+        -n metalk8s-ui \
+        metalk8s-ui-proxies-http \
+        --patch '{
+            "metadata": {
+                "annotations": {
+                    "nginx.ingress.kubernetes.io/enable-cors": "true",
+                    "nginx.ingress.kubernetes.io/cors-allow-headers":
+                    "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,x-auth-token"
+                }
+            }
+        }'
 
 
-2. Copy the output into ``ui/public/config.json``.
+#. In `webpack.dev.js` edit the value of `controlPlaneIP` and provide
+   your cluster bootstrap node's control plane IP
 
-3. Run the UI with ``cd ui; npm run start``
+#. Run the UI with ``cd ui; npm run start``
