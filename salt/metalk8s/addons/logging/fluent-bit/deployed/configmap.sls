@@ -46,6 +46,7 @@ Create fluent-bit ConfigMap:
                 Name           systemd
                 Tag            host.*
                 DB             /run/fluent-bit/flb_journal.db
+                Mem_Buf_Limit  5MB
                 Strip_Underscores On
             [FILTER]
                 Name           kubernetes
