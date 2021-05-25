@@ -165,25 +165,94 @@ get_service_endpoints:
           port: 4507
           protocol: TCP
     result:
-      ip: 10.11.12.13
-      node_name: my-node
-      hostname: null
-      ports:
-        requestserver: 4506
-        publisher: 4505
-        api: 4507
+      - ip: 10.11.12.13
+        node_name: my-node
+        hostname: null
+        ports:
+          requestserver: 4506
+          publisher: 4505
+          api: 4507
 
-  # 2. Error when getting the Endpoint object
+  # 2. Multiple addresses for an endpoint
+  - obj:
+      api_version: v1
+      kind: Endpoints
+      metadata:
+        annotations:
+          endpoints.kubernetes.io/last-change-trigger-time: '2021-05-25T07:36:46Z'
+        cluster_name: null
+        creation_timestamp: 2021-05-11 09:49:51+00:00
+        deletion_grace_period_seconds: null
+        deletion_timestamp: null
+        finalizers: null
+        generate_name: null
+        generation: null
+        labels:
+          app: repositories
+          app.kubernetes.io/managed-by: salt
+          app.kubernetes.io/name: repositories
+          app.kubernetes.io/part-of: metalk8s
+          heritage: salt
+          metalk8s.scality.com/version: 2.10.0-dev
+          service.kubernetes.io/headless: ''
+        name: repositories
+        namespace: kube-system
+        owner_references: null
+        resource_version: '2882986'
+        self_link: null
+        uid: f101166a-5175-41b0-bc9c-899da5b61685
+      subsets:
+      - addresses:
+        - hostname: null
+          ip: 10.11.12.13
+          node_name: my-node
+          target_ref:
+            api_version: null
+            field_path: null
+            kind: Pod
+            name: repositories-my-node
+            namespace: kube-system
+            resource_version: '2871130'
+            uid: c24f3ddc-c24a-4eb8-9080-e57468ce6429
+        - hostname: null
+          ip: 10.21.22.23
+          node_name: my-second-node
+          target_ref:
+            api_version: null
+            field_path: null
+            kind: Pod
+            name: repositories-my-second-node
+            namespace: kube-system
+            resource_version: '2882985'
+            uid: 9d6eea84-211d-47f8-b048-1778febf468e
+        not_ready_addresses: null
+        ports:
+        - name: http
+          port: 8080
+          protocol: TCP
+    result:
+      - ip: 10.11.12.13
+        node_name: my-node
+        hostname: null
+        ports:
+          http: 8080
+      - ip: 10.21.22.23
+        node_name: my-second-node
+        hostname: null
+        ports:
+          http: 8080
+
+  # 3. Error when getting the Endpoint object
   - obj: False
     raises: True
     result: "Unable to get kubernetes endpoints for my_service in namespace my_namespace"
 
-  # 3. Endpoint object does not exists
+  # 4. Endpoint object does not exist
   - obj: null
     raises: True
     result: "Unable to get kubernetes endpoints for my_service in namespace my_namespace"
 
-  # 4. Endpoint do not have any addresses
+  # 5. Endpoint does not have any address
   - obj:
       api_version: v1
       kind: Endpoints

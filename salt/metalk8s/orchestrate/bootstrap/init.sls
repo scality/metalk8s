@@ -57,12 +57,12 @@ Get metalk8s:control_plane_ip grain:
                         'api': 4507,
                     },
                 },
-                'repositories': {
+                'repositories': [{
                     'ip': bootstrap_grains['control_plane_ip'],
                     'ports': {
                         'http': 8080,
                     },
-                },
+                }],
             },
         },
     }

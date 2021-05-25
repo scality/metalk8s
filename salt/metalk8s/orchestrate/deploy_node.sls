@@ -145,9 +145,8 @@ Check pillar before salt-minion configuration:
     - tgt: {{ node_name }}
     - kwarg:
         keys:
-          - metalk8s.endpoints.salt-master.ip
-          - metalk8s.endpoints.repositories.ip
-          - metalk8s.endpoints.repositories.ports.http
+          - metalk8s.endpoints.salt-master
+          - metalk8s.endpoints.repositories
         # We cannot raise when using `salt.function` as we need to return
         # `False` to have a failed state
         # https://github.com/saltstack/salt/issues/55503
@@ -195,9 +194,8 @@ Check pillar before etcd deployment:
     - tgt: {{ node_name }}
     - kwarg:
         keys:
-          - metalk8s.endpoints.salt-master.ip
-          - metalk8s.endpoints.repositories.ip
-          - metalk8s.endpoints.repositories.ports.http
+          - metalk8s.endpoints.salt-master
+          - metalk8s.endpoints.repositories
         # We cannot raise when using `salt.function` as we need to return
         # `False` to have a failed state
         # https://github.com/saltstack/salt/issues/55503
@@ -250,9 +248,8 @@ Check pillar before highstate:
     - tgt: {{ node_name }}
     - kwarg:
         keys:
-          - metalk8s.endpoints.salt-master.ip
-          - metalk8s.endpoints.repositories.ip
-          - metalk8s.endpoints.repositories.ports.http
+          - metalk8s.endpoints.salt-master
+          - metalk8s.endpoints.repositories
         # We cannot raise when using `salt.function` as we need to return
         # `False` to have a failed state
         # https://github.com/saltstack/salt/issues/55503
