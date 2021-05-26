@@ -2,25 +2,24 @@ const HtmlWebPackPlugin = require('html-webpack-plugin');
 const path = require('path');
 const { version } = require('./package.json');
 const { DefinePlugin } = require('webpack');
+const common = require('./webpack.common');
 
-module.exports = (env) => ({
+module.exports = () => ({
+  ...common,
   mode: 'development',
   devtool: 'source-map',
-  entry: env.entry === 'navbar' ? {'solution-ui-navbar': './index.navbar.js'} : {alerts: './index.alerts.js'},
+  entry:
+    env.entry === 'navbar'
+      ? { 'solution-ui-navbar': './index.navbar.js' }
+      : { alerts: './index.alerts.js' },
   output: {
     path: path.resolve(__dirname, 'build'),
     filename: `shell/[name].${version}.js`,
   },
   module: {
-    // ...
+    ...common.module,
     rules: [
-      {
-        test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-        },
-      },
+      ...common.module.rules,
       {
         test: /\.mdx?$/,
         use: ['babel-loader', '@mdx-js/loader'],
@@ -33,6 +32,7 @@ module.exports = (env) => ({
     contentBase: 'public',
   },
   plugins: [
+    ...common.plugins,
     new DefinePlugin({
       'process.env': {
         NODE_ENV: JSON.stringify('development'),
