@@ -62,6 +62,9 @@
   (PR[#3356](https://github.com/scality/metalk8s/pull/3356))
 
 ## Release 2.9.3 (in development)
+## Enhancements
+- Allow hostPort on 127.0.0.1
+  (PR[#3396](https://github.com/scality/metalk8s/pull/3396))
 
 ## Release 2.9.2
 ### Bug fixes
