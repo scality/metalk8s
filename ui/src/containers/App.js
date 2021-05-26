@@ -6,7 +6,6 @@ import { useDispatch } from 'react-redux';
 import { IntlProvider, addLocaleData } from 'react-intl';
 import locale_en from 'react-intl/locale-data/en';
 import locale_fr from 'react-intl/locale-data/fr';
-import { QueryClient, QueryClientProvider } from 'react-query';
 import translations_en from '../translations/en';
 import translations_fr from '../translations/fr';
 import { Loader } from '@scality/core-ui';
@@ -16,7 +15,6 @@ import { fetchConfigAction } from '../ducks/config';
 import { initToggleSideBarAction } from '../ducks/app/layout';
 import { useTypedSelector, MetricsTimeSpanProvider } from '../hooks';
 
-const queryClient = new QueryClient();
 const messages = {
   EN: translations_en,
   FR: translations_fr,
@@ -41,18 +39,11 @@ const App = () => {
   }, [status]);
 
   return status === 'success' && api && theme ? (
-    <QueryClientProvider client={queryClient}>
-      <IntlProvider
-        locale={language}
-        messages={messages[language.toUpperCase()]}
-      >
-        <IntlGlobalProvider>
-          <MetricsTimeSpanProvider>
-            <Layout />
-          </MetricsTimeSpanProvider>
-        </IntlGlobalProvider>
-      </IntlProvider>
-    </QueryClientProvider>
+    <IntlProvider locale={language} messages={messages[language.toUpperCase()]}>
+      <IntlGlobalProvider>
+        <Layout />
+      </IntlGlobalProvider>
+    </IntlProvider>
   ) : (
     <Loader size="massive" centered={true} />
   );

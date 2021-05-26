@@ -3,6 +3,8 @@ const HtmlWebPackPlugin = require('html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
 const { DefinePlugin } = require('webpack');
+const ModuleFederationPlugin = require("webpack/lib/container/ModuleFederationPlugin");
+const deps = require("./package.json").dependencies;
 
 module.exports = (env) => ({
   entry: {
@@ -89,6 +91,24 @@ module.exports = (env) => ({
     ],
   },
   plugins: [
+    new ModuleFederationPlugin({
+      name: "metalk8s",
+      filename: "remoteEntry.js",
+      exposes: {
+        "./FederableApp": "./src/FederableApp",
+      },
+      shared: {
+        ...deps,
+        react: {
+          singleton: true,
+          requiredVersion: deps.react,
+        },
+        "react-dom": {
+          singleton: true,
+          requiredVersion: deps["react-dom"],
+        },
+      },
+    }),
     new ESLintPlugin(),
     new CompressionPlugin(),
     new DefinePlugin({
