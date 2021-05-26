@@ -1,14 +1,12 @@
 //@flow
 import React, { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { ThemeProvider } from 'styled-components';
 import { matchPath, RouteProps, Route, Redirect } from 'react-router';
 import { useHistory, useLocation, Switch } from 'react-router-dom';
 import {
   Layout as CoreUILayout,
   Notifications,
   Loader,
-  ScrollbarWrapper,
   ErrorPage404,
 } from '@scality/core-ui';
 import { intl } from '../translations/IntlGlobalProvider';
@@ -16,7 +14,6 @@ import { toggleSideBarAction } from '../ducks/app/layout';
 import { removeNotificationAction } from '../ducks/app/notifications';
 import CreateVolume from './CreateVolume';
 import { useTypedSelector } from '../hooks';
-import { Navbar } from '../components/Navbar';
 import { Suspense } from 'react';
 import AlertProvider from './AlertProvider';
 
@@ -30,7 +27,7 @@ const AlertPage = React.lazy(() => import('./AlertPage'));
 
 const Layout = () => {
   const sidebar = useTypedSelector((state) => state.app.layout.sidebar);
-  const { theme, language } = useTypedSelector((state) => state.config);
+  const { language } = useTypedSelector((state) => state.config);// TODO federate useLanguage from shell-ui
   const notifications = useTypedSelector(
     (state) => state.app.notifications.list,
   );
@@ -117,11 +114,8 @@ const Layout = () => {
   }
 
   return (
-    <ThemeProvider theme={theme}>
-      <ScrollbarWrapper>
         <CoreUILayout
           sidebar={isUserLoaded && !isAlertsPage ? sidebarConfig : undefined}
-          navbarElement={<Navbar />}
         >
           <AlertProvider>
             <Notifications
@@ -173,8 +167,6 @@ const Layout = () => {
             </Suspense>
           </AlertProvider>
         </CoreUILayout>
-      </ScrollbarWrapper>
-    </ThemeProvider>
   );
 };
 
