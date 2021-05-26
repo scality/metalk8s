@@ -244,6 +244,31 @@ subjects:
 apiVersion: v1
 kind: Service
 metadata:
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: ingress-nginx-control-plane
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 0.46.0
+    helm.sh/chart: ingress-nginx-3.30.0
+    heritage: metalk8s
+  name: ingress-nginx-control-plane-controller-metrics
+  namespace: metalk8s-ingress
+spec:
+  ports:
+  - name: metrics
+    port: 10254
+    targetPort: metrics
+  selector:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: ingress-nginx-control-plane
+    app.kubernetes.io/name: ingress-nginx
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
   annotations: null
   labels:
     app.kubernetes.io/component: controller
@@ -307,6 +332,7 @@ spec:
         - --ingress-class=nginx-control-plane
         - --configmap=metalk8s-ingress/ingress-nginx-control-plane-controller
         - --default-ssl-certificate=metalk8s-ingress/ingress-control-plane-default-certificate
+        - --metrics-per-host=false
         env:
         - name: POD_NAME
           valueFrom:
@@ -343,6 +369,9 @@ spec:
           protocol: TCP
         - containerPort: 443
           name: https
+          protocol: TCP
+        - containerPort: 10254
+          name: metrics
           protocol: TCP
         readinessProbe:
           failureThreshold: 3
@@ -384,5 +413,33 @@ spec:
         operator: Exists
   updateStrategy:
     type: RollingUpdate
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: ingress-nginx-control-plane
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 0.46.0
+    helm.sh/chart: ingress-nginx-3.30.0
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+  name: ingress-nginx-control-plane-controller
+  namespace: metalk8s-ingress
+spec:
+  endpoints:
+  - interval: 30s
+    port: metrics
+  namespaceSelector:
+    matchNames:
+    - metalk8s-ingress
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/instance: ingress-nginx-control-plane
+      app.kubernetes.io/name: ingress-nginx
 
 {% endraw %}
