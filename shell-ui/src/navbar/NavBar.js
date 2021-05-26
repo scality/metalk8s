@@ -3,13 +3,14 @@ import CoreUINavbar from '@scality/core-ui/dist/components/navbar/Navbar.compone
 import Dropdown from '@scality/core-ui/dist/components/dropdown/Dropdown.component';
 import { type Item as CoreUIDropdownItem } from '@scality/core-ui/src/lib/components/dropdown/Dropdown.component';
 import { useAuth } from 'oidc-react';
-import { useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import styled from 'styled-components';
 import type {
   Options,
   SolutionsNavbarProps,
   PathDescription,
   UserGroupsMapping,
+  Browser,
 } from './index';
 import type { Node } from 'react';
 import { logOut } from './auth/logout';
@@ -37,6 +38,16 @@ export const LoadingNavbar = ({ logo }: { logo: string }): Node => (
   />
 );
 
+const linkMatchesCurrentLocation = (
+  path: string,
+  pathDescription: PathDescription,
+): boolean => {
+  const normalizedLocation = normalizePath(location.href);
+  return pathDescription.activeIfMatches
+    ? new RegExp(pathDescription.activeIfMatches).test(location.href)
+    : normalizedLocation === normalizePath(path);
+};
+
 const translateOptionsToMenu = (
   options: Options,
   section: 'main' | 'subLogin',
@@ -46,22 +57,21 @@ const translateOptionsToMenu = (
   ) => { link: Node } | { label: string, onClick: () => void },
   userGroups: string[],
 ) => {
-  const normalizedLocation = normalizePath(location.href);
   const entries = Object.entries(options[section])
     //$FlowIssue - flow typing for Object.entries incorrectly typing values as [string, mixed] instead of [string, PathDescription]
     .filter((entry: [string, PathDescription]) =>
       isEntryAccessibleByTheUser(entry, userGroups),
     );
-  entries.sort(([_, entryA], [__, entryB]) => ((entryA.order || Infinity) < (entryB.order || Infinity) ? -1 : 1));
+  entries.sort(([_, entryA], [__, entryB]) =>
+    (entryA.order || Infinity) < (entryB.order || Infinity) ? -1 : 1,
+  );
   return entries.map(
     //$FlowIssue - flow typing for Object.entries incorrectly typing values as [string, mixed] instead of [string, PathDescription]
     ([path, pathDescription]: [string, PathDescription], i) => {
       try {
         return {
           ...renderer(path, pathDescription),
-          selected: pathDescription.activeIfMatches
-            ? new RegExp(pathDescription.activeIfMatches).test(location.href)
-            : normalizedLocation === normalizePath(path),
+          selected: linkMatchesCurrentLocation(path, pathDescription),
         };
       } catch (e) {
         throw new Error(
@@ -121,6 +131,69 @@ const Item = ({
   );
 };
 
+const nativeBrowser: Browser = {
+  open: ({ path }) => {
+    location.href = path;
+  },
+};
+
+const openLink = ({
+  path,
+  pathDescription,
+  federatedBrowser,
+}: {
+  path: string,
+  pathDescription: PathDescription,
+  federatedBrowser?: Browser,
+}) => {
+  if (!federatedBrowser) {
+    if (pathDescription.isExternal) {
+      window.open(path, '_blank');
+      return;
+    }
+    nativeBrowser.open({ path, pathDescription });
+    return;
+  }
+
+  const targetUrl = new URL(path);
+
+  // If target url is on the same origin as the current one and can be loaded using module federation we use the federated browser to open it
+  if (
+    pathDescription.module &&
+    pathDescription.scope &&
+    pathDescription.url &&
+    location.origin === targetUrl.origin
+  ) {
+    federatedBrowser.open({ path, pathDescription });
+  } else {
+    nativeBrowser.open({ path, pathDescription });
+  }
+};
+
+const Link = ({
+  children,
+  path,
+  pathDescription,
+  federatedBrowser,
+}: {
+  children: Node,
+  path: string,
+  pathDescription: PathDescription,
+  federatedBrowser?: Browser,
+}) => {
+  return (
+    <a
+      href={'#'}
+      onClick={() =>
+        //$FlowIssue pathDescription can't contain a `path` key.
+        openLink({ path, pathDescription, federatedBrowser })
+      }
+    >
+      {children}
+    </a>
+  );
+};
+
 export const Navbar = ({
   options,
   logo,
@@ -128,6 +201,8 @@ export const Navbar = ({
   canChangeLanguage,
   canChangeTheme,
   providerLogout,
+  federatedBrowser,
+  children,
 }: {
   options: Options,
   logo: string,
@@ -135,6 +210,8 @@ export const Navbar = ({
   canChangeLanguage?: boolean,
   canChangeTheme?: boolean,
   providerLogout: boolean,
+  federatedBrowser?: Browser,
+  children?: Node,
 }): Node => {
   const auth = useAuth();
   const brand = useTheme();
@@ -151,11 +228,51 @@ export const Navbar = ({
     });
   }, [JSON.stringify(accessiblePaths)]);
 
+  //On mount, navigate to the matching entry if it is federated
+  useEffect(() => {
+    if (!federatedBrowser) {
+      return;
+    }
+
+    //$FlowIssue - flow typing for Object.entries incorrectly typing values as [string, mixed] instead of [string, PathDescription]
+    const matchingLink: [string, PathDescription] | void = [...Object.entries(
+      options.main,
+    ),...Object.entries(
+      options.subLogin,
+    )]
+      //$FlowIssue - flow typing for Object.entries incorrectly typing values as [string, mixed] instead of [string, PathDescription]
+      .find(([path, pathDescription]: [string, PathDescription]) => {
+        return linkMatchesCurrentLocation(path, pathDescription);
+      });
+
+    if (!matchingLink) {
+      // TODO 404 ? Need to reset the error page when clicking a menu item...
+      return;
+    }
+
+    //open the link if it is federated
+    if (
+      matchingLink[1].module &&
+      matchingLink[1].scope &&
+      matchingLink[1].url
+    ) {
+      openLink({
+        path: matchingLink[0],
+        pathDescription: matchingLink[1],
+        federatedBrowser,
+      });
+    }
+  }, []);
+
   const tabs = translateOptionsToMenu(
     options,
     'main',
     (path, pathDescription) => ({
-      link: <a href={path}>{pathDescription[language]}</a>,
+      link: (
+        <Link {...{ path, pathDescription, federatedBrowser }}>
+          {pathDescription[language]}
+        </Link>
+      ),
     }),
     userGroups,
   );
@@ -183,11 +300,11 @@ export const Navbar = ({
               />
             ),
             onClick: () => {
-              if (pathDescription.isExternal) {
-                window.open(path, '_blank');
-              } else {
-                location.href = path;
-              }
+              openLink({
+                path,
+                pathDescription,
+                federatedBrowser,
+              });
             },
           }),
           userGroups,
@@ -234,11 +351,14 @@ export const Navbar = ({
   }
 
   return (
-    <CoreUINavbar
-      logo={<Logo src={logo} alt="logo" />}
-      rightActions={rightActions}
-      tabs={tabs}
-      role="navigation"
-    />
+    <>
+      <CoreUINavbar
+        logo={<Logo src={logo} alt="logo" />}
+        rightActions={rightActions}
+        tabs={tabs}
+        role="navigation"
+      />
+      {children}
+    </>
   );
 };

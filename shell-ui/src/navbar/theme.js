@@ -15,7 +15,7 @@ const ThemeContext = React.createContext<ThemeContextValues | null>(null);
 
 const themes = ['darkRebrand', 'light'];
 
-type Theme = { brand: typeof defaultTheme.darkRebrand };
+export type Theme = { brand: typeof defaultTheme.darkRebrand };
 
 export function useThemeName(): ThemeContextValues {
   const themeContext = useContext(ThemeContext);

@@ -1,5 +1,5 @@
 //@flow
-import React, { useLayoutEffect } from 'react';
+import React, { useLayoutEffect, type Node } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import reactToWebComponent from 'react-to-webcomponent';
@@ -16,7 +16,7 @@ import { ThemeProvider } from './theme';
 import { useFavicon } from './favicon';
 import packageJson from '../../package.json';
 const { version } = packageJson;
-import "./library";
+import './library';
 import ErrorPage500 from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 
 export type PathDescription = {
@@ -25,14 +25,21 @@ export type PathDescription = {
   groups?: string[],
   activeIfMatches?: string,
   icon?: string,
+  module?: string,
+  scope?: string,
+  url?: string,
   isExternal?: boolean,
-  order?: number
+  order?: number,
 };
 export type MenuItems = { [path: string]: PathDescription };
 
 export type Options = { main: MenuItems, subLogin: MenuItems };
 
 export type UserGroupsMapping = { [email: string]: string[] };
+
+export type Browser = {
+  open: (link: {path: string, pathDescription: PathDescription}) => void;
+}
 
 export type SolutionsNavbarProps = {
   'oidc-provider-url'?: string,
@@ -44,15 +51,17 @@ export type SolutionsNavbarProps = {
   options?: string,
   'logo-light'?: string,
   'logo-dark'?: string,
-  favicon: string,
-  'can-change-theme': string,
-  'can-change-language': string,
+  favicon?: string,
+  'can-change-theme'?: string,
+  'can-change-language'?: string,
   onAuthenticated?: (evt: CustomEvent) => void,
   onLanguageChanged?: (evt: CustomEvent) => void,
   onThemeChanged?: (evt: CustomEvent) => void,
   logOut?: () => void,
   setUserManager?: (userManager: UserManager) => void,
   'provider-logout'?: string,
+  children?: Node,
+  federatedBrowser?: Browser,
 };
 
 type Config = {
@@ -75,7 +84,7 @@ type Config = {
   userGroupsMapping?: UserGroupsMapping,
 };
 
-const SolutionsNavbar = ({
+export const SolutionsNavbar = ({
   'oidc-provider-url': oidcProviderUrl,
   scopes,
   'client-id': clientId,
@@ -94,7 +103,9 @@ const SolutionsNavbar = ({
   logOut,
   setUserManager,
   'provider-logout': providerLogout,
-}: SolutionsNavbarProps) => {
+  federatedBrowser,
+  children,
+}: SolutionsNavbarProps): Node => {
   const { data: config, status } = useQuery<Config>('navbarConfig', () => {
     if (configUrl) {
       return fetch(configUrl).then((r) => {
@@ -110,7 +121,7 @@ const SolutionsNavbar = ({
 
   useFavicon(favicon || config?.favicon || '/brand/favicon-metalk8s.svg');
 
-  const logos = {dark: logoDark, darkRebrand: logoDark, light: logoLight};
+  const logos = { dark: logoDark, darkRebrand: logoDark, light: logoLight };
 
   useLayoutEffect(() => {
     const savedRedirectUri = localStorage.getItem('redirectUrl');
@@ -123,9 +134,11 @@ const SolutionsNavbar = ({
     case 'idle':
     case 'loading':
     default:
-      return <LoadingNavbar logo={logos.dark || `/brand/assets/logo-dark.svg`} />;
+      return (
+        <LoadingNavbar logo={logos.dark || `/brand/assets/logo-dark.svg`} />
+      );
     case 'error':
-      return ReactDOM.render(<ErrorPage500 data-cy='sc-error-page500'/>, document.body);
+      throw new Error('TODO : keep the rebased message here');
     case 'success': {
       const userManager = new UserManager({
         authority: oidcProviderUrl || config.oidc?.providerUrl,
@@ -175,7 +188,14 @@ const SolutionsNavbar = ({
 
       return (
         <AuthProvider {...oidcConfig}>
-          <LanguageProvider onLanguageChanged={onLanguageChanged} canChangeLanguage={canChangeLanguage !== undefined && canChangeLanguage !== null ? Boolean(canChangeLanguage) : config.canChangeLanguage}>
+          <LanguageProvider
+            onLanguageChanged={onLanguageChanged}
+            canChangeLanguage={
+              canChangeLanguage !== undefined && canChangeLanguage !== null
+                ? Boolean(canChangeLanguage)
+                : config.canChangeLanguage
+            }
+          >
             <ThemeProvider onThemeChanged={onThemeChanged}>
               {(theme, themeName) => (
                 <>
@@ -183,17 +203,33 @@ const SolutionsNavbar = ({
                     userGroupsMapping={config.userGroupsMapping}
                     onAuthenticated={onAuthenticated}
                   />
-                  <StyledComponentsProvider
-                    theme={theme.brand}
-                  >
+                  <StyledComponentsProvider theme={theme.brand}>
                     <Navbar
-                      logo={logos[themeName] || config?.logo?.[themeName] || `/brand/assets/logo-${themeName}.svg`}
-                      canChangeLanguage={canChangeLanguage !== undefined && canChangeLanguage !== null ? Boolean(canChangeLanguage) : config.canChangeLanguage}
-                      canChangeTheme={canChangeTheme !== undefined && canChangeTheme !== null ? Boolean(canChangeTheme) : config.canChangeTheme}
+                      federatedBrowser={federatedBrowser}
+                      logo={
+                        logos[themeName] ||
+                        config?.logo?.[themeName] ||
+                        `/brand/assets/logo-${themeName}.svg`
+                      }
+                      canChangeLanguage={
+                        canChangeLanguage !== undefined &&
+                        canChangeLanguage !== null
+                          ? Boolean(canChangeLanguage)
+                          : config.canChangeLanguage
+                      }
+                      canChangeTheme={
+                        canChangeTheme !== undefined && canChangeTheme !== null
+                          ? Boolean(canChangeTheme)
+                          : config.canChangeTheme
+                      }
                       options={computedMenuOptions}
                       userGroupsMapping={config.userGroupsMapping}
-                      providerLogout={providerLogout ? providerLogout === 'true' : config?.providerLogout || false}
-                    />
+                      providerLogout={
+                        providerLogout
+                          ? providerLogout === 'true'
+                          : config?.providerLogout || false
+                      }
+                    >{children}</Navbar>
                   </StyledComponentsProvider>
                 </>
               )}
@@ -237,7 +273,6 @@ class SolutionsNavbarWebComponent extends reactToWebComponent(
   React,
   ReactDOM,
 ) {
-
   constructor() {
     super();
     this.setUserManager = (userManager: UserManager) => {
@@ -256,12 +291,13 @@ class SolutionsNavbarWebComponent extends reactToWebComponent(
       logOut(window.userManager, providerLogout);
     };
     this.getIdToken = () => {
-      return (window.userManager: UserManager).getUser().then(user => user.id_token);
-    }
+      return (window.userManager: UserManager)
+        .getUser()
+        .then((user) => user.id_token);
+    };
 
-    this.dispatchEvent(new CustomEvent('ready', {detail: {version}}));
+    this.dispatchEvent(new CustomEvent('ready', { detail: { version } }));
   }
-
 }
 
 customElements.define('solutions-navbar', SolutionsNavbarWebComponent);
