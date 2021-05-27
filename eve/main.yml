@@ -269,9 +269,10 @@ models:
         ARCHIVE_DIRECTORY: "%(prop:builddir)s/build"
         ARCHIVE: "metalk8s.iso"
         DEST: ''
+        NODE: bootstrap
       command: >
         scp -F ssh_config "$ARCHIVE_DIRECTORY/$ARCHIVE"
-        bootstrap:"$DEST"
+        $NODE:"$DEST"
       workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &create_mountpoint
@@ -456,7 +457,7 @@ models:
       name: Run fast tests on Bastion
       env: &_env_bastion_fast_tests
         <<: *_env_bastion_tests
-        PYTEST_FILTERS: "post and ci and not multinode and not slow"
+        PYTEST_FILTERS: "post and ci and not multinode and not slow and not registry_ha"
   - SetPropertyFromCommand: &set_bootstrap_cp_ip_ssh
       name: Set the bootstrap node control plane IP as a property
       property: bootstrap_control_plane_ip
@@ -647,7 +648,7 @@ models:
       doStepIf: "%(prop:install_solution:-false)s"
       name: Copy Solution archive to bootstrap
       <<: *copy_iso_bootstrap_ssh
-      env:
+      env: &_env_copy_solution_archive_bootstrap_ssh
         <<: *_env_copy_iso_bootstrap_ssh
         ARCHIVE: "%(prop:solution_archive:-example-solution-1.0.0.iso)s"
   - ShellCommand: &import_solution
@@ -2267,10 +2268,12 @@ stages:
           workdir: *terraform_workdir
           haltOnFailure: true
       - ShellCommand: *set_bootstrap_minion_id_ssh
-      - ShellCommand:
+      - ShellCommand: &create_archive_directory
           name: Create /archives directory
+          env:
+            NODE: "bootstrap"
           command: >
-            ssh -F ssh_config bootstrap '
+            ssh -F ssh_config $NODE '
               sudo mkdir /archives && sudo chown $USER: /archives
             '
           workdir: *terraform_workdir
@@ -2317,6 +2320,23 @@ stages:
       - ShellCommand: *wait_for_solution_operator
     # }}}
       - ShellCommand: *wait_pods_stable_ssh
+      - ShellCommand:
+          <<: *create_archive_directory
+          env:
+            NODE: node-1
+      - ShellCommand:
+          <<: *copy_iso_bootstrap_ssh
+          name: Copy archive to node-1
+          env:
+            <<: *_env_copy_iso_bootstrap_ssh
+            NODE: node-1
+            DEST: /archives/metalk8s.iso
+      - ShellCommand:
+          <<: *copy_solution_archive_bootstrap_ssh
+          name: Copy Solution archive to node-1
+          env:
+            <<: *_env_copy_solution_archive_bootstrap_ssh
+            NODE: node-1
       - ShellCommand: &multi_node_fast_tests
           <<: *bastion_tests
           name: Run fast tests on Bastion
@@ -2408,6 +2428,12 @@ stages:
             PYTEST_FILTERS: "install and ci and multinodes"
       - ShellCommand: *provision_volumes_on_node1
       - ShellCommand: *wait_pods_stable_ssh
+      - ShellCommand:
+          <<: *copy_iso_bootstrap_ssh
+          name: Copy archive to node-1
+          env:
+            <<: *_env_copy_iso_bootstrap_ssh
+            NODE: node-1
       - ShellCommand: *multi_node_fast_tests
       - ShellCommand: *multi_node_slow_tests
       - SetPropertyFromCommand:
