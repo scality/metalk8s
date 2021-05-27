@@ -1,5 +1,6 @@
 import './index';
-import { version } from '../../package.json';
+import packageJson from '../../package.json';
+const { version } = packageJson;
 import { render } from '@testing-library/react';
 import { QueryClientProvider, QueryClient } from 'react-query';
 import { renderHook } from '@testing-library/react-hooks';

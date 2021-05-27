@@ -25,7 +25,7 @@ COPY package.json package-lock.json /home/node/
 
 RUN npm ci
 
-COPY .babelrc config-overrides.js /home/node/
+COPY .babelrc webpack.common.js webpack.prod.js /home/node/
 COPY public /home/node/public/
 COPY src /home/node/src/
 

@@ -1,4 +1,5 @@
-import { version } from '../../package.json';
+import packageJson from '../../package.json';
+const { version } = packageJson;
 import * as k8s from './service/k8s';
 
 window.shellUIPlatform = {

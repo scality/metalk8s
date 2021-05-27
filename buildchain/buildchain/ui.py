@@ -120,7 +120,13 @@ def run_ui_builder(cmd: str) -> docker_command.DockerRun:
         builder=builders.UI_BUILDER,
         source_dir=constants.ROOT / "ui",
         build_dir=constants.UI_BUILD_ROOT,
-        source_mounts=["public", "src", "config-overrides.js", ".babelrc"],
+        source_mounts=[
+            "public",
+            "src",
+            "webpack.common.js",
+            "webpack.prod.js",
+            ".babelrc",
+        ],
     )
 
 

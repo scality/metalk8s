@@ -1,3 +1,4 @@
+import 'regenerator-runtime/runtime';
 import React, { useLayoutEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Provider, useDispatch } from 'react-redux';

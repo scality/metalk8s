@@ -376,8 +376,7 @@ const CreateVolume = (props) => {
       yup.object().shape({
         name: yup
           .string()
-          .matches(volumeNameRegex, intl.translate('name_error'))
-          .required(''),
+          .matches(volumeNameRegex, intl.translate('name_error')),
       }),
     ),
   });

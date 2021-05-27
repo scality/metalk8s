@@ -14,7 +14,8 @@ import { prefetch } from 'quicklink';
 import { LanguageProvider } from './lang';
 import { ThemeProvider } from './theme';
 import { useFavicon } from './favicon';
-import { version } from '../../package.json';
+import packageJson from '../../package.json';
+const { version } = packageJson;
 import "./library";
 import ErrorPage500 from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 

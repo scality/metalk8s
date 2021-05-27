@@ -1,7 +1,7 @@
 {
   "docUrl": "/docs",
   "oidc": {
-    "providerUrl": "https://{ip}:8443/oidc",
+    "providerUrl": "/oidc",
     "redirectUrl": "http://localhost:3000/",
     "clientId": "metalk8s-ui",
     "responseType": "id_token",
