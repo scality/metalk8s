@@ -4,6 +4,13 @@ include :
   - .dependencies
   - .restart
 
+# Make sure `genisoimage` is installed on every minions as it's used
+# in some MetalK8s custom execution modules
+Install genisoimage:
+  {{ pkg_installed('genisoimage') }}:
+    - require:
+      - test: Repositories configured
+
 # Make sure `python36-psutil` is installed on every minions as it's used
 # in some MetalK8s custom execution modules
 Install python psutil:
