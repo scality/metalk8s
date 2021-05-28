@@ -40,7 +40,7 @@ To generate a snapshot, use the
 
 .. code-block:: console
 
-   root@host # sosreport --batch -o metalk8s -kprometheus-snapshot=True
+   root@host # sosreport --batch --build -o metalk8s -kmetalk8s.prometheus-snapshot=True
 
 The name of the generated archive is printed on the console output and
 the Prometheus snapshot can be found under ``prometheus_snapshot`` directory.
