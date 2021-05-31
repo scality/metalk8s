@@ -23,7 +23,7 @@ RUN yum install -y --setopt=skip_missing_names_on_install=False \
     yum-utils \
     docker-ce-cli-18.09.6 \
     && adduser -u 1042 --home /home/eve eve --groups docker \
-    && chown eve:eve /home/eve/workspace \
+    && chown -R eve:eve /home/eve \
     && python3.6 -m pip install buildbot-worker==${BUILDBOT_VERSION}
 
 # Add eve to sudoers.
