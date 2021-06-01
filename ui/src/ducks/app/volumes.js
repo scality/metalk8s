@@ -19,6 +19,7 @@ import {
   SPARSE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
   REFRESH_TIMEOUT,
+  LVM_LOGICAL_VOLUME,
 } from '../../constants';
 
 import type { Metalk8sV1alpha1Volume } from '../../services/k8s/Metalk8sVolumeClient.generated';
@@ -276,6 +277,7 @@ type Volume = {
   storageClass: string,
   type: string, // TODO we might want to constraint it to 'sparseLoopDevice' | 'rawBlockDevice' | 'lvmLogicalVolume'
   size: string,
+  vgName: string,
   labels: { [key: string]: string },
   path: string,
 };
@@ -340,13 +342,17 @@ export function* createVolumes({
     /**
      * Size should be set for SPARSE_LOOP_DEVICE
      * Path should be set for RAW_BLOCK_DEVICE
+     * Size and vgName should be set for LVM_LOGICAL_VOLUME
      */
     let isNewVolumeValid =
       newVolumes[i] &&
       newVolumes[i].name &&
       newVolumes[i].storageClass &&
       ((newVolumes[i].type === SPARSE_LOOP_DEVICE && newVolumes[i].size) ||
-        (newVolumes[i].type === RAW_BLOCK_DEVICE && newVolumes[i].path));
+        (newVolumes[i].type === RAW_BLOCK_DEVICE && newVolumes[i].path) ||
+        (newVolumes[i].type === LVM_LOGICAL_VOLUME &&
+          newVolumes[i].size &&
+          newVolumes[i].vgName));
 
     if (isNewVolumeValid) {
       if (newVolumes[i].type === SPARSE_LOOP_DEVICE) {
@@ -354,10 +360,18 @@ export function* createVolumes({
           ...body.spec,
           sparseLoopDevice: { size: newVolumes[i].size },
         };
-      } else {
+      } else if (newVolumes[i].type === RAW_BLOCK_DEVICE) {
         body.spec = {
           ...body.spec,
           rawBlockDevice: { devicePath: newVolumes[i].path },
+        };
+      } else if (newVolumes[i].type === LVM_LOGICAL_VOLUME) {
+        body.spec = {
+          ...body.spec,
+          lvmLogicalVolume: {
+            size: newVolumes[i].size,
+            vgName: newVolumes[i].vgName,
+          },
         };
       }
 
