@@ -30,7 +30,11 @@ import {
   fontSize,
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
-import { SPARSE_LOOP_DEVICE, RAW_BLOCK_DEVICE } from '../constants';
+import {
+  SPARSE_LOOP_DEVICE,
+  RAW_BLOCK_DEVICE,
+  LVM_LOGICAL_VOLUME,
+} from '../constants';
 import {
   sizeUnits,
   useQuery,
@@ -251,6 +255,10 @@ const CreateVolume = (props) => {
       label: 'SparseLoopDevice',
       value: SPARSE_LOOP_DEVICE,
     },
+    {
+      label: 'LVMLogicalVolume',
+      value: LVM_LOGICAL_VOLUME,
+    },
   ];
 
   const initialValues = {
@@ -261,6 +269,7 @@ const CreateVolume = (props) => {
     path: '',
     selectedUnit: sizeUnits[3].value,
     sizeInput: '',
+    vgName: '',
     labels: {},
     labelName: '',
     labelValue: '',
@@ -362,6 +371,17 @@ const CreateVolume = (props) => {
       is: SPARSE_LOOP_DEVICE,
       then: yup.string(),
     }),
+    vgName: yup.string().when('type', {
+      is: LVM_LOGICAL_VOLUME,
+      then: yup
+        .string()
+        .matches(volumeNameRegex, intl.translate('name_error'))
+        .required(
+          intl.translate('generic_missing_field', {
+            field: intl.translate('name_error').toLowerCase(),
+          }),
+        ),
+    }),
     labels: yup.object(),
     labelValue: yup
       .string()
@@ -414,6 +434,7 @@ const CreateVolume = (props) => {
             onSubmit={(values) => {
               const newVolumes = { ...values };
               newVolumes.size = `${values.sizeInput}${values.selectedUnit}`;
+              newVolumes.vgName = `${values.vgName}`;
 
               const formattedVolumes = formatVolumeCreationData(newVolumes);
               createVolumes(formattedVolumes);
@@ -711,7 +732,7 @@ const CreateVolume = (props) => {
                           />
                         </SizeUnitFieldSelectContainer>
                       </SizeFieldContainer>
-                    ) : (
+                    ) : values.type === RAW_BLOCK_DEVICE ? (
                       <Input
                         name="path"
                         value={values.path}
@@ -734,6 +755,49 @@ const CreateVolume = (props) => {
                         error={touched.path && errors.path}
                         onBlur={handleOnBlur}
                       />
+                    ) : (
+                      <>
+                        <SizeFieldContainer>
+                          <Input
+                            name="sizeInput"
+                            type="number"
+                            min="1"
+                            value={values.sizeInput}
+                            onChange={handleChange('sizeInput')}
+                            label={`${intl.translate('volume_size')}*`}
+                            error={touched.sizeInput && errors.sizeInput}
+                            onBlur={handleOnBlur}
+                          />
+                          <SizeUnitFieldSelectContainer>
+                            <Input
+                              clearable={false}
+                              type="select"
+                              options={optionsSizeUnits}
+                              noOptionsMessage={() =>
+                                intl.translate('no_results')
+                              }
+                              name="selectedUnit"
+                              onChange={handleSelectChange('selectedUnit')}
+                              value={getSelectedObjectItem(
+                                optionsSizeUnits,
+                                values?.selectedUnit,
+                              )}
+                              error={
+                                touched.selectedUnit && errors.selectedUnit
+                              }
+                              onBlur={handleOnBlur}
+                            />
+                          </SizeUnitFieldSelectContainer>
+                        </SizeFieldContainer>
+                        <Input
+                          name="vgName"
+                          value={values.vgName}
+                          onChange={handleChange('vgName')}
+                          label={`Volume Group Name*`}
+                          error={touched.vgName && errors.vgName}
+                          onBlur={handleOnBlur}
+                        />
+                      </>
                     )}
                     <CheckboxContainer>
                       <Checkbox
