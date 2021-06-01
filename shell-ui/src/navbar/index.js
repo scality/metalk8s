@@ -115,7 +115,7 @@ const SolutionsNavbar = ({
   useLayoutEffect(() => {
     const savedRedirectUri = localStorage.getItem('redirectUrl');
     if (savedRedirectUri) {
-      prefetch(savedRedirectUri);
+      prefetch(savedRedirectUri).catch(() => console.log(`Failed to preload ${savedRedirectUri}`));;
     }
   }, []);
 

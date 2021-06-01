@@ -147,7 +147,7 @@ export const Navbar = ({
   const accessiblePaths = getAccessiblePathsFromOptions(options, userGroups);
   useLayoutEffect(() => {
     accessiblePaths.forEach((accessiblePath) => {
-      prefetch(accessiblePath);
+      prefetch(accessiblePath).catch(() => console.log(`Failed to preload ${accessiblePath}`));
     });
   }, [JSON.stringify(accessiblePaths)]);
 
