@@ -38,7 +38,7 @@
         },
         "accessModes": ["ReadWriteOnce"],
         "persistentVolumeReclaimPolicy": "Retain",
-        "storageClassName": "hyperdrive-data",
+        "storageClassName": "ssd-ext4",
         "mountOptions": ["noatime", "data=ordered", "barrier=1"],
         "volumeMode": "Filesystem",
         "nodeAffinity": {

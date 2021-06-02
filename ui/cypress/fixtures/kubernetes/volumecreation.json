@@ -95,7 +95,7 @@
        "rawBlockDevice":{
           "devicePath":"/sddsf"
        },
-       "storageClassName":"hyperdrive-data",
+       "storageClassName":"ssd-ext4",
        "template":{
           "metadata":{
              "creationTimestamp":null
