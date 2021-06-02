@@ -5,8 +5,14 @@
 {%- from "metalk8s/map.jinja" import networks with context %}
 {%- from "metalk8s/map.jinja" import proxies with context %}
 
-{%- set registry_ip = metalk8s.endpoints['repositories'].ip %}
-{%- set registry_port = metalk8s.endpoints['repositories'].ports.http %}
+{%- set registry_eps = [] %}
+{%- set pillar_endpoints = metalk8s.endpoints.repositories %}
+{%- if not pillar_endpoints | is_list %}
+  {%- set pillar_endpoints = [pillar_endpoints] %}
+{%- endif %}
+{%- for ep in pillar_endpoints %}
+  {%- do registry_eps.append('"http://' ~ ep.ip ~ ":" ~ ep.ports.http ~ '"') %}
+{%- endfor %}
 
 include:
   - metalk8s.repo
@@ -102,7 +108,7 @@ Configure registry IP in containerd conf:
         version = 2
 
         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ repo.registry_endpoint }}"]
-        endpoint = ["http://{{ registry_ip }}:{{ registry_port }}"]
+        endpoint = [{{ registry_eps | join(",") }}]
 
         [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
         runtime_type = "io.containerd.runc.v2"

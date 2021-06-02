@@ -53,6 +53,9 @@
   `systemd` cgroupDriver for Kubelet and containerd
   (PR[#3377](https://github.com/scality/metalk8s/pull/3377))
 
+- Allow to manually deploy a second registry container
+  (PR[#3400](https://github.com/scality/metalk8s/pull/3400))
+
 ### Breaking changes
 
 - [#2199](https://github.com/scality/metalk8s/issues/2199) - Prometheus label

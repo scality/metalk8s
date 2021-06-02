@@ -20,6 +20,7 @@ do not have a working MetalK8s_ setup.
    solutions
    changing_node_hostname
    metalk8s-utils
+   registry_ha
    listening_processes
    troubleshooting/index
    sosreport

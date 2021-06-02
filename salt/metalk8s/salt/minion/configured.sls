@@ -16,6 +16,7 @@ Configure salt minion:
     - backup: false
     - defaults:
         debug: {{ metalk8s.debug }}
+        {#- NOTE: We only consider a single master for the moment #}
         master_hostname: {{ metalk8s.endpoints['salt-master'].ip }}
         minion_id: {{ grains.id }}
         saltenv: {{ saltenv }}

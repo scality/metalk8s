@@ -3,8 +3,27 @@
 {%- from "metalk8s/map.jinja" import repo with context %}
 {%- from "metalk8s/map.jinja" import package_exclude_list with context %}
 
-{%- set repo_host = pillar.metalk8s.endpoints['repositories'].ip %}
-{%- set repo_port = pillar.metalk8s.endpoints['repositories'].ports.http %}
+{%- set repo_base_urls = [] %}
+{%- if repo.local_mode %}
+  {%- do repo_base_urls.append("file://" ~
+                               salt.metalk8s.get_archives()[saltenv].path ~ "/" ~
+                               repo.relative_path ~ "/" ~
+                               grains['os_family'].lower() ~ "/" ~
+                               "$metalk8s_osmajorrelease") %}
+
+{%- else %}
+  {%- set pillar_endpoints = metalk8s.endpoints.repositories %}
+  {%- if not pillar_endpoints | is_list %}
+    {%- set pillar_endpoints = [pillar_endpoints] %}
+  {%- endif %}
+  {%- for endpoint in pillar_endpoints %}
+    {%- do repo_base_urls.append("http://" ~
+                                endpoint.ip ~ ":" ~ endpoint.ports.http ~
+                                "/" ~ saltenv ~ "/" ~
+                                grains['os_family'].lower() ~ "/" ~
+                                "$metalk8s_osmajorrelease") %}
+  {%- endfor %}
+{%- endif %}
 
 Set metalk8s_osmajorrelease in yum vars:
   file.managed:
@@ -41,29 +60,25 @@ Ensure yum versionlock plugin is enabled:
       - pkg: Install yum-plugin-versionlock
 
 {%- for repo_name, repo_config in repo.repositories.items() %}
-  {%- if repo.local_mode %}
-    {%- set repo_base_url = "file://" ~
-                            salt.metalk8s.get_archives()[saltenv].path ~ "/" ~
-                            repo.relative_path ~ "/" ~
-                            grains['os_family'].lower() ~ "/" ~
-                            "$metalk8s_osmajorrelease" %}
-  {%- else %}
-    {%- set repo_base_url = "http://" ~ repo_host ~ ':' ~ repo_port ~
-                            "/" ~ saltenv ~ "/" ~
-                            grains['os_family'].lower() ~ "/" ~
-                            "$metalk8s_osmajorrelease" %}
-  {%- endif %}
-  {%- set repo_url = repo_base_url ~ "/" ~ repo_name ~
-                     "-el$metalk8s_osmajorrelease" %}
+  {%- set repo_urls = [] %}
+  {%- for base_url in repo_base_urls %}
+    {%- do repo_urls.append(base_url ~ "/" ~
+                            repo_name ~ "-el$metalk8s_osmajorrelease") %}
+  {%- endfor %}
   {%- set gpg_keys = [] %}
   {%- for gpgkey in repo_config.gpgkeys %}
-    {%- do gpg_keys.append(repo_url ~ "/" ~ gpgkey) %}
+    {# NOTE: We only use the first repo URL for GPG key since these are the same,
+       and we do not want to depend on both repos to import this key.
+       When installing a package, if the package's GPG key is not already imported
+       on the host, it will try to import **all** GPG keys listed and will fail if
+       unable to download one of them #}
+    {%- do gpg_keys.append(repo_urls[0] ~ "/" ~ gpgkey) %}
   {%- endfor %}
 Configure {{ repo_name }} repository:
   pkgrepo.managed:
     - name: {{ repo_name }}
     - humanname: {{ repo_config.humanname }}
-    - baseurl: {{ repo_url }}
+    - baseurl: {{ repo_urls | join(' ') }}
     - gpgcheck: {{ repo_config.gpgcheck }}
   {%- if gpg_keys %}
     - gpgkey: "{{ gpg_keys | join (' ') }}"

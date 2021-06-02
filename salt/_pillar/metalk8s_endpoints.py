@@ -30,19 +30,28 @@ def ext_pillar(minion_id, pillar, kubeconfig):  # pylint: disable=unused-argumen
 
     else:
         endpoints = {}
+        errors = []
 
         for namespace, services in services.items():
             for service in services:
+                service_endpoints = []
                 try:
                     service_endpoints = __salt__[
                         "metalk8s_kubernetes.get_service_endpoints"
                     ](service, namespace, kubeconfig)
                 except CommandExecutionError as exc:
-                    service_endpoints = __utils__["pillar_utils.errors_to_dict"](
-                        str(exc)
-                    )
+                    errors.append(str(exc))
+
+                # NOTE: This is needed for downgrade as this pillar
+                # is used for downgrade
+                # To be removed in 2.11
+                if len(service_endpoints) == 1:
+                    service_endpoints = service_endpoints[0]
+
                 endpoints.update({service: service_endpoints})
-                __utils__["pillar_utils.promote_errors"](endpoints, service)
+
+        if errors:
+            endpoints.update(__utils__["pillar_utils.errors_to_dict"](errors))
 
     result = {"metalk8s": {"endpoints": endpoints}}
 

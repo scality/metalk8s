@@ -180,17 +180,19 @@ def get_service_endpoints(service, namespace, kubeconfig):
         raise CommandExecutionError(error_tpl.format(service, namespace)) from exc
 
     try:
-        # Extract hostname, ip and node_name
-        result = {
-            k: v
-            for k, v in endpoint["subsets"][0]["addresses"][0].items()
-            if k in ["hostname", "ip", "node_name"]
-        }
+        result = []
 
-        # Add ports info to result dict
-        result["ports"] = {
-            port["name"]: port["port"] for port in endpoint["subsets"][0]["ports"]
-        }
+        for address in endpoint["subsets"][0]["addresses"]:
+            # Extract hostname, ip and node_name
+            res_ep = {
+                k: v for k, v in address.items() if k in ["hostname", "ip", "node_name"]
+            }
+
+            # Add ports info to result dict
+            res_ep["ports"] = {
+                port["name"]: port["port"] for port in endpoint["subsets"][0]["ports"]
+            }
+            result.append(res_ep)
     except (AttributeError, IndexError, KeyError, TypeError) as exc:
         raise CommandExecutionError(error_tpl.format(service, namespace)) from exc
 

@@ -66,6 +66,7 @@ Expose container images for Solution {{ display_name }}:
     - source: {{ mount_path }}/registry-config.inc.j2
     - name: {{ repo.config.directory }}/{{ solution.id }}-registry-config.inc
     - template: jinja
+    - makedirs: true
     - defaults:
         repository: {{ solution.id }}
         registry_root: {{ mount_path }}/images

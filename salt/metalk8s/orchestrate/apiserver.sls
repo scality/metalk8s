@@ -16,8 +16,7 @@ Check pillar on {{ node }}:
     - tgt: {{ node }}
     - kwarg:
         keys:
-          - metalk8s.endpoints.repositories.ip
-          - metalk8s.endpoints.repositories.ports.http
+          - metalk8s.endpoints.repositories
         # We cannot raise when using `salt.function` as we need to return
         # `False` to have a failed state
         # https://github.com/saltstack/salt/issues/55503
