@@ -56,6 +56,10 @@
 - Allow to manually deploy a second registry container
   (PR[#3400](https://github.com/scality/metalk8s/pull/3400))
 
+- [#3244](https://github.com/scality/metalk8s/issues/3244) - Support 
+  LVMLogicalVolume volume in the UI
+  (PR[#3410](https://github.com/scality/metalk8s/pull/3410))
+
 ### Breaking changes
 
 - [#2199](https://github.com/scality/metalk8s/issues/2199) - Prometheus label

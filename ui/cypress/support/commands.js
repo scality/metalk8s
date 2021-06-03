@@ -24,8 +24,7 @@
 // -- This is will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 import 'cypress-wait-until';
-import '@testing-library/cypress/add-commands'
-
+import '@testing-library/cypress/add-commands';
 
 import {
   EMPTY_QUERY_RANGE_RESULT,
@@ -33,137 +32,140 @@ import {
   genValues,
 } from './mockUtils';
 
-Cypress.Commands.add('setupMocks', (
-  config = 'config.json',
-  shellConfig = 'shell-config.json',
-) => {
-  // Static files
+Cypress.Commands.add(
+  'setupMocks',
+  (config = 'config.json', shellConfig = 'shell-config.json') => {
+    // Static files
 
-  const stubConfig = typeof config === 'string' ? { fixture: config } : config;
-  const stubShellConfig = typeof config === 'string' ? { fixture: shellConfig } : config;
+    const stubConfig =
+      typeof config === 'string' ? { fixture: config } : config;
+    const stubShellConfig =
+      typeof config === 'string' ? { fixture: shellConfig } : config;
 
-  if (stubShellConfig)
-    cy.route2('GET', '/shell/config.json', stubShellConfig);
-  if (stubConfig)
-    cy.route2('GET', '/config.json', stubConfig);
-  cy.route2('GET', '/oidc/.well-known/openid-configuration', {
-    fixture: 'openid-config.json',
-  });
+    if (stubShellConfig)
+      cy.route2('GET', '/shell/config.json', stubShellConfig);
+    if (stubConfig) cy.route2('GET', '/config.json', stubConfig);
+    cy.route2('GET', '/oidc/.well-known/openid-configuration', {
+      fixture: 'openid-config.json',
+    });
 
-  // SaltAPI
-  cy.route2({ method: 'POST', pathname: /^\/api\/salt\/$/ }, (req) => {
-    const saltArgs = JSON.parse(req.body);
-    if (
-      saltArgs.fun === 'grains.item' &&
-      saltArgs.arg.includes('ip_interfaces')
-    )
-      req.reply({ fixture: 'salt-api/ip-grains.json' });
-    else
-      req.reply({
-        body: 'Not supported in Cypress mock.',
-        statusCode: 500,
-      });
-  });
-  cy.route2('POST', '/api/salt/login', { fixture: 'salt-api/login.json' });
+    // SaltAPI
+    cy.route2({ method: 'POST', pathname: /^\/api\/salt\/$/ }, (req) => {
+      const saltArgs = JSON.parse(req.body);
+      if (
+        saltArgs.fun === 'grains.item' &&
+        saltArgs.arg.includes('ip_interfaces')
+      )
+        req.reply({ fixture: 'salt-api/ip-grains.json' });
+      else
+        req.reply({
+          body: 'Not supported in Cypress mock.',
+          statusCode: 500,
+        });
+    });
+    cy.route2('POST', '/api/salt/login', { fixture: 'salt-api/login.json' });
 
-  // Kubernetes
-  cy.route2(
-    {
-      method: 'GET',
-      pathname: '/api/kubernetes/api/v1/namespaces',
-      query: { fieldSelector: 'metadata.name=kube-system' },
-    },
-    { fixture: 'kubernetes/namespace-kube-system.json' },
-  );
-  cy.fixture('kubernetes/nodes.json').then((nodes) => {
-    cy.route2('GET', '/api/kubernetes/api/v1/nodes', { body: nodes });
+    // Kubernetes
+    cy.route2(
+      {
+        method: 'GET',
+        pathname: '/api/kubernetes/api/v1/namespaces',
+        query: { fieldSelector: 'metadata.name=kube-system' },
+      },
+      { fixture: 'kubernetes/namespace-kube-system.json' },
+    );
+    cy.fixture('kubernetes/nodes.json').then((nodes) => {
+      cy.route2('GET', '/api/kubernetes/api/v1/nodes', { body: nodes });
+
+      cy.route2(
+        'GET',
+        /^\/api\/kubernetes\/api\/v1\/nodes\/[a-z0-9_\-]+$/,
+        (req) => {
+          console.log(req);
+          req.reply({ body: nodes.items[0] });
+        },
+      );
+    });
+
+    cy.route2('GET', '/api/kubernetes/api/v1/persistentvolumes', {
+      fixture: 'kubernetes/persistentvolumes.json',
+    });
 
     cy.route2(
       'GET',
-      /^\/api\/kubernetes\/api\/v1\/nodes\/[a-z0-9_\-]+$/,
+      '/api/kubernetes/apis/storage.metalk8s.scality.com/v1alpha1/volumes',
+      { fixture: 'kubernetes/volumes.json' },
+    );
+
+    cy.route2('GET', '/api/kubernetes/api/v1/persistentvolumeclaims', {
+      fixture: 'kubernetes/persistentvolumeclaims.json',
+    });
+
+    cy.route2('GET', 'api/kubernetes/apis/storage.k8s.io/v1/storageclasses', {
+      fixture: 'kubernetes/storageclasses.json',
+    });
+
+    // Prometheus
+    cy.route2(
+      {
+        method: 'GET',
+        pathname: /^\/api\/prometheus\/api\/v1\/query$/,
+      },
       (req) => {
-        console.log(req);
-        req.reply({ body: nodes.items[0] });
+        const url = new URL(req.url);
+        const searchParams = new URLSearchParams(url.search);
+        const query = searchParams.get('query');
+
+        if (query === 'node_uname_info')
+          req.reply({ fixture: 'prometheus/node-uname-info.json' });
+        else if (query === 'kubelet_volume_stats_used_bytes')
+          req.reply({ fixture: 'prometheus/query-volumes-used.json' });
+        else if (query === 'kubelet_volume_stats_capacity_bytes')
+          req.reply({ fixture: 'prometheus/query-volumes-capacity.json' });
+        else if (
+          query === 'irate(node_disk_io_time_seconds_total[1h]) * 1000000'
+        )
+          req.reply({ fixture: 'prometheus/query-volumes-latency.json' });
+        else if (/^sum\(up\{job="[a-z0-9_\-]+"\}\)$/.exec(query))
+          req.reply({ fixture: 'prometheus/query-up-ok.json' });
+        else req.reply({ body: { error: 'Not yet mocked!' } });
       },
     );
-  });
-
-  cy.route2('GET', '/api/kubernetes/api/v1/persistentvolumes', {
-    fixture: 'kubernetes/persistentvolumes.json',
-  });
-
-  cy.route2(
-    'GET',
-    '/api/kubernetes/apis/storage.metalk8s.scality.com/v1alpha1/volumes',
-    { fixture: 'kubernetes/volumes.json' },
-  );
-
-  cy.route2('GET', '/api/kubernetes/api/v1/persistentvolumeclaims', {
-    fixture: 'kubernetes/persistentvolumeclaims.json',
-  });
-
-  cy.route2('GET', 'api/kubernetes/apis/storage.k8s.io/v1/storageclasses', {
-     fixture: 'kubernetes/storageclasses.json',
-  });
-
-  // Prometheus
-  cy.route2(
-    {
-      method: 'GET',
-      pathname: /^\/api\/prometheus\/api\/v1\/query$/,
-    },
-    (req) => {
-      const url = new URL(req.url);
-      const searchParams = new URLSearchParams(url.search);
-      const query = searchParams.get('query');
-
-      if (query === 'node_uname_info')
-        req.reply({ fixture: 'prometheus/node-uname-info.json' });
-      else if (query === 'kubelet_volume_stats_used_bytes')
-        req.reply({ fixture: 'prometheus/query-volumes-used.json' });
-      else if (query === 'kubelet_volume_stats_capacity_bytes')
-        req.reply({ fixture: 'prometheus/query-volumes-capacity.json' });
-      else if (query === 'irate(node_disk_io_time_seconds_total[1h]) * 1000000')
-        req.reply({ fixture: 'prometheus/query-volumes-latency.json' });
-      else if (/^sum\(up\{job="[a-z0-9_\-]+"\}\)$/.exec(query))
-        req.reply({ fixture: 'prometheus/query-up-ok.json' });
-      else req.reply({ body: { error: 'Not yet mocked!' } });
-    },
-  );
-  cy.route2(
-    {
-      method: 'GET',
-      pathname: /^\/api\/prometheus\/api\/v1\/query_range$/,
-    },
-    (req) => {
-      const url = new URL(req.url);
-      const searchParams = new URLSearchParams(url.search);
-      const query = searchParams.get('query');
-      const match = query.match(/instance=~"([^"]+:9100)"/);
-      if (match !== null) {
-        const [_, instance] = match;
-        req.reply({
-          body: makeQueryRangeResult({
-            metric: { instance },
-            values: genValues({
-              start: new Date(searchParams.get('start')),
-              end: new Date(searchParams.get('end')),
-              step: parseInt(searchParams.get('step')),
+    cy.route2(
+      {
+        method: 'GET',
+        pathname: /^\/api\/prometheus\/api\/v1\/query_range$/,
+      },
+      (req) => {
+        const url = new URL(req.url);
+        const searchParams = new URLSearchParams(url.search);
+        const query = searchParams.get('query');
+        const match = query.match(/instance=~"([^"]+:9100)"/);
+        if (match !== null) {
+          const [_, instance] = match;
+          req.reply({
+            body: makeQueryRangeResult({
+              metric: { instance },
+              values: genValues({
+                start: new Date(searchParams.get('start')),
+                end: new Date(searchParams.get('end')),
+                step: parseInt(searchParams.get('step')),
+              }),
             }),
-          }),
-        });
-      } else req.reply({ body: EMPTY_QUERY_RANGE_RESULT });
-    },
-  );
-  cy.route2('GET', '/api/prometheus/api/v1/alerts', {
-    fixture: 'prometheus/empty-alerts.json',
-  });
+          });
+        } else req.reply({ body: EMPTY_QUERY_RANGE_RESULT });
+      },
+    );
+    cy.route2('GET', '/api/prometheus/api/v1/alerts', {
+      fixture: 'prometheus/empty-alerts.json',
+    });
 
-  // Alertmanager
-  cy.route2('GET', '/api/alertmanager/api/v2/alerts', {
-    fixture: 'alertmanager/alerts.json',
-  });
-});
+    // Alertmanager
+    cy.route2('GET', '/api/alertmanager/api/v2/alerts', {
+      fixture: 'alertmanager/alerts.json',
+    });
+  },
+);
 
 const ADMIN_JWT = {
   id_token:
@@ -200,7 +202,8 @@ const BAD_ADMIN_JWT = {
   id_token: 'bad_token_id',
   access_token: 'bad_token_access',
   token_type: 'bearer',
-  scope: 'openid profile email groups offline_access audience:server:client_id:oidc-auth-client',
+  scope:
+    'openid profile email groups offline_access audience:server:client_id:oidc-auth-client',
   profile: null,
 };
 
@@ -229,9 +232,9 @@ Cypress.Commands.add('stubHistory', () => {
 const VOLUME_NAME = 'test-volume-sparse';
 const STORAGECLASS = 'metalk8s';
 const NODE_NAME = 'bootstrap';
-const VOLUME_TYPE = 'sparseLoopDevice';
 const VOLUME_SIZE = '1 GiB';
-Cypress.Commands.add('fillVolumeCreationForm', () => {
+
+Cypress.Commands.add('fillVolumeCreationForm', (volume_type) => {
   // The following steps are to fill the required fields of create volume form
   cy.get('input[name=name]').type(VOLUME_NAME);
   cy.findByText(/node\*/i)
@@ -250,6 +253,6 @@ Cypress.Commands.add('fillVolumeCreationForm', () => {
   cy.findByText(/type\*/i)
     .next('.sc-input-wrapper')
     .click();
-  cy.get('.sc-select__menu').find(`[data-cy="type-${VOLUME_TYPE}"]`).click();
+  cy.get('.sc-select__menu').find(`[data-cy="type-${volume_type}"]`).click();
   cy.get('input[name=sizeInput]').type(VOLUME_SIZE);
 });

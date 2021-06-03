@@ -1,9 +1,10 @@
+const VOLUME_TYPE_SPARSELOOP = 'sparseLoopDevice';
 // Test the error scenario of volume creation
 beforeEach(() => {
   cy.setupMocks();
   cy.login();
   cy.visit('/volumes/createVolume');
-  cy.fillVolumeCreationForm();
+  cy.fillVolumeCreationForm(VOLUME_TYPE_SPARSELOOP);
 });
 
 describe('volume creation fails', () => {
