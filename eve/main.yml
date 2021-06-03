@@ -3,8 +3,10 @@ version: "0.2"
 
 branches:
   # yamllint disable rule:line-length
-  user/*, feature/*, improvement/*, bugfix/*, w/*, q/*, hotfix/*, dependabot/*, documentation/*, release/*:
+  feature/*, improvement/*, bugfix/*, w/*, q/*, hotfix/*, dependabot/*, documentation/*, release/*:
     stage: pre-merge
+  user/*:
+    stage: publish
 
 models:
   # --- Re-usable steps (no parameters) ---
@@ -2739,6 +2741,10 @@ stages:
       type: local
     steps:
       - ShellCommand: *add_final_status_artifact_failed
+      - SetProperty:
+          name: Set artifacts_name property - for dev purposes
+          property: artifacts_name
+          value: 'github:scality:metalk8s:staging-2.9.3.r210601092216.a6ccd64.pre-merge.00035075'
       - SetProperty: *set_premerge_artifacts_name
       - SetProperty: *set_premerge_url
       - TriggerStages:
@@ -2794,18 +2800,7 @@ stages:
             IS_LATEST_DEV: '%(prop:is_latest_dev)s'
             IS_LATEST_STABLE: '%(prop:is_latest_stable:-unset)s'
             VERSION: '%(prop:metalk8s_version)s'
-      - SetPropertyFromCommand:
-          name: Set image_registry_url property
-          property: image_registry_url
-          command: |
-            if [ "$USE_PRODUCTION_REGISTRY" = true ]; then
-                PROJECT='%(secret:harbor_prod_project)s'
-            else
-                PROJECT='%(secret:harbor_dev_project)s'
-            fi
-            echo "$REGISTRY_HOST/$PROJECT"
-          env: *_env_image_registry
-      - SetPropertyFromCommand:
+      - SetProperty:
           name: Set is_dev property
           property: is_dev
           value: false
@@ -2817,21 +2812,28 @@ stages:
           haltOnFailure: true
       - ShellCommand:
           name: Load shell-ui image
-          command: docker load < shell-ui.tar.gz
+          command: |
+            docker load < shell-ui.tar.gz
           haltOnFailure: true
       - ShellCommand: &image_registry_tag_shell_ui
           name: Tag shell-ui image with current version
-          command: >
-            docker image tag "$IMAGE_SRC" "%(image_registry_url)s/$IMAGE_DST"
+          command: |
+            if [ "$USE_PRODUCTION_REGISTRY" = true ]; then
+                PROJECT='%(secret:harbor_prod_project)s'
+            else
+                PROJECT='%(secret:harbor_dev_project)s'
+            fi
+            docker tag "$IMAGE_SRC" "$REGISTRY_HOST/$PROJECT/$IMAGE_DST"
           env: &_env_image_registry_tag_shell_ui
+            <<: *_env_image_registry
             IMAGE_SRC: 'shell-ui:v%(prop:metalk8s_version)s'
             IMAGE_DST: 'shell-ui:v%(prop:metalk8s_version)s'
       - ShellCommand:
           <<: *image_registry_tag_shell_ui
-          name: Tag shell-ui image with short commit revision
+          name: Tag shell-ui image with commit short revision
           env:
             <<: *_env_image_registry_tag_shell_ui
-            IMAGE_DST: 'shell-ui:v%(prop:metalk8s_version)s-%(prop:short_commit_revision)s'
+            IMAGE_DST: 'shell-ui:v%(prop:metalk8s_version)s-%(prop:commit_short_revision)s'
           doStepIf: '%(prop:is_dev:-true)s'
       - ShellCommand:
           <<: *image_registry_tag_shell_ui
@@ -2839,19 +2841,25 @@ stages:
           env:
             <<: *_env_image_registry_tag_shell_ui
             IMAGE_DST: 'shell-ui:stable'
-          doStepIf: '%(prop:is_latest_stable:-false)s'
+          doStepIf: '%(prop:is_latest_stable)s'
       - ShellCommand:
           <<: *image_registry_tag_shell_ui
           name: Tag shell-ui image as latest
           env:
             <<: *_env_image_registry_tag_shell_ui
             IMAGE_DST: 'shell-ui:latest'
-          doStepIf: '%(prop:is_latest_dev:-false)s'
+          doStepIf: '%(prop:is_latest_dev)s'
       - ShellCommand:
           name: Push shell-ui image to the remote registry
           command: |
+            if [ "$USE_PRODUCTION_REGISTRY" = true ]; then
+                PROJECT='%(secret:harbor_prod_project)s'
+            else
+                PROJECT='%(secret:harbor_dev_project)s'
+            fi
             echo "The following $IMAGE_NAME tags will be pushed:"
-            docker images "%(image_registry_url)s/$IMAGE_NAME"
-            docker image push "%(image_registry_url)s/$IMAGE_NAME"
+            docker images "$REGISTRY_HOST/$PROJECT/$IMAGE_NAME"
+            docker push "$REGISTRY_HOST/$PROJECT/$IMAGE_NAME"
           env:
+            <<: *_env_image_registry
             IMAGE_NAME: shell-ui
