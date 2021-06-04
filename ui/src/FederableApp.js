@@ -59,12 +59,18 @@ const RouterWithBaseName = ({ children }) => {
   );
 };
 
-export const FederableApp = () => {
+function WithShell({children}) {
+    return <>{children}</>
+}
+
+export default function FederableApp() {
   return (
-    <Provider store={store}>
-      <RouterWithBaseName>
-        <App />
-      </RouterWithBaseName>
-    </Provider>
+    <WithShell>
+        <Provider store={store}>
+        <RouterWithBaseName>
+            <App />
+        </RouterWithBaseName>
+        </Provider>
+    </WithShell>
   );
-};
+}
