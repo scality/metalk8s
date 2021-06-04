@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react-hooks';
 import {
   sortCapacity,
   addMissingDataPoint,
@@ -7,6 +7,14 @@ import {
   linuxDrivesNamingIncrement,
   formatDateToMid1,
 } from './utils';
+import { MetricsTimeSpanProvider, useMetricsTimeSpan } from '../hooks';
+import {
+  QUERY_LAST_ONE_HOUR,
+  QUERY_LAST_SEVEN_DAYS,
+  SAMPLE_DURATION_LAST_ONE_HOUR,
+  SAMPLE_DURATION_LAST_SEVEN_DAYS,
+  SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
+} from '../constants';
 
 const testcases = [
   { storageCapacity: '1Ki' },
@@ -258,6 +266,62 @@ jest.mock('react-router-dom', () => {
     }),
     useLocation: () => location,
   };
+});
+
+describe('useMetricsTimeSpan hook', () => {
+  it('should render properly with the provider', () => {
+    const wrapper = ({ children }) => (
+      <MetricsTimeSpanProvider>{children}</MetricsTimeSpanProvider>
+    );
+
+    const { result } = renderHook(() => useMetricsTimeSpan(), { wrapper });
+    expect(result.error).not.toEqual(
+      Error(
+        "useMetricsTimeSpan hook can't be use outside <MetricsTimeSpanProvider/>",
+      ),
+    );
+  });
+
+  it('should throw an error if no provider', () => {
+    const { result } = renderHook(() => useMetricsTimeSpan());
+    expect(result.error).toEqual(
+      Error(
+        "useMetricsTimeSpan hook can't be use outside <MetricsTimeSpanProvider/>",
+      ),
+    );
+  });
+
+  it('setter/getter should set/get context value', () => {
+    const wrapper = ({ children }) => (
+      <MetricsTimeSpanProvider>{children}</MetricsTimeSpanProvider>
+    );
+    const { result } = renderHook(() => useMetricsTimeSpan(), { wrapper });
+    expect(typeof result.current[1]).toBe('function');
+    expect(result.current[0]).toEqual(SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS);
+    act(() => result.current[1](2000));
+    expect(result.current[0]).toEqual(2000);
+  });
+
+  it('should modify urlQuery if set context value', () => {
+    const wrapper = ({ children }) => (
+      <MetricsTimeSpanProvider>{children}</MetricsTimeSpanProvider>
+    );
+    jest
+      .spyOn(URLSearchParams.prototype, 'get')
+      .mockReturnValue(QUERY_LAST_SEVEN_DAYS);
+    const metricHook = renderHook(() => useMetricsTimeSpan(), {
+      wrapper,
+    });
+    expect(metricHook.result.current[0]).toBe(SAMPLE_DURATION_LAST_SEVEN_DAYS);
+
+    jest
+      .spyOn(URLSearchParams.prototype, 'get')
+      .mockReturnValue(QUERY_LAST_ONE_HOUR);
+    const metricHook2 = renderHook(() => useMetricsTimeSpan(), {
+      wrapper,
+    });
+    expect(metricHook2.result.current[0]).toBe(SAMPLE_DURATION_LAST_ONE_HOUR);
+  });
 });
 
 describe('useTableSortURLSync hook', () => {
