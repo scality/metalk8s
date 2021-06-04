@@ -1,14 +1,8 @@
-import './index';
-import packageJson from '../../package.json';
-const { version } = packageJson;
 import { useContext, createContext } from 'react';
 import {useQuery, QueryClientProvider, QueryClient} from 'react-query';
 
-export const alertLibrary = window.shellUIAlerts[version];
-alertLibrary.createAlertContext(createContext);
-
 export const TestAlert = () => {
-    const alerts = alertLibrary.useAlerts(useContext)({alertname: 'KubeCPUOvercommit'});
+    const alerts = useAlerts({alertname: 'KubeCPUOvercommit'});
     return <>{JSON.stringify(alerts)}</>
 }
 
