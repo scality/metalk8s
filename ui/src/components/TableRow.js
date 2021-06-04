@@ -7,7 +7,7 @@ import { intl } from '../translations/IntlGlobalProvider';
 const TableRowStyle = styled.div`
   &:hover,
   &:focus {
-    background-color: ${(props) => props.theme.brand.highlight};
+    background-color: ${(props) => props.theme.highlight};
     outline: none;
     cursor: pointer;
   }
@@ -19,23 +19,23 @@ const TableRowStyle = styled.div`
   border-right: 4px solid
     ${(props) =>
       props.isSelected
-        ? props.theme.brand.selectedActive
-        : props.theme.brand.backgroundLevel2};
+        ? props.theme.selectedActive
+        : props.theme.backgroundLevel2};
 
   background-color: ${(props) =>
     props.isSelected
-      ? props.theme.brand.highlight
-      : props.theme.brand.backgroundLevel2};
+      ? props.theme.highlight
+      : props.theme.backgroundLevel2};
 `;
 
 export const TooltipContent = styled.div`
-  color: ${(props) => props.theme.brand.textSecondary};
+  color: ${(props) => props.theme.textSecondary};
   font-weight: ${fontWeight.bold};
   min-width: 60px;
 `;
 
 export const UnknownIcon = styled.i`
-  color: ${(props) => props.theme.brand.textSecondary};
+  color: ${(props) => props.theme.textSecondary};
   // Increase the height so that the users don't need to hover precisely on the hyphen.
   height: 30px;
   padding-top: ${padding.base};

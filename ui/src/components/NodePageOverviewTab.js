@@ -32,11 +32,11 @@ const InformationLabel = styled.span`
   min-width: 150px;
   font-weight: ${fontWeight.bold};
   font-size: ${fontSize.base};
-  color: ${(props) => props.theme.brand.textSecondary};
+  color: ${(props) => props.theme.textSecondary};
 `;
 
 const InformationValue = styled.span`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
 `;
 
@@ -65,7 +65,7 @@ const Detail = styled.div`
 `;
 
 const ActiveAlertTitle = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.bold};
   padding: 0 0 ${padding.base} 0;
@@ -85,11 +85,11 @@ const DeployButton = styled(Button)`
 const NodeDeploymentWrapper = styled.div`
   padding: ${padding.smaller} 0 0 ${padding.small};
   margin: ${padding.base} ${padding.base} 0 ${padding.base};
-  background-color: ${(props) => props.theme.brand.backgroundLevel3};
+  background-color: ${(props) => props.theme.backgroundLevel3};
 `;
 
 const NodeDeploymentTitle = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   font-weight: ${fontWeight.bold};
   font-size: ${fontSize.base};
 `;
@@ -100,7 +100,7 @@ const NodeDeploymentStatus = styled.div`
 `;
 
 const InfoMessage = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
   padding: ${padding.base};
 `;
@@ -110,7 +110,7 @@ const NodeDeploymentContent = styled.div`
 `;
 
 const ErrorLabel = styled.span`
-  color: ${(props) => props.theme.brand.statusCritical};
+  color: ${(props) => props.theme.statusCritical};
 `;
 
 const NodePageOverviewTab = (props) => {

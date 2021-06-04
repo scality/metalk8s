@@ -24,7 +24,7 @@ const ActiveAlertsCardContainer = styled.div`
 `;
 
 const ActiveAlertsTitle = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.large};
   font-weight: ${fontWeight.bold};
   padding: ${padding.small} 0 0 0;
@@ -33,7 +33,7 @@ const ActiveAlertsTitle = styled.div`
 `;
 
 const ActiveAlertsTableContainer = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   padding: 1rem;
   font-family: 'Lato';
   font-size: ${fontSize.base};
@@ -69,9 +69,9 @@ const ActiveAlertsTableContainer = styled.div`
     }
 
     .sc-emptytable {
-      background-color: ${(props) => props.theme.brand.backgroundLevel4};
+      background-color: ${(props) => props.theme.backgroundLevel4};
       > * {
-        background-color: ${(props) => props.theme.brand.backgroundLevel4};
+        background-color: ${(props) => props.theme.backgroundLevel4};
       }
     }
   }

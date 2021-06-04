@@ -31,7 +31,7 @@ const VolumeDetailCardContainer = styled.div`
 `;
 
 const VolumeTitleSection = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   padding: ${padding.large} 0 ${padding.larger} ${padding.large};
   display: flex;
   justify-content: space-between;
@@ -53,16 +53,16 @@ const InformationLabel = styled.span`
   min-width: 150px;
   font-weight: ${fontWeight.bold};
   font-size: ${fontSize.base};
-  color: ${(props) => props.theme.brand.textSecondary};
+  color: ${(props) => props.theme.textSecondary};
 `;
 
 const InformationValue = styled.span`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
 `;
 
 const ClickableInformationValue = styled.span`
-  color: ${(props) => props.theme.brand.selectedActive};
+  color: ${(props) => props.theme.selectedActive};
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.semibold};
   cursor: pointer;
@@ -91,7 +91,7 @@ const VolumeUsage = styled.div`
 `;
 
 const VolumeSectionTitle = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.bold};
   padding: 0 0 ${padding.base} 0;
@@ -119,12 +119,12 @@ const LoaderContainer = styled(Loader)`
 
 const LabelName = styled.span`
   font-size: ${fontSize.small};
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   padding-right: ${padding.base};
 `;
 const LabelValue = styled.span`
   font-size: ${fontSize.small};
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
 `;
 
 const AlertsCounterContainer = styled.div`
@@ -361,8 +361,8 @@ const VolumeDetailCard = (props) => {
                     bottomRightLabel={`${formatSizeForDisplay(
                       storageCapacity,
                     )} TOTAL`}
-                    color={theme.brand.infoSecondary}
-                    backgroundColor={theme.brand.buttonSecondary}
+                    color={theme.infoSecondary}
+                    backgroundColor={theme.buttonSecondary}
                   />
                 </ProgressBarContainer>
               ) : (

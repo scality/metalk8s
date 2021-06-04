@@ -43,13 +43,13 @@ const MetricGraphCardContainer = styled.div`
 
 // No data rendering should be extracted to an common style
 const NoMetricsText = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
   padding: ${padding.small} 0 0 ${padding.larger};
 `;
 
 const NoDataGraphText = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.small};
   padding: ${padding.small} 0 0 ${padding.larger};
 `;
@@ -234,7 +234,7 @@ const MetricsTab = (props) => {
       ticks: true,
       tickCount: 4,
       labelAngle: -50,
-      labelColor: theme.brand.textSecondary,
+      labelColor: theme.textSecondary,
     },
     title: null,
   };

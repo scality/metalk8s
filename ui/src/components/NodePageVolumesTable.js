@@ -33,7 +33,7 @@ import {
 import { UnknownIcon, TooltipContent } from './TableRow';
 
 const VolumeListContainer = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   font-family: 'Lato';
   font-size: ${fontSize.base};
 
@@ -48,10 +48,10 @@ const VolumeListContainer = styled.div`
 
     .thead > div[role='row'] {
       // seperation line between header and content
-      border-bottom: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
+      border-bottom: 1px solid ${(props) => props.theme.backgroundLevel1};
 
       div[role='columnheader'] {
-        color: ${(props) => props.theme.brand.textPrimary} !important;
+        color: ${(props) => props.theme.textPrimary} !important;
         cursor: pointer;
       }
     }
@@ -60,16 +60,16 @@ const VolumeListContainer = styled.div`
       margin: 0;
       text-align: left;
       // speration lines between rows
-      border-bottom: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
+      border-bottom: 1px solid ${(props) => props.theme.backgroundLevel1};
       :last-child {
         border-right: 0;
       }
     }
 
     .sc-emptytable {
-      background-color: ${(props) => props.theme.brand.backgroundLevel4};
+      background-color: ${(props) => props.theme.backgroundLevel4};
       > * {
-        background-color: ${(props) => props.theme.brand.backgroundLevel4};
+        background-color: ${(props) => props.theme.backgroundLevel4};
       }
     }
   }
@@ -347,7 +347,7 @@ const VolumeListTable = (props) => {
           textAlign: 'left',
           flex: 1,
           minWidth: '95px',
-          color: theme.brand.selectedActive,
+          color: theme.selectedActive,
         },
         Cell: ({ value, row }) => {
           return (
@@ -379,8 +379,8 @@ const VolumeListTable = (props) => {
               size="large"
               percentage={value}
               buildinLabel={`${value}%`}
-              color={theme.brand.infoSecondary}
-              backgroundColor={theme.brand.buttonSecondary}
+              color={theme.infoSecondary}
+              backgroundColor={theme.buttonSecondary}
             />
           );
         },

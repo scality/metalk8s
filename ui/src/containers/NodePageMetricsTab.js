@@ -352,7 +352,7 @@ const NodePageMetricsTab = ({
       // Boolean value that determines whether the axis should include ticks.
       ticks: true,
       tickCount: 4,
-      labelColor: theme.brand.textSecondary,
+      labelColor: theme.textSecondary,
     },
     title: null,
   };

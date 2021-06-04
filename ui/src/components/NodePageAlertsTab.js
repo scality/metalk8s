@@ -1,5 +1,4 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { Chips, EmptyTable } from '@scality/core-ui';
 import {
@@ -20,7 +19,7 @@ const NodeAlertsTab = styled(NodeTab)`
 `;
 
 const ActiveAlertsTableContainer = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   padding: 1rem;
   font-family: 'Lato';
   font-size: ${fontSize.base};
@@ -30,13 +29,13 @@ const ActiveAlertsTableContainer = styled.div`
     th {
       font-weight: bold;
       height: 56px;
-      border-bottom: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
+      border-bottom: 1px solid ${(props) => props.theme.backgroundLevel1};
     }
 
     td {
       margin: 0;
       padding: 0.5rem;
-      border-bottom: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
+      border-bottom: 1px solid ${(props) => props.theme.backgroundLevel1};
       text-align: left;
       padding: 5px;
 
@@ -45,9 +44,9 @@ const ActiveAlertsTableContainer = styled.div`
       }
     }
     .sc-emptytable {
-      background-color: ${(props) => props.theme.brand.backgroundLevel4};
+      background-color: ${(props) => props.theme.backgroundLevel4};
       > * {
-        background-color: ${(props) => props.theme.brand.backgroundLevel4};
+        background-color: ${(props) => props.theme.backgroundLevel4};
       }
     }
   }
@@ -69,7 +68,7 @@ const Body = styled.tbody`
 `;
 
 const ActiveAlertsText = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   font-weight: ${fontWeight.bold};
   font-size: ${fontSize.large};
 `;
@@ -82,7 +81,6 @@ const TitleContainer = styled.div`
 
 const NodePageAlertsTab = (props) => {
   const { alertsNode } = props;
-  const theme = useSelector((state) => state.config.theme);
   const query = useURLQuery();
   // Retrieve the severity filter from URL.
   // Filter more than one severity, the URL should be:
@@ -215,7 +213,7 @@ const NodePageAlertsTab = (props) => {
   return (
     <NodeAlertsTab>
       <TitleContainer>
-        <ActiveAlertsText theme={theme}>
+        <ActiveAlertsText>
           {intl.translate('active_alerts')}
         </ActiveAlertsText>
         <ActiveAlertsFilter />
