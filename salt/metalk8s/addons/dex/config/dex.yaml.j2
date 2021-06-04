@@ -10,6 +10,8 @@
     )
 %}
 
+{%- set control_plane_ingress_ep = salt.metalk8s_network.get_control_plane_ingress_endpoint() %}
+
 
 # Defaults for configuration of Dex (OIDC)
 apiVersion: addons.metalk8s.scality.com/v1alpha2
@@ -21,7 +23,7 @@ spec:
 
   # Dex server configuration
   config:
-    issuer: https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc
+    issuer: {{ control_plane_ingress_ep }}/oidc
 
     storage:
       config:
@@ -65,12 +67,12 @@ spec:
     - id: metalk8s-ui
       name: MetalK8s UI
       redirectURIs:
-      - https://{{ grains.metalk8s.control_plane_ip }}:8443/{{ metalk8s_ui_config.spec.basePath.lstrip('/') }}
+      - {{ control_plane_ingress_ep }}/{{ metalk8s_ui_config.spec.basePath.lstrip('/') }}
       secret: ybrMJpVMQxsiZw26MhJzCjA2ut
     - id: grafana-ui
       name: Grafana UI
       redirectURIs:
-      - https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana/login/generic_oauth
+      - {{ control_plane_ingress_ep }}/grafana/login/generic_oauth
       secret: 4lqK98NcsWG5qBRHJUqYM1
 
     enablePasswordDB: true

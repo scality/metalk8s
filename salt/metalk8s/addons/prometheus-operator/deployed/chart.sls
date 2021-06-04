@@ -20826,15 +20826,15 @@ data:
     [auth]
     oauth_auto_login = true
     [auth.generic_oauth]
-    api_url = "{% endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/userinfo{%- raw %}"
-    auth_url = "{% endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/auth{%- raw %}"
+    api_url = "{% endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}/oidc/userinfo{%- raw %}"
+    auth_url = "{% endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}/oidc/auth{%- raw %}"
     client_id = grafana-ui
     client_secret = 4lqK98NcsWG5qBRHJUqYM1
     enabled = true
     role_attribute_path = contains(`{% endraw %}{{ dex.spec.config.staticPasswords | map(attribute='email') | list | tojson }}{% raw %}`, email) && 'Admin'
     scopes = openid profile email groups
     tls_skip_verify_insecure = true
-    token_url = "{% endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/oidc/token{%- raw %}"
+    token_url = "{% endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}/oidc/token{%- raw %}"
     [grafana_net]
     url = https://grafana.net
     [log]
@@ -20845,7 +20845,7 @@ data:
     plugins = /var/lib/grafana/plugins
     provisioning = /etc/grafana/provisioning
     [server]
-    root_url = "{% endraw -%}https://{{ grains.metalk8s.control_plane_ip }}:8443/grafana{%- raw %}"
+    root_url = "{% endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}/grafana{%- raw %}"
 kind: ConfigMap
 metadata:
   labels:

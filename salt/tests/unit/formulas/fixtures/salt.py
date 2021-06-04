@@ -414,6 +414,12 @@ register_basic("metalk8s_network.get_kubernetes_service_ip")(
 register_basic("metalk8s_network.get_oidc_service_ip")(
     MagicMock(return_value="10.96.0.7")
 )
+register_basic("metalk8s_network.get_control_plane_ingress_ip")(
+    MagicMock(return_value="192.168.1.240")
+)
+register_basic("metalk8s_network.get_control_plane_ingress_endpoint")(
+    MagicMock(return_value="https://192.168.1.240:8443")
+)
 
 
 @register_basic("metalk8s_network.get_ip_from_cidrs")

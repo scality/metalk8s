@@ -82,35 +82,6 @@ metalk8s:
                           kind: LokiConfig
                           spec: {}
 
-    nginx-ingress-control-plane:
-      control-plane-ip.sls:
-        _cases:
-          "Bootstrap node is local minion (default)": {}
-          "Bootstrapping (errors in pillar)":
-            pillar_overrides:
-              metalk8s:
-                nodes:
-                  _errors: ["Some error when retrieving nodes"]
-          "Bootstrapping (no nodes in pillar)":
-            pillar_overrides:
-              metalk8s:
-                nodes: []
-          "Bootstrap minion is not local":
-            _subcases:
-              "From master":
-                mode: master
-              "From minion":
-                mode: minion
-            pillar_overrides:
-              metalk8s:
-                ca:
-                  minion: other-bootstrap
-                nodes:
-                  bootstrap:  # default grains.id
-                    roles: [master, infra, etcd]
-                  other-bootstrap:
-                    roles: [ca, bootstrap]
-
     prometheus-operator:
       post-cleanup.sls:
         _cases:

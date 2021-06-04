@@ -21,7 +21,6 @@ Create Control-Plane Ingress server private key:
     - unless:
       - test -f "{{ private_key_path }}"
 
-{# TODO: add Ingress Service IP once stable (LoadBalancer probably) #}
 {%- set certSANs = [
     grains.fqdn,
     'localhost',
@@ -30,7 +29,7 @@ Create Control-Plane Ingress server private key:
     'nginx-ingress-control-plane.metalk8s-ingress',
     'nginx-ingress-control-plane.metalk8s-ingress.svc',
     'nginx-ingress-control-plane.metalk8s-ingress.svc.cluster.local',
-    grains.metalk8s.control_plane_ip,
+    salt.metalk8s_network.get_control_plane_ingress_ip(),
 ] %}
 
 Generate Control-Plane Ingress server certificate:
