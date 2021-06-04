@@ -1,7 +1,7 @@
 //@flow
 import { useEffect, useState, type Node, Suspense, lazy } from "react";
 import ErrorPage500 from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
-import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
+import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
 
 declare var __webpack_init_sharing__: (scope: string) => Promise<void>;
 declare var __webpack_share_scopes__: { default: {} };
@@ -70,17 +70,17 @@ const useDynamicScript = ({
   };
 };
 
-export type FederatedModuleProps = {
+export type FederatedComponentProps = {
     url: string,
     scope: string,
     module: string,
   };
 
-export function FederatedModule({
+export function FederatedComponent({
   url,
   scope,
   module,
-}: FederatedModuleProps): Node {
+}: FederatedComponentProps): Node {
   const { status } = useDynamicScript({
     url,
   });

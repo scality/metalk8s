@@ -1,5 +1,5 @@
 //@flow
-import React, { useLayoutEffect, type Node } from 'react';
+import React, { useLayoutEffect, type Node, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import reactToWebComponent from 'react-to-webcomponent';
@@ -266,38 +266,40 @@ const SolutionsNavbarProviderWrapper = (props: SolutionsNavbarProps) => {
   );
 };
 
-SolutionsNavbarProviderWrapper.propTypes = SolutionsNavbar.propTypes;
 
-class SolutionsNavbarWebComponent extends reactToWebComponent(
-  SolutionsNavbarProviderWrapper,
-  React,
-  ReactDOM,
-) {
-  constructor() {
-    super();
-    this.setUserManager = (userManager: UserManager) => {
-      window.userManager = userManager;
-    };
-    this.onAuthenticated = (evt: CustomEvent) => {
-      this.dispatchEvent(evt);
-    };
-    this.onLanguageChanged = (evt: CustomEvent) => {
-      this.dispatchEvent(evt);
-    };
-    this.onThemeChanged = (evt: CustomEvent) => {
-      this.dispatchEvent(evt);
-    };
-    this.logOut = (providerLogout?: boolean) => {
-      logOut(window.userManager, providerLogout);
-    };
-    this.getIdToken = () => {
-      return (window.userManager: UserManager)
-        .getUser()
-        .then((user) => user.id_token);
-    };
+//TODO remove or move this to another module
+// SolutionsNavbarProviderWrapper.propTypes = SolutionsNavbar.propTypes;
 
-    this.dispatchEvent(new CustomEvent('ready', { detail: { version } }));
-  }
-}
+// class SolutionsNavbarWebComponent extends reactToWebComponent(
+//   SolutionsNavbarProviderWrapper,
+//   React,
+//   ReactDOM,
+// ) {
+//   constructor() {
+//     super();
+//     this.setUserManager = (userManager: UserManager) => {
+//       window.userManager = userManager;
+//     };
+//     this.onAuthenticated = (evt: CustomEvent) => {
+//       this.dispatchEvent(evt);
+//     };
+//     this.onLanguageChanged = (evt: CustomEvent) => {
+//       this.dispatchEvent(evt);
+//     };
+//     this.onThemeChanged = (evt: CustomEvent) => {
+//       this.dispatchEvent(evt);
+//     };
+//     this.logOut = (providerLogout?: boolean) => {
+//       logOut(window.userManager, providerLogout);
+//     };
+//     this.getIdToken = () => {
+//       return (window.userManager: UserManager)
+//         .getUser()
+//         .then((user) => user.id_token);
+//     };
 
-customElements.define('solutions-navbar', SolutionsNavbarWebComponent);
+//     this.dispatchEvent(new CustomEvent('ready', { detail: { version } }));
+//   }
+// }
+
+// customElements.define('solutions-navbar', SolutionsNavbarWebComponent);
