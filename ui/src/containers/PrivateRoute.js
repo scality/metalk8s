@@ -1,15 +1,24 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect } from 'react';
 import { Route } from 'react-router-dom';
-import { ErrorPageAuth } from '@scality/core-ui';
+import { ErrorPage500, ErrorPageAuth } from '@scality/core-ui';
 import { useTypedSelector } from '../hooks';
+import { ComponentWithLazyHook } from '../ModuleFederation';
+import { useDispatch } from 'react-redux';
+import { updateAPIConfigAction } from '../ducks/config';
 
-const PrivateRoute = ({ component, location, ...rest }) => {
+const InternalPrivateRoute = ({ moduleExports, component, location, ...rest }) => {
   const { language, api } = useTypedSelector((state) => state.config);
   const url_support = api?.url_support;
-  const authenticated = useSelector((state) => !!state.oidc.user);
+  const {userData} = moduleExports['./App'].useAuth();
+  const dispatch = useDispatch();
 
-  if (authenticated) {
+  useEffect(() => {
+    dispatch(updateAPIConfigAction(userData));
+  }, [!userData, dispatch]);
+
+  console.log(userData)
+
+  if (userData) {
     return <Route {...rest} component={component} />;
   } else {
     return (
@@ -21,5 +30,16 @@ const PrivateRoute = ({ component, location, ...rest }) => {
     );
   }
 };
+
+const PrivateRoute = ({...props}) => {
+  return <ComponentWithLazyHook 
+      componentWithInjectedHook={InternalPrivateRoute}
+      renderOnError={<ErrorPage500 />}
+      remoteEntryUrl={"http://localhost:8084/shell/remoteEntry.js"}//TODO find a way to inject those values
+      federatedModule={'./App'}//TODO We may want to move hooks to another module 
+      moduleFederationScope={'shell'}
+      componentProps={props}
+    />
+}
 
 export default PrivateRoute;
