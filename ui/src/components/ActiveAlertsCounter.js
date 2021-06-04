@@ -5,7 +5,7 @@ import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import { STATUS_WARNING, STATUS_CRITICAL } from '../constants.js';
 
 export const CountersWrapper = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   display: flex;
   justify-content: space-around;
 `;
@@ -33,7 +33,7 @@ export const CounterValue = styled.div`
 
 export const CounterIcon = styled.i`
   color: ${(props) => {
-    const theme = props.theme.brand;
+    const theme = props.theme;
     let color = theme.textPrimary;
 
     switch (props.status) {

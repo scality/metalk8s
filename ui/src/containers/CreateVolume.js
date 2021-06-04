@@ -91,7 +91,7 @@ const CreateVolumeLayout = styled.div`
       margin-bottom: ${padding.large};
       .sc-input-label {
         width: 150px;
-        color: ${(props) => props.theme.brand.textPrimary};
+        color: ${(props) => props.theme.textPrimary};
       }
 
       // Avoid double margins for nested sc-inputs
@@ -132,9 +132,9 @@ const InputContainer = styled.div`
 const InputLabel = styled.label`
   padding: ${padding.small};
   font-size: ${fontSize.base};
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   .sc-input-label {
-    color: ${(props) => props.theme.brand.textPrimary};
+    color: ${(props) => props.theme.textPrimary};
   }
 `;
 
@@ -164,7 +164,7 @@ const LabelsValue = styled.div`
   width: 200px;
   padding-top: ${padding.small};
   margin-right: 12px;
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   word-wrap: break-word;
 `;
 
@@ -175,7 +175,7 @@ const TitleWrapper = styled.div`
 
 const LabelsName = styled(LabelsValue)`
   font-weight: ${fontWeight.bold};
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   word-wrap: break-word;
 `;
 
@@ -193,7 +193,7 @@ const MultiCreationFormContainer = styled.div`
   padding-left: ${padding.base};
   display: flex;
   flex-direction: column;
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
 `;
 
@@ -211,11 +211,11 @@ const SingleVolumeForm = styled.div`
 
 const InputQuestionMark = styled.i`
   padding-left: ${padding.small};
-  color: ${(props) => props.theme.brand.infoPrimary};
+  color: ${(props) => props.theme.infoPrimary};
 `;
 
 const RequiredText = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
   margin: ${padding.base} 0 ${padding.large} ${padding.small};
 `;

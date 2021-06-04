@@ -30,9 +30,9 @@ const DashboardGrid = styled.div`
 
   > div {
     background-color: ${(props) => {
-      return props.theme.brand.backgroundLevel2;
+      return props.theme.backgroundLevel2;
     }};
-    color: ${(props) => props.theme.brand.textPrimary};
+    color: ${(props) => props.theme.textPrimary};
     padding: 2px ${padding.smaller};
     .sc-vegachart svg {
       background-color: inherit !important;

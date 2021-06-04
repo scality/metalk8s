@@ -6,12 +6,14 @@ import NodePageContent from './NodePageContent';
 import { PageContainer } from '../components/style/CommonLayoutStyle';
 import { getNodeListData } from '../services/NodeUtils';
 import { useAlerts } from './AlertProvider';
+import { useTheme } from 'styled-components';
 
 const NodePage = (props) => {
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
   const {alerts} = useAlerts();
-  const nodeTableData = useSelector((state) => getNodeListData(alerts)(state, props));
+  const theme = useTheme();
+  const nodeTableData = useSelector((state) => getNodeListData(alerts, theme)(state, props));
   const nodesLoading = useSelector((state) => state.app.nodes.isLoading);
 
   return (

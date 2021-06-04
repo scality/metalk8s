@@ -13,7 +13,7 @@ import {
 
 const Circle = styled.i`
   color: ${(props) => {
-    const theme = props.theme.brand;
+    const theme = props.theme;
     let color;
 
     switch (props.status) {

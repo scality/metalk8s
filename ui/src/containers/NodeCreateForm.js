@@ -37,7 +37,7 @@ const CreateNodeLayout = styled.div`
       margin-top: ${padding.large};
       .sc-input-label {
         width: 200px;
-        color: ${(props) => props.theme.brand.textPrimary};
+        color: ${(props) => props.theme.textPrimary};
       }
       .sc-input-type {
         width: 240px;
@@ -58,7 +58,7 @@ const ActionContainer = styled.div`
 
 const ErrorMessage = styled.span`
   visibility: ${(props) => (props.visible ? 'visible' : 'hidden')};
-  color: ${(props) => props.theme.brand.statusCritical};
+  color: ${(props) => props.theme.statusCritical};
   font-size: ${fontSize.small};
 `;
 
@@ -75,7 +75,7 @@ const CheckboxGroup = styled.div`
 
 const FormSectionTitle = styled.h3`
   margin: 0 ${padding.small} 0;
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
 `;
 
 const FormSection = styled.div`
@@ -91,7 +91,7 @@ const InputContainer = styled.div`
 const InputLabel = styled.label`
   padding: ${padding.small};
   font-size: ${fontSize.base};
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
 `;
 
 const InputValue = styled(InputLabel)`
@@ -99,7 +99,7 @@ const InputValue = styled(InputLabel)`
 `;
 
 const RequiredText = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
   margin: ${padding.base} 0 ${padding.base} ${padding.small};
 `;

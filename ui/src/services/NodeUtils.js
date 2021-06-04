@@ -54,14 +54,12 @@ type NodetableList = {
 
 const IPsInfoSelector = (state) => state.app.nodes.IPsInfo;
 const nodesSelector = (state) => state.app.nodes.list;
-const brandSelector = (state) => state.config.theme.brand;
 
 // Return the data used by the Node list table
-export const getNodeListData = (alerts: Array<Alert>) => createTypedSelector<NodetableList>(
+export const getNodeListData = (alerts: Array<Alert>, brand: Brand) => createTypedSelector<NodetableList>(
   (
     nodes: $PropertyType<NodesState, 'list'>,
-    nodeIPsInfo: NodesState,
-    brand: Brand,
+    nodeIPsInfo: NodesState
   ) => {
     const mapped =
       nodes.map((node) => {
@@ -143,7 +141,6 @@ export const getNodeListData = (alerts: Array<Alert>) => createTypedSelector<Nod
   },
   nodesSelector,
   IPsInfoSelector,
-  brandSelector,
 );
 
 /*

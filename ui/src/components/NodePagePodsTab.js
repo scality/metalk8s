@@ -17,7 +17,7 @@ import {
 import { intl } from '../translations/IntlGlobalProvider';
 
 const PodTableContainer = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   padding: ${padding.large};
   font-family: 'Lato';
   font-size: ${fontSize.base};
@@ -59,7 +59,7 @@ const Body = styled.tbody`
 const Cell = styled.td`
   overflow-wrap: break-word;
   // seperation line color
-  border-top: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
+  border-top: 1px solid ${(props) => props.theme.backgroundLevel1};
 `;
 
 // Color specification:
@@ -73,17 +73,17 @@ const StatusText = styled.div`
   color: ${(props) => {
     const { status, numContainer, numContainerRunning } = props;
     if (status === STATUS_RUNNING && numContainer === numContainerRunning) {
-      return props.theme.brand.statusHealthy;
+      return props.theme.statusHealthy;
     } else if (status === STATUS_RUNNING || status === STATUS_PENDING) {
-      return props.theme.brand.statusWarning;
+      return props.theme.statusWarning;
     } else if (status === STATUS_FAILED || status === STATUS_UNKNOWN) {
-      return props.theme.brand.statusCritical;
+      return props.theme.statusCritical;
     }
   }}};
 `;
 
 const ExternalLink = styled.a`
-  color: ${(props) => props.theme.brand.textSecondary};
+  color: ${(props) => props.theme.textSecondary};
 `;
 
 function Table({ columns, data }) {

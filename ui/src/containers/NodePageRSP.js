@@ -199,7 +199,7 @@ const NodePageRSP = (props) => {
 
   return name && currentNode ? (
     <TabsItemsStyle>
-      <Tabs items={items} activeTabColor={theme.brand.backgroundLevel4}>
+      <Tabs items={items} activeTabColor={theme.backgroundLevel4}>
         <Switch>
           <Route
             path={`${path}/overview`}

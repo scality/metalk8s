@@ -1,5 +1,4 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useLocation, useRouteMatch } from 'react-router-dom';
 import styled from 'styled-components';
@@ -25,11 +24,11 @@ import {
 } from '../constants';
 
 const NodeListContainer = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   padding: ${padding.base};
   font-family: 'Lato';
   font-size: 1rem;
-  background-color: ${(props) => props.theme.brand.backgroundLevel2};
+  background-color: ${(props) => props.theme.backgroundLevel2};
   .sc-progressbarcontainer {
     width: 100%;
   }
@@ -69,9 +68,9 @@ const NodeListContainer = styled.div`
       }
     }
     .sc-emptytable {
-      background-color: ${(props) => props.theme.brand.backgroundLevel2};
+      background-color: ${(props) => props.theme.backgroundLevel2};
       > * {
-        background-color: ${(props) => props.theme.brand.backgroundLevel2};
+        background-color: ${(props) => props.theme.backgroundLevel2};
       }
     }
   }
@@ -82,7 +81,7 @@ const HeadRow = styled.tr`
   /* To display scroll bar on the table */
   display: table;
   table-layout: fixed;
-  border-bottom: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
+  border-bottom: 1px solid ${(props) => props.theme.backgroundLevel1};
 `;
 
 const CreateNodeButton = styled(Button)`
@@ -94,7 +93,7 @@ const TableRow = styled(HeadRow)`
   box-sizing: border-box;
   &:hover,
   &:focus {
-    background-color: ${(props) => props.theme.brand.highlight};
+    background-color: ${(props) => props.theme.highlight};
     outline: none;
     cursor: pointer;
   }
@@ -102,12 +101,12 @@ const TableRow = styled(HeadRow)`
   border-right: 4px solid
     ${(props) =>
       props.selectedNodeName === props.row.values.name.name
-        ? props.theme.brand.selectedActive
-        : props.theme.brand.backgroundLevel2};
+        ? props.theme.selectedActive
+        : props.theme.backgroundLevel2};
   background-color: ${(props) =>
     props.selectedNodeName === props.row.values.name.name
-      ? props.theme.brand.highlight
-      : props.theme.brand.backgroundLevel2};
+      ? props.theme.highlight
+      : props.theme.backgroundLevel2};
 `;
 
 // * table body
@@ -141,7 +140,7 @@ const IPs = styled.div`
 const IPText = styled.span`
   font-size: ${fontSize.smaller};
   padding-right: ${padding.small};
-  color: ${(props) => props.theme.brand.textSecondary};
+  color: ${(props) => props.theme.textSecondary};
 `;
 
 const StatusText = styled.div`
@@ -172,7 +171,6 @@ function GlobalFilter({
   preGlobalFilteredRows,
   globalFilter,
   setGlobalFilter,
-  theme,
 }) {
   const [value, setValue] = React.useState(globalFilter);
   const history = useHistory();
@@ -217,7 +215,7 @@ function GlobalFilter({
   );
 }
 
-function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
+function Table({ columns, data, rowClicked, selectedNodeName }) {
   const query = useURLQuery();
   const querySearch = query.get('search');
   const querySort = query.get('sort');
@@ -315,7 +313,6 @@ function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
                 preGlobalFilteredRows={preGlobalFilteredRows}
                 globalFilter={state.globalFilter}
                 setGlobalFilter={setGlobalFilter}
-                theme={theme}
               />
             </th>
           </tr>
@@ -411,7 +408,6 @@ const NodeListTable = (props) => {
   const query = useURLQuery();
 
   const { path } = useRouteMatch();
-  const theme = useSelector((state) => state.config.theme);
 
   const selectedNodeName =
     history?.location?.pathname?.split('/')?.slice(2)[0] || '';
@@ -492,7 +488,6 @@ const NodeListTable = (props) => {
         columns={columns}
         data={nodeTableData}
         rowClicked={onClickRow}
-        theme={theme}
         selectedNodeName={selectedNodeName}
       />
     </NodeListContainer>

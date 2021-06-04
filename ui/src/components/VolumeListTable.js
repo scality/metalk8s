@@ -44,10 +44,10 @@ import {
 import { UnknownIcon, TooltipContent } from './TableRow';
 
 const VolumeListContainer = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   font-family: 'Lato';
   font-size: ${fontSize.base};
-  background-color: ${(props) => props.theme.brand.backgroundLevel2};
+  background-color: ${(props) => props.theme.backgroundLevel2};
   .table {
     display: block;
     padding-bottom: ${padding.smaller};
@@ -58,11 +58,11 @@ const VolumeListContainer = styled.div`
     }
 
     .thead > div[role='row'] {
-      border-bottom: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
+      border-bottom: 1px solid ${(props) => props.theme.backgroundLevel1};
       font-weight: bold;
 
       div[role='columnheader'] {
-        color: ${(props) => props.theme.brand.textPrimary} !important;
+        color: ${(props) => props.theme.textPrimary} !important;
         cursor: pointer;
       }
     }
@@ -71,16 +71,16 @@ const VolumeListContainer = styled.div`
       margin: 0;
       text-align: left;
       // seperation lines between rows
-      border-bottom: 1px solid ${(props) => props.theme.brand.backgroundLevel1};
+      border-bottom: 1px solid ${(props) => props.theme.backgroundLevel1};
       :last-child {
         border-right: 0;
       }
     }
 
     .sc-emptytable {
-      background-color: ${(props) => props.theme.brand.backgroundLevel2};
+      background-color: ${(props) => props.theme.backgroundLevel2};
       > * {
-        background-color: ${(props) => props.theme.brand.backgroundLevel2};
+        background-color: ${(props) => props.theme.backgroundLevel2};
       }
     }
   }
@@ -402,8 +402,8 @@ const VolumeListTable = (props) => {
               size="large"
               percentage={value}
               buildinLabel={`${value}%`}
-              color={theme.brand.infoSecondary}
-              backgroundColor={theme.brand.buttonSecondary}
+              color={theme.infoSecondary}
+              backgroundColor={theme.buttonSecondary}
             />
           );
         },

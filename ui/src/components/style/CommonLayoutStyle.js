@@ -12,7 +12,7 @@ export const PageContainer = styled.div`
 export const CenteredPageContainer = styled.div`
   display: flex;
   justify-content: space-around;
-  background-color: ${(props) => props.theme.brand.backgroundLevel1};
+  background-color: ${(props) => props.theme.backgroundLevel1};
 `;
 
 export const LeftSideInstanceList = styled.div`
@@ -32,7 +32,7 @@ export const RightSidePanel = styled.div`
 export const NoInstanceSelectedContainer = styled.div`
   width: 51%;
   min-height: 700px;
-  background-color: ${(props) => props.theme.brand.backgroundLevel4};
+  background-color: ${(props) => props.theme.backgroundLevel4};
   margin: ${padding.small};
 `;
 
@@ -40,7 +40,7 @@ export const NoInstanceSelected = styled.div`
   position: relative;
   top: 50%;
   transform: translateY(-50%);
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   text-align: center;
 `;
 
@@ -64,7 +64,7 @@ export const TabsItemsStyle = styled.div`
   }
   .sc-tabs-item {
     margin-right: 0.3rem;
-    background-color: ${(props) => props.theme.brand.backgroundLevel3};
+    background-color: ${(props) => props.theme.backgroundLevel3};
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
     height: 2.8rem;
@@ -79,13 +79,13 @@ export const TabsItemsStyle = styled.div`
   .sc-tabs-item-content {
     padding: 0;
     flex: 1;
-    background-color: ${(props) => props.theme.brand.backgroundLevel4};
+    background-color: ${(props) => props.theme.backgroundLevel4};
   }
 `;
 
 export const TextBadge = styled.span`
-  background-color: ${(props) => props.theme.brand[props.variant]};
-  color: ${(props) => props.theme.brand.textReverse};
+  background-color: ${(props) => props.theme[props.variant]};
+  color: ${(props) => props.theme.textReverse};
   padding: 2px ${padding.smaller};
   border-radius: 4px;
   font-size: 0.8rem;
@@ -96,14 +96,14 @@ export const TextBadge = styled.span`
 export const VolumeTab = styled.div`
   height: 100%;
   overflow: auto;
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
 `;
 
 // Common styles for the tabs in NodePageRSP
 export const NodeTab = styled.div`
   height: 100%;
   overflow: auto;
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
 `;
 
 export const SortCaretWrapper = styled.span`
@@ -133,15 +133,15 @@ export const MetricsActionContainer = styled.div`
   position: sticky;
   top: 0px;
   z-index: 100;
-  background-color: ${(props) => props.theme.brand.backgroundLevel4};
+  background-color: ${(props) => props.theme.backgroundLevel4};
 
   .sc-dropdown {
     padding-left: 25px;
   }
 
   .sc-dropdown > div {
-    background-color: ${(props) => props.theme.brand.backgroundLevel4};
-    border: 1px solid ${(props) => props.theme.brand.textTertiary};
+    background-color: ${(props) => props.theme.backgroundLevel4};
+    border: 1px solid ${(props) => props.theme.textTertiary};
     border-radius: 3px;
   }
 `;
@@ -165,7 +165,7 @@ export const RowGraphContainer = styled.div`
 export const GraphTitle = styled.div`
   font-size: 1rem;
   font-weight: ${fontWeight.bold};
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   padding: ${padding.base} 0 0 ${padding.larger};
   display: flex;
   .sc-loader {
@@ -178,7 +178,7 @@ export const GraphWrapper = styled.div`
 `;
 
 export const TitlePage = styled.div`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   font-size: 24px;
   padding: ${padding.small} 0 0 ${padding.large};
 `;

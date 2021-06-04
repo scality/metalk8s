@@ -1,7 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { Fragment, useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { useHistory, useLocation, useRouteMatch } from 'react-router';
 import { Switch, Route } from 'react-router-dom';
 import { Tabs, EmptyState } from '@scality/core-ui';
@@ -60,7 +59,7 @@ const VolumePageContent = (props) => {
   const [isFirstLoadingDone, setIsFirstLoadingDone] = useState(false);
   const previousLoading = usePrevious(loading);
 
-  const theme = useSelector((state) => state.config.theme);
+  const theme = useTheme();
   const currentVolumeName = match.params.name;
 
   // If data has been retrieved and no volume is selected yet we select the first one
@@ -243,7 +242,7 @@ const VolumePageContent = (props) => {
             <RightSidePanel>
               <TabsItemsStyle>
                 <Tabs
-                  activeTabColor={theme.brand.backgroundLevel4}
+                  activeTabColor={theme.backgroundLevel4}
                   items={tabsItems}
                 >
                   <Switch>
