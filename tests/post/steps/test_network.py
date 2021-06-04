@@ -31,7 +31,7 @@ def check_ports(host, ssh_config):
 
 
 @then("we have only expected processes listening")
-def check_all_listening_process(host, version):
+def check_all_listening_process(host, version, control_plane_ingress_ip):
     # List of knwon listening process
     ignored_listening_processes = [
         22,  # sshd
@@ -92,6 +92,8 @@ def check_all_listening_process(host, version):
                 keys.append("{}:{}".format("control_plane_ip", port))
             if ip == grain_ips["workload_plane_ip"]:
                 keys.append("{}:{}".format("workload_plane_ip", port))
+            if ip == control_plane_ingress_ip:
+                keys.append("{}:{}".format("ingress_control_plane_ip", port))
 
             # One of the key already part of expected listening processes
             if any(key in expected_listening_processes for key in keys):

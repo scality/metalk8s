@@ -18,7 +18,7 @@ Feature: Authentication is up and running
         Given the Kubernetes API is available
         And the control-plane Ingress path '/oidc' is available
         And pods with label 'app.kubernetes.io/name=dex' are 'Ready'
-        When we perform a request on '/oidc/' with port '8443' on control-plane IP
+        When we perform a request on '/oidc/' on control-plane Ingress
         Then the server returns '404' with message '404 page not found'
 
     Scenario: Login to Dex using incorrect email

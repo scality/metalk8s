@@ -74,7 +74,7 @@ networks:
       control_plane_ip:8080:
         expected: nginx
         description: MetalK8s repository
-      control_plane_ip:8443:
+      ingress_control_plane_ip:8443:
         expected: kube-proxy
         description: Control plane nginx ingress
     master:

@@ -13,9 +13,6 @@ from tests import kube_utils
 from tests import utils
 
 
-CONTROL_PLANE_INGRESS_PORT = 8443
-
-
 # Pytest command-line options
 def pytest_addoption(parser):
     parser.addoption(
@@ -82,6 +79,28 @@ def kubeconfig(kubeconfig_data, tmp_path):
     kubeconfig_path = tmp_path / "admin.conf"
     kubeconfig_path.write_text(yaml.dump(kubeconfig_data), encoding="utf-8")
     return str(kubeconfig_path)  # Need Python 3.6 to open() a Path object
+
+
+@pytest.fixture
+def control_plane_ingress_ip(k8s_client):
+    """Return the Control Plane Ingress IP from Kubernetes service"""
+    ingress_svc = k8s_client.read_namespaced_service(
+        name="ingress-nginx-control-plane-controller",
+        namespace="metalk8s-ingress",
+    )
+    return ingress_svc.spec.external_i_ps[0]
+
+
+@pytest.fixture
+def control_plane_ingress_ep(k8s_client, control_plane_ingress_ip):
+    """Return the Control Plane Ingress Endpoint from Kubernetes service"""
+    ingress_svc = k8s_client.read_namespaced_service(
+        name="ingress-nginx-control-plane-controller",
+        namespace="metalk8s-ingress",
+    )
+    ingress_port = ingress_svc.spec.ports[0].port
+
+    return "https://{}:{}".format(control_plane_ingress_ip, ingress_port)
 
 
 @pytest.fixture
@@ -245,8 +264,8 @@ def ssh_config(request):
 
 
 @pytest.fixture
-def prometheus_api(control_plane_ip):
-    return utils.PrometheusApi(control_plane_ip, CONTROL_PLANE_INGRESS_PORT)
+def prometheus_api(control_plane_ingress_ep):
+    return utils.PrometheusApi(endpoint=control_plane_ingress_ep)
 
 
 def count_running_pods(request, k8s_client, pods_count, label, namespace, node):
@@ -362,24 +381,22 @@ def check_resource_list(host, resource, namespace):
     ),
     converters=dict(should_fail=lambda s: s == "not "),
 )
-def dex_login(username, password, should_fail, control_plane_ip):
+def dex_login(username, password, should_fail, control_plane_ingress_ep):
     session = utils.requests_retry_session(
         # Both Dex and the ingress controller may fail with one of the following codes
         status_forcelist=(500, 502, 503, 504),
         retries=10,
         backoff_factor=2,
     )
-    ingress_url = "https://{}:{}".format(control_plane_ip, CONTROL_PLANE_INGRESS_PORT)
-
     get_auth_start = time.time()
     try:
         auth_page = session.post(
-            ingress_url + "/oidc/auth?",
+            control_plane_ingress_ep + "/oidc/auth?",
             data={
                 "response_type": "id_token",
                 "client_id": "metalk8s-ui",
                 "scope": "openid audience:server:client_id:oidc-auth-client",
-                "redirect_uri": ingress_url + "/",
+                "redirect_uri": control_plane_ingress_ep + "/",
                 "nonce": "nonce",
             },
             verify=False,
@@ -409,7 +426,7 @@ def dex_login(username, password, should_fail, control_plane_ip):
 
     try:
         auth_response = session.post(
-            ingress_url + next_path,
+            control_plane_ingress_ep + next_path,
             data={"login": username, "password": password},
             verify=False,
             allow_redirects=False,
@@ -417,7 +434,7 @@ def dex_login(username, password, should_fail, control_plane_ip):
     except requests.exceptions.ConnectionError as exc:
         pytest.fail(
             "Failed when authenticating to Dex through '{}': {}".format(
-                ingress_url + next_path, exc
+                control_plane_ingress_ep + next_path, exc
             )
         )
 
