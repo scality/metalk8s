@@ -9,11 +9,25 @@
   },
   "options": {
     "main": {
-        "http://localhost:3000/":{ "en": "Platform", "fr": "Plateforme" },
-        "http://localhost:3000/alerts":{ "en": "Alerts", "fr": "Alertes" }
+      "http://localhost:3000/": {
+        "en": "Platform",
+        "fr": "Plateforme",
+        "activeIfMatches": "http://localhost:3000/(?!alerts|docs).*",
+        "module": "./FederableApp",
+        "scope": "metalk8s",
+        "url": "http://localhost:3000/static/js/remoteEntry.js"
+      },
+      "http://localhost:3000/alerts": {
+        "en": "Alerts",
+        "fr": "Alertes",
+        "activeIfMatches": "http://localhost:3000/alerts",
+        "module": "./FederableApp",
+        "scope": "metalk8s",
+        "url": "http://localhost:3000/static/js/remoteEntry.js"
+      }
     },
     "subLogin": {}
   },
-  "logo" : {},
+  "logo": {},
   "favicon": ""
 }
