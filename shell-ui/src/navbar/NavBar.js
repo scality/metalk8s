@@ -228,9 +228,9 @@ export const Navbar = ({
     });
   }, [JSON.stringify(accessiblePaths)]);
 
-  //On mount, navigate to the matching entry if it is federated
+  //On mount, once authenticated, navigate to the matching entry if it is federated
   useEffect(() => {
-    if (!federatedBrowser) {
+    if (!federatedBrowser || !auth.userData) {
       return;
     }
 
@@ -262,7 +262,7 @@ export const Navbar = ({
         federatedBrowser,
       });
     }
-  }, []);
+  }, [!auth.userData]);
 
   const tabs = translateOptionsToMenu(
     options,

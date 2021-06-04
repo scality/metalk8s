@@ -17,7 +17,7 @@ module.exports = {
     filename: `[name].${version}.js`,
   },
   plugins: [
-    ...common.plugins,
+    ...common.plugins(),
     new DefinePlugin({
       'process.env': {
         NODE_ENV: JSON.stringify('production'),

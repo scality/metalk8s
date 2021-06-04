@@ -4,13 +4,19 @@ const { version } = require('./package.json');
 const { DefinePlugin } = require('webpack');
 const common = require('./webpack.common');
 
-module.exports = () => ({
+module.exports = (env) => ({
   ...common,
   mode: 'development',
   devtool: 'source-map',
   entry:
     env.entry === 'navbar'
       ? { 'solution-ui-navbar': './index.navbar.js' }
+      : env.entry === 'all'
+      ? {
+          'solution-ui-navbar': './src/navbar/index.js',
+          alerts: './src/alerts/index.js',
+          platform: './src/platform/library.js',
+        }
       : { alerts: './index.alerts.js' },
   output: {
     path: path.resolve(__dirname, 'build'),
@@ -27,12 +33,12 @@ module.exports = () => ({
     ],
   },
   devServer: {
-    port: process.env.PORT || 8082,
+    port: process.env.PORT || 8084,
     historyApiFallback: true,
     contentBase: 'public',
   },
   plugins: [
-    ...common.plugins,
+    ...common.plugins('shell/'),
     new DefinePlugin({
       'process.env': {
         NODE_ENV: JSON.stringify('development'),
