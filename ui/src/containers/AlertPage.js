@@ -17,7 +17,7 @@ import CircleStatus from '../components/CircleStatus';
 import { TextBadge } from '../components/style/CommonLayoutStyle';
 import {
   compareHealth,
-  useQuery,
+  useURLQuery,
   useTableSortURLSync,
   formatDateToMid1,
 } from '../services/utils';
@@ -261,7 +261,7 @@ function GlobalFilter({
 }
 
 function ActiveAlertTab({ columns, data }) {
-  const query = useQuery();
+  const query = useURLQuery();
   const querySearch = query.get('search');
   const querySort = query.get('sort');
   const queryDesc = query.get('desc');

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Healthselector } from '@scality/core-ui';
 import { useHistory, useRouteMatch } from 'react-router';
-import { useQuery } from '../services/utils';
+import { useURLQuery } from '../services/utils';
 import {
   STATUS_WARNING,
   STATUS_CRITICAL,
@@ -10,7 +10,7 @@ import {
 
 const ActiveAlertsFilter = (props) => {
   const history = useHistory();
-  const query = useQuery();
+  const query = useURLQuery();
   const match = useRouteMatch();
   const selectedFilter = query.get('severity');
 

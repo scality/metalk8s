@@ -23,7 +23,7 @@ import {
 import {
   addMissingDataPoint,
   fromUnixTimestampToDate,
-  useQuery,
+  useURLQuery,
   useDynamicChartSize,
 } from '../services/utils';
 import {
@@ -98,7 +98,7 @@ const NodePageMetricsTab = ({
   const dispatch = useDispatch();
   const theme = useTypedSelector((state) => state.config.theme);
   const history = useHistory();
-  const query = useQuery();
+  const query = useURLQuery();
   const api = useTypedSelector((state) => state.config.api);
   const metricsTimeSpan = useTypedSelector(
     (state) => state.app.monitoring.nodeStats.metricsTimeSpan,

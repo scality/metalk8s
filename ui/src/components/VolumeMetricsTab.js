@@ -73,7 +73,7 @@ const MetricsTab = (props) => {
   const [graphWidth, graphHeight] = useDynamicChartSize('graph_container');
 
   // write the selected timespan in URL
-  const writeUrlTimeSpan = (timespan) => {
+  const writeUrlTimeSpan = (timespan: string) => {
     let formatted = queryTimeSpansCodes.find((item) => item.value === timespan);
 
     if (formatted) {

@@ -69,7 +69,7 @@ export function queryPrometheusRange(
   end: string,
   step: number, // step (time in seconds between 2 metrics)
   query: string, // query (the actual PromQL expression)
-) {
+): ?Promise<PrometheusQueryResult> {
   if (prometheusApiClient) {
     return prometheusApiClient.get(
       `/api/v1/query_range?start=${start}&end=${end}&step=${step}&query=` +

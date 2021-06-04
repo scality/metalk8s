@@ -37,7 +37,7 @@ import {
 } from '../constants';
 import {
   sizeUnits,
-  useQuery,
+  useURLQuery,
   linuxDrivesNamingIncrement,
 } from '../services/utils';
 import {
@@ -237,7 +237,7 @@ const CreateVolume = (props) => {
     dispatch(fetchStorageClassAction());
   }, [dispatch]);
 
-  const query = useQuery();
+  const query = useURLQuery();
   const nodeName = query.get('node');
 
   const storageClassesName = storageClass.map((item) => item.metadata.name);

@@ -9,7 +9,7 @@ import {
 } from '@scality/core-ui/dist/style/theme';
 import { useTable } from 'react-table';
 import ActiveAlertsFilter from './ActiveAlertsFilters';
-import { useQuery, formatDateToMid1 } from '../services/utils';
+import { useURLQuery, formatDateToMid1 } from '../services/utils';
 import { NodeTab } from './style/CommonLayoutStyle';
 import { STATUS_WARNING, STATUS_CRITICAL } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
@@ -83,7 +83,7 @@ const TitleContainer = styled.div`
 const NodePageAlertsTab = (props) => {
   const { alertsNode } = props;
   const theme = useSelector((state) => state.config.theme);
-  const query = useQuery();
+  const query = useURLQuery();
   // Retrieve the severity filter from URL.
   // Filter more than one severity, the URL should be:
   // `/nodes/<node-name>/alerts?severity=warning&severity=critical`

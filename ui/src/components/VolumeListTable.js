@@ -13,7 +13,7 @@ import {
 } from 'react-table';
 import { FixedSizeList as List } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { useQuery } from '../services/utils';
+import { useURLQuery } from '../services/utils';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
 import {
@@ -156,7 +156,7 @@ function Table({
   onClickRow,
 }) {
   const history = useHistory();
-  const query = useQuery();
+  const query = useURLQuery();
   const querySearch = query.get('search');
   const querySort = query.get('sort');
   const queryDesc = query.get('desc');
@@ -331,7 +331,7 @@ function Table({
               {intl.translate('no_volume_found')}
             </EmptyTable>
           ) : null}
-          {/* <AutoSizer> is a <div/> so it breaks the table layout, 
+          {/* <AutoSizer> is a <div/> so it breaks the table layout,
           we need to use <div/> for all the parts of table(thead, tbody, tr, td...) and retrieve the defaullt styles by className. */}
           <AutoSizer>
             {({ height, width }) => (

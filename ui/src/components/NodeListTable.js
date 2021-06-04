@@ -11,7 +11,7 @@ import {
   useSortBy,
 } from 'react-table';
 import { SearchInput } from '@scality/core-ui';
-import { useQuery } from '../services/utils';
+import { useURLQuery } from '../services/utils';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
 import { Button, EmptyTable } from '@scality/core-ui';
@@ -218,7 +218,7 @@ function GlobalFilter({
 }
 
 function Table({ columns, data, rowClicked, theme, selectedNodeName }) {
-  const query = useQuery();
+  const query = useURLQuery();
   const querySearch = query.get('search');
   const querySort = query.get('sort');
   const queryDesc = query.get('desc');
@@ -408,7 +408,7 @@ const NodeListTable = (props) => {
   const { nodeTableData } = props;
   const history = useHistory();
   const location = useLocation();
-  const query = useQuery();
+  const query = useURLQuery();
 
   const { path } = useRouteMatch();
   const theme = useSelector((state) => state.config.theme);

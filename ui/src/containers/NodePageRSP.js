@@ -7,7 +7,7 @@ import { Tabs } from '@scality/core-ui';
 import { useTheme } from 'styled-components';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { getPodsListData } from '../services/PodUtils';
-import { useQuery, useRefreshEffect } from '../services/utils';
+import { useURLQuery, useRefreshEffect } from '../services/utils';
 import {
   updateNodeStatsFetchArgumentAction,
   refreshNodeStatsAction,
@@ -36,7 +36,7 @@ import {
   NODE_ALERTS_GROUP,
   PORT_NODE_EXPORTER,
 } from '../constants';
-import { useAlerts } from '../containers/AlertProvider';
+import { useAlerts } from './AlertProvider';
 import { intl } from '../translations/IntlGlobalProvider';
 import { useTypedSelector } from '../hooks';
 
@@ -53,7 +53,7 @@ const NodePageRSP = (props) => {
   const theme = useTheme();
   // Initialize the `metricsTimeSpan` in saga state base on the URL query.
   // In order to keep the selected timespan for metrics tab when switch between the tabs.
-  const query = useQuery();
+  const query = useURLQuery();
   const nodeMetricsTimeSpan = useSelector(
     (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
   );
