@@ -12,7 +12,9 @@
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
     -->
     <link rel="manifest" href="manifest.json" />
-    <link rel="preload" as="script" href="{{htmlWebpackPlugin.files.js}}" />
+    {{#each htmlWebpackPlugin.files.js}}
+    <link rel="preload" as="script" href="{{this}}" />
+    {{/each}}
     <title>MetalK8s Platform</title>
   </head>
   <body>

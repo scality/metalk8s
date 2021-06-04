@@ -3,10 +3,10 @@ import 'regenerator-runtime/runtime';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import * as serviceWorker from './serviceWorker'
-import { FederatedModule } from './ModuleFederation';
+import { FederatedComponent } from './ModuleFederation';
 
 ReactDOM.render(
-    <FederatedModule module={'./App'} scope={'shell'} url={'http://localhost:8084/shell/remoteEntry.js'} />,//TODO find a way to inject those values
+    <FederatedComponent module={'./App'} scope={'shell'} url={'http://localhost:8084/shell/remoteEntry.js'} />,//TODO find a way to inject those values
   document.getElementById('root'),
 );
 
