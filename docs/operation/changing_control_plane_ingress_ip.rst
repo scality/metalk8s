@@ -1,6 +1,15 @@
 Changing the Control Plane Ingress IP
 =====================================
 
+This procedure describes how to change the Control Plane Ingress IP, and
+to enable (or disable) MetalLB management of this IP.
+
+.. note::
+
+  Disabling MetalLB using this procedure does **not** remove MetalLB,
+  it simply disables its use for managing the ``LoadBalancer`` *Service*
+  for MetalK8s Control Plane Ingress.
+
 #. On the Bootstrap node, update the ``ip`` field from
    ``networks.controlPlane.ingress`` in the Bootstrap configuration file.
    (refer to :ref:`Bootstrap Configuration<Bootstrap Configuration>`)
@@ -18,6 +27,16 @@ Changing the Control Plane Ingress IP
       $ salt-call metalk8s_network.get_control_plane_ingress_ip
       local:
           <my-new-ip>
+      $ salt-call pillar.get networks:control_plane
+      local:
+        ----------
+        cidr:
+          - <control-plane-cidr>
+        ingress:
+          ip:
+            <my-new-ip>
+        metalLB:
+          enabled: <true | false>
 
 #. On the Bootstrap node, reconfigure apiServer:
 

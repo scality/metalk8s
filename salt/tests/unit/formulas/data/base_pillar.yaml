@@ -54,6 +54,8 @@ networks:
   control_plane:
     cidr:
       - 51.68.68.0/24
+    metalLB:
+      enabled: False
   workload_plane:
     cidr:
       - 51.68.68.0/24

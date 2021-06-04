@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import requests
 import requests.exceptions
 
@@ -25,8 +26,20 @@ def test_access_http_services_on_control_plane_ip(host):
     pass
 
 
+@scenario(
+    "../features/ingress.feature", "Failover of Control Plane Ingress VIP using MetalLB"
+)
+def test_failover_cp_ingress_vip(host, teardown):
+    pass
+
+
 @scenario("../features/ingress.feature", "Change Control Plane Ingress IP to node-1 IP")
 def test_change_cp_ingress_ip(host, teardown):
+    pass
+
+
+@scenario("../features/ingress.feature", "Enable MetalLB")
+def test_change_cp_ingress_vip(host, teardown):
     pass
 
 
@@ -36,8 +49,13 @@ def context():
 
 
 @pytest.fixture
-def teardown(context, host, ssh_config, version):
+def teardown(context, host, ssh_config, version, k8s_client):
     yield
+    if "node_to_uncordon" in context:
+        k8s_client.patch_node(
+            context["node_to_uncordon"], {"spec": {"unschedulable": False}}
+        )
+
     if "bootstrap_to_restore" in context:
         with host.sudo():
             host.check_output(
@@ -58,6 +76,37 @@ def node_control_plane_ip_is_not_equal_to_its_workload_plane_ip(host):
 
     if data["control_plane_ip"] == data["workload_plane_ip"]:
         pytest.skip("Node control-plane IP is equal to node workload-plane IP")
+
+
+@given("a VIP for Control Plane Ingress is available")
+def we_have_a_vip(context):
+    cp_ingress_vip = os.environ.get("CONTROL_PLANE_INGRESS_VIP")
+
+    if not cp_ingress_vip:
+        pytest.skip("No Control Plane Ingress VIP to switch to")
+
+    context["new_cp_ingress_vip"] = cp_ingress_vip
+
+
+@given("MetalLB is already enabled")
+def metallb_enabled(host):
+    metallb_enabled = utils.get_pillar(host, "networks:control_plane:metalLB:enabled")
+
+    if not metallb_enabled:
+        pytest.skip("MetalLB is not enabled")
+
+
+@given("MetalLB is disabled")
+def disable_metallb(host, context, ssh_config, version):
+    metallb_enabled = utils.get_pillar(host, "networks:control_plane:metalLB:enabled")
+
+    if metallb_enabled:
+        bootstrap_patch = {
+            "networks": {"controlPlane": {"metalLB": {"enabled": False}, "ingress": {}}}
+        }
+
+        patch_bootstrap_config(context, host, bootstrap_patch)
+        re_configure_cp_ingress(host, version, ssh_config)
 
 
 @when(parsers.parse("we perform an {protocol} request on port {port} on a {plane} IP"))
@@ -89,12 +138,46 @@ def perform_request(host, context, protocol, port, plane):
         context["exception"] = exc
 
 
-@when(parsers.parse("we update control plane ingress IP to node '{node_name}' IP"))
+@when("we stop the node hosting the Control Plane Ingress VIP")
+def stop_cp_ingress_vip_node(context, k8s_client):
+    node_name = get_node_hosting_cp_ingress_vip(k8s_client)
+
+    context["cp_ingress_vip_node"] = node_name
+    context["node_to_uncordon"] = node_name
+
+    # Cordon node
+    k8s_client.patch_node(node_name, {"spec": {"unschedulable": True}})
+
+    # Delete Control Plane Ingress Controller from node
+    cp_ingress_pods = k8s_client.list_namespaced_pod(
+        "metalk8s-ingress",
+        label_selector="app.kubernetes.io/instance=ingress-nginx-control-plane",
+        field_selector="spec.nodeName={}".format(node_name),
+    )
+    for pod in cp_ingress_pods.items:
+        k8s_client.delete_namespaced_pod(pod.metadata.name, pod.metadata.namespace)
+
+
+@when(parsers.parse("we set control plane ingress IP to node '{node_name}' IP"))
 def update_cp_ingress_ip(host, context, ssh_config, version, node_name):
     node = testinfra.get_host(node_name, ssh_config=ssh_config)
     ip = utils.get_grain(node, "metalk8s:control_plane_ip")
 
     bootstrap_patch = {"networks": {"controlPlane": {"ingress": {"ip": ip}}}}
+
+    patch_bootstrap_config(context, host, bootstrap_patch)
+    re_configure_cp_ingress(host, version, ssh_config)
+
+
+@when(parsers.parse("we enable MetalLB and set control plane ingress IP to '{ip}'"))
+def update_control_plane_ingress_ip(host, context, ssh_config, version, ip):
+    ip = ip.format(**context)
+
+    bootstrap_patch = {
+        "networks": {
+            "controlPlane": {"metalLB": {"enabled": True}, "ingress": {"ip": ip}}
+        }
+    }
 
     patch_bootstrap_config(context, host, bootstrap_patch)
     re_configure_cp_ingress(host, version, ssh_config)
@@ -117,6 +200,15 @@ def server_does_not_respond(host, context):
     assert isinstance(context["exception"], requests.exceptions.ConnectionError)
 
 
+@then("the node hosting the Control Plane Ingress VIP changed")
+def check_node_hosting_vip_changed(context, k8s_client):
+    def _check_node_hosting():
+        new_node = get_node_hosting_cp_ingress_vip(k8s_client)
+        assert new_node != context["cp_ingress_vip_node"]
+
+    utils.retry(_check_node_hosting, times=10, wait=3)
+
+
 @then(parsers.parse("the control plane ingress IP is equal to node '{node_name}' IP"))
 def check_cp_ingress_node_ip(control_plane_ingress_ip, node_name, ssh_config):
     node = testinfra.get_host(node_name, ssh_config=ssh_config)
@@ -125,16 +217,50 @@ def check_cp_ingress_node_ip(control_plane_ingress_ip, node_name, ssh_config):
     assert control_plane_ingress_ip == ip
 
 
+@then(parsers.parse("the control plane ingress IP is equal to '{ip}'"))
+def check_cp_ingress_ip(context, control_plane_ingress_ip, ip):
+    ip = ip.format(**context)
+    assert control_plane_ingress_ip == ip
+
+
+def get_node_hosting_cp_ingress_vip(k8s_client):
+    # To get the node where sit the VIP we need to look at event on the Service
+    field_selectors = [
+        "reason=nodeAssigned",
+        "involvedObject.kind=Service",
+        "involvedObject.name=ingress-nginx-control-plane-controller",
+    ]
+    events = k8s_client.list_namespaced_event(
+        "metalk8s-ingress",
+        field_selector=",".join(field_selectors),
+    )
+
+    assert events.items, "Unable to get event for Control Plane Ingress Service"
+
+    match = None
+    for event in sorted(
+        events.items, key=lambda event: event.last_timestamp, reverse=True
+    ):
+        match = re.search(r'announcing from node "(?P<node>.+)"', event.message)
+        if match is not None:
+            break
+
+    assert match, "Unable to get the node hosting the Control Plane Ingress VIP"
+
+    return match.group("node")
+
+
 def patch_bootstrap_config(context, host, patch):
-    with host.sudo():
-        cmd_ret = host.check_output("salt-call --out json --local temp.dir")
+    if "bootstrap_to_restore" not in context:
+        with host.sudo():
+            cmd_ret = host.check_output("salt-call --out json --local temp.dir")
 
-    tmp_dir = json.loads(cmd_ret)["local"]
+        tmp_dir = json.loads(cmd_ret)["local"]
 
-    with host.sudo():
-        host.check_output("cp /etc/metalk8s/bootstrap.yaml {}".format(tmp_dir))
+        with host.sudo():
+            host.check_output("cp /etc/metalk8s/bootstrap.yaml {}".format(tmp_dir))
 
-    context["bootstrap_to_restore"] = os.path.join(tmp_dir, "bootstrap.yaml")
+        context["bootstrap_to_restore"] = os.path.join(tmp_dir, "bootstrap.yaml")
 
     with host.sudo():
         host.check_output(

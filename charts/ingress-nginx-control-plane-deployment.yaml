@@ -1,0 +1,76 @@
+controller:
+  image:
+    digest: null
+    repository: '__image__(nginx-ingress-controller)'
+
+  defaultBackendService: 'metalk8s-ingress/nginx-ingress-default-backend'
+
+  electionID: ingress-control-plane-controller-leader
+
+  ingressClass: nginx-control-plane
+
+  admissionWebhooks:
+    enabled: false
+
+  kind: Deployment
+
+  replicaCount: 2
+
+  minAvailable: 0
+
+  updateStrategy:
+    type: RollingUpdate
+
+  tolerations:
+    - key: "node-role.kubernetes.io/bootstrap"
+      operator: "Exists"
+      effect: "NoSchedule"
+    - key: "node-role.kubernetes.io/master"
+      operator: "Exists"
+      effect: "NoSchedule"
+    - key: "node-role.kubernetes.io/infra"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+  nodeSelector:
+    node-role.kubernetes.io/master: ''
+
+  service:
+    loadBalancerIP: '__var__(salt.metalk8s_network.get_control_plane_ingress_ip())'
+    externalTrafficPolicy: Local
+
+    enableHttp: false
+
+    ports:
+      https: 8443
+
+  extraArgs:
+    default-ssl-certificate: "metalk8s-ingress/ingress-control-plane-default-certificate"
+    metrics-per-host: false
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        metalk8s.scality.com/monitor: ''
+
+defaultBackend:
+  enabled: true
+
+  image:
+    repository: '__image__(nginx-ingress-defaultbackend-amd64)'
+
+  tolerations:
+    - key: "node-role.kubernetes.io/bootstrap"
+      operator: "Exists"
+      effect: "NoSchedule"
+    - key: "node-role.kubernetes.io/master"
+      operator: "Exists"
+      effect: "NoSchedule"
+    - key: "node-role.kubernetes.io/infra"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+  nodeSelector:
+    node-role.kubernetes.io/master: ''

@@ -38,6 +38,9 @@ def check_all_listening_process(host, version, control_plane_ingress_ip):
         111,  # rpcbind
         "127.0.0.1:25",  # smtp
     ]
+    # We ignore this range as this one is dynamically assigned
+    # for example for loadbalancer service node port
+    service_node_port_range = range(30000, 32767)
 
     # Get all listening process
     with host.sudo():
@@ -101,6 +104,10 @@ def check_all_listening_process(host, version, control_plane_ingress_ip):
 
             # Ignore some known listening process
             if any(key in ignored_listening_processes for key in keys):
+                continue
+
+            # Ignore service node port range if process name is "kube-proxy"
+            if int(port) in service_node_port_range and process["name"] == "kube-proxy":
                 continue
 
             # NOTE: Special case for containerd which uses a "random" port

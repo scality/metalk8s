@@ -1,6 +1,7 @@
 import logging
 from collections import Mapping
 
+import salt.utils.dictupdate
 import salt.utils.files
 import salt.utils.yaml
 
@@ -89,6 +90,17 @@ def _load_networks(config_data):
 
             if not isinstance(networks_data[net]["cidr"], list):
                 networks_data[net]["cidr"] = [networks_data[net]["cidr"]]
+
+    # MetalLB disabled by default
+    networks_data["controlPlane"].setdefault("metalLB", {}).setdefault("enabled", False)
+
+    if networks_data["controlPlane"]["metalLB"]["enabled"] and not networks_data[
+        "controlPlane"
+    ].get("ingress", {}).get("ip"):
+        errors.append(
+            "'ip' for 'ingress' in 'controlPlane' network is mandatory when 'metalLB'"
+            "is enabled"
+        )
 
     if errors:
         return __utils__["pillar_utils.errors_to_dict"](errors)

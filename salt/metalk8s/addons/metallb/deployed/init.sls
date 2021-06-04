@@ -1,0 +1,4 @@
+include:
+  - .namespace
+  - .config
+  - .chart

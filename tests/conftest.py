@@ -88,7 +88,7 @@ def control_plane_ingress_ip(k8s_client):
         name="ingress-nginx-control-plane-controller",
         namespace="metalk8s-ingress",
     )
-    return ingress_svc.spec.external_i_ps[0]
+    return ingress_svc.spec.load_balancer_ip or ingress_svc.spec.external_i_ps[0]
 
 
 @pytest.fixture

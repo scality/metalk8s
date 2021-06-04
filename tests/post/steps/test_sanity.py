@@ -1,7 +1,7 @@
 from kubernetes.client import AppsV1Api
 from kubernetes.client.rest import ApiException
 import pytest
-from pytest_bdd import scenario, then, parsers
+from pytest_bdd import scenario, given, then, parsers
 
 from tests import kube_utils
 from tests import utils
@@ -67,6 +67,33 @@ def test_daemonset_running(host):
 )
 def test_statefulset_running(host):
     pass
+
+
+@scenario(
+    "../features/sanity.feature",
+    "Control Plane Ingress Controller when MetalLB is disabled",
+)
+def test_cp_ingress_controller_no_metallb(host):
+    pass
+
+
+@scenario(
+    "../features/sanity.feature",
+    "Control Plane Ingress Controller when MetalLB is enabled",
+)
+def test_cp_ingress_controller_metallb(host):
+    pass
+
+
+# }}}
+# Given {{{
+
+
+@given(parsers.parse("MetalLB is {state}"))
+def is_metalb_enabled(host, state):
+    expected = state == "enabled"
+    if expected != utils.get_pillar(host, "networks:control_plane:metalLB:enabled"):
+        pytest.skip("We skip as we run this test only if MetalLB {}".format(state))
 
 
 # }}}
@@ -152,6 +179,12 @@ def check_static_pod(k8s_client, name, namespace, role):
     "the Deployment <name> in the <namespace> namespace has all desired "
     "replicas available"
 )
+@then(
+    parsers.parse(
+        "the Deployment '{name}' in the '{namespace}' namespace has all desired "
+        "replicas available"
+    )
+)
 def check_deployment(apps_client, name, namespace):
     def _wait_for_deployment():
         try:
@@ -178,6 +211,12 @@ def check_deployment(apps_client, name, namespace):
 
 
 @then("the DaemonSet <name> in the <namespace> namespace has all desired " "Pods ready")
+@then(
+    parsers.parse(
+        "the DaemonSet '{name}' in the '{namespace}' namespace has all desired "
+        "Pods ready"
+    )
+)
 def check_daemonset(apps_client, name, namespace):
     def _wait_for_daemon_set():
         try:

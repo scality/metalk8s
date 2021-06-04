@@ -174,6 +174,7 @@ def _operator_image(name: str, **kwargs: Any) -> targets.OperatorImage:
 TO_PULL: List[targets.RemoteImage] = []
 
 IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
+    constants.BITNAMI_REPOSITORY: ["metallb-controller", "metallb-speaker"],
     constants.CALICO_REPOSITORY: [
         "calico-node",
         "calico-kube-controllers",

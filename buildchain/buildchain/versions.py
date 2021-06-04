@@ -176,6 +176,16 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest="sha256:22fbde17ab647ddf89841e5e464464eece111402b7d599882c2a3393bc0d2810",
     ),
     Image(
+        name="metallb-controller",
+        version="0.10.2-debian-10-r0",
+        digest="sha256:573792b177b3fbe2c645f0d4fa084b3d6b8dbb6e0510fac00b0aa256d8315299",
+    ),
+    Image(
+        name="metallb-speaker",
+        version="0.10.2-debian-10-r0",
+        digest="sha256:8dc5efb75ef21f9052265d6c1571199b0542515cd4a23349c8590c67f9f01b1b",
+    ),
+    Image(
         name="pause",
         version="3.2",
         digest="sha256:80d28bedfe5dec59da9ebf8e6260224ac9008ab5c11dbbe16ee3ba3e4439ac2c",

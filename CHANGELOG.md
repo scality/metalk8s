@@ -59,8 +59,10 @@
 - [#2381](https://github.com/scality/metalk8s/issues/2381)) - Allow
   configuring the Control Plane Ingress' external IP, to enable high
   availability with failover of this (virtual) IP between control plane
-  nodes. This failover is not managed by MetalK8s.
-  (PR[#3415](https://github.com/scality/metalk8s/pull/3415))
+  nodes (PR[#3415](https://github.com/scality/metalk8s/pull/3415)).
+  If supported by the user environment, MetalK8s can manage fail-over
+  of this virtual IP using [MetalLB](https://metallb.universe.tf/)
+  (PR[#3418](https://github.com/scality/metalk8s/pull/3418)).
 
 ### Breaking changes
 

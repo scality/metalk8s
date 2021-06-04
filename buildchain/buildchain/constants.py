@@ -17,6 +17,7 @@ from buildchain import config
 CMD_WIDTH: int = 14
 
 # URLs of the main container repositories.
+BITNAMI_REPOSITORY: str = "docker.io/bitnami"
 CALICO_REPOSITORY: str = "docker.io/calico"
 COREDNS_REPOSITORY: str = "k8s.gcr.io/coredns"
 DEX_REPOSITORY: str = "ghcr.io/dexidp"

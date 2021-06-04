@@ -49,6 +49,8 @@ Configuration
           cidr: <CIDR-notation>
           ingress:
             ip: <IP-for-ingress>
+          metalLB:
+            enabled: <boolean>
         workloadPlane:
           cidr: <CIDR-notation>
           mtu: <network-MTU>
@@ -91,6 +93,16 @@ notation for it's various subfields.
       Ingress IP is the control plane IP of the Bootstrap node (which means
       that if you lose the Bootstrap node, you no longer have access to any
       control plane component).
+
+      This ``ip`` for ``ingress`` can be managed by MetalK8s directly if
+      it's possible in your environment, to do so we use
+      `MetalLB <https://metallb.universe.tf/>`_ that allow to manage this
+      Virtual IP directly on Layer2 using only
+      `ARP <https://en.wikipedia.org/wiki/Address_Resolution_Protocol>`_
+      requests, in order to be able to use MetalLB your network need to
+      properly broadcast ARP requests so that Control Plane node hosting
+      the Virtual IP can answer to this ARP request.
+      When MetalLB is enabled this ingress IP is mandatory.
 
       For ``workloadPlane`` entry an
       `MTU <https://en.wikipedia.org/wiki/Maximum_transmission_unit>`_ can
