@@ -89,13 +89,7 @@ describe('alerts', () => {
   beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
   afterEach(() => server.resetHandlers());
 
-  const alertLibrary = window.shellUIAlerts[version];
-  alertLibrary.createAlertContext(createContext)
-
   it('should export a renderable AlertProvider', () => {
-    //S
-    const AlertProvider = alertLibrary.AlertProvider(useQuery);
-
     //E
     const { queryByText } = render(
       <QueryClientProvider client={new QueryClient()}>
@@ -110,9 +104,6 @@ describe('alerts', () => {
   it('should retrieve expected alert', async () => {
     //S
     const queryClient = new QueryClient();
-
-    const AlertProvider = alertLibrary.AlertProvider(useQuery);
-    const useAlerts = alertLibrary.useAlerts(useContext);
 
     const wrapper = ({ children }) => (
       <QueryClientProvider client={queryClient}>
