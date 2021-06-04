@@ -1,6 +1,6 @@
 //@flow
 export const REFRESH_TIMEOUT = 15000;
-export const REFRESH_METRCIS_GRAPH = 60000;
+export const REFRESH_METRICS_GRAPH = 60000;
 export const FR_LANG = 'FR';
 export const EN_LANG = 'EN';
 export const LANGUAGE = 'language';
@@ -56,16 +56,22 @@ export const PORT_NODE_EXPORTER = '9100';
 
 export const queryTimeSpansCodes = [
   {
-    label: 'now-7d',
+    label: QUERY_LAST_SEVEN_DAYS,
     value: LAST_SEVEN_DAYS,
+    duration: SAMPLE_DURATION_LAST_SEVEN_DAYS,
+    frequency: SAMPLE_FREQUENCY_LAST_SEVEN_DAYS,
   },
   {
-    label: 'now-24h',
+    label: QUERY_LAST_TWENTY_FOUR_HOURS,
     value: LAST_TWENTY_FOUR_HOURS,
+    duration: SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
+    frequency: SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
   },
   {
-    label: 'now-1h',
+    label: QUERY_LAST_ONE_HOUR,
     value: LAST_ONE_HOUR,
+    duration: SAMPLE_DURATION_LAST_ONE_HOUR,
+    frequency: SAMPLE_FREQUENCY_LAST_ONE_HOUR,
   },
 ];
 
@@ -112,3 +118,9 @@ export const NODE_ALERTS_GROUP = [
 // The size of the status circle
 export const CIRCLE_BASE_SIZE = 'CIRCLE_BASE_SIZE';
 export const CIRCLE_DOUBLE_SIZE = 'CIRCLE_DOUBLE_SIZE';
+
+// LineChart colors
+export const lineColor1 = '#245A83';
+export const lineColor2 = '#808080';
+export const lineColor3 = '#A04EC9';
+export const lineColor4 = '#C6B38A';

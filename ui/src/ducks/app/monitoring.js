@@ -20,7 +20,7 @@ import {
 import * as CoreApi from '../../services/k8s/core';
 import {
   REFRESH_TIMEOUT,
-  REFRESH_METRCIS_GRAPH,
+  REFRESH_METRICS_GRAPH,
   LAST_SEVEN_DAYS,
   LAST_TWENTY_FOUR_HOURS,
   LAST_ONE_HOUR,
@@ -664,7 +664,7 @@ export function* refreshVolumeStats() {
   yield put(updateVolumeStatsAction({ isRefreshing: true }));
   yield call(fetchVolumeStats);
 
-  yield delay(REFRESH_METRCIS_GRAPH);
+  yield delay(REFRESH_METRICS_GRAPH);
   const isRefreshing = yield select(isVolumeStatsRefreshing);
   if (isRefreshing) {
     yield call(refreshVolumeStats);
@@ -678,7 +678,7 @@ export function* stopRefreshVolumeStats() {
 export function* refreshCurrentVolumeStats() {
   yield put(updateCurrentVolumeStatsAction({ isRefreshing: true }));
   yield call(fetchCurrentVolumeStats);
-  yield delay(REFRESH_METRCIS_GRAPH);
+  yield delay(REFRESH_METRICS_GRAPH);
   const isRefreshing = yield select(isCurrentVolumeStatsRefresh);
   if (isRefreshing) {
     yield call(refreshCurrentVolumeStats);
@@ -1017,7 +1017,7 @@ export function* watchRefreshNodeStats() {
         interrupt: take(STOP_REFRESH_NODESTATS),
         // If the refresh period expires before we receive a halt,
         // we can refresh the stats
-        requeue: delay(REFRESH_METRCIS_GRAPH),
+        requeue: delay(REFRESH_METRICS_GRAPH),
         // whenever we change one of the parameters for "fetchNodeStats",
         // it gets triggered again
         update: take(UPDATE_NODESTATS_FETCH_ARG),
