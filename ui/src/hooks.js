@@ -6,12 +6,13 @@ import { useQuery } from 'react-query';
 
 import type { RootState } from './ducks/reducer';
 import { coreV1 } from './services/k8s/api';
-import type { Nodes } from './types';
 import {
   queryTimeSpansCodes,
+  REFRESH_METRICS_GRAPH,
   SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
 } from './constants';
 import { useURLQuery } from './services/utils';
+import type { V1NodeList } from '@kubernetes/client-node';
 
 /**
  * It brings automatic strong typing to native useSelector by anotating state with RootState.
@@ -25,30 +26,21 @@ export const useTypedSelector: <TSelected>(
 /**
  * It retrieves the nodes data through react-queries
  */
-export const useNodes = (): Nodes => {
+export const useNodes = (): V1NodeList => {
   const [nodes, setNodes] = useState([]);
 
   const nodesQuery = useQuery(
     'nodesNames',
     () =>
       coreV1.listNode().then((res) => {
-        if (res.response.statusCode === 200 && res.body?.items) {
-          // Extracting useful data (IP, name, ...) to top level for ease of use
-          return res.body?.items.map((item) =>
-            Object.assign({}, item, {
-              internalIP: item?.status?.addresses?.find(
-                (ip) => ip.type === 'InternalIP',
-              ).address,
-              name: item?.metadata?.name,
-            }),
-          );
-        }
+        if (res.response.statusCode === 200 && res.body?.items)
+          return res.body?.items;
         return null;
       }),
     {
       refetchOnMount: false,
       refetchOnWindowFocus: false,
-      refetchInterval: 60000,
+      refetchInterval: REFRESH_METRICS_GRAPH,
       refetchIntervalInBackground: true,
     },
   );
@@ -60,6 +52,19 @@ export const useNodes = (): Nodes => {
   }, [nodesQuery]);
 
   return nodes;
+};
+
+export const useNodeAddressesSelector = (
+  nodes: V1NodeList,
+): Array<{ internalIP: string, name: string }> => {
+  return nodes.map((item) => {
+    return {
+      internalIP: item?.status?.addresses?.find(
+        (ip) => ip.type === 'InternalIP',
+      ).address,
+      name: item?.metadata?.name,
+    };
+  });
 };
 
 export type MetricsTimeSpan = number;

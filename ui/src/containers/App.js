@@ -14,7 +14,7 @@ import Layout from './Layout';
 import IntlGlobalProvider from '../translations/IntlGlobalProvider';
 import { fetchConfigAction } from '../ducks/config';
 import { initToggleSideBarAction } from '../ducks/app/layout';
-import { useTypedSelector } from '../hooks';
+import { useTypedSelector, MetricsTimeSpanProvider } from '../hooks';
 
 const queryClient = new QueryClient();
 const messages = {
@@ -47,7 +47,9 @@ const App = () => {
         messages={messages[language.toUpperCase()]}
       >
         <IntlGlobalProvider>
-          <Layout />
+          <MetricsTimeSpanProvider>
+            <Layout />
+          </MetricsTimeSpanProvider>
         </IntlGlobalProvider>
       </IntlProvider>
     </QueryClientProvider>

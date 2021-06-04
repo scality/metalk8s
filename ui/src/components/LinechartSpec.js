@@ -29,6 +29,14 @@ export const yAxisWriteRead = [
   },
 ];
 
+export const yAxisThroughput = [
+  {
+    field: 'y',
+    type: 'quantitative',
+    axis: { title: 'write(+) / read(-)', orient: 'right' },
+  },
+];
+
 export const getTooltipConfig = (
   fields: { field: string, type: string, title: string, format: string }[],
 ) => {
