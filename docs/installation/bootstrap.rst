@@ -47,6 +47,8 @@ Configuration
       networks:
         controlPlane:
           cidr: <CIDR-notation>
+          ingress:
+            ip: <IP-for-ingress>
         workloadPlane:
           cidr: <CIDR-notation>
           mtu: <network-MTU>
@@ -79,6 +81,16 @@ notation for it's various subfields.
         Several CIDRs can be provided if all nodes do not sit in the same
         network. This is an :ref:`advanced configuration<multiple CIDR network>`
         which we do not recommend for non-experts.
+
+      For ``controlPlane`` entry, an ``ingress`` can also be provided. This
+      section allow to set the IP that will be used to connect to all the
+      control plane components, like MetalK8s-UI and the whole monitoring
+      stack. We suggest using a
+      `Virtual IP <https://en.wikipedia.org/wiki/Virtual_IP_address>`_ that
+      will sit on a working master Node. The default value for this
+      Ingress IP is the control plane IP of the Bootstrap node (which means
+      that if you lose the Bootstrap node, you no longer have access to any
+      control plane component).
 
       For ``workloadPlane`` entry an
       `MTU <https://en.wikipedia.org/wiki/Maximum_transmission_unit>`_ can

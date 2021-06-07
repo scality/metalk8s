@@ -296,6 +296,7 @@ class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
         self,
         result,
         raises=False,
+        pillar=None,
         opts=None,
         grains=None,
         mine_ret=None,
@@ -304,6 +305,8 @@ class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
         """
         Tests the return of `get_control_plane_ingress_ip` function
         """
+        if pillar is None:
+            pillar = {"networks": {"control_plane": {}}}
         if opts is None:
             opts = {"__role": "minion"}
         if grains is None:
@@ -316,8 +319,10 @@ class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
         }
 
         with patch.dict(metalk8s_network.__salt__, salt_dict), patch.dict(
-            metalk8s_network.__opts__, opts
-        ), patch.dict(metalk8s_network.__grains__, grains):
+            metalk8s_network.__pillar__, pillar
+        ), patch.dict(metalk8s_network.__opts__, opts), patch.dict(
+            metalk8s_network.__grains__, grains
+        ):
             if raises:
                 self.assertRaisesRegex(
                     CommandExecutionError,
