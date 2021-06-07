@@ -3,7 +3,7 @@ import os
 import os.path
 
 import pytest
-from pytest_bdd import given, when, scenario, then, parsers
+from pytest_bdd import when, scenario, then, parsers
 import testinfra
 
 from tests import kube_utils, utils
@@ -44,18 +44,6 @@ def test_pull_registry(host):
 @scenario("../features/registry.feature", "Pull container image from registry (HA)")
 def test_pull_registry_ha(host, teardown):
     pass
-
-
-# }}}
-# Given {{{
-
-
-@given("we are on a multi node cluster")
-def check_multi_node(k8s_client):
-    nodes = k8s_client.list_node()
-
-    if len(nodes.items) == 1:
-        pytest.skip("We skip single node cluster for this test")
 
 
 # }}}
