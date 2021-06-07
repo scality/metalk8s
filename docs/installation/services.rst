@@ -12,13 +12,14 @@ and can be used for operating, extending and upgrading a MetalK8s cluster.
 
 Gather Required Information
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Get the control plane IP of the bootstrap node.
+Get the ingress control plane IP.
 
-.. code-block:: shell
+.. code-block:: console
 
-    root@bootstrap $ salt-call grains.get metalk8s:control_plane_ip
-    local:
-        <the control plane IP>
+    root@bootstrap $ kubectl --kubeconfig=/etc/kubernetes/admin.conf \
+      get svc -n metalk8s-ingress ingress-nginx-control-plane-controller \
+      -o=jsonpath='{.spec.externalIPs[0]}{"\n"}'
+    <the ingress control plane IP>
 
 Use MetalK8s UI
 ^^^^^^^^^^^^^^^
