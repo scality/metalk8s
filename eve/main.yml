@@ -111,11 +111,11 @@ models:
   - Upload: &upload_artifacts
       name: Upload artifacts
       source: artifacts
-      alwaysRun: True
+      alwaysRun: true
   - Upload: &upload_report_artifacts
       name: Upload sosreport logs to artifacts
       source: sosreport
-      alwaysRun: True
+      alwaysRun: true
   - Upload: &upload_cypress_artifacts
       name: Upload Cypress and UI Junit folder
       source: ui-tests
@@ -509,7 +509,7 @@ models:
           Artifact Url: %(prop:artifacts_public_url)s
           Branch: %(prop:branch)s
           Commit: %(prop:revision)s
-      haltOnFailure: True
+      haltOnFailure: true
   - ShellCommand: &add_final_status_artifact_success
       <<: *add_final_status_artifact
       name: Add successful status to artifacts
@@ -525,7 +525,22 @@ models:
   - Upload: &upload_final_status_artifact
       name: Upload final status to artifacts
       source: build_status
-      alwaysRun: True
+      alwaysRun: true
+  - ShellCommand: &image_registry_login
+      name: Login to Harbor image registry
+      command: |
+        if [ "$USE_PRODUCTION_REGISTRY" = true ]; then
+            HARBOR_LOGIN='%(secret:harbor_prod_login)s'
+            HARBOR_PASSWORD='%(secret:harbor_prod_token)s'
+        else
+            HARBOR_LOGIN='%(secret:harbor_dev_login)s'
+            HARBOR_PASSWORD='%(secret:harbor_dev_token)s'
+        fi
+        docker login --username "$HARBOR_LOGIN" --password "$HARBOR_PASSWORD" "$REGISTRY_HOST"
+      env: &_env_image_registry
+        USE_PRODUCTION_REGISTRY: "%(prop:use_production_registry:-false)s"
+        REGISTRY_HOST: registry.scality.com
+      haltOnFailure: true
 
   # --- Re-usable steps related to terraform actions ---
   - ShellCommand: &terraform_install
@@ -806,7 +821,7 @@ stages:
       type: local
     steps:
       - ShellCommand: *add_final_status_artifact_failed
-      - SetProperty:
+      - SetProperty: &set_premerge_artifacts_name
           # Set premerge_artifacts_name to current artifacts name
           # as we are in premerge so we can use same step to retrieve ISO
           # in pre-merge and post-merge
@@ -815,9 +830,10 @@ stages:
           value: "%(prop:artifacts_name)s"
       - SetProperty: *set_premerge_url
       - TriggerStages:
-          name: Trigger build, docs and lint stages simultaneously
+          name: Trigger build, docs, test and lint stages simultaneously
           stage_names:
             - build
+            - build-shell-ui
             - docs
             - lint
             - unit_tests
@@ -826,7 +842,7 @@ stages:
       - SetPropertyFromCommand: *set_version_prop
       - SetPropertyFromCommand: *set_short_version_prop
       - TriggerStages:
-          name: Trigger multiple-nodes step with built ISO
+          name: Trigger single and multiple nodes install stages with built ISO
           stage_names:
             - single-node-install-rhel
             - multiple-nodes
@@ -844,7 +860,7 @@ stages:
           name: Get pre-merge artifacts_name
           stage: pre-merge
           property: premerge_artifacts_name
-          haltOnFailure: True
+          haltOnFailure: true
       - SetProperty: *set_premerge_url
       - ShellCommand:
           name: Save the pre-merge artifacts reference
@@ -852,11 +868,11 @@ stages:
             mkdir -p build_status/.related_artifacts
             && touch
             "build_status/.related_artifacts/%(prop:premerge_artifacts_name)s"
-          haltOnFailure: True
+          haltOnFailure: true
       - SetPropertyFromCommand: *set_version_prop
       - SetPropertyFromCommand: *set_short_version_prop
       - TriggerStages:
-          name: Trigger post-merge lifecycle and solutions stages simultaneously
+          name: Trigger post-merge lifecycle, solutions and restore stages simultaneously
           stage_names:
             - post-merge-solutions
             - lifecycle-dev-branch
@@ -864,13 +880,19 @@ stages:
             - lifecycle-minor-version
             - bootstrap-restore
           haltOnFailure: true
+      - TriggerStages:
+          name: Trigger publish-images stage
+          stage_names:
+            - publish-images
+          haltOnFailure: true
+          doStepIf: "%(prop:publish_images:-false)s"
       - ShellCommand: *add_final_status_artifact_success
       - Upload: *upload_final_status_artifact
       - TriggerStages:
           name: Trigger TestRail objects creation and results upload
           stage_names:
             - create-upload-testrail-objects
-          alwaysRun: True
+          alwaysRun: true
 
   post-merge-solutions:
     worker:
@@ -917,7 +939,7 @@ stages:
           stage_names:
             - single-node-upgrade-centos
             - single-node-downgrade-centos
-          waitForFinish: True
+          waitForFinish: true
 
   create-upload-testrail-objects:
     worker:
@@ -955,7 +977,7 @@ stages:
             --test-suite "$TESTRAIL_SUITE"
             --test-plan "$TESTRAIL_PLAN"
             "$DESCRIPTION_FILE"
-          haltOnFailure: False
+          haltOnFailure: false
       - ShellCommand:
           name: Upload TestRail results
           env:
@@ -1760,8 +1782,8 @@ stages:
       - ShellCommand:
           <<: *untaint_bootstrap_ssh
           doStepIf: true
-    # NOTE: This section only run if property "install_solution" is True
-    # {{{
+      # NOTE: This section only run if property "install_solution" is True
+      # {{{
       - ShellCommand: *retrieve_iso_solution
       - ShellCommand: *copy_solution_archive_bootstrap_ssh
       - ShellCommand: *import_solution
@@ -1769,7 +1791,7 @@ stages:
       - ShellCommand: *create_solution_env
       - ShellCommand: *deploy_solution
       - ShellCommand: *wait_for_solution_operator
-    # }}}
+      # }}}
       - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand: *git_pull_ssh
       - ShellCommand: *bastion_fast_tests
@@ -1792,10 +1814,10 @@ stages:
             <<: *_install_single-node_junit_info
             STEP_NAME: single-node-install-rhel
       - Upload: *upload_final_status_artifact
-    # NOTE: This section only run if property "generate_snapshot" is True
-    # {{{
+      # NOTE: This section only run if property "generate_snapshot" is True
+      # {{{
       - ShellCommand: *terraform_gen_snapshot
-    # }}}
+      # }}}
       - ShellCommand:
           <<: *wait_debug
           env:
@@ -2287,8 +2309,8 @@ stages:
           env:
             <<: *_env_provision_volumes
             NODE_NAME: node-1
-    # NOTE: This section only run if property "install_solution" is True
-    # {{{
+      # NOTE: This section only run if property "install_solution" is True
+      # {{{
       - ShellCommand: *retrieve_iso_solution
       - ShellCommand: *copy_solution_archive_bootstrap_ssh
       - ShellCommand: *import_solution
@@ -2297,7 +2319,7 @@ stages:
       - ShellCommand: *untaint_bootstrap_ssh
       - ShellCommand: *deploy_solution
       - ShellCommand: *wait_for_solution_operator
-    # }}}
+      # }}}
       - ShellCommand: *wait_pods_stable_ssh
       - ShellCommand: &multi_node_fast_tests
           <<: *bastion_tests
@@ -2327,10 +2349,10 @@ stages:
             <<: *_install_multi-node_junit_info
             STEP_NAME: "multiple-nodes-%(prop:os:-centos-7)s"
       - Upload: *upload_final_status_artifact
-    # NOTE: This section only run if property "generate_snapshot" is True
-    # {{{
+      # NOTE: This section only run if property "generate_snapshot" is True
+      # {{{
       - ShellCommand: *terraform_gen_snapshot
-    # }}}
+      # }}}
       - ShellCommand:
           <<: *wait_debug
           timeout: 14400
@@ -2627,7 +2649,7 @@ stages:
           name: Get pre-merge artifacts_name
           stage: pre-merge
           property: premerge_artifacts_name
-          haltOnFailure: True
+          haltOnFailure: true
       - SetProperty: *set_premerge_url
       - TriggerStages:
           name: Trigger snapshot generations stages simultaneously
@@ -2671,3 +2693,166 @@ stages:
           name: Trigger multiple-nodes step with snapshot enabled
           stage_names:
             - multiple-nodes
+
+  build-shell-ui:
+    worker: *build_worker
+    steps:
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            STEP_NAME: build-shell-ui
+      - ShellCommand: *wait_for_docker
+      - Git: *git_pull
+      - SetPropertyFromCommand:
+          name: Set shell-ui version as a property
+          property: shell_ui_version
+          command: |
+            . ./VERSION
+            echo "$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH$VERSION_SUFFIX"
+      - ShellCommand:
+          name: Build shell-ui container image
+          command: docker build . --tag shell-ui:v%(prop:shell_ui_version)s
+          workdir: build/shell-ui
+          haltOnFailure: true
+      - ShellCommand:
+          name: Save shell-ui container image
+          command: >
+            docker save shell-ui:v%(prop:shell_ui_version)s |
+            gzip > shell-ui.tar.gz
+      - ShellCommand:
+          <<: *copy_artifacts
+          env:
+            DEST_DIR: "artifacts/images"
+            ARTIFACTS: >-
+              shell-ui.tar.gz
+      - Upload: *upload_artifacts
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            STEP_NAME: build-shell-ui
+      - Upload: *upload_final_status_artifact
+
+  publish:
+    worker:
+      type: local
+    steps:
+      - ShellCommand: *add_final_status_artifact_failed
+      - SetProperty: *set_premerge_artifacts_name
+      - SetProperty: *set_premerge_url
+      - TriggerStages:
+          stage_names:
+            - publish-shell-ui
+          haltOnFailure: true
+      - ShellCommand: *add_final_status_artifact_success
+      - Upload: *upload_final_status_artifact
+
+  publish-shell-ui:
+    worker: *build_worker
+    steps:
+      - ShellCommand: *wait_for_docker
+      - ShellCommand: *image_registry_login
+      - SetPropertyFromCommand: *set_version_prop
+      - SetPropertyFromCommand:
+          name: Set is_latest_dev property
+          property: is_latest_dev
+          command: |
+            if [ "$IS_LATEST_DEV" != unset ]; then
+                echo "$IS_LATEST_DEV"
+            elif [ "$IS_LATEST_STABLE" = true ]; then
+                echo false
+            else
+                LATEST_DEV_BRANCH=$(
+                    git ls-remote --heads "$GIT_REFERENCE" | \
+                    awk -F/ '$3 == "development" { print $4 }' | sort -V | tail -n 1
+                )
+                [ "$GIT_BRANCH" = "development/$LATEST_DEV_BRANCH" ] && echo true || echo false
+            fi
+          env:
+            GIT_REFERENCE: '%(prop:git_reference)s'
+            GIT_BRANCH: '%(prop:branch)s'
+            IS_LATEST_DEV: '%(prop:is_latest_dev:-unset)s'
+            IS_LATEST_STABLE: '%(prop:is_latest_stable:-unset)s'
+      - SetPropertyFromCommand:
+          name: Set is_stable_version property
+          property: is_latest_stable
+          command: |
+            if [ "$IS_LATEST_STABLE" != unset ]; then
+                echo "$IS_LATEST_STABLE"
+            elif [ "$IS_LATEST_DEV" = true ]; then
+                echo false
+            else
+                LATEST_STABLE_RELEASE=$(
+                    git ls-remote --tags --refs "$GIT_REFERENCE" | \
+                    awk -F/ '$3 ~ /^[0-9]+\.[0-9]+\.[0-9]+$/ { print $3 }' | sort -V | tail -n 1
+                )
+                [ "$VERSION" = "$LATEST_STABLE_RELEASE" ] && echo true || echo false
+            fi
+          env:
+            GIT_REFERENCE: '%(prop:git_reference)s'
+            IS_LATEST_DEV: '%(prop:is_latest_dev)s'
+            IS_LATEST_STABLE: '%(prop:is_latest_stable:-unset)s'
+            VERSION: '%(prop:metalk8s_version)s'
+      - SetProperty:
+          name: Set is_dev property
+          property: is_dev
+          value: false
+          doStepIf: '%(prop:use_production_registry:-false)s'
+      - ShellCommand:
+          name: Retrieve shell-ui image from pre-merge artifacts
+          command: >
+            curl -L -s -XGET -O '%(prop:premerge_artifacts_private_url)s/images/shell-ui.tar.gz'
+          haltOnFailure: true
+      - ShellCommand:
+          name: Load shell-ui image
+          command: docker load < shell-ui.tar.gz
+          haltOnFailure: true
+      - ShellCommand: &image_registry_tag_shell_ui
+          name: Tag shell-ui image with current version
+          command: |
+            if [ "$USE_PRODUCTION_REGISTRY" = true ]; then
+                PROJECT='%(secret:harbor_prod_project)s'
+            else
+                PROJECT='%(secret:harbor_dev_project)s'
+            fi
+            docker tag "$IMAGE_SRC" "$REGISTRY_HOST/$PROJECT/$IMAGE_DST"
+          env: &_env_image_registry_tag_shell_ui
+            <<: *_env_image_registry
+            IMAGE_SRC: 'shell-ui:v%(prop:metalk8s_version)s'
+            IMAGE_DST: 'shell-ui:v%(prop:metalk8s_version)s'
+      - ShellCommand:
+          <<: *image_registry_tag_shell_ui
+          name: Tag shell-ui image with commit short revision
+          env:
+            <<: *_env_image_registry_tag_shell_ui
+            IMAGE_DST: 'shell-ui:v%(prop:metalk8s_version)s-%(prop:commit_short_revision)s'
+          doStepIf: '%(prop:is_dev:-true)s'
+      - ShellCommand:
+          <<: *image_registry_tag_shell_ui
+          name: Tag shell-ui image as stable
+          env:
+            <<: *_env_image_registry_tag_shell_ui
+            IMAGE_DST: 'shell-ui:stable'
+          doStepIf: '%(prop:is_latest_stable)s'
+      - ShellCommand:
+          <<: *image_registry_tag_shell_ui
+          name: Tag shell-ui image as latest
+          env:
+            <<: *_env_image_registry_tag_shell_ui
+            IMAGE_DST: 'shell-ui:latest'
+          doStepIf: '%(prop:is_latest_dev)s'
+      - ShellCommand:
+          name: Push shell-ui image to the remote registry
+          command: |
+            if [ "$USE_PRODUCTION_REGISTRY" = true ]; then
+                PROJECT='%(secret:harbor_prod_project)s'
+            else
+                PROJECT='%(secret:harbor_dev_project)s'
+            fi
+            echo "The following $IMAGE_NAME tags will be pushed:"
+            docker images "$REGISTRY_HOST/$PROJECT/$IMAGE_NAME"
+            docker push "$REGISTRY_HOST/$PROJECT/$IMAGE_NAME"
+          env:
+            <<: *_env_image_registry
+            IMAGE_NAME: shell-ui
