@@ -41,7 +41,9 @@ const App = () => {
   return status === 'success' && api && theme ? (
     <IntlProvider locale={language} messages={messages[language.toUpperCase()]}>
       <IntlGlobalProvider>
-        <Layout />
+        <MetricsTimeSpanProvider>
+          <Layout />
+        </MetricsTimeSpanProvider>
       </IntlGlobalProvider>
     </IntlProvider>
   ) : (
