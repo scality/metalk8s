@@ -1,5 +1,5 @@
 import 'regenerator-runtime/runtime';
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Provider, useDispatch } from 'react-redux';
 import { createStore, applyMiddleware, compose } from 'redux';
 import { Router } from 'react-router-dom';
@@ -29,18 +29,19 @@ sagaMiddleware.run(sagas);
 const RouterWithBaseName = ({ children }) => {
   const configStatus = useTypedSelector((state) => state.config.status);
   const basename = useTypedSelector((state) => state.config.api?.ui_base_path);
-  const [history, setHistory] = useState(createBrowserHistory({}));
   const dispatch = useDispatch();
-  useLayoutEffect(() => {
+  const history = useMemo(() => {
+    let history = createBrowserHistory({});
     if (basename) {
       const historyWithBasename = createBrowserHistory({ basename });
-      setHistory(historyWithBasename);
-      if (window.Cypress) window.__history__ = historyWithBasename;
+      history = historyWithBasename;
       dispatch(setReduxHistory(historyWithBasename));
     } else {
       dispatch(setReduxHistory(history));
     }
     if (window.Cypress) window.__history__ = history;
+
+    return history;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [basename]);
 
