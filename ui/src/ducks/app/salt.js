@@ -7,7 +7,7 @@ import {
   put,
   select,
   take,
-  takeEvery,
+  takeLeading,
 } from 'redux-saga/effects';
 import { eventChannel, END } from 'redux-saga';
 import * as ApiSalt from '../../services/salt/api';
@@ -276,6 +276,6 @@ export function* saltSaga() {
   yield all([
     fork(manageLocalStorage),
     fork(garbageCollectJobs),
-    takeEvery(CONNECT_SALT_API, initialize),
+    takeLeading(CONNECT_SALT_API, initialize),
   ]);
 }
