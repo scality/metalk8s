@@ -535,14 +535,14 @@ export function* readNode({ payload }) {
 
 export function* nodesSaga() {
   yield all([
-    takeEvery(FETCH_NODES, fetchNodes),
+    takeLatest(FETCH_NODES, fetchNodes),
     takeEvery(CREATE_NODE, createNode),
     takeLatest(DEPLOY_NODE, deployNode),
-    takeEvery(REFRESH_NODES, refreshNodes),
-    takeEvery(STOP_REFRESH_NODES, stopRefreshNodes),
-    takeEvery(FETCH_CLUSTER_VERSION, fetchClusterVersion),
+    takeLatest(REFRESH_NODES, refreshNodes),
+    takeLatest(STOP_REFRESH_NODES, stopRefreshNodes),
+    takeLatest(FETCH_CLUSTER_VERSION, fetchClusterVersion),
     takeEvery(JOB_COMPLETED, notifyDeployJobCompleted),
-    takeEvery(FETCH_NODES_IPS_INTERFACES, fetchNodesIPsInterface),
+    takeLatest(FETCH_NODES_IPS_INTERFACES, fetchNodesIPsInterface),
     takeEvery(READ_NODE, readNode),
   ]);
 }
