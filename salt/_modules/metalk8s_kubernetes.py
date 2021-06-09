@@ -203,13 +203,19 @@ def _object_manipulation_function(action):
                 call_kwargs["body"].metadata.resourceVersion = old_object["metadata"][
                     "resourceVersion"
                 ]
-            # Keep `cluster_ip` if not present in the body
-            if (
-                obj.api_version == "v1"
-                and obj.kind == "Service"
-                and not call_kwargs["body"].spec.cluster_ip
-            ):
-                call_kwargs["body"].spec.cluster_ip = old_object["spec"]["cluster_ip"]
+            # Keep `cluster_ip` and `health_check_node_port` if not present in the body
+            if obj.api_version == "v1" and obj.kind == "Service":
+                if not call_kwargs["body"].spec.cluster_ip:
+                    call_kwargs["body"].spec.cluster_ip = old_object["spec"][
+                        "cluster_ip"
+                    ]
+                if (
+                    obj.spec.type == "LoadBalancer"
+                    and not call_kwargs["body"].spec.health_check_node_port
+                ):
+                    call_kwargs["body"].spec.health_check_node_port = old_object[
+                        "spec"
+                    ]["health_check_node_port"]
 
         kubeconfig, context = __salt__["metalk8s_kubernetes.get_kubeconfig"](**kwargs)
 

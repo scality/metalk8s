@@ -47,6 +47,10 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
             obj.metadata.resource_version = meta.get("resource_version")
 
             obj.spec.cluster_ip = manifest.get("spec", {}).get("clusterIP")
+            obj.spec.health_check_node_port = manifest.get("spec", {}).get(
+                "healthCheckNodePort"
+            )
+            obj.spec.type = manifest.get("spec", {}).get("type")
 
             def _to_dict():
                 if obj.metadata.resourceVersion:
@@ -57,6 +61,14 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     manifest.setdefault("spec", {})["clusterIP"] = obj.spec.cluster_ip
                     if "cluster_ip" in manifest.get("spec", {}):
                         del manifest["spec"]["cluster_ip"]
+                if obj.spec.type:
+                    manifest.setdefault("spec", {})["type"] = obj.spec.type
+                if obj.spec.health_check_node_port:
+                    manifest.setdefault("spec", {})[
+                        "healthCheckNodePort"
+                    ] = obj.spec.health_check_node_port
+                    if "health_check_node_port" in manifest.get("spec", {}):
+                        del manifest["spec"]["health_check_node_port"]
 
                 return manifest
 

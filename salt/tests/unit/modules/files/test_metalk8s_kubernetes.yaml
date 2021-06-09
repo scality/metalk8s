@@ -311,6 +311,80 @@ replace_object:
       spec:
         clusterIP: "20.21.22.23"
 
+  # Replace service object (special case we need to keep health_check_node_port)
+  - manifest:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: my_service
+      spec:
+        type: LoadBalancer
+    old_object:
+      # Old object is considered as k8s object so snake case
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: my_service
+        resource_version: "123456"
+      spec:
+        type: LoadBalancer
+        cluster_ip: "10.11.12.13"
+        health_check_node_port: "12345"
+    result:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: my_service
+        labels:
+          metalk8s.scality.com/version: unknown
+          app.kubernetes.io/managed-by: salt
+          heritage: salt
+        resourceVersion: "123456"
+      spec:
+        type: LoadBalancer
+        clusterIP: "10.11.12.13"
+        healthCheckNodePort: "12345"
+
+  # Replace service object (special case: health_check_node_port set in the manifest
+  # and old_object, keep the manifest one)
+  # NOTE: This test just ensure we keep the one from input manifest and not
+  #       replace it with the one from old_object, but in practice apiServer
+  #       will reject this call since health_check_node_port is immutable field
+  - manifest:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: my_service
+      spec:
+        clusterIP: "10.11.12.13"
+        type: LoadBalancer
+        healthCheckNodePort: "12345"
+    old_object:
+      # Old object is considered as k8s object so snake case
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: my_service
+        resource_version: "123456"
+      spec:
+        cluster_ip: "10.11.12.13"
+        type: LoadBalancer
+        health_check_node_port: "9876"
+    result:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: my_service
+        labels:
+          metalk8s.scality.com/version: unknown
+          app.kubernetes.io/managed-by: salt
+          heritage: salt
+        resourceVersion: "123456"
+      spec:
+        clusterIP: "10.11.12.13"
+        type: LoadBalancer
+        healthCheckNodePort: "12345"
+
   # Error when replacing object
   - manifest:
       apiVersion: v1
