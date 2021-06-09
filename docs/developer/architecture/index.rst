@@ -10,6 +10,7 @@ Architecture Documents
    centralized-cli
    ci
    configurations
+   control-plane-ingress
    deployment
    logs
    metalk8s-ui
