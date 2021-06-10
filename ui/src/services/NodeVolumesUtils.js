@@ -15,7 +15,6 @@ import {
   STATUS_BOUND,
   STATUS_RELEASED,
   STATUS_READY,
-  STATUS_NONE,
   PORT_NODE_EXPORTER,
 } from '../constants';
 import { intl } from '../translations/IntlGlobalProvider';
@@ -163,7 +162,7 @@ const getVolumeUsedCurrent = (state) =>
 const getVolumeCapacityCurrent = (state) =>
   state?.app?.monitoring?.volumeCurrentStats?.metrics?.volumeCapacityCurrent;
 
-export const getVolumeListData = (alerts) => createSelector(
+export const getVolumeListData = createSelector(
   getNodeNameFromUrl,
   getVolumes,
   getPVList,
@@ -206,8 +205,6 @@ export const getVolumeListData = (alerts) => createSelector(
 
       let volumeUsedCurrent = null;
       let volumeCapacityCurrent = null;
-      let volumeAlerts = [];
-      let volumeHealth = STATUS_NONE;
       // if volume is bounded
       if (volumePVC) {
         volumeUsedCurrent = volumeUsedCurrentList?.find(
@@ -218,11 +215,6 @@ export const getVolumeListData = (alerts) => createSelector(
           (volCap) =>
             volCap.metric.persistentvolumeclaim === volumePVC.metadata.name,
         );
-
-        volumeAlerts = filterAlerts(alerts, {
-          persistentvolumeclaim: volumePVC.metadata.name,
-        });
-        volumeHealth = getHealthStatus(volumeAlerts);
       }
 
       const instanceIP = nodeList?.find(
@@ -255,7 +247,6 @@ export const getVolumeListData = (alerts) => createSelector(
         usageRawData: volumeUsedCurrent?.value[1]
           ? bytesToSize(volumeUsedCurrent?.value[1])
           : 0,
-        health: volumeHealth,
         latency:
           // for latency we need to query the volumeLatecyCurrent based on both `instance` and `deviceName`
           volumeCurrentLatency
