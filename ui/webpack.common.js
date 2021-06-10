@@ -109,7 +109,12 @@ module.exports = (env) => ({
           singleton: true,
           eager: true,
         },
-        'react': {
+        'styled-components': {
+          singleton: true,
+          eager: true,
+          requiredVersion: deps['styled-components'],
+        },
+        react: {
           singleton: true,
           eager: true,
           requiredVersion: deps.react,
