@@ -40,6 +40,11 @@ module.exports = {
           eager: true,
           requiredVersion: deps.react,
         },
+        'styled-components': {
+            singleton: true,
+            eager: true,
+            requiredVersion: deps['styled-components'],
+        },
         'react-dom': {
           singleton: true,
           eager: true,
