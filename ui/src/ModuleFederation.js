@@ -6,6 +6,7 @@ import React, {
   Suspense,
   lazy,
   type StatelessFunctionalComponent,
+  useMemo
 } from 'react';
 import ErrorPage500 from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
@@ -197,19 +198,20 @@ export const ComponentWithLazyHook = <T>({
     urls: [remoteEntryUrl],
   });
 
+  const Component = useMemo(() => lazyWithModules(componentWithInjectedHook, {
+    scope: moduleFederationScope,
+    module: federatedModule,
+    url: remoteEntryUrl,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [moduleFederationScope, federatedModule, remoteEntryUrl]);
+
   if (status === 'loading' || status === 'idle') {
     return <Loader size="massive" centered={true} aria-label="loading" />; // TODO display the previous module while lazy loading the new one
   }
 
   if (status === 'error' && renderOnError) {
     return renderOnError;
-  }
-
-  const Component = lazyWithModules(componentWithInjectedHook, {
-    scope: moduleFederationScope,
-    module: federatedModule,
-    url: remoteEntryUrl,
-  });
+  }  
 
   return (
     <Suspense
