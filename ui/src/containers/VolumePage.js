@@ -5,6 +5,7 @@ import VolumeContent from './VolumePageContent';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
 import { makeGetNodeFromUrl, useRefreshEffect } from '../services/utils';
+import { getHealthStatus, filterAlerts } from '../services/alertUtils';
 import { fetchNodesAction } from '../ducks/app/nodes';
 import {
   refreshVolumesAction,
@@ -63,10 +64,10 @@ const VolumePage = (props) => {
   const nodes = useTypedSelector((state) => state.app.nodes.list);
   const volumes = useTypedSelector((state) => state.app.volumes.list);
   const volumesLoading = useTypedSelector(
-    (state) => state.app.volumes.isLoading,
+    (state) => state.app.volumes.isLoading
   );
   const currentVolumeObject = useTypedSelector(
-    (state) => state.app.volumes.currentVolumeObject,
+    (state) => state.app.volumes.currentVolumeObject
   );
 
   const pVList = useTypedSelector((state) => state.app.volumes.pVList);
@@ -78,12 +79,20 @@ const VolumePage = (props) => {
   const pVCList = useTypedSelector((state) => state?.app?.volumes?.pVCList);
 
   const volumeStats = useTypedSelector(
-    (state) => state.app.monitoring.volumeStats.metrics,
+    (state) => state.app.monitoring.volumeStats.metrics
   );
   // get all the volumes maybe filter by node
   const {alerts} = useAlerts();
   const volumeListData = useTypedSelector((state) =>
-    getVolumeListData(alerts)(state, props),
+    getVolumeListData(state, props).map(volume => {
+      const volumeAlerts = filterAlerts(alerts, {
+        persistentvolumeclaim: volume.name,
+      });
+      const volumeHealth = getHealthStatus(volumeAlerts);
+      return ({
+      ...volume,
+      health: volumeHealth
+    })}) 
   );
 
   return (
