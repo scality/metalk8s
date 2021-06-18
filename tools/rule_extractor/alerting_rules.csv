@@ -1,9 +1,11 @@
-AlertmanagerConfigInconsistent,critical,"The configuration of the instances of the Alertmanager cluster `{{ $labels.namespace }}/{{ $labels.service }}` are out of sync.
-{{ range printf ""alertmanager_config_hash{namespace=\""%s\"",service=\""%s\""}"" $labels.namespace $labels.service | query }}
-Configuration hash for pod {{ .Labels.pod }} is ""{{ printf ""%.f"" .Value }}""
-{{ end }}"
-AlertmanagerFailedReload,warning,Reloading Alertmanager's configuration has failed for {{ $labels.namespace }}/{{ $labels.pod}}.
-AlertmanagerMembersInconsistent,critical,Alertmanager has not found all other members of the cluster.
+AlertmanagerFailedReload,critical,Reloading an Alertmanager configuration has failed.
+AlertmanagerMembersInconsistent,critical,A member of an Alertmanager cluster has not found all other cluster members.
+AlertmanagerFailedToSendAlerts,warning,An Alertmanager instance failed to send notifications.
+AlertmanagerClusterFailedToSendAlerts,critical,All Alertmanager instances in a cluster failed to send notifications to a critical integration.
+AlertmanagerClusterFailedToSendAlerts,warning,All Alertmanager instances in a cluster failed to send notifications to a non-critical integration.
+AlertmanagerConfigInconsistent,critical,Alertmanager instances within the same cluster have different configurations.
+AlertmanagerClusterDown,critical,Half or more of the Alertmanager instances within the same cluster are down.
+AlertmanagerClusterCrashlooping,critical,Half or more of the Alertmanager instances within the same cluster are crashlooping.
 etcdInsufficientMembers,critical,"etcd cluster ""{{ $labels.job }}"": insufficient members ({{ $value }})."
 etcdNoLeader,critical,"etcd cluster ""{{ $labels.job }}"": member {{ $labels.instance }} has no leader."
 etcdHighNumberOfLeaderChanges,warning,"etcd cluster ""{{ $labels.job }}"": instance {{ $labels.instance }} has seen {{ $value }} leader changes within the last hour."
@@ -17,18 +19,16 @@ etcdHighCommitDurations,warning,"etcd cluster ""{{ $labels.job }}"": 99th percen
 etcdHighNumberOfFailedHTTPRequests,warning,{{ $value }}% of requests for {{ $labels.method }} failed on etcd instance {{ $labels.instance }}
 etcdHighNumberOfFailedHTTPRequests,critical,{{ $value }}% of requests for {{ $labels.method }} failed on etcd instance {{ $labels.instance }}.
 etcdHTTPRequestsSlow,warning,etcd instance {{ $labels.instance }} HTTP requests to {{ $labels.method }} are slow.
-TargetDown,warning,"{{ printf ""%.4g"" $value }}% of the {{ $labels.job }}/{{ $labels.service }} targets in {{ $labels.namespace }} namespace are down."
-Watchdog,none,"This is an alert meant to ensure that the entire alerting pipeline is functional.
-This alert is always firing, therefore it should always be firing in Alertmanager
-and always fire against a receiver. There are integrations with various notification
-mechanisms that send a notification when this alert is not firing. For example the
-""DeadMansSnitch"" integration in PagerDuty."
+TargetDown,warning,One or more targets are unreachable.
+Watchdog,none,An alert that should always be firing to certify that Alertmanager is working properly.
 KubeAPIErrorBudgetBurn,critical,The API server is burning too much error budget.
 KubeAPIErrorBudgetBurn,critical,The API server is burning too much error budget.
 KubeAPIErrorBudgetBurn,warning,The API server is burning too much error budget.
 KubeAPIErrorBudgetBurn,warning,The API server is burning too much error budget.
 KubeStateMetricsListErrors,critical,kube-state-metrics is experiencing errors in list operations.
 KubeStateMetricsWatchErrors,critical,kube-state-metrics is experiencing errors in watch operations.
+KubeStateMetricsShardingMismatch,critical,kube-state-metrics sharding is misconfigured.
+KubeStateMetricsShardsMissing,critical,kube-state-metrics shards are missing.
 KubePodCrashLooping,warning,Pod is crash looping.
 KubePodNotReady,warning,Pod has been in a non-ready state for more than 15 minutes.
 KubeDeploymentGenerationMismatch,warning,Deployment generation mismatch due to possible roll-back
@@ -94,7 +94,7 @@ NodeClockNotSynchronising,warning,Clock on {{ $labels.instance }} is not synchro
 NodeTextFileCollectorScrapeError,warning,Node Exporter text file collector failed to scrape.
 NodeRAIDDegraded,critical,RAID Array is degraded
 NodeRAIDDiskFailure,warning,Failed device in RAID array
-NodeNetworkInterfaceFlapping,warning,"Network interface ""{{ $labels.device }}"" changing it's up status often on node-exporter {{ $labels.namespace }}/{{ $labels.pod }}"""
+NodeNetworkInterfaceFlapping,warning,"Network interface ""{{ $labels.device }}"" changing it's up status often on node-exporter {{ $labels.namespace }}/{{ $labels.pod }}"
 PrometheusOperatorListErrors,warning,Errors while performing list operations in controller.
 PrometheusOperatorWatchErrors,warning,Errors while performing watch operations in controller.
 PrometheusOperatorSyncFailed,warning,Last controller reconciliation failed
@@ -105,7 +105,6 @@ PrometheusOperatorRejectedResources,warning,Resources rejected by Prometheus ope
 PrometheusBadConfig,critical,Failed Prometheus configuration reload.
 PrometheusNotificationQueueRunningFull,warning,Prometheus alert notification queue predicted to run full in less than 30m.
 PrometheusErrorSendingAlertsToSomeAlertmanagers,warning,Prometheus has encountered more than 1% errors sending alerts to a specific Alertmanager.
-PrometheusErrorSendingAlertsToAnyAlertmanager,critical,Prometheus encounters more than 3% errors sending alerts to any Alertmanager.
 PrometheusNotConnectedToAlertmanagers,warning,Prometheus is not connected to any Alertmanagers.
 PrometheusTSDBReloadsFailing,warning,Prometheus has issues reloading blocks from disk.
 PrometheusTSDBCompactionsFailing,warning,Prometheus has issues compacting blocks.
@@ -118,3 +117,5 @@ PrometheusRemoteWriteDesiredShards,warning,Prometheus remote write desired shard
 PrometheusRuleFailures,critical,Prometheus is failing rule evaluations.
 PrometheusMissingRuleEvaluations,warning,Prometheus is missing rule evaluations due to slow rule group evaluation.
 PrometheusTargetLimitHit,warning,Prometheus has dropped targets because some scrape configs have exceeded the targets limit.
+PrometheusLabelLimitHit,warning,Prometheus has dropped targets because some scrape configs have exceeded the labels limit.
+PrometheusErrorSendingAlertsToAnyAlertmanager,critical,Prometheus encounters more than 3% errors sending alerts to any Alertmanager.

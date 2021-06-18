@@ -168,7 +168,8 @@ spec:
           {{ printf "%.0f" $value }} receive errors in the last two minutes.'
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodenetworkreceiveerrs
         summary: Network interface is reporting many receive errors.
-      expr: increase(node_network_receive_errs_total[2m]) > {% endraw %}{{ rules.node_exporter.node_network_receive_errors.warning.errors }}{% raw %}
+      expr: increase(node_network_receive_errs_total[2m]) / rate(node_network_receive_packets_total[2m])
+        > {% endraw %}{{ rules.node_exporter.node_network_receive_errors.warning.error_rate }}{% raw %}
       for: 1h
       labels:
         severity: warning
@@ -178,7 +179,8 @@ spec:
           {{ printf "%.0f" $value }} transmit errors in the last two minutes.'
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodenetworktransmiterrs
         summary: Network interface is reporting many transmit errors.
-      expr: increase(node_network_transmit_errs_total[2m]) > {% endraw %}{{ rules.node_exporter.node_network_transmit_errors.warning.errors }}{% raw %}
+      expr: increase(node_network_transmit_errs_total[2m]) / rate(node_network_transmit_packets_total[2m])
+        > {% endraw %}{{ rules.node_exporter.node_network_transmit_errors.warning.error_rate }}{% raw %}
       for: 1h
       labels:
         severity: warning
@@ -217,7 +219,10 @@ spec:
           is configured on this host.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodeclocknotsynchronising
         summary: Clock not synchronising.
-      expr: min_over_time(node_timex_sync_status[5m]) == {% endraw %}{{ rules.node_exporter.node_clock_not_synchronising.warning.threshold }}{% raw %}
+      expr: |-
+        min_over_time(node_timex_sync_status[5m]) == {% endraw %}{{ rules.node_exporter.node_clock_not_synchronising.warning.threshold }}{% raw %}
+        and
+        node_timex_maxerror_seconds >= 16
       for: 10m
       labels:
         severity: warning
@@ -247,7 +252,7 @@ spec:
           Array '{{ $labels.device }}' needs attention and possibly a disk swap.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-noderaiddiskfailure
         summary: Failed device in RAID array
-      expr: node_md_disks{state="fail"} >= {% endraw %}{{ rules.node_exporter.node_raid_disk_failure.warning.threshold }}{% raw %}
+      expr: node_md_disks{state="failed"} >= {% endraw %}{{ rules.node_exporter.node_raid_disk_failure.warning.threshold }}{% raw %}
       labels:
         severity: warning
 {%- endraw %}

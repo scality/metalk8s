@@ -28,17 +28,16 @@
   dex image from v2.27.0 to v2.28.1
   (PR[#3370](https://github.com/scality/metalk8s/pull/3370))
 
-- [#3279](https://github.com/scality/metalk8s/issues/3279) - Bump
-  kube-prometheus-stack charts version from 12.2.3 to 15.4.4.
+- Bump kube-prometheus-stack charts version to 16.9.1
   The following images have also been bumped accordingly:
-   - grafana from 7.3.5 to 7.5.5
-   - k8s-sidecar from 1.1.0 to 1.10.7
-   - kube-state-metrics from v1.9.7 to v1.9.8
-   - node-exporter from v1.0.1 to v1.1.2
-   - prometheus from v2.22.1 to v2.26.0
-   - prometheus-config-reloader fomr v0.43.2 to v0.47.0
-   - prometheus-operator from v0.43.2 to v0.47.0
-  (PR[#3360](https://github.com/scality/metalk8s/pull/3360))
+   - grafana to 8.0.1
+   - k8s-sidecar to 1.12.2
+   - kube-state-metrics to v2.0.0
+   - node-exporter to v1.1.2
+   - prometheus to v2.27.1
+   - prometheus-config-reloader to v0.48.1
+   - prometheus-operator to v0.48.1
+  (PR[#3422](https://github.com/scality/metalk8s/pull/3422))
 
 - [#3279](https://github.com/scality/metalk8s/issues/3279) - Bump
   ingress-nginx chart version from 3.13.0 to 3.30.0

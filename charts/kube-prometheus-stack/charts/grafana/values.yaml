@@ -22,6 +22,22 @@ serviceAccount:
 
 replicas: 1
 
+## Create HorizontalPodAutoscaler object for deployment type
+#
+autoscaling:
+  enabled: false
+#   minReplicas: 1
+#   maxReplicas: 10
+#   metrics:
+#   - type: Resource
+#     resource:
+#       name: cpu
+#       targetAverageUtilization: 60
+#   - type: Resource
+#     resource:
+#       name: memory
+#       targetAverageUtilization: 60
+
 ## See `kubectl explain poddisruptionbudget.spec` for more
 ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
 podDisruptionBudget: {}
@@ -53,7 +69,7 @@ livenessProbe:
 
 image:
   repository: grafana/grafana
-  tag: 7.5.5
+  tag: 8.0.1
   sha: ""
   pullPolicy: IfNotPresent
 
@@ -516,7 +532,7 @@ dashboardsConfigMaps: {}
 ##
 grafana.ini:
   paths:
-    data: /var/lib/grafana/data
+    data: /var/lib/grafana/
     logs: /var/log/grafana
     plugins: /var/lib/grafana/plugins
     provisioning: /etc/grafana/provisioning
@@ -587,7 +603,7 @@ smtp:
 sidecar:
   image:
     repository: quay.io/kiwigrid/k8s-sidecar
-    tag: 1.10.7
+    tag: 1.12.2
     sha: ""
   imagePullPolicy: IfNotPresent
   resources: {}
