@@ -16,6 +16,7 @@ module.exports = (env) => ({
           'solution-ui-navbar': './src/navbar/index.js',
           alerts: './src/alerts/index.js',
           platform: './src/platform/library.js',
+          index: './index.all.js',
         }
       : { alerts: './index.alerts.js' },
   output: {
