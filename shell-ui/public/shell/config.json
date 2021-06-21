@@ -1,33 +1,15 @@
 {
-  "docUrl": "/docs",
-  "oidc": {
-    "providerUrl": "/oidc",
-    "redirectUrl": "http://localhost:3000/",
-    "clientId": "metalk8s-ui",
-    "responseType": "id_token",
-    "scopes": "openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
-  },
-  "options": {
-    "main": {
-      "http://localhost:3000/": {
-        "en": "Platform",
-        "fr": "Plateforme",
-        "activeIfMatches": "http://localhost:3000/(?!alerts|docs).*",
-        "module": "./FederableApp",
-        "scope": "metalk8s",
-        "url": "http://localhost:3000/static/js/remoteEntry.js"
+  "navbar": {
+    "main": [
+      {
+        "kind": "metalk8s-ui",
+        "view": "platform"
       },
-      "http://localhost:3000/alerts": {
-        "en": "Alerts",
-        "fr": "Alertes",
-        "activeIfMatches": "http://localhost:3000/alerts",
-        "module": "./FederableApp",
-        "scope": "metalk8s",
-        "url": "http://localhost:3000/static/js/remoteEntry.js"
+      {
+        "kind": "metalk8s-ui",
+        "view": "alerts"
       }
-    },
-    "subLogin": {}
-  },
-  "logo": {},
-  "favicon": ""
+    ],
+    "subLogin": []
+  }
 }
