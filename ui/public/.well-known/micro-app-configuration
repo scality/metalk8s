@@ -1,0 +1,42 @@
+{
+    "kind": "MicroAppConfiguration",
+    "apiVersion": "ui.scality.com/v1alpha1",
+    "metadata": {
+        "kind": "metalk8s-ui"
+    },
+    "spec": {
+        "remoteEntryPath": "/static/js/remoteEntry.js",
+        "views": {
+            "platform": {
+                "path": "/",
+                "label": {
+                    "en": "Platform",
+                    "fr": "Plateforme"
+                },
+                "module": "./FederableApp",
+                "scope": "metalk8s"
+            },
+            "alerts": {
+                "path": "/alerts",
+                "label": {
+                    "en": "Alerts",
+                    "fr": "Alertes"
+                },
+                "module": "./FederableApp",
+                "scope": "metalk8s"
+            }
+        },
+        "hooks": {
+            "TODO_useAlert_and_platform_lib_hooks": {
+                "module": "",
+                "scope": ""
+            }
+        },
+        "components": {
+            "TODO_AlertProvider": {
+                "module": "",
+                "scope": ""
+            }
+        }
+    }
+}
