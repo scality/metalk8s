@@ -6,27 +6,30 @@ import React, {
   Suspense,
   lazy,
   type StatelessFunctionalComponent,
-  useMemo
+  useMemo,
+  useRef,
 } from 'react';
 import ErrorPage500 from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
 
-
 /***
- * 
+ *
  * TODO EXTRACT THIS FILE TO A LIBRARY
- * 
+ *
  */
 
 declare var __webpack_init_sharing__: (scope: string) => Promise<void>;
 declare var __webpack_share_scopes__: { default: {} };
 
-type Module = any;// todo retrieve this type from webpack
+type Module = any; // todo retrieve this type from webpack
 
-export function loadModule(scope: string, module: string): () => Promise<Module> {
+export function loadModule(
+  scope: string,
+  module: string,
+): () => Promise<Module> {
   // todo replace any type with module
   return async () => {
-    // Initializes the share scope. This fills it with known provided modules from this build and all remotes
+    // Initializes the share scope. This fills it with known provided modules from this build and all remotesk
     await __webpack_init_sharing__('default');
     const container = window[scope]; // or get the container somewhere else
     // Initialize the container, it may provide shared modules
@@ -43,10 +46,13 @@ export const useDynamicScripts = ({
 }: {
   urls: string[],
 }): { status: 'idle' | 'loading' | 'success' | 'error' } => {
-  const [status, setStatus] =
-    useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<
+    'idle' | 'loading' | 'success' | 'error',
+  >('idle');
 
+  const isMountedRef = useRef(false);
   useEffect(() => {
+    isMountedRef.current = true;
     if (!urls || urls.length === 0) {
       return;
     }
@@ -56,7 +62,9 @@ export const useDynamicScripts = ({
     //todo rename elements to ,... ???>
     const elements = urls.flatMap((url) => {
       if (typeof url !== 'string') {
-        throw new Error(`Invalid url, can't load a dynamic script with url '${url}'`);
+        throw new Error(
+          `Invalid url, can't load a dynamic script with url '${url}'`,
+        );
       }
 
       const head = document.head;
@@ -99,17 +107,26 @@ export const useDynamicScripts = ({
 
     //TODO cancel {promises}/{set state} on unmount
     Promise.all(elements.map((elem) => elem.promise))
-      .then(() => setStatus('success'))
-      .catch(() => setStatus('error'));
+      .then(() => {
+        if (isMountedRef.current) {
+          setStatus('success');
+        }
+      })
+      .catch(() => {
+        if (isMountedRef.current) {
+          setStatus('error')
+        }
+      });
 
     return () => {
+      isMountedRef.current = false;
       elements.forEach((elem) => {
         console.log(`Dynamic Script Removed: ${elem.url}`);
         //$FlowIssue - document.head must be defined here
         document.head.removeChild(elem.element);
       });
     };
-  }, [JSON.stringify(urls)]);
+  }, [JSON.stringify(urls), isMountedRef]);
 
   return {
     status,
@@ -126,11 +143,18 @@ export function FederatedComponent({
   url,
   scope,
   module,
-  props
-}: FederatedComponentProps & {props: any}): Node {
+  props,
+}: FederatedComponentProps & { props: any }): Node {
   const { status } = useDynamicScripts({
     urls: [url],
   });
+
+  const Component = useMemo(() => {
+    if (status === 'success') {
+      return lazy(loadModule(scope, module));
+  } 
+  return () => <div></div>;
+  }, [scope, module, status]);
 
   if (!url || !scope || !module) {
     throw new Error("Can't federate a component without url, scope and module");
@@ -144,13 +168,11 @@ export function FederatedComponent({
     return <ErrorPage500 data-cy="sc-error-page500" />;
   }
 
-  const Component = lazy(loadModule(scope, module));
-
   return (
     <Suspense
       fallback={<Loader size="massive" centered={true} aria-label="loading" />}
     >
-      <Component {...props}/>
+      <Component {...props} />
     </Suspense>
   );
 }
@@ -170,7 +192,6 @@ export const lazyWithModules = (
       }),
       {},
     );
-    console.log(moduleExports);//todo remove this
     return {
       __esModule: true,
       default: (originalProps) =>
@@ -198,12 +219,16 @@ export const ComponentWithLazyHook = <T>({
     urls: [remoteEntryUrl],
   });
 
-  const Component = useMemo(() => lazyWithModules(componentWithInjectedHook, {
-    scope: moduleFederationScope,
-    module: federatedModule,
-    url: remoteEntryUrl,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [moduleFederationScope, federatedModule, remoteEntryUrl]);
+  const Component = useMemo(
+    () =>
+      lazyWithModules(componentWithInjectedHook, {
+        scope: moduleFederationScope,
+        module: federatedModule,
+        url: remoteEntryUrl,
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }),
+    [moduleFederationScope, federatedModule, remoteEntryUrl],
+  );
 
   if (status === 'loading' || status === 'idle') {
     return <Loader size="massive" centered={true} aria-label="loading" />; // TODO display the previous module while lazy loading the new one
@@ -211,7 +236,7 @@ export const ComponentWithLazyHook = <T>({
 
   if (status === 'error' && renderOnError) {
     return renderOnError;
-  }  
+  }
 
   return (
     <Suspense
