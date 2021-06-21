@@ -28,16 +28,12 @@ export default function AlertProvider({
     initialData: [],
   });
 
-  if (query.status === 'loading') {
-    return (
-      <AlertContext.Provider value={{ ...query }}>
+  return (
+    <AlertContext.Provider value={{ ...query }}>
+      {query.status === 'loading' && (
         <Loader size="massive" centered={true} aria-label="loading" />
-      </AlertContext.Provider>
-    );
-  } else
-    return (
-      <AlertContext.Provider value={{ ...query }}>
-        {children}
-      </AlertContext.Provider>
-    );
-};
+      )}
+      {query.status !== 'loading' && children}
+    </AlertContext.Provider>
+  );
+}
