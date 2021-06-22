@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import reactToWebComponent from 'react-to-webcomponent';
 import { ThemeProvider as StyledComponentsProvider } from 'styled-components';
 import { WebStorageStateStore } from 'oidc-client';
-import { AuthProvider, AuthProviderProps, UserManager } from 'oidc-react';
 import { QueryClient, QueryClientProvider, useQuery } from 'react-query';
 import { LoadingNavbar, Navbar } from './NavBar';
 import { UserDataListener } from './UserDataListener';
@@ -18,7 +17,10 @@ import packageJson from '../../package.json';
 const { version } = packageJson;
 import './library';
 import ErrorPage500 from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
+import {useConfig} from '../initFederation/ConfigurationProviders';
+import { useShellConfig } from '../initFederation/ShellConfigProvider';
 
+//TODO cleanup unnecessary types
 export type PathDescription = {
   en: string,
   fr: string,
@@ -38,7 +40,7 @@ export type Options = { main: MenuItems, subLogin: MenuItems };
 export type UserGroupsMapping = { [email: string]: string[] };
 
 export type Browser = {
-  open: (link: {path: string, pathDescription: PathDescription}) => void;
+  open: (link: {name: string, view: string}) => void;
 }
 
 export type SolutionsNavbarProps = {
@@ -106,88 +108,14 @@ export const SolutionsNavbar = ({
   federatedBrowser,
   children,
 }: SolutionsNavbarProps): Node => {
-  const { data: config, status } = useQuery<Config>('navbarConfig', () => {
-    if (configUrl) {
-      return fetch(configUrl).then((r) => {
-        if (r.ok) {
-          return r.json();
-        } else {
-          return Promise.reject();
-        }
-      });
-    }
-    return Promise.resolve({});
-  });
+
+  const {config} = useShellConfig();
 
   useFavicon(favicon || config?.favicon || '/brand/favicon-metalk8s.svg');
 
   const logos = { dark: logoDark, darkRebrand: logoDark, light: logoLight };
 
-  useLayoutEffect(() => {
-    const savedRedirectUri = localStorage.getItem('redirectUrl');
-    if (savedRedirectUri) {
-      prefetch(savedRedirectUri).catch(() => console.log(`Failed to preload ${savedRedirectUri}`));;
-    }
-  }, []);
-
-  switch (status) {
-    case 'idle':
-    case 'loading':
-    default:
       return (
-        <LoadingNavbar logo={logos.dark || `/brand/assets/logo-dark.svg`} />
-      );
-    case 'error':
-      throw new Error('TODO : keep the rebased message here');
-    case 'success': {
-      const userManager = new UserManager({
-        authority: oidcProviderUrl || config.oidc?.providerUrl,
-        client_id: clientId || config.oidc?.clientId,
-        redirect_uri:
-          redirectUrl || config.oidc?.redirectUrl || window.location.href,
-        silent_redirect_uri:
-          redirectUrl || config.oidc?.redirectUrl || window.location.href,
-        post_logout_redirect_uri:
-          redirectUrl || config.oidc?.redirectUrl || window.location.href,
-        response_type: responseType || config.oidc?.responseType || 'code',
-        scope: scopes || config.oidc?.scopes,
-        loadUserInfo: true,
-        automaticSilentRenew: true,
-        monitorSession: false,
-        userStore: new WebStorageStateStore({ store: localStorage }),
-      });
-
-      const computedMenuOptions = options
-        ? JSON.parse(options)
-        : config.options || { main: {}, subLogin: {} };
-
-      if (setUserManager) {
-        setUserManager(userManager);
-      }
-
-      const oidcConfig: AuthProviderProps = {
-        onBeforeSignIn: () => {
-          localStorage.setItem('redirectUrl', window.location.href);
-        },
-        onSignIn: () => {
-          const savedRedirectUri = localStorage.getItem('redirectUrl');
-          localStorage.removeItem('redirectUrl');
-          if (savedRedirectUri) {
-            location.href = savedRedirectUri;
-          } else {
-            const searchParams = new URLSearchParams(location.search);
-            searchParams.delete('state');
-            searchParams.delete('session_state');
-            searchParams.delete('code');
-            location.search = searchParams.toString();
-            location.hash = '';
-          }
-        },
-        userManager,
-      };
-
-      return (
-        <AuthProvider {...oidcConfig}>
           <LanguageProvider
             onLanguageChanged={onLanguageChanged}
             canChangeLanguage={
@@ -199,10 +127,6 @@ export const SolutionsNavbar = ({
             <ThemeProvider onThemeChanged={onThemeChanged}>
               {(theme, themeName) => (
                 <>
-                  <UserDataListener
-                    userGroupsMapping={config.userGroupsMapping}
-                    onAuthenticated={onAuthenticated}
-                  />
                   <StyledComponentsProvider theme={theme.brand}>
                     <Navbar
                       federatedBrowser={federatedBrowser}
@@ -222,7 +146,7 @@ export const SolutionsNavbar = ({
                           ? Boolean(canChangeTheme)
                           : config.canChangeTheme
                       }
-                      options={computedMenuOptions}
+                      options={{main: {}, subLogin: {}}}
                       userGroupsMapping={config.userGroupsMapping}
                       providerLogout={
                         providerLogout
@@ -235,10 +159,8 @@ export const SolutionsNavbar = ({
               )}
             </ThemeProvider>
           </LanguageProvider>
-        </AuthProvider>
       );
-    }
-  }
+   
 };
 
 SolutionsNavbar.propTypes = {
@@ -265,41 +187,3 @@ const SolutionsNavbarProviderWrapper = (props: SolutionsNavbarProps) => {
     </QueryClientProvider>
   );
 };
-
-
-//TODO remove or move this to another module
-// SolutionsNavbarProviderWrapper.propTypes = SolutionsNavbar.propTypes;
-
-// class SolutionsNavbarWebComponent extends reactToWebComponent(
-//   SolutionsNavbarProviderWrapper,
-//   React,
-//   ReactDOM,
-// ) {
-//   constructor() {
-//     super();
-//     this.setUserManager = (userManager: UserManager) => {
-//       window.userManager = userManager;
-//     };
-//     this.onAuthenticated = (evt: CustomEvent) => {
-//       this.dispatchEvent(evt);
-//     };
-//     this.onLanguageChanged = (evt: CustomEvent) => {
-//       this.dispatchEvent(evt);
-//     };
-//     this.onThemeChanged = (evt: CustomEvent) => {
-//       this.dispatchEvent(evt);
-//     };
-//     this.logOut = (providerLogout?: boolean) => {
-//       logOut(window.userManager, providerLogout);
-//     };
-//     this.getIdToken = () => {
-//       return (window.userManager: UserManager)
-//         .getUser()
-//         .then((user) => user.id_token);
-//     };
-
-//     this.dispatchEvent(new CustomEvent('ready', { detail: { version } }));
-//   }
-// }
-
-// customElements.define('solutions-navbar', SolutionsNavbarWebComponent);
