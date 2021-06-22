@@ -1,30 +1,48 @@
 //@flow
-import { createContext, useContext, type Node } from 'react';
+import { createContext, useContext, type Node, useCallback } from 'react';
 import { useQuery } from 'react-query';
 import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
 import ErrorPage500 from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
+import type {SolutionUI} from '../ModuleFederation';
 
 const UIListContext = createContext(null);
+
+
+export function useDeployedAppsRetriever(): {retrieveDeployedApps: (selectors?: {
+    kind?: string,
+    name?: string,
+  }) => SolutionUI[]} {
+
+    const uiListContext = useContext(UIListContext);
+  if (!uiListContext) {
+    throw new Error("Can't use useDeployedAppsRetriever outside of UIListProvider");
+  }
+
+  return {retrieveDeployedApps: (selectors) => {
+    if (selectors && uiListContext.uis) {
+        return uiListContext.uis.filter((ui) => {
+          return (
+            ((selectors.kind && selectors.kind === ui.kind) || !selectors.kind) &&
+            ((selectors.name && selectors.name === ui.name) || !selectors.name)
+          );
+        });
+      }
+    
+      return uiListContext.uis || [];
+  }}
+}
 
 export const useDeployedApps = (selectors?: {
   kind?: string,
   name?: string,
-}): { kind: string, url: string, name: string, version: string }[] => {
+}): SolutionUI[] => {
   const uiListContext = useContext(UIListContext);
   if (!uiListContext) {
     throw new Error("Can't use useDeployedApps outside of UIListProvider");
   }
 
-  if (selectors && uiListContext.uis) {
-    return uiListContext.uis.filter((ui) => {
-      return (
-        ((selectors.kind && selectors.kind === ui.kind) || !selectors.kind) &&
-        ((selectors.name && selectors.name === ui.name) || !selectors.name)
-      );
-    });
-  }
-
-  return uiListContext.uis || [];
+  const {retrieveDeployedApps} = useDeployedAppsRetriever();
+  return retrieveDeployedApps(selectors);
 };
 
 export const UIListProvider = ({
