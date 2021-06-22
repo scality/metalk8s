@@ -83,8 +83,7 @@ export function setConfigStatusAction(status: Status) {
 }
 
 export function updateAPIConfigAction(payload: {
-  id_token: string,
-  token_type: string,
+  token: string,
 }) {
   return { type: UPDATE_API_CONFIG, payload };
 }
@@ -117,7 +116,7 @@ export function* fetchConfig(): Generator<Effect, void, Result<Config>> {
 export function* updateApiServerConfig({
   payload,
 }: {
-  payload: { id_token: string, token_type: string },
+  payload: { token: string },
 }): Generator<Effect, void, Config> {
   const api = yield select((state: RootState) => state.config.api);
   if (api) {
@@ -125,8 +124,7 @@ export function* updateApiServerConfig({
     yield call(
       ApiK8s.updateApiServerConfig,
       api.url,
-      payload.id_token,
-      payload.token_type,
+      payload.token
     );
     yield call(authenticateSaltApi);
   }

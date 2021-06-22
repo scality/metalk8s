@@ -31,8 +31,8 @@ export async function authenticate(user: User): Promise<SaltToken> {
   }
   const payload = {
     eauth: 'kubernetes_rbac',
-    username: `oidc:${user.profile.email}`,
-    token: user.id_token,
+    username: `oidc:${user.email}`,
+    token: user.token,
   };
   return saltApiClient.post('/login', payload);
 }

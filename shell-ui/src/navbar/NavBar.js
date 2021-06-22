@@ -2,7 +2,6 @@
 import CoreUINavbar from '@scality/core-ui/dist/components/navbar/Navbar.component';
 import Dropdown from '@scality/core-ui/dist/components/dropdown/Dropdown.component';
 import { type Item as CoreUIDropdownItem } from '@scality/core-ui/src/lib/components/dropdown/Dropdown.component';
-import { useAuth } from 'oidc-react';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import styled from 'styled-components';
 import type {
@@ -25,6 +24,7 @@ import { useTheme } from 'styled-components';
 import { useLanguage } from './lang';
 import { useThemeName } from './theme';
 import { useIntl } from 'react-intl';
+import { useAuth } from '../auth/AuthProvider';
 
 const Logo = styled.img`
   height: 30px;
@@ -228,42 +228,6 @@ export const Navbar = ({
     });
   }, [JSON.stringify(accessiblePaths)]);
 
-  //On mount, once authenticated, navigate to the matching entry if it is federated
-  useEffect(() => {
-    if (!federatedBrowser || !auth.userData) {
-      return;
-    }
-
-    //$FlowIssue - flow typing for Object.entries incorrectly typing values as [string, mixed] instead of [string, PathDescription]
-    const matchingLink: [string, PathDescription] | void = [...Object.entries(
-      options.main,
-    ),...Object.entries(
-      options.subLogin,
-    )]
-      //$FlowIssue - flow typing for Object.entries incorrectly typing values as [string, mixed] instead of [string, PathDescription]
-      .find(([path, pathDescription]: [string, PathDescription]) => {
-        return linkMatchesCurrentLocation(path, pathDescription);
-      });
-
-    if (!matchingLink) {
-      // TODO 404 ? Need to reset the error page when clicking a menu item...
-      return;
-    }
-
-    //open the link if it is federated
-    if (
-      matchingLink[1].module &&
-      matchingLink[1].scope &&
-      matchingLink[1].url
-    ) {
-      openLink({
-        path: matchingLink[0],
-        pathDescription: matchingLink[1],
-        federatedBrowser,
-      });
-    }
-  }, [!auth.userData]);
-
   const tabs = translateOptionsToMenu(
     options,
     'main',
@@ -280,7 +244,7 @@ export const Navbar = ({
   const rightActions = [
     {
       type: 'dropdown',
-      text: auth.userData?.profile.name || '',
+      text: auth.userData?.username || '',
       icon: (
         <span style={{ color: brand.textTertiary }}>
           <i className="fas fa-user-cog"></i>
@@ -317,7 +281,7 @@ export const Navbar = ({
             />
           ),
           onClick: () => {
-            logOut(auth.userManager, providerLogout);
+            //logOut(auth.userManager, providerLogout); todo
           },
         },
       ],
