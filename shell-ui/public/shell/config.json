@@ -11,5 +11,6 @@
       }
     ],
     "subLogin": []
-  }
+  },
+  "discoveryUrl": "/shell/deployed-ui-apps.json"
 }
