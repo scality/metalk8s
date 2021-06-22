@@ -19,6 +19,7 @@ module.exports = {
       filename: `${prefix}remoteEntry.js`,
       exposes: {
         './App': './src/FederatedApp.jsx',
+        './auth/AuthProvider': './src/auth/AuthProvider.js',
         './alerts/AlertProvider': './src/alerts/AlertProvider.js',
         './alerts/alertHooks': './src/alerts/alertHooks.js',
       },
