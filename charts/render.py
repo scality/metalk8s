@@ -276,23 +276,30 @@ def main():
         metavar=("KIND", "NAME"),
         help="Remove a given manifest from the resulting chart",
     )
+    parser.add_argument(
+        "--kube-version",
+        help="Override default kube-version used by helm",
+    )
 
     parser.add_argument("path", help="Path to the chart directory")
     args = parser.parse_args()
 
-    template = subprocess.check_output(
-        [
-            "helm",
-            "template",
-            args.name,
-            "--namespace",
-            args.namespace,
-            "--values",
-            args.values,
-            "--include-crds",
-            args.path,
-        ]
-    )
+    command = [
+        "helm",
+        "template",
+        args.name,
+        "--namespace",
+        args.namespace,
+        "--values",
+        args.values,
+        "--include-crds",
+        args.path,
+    ]
+
+    if args.kube_version:
+        command.extend(["--kube-version", args.kube_version])
+
+    template = subprocess.check_output(command)
 
     drop_prometheus_rules = {}
     if args.drop_prometheus_rules:
