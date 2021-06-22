@@ -1,49 +1,59 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "dex.fullname" . }}
+  name: {{ include "dex.fullname" . }}
   labels:
-{{ include "dex.labels" . | indent 4 }}
-{{- if .Values.service.annotations }}
+    {{- include "dex.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
   annotations:
-{{ toYaml .Values.service.annotations | indent 4 }}
-{{- end }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
-  type: {{ .Values.service.type}}
-  sessionAffinity: None
-  ports:
-  - name: {{ if .Values.https }}https{{ else }}http{{ end }}
-    targetPort: {{ if .Values.https }}https{{ else }}http{{ end }}
-{{- if eq "NodePort" .Values.service.type }}
-    nodePort: {{ .Values.ports.web.nodePort }}
-{{- end }}
-    port: {{ .Values.ports.web.servicePort }}
-{{- if .Values.grpc }}
-  - name: grpc
-    targetPort: grpc
-  {{- if eq "NodePort" .Values.service.type }}
-    nodePort: {{ .Values.ports.grpc.nodePort }}
-  {{- end }}
-    port: {{ .Values.ports.grpc.servicePort }}
-{{- end }}
-{{- if .Values.telemetry }}
-  - name: telemetry
-    targetPort: telemetry
-  {{- if eq "NodePort" .Values.service.type }}
-    nodePort: {{ .Values.ports.telemetry.nodePort }}
-  {{- end }}
-    port: {{ .Values.ports.telemetry.servicePort }}
-{{- end }}
-{{- if hasKey .Values.service "externalIPs" }}
-  externalIPs:
-{{ toYaml .Values.service.externalIPs | indent 4 }}
-{{- end }}
-{{- if hasKey .Values.service "loadBalancerIP" }}
-  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
-{{- end }}
-{{- if hasKey .Values.service "clusterIP" }}
+  type: {{ .Values.service.type }}
+  {{- if hasKey .Values.service "clusterIP" }}
   clusterIP: {{ .Values.service.clusterIP | quote }}
-{{- end }}
+  {{- end }}
+  ports:
+    - name: http
+      port: {{ .Values.service.ports.http.port }}
+      {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) .Values.service.ports.http.nodePort }}
+      nodePort: {{ .Values.service.ports.http.nodePort }}
+      {{- end }}
+      targetPort: http
+      protocol: TCP
+      {{- if semverCompare ">=1.20-0" .Capabilities.KubeVersion.GitVersion }}
+      appProtocol: http
+      {{- end }}
+    {{- if .Values.https.enabled }}
+    - name: https
+      port: {{ .Values.service.ports.https.port }}
+      {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) .Values.service.ports.https.nodePort }}
+      nodePort: {{ .Values.service.ports.https.nodePort }}
+      {{- end }}
+      targetPort: https
+      protocol: TCP
+      {{- if semverCompare ">=1.20-0" .Capabilities.KubeVersion.GitVersion }}
+      appProtocol: https
+      {{- end }}
+    {{- end }}
+    {{- if .Values.grpc.enabled }}
+    - name: grpc
+      port: {{ .Values.service.ports.grpc.port }}
+      {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) .Values.service.ports.grpc.nodePort }}
+      nodePort: {{ .Values.service.ports.grpc.nodePort }}
+      {{- end }}
+      targetPort: grpc
+      protocol: TCP
+      {{- if semverCompare ">=1.20-0" .Capabilities.KubeVersion.GitVersion }}
+      appProtocol: http
+      {{- end }}
+    {{- end }}
+    - name: telemetry
+      port: 5558
+      targetPort: telemetry
+      protocol: TCP
+      {{- if semverCompare ">=1.20-0" .Capabilities.KubeVersion.GitVersion }}
+      appProtocol: http
+      {{- end }}
   selector:
-    app.kubernetes.io/name: {{ include "dex.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- include "dex.selectorLabels" . | nindent 4 }}

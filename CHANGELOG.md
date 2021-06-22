@@ -24,9 +24,9 @@
   loki image has been bump accordingly from 2.0.0 to 2.2.0
   (PR[#3363](https://github.com/scality/metalk8s/pull/3363))
 
-- [#3279](https://github.com/scality/metalk8s/issues/3279) - Bump
-  dex image from v2.27.0 to v2.28.1
-  (PR[#3370](https://github.com/scality/metalk8s/pull/3370))
+- Migrate from stable Dex deprecated chart to dexidp.io Dex chart, and
+  bump dex image to v2.28.1
+  (PR[#3427](https://github.com/scality/metalk8s/pull/3427))
 
 - Bump kube-prometheus-stack charts version to 16.9.1
   The following images have also been bumped accordingly:

@@ -1,134 +1,165 @@
-# ⚠️ Repo Archive Notice
-
-As of Nov 13, 2020, charts in this repo will no longer be updated.
-For more information, see the Helm Charts [Deprecation and Archive Notice](https://github.com/helm/charts#%EF%B8%8F-deprecation-and-archive-notice), and [Update](https://helm.sh/blog/charts-repo-deprecation/).
-
 # dex
 
-[Dex][dex] is an identity service that uses OpenID Connect to drive authentication for other apps.
+![version: 0.4.0](https://img.shields.io/badge/version-0.4.0-informational?style=flat-square) ![type: application](https://img.shields.io/badge/type-application-informational?style=flat-square) ![app version: 2.28.1](https://img.shields.io/badge/app%20version-2.28.1-informational?style=flat-square) ![kube version: >=1.14.0-0](https://img.shields.io/badge/kube%20version->=1.14.0--0-informational?style=flat-square) [![artifact hub](https://img.shields.io/badge/artifact%20hub-dex-informational?style=flat-square)](https://artifacthub.io/packages/helm/dex/dex)
 
-## DEPRECATION NOTICE
+OpenID Connect (OIDC) identity and OAuth 2.0 provider with pluggable connectors.
 
-This chart is deprecated and no longer supported.
+**Homepage:** <https://dexidp.io/>
 
-## Introduction
+## TL;DR;
 
-Dex acts as a portal to other identity providers through "connectors". This lets dex defer authentication to LDAP servers, SAML providers, or established identity providers like GitHub, Google, and Active Directory. Clients write their authentication logic once to talk to dex, then dex handles the protocols for a given backend.
-
-**Kubernetes authentication note**
-
-If you plan to use dex as a [Kubernetes OpenID Connect token authenticator plugin](http://kubernetes.io/docs/admin/authentication/#openid-connect-tokens) you'll need to additionally deploy some helper app which will provide authentication UI for users and talk to dex.
-
-Several helper apps are listed below:
-  - https://github.com/mintel/dex-k8s-authenticator
-  - https://github.com/heptiolabs/gangway
-  - https://github.com/micahhausler/k8s-oidc-helper
-  - https://github.com/negz/kuberos
-  - https://github.com/negz/kubehook
-  - https://github.com/fydrah/loginapp
-  - https://github.com/keycloak/keycloak
-
-## Installing the Chart
-
-To install the chart with the release name `my-release`:
-
-```sh
-$ helm install --name my-release stable/dex
+```bash
+helm repo add dex https://charts.dexidp.io
+helm install --generate-name --wait dex/dex
 ```
 
-It'll install the chart with the default parameters. However most probably it won't work for you as-is, thus before installing the chart you need to consult the [values.yaml](values.yaml) notes as well as [dex documentation][dex].
+## Getting started
 
-## Uninstalling the Chart
+### Minimal configuration
 
-To uninstall/delete the `my-release` deployment:
+Dex requires a minimal configuration in order to work.
+You can pass configuration to Dex using Helm values:
 
-```sh
-$ helm delete --purge my-release
+```yaml
+config:
+  # Set it to a valid URL
+  issuer: http://my-issuer-url.com
+
+  # See https://dexidp.io/docs/storage/ for more options
+  storage:
+    type: memory
+
+  # Enable at least one connector
+  # See https://dexidp.io/docs/connectors/ for more options
+  enablePasswordDB: true
 ```
 
-The command removes all the Kubernetes components associated with the chart and deletes the release.
+The above configuration won't make Dex automatically available on the configured URL.
+One (and probably the easiest) way to achieve that is configuring ingress:
 
-## Upgrading an existing release to a new major version
+```yaml
+ingress:
+  enabled: true
 
-A major chart version change (like v1.5.1 -> v2.0.0) indicates that there is an incompatible breaking change which requires manual actions.
+  hosts:
+    - host: my-issuer-url.com
+      paths:
+        - path: /
+```
 
-### Upgrade to v2.0.0
+### Minimal TLS configuration
 
-Breaking changes which should be considered and require manual actions during release upgrade:
+HTTPS is basically mandatory these days, especially for authentication and authorization services.
+There are several solutions for protecting services with TlS in Kubernetes,
+but by far the most popular and portable is undoubtedly [Cert Manager](https://cert-manager.io).
 
-- ability to switch grpc and https on and off via dedicated chart parameters
-- port definition for Pod, Service and dex config re-written from scratch
-- dex config is _not_ taken from `.Values.config` as-is anymore, pay attention!
+Cert Manager can be [installed](https://cert-manager.io/docs/installation/kubernetes) with a few steps:
 
-See the [Configuration](#configuration) section for the details on the parameters introduced in version 2.0.0.
+```shell
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+kubectl create namespace cert-manager
+helm install \
+  cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --set installCRDs=true
+```
 
-Moreover, this release updates all the labels to the new [recommended labels](https://github.com/helm/charts/blob/master/REVIEW_GUIDELINES.md#names-and-labels), most of them being immutable.
+The next step is setting up an [issuer](https://cert-manager.io/docs/concepts/issuer/) (eg. [Let's Encrypt](https://letsencrypt.org/)):
 
-In order to upgrade, please update your values file and uninstall/reinstall the chart.
+```shell
+cat <<EOF | kubectl apply -f -
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: acme
+spec:
+  acme:
+    email: YOUR@EMAIL_ADDRESS
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: acme-account-key
+    solvers:
+    - http01:
+       ingress:
+         class: YOUR_INGRESS_CLASS
+EOF
+```
 
-## Configuration
+Finally, change the ingress config to use TLS:
 
-Parameters introduced starting from v2
+```yaml
+ingress:
+  enabled: true
 
-| Parameter | Description | Default |
-| --------- | ----------- | ------- |
-| `certs.grpc.pod.annotations` | Annotations for the pod created by the `grpc-certs` job | `{}` |
-| `certs.grpc.pod.affinity` | Affinity for the pod created by the `grpc-certs` job | `{}` |
-| `certs.grpc.pod.nodeSelector` | nodeSelector for the pod created by the `grpc-certs` job | `{}` |
-| `certs.grpc.pod.tolerations` | Tolerations for the pod created by the `grpc-certs` job | `[]` |
-| `certs.web.pod.annotations` | Annotations for the pod created by the `web-certs` job | `{}` |
-| `certs.web.pod.affinity` | Affinity for the pod created by the `web-certs` job | `{}` |
-| `certs.web.pod.nodeSelector` | nodeSelector for the pod created by the `web-certs` job | `{}` |
-| `certs.web.pod.tolerations` | Tolerations for the pod created by the `web-certs` job | `[]` |
-| `config.connectors` | Maps to the dex config `connectors` dict param | `{}` |
-| `config.enablePasswordDB` | Maps to the dex config `enablePasswordDB` param | `true` |
-| `config.frontend` | Maps to the dex config `frontend` dict param | `""` |
-| `config.grpc.address` | dex grpc listen address | `127.0.0.1` |
-| `config.grpc.tlsCert` | Maps to the dex config `grpc.tlsCert` param | `/etc/dex/tls/grpc/server/tls.crt` |
-| `config.grpc.tlsClientCA` | Maps to the dex config `grpc.tlsClientCA` param | `/etc/dex/tls/grpc/ca/tls.crt` |
-| `config.grpc.tlsKey` | Maps to the dex config `grpc.tlsKey` param | `/etc/dex/tls/grpc/server/tls.key` |
-| `config.issuer` | Maps to the dex config `issuer` param | `http://dex.io:8080` |
-| `config.logger` | Maps to the dex config `logger` dict param | `{"level": "debug"}` |
-| `config.oauth2.alwaysShowLoginScreen` | Maps to the dex config `oauth2.alwaysShowLoginScreen` param | `false` |
-| `config.oauth2.skipApprovalScreen` | Maps to the dex config `oauth2.skipApprovalScreen` param | `true` |
-| `config.staticClients` | Maps to the dex config `staticClients` list param | `""` |
-| `config.staticPasswords` | Maps to the dex config `staticPasswords` list param | `""` |
-| `config.storage` | Maps to the dex config `storage` dict param | `{"type": "kubernetes", "config": {"inCluster": true}}` |
-| `config.web.address` | dex http/https listen address | `0.0.0.0` |
-| `config.web.tlsCert` | Maps to the dex config `web.tlsCert` param | `/etc/dex/tls/https/server/tls.crt` |
-| `config.web.tlsKey` | Maps to the dex config `web.tlsKey` param | `/etc/dex/tls/https/server/tls.key` |
-| `config.web.allowedOrigins` | Maps to the dex config `web.allowedOrigins` param | `[]` |
-| `config.expiry.signingKeys` | Maps to the dex config `expiry.signingKeys` param | `6h` |
-| `config.expiry.idTokens` | Maps to the dex config `expiry.idTokens` param | `24h` |
-| `crd.present` | Whether dex's CRDs are already present (if not cluster role and cluster role binding will be created to enable dex to create them). Depends on `rbac.create` | `false` |
-| `grpc` | Enable dex grpc endpoint | `true` |
-| `https` | Enable TLS termination for the dex http endpoint | `false` |
-| `podLabels` | Custom pod labels | `{}` |
-| `ports.grpc.containerPort` | grpc port listened by the dex | `5000` |
-| `ports.grpc.nodePort` | K8S Service node port for the dex grpc listener | `35000` |
-| `ports.grpc.servicePort` | K8S Service port for the dex grpc listener | `35000` |
-| `ports.web.containerPort` | http/https port listened by the dex | `5556` |
-| `ports.web.nodePort` | K8S Service node port for the dex http/https listener | `32000` |
-| `ports.web.servicePort` | K8S Service port for the dex http/https listener | `32000` |
-| `rbac.create` | If `true`, create & use RBAC resources | `true` |
-| `securityContext` | Allow setting the securityContext of the main dex deployment | `` |
-| `service.loadBalancerIP` | IP override for K8S LoadBalancer Service | `""` |
-| `livenessProbe.enabled` | k8s liveness probe enabled (cannot be enabled when `https = true`) | `false` |
-| `livenessProbe.path` |  k8s liveness probe http path | `"/healthz"`  |
-| `livenessProbe.initialDelaySeconds` | Number of seconds after the container has started before liveness probe is initiated.  |  `1` |
-| `livenessProbe.periodSeconds` | How often (in seconds) to perform the probe | `10`  |
-| `livenessProbe.timeoutSeconds` | Number of seconds after which the probe times out | `1`  |
-| `livenessProbe.failureThreshold` | Times to perform probe before restarting the container | `3`  |
-| `readinessProbe.enabled` | k8s readiness probe enabled (cannot be enabled when `https = true`) | `false`  |
-| `readinessProbe.path` |  k8s readiness probe http path | `"/healthz"`  |
-| `readinessProbe.initialDelaySeconds` | Number of seconds after the container has started before readiness probe is initiated.  |  `1` |
-| `readinessProbe.periodSeconds` | How often (in seconds) to perform the probe  |  `10` |
-| `readinessProbe.timeoutSeconds` | Number of seconds after which the probe times out | `1`  |
-| `readinessProbe.failureThreshold` | Times to perform probe before marking the container `Unready` |  `3` |
-| `imagePullSecrets` | Allows to run containers based on images in private registries. |  `{}` |
+  annotations:
+    cert-manager.io/cluster-issuer: acme
 
+  hosts:
+    - host: my-issuer-url.com
+      paths:
+        - path: /
 
-Check [values.yaml](values.yaml) notes together with [dex documentation][dex] and [config examples](https://github.com/dexidp/dex/tree/master/examples) for all the possible configuration options.
+  tls:
+    - hosts:
+        - my-issuer-url.com
+      secretName: dex-cert
+```
 
+## Values
 
-[dex]: https://github.com/dexidp/dex
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| replicaCount | int | `1` | Number of replicas (pods) to launch. |
+| image.repository | string | `"ghcr.io/dexidp/dex"` | Name of the image repository to pull the container image from. |
+| image.pullPolicy | string | `"IfNotPresent"` | [Image pull policy](https://kubernetes.io/docs/concepts/containers/images/#updating-images) for updating already existing images on a node. |
+| image.tag | string | `""` | Image tag override for the default value (chart appVersion). |
+| imagePullSecrets | list | `[]` | Reference to one or more secrets to be used when [pulling images](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-pod-that-uses-your-secret) (from private registries). |
+| nameOverride | string | `""` | A name in place of the chart name for `app:` labels. |
+| fullnameOverride | string | `""` | A name to substitute for the full names of resources. |
+| hostAliases | list | `[]` | A list of hosts and IPs that will be injected into the pod's hosts file if specified. See the [API reference](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#hostname-and-name-resolution) |
+| https.enabled | bool | `false` | Enable the HTTPS endpoint. |
+| grpc.enabled | bool | `false` | Enable the gRPC endpoint. Read more in the [documentation](https://dexidp.io/docs/api/). |
+| configSecret.create | bool | `true` | Enable creating a secret from the values passed to `config`. If set to false, name must point to an existing secret. |
+| configSecret.name | string | `""` | The name of the secret to mount as configuration in the pod. If not set and create is true, a name is generated using the fullname template. Must point to secret that contains at least a `config.yaml` key. |
+| config | object | `{}` | Application configuration. See the [official documentation](https://dexidp.io/docs/). |
+| volumes | list | `[]` | Additional storage [volumes](https://kubernetes.io/docs/concepts/storage/volumes/). See the [API reference](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#volumes-1) for details. |
+| volumeMounts | list | `[]` | Additional [volume mounts](https://kubernetes.io/docs/tasks/configure-pod-container/configure-volume-storage/). See the [API reference](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#volumes-1) for details. |
+| envFrom | list | `[]` | Additional environment variables mounted from [secrets](https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-environment-variables) or [config maps](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#configure-all-key-value-pairs-in-a-configmap-as-container-environment-variables). See the [API reference](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#environment-variables) for details. |
+| env | object | `{}` | Additional environment variables passed directly to containers. See the [API reference](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#environment-variables) for details. |
+| serviceAccount.create | bool | `true` | Enable service account creation. |
+| serviceAccount.annotations | object | `{}` | Annotations to be added to the service account. |
+| serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template. |
+| rbac.create | bool | `true` | Specifies whether RBAC resources should be created. If disabled, the operator is responsible for creating the necessary resources based on the templates. |
+| podAnnotations | object | `{}` | Annotations to be added to pods. |
+| podDisruptionBudget.enabled | bool | `false` | Enable a [pod distruption budget](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) to help dealing with [disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/). It is **highly recommended** for webhooks as disruptions can prevent launching new pods. |
+| podDisruptionBudget.minAvailable | int/percentage | `nil` | Number or percentage of pods that must remain available. |
+| podDisruptionBudget.maxUnavailable | int/percentage | `nil` | Number or percentage of pods that can be unavailable. |
+| priorityClassName | string | `""` | Specify a priority class name to set [pod priority](https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#pod-priority). |
+| podSecurityContext | object | `{}` | Pod [security context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod). See the [API reference](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context) for details. |
+| securityContext | object | `{}` | Container [security context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container). See the [API reference](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1) for details. |
+| service.annotations | object | `{}` | Annotations to be added to the service. |
+| service.type | string | `"ClusterIP"` | Kubernetes [service type](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types). |
+| service.ports.http.port | int | `5556` | HTTP service port |
+| service.ports.http.nodePort | int | `nil` | HTTP node port (when applicable) |
+| service.ports.https.port | int | `5554` | HTTPS service port |
+| service.ports.https.nodePort | int | `nil` | HTTPS node port (when applicable) |
+| service.ports.grpc.port | int | `5557` | gRPC service port |
+| service.ports.grpc.nodePort | int | `nil` | gRPC node port (when applicable) |
+| ingress.enabled | bool | `false` | Enable [ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/). |
+| ingress.className | string | `""` | Ingress [class name](https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class). |
+| ingress.annotations | object | `{}` | Annotations to be added to the ingress. |
+| ingress.hosts | list | See [values.yaml](values.yaml). | Ingress host configuration. |
+| ingress.tls | list | See [values.yaml](values.yaml). | Ingress TLS configuration. |
+| resources | object | No requests or limits. | Container resource [requests and limits](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/). See the [API reference](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#resources) for details. |
+| autoscaling | object | Disabled by default. | Autoscaling configuration (see [values.yaml](values.yaml) for details). |
+| nodeSelector | object | `{}` | [Node selector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector) configuration. |
+| tolerations | list | `[]` | [Tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) for node taints. See the [API reference](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#scheduling) for details. |
+| affinity | object | `{}` | [Affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity) configuration. See the [API reference](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#scheduling) for details. |
+
+## Migrating from stable/dex (or banzaicloud-stable/dex) chart
+
+This chart is not backwards compatible with the `stable/dex` (or `banzaicloud-stable/dex`) chart.
+
+However, Dex itself remains backwards compatible, so you can easily install the new chart in place of the old one
+and continue using Dex with a minimal downtime.

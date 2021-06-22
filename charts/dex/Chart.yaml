@@ -1,12 +1,28 @@
-apiVersion: v1
-appVersion: 2.24.0
-deprecated: true
-description: DEPRECATED OpenID Connect Identity (OIDC) and OAuth 2.0 Provider with
-  Pluggable Connectors
-home: https://github.com/dexidp/dex/
-icon: https://github.com/dexidp/dex/raw/master/Documentation/logos/dex-glyph-color.png
+annotations:
+  artifacthub.io/changes: |
+    - Added support for priority class name
+  artifacthub.io/images: |
+    - name: dex
+      image: ghcr.io/dexidp/dex:v2.28.1
+apiVersion: v2
+appVersion: 2.28.1
+description: OpenID Connect (OIDC) identity and OAuth 2.0 provider with pluggable
+  connectors.
+home: https://dexidp.io/
+icon: https://dexidp.io/favicon.png
 keywords:
-- dex
 - oidc
+- oauth
+- identity-provider
+- saml
+kubeVersion: '>=1.14.0-0'
+maintainers:
+- email: mark.sagikazar@gmail.com
+  name: sagikazarmark
+  url: https://sagikazarmark.hu
 name: dex
-version: 2.15.2
+sources:
+- https://github.com/dexidp/dex
+- https://github.com/dexidp/helm-charts/tree/master/charts/dex
+type: application
+version: 0.4.0

@@ -1,9 +1,5 @@
-image: '__image__(dex)'
-
-# NOTE: We do not use the new Helm3 chart for the moment as it's not yet part
-# of stable repo, but since Dex 2.24 is affected by CVE (CVE-2020-15216) use
-# the newest v2.28.1 image even if we still use the deprecated chart
-imageTag: 'v2.28.1'
+image:
+  repository: '__image__(dex)'
 
 nodeSelector:
   node-role.kubernetes.io/infra: ''
@@ -16,13 +12,15 @@ tolerations:
     operator: "Exists"
     effect: "NoSchedule"
 
-replicas: '__var__(dex.spec.deployment.replicas)'
+replicaCount: '__var__(dex.spec.deployment.replicas)'
 
 # grpc support
-grpc: false
+grpc:
+  enabled: false
 
 # https termination by dex itself
-https: true
+https:
+  enabled: true
 
 service:
   clusterIP: '__var__(salt.metalk8s_network.get_oidc_service_ip())'
@@ -32,11 +30,15 @@ ingress:
   annotations:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     kubernetes.io/ingress.class: "nginx-control-plane"
-  path: /oidc
   hosts:
-    - null
+    - paths:
+      - path: /oidc
 
-extraVolumes:
+volumes:
+  - name: https-tls
+    secret:
+      defaultMode: 420
+      secretName: dex-web-server-tls
   - name: dex-login
     configMap:
       name: dex-login
@@ -44,7 +46,9 @@ extraVolumes:
     configMap:
       name: nginx-ingress-ca-cert
 
-extraVolumeMounts:
+volumeMounts:
+  - name: https-tls
+    mountPath: /etc/dex/tls/https/server
   - name: dex-login
     mountPath: /web/themes/scality
   - name: nginx-ingress-ca-cert
@@ -55,42 +59,14 @@ podAnnotations:
   # Override default checksum as we want to manage it with salt
   checksum/config: '__slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret", apiVersion="v1", namespace="metalk8s-auth", name="dex", path="data:config.yaml")'
 
-certs:
-  web:
-    create: false
-  grpc:
-    create: false
-
 # Explicitly set namespace from env since it's needed for Dex in K8s 1.21
 # Sees: https://github.com/dexidp/dex/issues/2082
 env:
-  - name: KUBERNETES_POD_NAMESPACE
-    valueFrom:
-      fieldRef:
-        fieldPath: metadata.namespace
+  KUBERNETES_POD_NAMESPACE: metalk8s-auth
 
 # NOTE: Ignore these values, the configuration is computed from
 #       - salt/metalk8s/addons/dex/config/dex.yaml
 #       - salt/metalk8s/addons/dex/deployed/service-configuration.sls
-config:
-  issuer: 'dex.scality.com'
-  web:
-    tlsCert: /etc/dex/tls/https/server/tls.crt
-    tlsKey: /etc/dex/tls/https/server/tls.key
-  frontend:
-    theme: "scality"
-    issuer: "MetalK8s"
-
-  oauth2:
-    alwaysShowLoginScreen: true
-    skipApprovalScreen: true
-    responseTypes: ["code", "token", "id_token"]
-
-  expiry:
-    signingKeys: "6h"
-    idTokens: "24h"
-
-  staticClients: []
-
-  enablePasswordDB: true
-  staticPasswords: []
+configSecret:
+  create: false
+  name: dex

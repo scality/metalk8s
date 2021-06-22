@@ -14,8 +14,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.24.0
-    helm.sh/chart: dex-2.15.2
+    app.kubernetes.io/version: 2.28.1
+    helm.sh/chart: dex-0.4.0
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -28,8 +28,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.24.0
-    helm.sh/chart: dex-2.15.2
+    app.kubernetes.io/version: 2.28.1
+    helm.sh/chart: dex-0.4.0
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -55,8 +55,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.24.0
-    helm.sh/chart: dex-2.15.2
+    app.kubernetes.io/version: 2.28.1
+    helm.sh/chart: dex-0.4.0
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -77,34 +77,41 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.24.0
-    helm.sh/chart: dex-2.15.2
+    app.kubernetes.io/version: 2.28.1
+    helm.sh/chart: dex-0.4.0
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
 spec:
   clusterIP: {% endraw -%}{{ salt.metalk8s_network.get_oidc_service_ip() }}{%- raw %}
   ports:
+  - name: http
+    port: 5556
+    protocol: TCP
+    targetPort: http
   - name: https
-    port: 32000
+    port: 5554
+    protocol: TCP
     targetPort: https
+  - name: telemetry
+    port: 5558
+    protocol: TCP
+    targetPort: telemetry
   selector:
     app.kubernetes.io/instance: dex
     app.kubernetes.io/name: dex
-  sessionAffinity: None
   type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/component: dex
     app.kubernetes.io/instance: dex
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.24.0
-    helm.sh/chart: dex-2.15.2
+    app.kubernetes.io/version: 2.28.1
+    helm.sh/chart: dex-0.4.0
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -112,45 +119,58 @@ spec:
   replicas: {% endraw -%}{{ dex.spec.deployment.replicas }}{%- raw %}
   selector:
     matchLabels:
-      app.kubernetes.io/component: dex
       app.kubernetes.io/instance: dex
       app.kubernetes.io/name: dex
-  strategy:
-    rollingUpdate:
-      maxSurge: 0
-      maxUnavailable: 1
-    type: RollingUpdate
   template:
     metadata:
       annotations:
         checksum/config: __slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret",
           apiVersion="v1", namespace="metalk8s-auth", name="dex", path="data:config.yaml")
       labels:
-        app.kubernetes.io/component: dex
         app.kubernetes.io/instance: dex
         app.kubernetes.io/name: dex
     spec:
       containers:
-      - command:
-        - /usr/local/bin/dex
+      - args:
+        - dex
         - serve
-        - /etc/dex/cfg/config.yaml
+        - --web-http-addr
+        - 0.0.0.0:5556
+        - --web-https-addr
+        - 0.0.0.0:5554
+        - --telemetry-addr
+        - 0.0.0.0:5558
+        - /etc/dex/config.yaml
         env:
         - name: KUBERNETES_POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
+          value: metalk8s-auth
         image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.28.1
         imagePullPolicy: IfNotPresent
-        name: main
+        livenessProbe:
+          httpGet:
+            path: /healthz/live
+            port: telemetry
+        name: dex
         ports:
         - containerPort: 5556
+          name: http
+          protocol: TCP
+        - containerPort: 5554
           name: https
           protocol: TCP
-        resources: null
+        - containerPort: 5558
+          name: telemetry
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /healthz/ready
+            port: telemetry
+        resources: {}
+        securityContext: {}
         volumeMounts:
-        - mountPath: /etc/dex/cfg
+        - mountPath: /etc/dex
           name: config
+          readOnly: true
         - mountPath: /etc/dex/tls/https/server
           name: https-tls
         - mountPath: /web/themes/scality
@@ -160,6 +180,7 @@ spec:
           subPath: ca.crt
       nodeSelector:
         node-role.kubernetes.io/infra: ''
+      securityContext: {}
       serviceAccountName: dex
       tolerations:
       - effect: NoSchedule
@@ -171,10 +192,6 @@ spec:
       volumes:
       - name: config
         secret:
-          defaultMode: 420
-          items:
-          - key: config.yaml
-            path: config.yaml
           secretName: dex
       - name: https-tls
         secret:
@@ -187,7 +204,7 @@ spec:
           name: nginx-ingress-ca-cert
         name: nginx-ingress-ca-cert
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   annotations:
@@ -198,8 +215,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.24.0
-    helm.sh/chart: dex-2.15.2
+    app.kubernetes.io/version: 2.28.1
+    helm.sh/chart: dex-0.4.0
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -210,7 +227,7 @@ spec:
       paths:
       - backend:
           serviceName: dex
-          servicePort: 32000
+          servicePort: 5554
         path: /oidc
 
 {% endraw %}
