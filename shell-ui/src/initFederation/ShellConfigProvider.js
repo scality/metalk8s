@@ -40,15 +40,19 @@ export const useShellConfig = (): {
 };
 
 export const ShellConfigProvider = ({ shellConfigUrl, children }): Node => {
-  const { data: config, status } = useQuery<Config>('navbarConfig', () => {
-    return fetch(shellConfigUrl).then((r) => {
-      if (r.ok) {
-        return r.json();
-      } else {
-        return Promise.reject();
-      }
-    });
-  });
+  const { data: config, status } = useQuery<Config>(
+    'navbarConfig',
+    () => {
+      return fetch(shellConfigUrl).then((r) => {
+        if (r.ok) {
+          return r.json();
+        } else {
+          return Promise.reject();
+        }
+      });
+    },
+    { refetchOnWindowFocus: false },
+  );
 
   return (
     <ShellConfigContext.Provider value={{ config, status }}>
