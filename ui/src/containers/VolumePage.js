@@ -5,7 +5,6 @@ import VolumeContent from './VolumePageContent';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
 import { makeGetNodeFromUrl, useRefreshEffect } from '../services/utils';
-import { getHealthStatus, filterAlerts } from '../services/alertUtils';
 import { fetchNodesAction } from '../ducks/app/nodes';
 import {
   refreshVolumesAction,
@@ -21,10 +20,8 @@ import {
   refreshCurrentVolumeStatsAction,
   stopRefreshCurrentVolumeStatsAction,
 } from '../ducks/app/monitoring';
-import { getVolumeListData } from '../services/NodeVolumesUtils';
 import { PageContainer } from '../components/style/CommonLayoutStyle';
-import { useTypedSelector } from '../hooks';
-import { useAlerts } from './AlertProvider';
+import { useTypedSelector, useVolumesWithAlerts } from '../hooks';
 
 // <VolumePage> component fetchs all the data used by volume page from redux store.
 // the data for <VolumeMetricGraphCard>: get the default metrics time span `last 24 hours`, and the component itself can change the time span base on the dropdown selection.
@@ -82,18 +79,7 @@ const VolumePage = (props) => {
     (state) => state.app.monitoring.volumeStats.metrics
   );
   // get all the volumes maybe filter by node
-  const {alerts} = useAlerts();
-  const volumeListData = useTypedSelector((state) =>
-    getVolumeListData(state, props).map(volume => {
-      const volumeAlerts = filterAlerts(alerts, {
-        persistentvolumeclaim: volume.name,
-      });
-      const volumeHealth = getHealthStatus(volumeAlerts);
-      return ({
-      ...volume,
-      health: volumeHealth
-    })}) 
-  );
+  const volumeListData = useVolumesWithAlerts();
 
   return (
     <PageContainer>

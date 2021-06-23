@@ -13,6 +13,9 @@ import {
 } from './constants';
 import { useURLQuery } from './services/utils';
 import type { V1NodeList } from '@kubernetes/client-node';
+import { useAlerts } from './containers/AlertProvider';
+import { getVolumeListData } from './services/NodeVolumesUtils';
+import { filterAlerts, getHealthStatus } from './services/alertUtils';
 
 /**
  * It brings automatic strong typing to native useSelector by anotating state with RootState.
@@ -118,3 +121,19 @@ export const useMetricsTimeSpan = (): [
 
   return [metricsTimeSpan, setMetricsTimeSpan];
 };
+
+export const useVolumesWithAlerts = (nodeName?: string) => {
+  const {alerts} = useAlerts();
+  const volumeListData = useTypedSelector((state) =>
+    getVolumeListData(state, null, nodeName).map(volume => {
+      const volumeAlerts = filterAlerts(alerts, {
+        persistentvolumeclaim: volume.name,
+      });
+      const volumeHealth = getHealthStatus(volumeAlerts);
+      return ({
+      ...volume,
+      health: volumeHealth
+    })}) 
+  );
+  return volumeListData;
+}
