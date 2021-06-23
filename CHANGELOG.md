@@ -3,8 +3,8 @@
 ## Release 2.10.0 (in development)
 ### Enhancements
 
-- Bump Kubernetes version to 1.21.0
-  (PR[#3354](https://github.com/scality/metalk8s/pull/3354))
+- Bump Kubernetes version to 1.21.2
+  (PR[#3423](https://github.com/scality/metalk8s/pull/3423))
 
 - Bump CoreDNS version to 1.8.0
   (PR[#3354](https://github.com/scality/metalk8s/pull/3354))
