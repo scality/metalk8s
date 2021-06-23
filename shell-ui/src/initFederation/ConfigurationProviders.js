@@ -1,6 +1,8 @@
 //@flow
 import { createContext, useContext, type Node } from 'react';
 import { useQueries } from 'react-query';
+import { useShellConfig } from './ShellConfigProvider';
+import { useHistory } from 'react-router-dom';
 import { useDeployedApps, useDeployedAppsRetriever } from './UIListProvider';
 
 const WebFingersContext = createContext(null);
@@ -38,6 +40,17 @@ type FederatedModuleInfo = {
   scope: string,
 };
 
+export type View = {
+  path: string,
+  exact?: boolean,
+  strict?: boolean,
+  sensitive?: boolean,
+  label: {
+    en: string,
+    fr: string,
+  },
+} & FederatedModuleInfo;
+
 type BuildtimeWebFinger = {
   kind: 'MicroAppConfiguration',
   apiVersion: 'ui.scality.com/v1alpha1',
@@ -47,16 +60,7 @@ type BuildtimeWebFinger = {
   spec: {
     remoteEntryPath: string,
     views: {
-      [viewKey: string]: {
-        path: string,
-        exact?: boolean,
-        strict?: boolean,
-        sensitive?: boolean,
-        label: {
-          en: string,
-          fr: string,
-        },
-      } & FederatedModuleInfo,
+      [viewKey: string]: View,
     },
     hooks: {
       [hookName: string]: FederatedModuleInfo,
@@ -135,6 +139,108 @@ export function useConfig({
 
   return retrieveConfiguration({ configType, name });
 }
+
+export function useDiscoveredViews(): (
+  | {
+      isFederated: true,
+      app: SolutionUI,
+      view: View,
+      groups?: string[],
+      icon?: string,
+      navbarGroup: 'main' | 'sublogin',
+    }
+  | {
+      isFederated: false,
+      url: string,
+      isExternal: boolean,
+      groups?: string[],
+      navbarGroup: 'main' | 'sublogin',
+      icon?: string,
+    }
+)[] {
+  const { retrieveConfiguration } = useConfigRetriever();
+  const { retrieveDeployedApps } = useDeployedAppsRetriever();
+  const { config: shellConfig } = useShellConfig();
+  const deployedApps = retrieveDeployedApps();
+
+  const discoveredViews = [
+    ...shellConfig.navbar.main.map((entry) => ({
+      ...entry,
+      navbarGroup: 'main',
+    })),
+    ...shellConfig.navbar.subLogin.map((entry) => ({
+      ...entry,
+      navbarGroup: 'subLogin',
+    })),
+  ].flatMap((navbarEntry) => {
+    if (!navbarEntry.kind || !navbarEntry.view) {
+      return [
+        {
+          url: navbarEntry.url,
+          isExternal: navbarEntry.isExternal,
+          icon: navbarEntry.icon,
+          groups: navbarEntry.groups,
+          isFederated: false,
+          navbarGroup: navbarEntry.navbarGroup,
+        },
+      ];
+    }
+    const matchingApps = retrieveDeployedApps({ kind: navbarEntry.kind });
+    if (!matchingApps || matchingApps.length === 0) {
+      return [];
+    }
+    const app = matchingApps[0];
+    const appBuildConfig = retrieveConfiguration({
+      configType: 'build',
+      name: app.name,
+    });
+    if (
+      appBuildConfig &&
+      appBuildConfig.spec.views &&
+      appBuildConfig.spec.views[navbarEntry.view]
+    ) {
+      const view = appBuildConfig.spec.views[navbarEntry.view];
+      return [
+        {
+          view,
+          app,
+          groups: navbarEntry.groups,
+          icon: navbarEntry.icon,
+          navbarGroup: navbarEntry.navbarGroup,
+          isFederated: true,
+        },
+      ];
+    }
+
+    return [];
+  });
+
+  return discoveredViews;
+}
+
+export const useLinkOpener = () => {
+  const history = useHistory();
+  return {
+    openLink: (to: { isExternal: boolean, app: SolutionUI, view: View, isFederated: true } | {isFederated: false, isExternal: boolean, url: string}) => {
+      if (to.isExternal) {
+        if (to.isFederated) {
+          window.open(
+            to.app.appHistoryBasePath + to.view.path,
+            '_blank',
+          );
+        } else {
+          window.open(to.url, '_blank');
+        }
+      } else if (to.isFederated) {
+        history.push(
+          to.app.appHistoryBasePath + to.view.path,
+        );
+      } else {
+        window.location.href = to.url;
+      }
+    },
+  };
+};
 
 export const ConfigurationProvider = ({
   children,
