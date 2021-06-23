@@ -9,7 +9,6 @@ import type {
   SolutionsNavbarProps,
   PathDescription,
   UserGroupsMapping,
-  Browser,
 } from './index';
 import type { Node } from 'react';
 import { logOut } from './auth/logout';
@@ -113,14 +112,12 @@ export const Navbar = ({
   canChangeLanguage,
   canChangeTheme,
   providerLogout,
-  federatedBrowser,
   children,
 }: {
   logo: string,
   canChangeLanguage?: boolean,
   canChangeTheme?: boolean,
   providerLogout: boolean,
-  federatedBrowser?: Browser,
   children?: Node,
 }): Node => {
   const { userData } = useAuth();

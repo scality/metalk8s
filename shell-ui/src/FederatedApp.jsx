@@ -119,6 +119,7 @@ function InternalApp(): Node {
     useState<FederatedComponentProps | null>(null);
 
   const discoveredViews = useDiscoveredViews();
+  const {retrieveConfiguration} = useConfigRetriever();
 
   const routes = discoveredViews
     .filter((discoveredView) => discoveredView.isFederated)
@@ -144,41 +145,9 @@ function InternalApp(): Node {
       ),
     }));
 
-  const { retrieveConfiguration } = useConfigRetriever();
-  const { retrieveDeployedApps } = useDeployedAppsRetriever();
-  const { config: shellConfig } = useShellConfig();
-  const deployedApps = retrieveDeployedApps();
-
-  const federatedBrowser: Browser = {
-    open: ({ name, view }) => {
-      const buildConfig = retrieveConfiguration({ configType: 'build', name });
-      const runConfig = retrieveConfiguration({ configType: 'run', name });
-      const matchingApps = retrieveDeployedApps({ name });
-      if (
-        buildConfig &&
-        buildConfig.spec.views &&
-        buildConfig.spec.views[view] &&
-        matchingApps &&
-        matchingApps.length > 0
-      ) {
-        setFederatedComponent({
-          module: buildConfig.spec.views[view].module,
-          scope: buildConfig.spec.views[view].scope,
-          url: matchingApps[0].url + buildConfig.spec.remoteEntryPath,
-        });
-        window.history.pushState(
-          {},
-          runConfig?.spec.title || null,
-          matchingApps[0].appHistoryBasePath +
-            buildConfig.spec.views[view].path,
-        );
-      }
-    },
-  };
-
   return (
     <BrowserRouter>
-      <SolutionsNavbar federatedBrowser={federatedBrowser}>
+      <SolutionsNavbar>
         <Switch>
           {routes.map((route) => (
             <Route key={route.path} {...route} />
