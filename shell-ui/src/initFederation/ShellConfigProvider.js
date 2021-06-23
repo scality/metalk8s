@@ -34,9 +34,11 @@ export type Theme = {
 };
 
 export type NavbarEntry = {
-  groups: string[],
-  kind: string,
-  view: string,
+  groups?: string[],
+  kind?: string,
+  view?: string,
+  url?: string,
+  icon?: string,
   isExternal: boolean,
 };
 

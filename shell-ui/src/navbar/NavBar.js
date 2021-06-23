@@ -2,7 +2,7 @@
 import CoreUINavbar from '@scality/core-ui/dist/components/navbar/Navbar.component';
 import Dropdown from '@scality/core-ui/dist/components/dropdown/Dropdown.component';
 import { type Item as CoreUIDropdownItem } from '@scality/core-ui/src/lib/components/dropdown/Dropdown.component';
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState, useCallback } from 'react';
 import styled from 'styled-components';
 import type {
   Options,
@@ -25,6 +25,12 @@ import { useLanguage } from './lang';
 import { useThemeName } from './theme';
 import { useIntl } from 'react-intl';
 import { useAuth } from '../auth/AuthProvider';
+import {
+  useDiscoveredViews,
+  useLinkOpener,
+} from '../initFederation/ConfigurationProviders';
+import { useLocation } from 'react-router-dom';
+import { matchPath, RouteProps } from 'react-router';
 
 const Logo = styled.img`
   height: 30px;
@@ -37,52 +43,6 @@ export const LoadingNavbar = ({ logo }: { logo: string }): Node => (
     tabs={[{ title: 'loading' }]}
   />
 );
-
-const linkMatchesCurrentLocation = (
-  path: string,
-  pathDescription: PathDescription,
-): boolean => {
-  const normalizedLocation = normalizePath(location.href);
-  return pathDescription.activeIfMatches
-    ? new RegExp(pathDescription.activeIfMatches).test(location.href)
-    : normalizedLocation === normalizePath(path);
-};
-
-const translateOptionsToMenu = (
-  options: Options,
-  section: 'main' | 'subLogin',
-  renderer: (
-    path: string,
-    pathDescription: PathDescription,
-  ) => { link: Node } | { label: string, onClick: () => void },
-  userGroups: string[],
-) => {
-  const entries = Object.entries(options[section])
-    //$FlowIssue - flow typing for Object.entries incorrectly typing values as [string, mixed] instead of [string, PathDescription]
-    .filter((entry: [string, PathDescription]) =>
-      isEntryAccessibleByTheUser(entry, userGroups),
-    );
-  entries.sort(([_, entryA], [__, entryB]) =>
-    (entryA.order || Infinity) < (entryB.order || Infinity) ? -1 : 1,
-  );
-  return entries.map(
-    //$FlowIssue - flow typing for Object.entries incorrectly typing values as [string, mixed] instead of [string, PathDescription]
-    ([path, pathDescription]: [string, PathDescription], i) => {
-      try {
-        return {
-          ...renderer(path, pathDescription),
-          selected: linkMatchesCurrentLocation(path, pathDescription),
-        };
-      } catch (e) {
-        throw new Error(
-          `[navbar][config] Invalid path specified in "options.${section}": "${path}" ` +
-            '(keys must be defined as fully qualified URLs, ' +
-            'such as "{protocol}://{host}{path}?{queryParams}")',
-        );
-      }
-    },
-  );
-};
 
 const NavbarDropDownItem = styled.div`
   display: flex;
@@ -131,148 +91,129 @@ const Item = ({
   );
 };
 
-const nativeBrowser: Browser = {
-  open: ({ path }) => {
-    location.href = path;
-  },
-};
-
-const openLink = ({
-  path,
-  pathDescription,
-  federatedBrowser,
-}: {
-  path: string,
-  pathDescription: PathDescription,
-  federatedBrowser?: Browser,
-}) => {
-  if (!federatedBrowser) {
-    if (pathDescription.isExternal) {
-      window.open(path, '_blank');
-      return;
-    }
-    nativeBrowser.open({ path, pathDescription });
-    return;
-  }
-
-  const targetUrl = new URL(path);
-
-  // If target url is on the same origin as the current one and can be loaded using module federation we use the federated browser to open it
-  if (
-    pathDescription.module &&
-    pathDescription.scope &&
-    pathDescription.url &&
-    location.origin === targetUrl.origin
-  ) {
-    federatedBrowser.open({ path, pathDescription });
-  } else {
-    nativeBrowser.open({ path, pathDescription });
-  }
-};
-
 const Link = ({
   children,
-  path,
-  pathDescription,
-  federatedBrowser,
+  to,
 }: {
   children: Node,
-  path: string,
-  pathDescription: PathDescription,
-  federatedBrowser?: Browser,
+  to:
+    | { isExternal: boolean, app: SolutionUI, view: View, isFederated: true }
+    | { isFederated: false, isExternal: boolean, url: string },
 }) => {
+  const { openLink } = useLinkOpener();
   return (
-    <a
-      href={'#'}
-      onClick={() =>
-        //$FlowIssue pathDescription can't contain a `path` key.
-        openLink({ path, pathDescription, federatedBrowser })
-      }
-    >
+    <a href={'#'} onClick={() => openLink(to)}>
       {children}
     </a>
   );
 };
 
 export const Navbar = ({
-  options,
   logo,
-  userGroupsMapping,
   canChangeLanguage,
   canChangeTheme,
   providerLogout,
   federatedBrowser,
   children,
 }: {
-  options: Options,
   logo: string,
-  userGroupsMapping?: UserGroupsMapping,
   canChangeLanguage?: boolean,
   canChangeTheme?: boolean,
   providerLogout: boolean,
   federatedBrowser?: Browser,
   children?: Node,
 }): Node => {
-  const auth = useAuth();
+  const { userData } = useAuth();
   const brand = useTheme();
 
   const { themeName, unSelectedThemes, setTheme } = useThemeName();
   const { language, setLanguage, unSelectedLanguages } = useLanguage();
   const intl = useIntl();
 
-  const userGroups: string[] = getUserGroups(auth.userData, userGroupsMapping);
-  const accessiblePaths = getAccessiblePathsFromOptions(options, userGroups);
-  useLayoutEffect(() => {
-    accessiblePaths.forEach((accessiblePath) => {
-      prefetch(accessiblePath).catch(() => console.log(`Failed to preload ${accessiblePath}`));
-    });
-  }, [JSON.stringify(accessiblePaths)]);
+  const discoveredViews = useDiscoveredViews();
+  const location = useLocation();
+  const { openLink } = useLinkOpener();
 
-  const tabs = translateOptionsToMenu(
-    options,
-    'main',
-    (path, pathDescription) => ({
-      link: (
-        <Link {...{ path, pathDescription, federatedBrowser }}>
-          {pathDescription[language]}
-        </Link>
-      ),
-    }),
-    userGroups,
+  const doesRouteMatch = useCallback(
+    (path: RouteProps) => {
+      return matchPath(location.pathname, path);
+    },
+    [location],
   );
+
+  const accessibleViews = discoveredViews.filter(
+    (discoveredView) =>
+      userData &&
+      (discoveredView.groups?.some((group) =>
+        userData.groups.includes(group),
+      ) ??
+        true),
+  );
+
+  const selectedTabs = accessibleViews.filter((accessibleView) =>
+    accessibleView.isFederated
+      ? doesRouteMatch({
+          path:
+            accessibleView.app.appHistoryBasePath + accessibleView.view.path,
+          exact: accessibleView.view.exact,
+          strict: accessibleView.view.strict,
+          sensitive: accessibleView.view.sensitive,
+        })
+      : normalizePath(accessibleView.url) ===
+        window.location.origin + window.location.pathname,
+  );
+
+  const selectedMainTabs = selectedTabs.filter(tab =>
+    tab.navbarGroup === 'main',
+  );
+  const selectedMainTab = selectedMainTabs.pop();
+
+  const selectedSubLoginTabs = selectedTabs.filter(tab => 
+    tab.navbarGroup === 'subLogin',
+  );
+  const selectedSubLoginTab = selectedSubLoginTabs.pop();
+
+  const tabs = accessibleViews
+    .filter((accessibleView) => accessibleView.navbarGroup === 'main')
+    .map((accessibleView) => ({
+      link: (
+        <Link to={accessibleView}>{accessibleView.view.label[language]}</Link>
+      ),
+      selected: selectedMainTab
+        ? selectedMainTab.app.name === accessibleView.app.name &&
+          selectedMainTab.view.path === accessibleView.view.path
+        : false,
+    }));
 
   const rightActions = [
     {
       type: 'dropdown',
-      text: auth.userData?.username || '',
+      text: userData?.username || '',
       icon: (
         <span style={{ color: brand.textTertiary }}>
           <i className="fas fa-user-cog"></i>
         </span>
       ),
       items: [
-        ...translateOptionsToMenu(
-          options,
-          'subLogin',
-          (path, pathDescription) => ({
+        ...accessibleViews
+          .filter((accessibleView) => accessibleView.navbarGroup === 'subLogin')
+          .map((accessibleView) => ({
             label: (
               // $FlowFixMe Dropdown item typing is currently a string but can also accepts a react node
               <Item
-                icon={pathDescription.icon}
-                isExternal={pathDescription.isExternal}
-                label={pathDescription[language]}
+                icon={accessibleView.icon}
+                isExternal={accessibleView.isExternal}
+                label={accessibleView.view.label[language]}
               />
             ),
+            selected: selectedSubLoginTab
+              ? selectedSubLoginTab.app.name === accessibleView.app.name &&
+                selectedSubLoginTab.view.path === accessibleView.view.path
+              : false,
             onClick: () => {
-              openLink({
-                path,
-                pathDescription,
-                federatedBrowser,
-              });
+              openLink(accessibleView);
             },
-          }),
-          userGroups,
-        ),
+          })),
         {
           label: (
             <Item

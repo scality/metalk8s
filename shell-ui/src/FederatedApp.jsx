@@ -33,6 +33,7 @@ import {
 import {
   ConfigurationProvider,
   useConfigRetriever,
+  useDiscoveredViews,
 } from './initFederation/ConfigurationProviders';
 import { Route, Switch, BrowserRouter } from 'react-router-dom';
 import {
@@ -50,9 +51,9 @@ function FederatedRoute({
   scope,
   module,
   app,
-  navbarEntry,
+  groups,
 }: FederatedComponentProps & {
-  navbarEntry: NavbarEntry,
+  groups?: string[],
   app: SolutionUI,
 }): Node {
   const { retrieveConfiguration } = useConfigRetriever();
@@ -74,7 +75,7 @@ function FederatedRoute({
       scope={scope}
       module={module}
       app={app}
-      navbarEntry={navbarEntry}
+      groups={groups}
     />
   );
 }
@@ -84,9 +85,9 @@ function ProtectedFederatedRoute({
   scope,
   module,
   app,
-  navbarEntry,
+  groups,
 }: FederatedComponentProps & {
-  navbarEntry: NavbarEntry,
+  groups?: string[],
   app: SolutionUI,
 }): Node {
   const { userData } = useAuth();
@@ -94,8 +95,7 @@ function ProtectedFederatedRoute({
 
   if (
     userData &&
-    (navbarEntry.groups?.some((group) => userData.groups.includes(group)) ??
-      true)
+    (groups?.some((group) => userData.groups.includes(group)) ?? true)
   ) {
     const appBuildConfig = retrieveConfiguration({
       configType: 'build',
@@ -117,51 +117,37 @@ function InternalApp(): Node {
   const navbarConfigUrl = '/shell/config.json'; // TODO find a way to inject this
   const [federatedComponent, setFederatedComponent] =
     useState<FederatedComponentProps | null>(null);
+
+  const discoveredViews = useDiscoveredViews();
+
+  const routes = discoveredViews
+    .filter((discoveredView) => discoveredView.isFederated)
+    .map(({ app, view, groups }) => ({
+      path: app.appHistoryBasePath + view.path,
+      exact: view.exact,
+      strict: view.strict,
+      sensitive: view.sensitive,
+      component: () => (
+        <FederatedRoute
+          url={
+            app.url +
+            retrieveConfiguration({
+              configType: 'build',
+              name: app.name,
+            }).spec.remoteEntryPath
+          }
+          module={view.module}
+          scope={view.scope}
+          app={app}
+          groups={groups}
+        />
+      ),
+    }));
+
   const { retrieveConfiguration } = useConfigRetriever();
   const { retrieveDeployedApps } = useDeployedAppsRetriever();
   const { config: shellConfig } = useShellConfig();
   const deployedApps = retrieveDeployedApps();
-
-  const routes = [
-    ...shellConfig.navbar.main,
-    ...shellConfig.navbar.subLogin,
-  ].flatMap((navbarEntry) => {
-    const matchingApps = retrieveDeployedApps({ kind: navbarEntry.kind });
-    if (!matchingApps || matchingApps.length === 0) {
-      return [];
-    }
-    const app = matchingApps[0];
-    const appBuildConfig = retrieveConfiguration({
-      configType: 'build',
-      name: app.name,
-    });
-    if (
-      appBuildConfig &&
-      appBuildConfig.spec.views &&
-      appBuildConfig.spec.views[navbarEntry.view]
-    ) {
-      const view = appBuildConfig.spec.views[navbarEntry.view];
-      return [
-        {
-          path: app.appHistoryBasePath + view.path,
-          exact: view.exact,
-          strict: view.strict,
-          sensitive: view.sensitive,
-          component: () => (
-            <FederatedRoute
-              url={app.url + appBuildConfig.spec.remoteEntryPath}
-              module={view.module}
-              scope={view.scope}
-              app={app}
-              navbarEntry={navbarEntry}
-            />
-          ),
-        },
-      ];
-    }
-
-    return [];
-  });
 
   const federatedBrowser: Browser = {
     open: ({ name, view }) => {
@@ -191,15 +177,15 @@ function InternalApp(): Node {
   };
 
   return (
-    <SolutionsNavbar federatedBrowser={federatedBrowser}>
-      <BrowserRouter>
+    <BrowserRouter>
+      <SolutionsNavbar federatedBrowser={federatedBrowser}>
         <Switch>
           {routes.map((route) => (
             <Route key={route.path} {...route} />
           ))}
         </Switch>
-      </BrowserRouter>
-    </SolutionsNavbar>
+      </SolutionsNavbar>
+    </BrowserRouter>
   );
 }
 

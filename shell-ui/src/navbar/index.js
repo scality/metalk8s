@@ -87,23 +87,8 @@ type Config = {
 };
 
 export const SolutionsNavbar = ({
-  'oidc-provider-url': oidcProviderUrl,
-  scopes,
-  'client-id': clientId,
-  'redirect-url': redirectUrl,
-  'config-url': configUrl,
-  'response-type': responseType,
   'logo-dark': logoDark,
   'logo-light': logoLight,
-  favicon,
-  options,
-  'can-change-theme': canChangeTheme,
-  'can-change-language': canChangeLanguage,
-  onAuthenticated,
-  onLanguageChanged,
-  onThemeChanged,
-  logOut,
-  setUserManager,
   'provider-logout': providerLogout,
   federatedBrowser,
   children,
@@ -111,20 +96,13 @@ export const SolutionsNavbar = ({
 
   const {config} = useShellConfig();
 
-  useFavicon(favicon || config?.favicon || '/brand/favicon-metalk8s.svg');
+  useFavicon(config?.favicon || '/brand/favicon-metalk8s.svg');
 
   const logos = { dark: logoDark, darkRebrand: logoDark, light: logoLight };
 
       return (
-          <LanguageProvider
-            onLanguageChanged={onLanguageChanged}
-            canChangeLanguage={
-              canChangeLanguage !== undefined && canChangeLanguage !== null
-                ? Boolean(canChangeLanguage)
-                : config.canChangeLanguage
-            }
-          >
-            <ThemeProvider onThemeChanged={onThemeChanged}>
+          <LanguageProvider>
+            <ThemeProvider>
               {(theme, themeName) => (
                 <>
                   <StyledComponentsProvider theme={theme.brand}>
@@ -135,18 +113,6 @@ export const SolutionsNavbar = ({
                         config?.logo?.[themeName] ||
                         `/brand/assets/logo-${themeName}.svg`
                       }
-                      canChangeLanguage={
-                        canChangeLanguage !== undefined &&
-                        canChangeLanguage !== null
-                          ? Boolean(canChangeLanguage)
-                          : config.canChangeLanguage
-                      }
-                      canChangeTheme={
-                        canChangeTheme !== undefined && canChangeTheme !== null
-                          ? Boolean(canChangeTheme)
-                          : config.canChangeTheme
-                      }
-                      options={{main: {}, subLogin: {}}}
                       userGroupsMapping={config.userGroupsMapping}
                       providerLogout={
                         providerLogout
