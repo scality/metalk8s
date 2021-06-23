@@ -146,6 +146,7 @@ export const ConfigurationProvider = ({
     deployedUIs.flatMap((ui) => [
       {
         queryKey: `${ui.name}.${ui.kind}.${ui.version}-buildtime-WebFinger`,
+        refetchOnWindowFocus: false,
         queryFn: () => {
           return fetch(`${ui.url}/.well-known/micro-app-configuration`).then(
             (r) => {
@@ -160,6 +161,7 @@ export const ConfigurationProvider = ({
       },
       {
         queryKey: `${ui.name}.${ui.kind}.${ui.version}-runtime-WebFinger`,
+        refetchOnWindowFocus: false,
         queryFn: () => {
           return fetch(`${ui.url}/.well-known/runtime-app-configuration`).then(
             (r) => {
