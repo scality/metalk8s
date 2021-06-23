@@ -292,14 +292,14 @@ const VolumePageContent = (props) => {
                           storageCapacity={
                             volumeListData?.find(
                               (vol) => vol.name === currentVolumeName,
-                            ).storageCapacity
+                            )?.storageCapacity
                           }
                           health={
                             volumeListData?.find(
                               (vol) => vol.name === currentVolumeName,
-                            ).health
+                            )?.health
                           }
-                          condition={currentVolume.status}
+                          condition={currentVolume?.status}
                           // the delete button inside the volume detail card should know that which volume is the first one
                           volumeListData={volumeListData}
                           pVList={pVList}
@@ -323,7 +323,7 @@ const VolumePageContent = (props) => {
                           volumeName={currentVolumeName}
                           volumeMetricGraphData={volumeMetricGraphData}
                           // the volume condition compute base on the `status` and `bound/unbound`
-                          volumeCondition={currentVolume.status}
+                          volumeCondition={currentVolume?.status}
                           volumePVCName={PVCName}
                           volumeNamespace={PVCNamespace}
                         />

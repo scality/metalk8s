@@ -4,7 +4,6 @@ import {
   getVolumes,
   computeVolumeCondition,
   bytesToSize,
-  compareHealth,
 } from './utils.js';
 import {
   STATUS_UNKNOWN,
@@ -188,6 +187,10 @@ export const getVolumeListData = createSelector(
       );
     }
 
+    if (!pVCList || !pVCList.length) {
+      return [];
+    }
+
     nodeVolumes = nodeVolumes?.map((volume) => {
       const volumePV = pVList?.find(
         (pV) => pV.metadata.name === volume.metadata.name,
@@ -205,8 +208,10 @@ export const getVolumeListData = createSelector(
 
       let volumeUsedCurrent = null;
       let volumeCapacityCurrent = null;
+      let persistentvolumeclaim = null;
       // if volume is bounded
       if (volumePVC) {
+        persistentvolumeclaim = volumePVC.metadata.name;
         volumeUsedCurrent = volumeUsedCurrentList?.find(
           (volUsed) =>
             volUsed.metric.persistentvolumeclaim === volumePVC.metadata.name,
@@ -230,6 +235,7 @@ export const getVolumeListData = createSelector(
       return {
         name: volume?.metadata?.name,
         node: volume?.spec?.nodeName,
+        persistentvolumeclaim,
         usage:
           volumeUsedCurrent && volumeCapacityCurrent
             ? (
@@ -256,9 +262,7 @@ export const getVolumeListData = createSelector(
       };
     });
 
-    // Initial data sorting
-    // Following sorts should be handled by react-table directly in the component
-    return nodeVolumes.sort((a, b) => compareHealth(b.health, a.health));
+    return nodeVolumes;
   },
 );
 

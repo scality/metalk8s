@@ -447,6 +447,9 @@ it('should return the volume list filtered by a specific node', () => {
       usageRawData: '20.0 MiB',
       health: 'healthy',
       latency: undefined,
+      persistentvolumeclaim:
+        'alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-0',
+      errorReason: undefined,
     },
     {
       name: 'prom-m0-reldev',
@@ -459,6 +462,9 @@ it('should return the volume list filtered by a specific node', () => {
       usageRawData: '4.5 GiB',
       health: 'healthy',
       latency: 900,
+      persistentvolumeclaim:
+        'prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-1',
+      errorReason: undefined,
     },
   ];
   expect(result).toEqual(volumelistFilteredByNode);

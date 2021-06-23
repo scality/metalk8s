@@ -11,8 +11,11 @@ import {
   REFRESH_METRICS_GRAPH,
   SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
 } from './constants';
-import { useURLQuery } from './services/utils';
+import { compareHealth, useURLQuery } from './services/utils';
 import type { V1NodeList } from '@kubernetes/client-node';
+import { useAlerts } from './containers/AlertProvider';
+import { getVolumeListData } from './services/NodeVolumesUtils';
+import { filterAlerts, getHealthStatus } from './services/alertUtils';
 
 /**
  * It brings automatic strong typing to native useSelector by anotating state with RootState.
@@ -73,7 +76,8 @@ export type MetricsTimeSpanContextValue = {
   metricsTimeSpan: MetricsTimeSpan,
   setMetricsTimeSpan: MetricsTimeSpanSetter,
 };
-export const MetricsTimeSpanContext = createContext<MetricsTimeSpanContextValue>();
+export const MetricsTimeSpanContext =
+  createContext<MetricsTimeSpanContextValue>();
 export const MetricsTimeSpanProvider = ({ children }: { children: Node }) => {
   const [metricsTimeSpan, setMetricsTimeSpan] = useState(
     SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
@@ -117,4 +121,29 @@ export const useMetricsTimeSpan = (): [
   }, [setMetricsTimeSpan, queryTimeSpan]);
 
   return [metricsTimeSpan, setMetricsTimeSpan];
+};
+
+export const useVolumesWithAlerts = (nodeName?: string) => {
+  const { alerts } = useAlerts();
+  const volumeListData = useTypedSelector((state) =>
+    getVolumeListData(state, null, nodeName),
+  );
+  //This forces alerts to have been fetched at least once (watchdog alert should be present)
+  // before rendering volume list
+  // TODO enhance this using useAlerts status
+  if (alerts.length === 0) return [];
+  const volumeListWithStatus = volumeListData.map((volume) => {
+    const volumeAlerts = filterAlerts(alerts, {
+      persistentvolumeclaim: volume.persistentvolumeclaim,
+    });
+    const volumeHealth = getHealthStatus(volumeAlerts);
+    return {
+      ...volume,
+      health: volumeHealth,
+    };
+  });
+  volumeListWithStatus.sort((volumeA, volumeB) =>
+    compareHealth(volumeB.health, volumeA.health),
+  );
+  return volumeListWithStatus;
 };

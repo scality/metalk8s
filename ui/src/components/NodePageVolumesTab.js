@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import {
   refreshVolumesAction,
@@ -17,11 +17,10 @@ import {
   fetchVolumeStatsAction,
 } from '../ducks/app/monitoring';
 import NodePageVolumesTable from '../components/NodePageVolumesTable';
-import { getVolumeListData } from '../services/NodeVolumesUtils';
 import { useRefreshEffect } from '../services/utils';
 import { fontSize } from '@scality/core-ui/dist/style/theme';
 import { NodeTab } from './style/CommonLayoutStyle';
-import { useAlerts } from '../containers/AlertProvider';
+import { useVolumesWithAlerts } from '../hooks';
 
 // Overriding overflow for the Tab since the table components has inner scroll
 export const NodesVolumesTab = styled(NodeTab)`
@@ -39,10 +38,7 @@ const NodePageVolumesTab = (props) => {
   const { name } = useParams();
   const dispatch = useDispatch();
 
-  const {alerts} = useAlerts()
-  const volumeListData = useSelector((state) =>
-    getVolumeListData(alerts)(state, null, name),
-  );
+  const volumeListData = useVolumesWithAlerts();
 
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
   useRefreshEffect(
