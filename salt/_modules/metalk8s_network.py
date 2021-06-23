@@ -226,3 +226,34 @@ def routes():
             )
 
     return ret
+
+
+def get_control_plane_ingress_ip():
+    if "ingress" in __pillar__["networks"]["control_plane"]:
+        return __pillar__["networks"]["control_plane"]["ingress"]["ip"]
+
+    # Use Bootstrap Control Plane IP as Ingress Control plane IP
+    bootstrap_id = __salt__["metalk8s.minions_by_role"]("bootstrap")[0]
+
+    if __grains__["id"] == bootstrap_id:
+        return __grains__["metalk8s"]["control_plane_ip"]
+
+    if __opts__.get("__role") == "minion":
+        mine_ret = __salt__["mine.get"](tgt=bootstrap_id, fun="control_plane_ip")
+    else:
+        mine_ret = __salt__["saltutil.runner"](
+            "mine.get", tgt=bootstrap_id, fun="control_plane_ip"
+        )
+
+    if not isinstance(mine_ret, dict) or bootstrap_id not in mine_ret:
+        raise CommandExecutionError(
+            "Unable to get {} Control Plane IP: {}".format(bootstrap_id, mine_ret)
+        )
+
+    return mine_ret[bootstrap_id]
+
+
+def get_control_plane_ingress_endpoint():
+    return "https://{}:8443".format(
+        __salt__["metalk8s_network.get_control_plane_ingress_ip"]()
+    )

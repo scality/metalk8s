@@ -2,9 +2,6 @@
 {%- from "metalk8s/map.jinja" import certificates with context %}
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
-{%- from "metalk8s/addons/nginx-ingress-control-plane/control-plane-ip.sls"
-    import ingress_control_plane with context
-%}
 
 {%- set encryption_k8s_path = "/etc/kubernetes/encryption.conf" %}
 
@@ -98,7 +95,7 @@ Create kube-apiserver Pod manifest:
         # }
           - --encryption-provider-config={{ encryption_k8s_path }}
           - --cors-allowed-origins=.*
-          - --oidc-issuer-url=https://{{ ingress_control_plane }}/oidc
+          - --oidc-issuer-url={{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}/oidc
           - --oidc-client-id=oidc-auth-client
           - --oidc-ca-file=/etc/metalk8s/pki/nginx-ingress/ca.crt
           - --oidc-username-claim=email

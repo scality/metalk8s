@@ -117,6 +117,14 @@ def test_volume(volume_client, name):
         volume_client.delete(name, sync=True)
 
 
+@given("we are on a multi node cluster")
+def check_multi_node(k8s_client):
+    nodes = k8s_client.list_node()
+
+    if len(nodes.items) == 1:
+        pytest.skip("We skip single node cluster for this test")
+
+
 # }}}
 
 # Then {{{

@@ -132,6 +132,8 @@ Update pillar on bootstrap minion after highstate:
   salt.function:
   - name: saltutil.refresh_pillar
   - tgt: {{ pillar.bootstrap_id }}
+  - kwarg:
+      wait: true
   - require:
     - salt: Configure bootstrap Node object
 

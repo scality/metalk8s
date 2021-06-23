@@ -283,7 +283,8 @@ metadata:
   namespace: metalk8s-ingress
 spec:
   externalIPs:
-  - '{%- endraw -%}{{ grains.metalk8s.control_plane_ip }}{%- raw -%}'
+  - '{%- endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_ip() }}{%- raw
+    -%}'
   ports:
   - name: https
     port: 8443

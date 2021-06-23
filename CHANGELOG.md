@@ -60,6 +60,12 @@
   LVMLogicalVolume volume in the UI
   (PR[#3410](https://github.com/scality/metalk8s/pull/3410))
 
+- [#2381](https://github.com/scality/metalk8s/issues/2381)) - Allow
+  configuring the Control Plane Ingress' external IP, to enable high
+  availability with failover of this (virtual) IP between control plane
+  nodes. This failover is not managed by MetalK8s.
+  (PR[#3415](https://github.com/scality/metalk8s/pull/3415))
+
 ### Breaking changes
 
 - [#2199](https://github.com/scality/metalk8s/issues/2199) - Prometheus label

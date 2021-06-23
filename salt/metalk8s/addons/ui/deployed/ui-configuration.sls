@@ -55,7 +55,7 @@ metalk8s-ui-config ConfigMap already exist:
   {%- endif %}
 
   {%- set stripped_base_path = metalk8s_ui.spec.basePath.strip('/') %}
-  {%- set cp_ingress_url = "https://" ~ grains.metalk8s.control_plane_ip ~ ":8443" %}
+  {%- set cp_ingress_url = salt.metalk8s_network.get_control_plane_ingress_endpoint() %}
   {%- set metalk8s_ui_url = cp_ingress_url ~ '/' ~ stripped_base_path ~
                             ('/' if stripped_base_path else '') %}
 

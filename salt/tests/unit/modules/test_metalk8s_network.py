@@ -290,3 +290,76 @@ class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
         ):
             self.assertEqual(metalk8s_network.routes(), result)
             mock_ip_cmd.assert_called_once_with("ip -4 route show table main")
+
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["get_control_plane_ingress_ip"])
+    def test_get_control_plane_ingress_ip(
+        self,
+        result,
+        raises=False,
+        pillar=None,
+        opts=None,
+        grains=None,
+        mine_ret=None,
+        mine_runner_ret=None,
+    ):
+        """
+        Tests the return of `get_control_plane_ingress_ip` function
+        """
+        if pillar is None:
+            pillar = {"networks": {"control_plane": {}}}
+        if opts is None:
+            opts = {"__role": "minion"}
+        if grains is None:
+            grains = {"id": "my-node"}
+
+        salt_dict = {
+            "metalk8s.minions_by_role": MagicMock(return_value=["bootstrap"]),
+            "mine.get": MagicMock(return_value=mine_ret),
+            "saltutil.runner": MagicMock(return_value=mine_runner_ret),
+        }
+
+        with patch.dict(metalk8s_network.__salt__, salt_dict), patch.dict(
+            metalk8s_network.__pillar__, pillar
+        ), patch.dict(metalk8s_network.__opts__, opts), patch.dict(
+            metalk8s_network.__grains__, grains
+        ):
+            if raises:
+                self.assertRaisesRegex(
+                    CommandExecutionError,
+                    result,
+                    metalk8s_network.get_control_plane_ingress_ip,
+                )
+            else:
+                self.assertEqual(
+                    metalk8s_network.get_control_plane_ingress_ip(), result
+                )
+
+    @utils.parameterized_from_cases(
+        YAML_TESTS_CASES["get_control_plane_ingress_endpoint"]
+    )
+    def test_get_control_plane_ingress_endpoint(
+        self, result, raises=False, cp_ingress_ip_ret=None
+    ):
+        """
+        Tests the return of `get_control_plane_ingress_endpoint` function
+        """
+        mock_get_cp_ingress_ip = MagicMock(return_value=cp_ingress_ip_ret)
+        if raises:
+            mock_get_cp_ingress_ip.side_effect = CommandExecutionError(
+                cp_ingress_ip_ret
+            )
+
+        with patch.dict(
+            metalk8s_network.__salt__,
+            {"metalk8s_network.get_control_plane_ingress_ip": mock_get_cp_ingress_ip},
+        ):
+            if raises:
+                self.assertRaisesRegex(
+                    CommandExecutionError,
+                    result,
+                    metalk8s_network.get_control_plane_ingress_endpoint,
+                )
+            else:
+                self.assertEqual(
+                    metalk8s_network.get_control_plane_ingress_endpoint(), result
+                )

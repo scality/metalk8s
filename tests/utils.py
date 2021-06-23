@@ -194,9 +194,12 @@ class PrometheusApiError(Exception):
 
 
 class PrometheusApi:
-    def __init__(self, host, port=9090):
-        self.host = host
-        self.port = port
+    def __init__(self, host=None, port=9090, endpoint=None):
+        self.endpoint = endpoint
+
+        if not self.endpoint:
+            self.endpoint = "https://{}:{}".format(host, port)
+
         self.session = requests_retry_session()
 
     def request(self, method, route, **kwargs):
@@ -204,9 +207,7 @@ class PrometheusApi:
             kwargs.setdefault("verify", False)
             response = self.session.request(
                 method,
-                "https://{}:{}/api/prometheus/api/v1/{}".format(
-                    self.host, self.port, route
-                ),
+                "{}/api/prometheus/api/v1/{}".format(self.endpoint, route),
                 **kwargs
             )
             response.raise_for_status()
