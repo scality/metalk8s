@@ -7,7 +7,30 @@ import { useQuery } from 'react-query';
 const ShellConfigContext = createContext(null);
 
 export type Theme = {
-  //TODO
+  logoPath: string,
+  faviconPath: string,
+  colors: {
+    statusHealthy: string,
+    statusWarning: string,
+    statusCritical: string,
+    selectedActive: string,
+    highlight: string,
+    border: string,
+    buttonPrimary: string,
+    buttonSecondary: string,
+    buttonDelete: string,
+    infoPrimary: string,
+    infoSecondary: string,
+    backgroundLevel1: string,
+    backgroundLevel2: string,
+    backgroundLevel3: string,
+    backgroundLevel4: string,
+    textPrimary: string,
+    textSecondary: string,
+    textTertiary: string,
+    textReverse: string,
+    textLink: string,
+  },
 };
 
 export type NavbarEntry = {
@@ -18,7 +41,7 @@ export type NavbarEntry = {
 };
 
 export type ShellConfig = {
-  themes?: Theme,
+  themes?: { [themeName: string]: Theme },
   navbar: {
     main: NavbarEntry[],
     subLogin: NavbarEntry[],
