@@ -1,3 +1,4 @@
+import json
 import os
 import pathlib
 import time
@@ -48,6 +49,11 @@ def test_push_log_to_loki(host):
 
 @scenario("../features/logging.feature", "Logging pipeline is working")
 def test_logging_pipeline_is_working(host):
+    pass
+
+
+@scenario("../features/logging.feature", "Retrieve cluster alerts from Loki")
+def test_loki_alerts(host):
     pass
 
 
@@ -209,8 +215,8 @@ def retrieve_alert_from_loki(k8s_client, alertname):
 
         alert_found = False
         for element in alerts:
-            alert = json.loads(element[1])
-            if alert.get("labels", []).get("alertname") == alertname:
+            alert = json.loads(json.loads(element[1]).get("message", "{}"))
+            if alert.get("labels", {}).get("alertname") == alertname:
                 alert_found = True
 
         assert alert_found, "No '{0}' alert found in Loki".format(alertname)
