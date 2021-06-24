@@ -10,7 +10,6 @@ import {
 import type { RootState } from '../reducer';
 import * as VolumesApi from '../../services/k8s/volumes';
 import * as Metalk8sVolumesApi from '../../services/k8s/Metalk8sVolumeClient.generated';
-import { intl } from '../../translations/IntlGlobalProvider';
 import {
   addNotificationErrorAction,
   addNotificationSuccessAction,
@@ -206,6 +205,7 @@ export const volumesRefreshingSelector = (state: any): boolean =>
   state.app.volumes.isRefreshing;
 export const persistentVolumesRefreshingSelector = (state: any): boolean =>
   state.app.volumes.isPVRefreshing;
+const intlSelector = (state: RootState) => state.config.intl;
 
 // Sagas
 export function* fetchVolumes(): Generator<
@@ -321,6 +321,7 @@ export function* createVolumes({
   | { error: any, body: null },
 > {
   const { newVolumes } = payload;
+
   for (var i = 0; i < newVolumes.length; i++) {
     const body: Metalk8sV1alpha1Volume = {
       apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
@@ -379,6 +380,8 @@ export function* createVolumes({
         Metalk8sVolumesApi.createMetalk8sV1alpha1Volume,
         body,
       );
+      const intl = yield select(intlSelector);
+
       if (!result.error) {
         const { history } = yield select((state: RootState) => state.history);
         yield call(
@@ -387,19 +390,25 @@ export function* createVolumes({
         );
         yield put(
           addNotificationSuccessAction({
-            title: intl.translate('volume_creation'),
-            message: intl.translate('volume_creation_success', {
-              name: newVolumes[i].name,
-            }),
+            title: intl.formatMessage({ id: 'volume_creation' }),
+            message: intl.formatMessage(
+              { id: 'volume_creation_success' },
+              {
+                name: newVolumes[i].name,
+              },
+            ),
           }),
         );
       } else {
         yield put(
           addNotificationErrorAction({
-            title: intl.translate('volume_creation'),
-            message: intl.translate('volume_creation_failed', {
-              name: newVolumes[i].name,
-            }),
+            title: intl.formatMessage({ id: 'volume_creation' }),
+            message: intl.formatMessage(
+              { id: 'volume_creation_failed' },
+              {
+                name: newVolumes[i].name,
+              },
+            ),
           }),
         );
       }
@@ -503,11 +512,7 @@ export function* stopRefreshPersistentVolumes(): Generator<
   yield put(updatePersistentVolumesRefreshingAction(false));
 }
 
-export function* deleteVolume({
-  payload,
-}: {
-  payload: string,
-}): Generator<
+export function* deleteVolume({ payload }: { payload: string }): Generator<
   Effect,
   void,
   | {
@@ -520,22 +525,29 @@ export function* deleteVolume({
     Metalk8sVolumesApi.deleteMetalk8sV1alpha1Volume,
     payload,
   );
+  const intl = yield select(intlSelector);
   if (!result.error) {
     yield put(
       addNotificationSuccessAction({
-        title: intl.translate('volume_deletion'),
-        message: intl.translate('volume_delete_success', {
-          name: payload,
-        }),
+        title: intl.formatMessage({ id: 'volume_deletion' }),
+        message: intl.formatMessage(
+          { id: 'volume_delete_success' },
+          {
+            name: payload,
+          },
+        ),
       }),
     );
   } else {
     yield put(
       addNotificationErrorAction({
-        title: intl.translate('volume_deletion'),
-        message: intl.translate('volume_delete_failed', {
-          name: payload,
-        }),
+        title: intl.formatMessage({ id: 'volume_deletion' }),
+        message: intl.formatMessage(
+          { id: 'volume_delete_failed' },
+          {
+            name: payload,
+          },
+        ),
       }),
     );
   }

@@ -1,4 +1,5 @@
 //@flow
+import { IntlShape } from 'react-intl';
 import type { RootState } from './reducer';
 import type { Config, Theme } from '../services/api';
 import { Effect, call, put, takeEvery, select } from 'redux-saga/effects';
@@ -23,6 +24,7 @@ export const SET_CONFIG_STATUS = 'SET_CONFIG_STATUS';
 export const UPDATE_API_CONFIG = 'UPDATE_API_CONFIG';
 export const LOGOUT = 'LOGOUT';
 export const SET_USER_LOADED = 'SET_USER_LOADED';
+const SET_INTL = 'SET_INTL';
 
 // Reducer
 type Status = 'idle' | 'loading' | 'error' | 'success';
@@ -32,6 +34,7 @@ export type ConfigState = {
   theme: Theme,
   api: ?Config,
   status: Status,
+  intl: IntlShape,
 };
 
 const defaultState: ConfigState = {
@@ -39,6 +42,7 @@ const defaultState: ConfigState = {
   theme: {}, // current theme
   api: null,
   status: 'idle',
+  intl: {},
 };
 
 export default function reducer(
@@ -56,6 +60,8 @@ export default function reducer(
       return { ...state, isUserLoaded: action.payload };
     case SET_CONFIG_STATUS:
       return { ...state, status: action.status };
+    case SET_INTL:
+      return { ...state, intl: action.payload };
     default:
       return state;
   }
@@ -90,6 +96,10 @@ export function updateAPIConfigAction(payload: {
 
 export function logoutAction() {
   return { type: LOGOUT };
+}
+
+export function setIntlAction(intl: IntlShape) {
+  return { type: SET_INTL, payload: intl };
 }
 
 // Selectors

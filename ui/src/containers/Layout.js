@@ -1,5 +1,5 @@
 //@flow
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { matchPath, RouteProps, Route, Redirect } from 'react-router';
 import { useHistory, useLocation, Switch } from 'react-router-dom';
@@ -9,9 +9,10 @@ import {
   Loader,
   ErrorPage404,
 } from '@scality/core-ui';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 import { toggleSideBarAction } from '../ducks/app/layout';
 import { removeNotificationAction } from '../ducks/app/notifications';
+import { setIntlAction } from '../ducks/config';
 import CreateVolume from './CreateVolume';
 import { useTypedSelector } from '../hooks';
 import { Suspense } from 'react';
@@ -27,11 +28,16 @@ const AlertPage = React.lazy(() => import('./AlertPage'));
 
 const Layout = () => {
   const sidebar = useTypedSelector((state) => state.app.layout.sidebar);
-  const { language } = useTypedSelector((state) => state.config);// TODO federate useLanguage from shell-ui
+  const intl = useIntl();
+  const language = intl.locale;
   const notifications = useTypedSelector(
     (state) => state.app.notifications.list,
   );
 
+  useEffect(() => {
+    dispatch(setIntlAction(intl));
+    // eslint-disable-next-line
+  }, [language]);
   const isUserLoaded = useTypedSelector((state) => !!state.oidc?.user);
   const api = useTypedSelector((state) => state.config.api);
   const dispatch = useDispatch();
@@ -64,7 +70,7 @@ const Layout = () => {
     'data-cy-state-isexpanded': sidebar.expanded,
     actions: [
       {
-        label: intl.translate('dashboard'),
+        label: intl.formatMessage({ id: 'dashboard' }),
         icon: <i className="fas fa-desktop" />,
         onClick: () => {
           history.push('/dashboard');
@@ -77,7 +83,7 @@ const Layout = () => {
         'data-cy': 'sidebar_item_dashboard',
       },
       {
-        label: intl.translate('nodes'),
+        label: intl.formatMessage({ id: 'nodes' }),
         icon: <i className="fas fa-server" />,
         onClick: () => {
           history.push('/nodes');
@@ -90,7 +96,7 @@ const Layout = () => {
         'data-cy': 'sidebar_item_nodes',
       },
       {
-        label: intl.translate('volumes'),
+        label: intl.formatMessage({ id: 'volumes' }),
         icon: <i className="fas fa-database" />,
         onClick: () => {
           history.push('/volumes');
@@ -114,59 +120,52 @@ const Layout = () => {
   }
 
   return (
-        <CoreUILayout
-          sidebar={isUserLoaded && !isAlertsPage ? sidebarConfig : undefined}
-        >
-          <AlertProvider>
-            <Notifications
-              notifications={notifications}
-              onDismiss={removeNotification}
+    <CoreUILayout
+      sidebar={isUserLoaded && !isAlertsPage ? sidebarConfig : undefined}
+    >
+      <AlertProvider>
+        <Notifications
+          notifications={notifications}
+          onDismiss={removeNotification}
+        />
+        <Suspense fallback={<Loader size="massive" centered={true} />}>
+          <Switch>
+            <PrivateRoute
+              exact
+              path="/"
+              component={() => <Redirect to="/nodes" />}
             />
-            <Suspense fallback={<Loader size="massive" centered={true} />}>
-              <Switch>
-                <PrivateRoute
-                  exact
-                  path="/"
-                  component={() => <Redirect to="/nodes" />}
-                />
-                <PrivateRoute
-                  exact
-                  path="/nodes/create"
-                  component={NodeCreateForm}
-                />
-                <PrivateRoute
-                  path={`/nodes/:id/createVolume`}
-                  component={CreateVolume}
-                />
-                <PrivateRoute
-                  exact
-                  path="/volumes/createVolume"
-                  component={CreateVolume}
-                />
-                <PrivateRoute path="/nodes" component={NodePage} />
-                <PrivateRoute path="/volumes/:name?" component={VolumePage} />
-                <PrivateRoute exact path="/about" component={About} />
-                <PrivateRoute exact path="/alerts" component={AlertPage} />
+            <PrivateRoute
+              exact
+              path="/nodes/create"
+              component={NodeCreateForm}
+            />
+            <PrivateRoute
+              path={`/nodes/:id/createVolume`}
+              component={CreateVolume}
+            />
+            <PrivateRoute
+              exact
+              path="/volumes/createVolume"
+              component={CreateVolume}
+            />
+            <PrivateRoute path="/nodes" component={NodePage} />
+            <PrivateRoute path="/volumes/:name?" component={VolumePage} />
+            <PrivateRoute exact path="/about" component={About} />
+            <PrivateRoute exact path="/alerts" component={AlertPage} />
 
-                {api && api.flags && api.flags.includes('dashboard') && (
-                  <PrivateRoute
-                    exact
-                    path="/dashboard"
-                    component={DashboardPage}
-                  />
-                )}
-                <Route
-                  component={() => (
-                    <ErrorPage404
-                      data-cy="sc-error-page404"
-                      locale={language}
-                    />
-                  )}
-                />
-              </Switch>
-            </Suspense>
-          </AlertProvider>
-        </CoreUILayout>
+            {api && api.flags && api.flags.includes('dashboard') && (
+              <PrivateRoute exact path="/dashboard" component={DashboardPage} />
+            )}
+            <Route
+              component={() => (
+                <ErrorPage404 data-cy="sc-error-page404" locale={language} />
+              )}
+            />
+          </Switch>
+        </Suspense>
+      </AlertProvider>
+    </CoreUILayout>
   );
 };
 
