@@ -2,7 +2,7 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { LineChart, Loader, Dropdown, Button, Toggle } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import {
@@ -96,7 +96,7 @@ const NodePageMetricsTab = ({
   avgStats: MonitoringMetrics,
 }) => {
   const dispatch = useDispatch();
-  const theme = useTypedSelector((state) => state.config.theme);
+  const theme = useTheme();
   const history = useHistory();
   const query = useURLQuery();
   const intl = useIntl();
@@ -564,7 +564,7 @@ const NodePageMetricsTab = ({
               lineConfig={lineConfig}
               strokeDashEncodingConfig={showAvg && strokeDashConfig}
               opacityEncodingConfig={opacityConfig}
-              tooltipTheme={'dark'}
+              tooltipTheme={'custom'}
             />
           )}
         </GraphWrapper>
@@ -587,7 +587,7 @@ const NodePageMetricsTab = ({
               lineConfig={lineConfig}
               strokeDashEncodingConfig={showAvg && strokeDashConfig}
               opacityEncodingConfig={opacityConfig}
-              tooltipTheme={'dark'}
+              tooltipTheme={'custom'}
             />
           )}
         </GraphWrapper>
@@ -611,7 +611,7 @@ const NodePageMetricsTab = ({
               lineConfig={lineConfig}
               strokeDashEncodingConfig={showAvg && strokeDashConfig}
               opacityEncodingConfig={opacityConfig}
-              tooltipTheme={'dark'}
+              tooltipTheme={'custom'}
             />
           )}
         </GraphWrapper>
@@ -634,7 +634,7 @@ const NodePageMetricsTab = ({
               lineConfig={lineConfig}
               strokeDashEncodingConfig={showAvg && strokeDashConfig}
               opacityEncodingConfig={opacityConfig}
-              tooltipTheme={'dark'}
+              tooltipTheme={'custom'}
             />
           )}
         </GraphWrapper>
@@ -661,7 +661,7 @@ const NodePageMetricsTab = ({
               lineConfig={lineConfig}
               strokeDashEncodingConfig={showAvg && strokeDashConfig}
               opacityEncodingConfig={opacityConfig}
-              tooltipTheme={'dark'}
+              tooltipTheme={'custom'}
             />
           )}
         </GraphWrapper>
@@ -688,7 +688,7 @@ const NodePageMetricsTab = ({
               lineConfig={lineConfig}
               strokeDashEncodingConfig={showAvg && strokeDashConfig}
               opacityEncodingConfig={opacityConfig}
-              tooltipTheme={'dark'}
+              tooltipTheme={'custom'}
             />
           )}
         </GraphWrapper>

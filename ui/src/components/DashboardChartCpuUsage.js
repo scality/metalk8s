@@ -46,7 +46,7 @@ const DashboardChartCpuUsage = (props: DashboardChartProps) => {
         lineConfig={props.lineConfig}
         tooltip={true}
         tooltipConfig={props.perNodeTooltip}
-        tooltipTheme={'dark'}
+        tooltipTheme={'custom'}
       />
     </GraphWrapper>
   );

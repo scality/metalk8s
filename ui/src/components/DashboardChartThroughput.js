@@ -92,7 +92,7 @@ const DashboardChartThroughput = (props: DashboardChartProps) => {
         lineConfig={props.lineConfig}
         tooltip={true}
         tooltipConfig={tooltipConfig}
-        tooltipTheme={'dark'}
+        tooltipTheme={'custom'}
       />
     </GraphWrapper>
   );
