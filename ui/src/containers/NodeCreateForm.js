@@ -12,7 +12,7 @@ import {
   clearCreateNodeErrorAction,
   fetchClusterVersionAction,
 } from '../ducks/app/nodes';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 import {
   TitlePage,
   CenteredPageContainer,
@@ -134,7 +134,7 @@ const NodeCreateForm = () => {
   const dispatch = useDispatch();
   const createNode = (body) => dispatch(createNodeAction(body));
   const history = useHistory();
-
+  const intl = useIntl();
   useEffect(() => {
     dispatch(fetchClusterVersionAction());
     return () => {
@@ -178,16 +178,16 @@ const NodeCreateForm = () => {
                 <Form>
                   <FormSection>
                     <RequiredText>
-                      {intl.translate('required_fields')}
+                      {intl.formatMessage({ id: 'required_fields' })}
                     </RequiredText>
                   </FormSection>
                   <FormSection>
                     <FormSectionTitle>
-                      {intl.translate('new_node_data')}
+                      {intl.formatMessage({ id: 'new_node_data' })}
                     </FormSectionTitle>
                     <Input
                       name="name"
-                      label={`${intl.translate('name')}*`}
+                      label={`${intl.formatMessage({ id: 'name' })}*`}
                       value={values.name}
                       onChange={handleChange('name')}
                       error={touched.name && errors.name}
@@ -195,18 +195,18 @@ const NodeCreateForm = () => {
                     />
                     <InputContainer className="sc-input">
                       <InputLabel className="sc-input-label">
-                        {intl.translate('metalk8s_version')}
+                        {intl.formatMessage({ id: 'metalk8s_version' })}
                       </InputLabel>
                       <InputValue>{clusterVersion}</InputValue>
                     </InputContainer>
                     <InputContainer className="sc-input">
                       <InputLabel className="sc-input-label">
-                        {intl.translate('roles')}
+                        {intl.formatMessage({ id: 'roles' })}
                       </InputLabel>
                       <CheckboxGroup>
                         <Checkbox
                           name="workload_plane"
-                          label={intl.translate('workload_plane')}
+                          label={intl.formatMessage({ id: 'workload_plane' })}
                           checked={values.workload_plane}
                           value={values.workload_plane}
                           onChange={handleChange('workload_plane')}
@@ -214,7 +214,7 @@ const NodeCreateForm = () => {
                         />
                         <Checkbox
                           name="control_plane"
-                          label={intl.translate('control_plane')}
+                          label={intl.formatMessage({ id: 'control_plane' })}
                           checked={values.control_plane}
                           value={values.control_plane}
                           onChange={handleChange('control_plane')}
@@ -222,7 +222,7 @@ const NodeCreateForm = () => {
                         />
                         <Checkbox
                           name="infra"
-                          label={intl.translate('infra')}
+                          label={intl.formatMessage({ id: 'infra' })}
                           checked={values.infra}
                           value={values.infra}
                           onChange={handleChange('infra')}
@@ -238,7 +238,7 @@ const NodeCreateForm = () => {
                             )
                           }
                         >
-                          {intl.translate('role_values_error')}
+                          {intl.formatMessage({ id: 'role_values_error' })}
                         </ErrorMessage>
                       </CheckboxGroup>
                     </InputContainer>
@@ -246,11 +246,11 @@ const NodeCreateForm = () => {
 
                   <FormSection>
                     <FormSectionTitle>
-                      {intl.translate('new_node_access')}
+                      {intl.formatMessage({ id: 'new_node_access' })}
                     </FormSectionTitle>
                     <Input
                       name="ssh_user"
-                      label={`${intl.translate('ssh_user')}*`}
+                      label={`${intl.formatMessage({ id: 'ssh_user' })}*`}
                       value={values.ssh_user}
                       onChange={handleChange('ssh_user')}
                       error={touched.ssh_user && errors.ssh_user}
@@ -258,7 +258,7 @@ const NodeCreateForm = () => {
                     />
                     <Input
                       name="hostName_ip"
-                      label={`${intl.translate('hostName_ip')}*`}
+                      label={`${intl.formatMessage({ id: 'hostName_ip' })}*`}
                       value={values.hostName_ip}
                       onChange={handleChange('hostName_ip')}
                       error={touched.hostName_ip && errors.hostName_ip}
@@ -266,7 +266,7 @@ const NodeCreateForm = () => {
                     />
                     <Input
                       name="ssh_port"
-                      label={`${intl.translate('ssh_port')}*`}
+                      label={`${intl.formatMessage({ id: 'ssh_port' })}*`}
                       value={values.ssh_port}
                       onChange={handleChange('ssh_port')}
                       error={touched.ssh_port && errors.ssh_port}
@@ -274,7 +274,7 @@ const NodeCreateForm = () => {
                     />
                     <Input
                       name="ssh_key_path"
-                      label={`${intl.translate('ssh_key_path')}*`}
+                      label={`${intl.formatMessage({ id: 'ssh_key_path' })}*`}
                       value={values.ssh_key_path}
                       onChange={handleChange('ssh_key_path')}
                       error={touched.ssh_key_path && errors.ssh_key_path}
@@ -283,7 +283,7 @@ const NodeCreateForm = () => {
 
                     <InputContainer className="sc-input">
                       <InputLabel className="sc-input-label">
-                        {intl.translate('sudo_required')}
+                        {intl.formatMessage({ id: 'sudo_required' })}
                       </InputLabel>
                       <Toggle
                         name="sudo_required"
@@ -298,13 +298,13 @@ const NodeCreateForm = () => {
                     <div>
                       <div>
                         <Button
-                          text={intl.translate('cancel')}
+                          text={intl.formatMessage({ id: 'cancel' })}
                           type="button"
                           outlined
                           onClick={() => history.goBack()}
                         />
                         <Button
-                          text={intl.translate('create')}
+                          text={intl.formatMessage({ id: 'create' })}
                           variant={'buttonPrimary'}
                           type="submit"
                           disabled={

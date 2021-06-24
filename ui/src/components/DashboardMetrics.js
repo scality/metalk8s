@@ -4,7 +4,7 @@ import { useQuery } from 'react-query';
 import { Button } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { lighten, darken } from 'polished';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 
 import { fetchConfig } from '../services/api';
 import {
@@ -95,7 +95,7 @@ const DashboardMetrics = () => {
   const theme = useTypedSelector((state) => state.config.theme);
   const nodeAddresses = useNodeAddressesSelector(useNodes());
   const [metricsTimeSpan] = useMetricsTimeSpan();
-
+  const intl = useIntl();
   // Get dynamic chart size for 1 column, 4 rows
   const [graphWidth, graphHeight] = useDynamicChartSize(
     'dashboard-metrics-container',
@@ -162,10 +162,10 @@ const DashboardMetrics = () => {
   return (
     <MetricsContainer id="dashboard-metrics-container">
       <PanelActions>
-        <PageSubtitle>{intl.translate('metrics')}</PageSubtitle>
+        <PageSubtitle>{intl.formatMessage({ id: 'metrics' })}</PageSubtitle>
         {configQuery.isSuccess && configQuery.data.url_grafana && (
           <Button
-            text={intl.translate('advanced_metrics')}
+            text={intl.formatMessage({ id: 'advanced_metrics' })}
             variant={'buttonSecondary'}
             icon={<i className="fas fa-external-link-alt" />}
             size={'small'}

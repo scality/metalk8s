@@ -27,7 +27,7 @@ import {
   SAMPLE_FREQUENCY_LAST_ONE_HOUR,
   queryTimeSpansCodes,
 } from '../constants';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 import {
   VolumeTab,
   MetricsActionContainer,
@@ -64,6 +64,7 @@ const MetricsTab = (props) => {
   } = props;
   const dispatch = useDispatch();
   const history = useHistory();
+  const intl = useIntl();
   const query = new URLSearchParams(history?.location?.search);
   const theme = useSelector((state) => state.config.theme);
   const metricsTimeSpan = useSelector(
@@ -313,7 +314,7 @@ const MetricsTab = (props) => {
         <MetricsActionContainer>
           {config.api?.url_grafana && volumeNamespace && volumePVCName && (
             <Button
-              text={intl.translate('advanced_metrics')}
+              text={intl.formatMessage({ id: 'advanced_metrics' })}
               variant={'buttonSecondary'}
               onClick={() => {}}
               icon={<i className="fas fa-external-link-alt" />}
@@ -411,7 +412,9 @@ const MetricsTab = (props) => {
             </RowGraphContainer>
           </GraphsContainer>
         ) : (
-          <NoMetricsText>{intl.translate('volume_is_not_bound')}</NoMetricsText>
+          <NoMetricsText>
+            {intl.formatMessage({ id: 'volume_is_not_bound' })}
+          </NoMetricsText>
         )}
       </MetricGraphCardContainer>
     </VolumeTab>

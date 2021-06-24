@@ -14,7 +14,7 @@ import {
   EmptyTable,
   ConstrainedText,
 } from '@scality/core-ui';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 import {
   VOLUME_CONDITION_LINK,
   VOLUME_CONDITION_UNLINK,
@@ -106,6 +106,7 @@ const TableRowStyle = styled.div``;
 
 const TableRow = (props) => {
   const { row, style, onClickRow, isSelected } = props;
+  const intl = useIntl();
   return (
     <TableRowStyle
       {...row.getRowProps({
@@ -135,7 +136,9 @@ const TableRow = (props) => {
               <Tooltip
                 placement={cell.row.index === 0 ? 'bottom' : 'top'}
                 overlay={
-                  <TooltipContent>{intl.translate('unknown')}</TooltipContent>
+                  <TooltipContent>
+                    {intl.formatMessage({ id: 'unknown' })}
+                  </TooltipContent>
                 }
               >
                 <UnknownIcon className="fas fa-minus"></UnknownIcon>
@@ -156,7 +159,7 @@ const TableRow = (props) => {
 
 function Table({ columns, data, nodeName, volumeName, theme }) {
   const history = useHistory();
-
+  const intl = useIntl();
   const sortTypes = React.useMemo(() => {
     return {
       health: (row1, row2) =>
@@ -235,7 +238,7 @@ function Table({ columns, data, nodeName, volumeName, theme }) {
                 <CreateVolumeButton
                   size="small"
                   variant={'buttonSecondary'}
-                  text={intl.translate('create_new_volume')}
+                  text={intl.formatMessage({ id: 'create_new_volume' })}
                   icon={<i className="fas fa-plus"></i>}
                   onClick={() => {
                     // depends on if we add node filter
@@ -292,7 +295,7 @@ function Table({ columns, data, nodeName, volumeName, theme }) {
         <Body {...getTableBodyProps()}>
           {data.length === 0 ? (
             <EmptyTable useDiv={true}>
-              {intl.translate('no_volume_found')}
+              {intl.formatMessage({ id: 'no_volume_found' })}
             </EmptyTable>
           ) : null}
           {/* <AutoSizer> is a <div/> so it breaks the table layout, 
@@ -319,7 +322,7 @@ const VolumeListTable = (props) => {
   const { nodeName, volumeListData, volumeName } = props;
   const history = useHistory();
   const theme = useSelector((state) => state.config.theme);
-
+  const intl = useIntl();
   const columns = React.useMemo(() => {
     const onClickCell = (name) => {
       history.push(`/volumes/${name}/overview?node=${nodeName}`);
@@ -442,7 +445,9 @@ const VolumeListTable = (props) => {
                 <Tooltip
                   placement={cellProps.row.index === 0 ? 'bottom' : 'top'}
                   overlay={
-                    <TooltipContent>{intl.translate('unknown')}</TooltipContent>
+                    <TooltipContent>
+                      {intl.formatMessage({ id: 'unknown' })}
+                    </TooltipContent>
                   }
                 >
                   <UnknownIcon

@@ -25,7 +25,7 @@ import {
   RightSidePanel,
   TabsItemsStyle,
 } from '../components/style/CommonLayoutStyle';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 import { usePrevious } from '../services/utils';
 
 const VolumePageContentContainer = styled.div`
@@ -58,7 +58,7 @@ const VolumePageContent = (props) => {
   const query = new URLSearchParams(location.search);
   const [isFirstLoadingDone, setIsFirstLoadingDone] = useState(false);
   const previousLoading = usePrevious(loading);
-
+  const intl = useIntl();
   const theme = useTheme();
   const currentVolumeName = match.params.name;
 
@@ -165,7 +165,7 @@ const VolumePageContent = (props) => {
   const tabsItems = [
     {
       selected: isOverviewPage,
-      title: intl.translate('overview'),
+      title: intl.formatMessage({ id: 'overview' }),
       onClick: () =>
         history.push(
           `${match.url}/overview${query.toString() && `?${query.toString()}`}`,
@@ -176,7 +176,7 @@ const VolumePageContent = (props) => {
       selected: isAlertsPage,
       title: (
         <span>
-          {intl.translate('alerts')}
+          {intl.formatMessage({ id: 'alerts' })}
           {alertlist && alertlist.length ? (
             <TextBadge variant={'infoPrimary'}>{alertlist.length}</TextBadge>
           ) : null}
@@ -190,7 +190,7 @@ const VolumePageContent = (props) => {
     },
     {
       selected: isMetricsPage,
-      title: <span>{intl.translate('metrics')}</span>,
+      title: <span>{intl.formatMessage({ id: 'metrics' })}</span>,
       onClick: () =>
         history.push(
           `${match.url}/metrics${query.toString() && `?${query.toString()}`}`,
@@ -199,7 +199,7 @@ const VolumePageContent = (props) => {
     },
     {
       selected: isDetailsPage,
-      title: <span>{intl.translate('details')}</span>,
+      title: <span>{intl.formatMessage({ id: 'details' })}</span>,
       onClick: () =>
         history.push(
           `${match.url}/details${query.toString() && `?${query.toString()}`}`,
@@ -241,10 +241,7 @@ const VolumePageContent = (props) => {
           {currentVolumeName && volume ? (
             <RightSidePanel>
               <TabsItemsStyle>
-                <Tabs
-                  activeTabColor={theme.backgroundLevel4}
-                  items={tabsItems}
-                >
+                <Tabs activeTabColor={theme.backgroundLevel4} items={tabsItems}>
                   <Switch>
                     <Route
                       path={`${match.url}/overview`}
@@ -254,9 +251,12 @@ const VolumePageContent = (props) => {
                           nodeName={volume?.spec?.nodeName}
                           storage={
                             pV?.spec?.capacity?.storage ??
-                            intl.translate('unknown')
+                            intl.formatMessage({ id: 'unknown' })
                           }
-                          status={volumeStatus ?? intl.translate('unknown')}
+                          status={
+                            volumeStatus ??
+                            intl.formatMessage({ id: 'unknown' })
+                          }
                           storageClassName={volume?.spec?.storageClassName}
                           creationTimestamp={
                             volume?.metadata?.creationTimestamp
@@ -277,15 +277,17 @@ const VolumePageContent = (props) => {
                               : SPARSE_LOOP_DEVICE
                           }
                           usedPodName={
-                            UsedPod ? UsedPod?.name : intl.translate('not_used')
+                            UsedPod
+                              ? UsedPod?.name
+                              : intl.formatMessage({ id: 'not_used' })
                           }
                           devicePath={
                             volume?.spec?.rawBlockDevice?.devicePath ??
-                            intl.translate('not_applicable')
+                            intl.formatMessage({ id: 'not_applicable' })
                           }
                           vgName={
                             volume?.spec?.lvmLogicalVolume?.vgName ??
-                            intl.translate('not_applicable')
+                            intl.formatMessage({ id: 'not_applicable' })
                           }
                           volumeUsagePercentage={currentVolume?.usage}
                           volumeUsageBytes={currentVolume?.usageRawData ?? 0}
@@ -345,8 +347,10 @@ const VolumePageContent = (props) => {
             <NoInstanceSelectedContainer>
               <NoInstanceSelected>
                 {currentVolumeName
-                  ? `Volume ${currentVolumeName} ${intl.translate('not_found')}`
-                  : intl.translate('no_volume_selected')}
+                  ? `Volume ${currentVolumeName} ${intl.formatMessage({
+                      id: 'not_found',
+                    })}`
+                  : intl.formatMessage({ id: 'no_volume_selected' })}
               </NoInstanceSelected>
             </NoInstanceSelectedContainer>
           )}

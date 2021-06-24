@@ -14,7 +14,7 @@ import { useURLQuery } from '../services/utils';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
 import { Button, EmptyTable } from '@scality/core-ui';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 import { compareHealth, useTableSortURLSync } from '../services/utils';
 import {
   API_STATUS_READY,
@@ -175,6 +175,7 @@ function GlobalFilter({
   const [value, setValue] = React.useState(globalFilter);
   const history = useHistory();
   const location = useLocation();
+  const intl = useIntl();
   const onChange = useAsyncDebounce((value) => {
     setGlobalFilter(value || undefined);
 
@@ -204,7 +205,7 @@ function GlobalFilter({
       <CreateNodeButton
         size="base"
         variant="buttonPrimary"
-        text={intl.translate('create_new_node')}
+        text={intl.formatMessage({ id: 'create_new_node' })}
         icon={<i className="fas fa-plus"></i>}
         onClick={() => {
           history.push('/nodes/create');
@@ -220,7 +221,7 @@ function Table({ columns, data, rowClicked, selectedNodeName }) {
   const querySearch = query.get('search');
   const querySort = query.get('sort');
   const queryDesc = query.get('desc');
-
+  const intl = useIntl();
   // Use the state and functions returned from useTable to build your UI
   const defaultColumn = React.useMemo(
     () => ({
@@ -350,7 +351,9 @@ function Table({ columns, data, rowClicked, selectedNodeName }) {
         </thead>
         <Body {...getTableBodyProps()}>
           {rows.length === 0 ? (
-            <EmptyTable>{intl.translate('no_node_found')}</EmptyTable>
+            <EmptyTable>
+              {intl.formatMessage({ id: 'no_node_found' })}
+            </EmptyTable>
           ) : null}
           {rows.map((row, i) => {
             prepareRow(row);
@@ -382,10 +385,12 @@ function Table({ columns, data, rowClicked, selectedNodeName }) {
                         </IPs>
                       </Cell>
                     );
-                  } else if (cell.value === intl.translate('unknown')) {
+                  } else if (
+                    cell.value === intl.formatMessage({ id: 'unknown' })
+                  ) {
                     return (
                       <Cell {...cellProps}>
-                        <div>{intl.translate('unknown')}</div>
+                        <div>{intl.formatMessage({ id: 'unknown' })}</div>
                       </Cell>
                     );
                   } else {
@@ -406,7 +411,7 @@ const NodeListTable = (props) => {
   const history = useHistory();
   const location = useLocation();
   const query = useURLQuery();
-
+  const intl = useIntl();
   const { path } = useRouteMatch();
 
   const selectedNodeName =
@@ -441,7 +446,7 @@ const NodeListTable = (props) => {
           return computedStatus.map((status) => {
             return (
               <StatusText key={status} textColor={statusTextColor}>
-                {intl.translate(`${status}`)}
+                {intl.formatMessage({ id: `${status}` })}
               </StatusText>
             );
           });

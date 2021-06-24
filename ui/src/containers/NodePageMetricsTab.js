@@ -39,7 +39,7 @@ import {
   queryTimeSpansCodes,
   PORT_NODE_EXPORTER,
 } from '../constants';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 import { useTypedSelector } from '../hooks';
 
 const GraphGrid = styled.div`
@@ -99,6 +99,7 @@ const NodePageMetricsTab = ({
   const theme = useTypedSelector((state) => state.config.theme);
   const history = useHistory();
   const query = useURLQuery();
+  const intl = useIntl();
   const api = useTypedSelector((state) => state.config.api);
   const metricsTimeSpan = useTypedSelector(
     (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
@@ -286,36 +287,38 @@ const NodePageMetricsTab = ({
       format: '.2f',
     },
   ];
+
+  const clusterAvgLocale = intl.formatMessage({ id: 'cluster_avg' });
   if (showAvg) {
     ttpCPUSpec.push({
       field: 'cluster avg',
       type: 'quantitative',
-      title: `CPU Usage - ${intl.translate('cluster_avg')}`,
+      title: `CPU Usage - ${clusterAvgLocale}`,
       format: '.1f',
     });
     ttpSystemLoadSpec.push({
       field: 'cluster avg',
       type: 'quantitative',
-      title: `System Load - ${intl.translate('cluster_avg')}`,
+      title: `System Load - ${clusterAvgLocale}`,
       format: '.1f',
     });
     ttpMemorySpec.push({
       field: 'cluster avg',
       type: 'quantitative',
-      title: `Memory - ${intl.translate('cluster_avg')}`,
+      title: `Memory - ${clusterAvgLocale}`,
       format: '.1f',
     });
     ttpIOPSSpec.push(
       {
         field: 'read avg',
         type: 'quantitative',
-        title: `Read - ${intl.translate('cluster_avg')}`,
+        title: `Read - ${clusterAvgLocale}`,
         format: '.1f',
       },
       {
         field: 'write avg',
         type: 'quantitative',
-        title: `Write - ${intl.translate('cluster_avg')}`,
+        title: `Write - ${clusterAvgLocale}`,
         format: '.1f',
       },
     );
@@ -323,13 +326,13 @@ const NodePageMetricsTab = ({
       {
         field: 'in avg',
         type: 'quantitative',
-        title: `In - ${intl.translate('cluster_avg')}`,
+        title: `In - ${clusterAvgLocale}`,
         format: '.2f',
       },
       {
         field: 'out avg',
         type: 'quantitative',
-        title: `Out - ${intl.translate('cluster_avg')}`,
+        title: `Out - ${clusterAvgLocale}`,
         format: '.2f',
       },
     );
@@ -364,7 +367,7 @@ const NodePageMetricsTab = ({
       direction: 'horizontal',
       orient: 'bottom',
       title: null,
-      values: [`${intl.translate('cluster_avg')}.`],
+      values: [`${clusterAvgLocale}.`],
       symbolSize: 300,
       labelFontSize: 12,
     },
@@ -508,7 +511,7 @@ const NodePageMetricsTab = ({
         <MetricsToggleWrapper>
           <Toggle
             name="showAvg"
-            label={intl.translate('show_cluster_avg')}
+            label={intl.formatMessage({ id: 'show_cluster_avg' })}
             toggle={showAvg}
             value={showAvg}
             onChange={(e: SyntheticEvent<HTMLInputElement>) => {
@@ -524,7 +527,7 @@ const NodePageMetricsTab = ({
         </MetricsToggleWrapper>
         {api && api.url_grafana && (
           <Button
-            text={intl.translate('advanced_metrics')}
+            text={intl.formatMessage({ id: 'advanced_metrics' })}
             variant={'buttonSecondary'}
             icon={<i className="fas fa-external-link-alt" />}
             size={'small'}

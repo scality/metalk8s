@@ -9,7 +9,7 @@ import {
 import ActiveAlertsFilters from './ActiveAlertsFilters';
 import { Chips, EmptyTable } from '@scality/core-ui';
 import { useTable } from 'react-table';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 import { VolumeTab } from './style/CommonLayoutStyle';
 import { formatDateToMid1 } from '../services/utils';
 
@@ -96,7 +96,7 @@ const Body = styled.tbody`
 const ActiveAlertsCard = (props) => {
   const { alertlist, PVCName } = props;
   const location = useLocation();
-
+  const intl = useIntl();
   const query = new URLSearchParams(location.search);
   const selectedFilter = query.get('severity');
 
@@ -147,10 +147,14 @@ const ActiveAlertsCard = (props) => {
 
         <Body {...getTableBodyProps()}>
           {!PVCName && (
-            <EmptyTable> {intl.translate('volume_is_not_bound')}</EmptyTable>
+            <EmptyTable>
+              {intl.formatMessage({ id: 'volume_is_not_bound' })}
+            </EmptyTable>
           )}
           {PVCName && data?.length === 0 && (
-            <EmptyTable>{intl.translate('no_active_alerts')}</EmptyTable>
+            <EmptyTable>
+              {intl.formatMessage({ id: 'no_active_alerts' })}
+            </EmptyTable>
           )}
           {rows?.map((row, i) => {
             prepareRow(row);
@@ -227,7 +231,7 @@ const ActiveAlertsCard = (props) => {
     <VolumeAlertTab>
       <ActiveAlertsCardContainer>
         <ActiveAlertsTitle>
-          <div>{intl.translate('active_alerts')}</div>
+          <div>{intl.formatMessage({ id: 'active_alerts' })}</div>
           {PVCName && activeAlertListData?.length !== 0 && (
             <ActiveAlertsFilters />
           )}

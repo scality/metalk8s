@@ -37,7 +37,7 @@ import {
   PORT_NODE_EXPORTER,
 } from '../constants';
 import { useAlerts } from './AlertProvider';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 import { useTypedSelector } from '../hooks';
 
 // <NodePageRSP> fetches the data for all the tabs given the current selected Node
@@ -47,7 +47,7 @@ const NodePageRSP = (props) => {
   const history = useHistory();
   const location = useLocation();
   const dispatch = useDispatch();
-
+  const intl = useIntl();
   const { path, url } = useRouteMatch();
   const { name } = useParams();
   const theme = useTheme();
@@ -150,7 +150,7 @@ const NodePageRSP = (props) => {
       selected: isAlertsTabActive,
       title: (
         <span>
-          {intl.translate('alerts')}
+          {intl.formatMessage({ id: 'alerts' })}
           {alertsNode && alertsNode.length ? (
             <TextBadge variant={'infoPrimary'}>{alertsNode.length}</TextBadge>
           ) : null}
@@ -169,14 +169,14 @@ const NodePageRSP = (props) => {
     },
     {
       selected: isVolumesTabActive,
-      title: intl.translate('volumes'),
+      title: intl.formatMessage({ id: 'volumes' }),
       onClick: () =>
         history.push(`${url}/volumes${queryString && `?${queryString}`}`),
       'data-cy': 'volumes_tab_node_page',
     },
     {
       selected: isPodsTabActive,
-      title: intl.translate('pods'),
+      title: intl.formatMessage({ id: 'pods' }),
       onClick: () =>
         history.push(`${url}/pods${queryString && `?${queryString}`}`),
       'data-cy': 'pods_tab_node_page',
@@ -190,7 +190,7 @@ const NodePageRSP = (props) => {
     },
     {
       selected: isDetailsTabActive,
-      title: intl.translate('details'),
+      title: intl.formatMessage({ id: 'details' }),
       onClick: () =>
         history.push(`${url}/details${queryString && `?${queryString}`}`),
       'data-cy': 'details_tab_node_page',
@@ -257,8 +257,8 @@ const NodePageRSP = (props) => {
   ) : (
     <NoInstanceSelected>
       {name
-        ? `Node ${name} ${intl.translate('not_found')}`
-        : intl.translate('no_node_selected')}
+        ? `Node ${name} ${intl.formatMessage({ id: 'not_found' })}`
+        : intl.formatMessage({ id: 'no_node_selected' })}
     </NoInstanceSelected>
   );
 };

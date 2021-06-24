@@ -3,7 +3,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { Button } from '@scality/core-ui';
 import { NodeTab } from './style/CommonLayoutStyle';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import NodePartitionTable from './NodePartitionTable';
 import { PORT_NODE_EXPORTER } from '../constants';
@@ -20,7 +20,7 @@ const TitleContainer = styled.div`
 
 const NodePagePartitionTab = (props: Object) => {
   const { instanceIP } = props;
-
+  const intl = useIntl();
   // To redirect to the right Node(Detailed) dashboard in Grafana
   const api = useTypedSelector((state) => state.config.api);
   const unameInfos = useTypedSelector(
@@ -36,7 +36,7 @@ const NodePagePartitionTab = (props: Object) => {
       <TitleContainer>
         {api && api.url_grafana && (
           <Button
-            text={intl.translate('advanced_metrics')}
+            text={intl.formatMessage({ id: 'advanced_metrics' })}
             variant={'buttonSecondary'}
             onClick={() => {}}
             icon={<i className="fas fa-external-link-alt" />}

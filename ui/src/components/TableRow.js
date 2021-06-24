@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { Tooltip, ConstrainedText } from '@scality/core-ui';
 import { fontWeight, padding } from '@scality/core-ui/dist/style/theme';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 
 const TableRowStyle = styled.div`
   &:hover,
@@ -43,7 +43,7 @@ export const UnknownIcon = styled.i`
 
 const TableRow = (props) => {
   const { row, style, onClickRow, isSelected } = props;
-
+  const intl = useIntl();
   return (
     <TableRowStyle
       {...row.getRowProps({
@@ -82,7 +82,9 @@ const TableRow = (props) => {
               <Tooltip
                 placement={cell.row.index === 0 ? 'bottom' : 'top'}
                 overlay={
-                  <TooltipContent>{intl.translate('unknown')}</TooltipContent>
+                  <TooltipContent>
+                    {intl.formatMessage({ id: 'unknown' })}
+                  </TooltipContent>
                 }
               >
                 <UnknownIcon className="fas fa-minus"></UnknownIcon>

@@ -19,7 +19,7 @@ import {
   NODE_FILESYSTEM_ALMOST_OUTOF_FILES,
   PORT_NODE_EXPORTER,
 } from '../constants';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 
 const HeadRow = styled.tr`
   width: 100%;
@@ -101,6 +101,7 @@ const LoaderContainer = styled.div`
 
 const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
   const theme = useTheme();
+  const intl = useIntl();
   const alertList = useAlerts({
     alertname: [
       NODE_FILESYSTEM_SPACE_FILLINGUP,
@@ -176,7 +177,9 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
         </thead>
         <Body {...getTableBodyProps()}>
           {status === 'success' && partitions.length === 0 && (
-            <EmptyTable>{intl.translate('no_system_partition')}</EmptyTable>
+            <EmptyTable>
+              {intl.formatMessage({ id: 'no_system_partition' })}
+            </EmptyTable>
           )}
           {status === 'loading' && (
             <HeadRow
@@ -212,7 +215,7 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
                   textAlign: 'center',
                 }}
               >
-                {intl.translate('error_system_partitions')}
+                {intl.formatMessage({ id: 'error_system_partitions' })}
               </td>
             </HeadRow>
           )}
