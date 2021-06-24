@@ -139,7 +139,7 @@ spec:
         resources:
           requests:
             cpu: 100m
-            memory: 100Mi
+            memory: 200Mi
         volumeMounts:
         - mountPath: /fluent-bit/etc/fluent-bit.conf
           name: config

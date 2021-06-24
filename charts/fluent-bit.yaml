@@ -12,7 +12,7 @@ podAnnotations:
 resources:
   requests:
     cpu: 100m
-    memory: 100Mi
+    memory: 200Mi
 
 tolerations:
 - key: node-role.kubernetes.io/bootstrap
