@@ -8,12 +8,13 @@ import { apiConfigSelector } from './config';
 import { connectSaltApiAction } from './app/salt';
 import { User } from 'oidc-client';
 import { addNotificationErrorAction } from './app/notifications';
-import { intl } from '../translations/IntlGlobalProvider';
 
 // Actions
 const AUTHENTICATE_SALT_API = 'AUTHENTICATE_SALT_API';
 export const SALT_AUTHENTICATION_SUCCESS = 'SALT_AUTHENTICATION_SUCCESS';
 export const SALT_AUTHENTICATION_FAILED = 'SALT_AUTHENTICATION_FAILED';
+//Selecter
+const intlSelector = (state: RootState) => state.config.intl;
 
 // Reducer
 const defaultState = {
@@ -58,6 +59,8 @@ export function* authenticateSaltApi(): Generator<Effect, void, any> {
     ApiSalt.authenticate,
     user,
   );
+  const intl = yield select(intlSelector);
+
   if (api && result && !result.error) {
     yield call(ApiSalt.getClient().setHeaders, {
       'X-Auth-Token': result.return[0].token,
@@ -70,7 +73,12 @@ export function* authenticateSaltApi(): Generator<Effect, void, any> {
       }),
     );
   } else {
-    yield put(addNotificationErrorAction({title: intl.translate('salt_login_error_title'), message: intl.translate('salt_login_error_message')}))
+    yield put(
+      addNotificationErrorAction({
+        title: intl.formatMessage({ id: 'salt_login_error_title' }),
+        message: intl.formatMessage({ id: 'salt_login_error_message' }),
+      }),
+    );
   }
 }
 

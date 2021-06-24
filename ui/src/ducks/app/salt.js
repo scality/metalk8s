@@ -10,6 +10,7 @@ import {
   takeLeading,
 } from 'redux-saga/effects';
 import { eventChannel, END } from 'redux-saga';
+import type { RootState } from '../reducer';
 import * as ApiSalt from '../../services/salt/api';
 import {
   getJobStatusFromEventRet,
@@ -20,7 +21,6 @@ import {
   markJobCompleteInLocalStorage,
 } from '../../services/salt/utils';
 import { addNotificationErrorAction } from './notifications';
-import { intl } from '../../translations/IntlGlobalProvider';
 
 // Actions
 export const ADD_JOB = 'ADD_JOB';
@@ -131,7 +131,8 @@ export function setJobStatusAction(jid, status) {
 }
 
 // Selectors
-export const allJobsSelector = (state) => state.app.salt.jobs;
+export const allJobsSelector = (state: RootState) => state.app.salt.jobs;
+const intlSelector = (state: RootState) => state.config.intl;
 
 // Sagas
 export function* initialize(payload) {
@@ -175,10 +176,11 @@ export function* manageLocalStorage() {
 
 export function* refreshJobStatus(job) {
   const result = yield call(ApiSalt.printJob, job.jid);
+  const intl = yield call(intlSelector);
   if (result.error) {
     yield put(
       addNotificationErrorAction({
-        title: intl.translate('salt_job'),
+        title: intl.formatMessage({ id: 'salt_job' }),
         message: JSON.stringify(result.error),
       }),
     );

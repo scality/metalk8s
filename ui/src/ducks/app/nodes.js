@@ -17,7 +17,6 @@ import {
   addNotificationSuccessAction,
   addNotificationErrorAction,
 } from './notifications';
-import { intl } from '../../translations/IntlGlobalProvider';
 import {
   addJobAction,
   JOB_COMPLETED,
@@ -259,6 +258,8 @@ export const nodesRefreshingSelector = (state) => state.app.nodes.isRefreshing;
 export const historySelector = (state) => state.history;
 export const isSaltAPIAuthenticatedSelector = (state) => state.login.salt;
 const nodeListSelector = (state) => state.app.nodes.list;
+const intlSelector = (state) => state.app.config.intl;
+
 // Sagas
 export function* fetchClusterVersion() {
   const result = yield call(CoreApi.getKubeSystemNamespace);
@@ -344,6 +345,7 @@ export function* fetchNodes() {
 
 export function* createNode({ payload }) {
   const clusterVersion = yield select(clusterVersionSelector);
+  const intl = yield select(intlSelector);
   const body = {
     metadata: {
       name: payload.name,
@@ -384,10 +386,13 @@ export function* createNode({ payload }) {
     yield call(historyState.history.push, '/nodes');
     yield put(
       addNotificationSuccessAction({
-        title: intl.translate('node_creation'),
-        message: intl.translate('node_creation_success', {
-          name: payload.name,
-        }),
+        title: intl.formatMessage({ id: 'node_creation' }),
+        message: intl.formatMessage(
+          { id: 'node_creation_success' },
+          {
+            name: payload.name,
+          },
+        ),
       }),
     );
   } else {
@@ -397,8 +402,13 @@ export function* createNode({ payload }) {
     });
     yield put(
       addNotificationErrorAction({
-        title: intl.translate('node_creation'),
-        message: intl.translate('node_creation_failed', { name: payload.name }),
+        title: intl.formatMessage({ id: 'node_creation' }),
+        message: intl.formatMessage(
+          { id: 'node_creation_failed' },
+          {
+            name: payload.name,
+          },
+        ),
       }),
     );
   }
@@ -408,11 +418,12 @@ export function* deployNode({ payload }) {
   const clusterVersion = yield select(
     (state) => state.app.nodes.clusterVersion,
   );
+  const intl = yield select(intlSelector);
   const result = yield call(ApiSalt.deployNode, payload.name, clusterVersion);
   if (result.error) {
     yield put(
       addNotificationErrorAction({
-        title: intl.translate('node_deployment'),
+        title: intl.formatMessage({ id: 'node_deployment' }),
         message: result.error,
       }),
     );
@@ -430,26 +441,33 @@ export function* deployNode({ payload }) {
 
 export function* notifyDeployJobCompleted({ payload: { jid, status } }) {
   const jobs = yield select((state) => state.app.salt.jobs);
+  const intl = yield select(intlSelector);
   const job = jobs.find((job) => job.jid === jid);
   if (job?.type === 'deploy-node') {
     if (status.success) {
       yield put(
         addNotificationSuccessAction({
-          title: intl.translate('node_deployment'),
-          message: intl.translate('node_deployment_success', {
-            name: job.node,
-          }),
+          title: intl.formatMessage({ id: 'node_deployment' }),
+          message: intl.formatMessage(
+            { id: 'node_deployment_success' },
+            {
+              name: job.node,
+            },
+          ),
         }),
       );
     } else {
       yield put(
         addNotificationErrorAction({
-          title: intl.translate('node_deployment'),
-          message: intl.translate('node_deployment_failed', {
-            name: job.node,
-            step: status.step,
-            reason: status.comment,
-          }),
+          title: intl.formatMessage({ id: 'node_deployment' }),
+          message: intl.formatMessage(
+            { id: 'node_deployment_failed' },
+            {
+              name: job.node,
+              step: status.step,
+              reason: status.comment,
+            },
+          ),
         }),
       );
     }

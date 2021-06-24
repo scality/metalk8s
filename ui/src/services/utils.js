@@ -3,7 +3,6 @@ import { useDispatch } from 'react-redux';
 import { useLocation, useHistory } from 'react-router-dom';
 import { createSelector } from 'reselect';
 import sortByArray from 'lodash.sortby';
-import { intl } from '../translations/IntlGlobalProvider';
 import {
   STATUS_FAILED,
   STATUS_READY,
@@ -251,11 +250,11 @@ export function bytesToSize(bytes) {
 //  Unlink: Ready + Unbound
 //  Link: Ready + Bound
 export function computeVolumeCondition(status, isBound) {
-  if (status === STATUS_FAILED && isBound === intl.translate('no')) {
+  if (status === STATUS_FAILED && !isBound) {
     return VOLUME_CONDITION_EXCLAMATION;
-  } else if (status === STATUS_READY && isBound === intl.translate('no')) {
+  } else if (status === STATUS_READY && !isBound) {
     return VOLUME_CONDITION_UNLINK;
-  } else if (status === STATUS_READY && isBound === intl.translate('yes')) {
+  } else if (status === STATUS_READY && isBound) {
     return VOLUME_CONDITION_LINK;
   } else {
     return STATUS_UNKNOWN;
@@ -429,8 +428,8 @@ export const useDynamicChartSize = (
   columns: number = 2,
   rows: number = 3,
 ): [number, number] => {
-  const graphsContainerWidth = document.getElementById(container_id)
-    ?.offsetWidth;
+  const graphsContainerWidth =
+    document.getElementById(container_id)?.offsetWidth;
   const [graphWidth, setGraphWidth] = useState(0);
   useEffect(() => {
     if (graphsContainerWidth) {
