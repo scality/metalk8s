@@ -23,7 +23,7 @@ import {
   SearchInput,
   EmptyTable,
 } from '@scality/core-ui';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 import TableRow from './TableRow';
 import {
   VOLUME_CONDITION_LINK,
@@ -160,7 +160,7 @@ function Table({
   const querySearch = query.get('search');
   const querySort = query.get('sort');
   const queryDesc = query.get('desc');
-
+  const intl = useIntl();
   // Use the state and functions returned from useTable to build your UI
   const defaultColumn = React.useMemo(
     () => ({
@@ -262,7 +262,7 @@ function Table({
                 <CreateVolumeButton
                   size="base"
                   variant={'buttonPrimary'}
-                  text={intl.translate('create_new_volume')}
+                  text={intl.formatMessage({ id: 'create_new_volume' })}
                   icon={<i className="fas fa-plus"></i>}
                   onClick={() => {
                     // depends on if we add node filter
@@ -328,7 +328,7 @@ function Table({
         <Body {...getTableBodyProps()}>
           {data.length === 0 ? (
             <EmptyTable useDiv={true}>
-              {intl.translate('no_volume_found')}
+              {intl.formatMessage({ id: 'no_volume_found' })}
             </EmptyTable>
           ) : null}
           {/* <AutoSizer> is a <div/> so it breaks the table layout,
@@ -361,7 +361,7 @@ const VolumeListTable = (props) => {
   } = props;
   const history = useHistory();
   const location = useLocation();
-
+  const intl = useIntl();
   const theme = useSelector((state) => state.config.theme);
 
   const columns = React.useMemo(() => {
@@ -465,7 +465,9 @@ const VolumeListTable = (props) => {
                 <Tooltip
                   placement={cellProps.row.index === 0 ? 'bottom' : 'top'}
                   overlay={
-                    <TooltipContent>{intl.translate('unknown')}</TooltipContent>
+                    <TooltipContent>
+                      {intl.formatMessage({ id: 'unknown' })}
+                    </TooltipContent>
                   }
                 >
                   <UnknownIcon

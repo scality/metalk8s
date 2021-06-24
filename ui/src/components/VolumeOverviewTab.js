@@ -20,7 +20,7 @@ import {
   LVM_LOGICAL_VOLUME,
 } from '../constants';
 import { Button, Modal, ProgressBar, Loader } from '@scality/core-ui';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 import { VolumeTab } from './style/CommonLayoutStyle';
 import { formatSizeForDisplay } from '../services/utils';
 
@@ -158,6 +158,7 @@ const VolumeDetailCard = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const location = useLocation();
+  const intl = useIntl();
   const query = new URLSearchParams(location.search);
   const theme = useSelector((state) => state.config.theme);
 
@@ -222,7 +223,7 @@ const VolumeDetailCard = (props) => {
         <DeleteButton
           variant="buttonDelete"
           icon={<i className="fas fa-sm fa-trash" />}
-          text={intl.translate('delete_volume')}
+          text={intl.formatMessage({ id: 'delete_volume' })}
           onClick={(e) => {
             e.stopPropagation();
             setisDeleteConfirmationModalOpen(true);
@@ -234,32 +235,38 @@ const VolumeDetailCard = (props) => {
       <VolumeDetailCardContainer>
         <div>
           <InformationSpan>
-            <InformationLabel>{intl.translate('node')}</InformationLabel>
+            <InformationLabel>
+              {intl.formatMessage({ id: 'node' })}
+            </InformationLabel>
             <ClickableInformationValue onClick={onClickNodeName}>
               {nodeName}
             </ClickableInformationValue>
           </InformationSpan>
           <InformationSpan>
-            <InformationLabel>{intl.translate('size')}</InformationLabel>
+            <InformationLabel>
+              {intl.formatMessage({ id: 'size' })}
+            </InformationLabel>
             <InformationValue data-cy="volume_size_value">
               {formatSizeForDisplay(storage)}
             </InformationValue>
           </InformationSpan>
           <InformationSpan>
-            <InformationLabel>{intl.translate('status')}</InformationLabel>
+            <InformationLabel>
+              {intl.formatMessage({ id: 'status' })}
+            </InformationLabel>
             <InformationValue data-cy="volume_status_value">
               {status}
             </InformationValue>
           </InformationSpan>
           <InformationSpan>
             <InformationLabel>
-              {intl.translate('storageClass')}
+              {intl.formatMessage({ id: 'storageClass' })}
             </InformationLabel>
             <InformationValue>{storageClassName}</InformationValue>
           </InformationSpan>
           <InformationSpan>
             <InformationLabel>
-              {intl.translate('creationTime')}
+              {intl.formatMessage({ id: 'creationTime' })}
             </InformationLabel>
             {creationTimestamp ? (
               <InformationValue>
@@ -281,18 +288,22 @@ const VolumeDetailCard = (props) => {
             )}
           </InformationSpan>
           <InformationSpan>
-            <InformationLabel>{intl.translate('volume_type')}</InformationLabel>
+            <InformationLabel>
+              {intl.formatMessage({ id: 'volume_type' })}
+            </InformationLabel>
             <InformationValue>{volumeType}</InformationValue>
           </InformationSpan>
           <InformationSpan>
-            <InformationLabel>{intl.translate('used_by')}</InformationLabel>
+            <InformationLabel>
+              {intl.formatMessage({ id: 'used_by' })}
+            </InformationLabel>
             <InformationValue>{usedPodName}</InformationValue>
           </InformationSpan>
           <InformationSpan>
             {volumeType !== LVM_LOGICAL_VOLUME ? (
               <>
                 <InformationLabel data-cy="backend_disk_label">
-                  {intl.translate('backend_disk')}
+                  {intl.formatMessage({ id: 'backend_disk' })}
                 </InformationLabel>
                 <InformationValue data-cy="backend_disk_value">
                   {devicePath}
@@ -310,7 +321,9 @@ const VolumeDetailCard = (props) => {
             )}
           </InformationSpan>
           <InformationSpan>
-            <InformationLabel>{intl.translate('labels')}</InformationLabel>
+            <InformationLabel>
+              {intl.formatMessage({ id: 'labels' })}
+            </InformationLabel>
             <InformationValue>
               {labels?.map((label) => {
                 return (
@@ -332,7 +345,7 @@ const VolumeDetailCard = (props) => {
           {alertlist && (
             <AlertsCounterContainer>
               <VolumeSectionTitle>
-                {intl.translate('active_alerts')}
+                {intl.formatMessage({ id: 'active_alerts' })}
               </VolumeSectionTitle>
               <ActiveAlertsCounter
                 criticalCounter={
@@ -350,8 +363,11 @@ const VolumeDetailCard = (props) => {
           )}
           {condition === VOLUME_CONDITION_LINK && (
             <VolumeUsage>
-              <VolumeSectionTitle>{intl.translate('usage')}</VolumeSectionTitle>
-              {volumeUsagePercentage !== intl.translate('unknown') ? (
+              <VolumeSectionTitle>
+                {intl.formatMessage({ id: 'usage' })}
+              </VolumeSectionTitle>
+              {volumeUsagePercentage !==
+              intl.formatMessage({ id: 'unknown' }) ? (
                 <ProgressBarContainer>
                   <ProgressBar
                     size="large"
@@ -374,17 +390,17 @@ const VolumeDetailCard = (props) => {
         <Modal
           close={() => setisDeleteConfirmationModalOpen(false)}
           isOpen={isDeleteConfirmationModalOpen}
-          title={intl.translate('delete_volume')}
+          title={intl.formatMessage({ id: 'delete_volume' })}
           footer={
             <NotificationButtonGroup>
               <CancelButton
                 outlined
-                text={intl.translate('cancel')}
+                text={intl.formatMessage({ id: 'cancel' })}
                 onClick={onClickCancelButton}
               />
               <Button
                 variant="buttonDelete"
-                text={intl.translate('delete')}
+                text={intl.formatMessage({ id: 'delete' })}
                 onClick={() => {
                   onClickDeleteButton(name, nodeName);
                 }}
@@ -394,9 +410,9 @@ const VolumeDetailCard = (props) => {
           }
         >
           <ModalBody>
-            <div>{intl.translate('delete_a_volume_warning')}</div>
+            <div>{intl.formatMessage({ id: 'delete_a_volume_warning' })}</div>
             <div>
-              {intl.translate('delete_a_volume_confirm')}
+              {intl.formatMessage({ id: 'delete_a_volume_confirm' })}
               <strong>{name}</strong>?
             </div>
           </ModalBody>

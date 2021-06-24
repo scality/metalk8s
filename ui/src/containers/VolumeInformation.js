@@ -31,7 +31,7 @@ import {
   computeVolumeGlobalStatus,
   volumeGetError,
 } from '../services/NodeVolumesUtils';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 
 const VolumeInformationListContainer = styled(InformationListContainer)`
   margin: ${padding.larger};
@@ -71,7 +71,7 @@ const LoaderContainer = styled(Loader)`
 const VolumeInformation = (props) => {
   const dispatch = useDispatch();
   const match = useRouteMatch();
-
+  const intl = useIntl();
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
   useRefreshEffect(
     refreshPersistentVolumesAction,
@@ -103,11 +103,11 @@ const VolumeInformation = (props) => {
   const [errorCode, errorMessage] = volumeGetError(volume?.status);
   const columns = [
     {
-      label: intl.translate('name'),
+      label: intl.formatMessage({ id: 'name' }),
       dataKey: 'name',
     },
     {
-      label: intl.translate('value'),
+      label: intl.formatMessage({ id: 'value' }),
       dataKey: 'value',
     },
   ];
@@ -127,8 +127,8 @@ const VolumeInformation = (props) => {
           icon={<i className="fas fa-exclamation-triangle" />}
           title={
             errorCode === 'CreationError'
-              ? intl.translate('failed_to_create_volume')
-              : intl.translate('error')
+              ? intl.formatMessage({ id: 'failed_to_create_volume' })
+              : intl.formatMessage({ id: 'error' })
           }
         >
           {errorMessage}
@@ -139,23 +139,32 @@ const VolumeInformation = (props) => {
 
       <VolumeInformationListContainer>
         <InformationSpan>
-          <InformationLabel>{intl.translate('name')}</InformationLabel>
+          <InformationLabel>
+            {intl.formatMessage({ id: 'name' })}
+          </InformationLabel>
           <InformationMainValue>{volume?.metadata?.name}</InformationMainValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{intl.translate('status')}</InformationLabel>
+          <InformationLabel>
+            {intl.formatMessage({ id: 'status' })}
+          </InformationLabel>
           <InformationValue>
-            {volumeStatus ?? intl.translate('unknown')}
+            {volumeStatus ?? intl.formatMessage({ id: 'unknown' })}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{intl.translate('size')}</InformationLabel>
+          <InformationLabel>
+            {intl.formatMessage({ id: 'size' })}
+          </InformationLabel>
           <InformationValue>
-            {pV?.spec?.capacity?.storage ?? intl.translate('unknown')}
+            {pV?.spec?.capacity?.storage ??
+              intl.formatMessage({ id: 'unknown' })}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{intl.translate('type')}</InformationLabel>
+          <InformationLabel>
+            {intl.formatMessage({ id: 'type' })}
+          </InformationLabel>
           <InformationValue>
             {volume?.spec?.rawBlockDevice
               ? RAW_BLOCK_DEVICE
@@ -163,38 +172,51 @@ const VolumeInformation = (props) => {
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{intl.translate('bound')}</InformationLabel>
+          <InformationLabel>
+            {intl.formatMessage({ id: 'bound' })}
+          </InformationLabel>
           <InformationValue>
             {pV?.status?.phase === STATUS_BOUND
-              ? intl.translate('yes')
-              : intl.translate('no')}
+              ? intl.formatMessage({ id: 'yes' })
+              : intl.formatMessage({ id: 'no' })}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{intl.translate('storageClass')}</InformationLabel>
+          <InformationLabel>
+            {intl.formatMessage({ id: 'storageClass' })}
+          </InformationLabel>
           <InformationValue>{volume?.spec?.storageClassName}</InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{intl.translate('path')}</InformationLabel>
+          <InformationLabel>
+            {intl.formatMessage({ id: 'path' })}
+          </InformationLabel>
           <InformationValue>
             {volume?.spec?.rawBlockDevice?.devicePath ??
-              intl.translate('not_applicable')}
+              intl.formatMessage({ id: 'not_applicable' })}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{intl.translate('access_mode')}</InformationLabel>
+          <InformationLabel>
+            {intl.formatMessage({ id: 'access_mode' })}
+          </InformationLabel>
+          intl.formatMessage
           <InformationValue>
-            {pV?.spec?.accessModes ?? intl.translate('unknown')}
+            {pV?.spec?.accessModes ?? intl.formatMessage({ id: 'unknown' })}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{intl.translate('mount_option')}</InformationLabel>
+          <InformationLabel>
+            {intl.formatMessage({ id: 'mount_option' })}
+          </InformationLabel>
           <InformationValue>
             {storageClass?.mountOptions.join(', ')}
           </InformationValue>
         </InformationSpan>
         <InformationSpan>
-          <InformationLabel>{intl.translate('creationTime')}</InformationLabel>
+          <InformationLabel>
+            {intl.formatMessage({ id: 'creationTime' })}
+          </InformationLabel>
           {volume?.metadata?.creationTimestamp ? (
             <InformationValue>
               <FormattedDate value={volume.metadata.creationTimestamp} />{' '}
@@ -211,7 +233,9 @@ const VolumeInformation = (props) => {
         </InformationSpan>
         {!!labels?.length && (
           <InformationContainer>
-            <InformationLabel>{intl.translate('labels')}</InformationLabel>
+            <InformationLabel>
+              {intl.formatMessage({ id: 'labels' })}
+            </InformationLabel>
             <InformationValueSection>
               <Table
                 list={labels}

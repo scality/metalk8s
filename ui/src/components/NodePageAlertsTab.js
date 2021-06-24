@@ -11,7 +11,7 @@ import ActiveAlertsFilter from './ActiveAlertsFilters';
 import { useURLQuery, formatDateToMid1 } from '../services/utils';
 import { NodeTab } from './style/CommonLayoutStyle';
 import { STATUS_WARNING, STATUS_CRITICAL } from '../constants';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 
 // Overriding overflow for the Tab since the table components has inner scroll
 const NodeAlertsTab = styled(NodeTab)`
@@ -81,6 +81,7 @@ const TitleContainer = styled.div`
 
 const NodePageAlertsTab = (props) => {
   const { alertsNode } = props;
+  const intl = useIntl();
   const query = useURLQuery();
   // Retrieve the severity filter from URL.
   // Filter more than one severity, the URL should be:
@@ -106,16 +107,11 @@ const NodePageAlertsTab = (props) => {
   // React Table for the volume list
   function Table({ columns, data }) {
     // Use the state and functions returned from useTable to build your UI
-    const {
-      getTableProps,
-      getTableBodyProps,
-      headerGroups,
-      rows,
-      prepareRow,
-    } = useTable({
-      columns,
-      data,
-    });
+    const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
+      useTable({
+        columns,
+        data,
+      });
 
     // Render the UI for your table
     return (
@@ -138,7 +134,9 @@ const NodePageAlertsTab = (props) => {
         </thead>
         <Body {...getTableBodyProps()}>
           {activeAlertListData.length === 0 ? (
-            <EmptyTable>{intl.translate('no_active_alerts')}</EmptyTable>
+            <EmptyTable>
+              {intl.formatMessage({ id: 'no_active_alerts' })}
+            </EmptyTable>
           ) : null}
           {rows.map((row, i) => {
             prepareRow(row);
@@ -214,7 +212,7 @@ const NodePageAlertsTab = (props) => {
     <NodeAlertsTab>
       <TitleContainer>
         <ActiveAlertsText>
-          {intl.translate('active_alerts')}
+          {intl.formatMessage({ id: 'active_alerts' })}
         </ActiveAlertsText>
         <ActiveAlertsFilter />
       </TitleContainer>

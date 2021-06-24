@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import { VolumeTab } from './style/CommonLayoutStyle';
 
@@ -18,13 +18,15 @@ const ErrorText = styled.div`
 
 const VolumeDetailsTab = (props) => {
   const { data } = props.currentVolumeObject;
-
+  const intl = useIntl();
   return (
     <VolumeTab>
       <VolumeObjectContent>
         {data && JSON.stringify(data, null, '\t')}
         {!data && (
-          <ErrorText>{intl.translate('error_volume_details')}</ErrorText>
+          <ErrorText>
+            {intl.formatMessage({ id: 'error_volume_details' })}
+          </ErrorText>
         )}
       </VolumeObjectContent>
     </VolumeTab>

@@ -15,7 +15,7 @@ import { deployNodeAction } from '../ducks/app/nodes';
 import { NodeTab } from './style/CommonLayoutStyle';
 import CircleStatus from './CircleStatus';
 import { API_STATUS_UNKNOWN } from '../constants';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 
 const TabContentContainer = styled.div`
   overflow-y: auto;
@@ -115,7 +115,7 @@ const ErrorLabel = styled.span`
 
 const NodePageOverviewTab = (props) => {
   const { nodeTableData, nodes, volumes, pods } = props;
-
+  const intl = useIntl();
   // Retrieve the node name from URL parameter
   const { name } = useParams();
   const dispatch = useDispatch();
@@ -135,22 +135,22 @@ const NodePageOverviewTab = (props) => {
     activeJob = sortedJobs[0];
   }
 
-  let steps = [{ title: intl.translate('node_registered') }];
+  let steps = [{ title: intl.formatMessage({ id: 'node_registered' }) }];
   let success = false;
   if (activeJob) {
     if (activeJob.events.find((event) => event.tag.includes('/new'))) {
-      steps.push({ title: intl.translate('deployment_started') });
+      steps.push({ title: intl.formatMessage({ id: 'deployment_started' }) });
     }
 
     if (activeJob.completed) {
       const status = activeJob.status;
       steps.push({
-        title: intl.translate('completed'),
+        title: intl.formatMessage({ id: 'completed' }),
         content: (
           <span>
             {!status.success && (
               <ErrorLabel>
-                {`${intl.translate('error')}: ${status.step} - ${
+                {`${intl.formatMessage({ id: 'error' })}: ${status.step} - ${
                   status.comment
                 }`}
               </ErrorLabel>
@@ -161,7 +161,7 @@ const NodePageOverviewTab = (props) => {
       success = status.success;
     } else {
       steps.push({
-        title: intl.translate('deploying'),
+        title: intl.formatMessage({ id: 'deploying' }),
         content: <Loader size="larger" />,
       });
     }
@@ -198,7 +198,7 @@ const NodePageOverviewTab = (props) => {
           {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN ? (
             !currentNodeReturnByK8S?.deploying ? (
               <DeployButton
-                text={intl.translate('deploy')}
+                text={intl.formatMessage({ id: 'deploy' })}
                 variant="buttonSecondary"
                 onClick={() => {
                   dispatch(deployNodeAction({ name }));
@@ -206,7 +206,7 @@ const NodePageOverviewTab = (props) => {
               />
             ) : (
               <DeployButton
-                text={intl.translate('deploying')}
+                text={intl.formatMessage({ id: 'deploying' })}
                 disabled
                 icon={<Loader size="smaller" />}
               />
@@ -241,7 +241,7 @@ const NodePageOverviewTab = (props) => {
                       key={cond}
                       textColor={currentNode?.status?.statusColor}
                     >
-                      {intl.translate(`${cond}`)}
+                      {intl.formatMessage({ id: `${cond}` })}
                     </StatusText>
                   );
                 })}
@@ -249,7 +249,7 @@ const NodePageOverviewTab = (props) => {
             </InformationSpan>
             <InformationSpan>
               <InformationLabel>
-                {intl.translate('creationTime')}
+                {intl.formatMessage({ id: 'creationTime' })}
               </InformationLabel>
               {creationTimestamp ? (
                 <InformationValue>
@@ -280,20 +280,20 @@ const NodePageOverviewTab = (props) => {
               <InformationLabel>Volumes</InformationLabel>
               <InformationValue>
                 {volumesAttachedCurrentNode?.length ??
-                  intl.translate('unknown')}
+                  intl.formatMessage({ id: 'unknown' })}
               </InformationValue>
             </InformationSpan>
             <InformationSpan>
               <InformationLabel>Pods</InformationLabel>
               <InformationValue>
                 {podsScheduledOnCurrentNode?.length ??
-                  intl.translate('unknown')}
+                  intl.formatMessage({ id: 'unknown' })}
               </InformationValue>
             </InformationSpan>
           </div>
           <ActiveAlertWrapper>
             <ActiveAlertTitle>
-              {intl.translate('active_alerts')}
+              {intl.formatMessage({ id: 'active_alerts' })}
             </ActiveAlertTitle>
             <ActiveAlertsCounter
               criticalCounter={currentNode?.health?.criticalAlertsCounter}
@@ -305,14 +305,19 @@ const NodePageOverviewTab = (props) => {
         {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN ? (
           <NodeDeploymentWrapper>
             <NodeDeploymentTitle>
-              {intl.translate('deployment')}
+              {intl.formatMessage({ id: 'deployment' })}
             </NodeDeploymentTitle>
             {activeJob === undefined ? (
               <InfoMessage>
-                {intl.translate('no_deployment_found', { name: name })}
+                {intl.formatMessage(
+                  { id: 'no_deployment_found' },
+                  { name: name },
+                )}
               </InfoMessage>
             ) : activeJob.completed && isEmpty(activeJob.status) ? (
-              <InfoMessage>{intl.translate('refreshing_job')}</InfoMessage>
+              <InfoMessage>
+                {intl.formatMessage({ id: 'refreshing_job' })}
+              </InfoMessage>
             ) : (
               <NodeDeploymentContent>
                 <NodeDeploymentStatus>

@@ -2,12 +2,14 @@ import React from 'react';
 import { CallbackComponent } from 'redux-oidc';
 import { useHistory } from 'react-router';
 import { useSelector } from 'react-redux';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 import { Loader } from '@scality/core-ui';
 
 const CallbackPage = () => {
   const userManager = useSelector((state) => state.config.userManager);
   const history = useHistory();
+  const intl = useIntl();
+
   return (
     <CallbackComponent
       userManager={userManager}
@@ -20,7 +22,7 @@ const CallbackPage = () => {
       }}
     >
       <Loader size="massive" centered={true}>
-        {intl.translate('redirecting')}
+        {intl.formatMessage({ id: 'redirecting' })}
       </Loader>
     </CallbackComponent>
   );

@@ -15,7 +15,7 @@ import { sortSelector, useRefreshEffect } from '../services/utils';
 import NoRowsRenderer from '../components/NoRowsRenderer';
 import { API_STATUS_NOT_READY, API_STATUS_UNKNOWN } from '../constants.js';
 import PageContainer from '../components/TableBasedPageStyle';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 
 const ActionContainer = styled.div`
   margin-bottom: ${padding.base};
@@ -58,7 +58,7 @@ const NodeList = () => {
   const nodes = useSelector((state) => state.app.nodes);
   const dispatch = useDispatch();
   const deployNode = (payload) => dispatch(deployNodeAction(payload));
-
+  const intl = useIntl();
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
   const [sortBy, setSortBy] = useState('name');
@@ -66,17 +66,19 @@ const NodeList = () => {
   const history = useHistory();
   const columns = [
     {
-      label: intl.translate('name'),
+      label: intl.formatMessage({ id: 'name' }),
       dataKey: 'name',
       flexGrow: 1,
     },
     {
-      label: intl.translate('status'),
+      label: intl.formatMessage({ id: 'status' }),
       dataKey: 'status',
-      renderer: (data) => <span> {intl.translate(data) || data}</span>,
+      renderer: (data) => (
+        <span> {intl.formatMessage({ id: `${data}` }) || data}</span>
+      ),
     },
     {
-      label: intl.translate('deployment'),
+      label: intl.formatMessage('deployment'),
       dataKey: 'deployment',
       renderer: (data, rowData) => {
         if (
@@ -86,7 +88,7 @@ const NodeList = () => {
           return (
             <span className="status">
               <Button
-                text={intl.translate('deploy')}
+                text={intl.formatMessage({ id: 'deploy' })}
                 onClick={(event) => {
                   event.stopPropagation();
                   deployNode(rowData);
@@ -100,7 +102,7 @@ const NodeList = () => {
           return (
             <span className="status">
               <Button
-                text={intl.translate('deploying')}
+                text={intl.formatMessage({ id: 'deploying' })}
                 onClick={(event) => {
                   event.stopPropagation();
                   history.push(`/nodes/${rowData.name}/deploy`);
@@ -115,12 +117,12 @@ const NodeList = () => {
       },
     },
     {
-      label: intl.translate('roles'),
+      label: intl.formatMessage({ id: 'roles' }),
       dataKey: 'roles',
       flexGrow: 1,
     },
     {
-      label: intl.translate('metalk8s_version'),
+      label: intl.formatMessage({ id: 'metalk8s_version' }),
       dataKey: 'metalk8s_version',
     },
   ];
@@ -142,7 +144,7 @@ const NodeList = () => {
     <PageContainer>
       <ActionContainer>
         <Button
-          text={intl.translate('create_new_node')}
+          text={intl.formatMessage({ id: 'create_new_node' })}
           onClick={() => history.push('/nodes/create')}
           icon={<i className="fas fa-plus" />}
         />
@@ -169,7 +171,9 @@ const NodeList = () => {
             }
           }}
           noRowsRenderer={() => (
-            <NoRowsRenderer content={intl.translate('no_data_available')} />
+            <NoRowsRenderer
+              content={intl.formatMessage({ id: 'no_data_available' })}
+            />
           )}
         />
       </TableContainer>

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchClusterVersionAction } from '../ducks/app/nodes';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 
 const Title = styled.h3`
   margin-top: 25px;
@@ -19,15 +19,17 @@ const AboutContainer = styled.div`
 
 const About = (props) => {
   const clusterVersion = useSelector((state) => state.app.nodes.clusterVersion);
+  const intl = useIntl();
   const dispatch = useDispatch();
+
   useEffect(() => {
     dispatch(fetchClusterVersionAction());
   }, [dispatch]);
 
   return (
     <AboutContainer>
-      <Title>{intl.translate('product_name')}</Title>
-      {`${intl.translate('cluster_version')}: ${clusterVersion}`}
+      <Title>{intl.formatMessage({ id: 'product_name' })}</Title>
+      {`${intl.formatMessage({ id: 'cluster_version' })}: ${clusterVersion}`}
     </AboutContainer>
   );
 };

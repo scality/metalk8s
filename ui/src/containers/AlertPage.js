@@ -21,7 +21,7 @@ import {
   useTableSortURLSync,
   formatDateToMid1,
 } from '../services/utils';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 
 const AlertPageContainer = styled.div`
   display: flex;
@@ -111,6 +111,7 @@ function AlertPageHeader({
   critical: number,
   warning: number,
 }) {
+  const intl = useIntl();
   return (
     <AlertPageHeaderContainer>
       <Title>
@@ -123,12 +124,12 @@ function AlertPageHeader({
               : 'statusHealthy'
           }
         />
-        <>{intl.translate('alerts')}</>
+        <>{intl.formatMessage({ id: 'alerts' })}</>
         <SeperationLine />
       </Title>
 
       <SecondaryTitle>
-        <>{intl.translate('active_alerts')}</>
+        <>{intl.formatMessage({ id: 'active_alerts' })}</>
         <TextBadge variant="infoPrimary">{`${activeAlerts}`}</TextBadge>
         <SeperationLine />
       </SecondaryTitle>
@@ -265,7 +266,7 @@ function ActiveAlertTab({ columns, data }) {
   const querySearch = query.get('search');
   const querySort = query.get('sort');
   const queryDesc = query.get('desc');
-
+  const intl = useIntl();
   // Use the state and functions returned from useTable to build your UI
   const defaultColumn = React.useMemo(
     () => ({
@@ -388,7 +389,9 @@ function ActiveAlertTab({ columns, data }) {
 
       <Body {...getTableBodyProps()}>
         {!rows.length && (
-          <EmptyTable>{intl.translate('no_active_alerts')}</EmptyTable>
+          <EmptyTable>
+            {intl.formatMessage({ id: 'no_active_alerts' })}
+          </EmptyTable>
         )}
         {rows.map((row, i) => {
           prepareRow(row);

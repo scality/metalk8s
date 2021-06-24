@@ -44,7 +44,7 @@ import {
   formatVolumeCreationData,
   formatBatchName,
 } from '../services/NodeVolumesUtils';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 import {
   TitlePage,
   CenteredPageContainer,
@@ -223,7 +223,7 @@ const RequiredText = styled.div`
 const CreateVolume = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
-
+  const intl = useIntl();
   const createVolumes = (newVolumes) =>
     dispatch(createVolumesAction(newVolumes));
 
@@ -336,35 +336,47 @@ const CreateVolume = (props) => {
   const validationSchema = yup.object().shape({
     name: yup
       .string()
-      .matches(volumeNameRegex, intl.translate('name_error'))
+      .matches(volumeNameRegex, intl.formatMessage({ id: 'name_error' }))
       .required(
-        intl.translate('generic_missing_field', {
-          field: intl.translate('name').toLowerCase(),
-        }),
+        intl.formatMessage(
+          { id: 'generic_missing_field' },
+          {
+            field: intl.formatMessage({ id: 'name' }).toLowerCase(),
+          },
+        ),
       ),
     node: yup.string().required(),
     storageClass: yup.string().required(),
     type: yup.string().required(),
     path: yup
       .string()
-      .matches(/^\//, intl.translate('volume_path_error'))
+      .matches(/^\//, intl.formatMessage({ id: 'volume_path_error' }))
       .when('type', {
         is: RAW_BLOCK_DEVICE,
         then: yup.string().required(
-          intl.translate('generic_missing_field', {
-            field: intl.translate('device_path').toLowerCase(),
-          }),
+          intl.formatMessage(
+            { id: 'generic_missing_field' },
+            {
+              field: intl.formatMessage({ id: 'device_path' }).toLowerCase(),
+            },
+          ),
         ),
       }),
     sizeInput: yup.string().when('type', {
       is: SPARSE_LOOP_DEVICE,
       then: yup
         .string()
-        .matches(positiveIntegerRegex, intl.translate('volume_size_error'))
+        .matches(
+          positiveIntegerRegex,
+          intl.formatMessage({ id: 'volume_size_error' }),
+        )
         .required(
-          intl.translate('generic_missing_field', {
-            field: intl.translate('volume_size').toLowerCase(),
-          }),
+          intl.formatMessage(
+            { id: 'generic_missing_field' },
+            {
+              field: intl.formatMessage({ id: 'volume_size' }).toLowerCase(),
+            },
+          ),
         ),
     }),
     selectedUnit: yup.string().when('type', {
@@ -375,18 +387,21 @@ const CreateVolume = (props) => {
       is: LVM_LOGICAL_VOLUME,
       then: yup
         .string()
-        .matches(volumeNameRegex, intl.translate('name_error'))
+        .matches(volumeNameRegex, intl.formatMessage({ id: 'name_error' }))
         .required(
-          intl.translate('generic_missing_field', {
-            field: intl.translate('name_error').toLowerCase(),
-          }),
+          intl.formatMessage(
+            { id: 'generic_missing_field' },
+            {
+              field: intl.formatMessage({ id: 'name_error' }).toLowerCase(),
+            },
+          ),
         ),
     }),
     labels: yup.object(),
     labelValue: yup
       .string()
-      .matches(labelValueRegex, intl.translate('label_value_error'))
-      .max(63, intl.translate('n_character_or_less', { n: 63 })),
+      .matches(labelValueRegex, intl.formatMessage({ id: 'label_value_error' }))
+      .max(63, intl.formatMessage({ id: 'n_character_or_less' }, { n: 63 })),
     numberOfVolumes: yup
       .number()
       .positive()
@@ -396,7 +411,7 @@ const CreateVolume = (props) => {
       yup.object().shape({
         name: yup
           .string()
-          .matches(volumeNameRegex, intl.translate('name_error')),
+          .matches(volumeNameRegex, intl.formatMessage({ id: 'name_error' })),
       }),
     ),
   });
@@ -415,15 +430,15 @@ const CreateVolume = (props) => {
           <Banner
             variant="warning"
             icon={<i className="fas fa-exclamation-triangle" />}
-            title={intl.translate('no_storage_class_found')}
+            title={intl.formatMessage({ id: 'no_storage_class_found' })}
           >
-            {intl.translate('storage_class_is_required')}
+            {intl.formatMessage({ id: 'storage_class_is_required' })}
             <a
               rel="noopener noreferrer"
               target="_blank"
               href={`${api.url_doc}/operation/volume_management/storageclass_creation.html`}
             >
-              {intl.translate('learn_more')}
+              {intl.formatMessage({ id: 'learn_more' })}
             </a>
           </Banner>
         )}
@@ -486,16 +501,15 @@ const CreateVolume = (props) => {
 
                   if (hasLabelPrefix) {
                     const prefix = value.split('/')[0];
-                    const isLabelPrefixMatched = labelNamePrefixRegex.test(
-                      prefix,
-                    );
-                    error = intl.translate(
+                    const isLabelPrefixMatched =
+                      labelNamePrefixRegex.test(prefix);
+                    error = intl.formatMessage(
                       isLabelPrefixMatched
-                        ? 'label_name_error'
-                        : 'label_prefix_name_error',
+                        ? { id: 'label_name_error' }
+                        : { id: 'label_prefix_name_error' },
                     );
                   } else {
-                    error = intl.translate('label_name_error');
+                    error = intl.formatMessage({ id: 'label_name_error' });
                   }
                 }
                 return error;
@@ -591,7 +605,7 @@ const CreateVolume = (props) => {
                       min="1"
                       value={values.sizeInput}
                       onChange={handleChange('sizeInput')}
-                      label={`${intl.translate('volume_size')}*`}
+                      label={`${intl.formatMessage({ id: 'volume_size' })}*`}
                       error={touched.sizeInput && errors.sizeInput}
                       onBlur={handleOnBlur}
                     />
@@ -600,7 +614,9 @@ const CreateVolume = (props) => {
                         clearable={false}
                         type="select"
                         options={optionsSizeUnits}
-                        noOptionsMessage={() => intl.translate('no_results')}
+                        noOptionsMessage={() =>
+                          intl.formatMessage({ id: 'no_results' })
+                        }
                         name="selectedUnit"
                         onChange={handleSelectChange('selectedUnit')}
                         value={getSelectedObjectItem(
@@ -628,12 +644,14 @@ const CreateVolume = (props) => {
                         onChange={handleChange('path')}
                         label={
                           <>
-                            {`${intl.translate('device_path')}*`}
+                            {`${intl.formatMessage({ id: 'device_path' })}*`}
                             <Tooltip
                               placement="right"
                               overlay={
                                 <div style={{ minWidth: '200px' }}>
-                                  {intl.translate('device_path_explanation')}
+                                  {intl.formatMessage({
+                                    id: 'device_path_explanation',
+                                  })}
                                 </div>
                               }
                             >
@@ -668,7 +686,7 @@ const CreateVolume = (props) => {
                 <Form>
                   <FormSection>
                     <RequiredText>
-                      {intl.translate('required_fields')}
+                      {intl.formatMessage({ id: 'required_fields' })}
                     </RequiredText>
                   </FormSection>
 
@@ -677,19 +695,21 @@ const CreateVolume = (props) => {
                       name="name"
                       value={values.name}
                       onChange={handleChange('name')}
-                      label={`${intl.translate('name')}*`}
+                      label={`${intl.formatMessage({ id: 'name' })}*`}
                       error={touched.name && errors.name}
                       onBlur={handleOnBlur}
                     />
                     {/* The node input will be prefilled if we create volume from node*/}
                     <Input
                       id="node_input"
-                      label={`${intl.translate('node')}*`}
+                      label={`${intl.formatMessage({ id: 'node' })}*`}
                       clearable={false}
                       type="select"
                       options={optionsNodes}
-                      placeholder={intl.translate('select_a_node')}
-                      noOptionsMessage={() => intl.translate('no_results')}
+                      placeholder={intl.formatMessage({ id: 'select_a_node' })}
+                      noOptionsMessage={() =>
+                        intl.formatMessage({ id: 'no_results' })
+                      }
                       name="node"
                       onChange={handleSelectChange('node')}
                       value={getSelectedObjectItem(optionsNodes, values?.node)}
@@ -698,14 +718,16 @@ const CreateVolume = (props) => {
                     />
                     <InputContainer className="sc-input">
                       <InputLabel className="sc-input-label">
-                        {intl.translate('labels')}
+                        {intl.formatMessage({ id: 'labels' })}
                       </InputLabel>
                       <LabelsContainer>
                         <LabelsForm>
                           <Field
                             as={Input}
                             name="labelName"
-                            placeholder={intl.translate('enter_label_name')}
+                            placeholder={intl.formatMessage({
+                              id: 'enter_label_name',
+                            })}
                             value={values.labelName}
                             error={touched.labelName && errors.labelName}
                             onBlur={handleOnBlur}
@@ -714,14 +736,17 @@ const CreateVolume = (props) => {
                           />
                           <Input
                             name="labelValue"
-                            placeholder={intl.translate('enter_label_value')}
+                            placeholder={intl.formatMessage({
+                              id: 'enter_label_value',
+                            })}
                             value={values.labelValue}
                             error={touched.labelValue && errors.labelValue}
                             onBlur={handleOnBlur}
                             onChange={handleChange('labelValue')}
                           />
+                          intl.formatMessage
                           <Button
-                            text={intl.translate('add')}
+                            text={intl.formatMessage({ id: 'add' })}
                             type="button"
                             onClick={addLabel}
                             data-cy="add-volume-labels-button"
@@ -754,12 +779,16 @@ const CreateVolume = (props) => {
 
                     <Input
                       id="storageClass_input"
-                      label={`${intl.translate('storageClass')}*`}
+                      label={`${intl.formatMessage({ id: 'storageClass' })}*`}
                       clearable={false}
                       type="select"
                       options={optionsStorageClasses}
-                      placeholder={intl.translate('select_a_storageClass')}
-                      noOptionsMessage={() => intl.translate('no_results')}
+                      placeholder={intl.formatMessage({
+                        id: 'select_a_storageClass',
+                      })}
+                      noOptionsMessage={() =>
+                        intl.formatMessage({ id: 'no_results' })
+                      }
                       name="storageClass"
                       onChange={handleSelectChange('storageClass')}
                       value={getSelectedObjectItem(
@@ -771,12 +800,14 @@ const CreateVolume = (props) => {
                     />
                     <Input
                       id="type_input"
-                      label={`${intl.translate('volume_type')}*`}
+                      label={`${intl.formatMessage({ id: 'volume_type' })}*`}
                       clearable={false}
                       type="select"
                       options={optionsTypes}
-                      placeholder={intl.translate('select_a_type')}
-                      noOptionsMessage={() => intl.translate('no_results')}
+                      placeholder={intl.formatMessage({ id: 'select_a_type' })}
+                      noOptionsMessage={() =>
+                        intl.formatMessage({ id: 'no_results' })
+                      }
                       name="type"
                       onChange={handleSelectChange('type')}
                       value={getSelectedObjectItem(optionsTypes, values?.type)}
@@ -787,7 +818,9 @@ const CreateVolume = (props) => {
                     <CheckboxContainer>
                       <Checkbox
                         name="multiVolumeCreation"
-                        label={intl.translate('create_multiple_volumes')}
+                        label={intl.formatMessage({
+                          id: 'create_multiple_volumes',
+                        })}
                         checked={values.multiVolumeCreation}
                         value={values.multiVolumeCreation}
                         onChange={handleCheckboxChange('multiVolumeCreation')}
@@ -813,7 +846,9 @@ const CreateVolume = (props) => {
                                   paddingRight: `${padding.base}`,
                                 }}
                               >
-                                {intl.translate('number_volume_create')}
+                                {intl.formatMessage({
+                                  id: 'number_volume_create',
+                                })}
                               </span>
                               <Input
                                 type="number"
@@ -839,9 +874,9 @@ const CreateVolume = (props) => {
                                 paddingTop: `${padding.large}`,
                               }}
                             >
-                              {intl.translate(
-                                'default_batch_volume_values_explanation',
-                              )}
+                              {intl.formatMessage({
+                                id: 'default_batch_volume_values_explanation',
+                              })}
                             </div>
                             {values.numberOfVolumes <=
                               MAX_VOLUME_BATCH_CREATION &&
@@ -855,7 +890,7 @@ const CreateVolume = (props) => {
                                   <SingleVolumeForm>
                                     <RecommendField
                                       name={`volumes[${index}]name`}
-                                      label={intl.translate('name')}
+                                      label={intl.formatMessage({ id: 'name' })}
                                       onBlur={handleOnBlur}
                                       index={index}
                                       fieldname="name"
@@ -863,7 +898,9 @@ const CreateVolume = (props) => {
                                     {values.type === RAW_BLOCK_DEVICE ? (
                                       <RecommendField
                                         name={`volumes.${index}.path`}
-                                        label={intl.translate('device_path')}
+                                        label={intl.formatMessage({
+                                          id: 'device_path',
+                                        })}
                                         onBlur={handleOnBlur}
                                         index={index}
                                         fieldname="path"
@@ -879,13 +916,13 @@ const CreateVolume = (props) => {
                   )}
                   <ActionContainer>
                     <Button
-                      text={intl.translate('cancel')}
+                      text={intl.formatMessage({ id: 'cancel' })}
                       type="button"
                       outlined
                       onClick={() => history.goBack()}
                     />
                     <Button
-                      text={intl.translate('create')}
+                      text={intl.formatMessage({ id: 'create' })}
                       type="submit"
                       variant={'buttonPrimary'}
                       disabled={!dirty || !isEmpty(errors) || values.labelName}

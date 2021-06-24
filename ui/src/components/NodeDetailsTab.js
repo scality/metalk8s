@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import { NodeTab } from './style/CommonLayoutStyle';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 
 const NodeObjectContent = styled.div`
   padding: ${padding.large} 50px 0 ${padding.larger};
@@ -21,14 +21,16 @@ const NodePageDetailsTab = (props) => {
   const currentNodeObject = useSelector(
     (state) => state.app.nodes.currentNodeObject,
   );
-
+  const intl = useIntl();
   return (
     <NodeTab>
       <NodeObjectContent>
         {currentNodeObject ? (
           JSON.stringify(currentNodeObject, null, '\t')
         ) : (
-          <ErrorText>{intl.translate('error_volume_details')}</ErrorText>
+          <ErrorText>
+            {intl.formatMessage({ id: 'error_volume_details' })}
+          </ErrorText>
         )}
       </NodeObjectContent>
     </NodeTab>

@@ -17,7 +17,7 @@ import {
   STATUS_READY,
   PORT_NODE_EXPORTER,
 } from '../constants';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 import type { Alert, Health } from './alertUtils';
 import type { InstantVectorResult } from './prometheus/api';
 import { V1PersistentVolume } from '@kubernetes/client-node/dist/gen/model/models';
@@ -181,6 +181,7 @@ export const getVolumeListData = createSelector(
     volumeLatencyCurrent,
     volumeCapacityCurrentList,
   ) => {
+    const intl = useIntl();
     let nodeVolumes = volumes;
     if (nodeFilter) {
       nodeVolumes = volumes?.filter(
@@ -198,9 +199,7 @@ export const getVolumeListData = createSelector(
       );
       const volumeComputedCondition = computeVolumeCondition(
         computeVolumeGlobalStatus(volume.metadata.name, volume?.status),
-        volumePV?.status?.phase === STATUS_BOUND
-          ? intl.translate('yes')
-          : intl.translate('no'),
+        volumePV?.status?.phase === STATUS_BOUND,
       );
 
       let volumeUsedCurrent = null;
@@ -240,8 +239,8 @@ export const getVolumeListData = createSelector(
         status: volumeComputedCondition,
         bound:
           volumePV?.status?.phase === STATUS_BOUND
-            ? intl.translate('yes')
-            : intl.translate('no'),
+            ? intl.formatMessage({ id: 'yes' })
+            : intl.formatMessage({ id: 'no' }),
         storageCapacity: volumePV?.spec?.capacity?.storage,
         storageClass: volume?.spec?.storageClassName,
         usageRawData: volumeUsedCurrent?.value[1]

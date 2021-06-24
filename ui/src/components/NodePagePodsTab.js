@@ -14,7 +14,7 @@ import {
   STATUS_FAILED,
   STATUS_UNKNOWN,
 } from '../constants';
-import { intl } from '../translations/IntlGlobalProvider';
+import { useIntl } from 'react-intl';
 
 const PodTableContainer = styled.div`
   color: ${(props) => props.theme.textPrimary};
@@ -87,6 +87,7 @@ const ExternalLink = styled.a`
 `;
 
 function Table({ columns, data }) {
+  const intl = useIntl();
   // Use the state and functions returned from useTable to build your UI
   const {
     getTableProps,
@@ -130,7 +131,7 @@ function Table({ columns, data }) {
                 if (cell.column.Header !== 'Name' && cell.value === undefined) {
                   return (
                     <Cell {...cellProps}>
-                      <div>{intl.translate('unknown')}</div>
+                      <div>{intl.formatMessage({ id: 'unknown' })}</div>
                     </Cell>
                   );
                 } else {
@@ -148,7 +149,7 @@ function Table({ columns, data }) {
 const NodePagePodsTab = (props) => {
   const { pods } = props;
   const config = useSelector((state) => state.config);
-
+  const intl = useIntl();
   const columns = React.useMemo(
     () => [
       {
@@ -193,7 +194,7 @@ const NodePagePodsTab = (props) => {
               placement={'left'}
               overlay={
                 <TooltipContent>
-                  {intl.translate('advanced_monitoring')}
+                  {intl.formatMessage({ id: 'advanced_monitoring' })}
                 </TooltipContent>
               }
             >
