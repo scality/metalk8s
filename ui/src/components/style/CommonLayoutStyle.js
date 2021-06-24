@@ -184,7 +184,7 @@ export const TitlePage = styled.div`
 `;
 
 export const PageSubtitle = styled.h3`
-  color: ${(props) => props.theme.brand.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   margin: ${padding.small} 0;
   display: flex;
   align-items: center;

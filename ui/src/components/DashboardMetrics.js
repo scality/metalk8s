@@ -114,7 +114,7 @@ const DashboardMetrics = () => {
           : '%m/%d',
       ticks: true,
       tickCount: 4,
-      labelColor: theme.brand.textSecondary,
+      labelColor: theme.textSecondary,
       labelFlush: 20,
     },
     title: null,

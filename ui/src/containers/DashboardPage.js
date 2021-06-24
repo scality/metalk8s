@@ -60,12 +60,12 @@ const DashboardGrid = styled.div`
     padding: ${padding.smaller} 0px;
 
     background-color: ${(props) => {
-      return props.theme.brand.backgroundLevel1;
+      return props.theme.backgroundLevel1;
     }};
 
     div {
       background-color: ${(props) => {
-        return props.theme.brand.backgroundLevel1;
+        return props.theme.backgroundLevel1;
       }};
     }
   }
