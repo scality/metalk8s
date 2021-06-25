@@ -17,4 +17,5 @@ Architecture Documents
    monitoring
    requirements
    solutions
+   sso
    volume
