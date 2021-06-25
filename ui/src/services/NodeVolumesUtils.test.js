@@ -434,7 +434,7 @@ const propsWithNodeFilter = {
 };
 
 it('should return the volume list filtered by a specific node', () => {
-  const result = getVolumeListData([])(stateApp, propsWithNodeFilter);
+  const result = getVolumeListData(stateApp, propsWithNodeFilter);
   const volumelistFilteredByNode = [
     {
       name: 'master-0-alertmanager',
@@ -445,7 +445,6 @@ it('should return the volume list filtered by a specific node', () => {
       storageCapacity: '5Gi',
       storageClass: 'metalk8s',
       usageRawData: '20.0 MiB',
-      health: 'healthy',
       latency: undefined,
       persistentvolumeclaim:
         'alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-0',
@@ -460,7 +459,6 @@ it('should return the volume list filtered by a specific node', () => {
       storageCapacity: '20Gi',
       storageClass: 'metalk8s',
       usageRawData: '4.5 GiB',
-      health: 'healthy',
       latency: 900,
       persistentvolumeclaim:
         'prometheus-prometheus-operator-prometheus-db-prometheus-prometheus-operator-prometheus-1',
@@ -478,7 +476,7 @@ const propsWrongNodeFilter = {
 };
 
 it('should return an empty array when the node filter in URL does not exist', () => {
-  const result = getVolumeListData([])(stateApp, propsWrongNodeFilter);
+  const result = getVolumeListData(stateApp, propsWrongNodeFilter);
   expect(result).toEqual([]);
 });
 
@@ -489,7 +487,7 @@ const propsWithNonVolumeNodeFilter = {
   },
 };
 it('should return an empty array when there is no volume in this node', () => {
-  const result = getVolumeListData([])(stateApp, propsWithNonVolumeNodeFilter);
+  const result = getVolumeListData(stateApp, propsWithNonVolumeNodeFilter);
   expect(result).toEqual([]);
 });
 
@@ -511,7 +509,7 @@ const props = {
 
 // Todo: in this case, it should be redirect to the Empty State Page.
 it('should return an empty array when there is no volume at all in this platform', () => {
-  const result = getVolumeListData([])(stateEmptyVolume, props);
+  const result = getVolumeListData(stateEmptyVolume, props);
   expect(result).toEqual([]);
 });
 
