@@ -1,4 +1,5 @@
 const ModuleFederationPlugin = require('webpack/lib/container/ModuleFederationPlugin');
+const HtmlWebPackPlugin = require('html-webpack-plugin');
 const deps = require('./package.json').dependencies;
 
 module.exports = {
@@ -12,6 +13,10 @@ module.exports = {
         },
       },
     ],
+  },
+  resolve: {
+    modules: ['node_modules'],
+    extensions: ['.js', '.jsx', '.css', '.json'],
   },
   plugins: (prefix = '') => [
     new ModuleFederationPlugin({

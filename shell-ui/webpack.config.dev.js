@@ -1,4 +1,3 @@
-const HtmlWebPackPlugin = require('html-webpack-plugin');
 const path = require('path');
 const { version } = require('./package.json');
 const { DefinePlugin } = require('webpack');

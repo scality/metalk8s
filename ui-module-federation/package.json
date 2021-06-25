@@ -5,7 +5,7 @@
   "main": "build/ModuleFederation.js",
   "scripts": {
     "build": "tsc",
-    "prepare": "npm run build",
+    "postinstall": "npm run build",
     "test": "jest"
   },
   "author": "",
