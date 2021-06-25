@@ -1,8 +1,7 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useLocation } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import {
   useTable,
   useFilters,
@@ -362,7 +361,7 @@ const VolumeListTable = (props) => {
   const history = useHistory();
   const location = useLocation();
   const intl = useIntl();
-  const theme = useSelector((state) => state.config.theme);
+  const theme = useTheme();
 
   const columns = React.useMemo(() => {
     return [

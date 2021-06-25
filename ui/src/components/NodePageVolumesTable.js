@@ -1,7 +1,6 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { useTable, useFilters, useSortBy, useBlockLayout } from 'react-table';
 import { FixedSizeList as List } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
@@ -321,7 +320,7 @@ function Table({ columns, data, nodeName, volumeName, theme }) {
 const VolumeListTable = (props) => {
   const { nodeName, volumeListData, volumeName } = props;
   const history = useHistory();
-  const theme = useSelector((state) => state.config.theme);
+  const theme = useTheme();
   const intl = useIntl();
   const columns = React.useMemo(() => {
     const onClickCell = (name) => {
