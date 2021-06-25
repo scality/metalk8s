@@ -9,6 +9,8 @@ import { rest } from 'msw';
 import { afterAll, beforeAll, jest } from '@jest/globals';
 import { createContext, useContext } from 'react';
 import { useQuery } from 'react-query';
+import AlertProvider from './AlertProvider.js';
+import { useAlerts } from './alertHooks';
 
 const testService = 'http://10.0.0.1/api/alertmanager';
 

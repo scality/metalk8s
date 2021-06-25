@@ -1,12 +1,11 @@
-import '../library';
 import React, { createContext, useContext } from 'react';
-import packageJson from '../../../package.json';
+import packageJson from '../../package.json';
 const { version } = packageJson;
 import { setupServer } from 'msw/node';
 import { rest } from 'msw';
 import { renderHook } from '@testing-library/react-hooks';
 import { QueryClient, QueryClientProvider, useQuery } from 'react-query';
-import { AlertProvider } from '../AlertProvider.js';
+import AlertProvider from './AlertProvider.js';
 import { useHighestSeverityAlerts } from './alertHooks';
 import { afterAll, beforeAll, jest } from '@jest/globals';
 
@@ -67,21 +66,16 @@ describe('useHighestSeverityAlerts hook', () => {
   beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
   afterEach(() => server.resetHandlers());
 
-  const alertLibrary = window.shellUIAlerts[version];
-  alertLibrary.createAlertContext(createContext);
-
   const wrapper = ({ children }) => (
     <QueryClientProvider client={new QueryClient()}>
       <AlertProvider alertManagerUrl={testService}>{children}</AlertProvider>
     </QueryClientProvider>
   );
-  const AlertProvider = alertLibrary.AlertProvider(useQuery);
-  const useAlerts = alertLibrary.useAlerts(useContext);
 
   it('should only get the VolumeAtRisk alert when both VolumeAtRisk and VolumeDegraded are active', async () => {
     const { result, waitForNextUpdate } = renderHook(
       () =>
-        useHighestSeverityAlerts(useContext, {
+        useHighestSeverityAlerts({
           alertname: ['VolumeAtRisk', 'VolumeDegraded'],
         }),
       { wrapper },
@@ -96,7 +90,7 @@ describe('useHighestSeverityAlerts hook', () => {
   it('should get empty array', async () => {
     const { result, waitForNextUpdate } = renderHook(
       () =>
-        useHighestSeverityAlerts(useContext, {
+        useHighestSeverityAlerts({
           alertname: ['NodeAtRisk', 'NodeDegraded'],
         }),
       { wrapper },
