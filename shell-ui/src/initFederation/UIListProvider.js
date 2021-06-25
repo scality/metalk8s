@@ -3,7 +3,7 @@ import { createContext, useContext, type Node, useCallback } from 'react';
 import { useQuery } from 'react-query';
 import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
 import ErrorPage500 from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
-import type { SolutionUI } from '../ModuleFederation';
+import type { SolutionUI } from '@scality/module-federation';
 
 const UIListContext = createContext(null);
 
@@ -73,10 +73,9 @@ export const UIListProvider = ({
 
   return (
     <UIListContext.Provider value={{ uis: data }}>
-      {status === 'loading' ||
-        (status === 'idle' && (
-          <Loader size="massive" centered={true} aria-label="loading" />
-        ))}
+      {(status === 'loading' || status === 'idle') && (
+        <Loader size="massive" centered={true} aria-label="loading" />
+      )}
       {status === 'error' && <ErrorPage500 data-cy="sc-error-page500" />}
       {status === 'success' && children}
     </UIListContext.Provider>
