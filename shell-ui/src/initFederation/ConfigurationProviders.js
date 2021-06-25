@@ -4,6 +4,8 @@ import { useQueries } from 'react-query';
 import { useShellConfig } from './ShellConfigProvider';
 import { useHistory } from 'react-router-dom';
 import { useDeployedApps, useDeployedAppsRetriever } from './UIListProvider';
+import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
+import ErrorPage500 from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 
 const WebFingersContext = createContext(null);
 
@@ -221,20 +223,24 @@ export function useDiscoveredViews(): (
 export const useLinkOpener = () => {
   const history = useHistory();
   return {
-    openLink: (to: { isExternal: boolean, app: SolutionUI, view: View, isFederated: true } | {isFederated: false, isExternal: boolean, url: string}) => {
+    openLink: (
+      to:
+        | {
+            isExternal: boolean,
+            app: SolutionUI,
+            view: View,
+            isFederated: true,
+          }
+        | { isFederated: false, isExternal: boolean, url: string },
+    ) => {
       if (to.isExternal) {
         if (to.isFederated) {
-          window.open(
-            to.app.appHistoryBasePath + to.view.path,
-            '_blank',
-          );
+          window.open(to.app.appHistoryBasePath + to.view.path, '_blank');
         } else {
           window.open(to.url, '_blank');
         }
       } else if (to.isFederated) {
-        history.push(
-          to.app.appHistoryBasePath + to.view.path,
-        );
+        history.push(to.app.appHistoryBasePath + to.view.path);
       } else {
         window.location.href = to.url;
       }
@@ -283,9 +289,27 @@ export const ConfigurationProvider = ({
     ]),
   );
 
+  const statuses = Array.from(new Set(results.map((result) => result.status)));
+
+  const globalStatus = statuses.includes('error')
+    ? 'error'
+    : statuses.includes('loading')
+    ? 'loading'
+    : statuses.includes('idle') && !statuses.includes('success')
+    ? 'idle'
+    : statuses.includes('idle') && statuses.includes('success')
+    ? 'loading'
+    : 'success';
+
+  console.log('Statuses    ', globalStatus, statuses);
+
   return (
     <WebFingersContext.Provider value={results}>
-      {children}
+      {(globalStatus === 'loading' || globalStatus === 'idle') && (
+        <Loader size="massive" centered={true} aria-label="loading" />
+      )}
+      {globalStatus === 'error' && <ErrorPage500 data-cy="sc-error-page500" />}
+      {globalStatus === 'success' && children}
     </WebFingersContext.Provider>
   );
 };
