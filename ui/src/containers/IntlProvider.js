@@ -2,7 +2,7 @@
 import React, { type Node, useEffect } from 'react';
 import { IntlProvider } from 'react-intl';
 import { ErrorPage500 } from '@scality/core-ui';
-import { ComponentWithLazyHook } from '../ModuleFederation';
+import { ComponentWithFederatedImports } from '@scality/module-federation';
 import translations_en from '../translations/en';
 import translations_fr from '../translations/fr';
 
@@ -34,13 +34,17 @@ const InternalIntlProvider = ({
 
 const FederatedIntlProvider = ({ children }: { children: Node }): Node => {
   return (
-    <ComponentWithLazyHook
-      componentWithInjectedHook={InternalIntlProvider}
+    <ComponentWithFederatedImports
+      componentWithInjectedImports={InternalIntlProvider}
       renderOnError={<ErrorPage500 />}
-      remoteEntryUrl={'http://localhost:8084/shell/remoteEntry.js'}
-      federatedModule={'./lang'}
-      moduleFederationScope={'shell'}
       componentProps={{ children }}
+      federatedImports={[
+        {
+          scope: 'shell',
+          module: './lang',
+          remoteEntryUrl: 'http://localhost:8084/shell/remoteEntry.js',
+        },
+      ]}
     />
   );
 };

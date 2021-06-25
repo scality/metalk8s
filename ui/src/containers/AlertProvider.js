@@ -1,15 +1,18 @@
 //@flow
 import React, { type Node } from 'react';
+import { useIntl } from 'react-intl';
 import { useTypedSelector } from '../hooks';
 import { ErrorBoundary } from 'react-error-boundary';
 import type { FilterLabels } from '../services/alertUtils';
 import { ErrorPage500 } from '@scality/core-ui';
-import { useTheme } from 'styled-components';
-// import { FederatedComponent } from '../ModuleFederation';
+import {
+  ComponentWithFederatedImports,
+  FederatedComponent,
+} from '@scality/module-federation';
 
+const alertGlobal = {};
 export const useAlerts = (filters: FilterLabels) => {
-  //return alertGlobal.hooks.useAlerts(filters);
-  return {alerts: []}
+  return alertGlobal.hooks.useAlerts(filters);
 };
 
 const InternalAlertProvider = ({
@@ -19,29 +22,27 @@ const InternalAlertProvider = ({
   moduleExports: {},
   children: Node,
 }): Node => {
-  //alertGlobal.hooks = moduleExports['./alerts/alertHooks'];
+  alertGlobal.hooks = moduleExports['./alerts/alertHooks'];
 
-  console.log(useTheme())
+  const alertManagerUrl = useTypedSelector(
+    (state) => state.config.api.url_alertmanager,
+  );
 
-  return <>{children}</>
-
-  // const alertManagerUrl = useTypedSelector(
-  //   (state) => state.config.api.alertManagerUrl,
-  // );
-  // return (
-  //   <FederatedComponent
-  //     module={'./alerts/AlertProvider'}//TODO find a way to inject those values
-  //     scope={'shell'}
-  //     url={'http://localhost:8084/shell/remoteEntry.js'}
-  //     alertManagerUrl={alertManagerUrl}
-  //   >
-  //     {children}
-  //   </FederatedComponent>
-  // );
+  return (
+    <FederatedComponent
+      module={'./alerts/AlertProvider'} //TODO find a way to inject those values
+      scope={'shell'}
+      url={'http://localhost:8084/shell/remoteEntry.js'}
+      props={{ alertManagerUrl, children }}
+    ></FederatedComponent>
+  );
 };
 
 function ErrorFallback() {
-  const { language, api } = useTypedSelector((state) => state.config);
+  const intl = useIntl();
+  const language = intl.locale;
+
+  const { api } = useTypedSelector((state) => state.config);
   const url_support = api?.url_support;
   return (
     <ErrorPage500
@@ -55,15 +56,18 @@ function ErrorFallback() {
 const AlertProvider = ({ children }: { children: Node }): Node => {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
-      {/* <ComponentWithLazyHook
-        componentWithInjectedHook={InternalAlertProvider}
+      <ComponentWithFederatedImports
+        componentWithInjectedImports={InternalAlertProvider}
         renderOnError={<ErrorPage500 />}
-        remoteEntryUrl={'http://localhost:8084/shell/remoteEntry.js'} //TODO find a way to inject those values
-        federatedModule={'./alerts/alertHooks'}
-        moduleFederationScope={'shell'}
         componentProps={{ children }}
-      /> */}
-      <InternalAlertProvider>{children}</InternalAlertProvider>
+        federatedImports={[
+          {
+            scope: 'shell',
+            module: './alerts/alertHooks',
+            remoteEntryUrl: 'http://localhost:8084/shell/remoteEntry.js',
+          },
+        ]}
+      />
     </ErrorBoundary>
   );
 };
