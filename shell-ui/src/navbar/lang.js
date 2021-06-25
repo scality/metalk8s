@@ -6,8 +6,6 @@ import translations_en from './translations/en';
 import translations_fr from './translations/fr';
 import { LANGUAGE_CHANGED_EVENT } from './events';
 
-console.log('shell-react-intl', reactIntl)
-
 const LanguageContext = React.createContext(null);
 
 type Language = 'en' | 'fr';
