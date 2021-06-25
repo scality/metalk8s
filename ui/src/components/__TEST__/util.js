@@ -3,11 +3,13 @@ import { ThemeProvider } from 'styled-components';
 import { render } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { screen, waitForElementToBeRemoved } from '@testing-library/react';
+import { IntlProvider } from 'react-intl';
 import AlertProvider from '../../containers/AlertProvider';
 import { Provider } from 'react-redux';
 import { applyMiddleware, compose, createStore } from 'redux';
 import createSagaMiddleware from 'redux-saga';
 import reducer from '../../ducks/reducer';
+import translations_en from '../../translations/en';
 
 const composeEnhancers =
   typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
@@ -56,13 +58,15 @@ const AllTheProviders = ({ children }) => {
     },
   };
   return (
-    <Provider store={store}>
-      <QueryClientProvider client={queryClient}>
-        <AlertProvider>
-          <ThemeProvider theme={theme}>{children}</ThemeProvider>
-        </AlertProvider>
-      </QueryClientProvider>
-    </Provider>
+    <IntlProvider locale="en" messages={translations_en}>
+      <Provider store={store}>
+        <QueryClientProvider client={queryClient}>
+          <AlertProvider>
+            <ThemeProvider theme={theme}>{children}</ThemeProvider>
+          </AlertProvider>
+        </QueryClientProvider>
+      </Provider>
+    </IntlProvider>
   );
 };
 
