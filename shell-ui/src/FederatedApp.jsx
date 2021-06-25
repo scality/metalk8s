@@ -22,7 +22,7 @@ import {
   FederatedComponent,
   type FederatedComponentProps,
   type SolutionUI,
-} from './ModuleFederation';
+} from '@scality/module-federation';
 import { useAuth as useOidcReactAuth, type AuthContextProps } from 'oidc-react';
 import AlertProvider from './alerts/AlertProvider';
 import {

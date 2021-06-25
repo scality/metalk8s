@@ -3,7 +3,7 @@ import 'regenerator-runtime/runtime';
 import "@fortawesome/fontawesome-free/js/all.js";
 
 import NavbarMdx from './src/navbar/index.mdx';
-import { FederatedComponent } from './src/ModuleFederation';
+import { FederatedComponent } from '@scality/module-federation';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
 ReactDOM.render(<>
