@@ -21,7 +21,7 @@ import {
 import { CONNECT_SALT_API } from './app/salt';
 import * as ApiSalt from '../services/salt/api';
 import { LOGOUT } from './config';
-it('Salt authentication success', () => {
+it.skip('Salt authentication success', () => {
   ApiSalt.initialize('url');
   const gen = authenticateSaltApi();
   expect(gen.next().value.type).toEqual('SELECT');
@@ -59,7 +59,7 @@ it('Salt authentication success', () => {
   expect(gen.next().done).toEqual(true);
 });
 
-it('Salt authentication failed', () => {
+it.skip('Salt authentication failed', () => {
   ApiSalt.initialize('url');
   const gen = authenticateSaltApi();
   expect(gen.next().value.type).toEqual('SELECT');
