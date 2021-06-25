@@ -15,24 +15,23 @@ import { createContext } from "react";
 import { useContext } from "react";
 import { FunctionComponent } from "react";
 
+type Module = any;
+
 declare var __webpack_init_sharing__: (scope: string) => Promise<void>;
 declare var __webpack_share_scopes__: { default: any };
 declare global {
 	interface Window {
 		[scope: string]: {
       init: (sharedModules: any) => Promise<void>;
-      get: (module: string) => () => any;
+      get: (module: string) => () => Module;
     }
 	}
 }
-
-type Module = any; // todo retrieve this type from webpack
 
 export function loadModule(
   scope: string,
   module: string
 ): () => Promise<Module> {
-  // todo replace any type with module
   return async () => {
     // Initializes the share scope. This fills it with known provided modules from this build and all remotesk
     await __webpack_init_sharing__("default");
@@ -60,7 +59,6 @@ export const useCurrentApp = () => {
 };
 
 export const useDynamicScripts = ({
-  //todo check if script is already loaded
   urls,
 }: {
   urls: string[];
@@ -77,8 +75,7 @@ export const useDynamicScripts = ({
 
     setStatus("loading");
 
-    //todo rename elements to ,... ???>
-    const elements = urls.flatMap((url) => {
+    const elementsPromises = urls.flatMap((url) => {
       if (typeof url !== "string") {
         throw new Error(
           `Invalid url, can't load a dynamic script with url '${url}'`
@@ -94,7 +91,7 @@ export const useDynamicScripts = ({
         (scriptElement) => scriptElement.attributes.src?.value === url
       );
       if (existingElement) {
-        return [{ url, promise: Promise.resolve(), element: existingElement }];
+        return [Promise.resolve()];
       }
       const element = document.createElement("script");
       element.src = url;
@@ -120,11 +117,10 @@ export const useDynamicScripts = ({
         document.head.appendChild(element);
       });
 
-      return [{ url, promise, element }];
+      return [promise];
     });
 
-    //TODO cancel {promises}/{set state} on unmount
-    Promise.all(elements.map((elem) => elem.promise))
+    Promise.all(elementsPromises)
       .then(() => {
         if (isMountedRef.current) {
           setStatus("success");
@@ -224,36 +220,34 @@ export const lazyWithModules = <Props extends {}>(
   });
 };
 
-export const ComponentWithLazyHook = <Props extends {}>({
-  remoteEntryUrl,
+export const ComponentWithFederatedImports = <Props extends {}>({
   renderOnError,
-  componentWithInjectedHook,
-  moduleFederationScope,
-  app,
-  federatedModule,
+  componentWithInjectedImports,
   componentProps,
+  federatedImports
 }: {
-  remoteEntryUrl: string;
   renderOnError: ReactNode;
-  componentWithInjectedHook: FunctionComponent<Props>;
-  moduleFederationScope: string;
-  federatedModule: string;
-  app: SolutionUI;
+  componentWithInjectedImports: FunctionComponent<Props>;
   componentProps: Props;
+  federatedImports: {
+    remoteEntryUrl: string;
+    scope: string;
+    module: string;
+  }[]
 }): ReactNode => {
   const { status } = useDynamicScripts({
-    urls: [remoteEntryUrl],
+    urls: federatedImports.map(federatedImport => federatedImport.remoteEntryUrl),
   });
 
   const Component = useMemo(
     () =>
-      lazyWithModules(componentWithInjectedHook, {
-        scope: moduleFederationScope,
-        module: federatedModule,
-        url: remoteEntryUrl,
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-      }),
-    [moduleFederationScope, federatedModule, remoteEntryUrl]
+      lazyWithModules(componentWithInjectedImports,
+        ...federatedImports.map(federatedImport => ({
+          scope: federatedImport.scope,
+          module: federatedImport.module,
+          url: federatedImport.remoteEntryUrl,
+        }))),
+    [JSON.stringify(federatedImports)]
   );
 
   if (status === "loading" || status === "idle") {
@@ -268,10 +262,8 @@ export const ComponentWithLazyHook = <Props extends {}>({
     <Suspense
       fallback={<Loader size="massive" centered={true} aria-label="loading" />}
     >
-      <CurrentAppContext.Provider value={app}>
-        {/*@ts-expect-error*/}
-        <Component {...componentProps} />
-      </CurrentAppContext.Provider>
+      {/*@ts-expect-error*/}
+      <Component {...componentProps} />
     </Suspense>
   );
 };
