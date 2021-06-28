@@ -15,6 +15,20 @@
       "subLogin": {
           "https://mocked.ingress/docs":{ "en": "Documentation", "fr": "Documentation" }
       }
-    }
+    },
+    "navbar": {
+      "main": [
+        {
+          "kind": "metalk8s-ui",
+          "view": "platform"
+        },
+        {
+          "kind": "metalk8s-ui",
+          "view": "alerts"
+        }
+      ],
+      "subLogin": []
+    },
+    "discoveryUrl": "/shell/deployed-ui-apps.json"
   }
   

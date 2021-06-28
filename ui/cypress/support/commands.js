@@ -34,17 +34,31 @@ import {
 
 Cypress.Commands.add(
   'setupMocks',
-  (config = 'config.json', shellConfig = 'shell-config.json') => {
+  (
+    config = 'config.json',
+    shellConfig = 'shell-config.json',
+    uiDiscovery = 'deployed-ui-apps.json',
+  ) => {
     // Static files
 
     const stubConfig =
       typeof config === 'string' ? { fixture: config } : config;
     const stubShellConfig =
-      typeof config === 'string' ? { fixture: shellConfig } : config;
+      typeof shellConfig === 'string' ? { fixture: shellConfig } : shellConfig;
 
-    if (stubShellConfig)
+    const stubUIDiscovery =
+      typeof uiDiscovery === 'string' ? { fixture: uiDiscovery } : uiDiscovery;
+
+    if (stubShellConfig) {
       cy.route2('GET', '/shell/config.json', stubShellConfig);
-    if (stubConfig) cy.route2('GET', '/config.json', stubConfig);
+    }
+    if (stubConfig) {
+      cy.route2('GET', '/config.json', stubConfig);
+    }
+    if (stubUIDiscovery) {
+      cy.route2('GET', '/shell/deployed-ui-apps.json', stubUIDiscovery);
+    }
+
     cy.route2('GET', '/oidc/.well-known/openid-configuration', {
       fixture: 'openid-config.json',
     });
