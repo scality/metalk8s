@@ -181,9 +181,6 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     constants.COREDNS_REPOSITORY: [
         "coredns",
     ],
-    constants.COREOS_REPOSITORY: [
-        "kube-state-metrics",
-    ],
     constants.DEX_REPOSITORY: [
         "dex",
     ],
@@ -208,6 +205,9 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     ],
     constants.KIWIGRID_REPOSITORY: [
         "k8s-sidecar",
+    ],
+    constants.KUBE_STATE_METRICS_REPOSITORY: [
+        "kube-state-metrics",
     ],
     constants.PROMETHEUS_ADAPTER_REPOSITORY: [
         "k8s-prometheus-adapter-amd64",

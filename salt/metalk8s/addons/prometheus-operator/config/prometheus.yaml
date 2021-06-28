@@ -39,10 +39,10 @@ spec:
           available: 3
       node_network_receive_errors:
         warning:
-          errors: 10  # Number of receive errors for the last 2m
+          error_rate: 0.01  # Rate of receive errors for the last 2m
       node_network_transmit_errors:
         warning:
-          errors: 10  # Number of transmit errors for the last 2m
+          error_rate: 0.01  # Rate of transmit errors for the last 2m
       node_high_number_conntrack_entries_used:
         warning:
           threshold: 0.75

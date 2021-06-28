@@ -1,20 +1,50 @@
 [
     {
-        "message": "The configuration of the instances of the Alertmanager cluster `{{ $labels.namespace }}/{{ $labels.service }}` are out of sync.\n{{ range printf \"alertmanager_config_hash{namespace=\\\"%s\\\",service=\\\"%s\\\"}\" $labels.namespace $labels.service | query }}\nConfiguration hash for pod {{ .Labels.pod }} is \"{{ printf \"%.f\" .Value }}\"\n{{ end }}",
+        "message": "Reloading an Alertmanager configuration has failed.",
+        "name": "AlertmanagerFailedReload",
+        "query": "max_over_time(alertmanager_config_last_reload_successful{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) == 0",
+        "severity": "critical"
+    },
+    {
+        "message": "A member of an Alertmanager cluster has not found all other cluster members.",
+        "name": "AlertmanagerMembersInconsistent",
+        "query": "max_over_time(alertmanager_cluster_members{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) < on(namespace, service) group_left() count by(namespace, service) (max_over_time(alertmanager_cluster_members{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]))",
+        "severity": "critical"
+    },
+    {
+        "message": "An Alertmanager instance failed to send notifications.",
+        "name": "AlertmanagerFailedToSendAlerts",
+        "query": "(rate(alertmanager_notifications_failed_total{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) / rate(alertmanager_notifications_total{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m])) > 0.01",
+        "severity": "warning"
+    },
+    {
+        "message": "All Alertmanager instances in a cluster failed to send notifications to a critical integration.",
+        "name": "AlertmanagerClusterFailedToSendAlerts",
+        "query": "min by(namespace, service, integration) (rate(alertmanager_notifications_failed_total{integration=~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) / rate(alertmanager_notifications_total{integration=~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m])) > 0.01",
+        "severity": "critical"
+    },
+    {
+        "message": "All Alertmanager instances in a cluster failed to send notifications to a non-critical integration.",
+        "name": "AlertmanagerClusterFailedToSendAlerts",
+        "query": "min by(namespace, service, integration) (rate(alertmanager_notifications_failed_total{integration!~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) / rate(alertmanager_notifications_total{integration!~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m])) > 0.01",
+        "severity": "warning"
+    },
+    {
+        "message": "Alertmanager instances within the same cluster have different configurations.",
         "name": "AlertmanagerConfigInconsistent",
         "query": "count by(namespace, service) (count_values by(namespace, service) (\"config_hash\", alertmanager_config_hash{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})) != 1",
         "severity": "critical"
     },
     {
-        "message": "Reloading Alertmanager's configuration has failed for {{ $labels.namespace }}/{{ $labels.pod}}.",
-        "name": "AlertmanagerFailedReload",
-        "query": "alertmanager_config_last_reload_successful{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"} == 0",
-        "severity": "warning"
+        "message": "Half or more of the Alertmanager instances within the same cluster are down.",
+        "name": "AlertmanagerClusterDown",
+        "query": "(count by(namespace, service) (avg_over_time(up{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) < 0.5) / count by(namespace, service) (up{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})) >= 0.5",
+        "severity": "critical"
     },
     {
-        "message": "Alertmanager has not found all other members of the cluster.",
-        "name": "AlertmanagerMembersInconsistent",
-        "query": "alertmanager_cluster_members{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"} != on(service) group_left() count by(service) (alertmanager_cluster_members{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})",
+        "message": "Half or more of the Alertmanager instances within the same cluster are crashlooping.",
+        "name": "AlertmanagerClusterCrashlooping",
+        "query": "(count by(namespace, service) (changes(process_start_time_seconds{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[10m]) > 4) / count by(namespace, service) (up{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})) >= 0.5",
         "severity": "critical"
     },
     {
@@ -96,13 +126,13 @@
         "severity": "warning"
     },
     {
-        "message": "{{ printf \"%.4g\" $value }}% of the {{ $labels.job }}/{{ $labels.service }} targets in {{ $labels.namespace }} namespace are down.",
+        "message": "One or more targets are unreachable.",
         "name": "TargetDown",
         "query": "100 * (count by(job, namespace, service) (up == 0) / count by(job, namespace, service) (up)) > 10",
         "severity": "warning"
     },
     {
-        "message": "This is an alert meant to ensure that the entire alerting pipeline is functional.\nThis alert is always firing, therefore it should always be firing in Alertmanager\nand always fire against a receiver. There are integrations with various notification\nmechanisms that send a notification when this alert is not firing. For example the\n\"DeadMansSnitch\" integration in PagerDuty.",
+        "message": "An alert that should always be firing to certify that Alertmanager is working properly.",
         "name": "Watchdog",
         "query": "vector(1)",
         "severity": "none"
@@ -144,9 +174,21 @@
         "severity": "critical"
     },
     {
+        "message": "kube-state-metrics sharding is misconfigured.",
+        "name": "KubeStateMetricsShardingMismatch",
+        "query": "stdvar(kube_state_metrics_total_shards{job=\"kube-state-metrics\"}) != 0",
+        "severity": "critical"
+    },
+    {
+        "message": "kube-state-metrics shards are missing.",
+        "name": "KubeStateMetricsShardsMissing",
+        "query": "2 ^ max(kube_state_metrics_total_shards{job=\"kube-state-metrics\"}) - 1 - sum(2 ^ max by(shard_ordinal) (kube_state_metrics_shard_ordinal{job=\"kube-state-metrics\"})) != 0",
+        "severity": "critical"
+    },
+    {
         "message": "Pod is crash looping.",
         "name": "KubePodCrashLooping",
-        "query": "rate(kube_pod_container_status_restarts_total{job=\"kube-state-metrics\",namespace=~\".*\"}[10m]) * 60 * 5 > 0",
+        "query": "increase(kube_pod_container_status_restarts_total{job=\"kube-state-metrics\",namespace=~\".*\"}[10m]) > 0",
         "severity": "warning"
     },
     {
@@ -488,13 +530,13 @@
     {
         "message": "Network interface is reporting many receive errors.",
         "name": "NodeNetworkReceiveErrs",
-        "query": "increase(node_network_receive_errs_total[2m]) > 10",
+        "query": "increase(node_network_receive_errs_total[2m]) / rate(node_network_receive_packets_total[2m]) > 0.01",
         "severity": "warning"
     },
     {
         "message": "Network interface is reporting many transmit errors.",
         "name": "NodeNetworkTransmitErrs",
-        "query": "increase(node_network_transmit_errs_total[2m]) > 10",
+        "query": "increase(node_network_transmit_errs_total[2m]) / rate(node_network_transmit_packets_total[2m]) > 0.01",
         "severity": "warning"
     },
     {
@@ -512,7 +554,7 @@
     {
         "message": "Clock on {{ $labels.instance }} is not synchronising. Ensure NTP is configured on this host.",
         "name": "NodeClockNotSynchronising",
-        "query": "min_over_time(node_timex_sync_status[5m]) == 0",
+        "query": "min_over_time(node_timex_sync_status[5m]) == 0 and node_timex_maxerror_seconds >= 16",
         "severity": "warning"
     },
     {
@@ -530,11 +572,11 @@
     {
         "message": "Failed device in RAID array",
         "name": "NodeRAIDDiskFailure",
-        "query": "node_md_disks{state=\"fail\"} >= 1",
+        "query": "node_md_disks{state=\"failed\"} >= 1",
         "severity": "warning"
     },
     {
-        "message": "Network interface \"{{ $labels.device }}\" changing it's up status often on node-exporter {{ $labels.namespace }}/{{ $labels.pod }}\"",
+        "message": "Network interface \"{{ $labels.device }}\" changing it's up status often on node-exporter {{ $labels.namespace }}/{{ $labels.pod }}",
         "name": "NodeNetworkInterfaceFlapping",
         "query": "changes(node_network_up{device!~\"veth.+\",job=\"node-exporter\"}[2m]) > 2",
         "severity": "warning"
@@ -600,12 +642,6 @@
         "severity": "warning"
     },
     {
-        "message": "Prometheus encounters more than 3% errors sending alerts to any Alertmanager.",
-        "name": "PrometheusErrorSendingAlertsToAnyAlertmanager",
-        "query": "min without(alertmanager) (rate(prometheus_notifications_errors_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) / rate(prometheus_notifications_sent_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m])) * 100 > 3",
-        "severity": "critical"
-    },
-    {
         "message": "Prometheus is not connected to any Alertmanagers.",
         "name": "PrometheusNotConnectedToAlertmanagers",
         "query": "max_over_time(prometheus_notifications_alertmanagers_discovered{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) < 1",
@@ -626,7 +662,7 @@
     {
         "message": "Prometheus is not ingesting samples.",
         "name": "PrometheusNotIngestingSamples",
-        "query": "rate(prometheus_tsdb_head_samples_appended_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) <= 0",
+        "query": "(rate(prometheus_tsdb_head_samples_appended_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) <= 0 and (sum without(scrape_job) (prometheus_target_metadata_cache_entries{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}) > 0 or sum without(rule_group) (prometheus_rule_group_rules{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}) > 0))",
         "severity": "warning"
     },
     {
@@ -644,13 +680,13 @@
     {
         "message": "Prometheus fails to send samples to remote storage.",
         "name": "PrometheusRemoteStorageFailures",
-        "query": "(rate(prometheus_remote_storage_failed_samples_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) / (rate(prometheus_remote_storage_failed_samples_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) + rate(prometheus_remote_storage_succeeded_samples_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]))) * 100 > 1",
+        "query": "((rate(prometheus_remote_storage_failed_samples_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) or rate(prometheus_remote_storage_samples_failed_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m])) / ((rate(prometheus_remote_storage_failed_samples_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) or rate(prometheus_remote_storage_samples_failed_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m])) + (rate(prometheus_remote_storage_succeeded_samples_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) or rate(prometheus_remote_storage_samples_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m])))) * 100 > 1",
         "severity": "critical"
     },
     {
         "message": "Prometheus remote write is behind.",
         "name": "PrometheusRemoteWriteBehind",
-        "query": "(max_over_time(prometheus_remote_storage_highest_timestamp_in_seconds{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) - on(job, instance) group_right() max_over_time(prometheus_remote_storage_queue_highest_sent_timestamp_seconds{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m])) > 120",
+        "query": "(max_over_time(prometheus_remote_storage_highest_timestamp_in_seconds{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) - ignoring(remote_name, url) group_right() max_over_time(prometheus_remote_storage_queue_highest_sent_timestamp_seconds{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m])) > 120",
         "severity": "critical"
     },
     {
@@ -676,5 +712,17 @@
         "name": "PrometheusTargetLimitHit",
         "query": "increase(prometheus_target_scrape_pool_exceeded_target_limit_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) > 0",
         "severity": "warning"
+    },
+    {
+        "message": "Prometheus has dropped targets because some scrape configs have exceeded the labels limit.",
+        "name": "PrometheusLabelLimitHit",
+        "query": "increase(prometheus_target_scrape_pool_exceeded_label_limits_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) > 0",
+        "severity": "warning"
+    },
+    {
+        "message": "Prometheus encounters more than 3% errors sending alerts to any Alertmanager.",
+        "name": "PrometheusErrorSendingAlertsToAnyAlertmanager",
+        "query": "min without(alertmanager) (rate(prometheus_notifications_errors_total{alertmanager!~\"\",job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) / rate(prometheus_notifications_sent_total{alertmanager!~\"\",job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m])) * 100 > 3",
+        "severity": "critical"
     }
 ]
