@@ -42,7 +42,7 @@ const FederatedIntlProvider = ({ children }: { children: Node }): Node => {
         {
           scope: 'shell',
           module: './lang',
-          remoteEntryUrl: 'http://localhost:8084/shell/remoteEntry.js',
+          remoteEntryUrl: window.shellUIRemoteEntryUrl,
         },
       ]}
     />

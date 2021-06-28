@@ -16,6 +16,10 @@
     <link rel="preload" as="script" href="{{this}}" />
     {{/each}}
     <title>MetalK8s Platform</title>
+    <script type="application/javascript">
+      window.shellUIRemoteEntryUrl =
+        'http://localhost:8084/shell/remoteEntry.js';//This is only used in local, so it is fine to hardcode it.
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

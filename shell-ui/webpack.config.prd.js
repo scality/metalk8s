@@ -8,13 +8,10 @@ module.exports = {
   mode: 'production',
   devtool: false,
   entry: {
-    'solution-ui-navbar': './src/navbar/index.js',
-    alerts: './src/alerts/index.js',
-    platform: './src/platform/library.js',
+    shell: './src/index.js',
   },
   output: {
     path: path.resolve(__dirname, 'build'),
-    filename: `[name].${version}.js`,
   },
   plugins: [
     ...common.plugins(),

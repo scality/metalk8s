@@ -9,8 +9,8 @@ ReactDOM.render(
   <FederatedComponent
     module={'./App'}
     scope={'shell'}
-    url={'http://localhost:8084/shell/remoteEntry.js'}
-  />, //This file is only used in dev env, so as a first implementation it is fine to hardcode this url
+    url={window.shellUIRemoteEntryUrl}
+  />,
   document.getElementById('root'),
 );
 

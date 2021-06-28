@@ -30,9 +30,9 @@ const InternalAlertProvider = ({
 
   return (
     <FederatedComponent
-      module={'./alerts/AlertProvider'} //TODO find a way to inject those values
+      module={'./alerts/AlertProvider'}
       scope={'shell'}
-      url={'http://localhost:8084/shell/remoteEntry.js'}
+      url={window.shellUIRemoteEntryUrl}
       props={{ alertManagerUrl, children }}
     ></FederatedComponent>
   );
@@ -64,7 +64,7 @@ const AlertProvider = ({ children }: { children: Node }): Node => {
           {
             scope: 'shell',
             module: './alerts/alertHooks',
-            remoteEntryUrl: 'http://localhost:8084/shell/remoteEntry.js',
+            remoteEntryUrl: window.shellUIRemoteEntryUrl,
           },
         ]}
       />

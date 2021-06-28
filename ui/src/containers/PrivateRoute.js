@@ -42,7 +42,7 @@ const PrivateRoute = ({ ...props }) => {
       renderOnError={<ErrorPage500 />}
       federatedImports={[
         {
-          remoteEntryUrl: 'http://localhost:8084/shell/remoteEntry.js',//TODO inject this
+          remoteEntryUrl: window.shellUIRemoteEntryUrl,
           scope: 'shell',
           module: './auth/AuthProvider',
         },
