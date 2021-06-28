@@ -492,6 +492,7 @@ const VolumeListTable = (props) => {
         },
       },
     ];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [volumeListData, theme, isNodeColumn]);
   const nodeCol = {
     Header: 'Node',

@@ -19,7 +19,8 @@ const InternalPrivateRoute = ({
 
   useEffect(() => {
     dispatch(updateAPIConfigAction(userData));
-  }, [!userData, dispatch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [!userData]);
 
   if (userData) {
     return <Route {...rest} component={component} />;

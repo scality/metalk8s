@@ -472,6 +472,7 @@ const VolumeListTable = (props) => {
         },
       },
     ];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [volumeListData, theme, history, nodeName]);
 
   return (

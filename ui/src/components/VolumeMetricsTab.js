@@ -100,7 +100,8 @@ const MetricsTab = (props) => {
   };
 
   // handle timespan in url query
-  useEffect(handleUrlQuery, [volumeName]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(handleUrlQuery, [volumeName, query.get('from'), metricsTimeSpan]);
 
   const updateMetricsGraph = () => dispatch(fetchVolumeStatsAction());
 
