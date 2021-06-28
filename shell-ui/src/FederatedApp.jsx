@@ -35,7 +35,7 @@ import {
   useConfigRetriever,
   useDiscoveredViews,
 } from './initFederation/ConfigurationProviders';
-import { Route, Switch, BrowserRouter } from 'react-router-dom';
+import { Route, Switch, Router } from 'react-router-dom';
 import {
   ShellConfigProvider,
   useShellConfig,
@@ -43,6 +43,7 @@ import {
 } from './initFederation/ShellConfigProvider';
 import { AuthConfigProvider, useAuthConfig } from './auth/AuthConfigProvider';
 import { AuthProvider, useAuth } from './auth/AuthProvider';
+import { createBrowserHistory } from 'history';
 
 export const queryClient: typeof QueryClient = new QueryClient();
 
@@ -118,8 +119,14 @@ function InternalApp(): Node {
   const [federatedComponent, setFederatedComponent] =
     useState<FederatedComponentProps | null>(null);
 
+  const history = useMemo(() => {
+    const history = createBrowserHistory({});
+    if (window.Cypress) window.__history__ = history;
+    return history;
+  }, []);
+
   const discoveredViews = useDiscoveredViews();
-  const {retrieveConfiguration} = useConfigRetriever();
+  const { retrieveConfiguration } = useConfigRetriever();
 
   const routes = discoveredViews
     .filter((discoveredView) => discoveredView.isFederated)
@@ -146,7 +153,7 @@ function InternalApp(): Node {
     }));
 
   return (
-    <BrowserRouter>
+    <Router history={history}>
       <SolutionsNavbar>
         <Switch>
           {routes.map((route) => (
@@ -154,7 +161,7 @@ function InternalApp(): Node {
           ))}
         </Switch>
       </SolutionsNavbar>
-    </BrowserRouter>
+    </Router>
   );
 }
 
