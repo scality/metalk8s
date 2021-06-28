@@ -9,7 +9,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.3",
     "@fortawesome/react-fontawesome": "^0.1.14",
     "@kubernetes/client-node": "github:scality/kubernetes-client-javascript.git#browser-0.10.2-63-g579d066",
-    "@scality/module-federation": "file:../ui-module-federation",
+    "@scality/module-federation": "github:scality/module-federation.git#init",
     "@scality/core-ui": "github:scality/core-ui.git#v0.18.3",
     "axios": "^0.21.1",
     "formik": "2.2.5",

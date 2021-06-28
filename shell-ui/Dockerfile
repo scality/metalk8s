@@ -10,7 +10,7 @@ COPY package*.json /home/node/
 # Ref : https://npm.community/t/npm-ci-not-running-prepare-for-git-dependencies-when-run-as-root-in-docker/4485/2
 RUN npm config set unsafe-perm true && npm ci
 
-COPY webpack.*.js babel.config.js .flowconfig /home/node/
+COPY index-template.html webpack.*.js babel.config.js .flowconfig /home/node/
 COPY src /home/node/src
 
 RUN npm run build

@@ -11,7 +11,7 @@ RUN yum install -y --setopt=skip_missing_names_on_install=False \
         nginx \
         nodejs
 
-COPY ui/standalone-nginx.conf /etc/nginx/conf.d/default.conf
+COPY standalone-nginx.conf /etc/nginx/conf.d/default.conf
 RUN rm -rf /usr/share/nginx/html/*
 
 # UI build (cannot use build stages for now) {{{
@@ -19,16 +19,15 @@ RUN rm -rf /usr/share/nginx/html/*
 RUN adduser -u 1000 --home /home/node node
 
 #USER node
-WORKDIR /home/node/ui
+WORKDIR /home/node
 
-COPY ui/package.json ui/package-lock.json /home/node/ui/
-COPY ui-module-federation /home/node/ui-module-federation/
+COPY package.json package-lock.json /home/node/
 
 RUN npm config set unsafe-perm true && npm ci
 
-COPY ui/.babelrc ui/webpack.common.js ui/webpack.prod.js /home/node/ui/
-COPY ui/public /home/node/ui/public/
-COPY ui/src /home/node/ui/src/
+COPY .babelrc webpack.common.js webpack.prod.js /home/node/
+COPY public /home/node/public/
+COPY src /home/node/src/
 
 RUN npm run build
 
