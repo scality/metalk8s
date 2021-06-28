@@ -16,7 +16,6 @@ from buildchain import targets
 from buildchain import types
 from buildchain import utils
 from buildchain import ui
-from buildchain import versions
 
 
 def task_shell_ui() -> types.TaskDict:
@@ -56,9 +55,7 @@ def task__shell_ui_build() -> types.TaskDict:
         ],
         "file_dep": list(utils.git_ls("shell-ui")),
         "targets": [
-            constants.SHELL_UI_BUILD_ROOT.joinpath(
-                f"solution-ui-navbar.{versions.SHELL_UI_VERSION}.js"
-            ),
+            constants.SHELL_UI_BUILD_ROOT / "shell" / "index.html",
         ],
         "clean": [clean],
     }
@@ -74,6 +71,8 @@ def run_shell_ui_builder(cmd: str) -> docker_command.DockerRun:
         entrypoint="../ui/entrypoint.sh",
         source_mounts=[
             "src",
+            "index-template.html",
+            "webpack.common.js",
             "webpack.config.prd.js",
             "babel.config.js",
             ".flowconfig",
