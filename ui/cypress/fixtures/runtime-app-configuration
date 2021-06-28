@@ -1,0 +1,30 @@
+{
+    "kind": "MicroAppRuntimeConfiguration",
+    "apiVersion": "ui.scality.com/v1alpha1",
+    "metadata": {
+        "kind": "metalk8s-ui",
+        "name": "metalk8s.eu-west-1"
+    },
+    "spec": {
+        "title": "MetalK8s Platform",
+        "selfConfiguration": {
+            "url": "/api/kubernetes",
+            "url_salt": "/api/salt",
+            "url_prometheus": "/api/prometheus",
+            "url_grafana": "/grafana",
+            "url_doc": "/docs",
+            "url_alertmanager": "/api/alertmanager",
+            "flags": [],
+            "ui_base_path":"/",
+            "url_support": "https://github.com/scality/metalk8s/discussions/new"
+          },
+        "auth": {
+            "kind": "OIDC",
+            "providerUrl": "/oidc",
+            "redirectUrl": "/",
+            "clientId": "metalk8s-ui",
+            "responseType": "id_token",
+            "scopes": "openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
+        }
+    }
+}
