@@ -17,4 +17,4 @@ name: prometheus-adapter
 sources:
 - https://github.com/kubernetes/charts
 - https://github.com/DirectXMan12/k8s-prometheus-adapter
-version: 2.12.2
+version: 2.14.2
