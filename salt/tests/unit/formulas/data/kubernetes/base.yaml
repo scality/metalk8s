@@ -445,3 +445,9 @@ items: []
 apiVersion: monitoring.coreos.com/v1
 objectKind: PrometheusRule
 items: []
+
+---
+# Default deployment list (empty)
+apiVersion: apps/v1
+objectKind: Deployment
+items: []

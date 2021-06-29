@@ -16,5 +16,6 @@ include:
 - .theme-configmap
 - .service-configuration
 - .secret
+- .pre-upgrade
 - .chart
 - .clusterrolebinding
