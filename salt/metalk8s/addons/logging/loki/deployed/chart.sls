@@ -14,7 +14,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.5.0
+    chart: loki-2.5.2
     heritage: metalk8s
     release: loki
   name: loki
@@ -51,6 +51,7 @@ spec:
   - downwardAPI
 ---
 apiVersion: v1
+automountServiceAccountToken: true
 kind: ServiceAccount
 metadata:
   annotations: {}
@@ -59,7 +60,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.5.0
+    chart: loki-2.5.2
     heritage: metalk8s
     release: loki
   name: loki
@@ -73,7 +74,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.5.0
+    chart: loki-2.5.2
     heritage: metalk8s
     release: loki
   name: loki
@@ -96,7 +97,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.5.0
+    chart: loki-2.5.2
     heritage: metalk8s
     release: loki
   name: loki
@@ -117,7 +118,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.5.0
+    chart: loki-2.5.2
     heritage: metalk8s
     release: loki
     variant: headless
@@ -143,7 +144,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.5.0
+    chart: loki-2.5.2
     heritage: metalk8s
     release: loki
   name: loki
@@ -168,7 +169,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.5.0
+    chart: loki-2.5.2
     heritage: metalk8s
     release: loki
   name: loki
@@ -198,7 +199,7 @@ spec:
       - args:
         - -config.file=/etc/loki/loki.yaml
         env: null
-        image: {% endraw -%}{{ build_image_name("loki", False) }}{%- raw %}:2.2.0
+        image: {% endraw -%}{{ build_image_name("loki", False) }}{%- raw %}:2.2.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -269,9 +270,10 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.5.0
+    chart: loki-2.5.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
+    release: loki
   name: loki
   namespace: metalk8s-logging
 spec:
