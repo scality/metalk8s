@@ -44,9 +44,8 @@
   nginx-ingress-controller image has been bump accordingly from v0.41.2
   to v0.46.0 (PR[#3371](https://github.com/scality/metalk8s/pull/3371))
 
-- [#3279](https://github.com/scality/metalk8s/issues/3279) - Bump
-  Calico version from 3.17.0 to 3.19.0
-  (PR [#](https://github.com/scality/metalk8s/pull/))
+- Bump Calico version to 3.19.1
+  (PR [#3430](https://github.com/scality/metalk8s/pull/3430))
 
 - [#3366](https://github.com/scality/metalk8s/issues/3366) - Use
   `systemd` cgroupDriver for Kubelet and containerd
