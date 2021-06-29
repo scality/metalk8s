@@ -18,10 +18,9 @@
   fluent-bit-plugin-loki image has been bump accordingly from v1.6.0-amd64
   to v2.1.0-amd64 (PR[#3364](https://github.com/scality/metalk8s/pull/3364))
 
-- [#3279](https://github.com/scality/metalk8s/issues/3279) - Bump
-  loki chart version from 2.1.0 to 2.5.0.
-  loki image has been bump accordingly from 2.0.0 to 2.2.0
-  (PR[#3363](https://github.com/scality/metalk8s/pull/3363))
+- Bump loki chart version to 2.5.2,
+  loki image has been bump accordingly to 2.2.1
+  (PR[#3428](https://github.com/scality/metalk8s/pull/3428))
 
 - Migrate from stable Dex deprecated chart to dexidp.io Dex chart, and
   bump dex image to v2.28.1
