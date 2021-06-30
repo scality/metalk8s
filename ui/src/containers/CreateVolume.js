@@ -744,7 +744,6 @@ const CreateVolume = (props) => {
                             onBlur={handleOnBlur}
                             onChange={handleChange('labelValue')}
                           />
-                          intl.formatMessage
                           <Button
                             text={intl.formatMessage({ id: 'add' })}
                             type="button"
