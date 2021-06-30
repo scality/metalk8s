@@ -61,7 +61,7 @@ module.exports = {
     }),
     new HtmlWebPackPlugin({
         template: './index-template.html',
-        filename: './shell/index.html',
+        filename: './index.html',
     }),
   ],
 };
