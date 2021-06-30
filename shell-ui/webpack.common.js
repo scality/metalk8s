@@ -28,6 +28,7 @@ module.exports = {
         './auth/AuthProvider': './src/auth/AuthProvider.js',
         './alerts/AlertProvider': './src/alerts/AlertProvider.js',
         './alerts/alertHooks': './src/alerts/alertHooks.js',
+        './moduleFederation/ConfigurationProvider': './src/initFederation/ConfigurationProviders.js',
       },
       shared: {
         ...Object.fromEntries(
@@ -39,6 +40,10 @@ module.exports = {
           ]),
         ),
         '@scality/core-ui': {
+          singleton: true,
+          eager: true,
+        },
+        '@scality/module-federation': {
           singleton: true,
           eager: true,
         },

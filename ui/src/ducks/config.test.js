@@ -42,22 +42,5 @@ it('update the config state when fetchConfig', () => {
     put({ type: SET_API_CONFIG, payload: result }),
   );
 
-  expect(gen.next(result).value).toEqual(
-    call(ApiSalt.initialize, 'http://172.21.254.13:4507'),
-  );
-
-  expect(gen.next(result).value).toEqual(
-    call(ApiPrometheus.initialize, 'http://172.21.254.46:30222'),
-  );
-
-  expect(gen.next(result).value).toEqual(
-    call(ApiAlertmanager.initialize, 'http://172.21.254.46:8443'),
-  );
-
-  expect(gen.next(result).value).toEqual(
-    call(ApiLoki.initialize, 'http://172.21.254.46:8080'),
-  );
-  expect(gen.next().value).toEqual(put(setConfigStatusAction('success')));
-
   expect(gen.next().done).toEqual(true);
 });

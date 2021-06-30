@@ -113,14 +113,17 @@ export function* fetchConfig(): Generator<Effect, void, Result<Config>> {
   const result = yield call(Api.fetchConfig);
   if (!result.error) {
     yield put(setApiConfigAction(result));
-    yield call(ApiSalt.initialize, result.url_salt);
-    yield call(ApiPrometheus.initialize, result.url_prometheus);
-    yield call(ApiAlertmanager.initialize, result.url_alertmanager);
-    yield call(ApiLoki.initialize, result.url_loki);
-    yield put(setConfigStatusAction('success'));
   } else {
     yield put(setConfigStatusAction('error'));
   }
+}
+
+function* setApiConfig({payload: config}: {payload: Config}): Generator<Effect, void, Result<Config>> {
+  yield call(ApiSalt.initialize, config.url_salt);
+  yield call(ApiPrometheus.initialize, config.url_prometheus);
+  yield call(ApiAlertmanager.initialize, config.url_alertmanager);
+  yield call(ApiLoki.initialize, config.url_loki);
+  yield put(setConfigStatusAction('success'));
 }
 
 export function* updateApiServerConfig({
@@ -142,6 +145,7 @@ export function* updateApiServerConfig({
 
 export function* configSaga(): Generator<Effect, void, void> {
   yield takeEvery(FETCH_CONFIG, fetchConfig);
+  yield takeEvery(SET_API_CONFIG, setApiConfig);
   yield takeEvery(UPDATE_API_CONFIG, updateApiServerConfig);
   yield takeEvery(LOGOUT, logOut);
 }

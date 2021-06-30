@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { Route } from 'react-router-dom';
 import { ErrorPage500, ErrorPageAuth } from '@scality/core-ui';
 import { useTypedSelector } from '../hooks';
@@ -17,7 +17,7 @@ const InternalPrivateRoute = ({
   const { userData } = moduleExports['./auth/AuthProvider'].useAuth();
   const dispatch = useDispatch();
 
-  useEffect(() => {
+  useMemo(() => {
     dispatch(updateAPIConfigAction(userData));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [!userData]);

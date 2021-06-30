@@ -109,6 +109,10 @@ module.exports = (env) => ({
           singleton: true,
           eager: true,
         },
+        '@scality/module-federation': {
+          singleton: true,
+          eager: true,
+        },
         'styled-components': {
           singleton: true,
           eager: true,
