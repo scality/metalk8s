@@ -42,7 +42,7 @@ metalk8s-ui-config ConfigMap already exist:
 
 {%- if metalk8s_shell_ui_config is none %}
   {%- set metalk8s_ui_defaults = salt.slsutil.renderer(
-          'salt://metalk8s/addons/ui/config/metalk8s-ui-config.yaml',
+          'salt://metalk8s/addons/ui/config/metalk8s-ui-config.yaml.j2',
           saltenv=saltenv
       )
   %}

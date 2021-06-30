@@ -95,7 +95,7 @@ centralized user interface.
 
 The default configuration values for MetalK8s UI are specified below:
 
-.. literalinclude:: ../../salt/metalk8s/addons/ui/config/metalk8s-ui-config.yaml
+.. literalinclude:: ../../salt/metalk8s/addons/ui/config/metalk8s-ui-config.yaml.j2
    :language: yaml
    :lines: 3-
 

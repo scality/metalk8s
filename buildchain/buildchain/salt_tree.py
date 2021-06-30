@@ -351,7 +351,19 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/ui/deployed/ingress.sls"),
     Path("salt/metalk8s/addons/ui/deployed/init.sls"),
     Path("salt/metalk8s/addons/ui/config/metalk8s-shell-ui-config.yaml.j2"),
-    Path("salt/metalk8s/addons/ui/config/metalk8s-ui-config.yaml"),
+    Path("salt/metalk8s/addons/ui/config/metalk8s-ui-config.yaml.j2"),
+    targets.TemplateFile(
+        task_name="salt/metalk8s/addons/ui/config/deployed-ui-apps.yaml.j2",
+        source=constants.ROOT.joinpath(
+            "salt/metalk8s/addons/ui/config/deployed-ui-apps.yaml.j2.in"
+        ),
+        destination=constants.ISO_ROOT.joinpath(
+            "salt/metalk8s/addons/ui/config/deployed-ui-apps.yaml.j2"
+        ),
+        context={
+            "VERSION": versions.VERSION,
+        },
+    ),
     Path("salt/metalk8s/addons/ui/deployed/ui-configuration.sls"),
     Path("salt/metalk8s/addons/ui/deployed/files/metalk8s-ui-deployment.yaml.j2"),
     Path("salt/metalk8s/addons/ui/deployed/namespace.sls"),

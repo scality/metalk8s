@@ -2,7 +2,7 @@ include:
 - .namespace
 
 {%- set metalk8s_ui_defaults = salt.slsutil.renderer(
-        'salt://metalk8s/addons/ui/config/metalk8s-ui-config.yaml', saltenv=saltenv
+        'salt://metalk8s/addons/ui/config/metalk8s-ui-config.yaml.j2', saltenv=saltenv
     )
 %}
 
@@ -59,19 +59,28 @@ Create metalk8s-ui ConfigMap:
         data:
           config.json: |
             {
-              "url": "/api/kubernetes",
-              "url_salt": "/api/salt",
-              "url_prometheus": "/api/prometheus",
-              "url_grafana": "/grafana",
-              "url_doc": "/docs",
-              "url_alertmanager": "/api/alertmanager",
-              "url_navbar": "/shell/solution-ui-navbar.@@ShellUIVersion.js",
-              "url_alerts": "/shell/alerts.@@ShellUIVersion.js",
-              "url_navbar_config": "/shell/config.json",
-              "ui_base_path": "{{ normalized_base_path }}",
-              "alerts_lib_version": "@@ShellUIVersion"
+              "kind": "MicroAppRuntimeConfiguration",
+              "apiVersion": "ui.scality.com/v1alpha1",
+              "metadata": {
+                  "kind": "metalk8s-ui",
+                  "name": "metalk8s.eu-west-1"
+              },
+              "spec": {
+                "title": "{{ metalk8s_ui_config.spec.title }}",
+                "selfConfiguration": {
+                  "url": "/api/kubernetes",
+                  "url_salt": "/api/salt",
+                  "url_prometheus": "/api/prometheus",
+                  "url_grafana": "/grafana",
+                  "url_doc": "/docs",
+                  "url_alertmanager": "/api/alertmanager",
+                  "flags": [],
+                  "ui_base_path": "{{ normalized_base_path }}",
+                  "url_support": "https://github.com/scality/metalk8s/discussions/new"
+                },
+                "auth": {{ metalk8s_ui_config.spec.auth | tojson }}
+              }
             }
-
 Create shell-ui ConfigMap:
   metalk8s_kubernetes.object_present:
     - manifest:
