@@ -61,6 +61,9 @@ spec:
           - name: shell-ui-volume
             mountPath: /etc/metalk8s/ui/shell-config
             readOnly: true
+          - name: deployed-ui-apps-volume
+            mountPath: /etc/metalk8s/ui/deployed-ui-apps
+            readOnly: true
       volumes:
         - name: metalk8s-ui-volume
           configMap:
@@ -68,3 +71,6 @@ spec:
         - name: shell-ui-volume
           configMap:
             name: shell-ui
+        - name: deployed-ui-apps-volume
+          configMap:
+            name: deployed-ui-apps-generated

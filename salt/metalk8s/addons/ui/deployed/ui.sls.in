@@ -11,6 +11,16 @@ include:
     )
 %}
 
+{%- set deployed_ui_apps_defaults = salt.slsutil.renderer(
+        'salt://metalk8s/addons/ui/config/deployed-ui-apps.yaml.j2', saltenv=saltenv
+    )
+%}
+
+{%- set deployed_ui_apps = salt.metalk8s_service_configuration.get_service_conf(
+        'metalk8s-ui', 'deployed-ui-apps', deployed_ui_apps_defaults
+    )
+%}
+
 {%- set metalk8s_shell_ui_defaults = salt.slsutil.renderer(
         'salt://metalk8s/addons/ui/config/metalk8s-shell-ui-config.yaml.j2', saltenv=saltenv
     )
@@ -92,3 +102,15 @@ Create shell-ui ConfigMap:
         data:
           config.json: |-
             {{ metalk8s_shell_ui_config.spec | tojson }}
+
+Create deployed-ui-apps ConfigMap:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: deployed-ui-apps-generated
+          namespace: metalk8s-ui
+        data:
+          deployed-ui-apps.json: |-
+            {{ deployed_ui_apps.spec.deployedApps | tojson }}
