@@ -154,6 +154,12 @@ export function useDiscoveredViews(): (
   | {
       isFederated: false,
       url: string,
+      view: {
+        label: {
+          en: string,
+          fr: string,
+        },
+      },
       isExternal: boolean,
       groups?: string[],
       navbarGroup: 'main' | 'sublogin',
@@ -181,6 +187,9 @@ export function useDiscoveredViews(): (
           url: navbarEntry.url,
           isExternal: navbarEntry.isExternal,
           icon: navbarEntry.icon,
+          view: {
+            label: navbarEntry.label,
+          },
           groups: navbarEntry.groups,
           isFederated: false,
           navbarGroup: navbarEntry.navbarGroup,
@@ -300,8 +309,6 @@ export const ConfigurationProvider = ({
     : statuses.includes('idle') && statuses.includes('success')
     ? 'loading'
     : 'success';
-
-  console.log('Statuses    ', globalStatus, statuses);
 
   return (
     <WebFingersContext.Provider value={results}>

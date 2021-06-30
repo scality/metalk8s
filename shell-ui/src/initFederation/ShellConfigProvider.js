@@ -35,6 +35,10 @@ export type Theme = {
 
 export type NavbarEntry = {
   groups?: string[],
+  label?: {
+      en: string,
+      fr: string,
+  },
   kind?: string,
   view?: string,
   url?: string,
