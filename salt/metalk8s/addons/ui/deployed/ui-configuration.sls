@@ -29,7 +29,7 @@ Create metalk8s-ui-config ConfigMap:
           namespace: metalk8s-ui
         data:
           config.yaml: |-
-            apiVersion: addons.metalk8s.scality.com/v1alpha1
+            apiVersion: addons.metalk8s.scality.com/v1alpha2
             kind: UIConfig
             spec: {}
 
