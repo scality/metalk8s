@@ -14,7 +14,7 @@
 
 
 # Defaults for shell UI configuration
-apiVersion: addons.metalk8s.scality.com/v1alpha1
+apiVersion: addons.metalk8s.scality.com/v1alpha2
 kind: ShellUIConfig
 spec:
   oidc:
@@ -27,6 +27,7 @@ spec:
 {%- for user in dex.spec.config.staticPasswords | map(attribute='email') %}
     "{{ user }}": [metalk8s:admin]
 {%- endfor %}
+  discoveryUrl: "/shell/deployed-ui-apps.json"
   logo:
     light: /brand/assets/logo-light.svg
     dark: /brand/assets/logo-dark.svg
