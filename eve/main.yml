@@ -857,7 +857,7 @@ stages:
       type: local
     steps:
       - ShellCommand: *add_final_status_artifact_failed
-      - GetArtifactsFromStage:
+      - GetArtifactsFromStage: &get_premerge_name
           name: Get pre-merge artifacts_name
           stage: pre-merge
           property: premerge_artifacts_name
@@ -2783,7 +2783,7 @@ stages:
       type: local
     steps:
       - ShellCommand: *add_final_status_artifact_failed
-      - SetProperty: *set_premerge_artifacts_name
+      - GetArtifactsFromStage: *get_premerge_name
       - SetProperty: *set_premerge_url
       - TriggerStages:
           stage_names:
