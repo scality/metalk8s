@@ -3,25 +3,13 @@ const { version } = require('./package.json');
 const { DefinePlugin } = require('webpack');
 const common = require('./webpack.common');
 
+const controlPlaneIP = '{{IP}}';
+const controlPlaneBaseUrl = `https://${controlPlaneIP}:8443`;
+
 module.exports = (env) => ({
   ...common,
   mode: 'development',
   devtool: 'source-map',
-  entry:
-    env.entry === 'navbar'
-      ? { 'solution-ui-navbar': './index.navbar.js' }
-      : env.entry === 'all'
-      ? {
-          'solution-ui-navbar': './src/navbar/index.js',
-          alerts: './src/alerts/index.js',
-          platform: './src/platform/library.js',
-          index: './index.all.js',
-        }
-      : { alerts: './index.alerts.js' },
-  output: {
-    path: path.resolve(__dirname, 'build'),
-    filename: `shell/[name].${version}.js`,
-  },
   module: {
     ...common.module,
     rules: [
@@ -34,11 +22,27 @@ module.exports = (env) => ({
   },
   devServer: {
     port: process.env.PORT || 8084,
-    historyApiFallback: true,
+    historyApiFallback: {
+      rewrites: [
+        { from: /^\/.*$/, to: '/shell/index.html' },
+      ]
+    },
     contentBase: 'public',
+    proxy: [
+      {
+        context: ['/static/js'],
+        target: 'http://localhost:3000',
+        secure: false,
+      },
+      {
+        context: ['/api', '/grafana', '/docs', '/oidc'],
+        target: controlPlaneBaseUrl,
+        secure: false,
+      },
+    ]
   },
   plugins: [
-    ...common.plugins('shell/'),
+    ...common.plugins(),
     new DefinePlugin({
       'process.env': {
         NODE_ENV: JSON.stringify('development'),
