@@ -63,6 +63,7 @@ spec:
       - -c
       - |
         cp -r /tmp/shell-ui-files/html/shell/ /usr/share/nginx/html/
+        ls -larth /usr/share/nginx/html/
         nginx -g 'daemon off;' 2>&1
     ports:
     - containerPort: 80
