@@ -12,6 +12,43 @@ module.exports = {
           loader: 'babel-loader',
         },
       },
+      {
+        test: /\.html$/,
+        use: [
+          {
+            loader: 'html-loader',
+          },
+        ],
+      },
+      {
+        test: /\.(jpe?g|gif|png|ttf|eot|svg)$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]?[hash]',
+              outputPath: 'static/media/',
+            },
+          },
+        ],
+      },
+      {
+        test: /\.woff(2)?$/,
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              limit: 10000,
+              mimetype: 'application/fontwoff',
+              outputPath: 'static/media/',
+            },
+          },
+        ],
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader'],
+      },
     ],
   },
   resolve: {
@@ -28,7 +65,8 @@ module.exports = {
         './auth/AuthProvider': './src/auth/AuthProvider.js',
         './alerts/AlertProvider': './src/alerts/AlertProvider.js',
         './alerts/alertHooks': './src/alerts/alertHooks.js',
-        './moduleFederation/ConfigurationProvider': './src/initFederation/ConfigurationProviders.js',
+        './moduleFederation/ConfigurationProvider':
+          './src/initFederation/ConfigurationProviders.js',
       },
       shared: {
         ...Object.fromEntries(
@@ -53,9 +91,9 @@ module.exports = {
           requiredVersion: deps.react,
         },
         'styled-components': {
-            singleton: true,
-            eager: true,
-            requiredVersion: deps['styled-components'],
+          singleton: true,
+          eager: true,
+          requiredVersion: deps['styled-components'],
         },
         'react-dom': {
           singleton: true,
@@ -65,8 +103,8 @@ module.exports = {
       },
     }),
     new HtmlWebPackPlugin({
-        template: './index-template.html',
-        filename: './index.html',
+      template: '!!handlebars-loader!./index-template.html',
+      filename: './index.html',
     }),
   ],
 };

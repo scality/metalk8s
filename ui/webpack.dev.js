@@ -4,6 +4,7 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
   .BundleAnalyzerPlugin;
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const webpack = require('webpack');
+const HtmlWebPackPlugin = require('html-webpack-plugin');
 
 const env = 'development';
 const controlPlaneIP = '{{IP}}';
@@ -15,6 +16,10 @@ module.exports = {
   devtool: 'inline-source-map',
   plugins: [
     ...common(env).plugins,
+    new HtmlWebPackPlugin({
+      template: '!!handlebars-loader!./src/index.html',
+      filename: './index.html',
+    }),
     new BundleAnalyzerPlugin(),
     new webpack.HotModuleReplacementPlugin(),
     new ReactRefreshWebpackPlugin({

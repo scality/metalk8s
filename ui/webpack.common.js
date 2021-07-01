@@ -1,5 +1,4 @@
 const path = require('path');
-const HtmlWebPackPlugin = require('html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
 const { DefinePlugin } = require('webpack');
@@ -137,10 +136,6 @@ module.exports = (env) => ({
         NODE_ENV: JSON.stringify(env),
         PUBLIC_URL: JSON.stringify('/'),
       },
-    }),
-    new HtmlWebPackPlugin({
-      template: '!!handlebars-loader!./src/index.html',
-      filename: './index.html',
     }),
   ],
 });

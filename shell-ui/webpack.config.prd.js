@@ -7,11 +7,10 @@ module.exports = {
   ...common,
   mode: 'production',
   devtool: false,
-  entry: {
-    shell: './src/index.js',
-  },
+  entry: './src/App.jsx',
   output: {
     path: path.resolve(__dirname, 'build'),
+    publicPath: '/shell/',
   },
   plugins: [
     ...common.plugins(),
