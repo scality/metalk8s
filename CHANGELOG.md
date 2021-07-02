@@ -37,10 +37,9 @@
    - prometheus-operator to v0.48.1
   (PR[#3422](https://github.com/scality/metalk8s/pull/3422))
 
-- [#3279](https://github.com/scality/metalk8s/issues/3279) - Bump
-  ingress-nginx chart version from 3.13.0 to 3.30.0
-  nginx-ingress-controller image has been bump accordingly from v0.41.2
-  to v0.46.0 (PR[#3371](https://github.com/scality/metalk8s/pull/3371))
+- Bump ingress-nginx chart version to 3.34.0
+  nginx-ingress-controller image has been bump accordingly to v0.47.0
+  (PR[#34381](https://github.com/scality/metalk8s/pull/3438))
 
 - Bump Calico version to 3.19.1
   (PR [#3430](https://github.com/scality/metalk8s/pull/3430))
