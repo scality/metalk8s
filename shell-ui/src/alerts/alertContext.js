@@ -1,3 +1,10 @@
-import { createContext } from "react";
+import { createContext } from 'react';
 
-export const AlertContext = createContext(null);
+if (!window.shellContexts) {
+  window.shellContexts = {};
+}
+
+if (!window.shellContexts.AlertContext) {
+  window.shellContexts.AlertContext = createContext(null);
+}
+export const AlertContext = window.shellContexts.AlertContext;

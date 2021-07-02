@@ -1,12 +1,18 @@
 //@flow
-import React, { useContext, useState, type Node, useLayoutEffect } from 'react';
+import React, { useContext, useState, type Node, useLayoutEffect, createContext } from 'react';
 import * as reactIntl  from 'react-intl';
 import { IntlProvider } from 'react-intl';
 import translations_en from './translations/en';
 import translations_fr from './translations/fr';
 import { LANGUAGE_CHANGED_EVENT } from './events';
 
-const LanguageContext = React.createContext(null);
+if (!window.shellContexts) {
+  window.shellContexts = {};
+}
+
+if (!window.shellContexts.LanguageContext) {
+  window.shellContexts.LanguageContext = createContext(null);
+}
 
 type Language = 'en' | 'fr';
 
@@ -22,7 +28,7 @@ export function useLanguage(): {
   setLanguage: (language: Language) => void,
   unSelectedLanguages: Language[],
 } {
-  const languageContext = useContext(LanguageContext);
+  const languageContext = useContext(window.shellContexts.LanguageContext);
   if (languageContext === null) {
     throw new Error(
       "useLanguage hook can't be use outside <LanguageProvider/>",
@@ -67,13 +73,13 @@ export function LanguageProvider({
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage }}>
+    <window.shellContexts.LanguageContext.Provider value={{ language, setLanguage }}>
       <IntlProvider
         locale={language}
         messages={messages[language.toUpperCase()]}
       >
         {children}
       </IntlProvider>
-    </LanguageContext.Provider>
+    </window.shellContexts.LanguageContext.Provider>
   );
 }

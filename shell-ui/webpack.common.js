@@ -111,6 +111,7 @@ module.exports = {
     new HtmlWebPackPlugin({
       template: '!!handlebars-loader!./index-template.html',
       filename: './index.html',
+      excludeChunks: ['shell'],
     }),
   ],
 };
