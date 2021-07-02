@@ -1,4 +1,5 @@
 //@flow
+import '@fortawesome/fontawesome-free/css/all.css';
 import {
   createContext,
   useContext,
@@ -44,6 +45,8 @@ import {
 import { AuthConfigProvider, useAuthConfig } from './auth/AuthConfigProvider';
 import { AuthProvider, useAuth } from './auth/AuthProvider';
 import { createBrowserHistory } from 'history';
+import { ErrorBoundary } from 'react-error-boundary';
+import { useLanguage } from './navbar/lang';
 
 export const queryClient: typeof QueryClient = new QueryClient();
 
@@ -59,6 +62,7 @@ function FederatedRoute({
 }): Node {
   const { retrieveConfiguration } = useConfigRetriever();
   const { setAuthConfig } = useAuthConfig();
+  const { language } = useLanguage();
 
   useEffect(() => {
     const runtimeAppConfig = retrieveConfiguration({
@@ -71,13 +75,18 @@ function FederatedRoute({
   }, [retrieveConfiguration]);
 
   return (
-    <ProtectedFederatedRoute
-      url={url}
-      scope={scope}
-      module={module}
-      app={app}
-      groups={groups}
-    />
+    <ErrorBoundary FallbackComponent={() => <ErrorPage500
+        data-cy="sc-error-page500"
+        locale={language}
+      />}>
+        <ProtectedFederatedRoute
+            url={url}
+            scope={scope}
+            module={module}
+            app={app}
+            groups={groups}
+        />
+    </ErrorBoundary>
   );
 }
 
