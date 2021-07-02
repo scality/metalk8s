@@ -73,6 +73,8 @@ module.exports = {
         './alerts/alertHooks': './src/alerts/alertHooks.js',
         './moduleFederation/ConfigurationProvider':
           './src/initFederation/ConfigurationProviders.js',
+        './moduleFederation/UIListProvider':
+          './src/initFederation/UIListProvider.js',
       },
       shared: {
         ...Object.fromEntries(
