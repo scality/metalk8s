@@ -94,6 +94,7 @@ module.exports = (env) => ({
       filename: 'static/js/remoteEntry.js',
       exposes: {
         './FederableApp': './src/FederableApp.js',
+        './platformLibrary': './src/services/platformlibrary/k8s.js',
       },
       shared: {
         ...Object.fromEntries(

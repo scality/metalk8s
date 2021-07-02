@@ -27,9 +27,9 @@
             }
         },
         "hooks": {
-            "TODO_useAlert_and_platform_lib_hooks": {
-                "module": "",
-                "scope": ""
+            "platform_library": {
+                "module": "./platformLibrary",
+                "scope": "metalk8s"
             }
         },
         "components": {
