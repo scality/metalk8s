@@ -4,7 +4,6 @@ import { Provider, useDispatch } from 'react-redux';
 import { createStore, applyMiddleware, compose } from 'redux';
 import { Router } from 'react-router-dom';
 import createSagaMiddleware from 'redux-saga';
-import './index.css';
 import App from './containers/App';
 import reducer from './ducks/reducer';
 import sagas from './ducks/sagas';

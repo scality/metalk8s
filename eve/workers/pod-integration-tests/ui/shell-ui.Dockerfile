@@ -34,6 +34,7 @@ COPY package.json package-lock.json /home/node/
 RUN npm config set unsafe-perm true && npm ci
 
 COPY index-template.html webpack.*.js babel.config.js .flowconfig /home/node/
+COPY public /home/node/public/
 COPY src /home/node/src/
 
 RUN npm run build

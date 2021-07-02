@@ -47,6 +47,7 @@ import { AuthProvider, useAuth } from './auth/AuthProvider';
 import { createBrowserHistory } from 'history';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useLanguage } from './navbar/lang';
+import './index.css';
 
 export const queryClient: typeof QueryClient = new QueryClient();
 

@@ -71,6 +71,7 @@ def run_shell_ui_builder(cmd: str) -> docker_command.DockerRun:
         entrypoint="../ui/entrypoint.sh",
         source_mounts=[
             "src",
+            "public",
             "index-template.html",
             "webpack.common.js",
             "webpack.config.prd.js",
