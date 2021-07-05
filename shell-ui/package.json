@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@scality/core-ui": "github:scality/core-ui.git#v0.18.3",
-    "@scality/module-federation": "github:scality/module-federation.git#init",
+    "@scality/module-federation": "github:scality/module-federation.git#1.0.0",
     "oidc-client": "^1.11.3",
     "oidc-react": "^1.1.5",
     "polished": "^4.0.5",
