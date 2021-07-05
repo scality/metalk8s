@@ -35,6 +35,6 @@ RUN npm run build
 
 # }}}
 
-RUN cp -r build/* /usr/share/nginx/html/
+RUN shopt -s dotglob && cp -r build/* /usr/share/nginx/html/
 
 CMD ["nginx", "-g", "daemon off;"]

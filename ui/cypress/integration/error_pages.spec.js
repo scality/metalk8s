@@ -14,49 +14,6 @@ describe('Error Pages Navigation', () => {
   });
 });
 
-describe('Error Pages Custom config', () => {
-  beforeEach(() => {
-    cy.setupMocks(null);
-    cy.login();
-  });
-
-  it('redirects me to 500 - fetch config results in internal error', () => {
-    cy.route2('GET', '/config.json', {
-      fixture: 'config.json',
-      statusCode: 500,
-    });
-    cy.visit('/');
-    cy.stubHistory();
-    cy.get('[data-cy="sc-error-page500"]').contains('Unexpected Error');
-  });
-
-  it('redirects me to 500 in case of wrong url_alerts config', () => {
-    let url_support = 'https://mysupportlink.com';
-    cy.fixture('config.json').then((config) => {
-      config.url_support = url_support;
-      // must be a fake url
-      // otherwise in CI nginx which is served with a try files rule, will return a html with successful response code
-      config.url_alerts = 'http://invalid/url';
-      cy.route2('GET', '/config.json', config);
-    });
-
-    // alerts page will throw an error if it has failed
-    // we must catch it on cypress
-    cy.on('uncaught:exception', () => false);
-
-    cy.visit('/');
-    cy.stubHistory();
-
-    cy.get('[data-cy="sc-error-page500"]').contains('Unexpected Error');
-
-    if (url_support) {
-      cy.get('.sc-error-page500 * a')
-        .should('have.attr', 'href')
-        .and('include', url_support);
-    }
-  });
-});
-
 describe('Error Pages Auth failure', () => {
   beforeEach(() => {
     cy.setupMocks();
@@ -88,7 +45,6 @@ describe('Error Pages Navbar failure', () => {
     cy.on('uncaught:exception', () => false);
 
     cy.visit('/');
-    cy.stubHistory();
 
     cy.get('[data-cy="sc-error-page500"]').contains('Unexpected Error');
   });

@@ -131,7 +131,6 @@ function InternalApp(): Node {
 
   const history = useMemo(() => {
     const history = createBrowserHistory({});
-    if (window.Cypress) window.__history__ = history;
     return history;
   }, []);
 

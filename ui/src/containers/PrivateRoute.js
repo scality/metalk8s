@@ -22,7 +22,7 @@ const InternalPrivateRoute = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [!userData]);
 
-  if (userData) {
+  if (userData.token && userData.username) {
     return <Route {...rest} component={component} />;
   } else {
     return (

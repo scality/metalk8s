@@ -15,7 +15,7 @@
     "toConsole": true
   },
   "chromeWebSecurity": false,
-  "baseUrl": "http://localhost:3000",
+  "baseUrl": "http://localhost:8084",
   "viewportWidth": 1440,
   "viewportHeight": 900,
   "defaultCommandTimeout": 30000,
