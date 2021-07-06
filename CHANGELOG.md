@@ -63,6 +63,10 @@
   of this virtual IP using [MetalLB](https://metallb.universe.tf/)
   (PR[#3418](https://github.com/scality/metalk8s/pull/3418)).
 
+- Use webpack 5 module federation to provide a framework allowing
+  aggregation of solutions UIs
+  (PR[#3414](https://github.com/scality/metalk8s/pull/3414))
+
 ### Breaking changes
 
 - [#2199](https://github.com/scality/metalk8s/issues/2199) - Prometheus label
