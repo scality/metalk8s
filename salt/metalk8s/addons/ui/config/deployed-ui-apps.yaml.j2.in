@@ -19,5 +19,5 @@ spec:
     - kind: "metalk8s-ui"
       name: "metalk8s.eu-west-1"
       version: "{{ version }}"
-      url: "{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}"
-      appHistoryBasePath: "{{ metalk8s_ui_config.spec.basePath.lstrip('/') }}"
+      url: "{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}{{ '/' ~ metalk8s_ui_config.spec.basePath.lstrip('/') if metalk8s_ui_config.spec.basePath.lstrip('/') else '' }}"
+      appHistoryBasePath: "{{ '/' ~ metalk8s_ui_config.spec.basePath.lstrip('/') if metalk8s_ui_config.spec.basePath.lstrip('/') else '' }}"

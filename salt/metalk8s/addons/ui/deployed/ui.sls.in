@@ -101,6 +101,10 @@ Create metalk8s-ui ConfigMap:
               "url_alertmanager": "/api/alertmanager",
               "flags": [],
               "ui_base_path": "{{ normalized_base_path }}",
+              "url_navbar": "/shell/solution-ui-navbar.@@ShellUIVersion.js",
+              "url_alerts": "/shell/alerts.@@ShellUIVersion.js",
+              "url_navbar_config": "/shell/config.json",
+              "alerts_lib_version": "@@ShellUIVersion",
               "url_support": "https://github.com/scality/metalk8s/discussions/new"
             }
 Create shell-ui ConfigMap:

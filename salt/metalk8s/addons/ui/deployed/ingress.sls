@@ -91,17 +91,20 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     kubernetes.io/ingress.class: "nginx-control-plane"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
 spec:
   rules:
   - http:
       paths:
 {% for path in [
-    "/brand",
-    "/config.json",
-    "/manifest.json",
-    "/shell",
-    "/static",
-    normalized_base_path
+    "/(brand.*)",
+    "/(config.json)",
+    "/(manifest.json)",
+    "/(shell.*)",
+    "/(static.*)",
+    "/" + stripped_base_path + "/(.well-known.*)" if stripped_base_path else "/(.well-known.*)",
+    "/" + stripped_base_path + "/(static.*)" if stripped_base_path else "/(static.*)",
+    "/(" + stripped_base_path + ".*)",
 ] %}
       - path: {{ path }}
         backend:
