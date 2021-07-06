@@ -67,7 +67,7 @@ Create metalk8s-ui ConfigMap:
           name: metalk8s-ui
           namespace: metalk8s-ui
         data:
-          config.json: |
+          runtime-app-configuration.json: |
             {
               "kind": "MicroAppRuntimeConfiguration",
               "apiVersion": "ui.scality.com/v1alpha1",
@@ -90,6 +90,18 @@ Create metalk8s-ui ConfigMap:
                 },
                 "auth": {{ metalk8s_ui_config.spec.auth | tojson }}
               }
+            }
+          config.json: |
+            {
+              "url": "/api/kubernetes",
+              "url_salt": "/api/salt",
+              "url_prometheus": "/api/prometheus",
+              "url_grafana": "/grafana",
+              "url_doc": "/docs",
+              "url_alertmanager": "/api/alertmanager",
+              "flags": [],
+              "ui_base_path": "{{ normalized_base_path }}",
+              "url_support": "https://github.com/scality/metalk8s/discussions/new"
             }
 Create shell-ui ConfigMap:
   metalk8s_kubernetes.object_present:
