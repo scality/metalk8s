@@ -26,7 +26,7 @@ Procedure
     kubectl --kubeconfig /etc/kubernetes/admin.conf \
         edit cm -n metalk8s-auth metalk8s-dex-config
 
-This will allow you to register localhost:3000 as a valid authentication
+This will allow you to register localhost:8084 as a valid authentication
  target. To do so add the following sections under config.yaml:
 
 .. code-block:: yaml
@@ -38,7 +38,7 @@ This will allow you to register localhost:3000 as a valid authentication
         name: MetalK8s UI
         redirectURIs:
           - https://<bootstrap_control_plane_ip>:8443/
-          - http://localhost:3000/
+          - http://localhost:8084/
         secret: ybrMJpVMQxsiZw26MhJzCjA2ut
 
 You can retrieve the ``bootstrap_control_plane_ip`` by running:
@@ -94,4 +94,8 @@ You can retrieve the ``bootstrap_control_plane_ip`` by running:
 #. In `webpack.dev.js` edit the value of `controlPlaneIP` and provide
    your cluster bootstrap node's control plane IP
 
-#. Run the UI with ``cd ui; npm run start``
+#. Run ShellUI with ``cd shell-ui; npm run start``
+
+#. Run the UI with ``cd ui; npm run start:ui``
+
+#. Access the UI by browsing to ``http://localhost:8084``
