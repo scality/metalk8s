@@ -151,7 +151,7 @@ upgrade_local_engines () {
     )
     for container in "${containers_to_check[@]}"; do
         "${SALT_CALL}" --local --retcode-passthrough cri.wait_container \
-            name="$container" state=running timeout=120 || return 1
+            name="$container" state=running timeout=180 || return 1
     done
 }
 
