@@ -6,6 +6,7 @@ import { useHistory } from 'react-router-dom';
 import { useDeployedApps, useDeployedAppsRetriever } from './UIListProvider';
 import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
 import ErrorPage500 from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
+import { useShellHistory } from './ShellHistoryProvider';
 
 if (!window.shellContexts) {
     window.shellContexts = {};
@@ -236,7 +237,7 @@ export function useDiscoveredViews(): (
 }
 
 export const useLinkOpener = () => {
-  const history = useHistory();
+  const history = useShellHistory();
   return {
     openLink: (
       to:

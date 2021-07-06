@@ -48,6 +48,7 @@ import { createBrowserHistory } from 'history';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useLanguage } from './navbar/lang';
 import './index.css';
+import { ShellHistoryProvider } from './initFederation/ShellHistoryProvider';
 
 export const queryClient: typeof QueryClient = new QueryClient();
 
@@ -76,17 +77,18 @@ function FederatedRoute({
   }, [retrieveConfiguration]);
 
   return (
-    <ErrorBoundary FallbackComponent={() => <ErrorPage500
-        data-cy="sc-error-page500"
-        locale={language}
-      />}>
-        <ProtectedFederatedRoute
-            url={url}
-            scope={scope}
-            module={module}
-            app={app}
-            groups={groups}
-        />
+    <ErrorBoundary
+      FallbackComponent={() => (
+        <ErrorPage500 data-cy="sc-error-page500" locale={language} />
+      )}
+    >
+      <ProtectedFederatedRoute
+        url={url}
+        scope={scope}
+        module={module}
+        app={app}
+        groups={groups}
+      />
     </ErrorBoundary>
   );
 }
@@ -163,13 +165,15 @@ function InternalApp(): Node {
 
   return (
     <Router history={history}>
-      <SolutionsNavbar>
-        <Switch>
-          {routes.map((route) => (
-            <Route key={route.path} {...route} />
-          ))}
-        </Switch>
-      </SolutionsNavbar>
+      <ShellHistoryProvider>
+        <SolutionsNavbar>
+          <Switch>
+            {routes.map((route) => (
+              <Route key={route.path} {...route} />
+            ))}
+          </Switch>
+        </SolutionsNavbar>
+      </ShellHistoryProvider>
     </Router>
   );
 }
