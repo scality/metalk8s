@@ -160,13 +160,13 @@ export const Navbar = ({
         window.location.origin + window.location.pathname,
   );
 
-  const selectedMainTabs = selectedTabs.filter(tab =>
-    tab.navbarGroup === 'main',
+  const selectedMainTabs = selectedTabs.filter(
+    (tab) => tab.navbarGroup === 'main',
   );
   const selectedMainTab = selectedMainTabs.pop();
 
-  const selectedSubLoginTabs = selectedTabs.filter(tab => 
-    tab.navbarGroup === 'subLogin',
+  const selectedSubLoginTabs = selectedTabs.filter(
+    (tab) => tab.navbarGroup === 'subLogin',
   );
   const selectedSubLoginTab = selectedSubLoginTabs.pop();
 
@@ -176,10 +176,17 @@ export const Navbar = ({
       link: (
         <Link to={accessibleView}>{accessibleView.view.label[language]}</Link>
       ),
-      selected: selectedMainTab
-        ? selectedMainTab.app.name === accessibleView.app.name &&
-          selectedMainTab.view.path === accessibleView.view.path
-        : false,
+      selected:
+        selectedMainTab &&
+        selectedMainTab.isFederated &&
+        accessibleView.isFederated
+          ? selectedMainTab.app.name === accessibleView.app.name &&
+            selectedMainTab.view.path === accessibleView.view.path
+          : selectedMainTab &&
+            !selectedMainTab.isFederated &&
+            !accessibleView.isFederated
+          ? selectedMainTab.url === accessibleView.url
+          : false,
     }));
 
   const rightActions = [
