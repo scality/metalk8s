@@ -23,7 +23,7 @@ import { useTheme } from 'styled-components';
 import { useLanguage } from './lang';
 import { useThemeName } from './theme';
 import { useIntl } from 'react-intl';
-import { useAuth } from '../auth/AuthProvider';
+import { useAuth, useLogOut } from '../auth/AuthProvider';
 import {
   useDiscoveredViews,
   useLinkOpener,
@@ -130,6 +130,7 @@ export const Navbar = ({
   const discoveredViews = useDiscoveredViews();
   const location = useLocation();
   const { openLink } = useLinkOpener();
+  const { logOut } = useLogOut();
 
   const doesRouteMatch = useCallback(
     (path: RouteProps) => {
@@ -226,7 +227,7 @@ export const Navbar = ({
             />
           ),
           onClick: () => {
-            //logOut(auth.userManager, providerLogout); todo
+            logOut();
           },
         },
       ],

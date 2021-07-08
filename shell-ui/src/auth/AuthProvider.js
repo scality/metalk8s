@@ -1,5 +1,5 @@
 //@flow
-import { type Node } from 'react';
+import { type Node, useCallback } from 'react';
 import { useAuthConfig } from './AuthConfigProvider';
 import {
   AuthProvider as OIDCAuthProvider,
@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: Node }) {
   }
 
   if (authConfig.kind === 'OAuth2Proxy') {
-    throw new Error('Not yet supproted');
+    throw new Error('OAuth2Proxy authentication kind is not yet supported');
   }
 
   return <OAuth2AuthProvider>{children}</OAuth2AuthProvider>;
@@ -67,7 +67,12 @@ function OAuth2AuthProvider({ children }: { children: Node }) {
 }
 
 export function useAuth(): {
-  userData?: { token: string, username: string, groups: string[], email: string },
+  userData?: {
+    token: string,
+    username: string,
+    groups: string[],
+    email: string,
+  },
 } {
   const auth = useOauth2Auth(); // todo add support for OAuth2Proxy
   const { config } = useShellConfig();
@@ -83,4 +88,35 @@ export function useAuth(): {
       groups: getUserGroups(auth.userData, config.userGroupsMapping),
     },
   };
+}
+
+export function useLogOut() {
+  const { authConfig } = useAuthConfig();
+  let auth;
+  try {
+    auth = useOauth2Auth();
+  } catch(e) {
+    //If an exception is raised here it is likely because the app is not using OIDC auth kind, so we can ignore this
+    console.log('Failed to retrieve auth informations for OIDC auth kind', e)
+  }
+
+  return {logOut: useCallback(() => {
+    if (!authConfig) {
+      return;
+    }
+  
+    if (authConfig.kind === 'OAuth2Proxy') {
+      throw new Error('OAuth2Proxy authentication kind is not yet supported');
+    }
+    if (auth && auth.userManager) {
+      auth.userManager.revokeAccessToken();
+      if (authConfig.providerLogout) {
+        auth.userManager.signoutRedirect();
+      } else {
+        auth.userManager.removeUser();
+        location.reload();
+      }
+    }
+  }, [JSON.stringify(authConfig), auth])}
+  
 }

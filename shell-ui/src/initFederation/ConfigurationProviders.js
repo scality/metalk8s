@@ -28,6 +28,7 @@ export type OIDCConfig = {
   clientId: string,
   responseType: string,
   scopes: string,
+  providerLogout?: boolean
 };
 
 type RuntimeWebFinger = {
