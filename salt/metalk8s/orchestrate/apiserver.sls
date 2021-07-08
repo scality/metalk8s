@@ -34,11 +34,8 @@ Deploy apiserver {{ node }} to {{ dest_version }}:
     - saltenv: metalk8s-{{ dest_version }}
     - require:
       - salt: Check pillar on {{ node }}
-  {%- if previous_node is defined %}
-      - salt: Deploy apiserver {{ previous_node }} to {{ dest_version }}
+  {%- if loop.previtem is defined %}
+      - salt: Deploy apiserver {{ loop.previtem }} to {{ dest_version }}
   {%- endif %}
-
-  {#- Ugly but needed since we have jinja2.7 (`loop.previtem` added in 2.10) #}
-  {%- set previous_node = node %}
 
 {%- endfor %}
