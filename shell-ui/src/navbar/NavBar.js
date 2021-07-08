@@ -211,10 +211,17 @@ export const Navbar = ({
                 label={accessibleView.view.label[language]}
               />
             ),
-            selected: selectedSubLoginTab
-              ? selectedSubLoginTab.app.name === accessibleView.app.name &&
-                selectedSubLoginTab.view.path === accessibleView.view.path
-              : false,
+            selected:
+              selectedSubLoginTab &&
+              selectedSubLoginTab.isFederated &&
+              accessibleView.isFederated
+                ? selectedSubLoginTab.app.name === accessibleView.app.name &&
+                  selectedSubLoginTab.view.path === accessibleView.view.path
+                : selectedSubLoginTab &&
+                  !selectedSubLoginTab.isFederated &&
+                  !accessibleView.isFederated
+                ? selectedSubLoginTab.url === accessibleView.url
+                : false,
             onClick: () => {
               openLink(accessibleView);
             },
