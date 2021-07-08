@@ -152,6 +152,24 @@ Create metalk8s-shell-ui-config ConfigMap:
 
   {%- if config_data.apiVersion == 'addons.metalk8s.scality.com/v1alpha1' %}
 
+    {%- set metalk8s_ui_defaults = salt.slsutil.renderer(
+            'salt://metalk8s/addons/ui/config/metalk8s-ui-config.yaml.j2',
+            saltenv=saltenv
+        )
+    %}
+    {%- if metalk8s_ui_config is none %}
+      {%- set metalk8s_ui = metalk8s_ui_defaults %}
+    {%- else %}
+      {%- set metalk8s_ui = salt.metalk8s_service_configuration.get_service_conf(
+          'metalk8s-ui', 'metalk8s-ui-config', metalk8s_ui_defaults
+      ) %}
+    {%- endif %}
+
+    {%- set stripped_base_path = metalk8s_ui.spec.basePath.strip('/') %}
+    {%- set cp_ingress_url = salt.metalk8s_network.get_control_plane_ingress_endpoint() %}
+    {%- set metalk8s_ui_url = cp_ingress_url ~ '/' ~ stripped_base_path ~
+                              ('/' if stripped_base_path else '') %}
+
 Convert old Metalk8s Shell UI ServiceConfiguration to new format:
   metalk8s_kubernetes.object_present:
     - manifest:
