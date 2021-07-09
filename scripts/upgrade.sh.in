@@ -146,13 +146,18 @@ upgrade_local_engines () {
     local -a containers_to_check=(
         'repositories'
         'salt-master'
-        'kube-apiserver'
         'etcd'
+        'kube-apiserver'
     )
     for container in "${containers_to_check[@]}"; do
         "${SALT_CALL}" --local --retcode-passthrough cri.wait_container \
             name="$container" state=running timeout=180 || return 1
     done
+
+    # Make sure apiserver works well
+    "${SALT_CALL}" --local --retcode-passthrough http.wait_for_successful_query \
+        https://127.0.0.1:7443/healthz \
+        verify_ssl=False status=200 match="ok"
 }
 
 upgrade_nodes () {
