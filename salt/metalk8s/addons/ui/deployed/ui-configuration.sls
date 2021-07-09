@@ -188,7 +188,7 @@ Convert old Metalk8s Shell UI ServiceConfiguration to new format:
                   {%- if 'options' in config_data.spec %}
                     {% set main_options = [] %}
                     {% for url, entry in config_data.spec.options.main.items() %}
-                      {% do main_options.append({'url': url, 'groups': entry['groups'], 'label': {'en': entry['en'], 'fr': entry['fr']}, 'order': entry['order']}) %}
+                      {% do main_options.append({'url': url, 'groups': entry['groups'], 'label': {'en': entry['en'], 'fr': entry['fr']}, 'order': entry['order'] if 'order' in entry else 100}) %}
                     {% endfor %}
                     {%- set sorted_main_options =main_options | sort(attribute='order') %}
                     {% for entry in sorted_main_options %}
