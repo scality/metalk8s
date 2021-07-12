@@ -93,6 +93,7 @@ Create kube-apiserver Pod manifest:
           - --tls-cert-file={{ certificates.server.files.apiserver.path }}
           - --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
         # }
+          - --bind-address={{ host }}
           - --encryption-provider-config={{ encryption_k8s_path }}
           - --cors-allowed-origins=.*
           - --oidc-issuer-url={{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}/oidc
@@ -145,7 +146,7 @@ Make sure kube-apiserver container is up and ready:
     - require:
       - module: Delay after apiserver pod deployment
   http.wait_for_successful_query:
-    - name: https://127.0.0.1:6443/healthz
+    - name: https://{{ host }}:6443/healthz
     - verify_ssl: True
     - ca_bundle: /etc/kubernetes/pki/ca.crt
     - status: 200

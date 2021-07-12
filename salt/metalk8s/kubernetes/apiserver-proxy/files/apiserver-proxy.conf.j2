@@ -26,7 +26,7 @@ events {
 %}
 {%-         if not master_ips and grains.id in masters %}
 {# In case we're bootstrapping, the Mine wouldn't be available #}
-{%-             set apiservers = ["127.0.0.1"] %}
+{%-             set apiservers = [grains['metalk8s']['control_plane_ip']] %}
 {%-         else %}
 {%-             set apiservers = master_ips.values() | sort %}
 {%-         endif %}

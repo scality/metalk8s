@@ -75,7 +75,7 @@ networks:
         expected: nginx
         description: MetalK8s repository
     master:
-      0.0.0.0:6443:
+      control_plane_ip:6443:
         expected: kube-apiserver
         description: Kubernetes apiserver
       127.0.0.1:7080:
