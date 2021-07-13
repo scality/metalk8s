@@ -67,6 +67,12 @@
   aggregation of solutions UIs
   (PR[#3414](https://github.com/scality/metalk8s/pull/3414))
 
+### Bug fixes
+- [#3445](https://github.com/scality/metalk8s/issues/3445) - Avoid
+  kube-apiserver timeout during single node cluster upgrade when a
+  lot of pod ran on the node
+  (PR[#3447](https://github.com/scality/metalk8s/pull/3447))
+
 ### Breaking changes
 
 - [#2199](https://github.com/scality/metalk8s/issues/2199) - Prometheus label
