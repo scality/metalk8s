@@ -291,7 +291,7 @@ class DrainTestCase(TestCase, mixins.LoaderModuleMockMixin):
             if raises:
                 self.assertRaisesRegex(
                     CommandExecutionError,
-                    "The following are not deletable: {}".format(raise_msg),
+                    raise_msg,
                     drainer.run_drain,
                     dry_run=True,
                 )

@@ -227,13 +227,22 @@ class Drain(object):
           - None if not found
         Raises: CommandExecutionError if API fails
         """
-        return __salt__["metalk8s_kubernetes.get_object"](
-            name=controller_ref["name"],
-            kind=controller_ref["kind"],
-            apiVersion=controller_ref["api_version"],
-            namespace=namespace,
-            **self._kwargs
-        )
+        try:
+            return __salt__["metalk8s_kubernetes.get_object"](
+                name=controller_ref["name"],
+                kind=controller_ref["kind"],
+                apiVersion=controller_ref["api_version"],
+                namespace=namespace,
+                **self._kwargs
+            )
+        except CommandExecutionError as exc:
+            # If we get "Unknown object type" just consider we do not know the
+            # controller object
+            if isinstance(exc.__cause__, ValueError) and "Unknown object type" in str(
+                exc.__cause__
+            ):
+                return None
+            raise
 
     def get_pod_controller(self, pod):
         """Get a pod's controller object reference

@@ -238,13 +238,27 @@ drain:
       - level: WARNING
         contains: "Deleting pods with local storage: my-pod-with-local-storage"
 
+    # pod managed by unknown controller (evicted, with a warning)
+    - node_name: my-node
+      dataset: unknown-controller-pod
+      pods_to_evict:
+        - my-custom-pod
+      force: true
+      log_lines:
+        - level: WARNING
+          contains: >-
+            Deleting pods not managed by ReplicationController, ReplicaSet,
+            Job, DaemonSet or StatefulSet: my-custom-pod
+
     ## ERROR
     # Daemonset-managed pods
     - node_name: my-node
       dataset: single-daemonset
       pods_to_evict: []
       raises: true
-      raise_msg: "DaemonSet-managed pods: my-daemonset-pod."
+      raise_msg: >-
+        The following are not deletable: DaemonSet-managed pods:
+        my-daemonset-pod.
 
     # Orphaned Daemonset-managed pods
     - node_name: my-node
@@ -253,8 +267,8 @@ drain:
       raises: true
       # FIXME: weird error
       raise_msg: >-
-        Missing controller for pod 'my-namespace/my-daemonset-pod':
-        my-daemonset-pod, my-daemonset-pod.
+        The following are not deletable: Missing controller for pod
+        'my-namespace/my-daemonset-pod': my-daemonset-pod, my-daemonset-pod.
 
     # Other orphaned pods
     - node_name: my-node
@@ -262,8 +276,8 @@ drain:
       pods_to_evict: []
       raises: true
       raise_msg: >-
-        Missing controller for pod 'my-namespace/my-replicaset-pod':
-        my-replicaset-pod.
+        The following are not deletable: Missing controller for pod
+        'my-namespace/my-replicaset-pod': my-replicaset-pod.
 
     # Local storage (evicted, with a warning)
     - node_name: my-node
@@ -271,7 +285,17 @@ drain:
       pods_to_evict:
         - my-pod-with-local-storage
       raises: true
-      raise_msg: "pods with local storage: my-pod-with-local-storage."
+      raise_msg: >-
+        The following are not deletable: pods with local storage:
+        my-pod-with-local-storage.
+
+    # unable to get controller
+    - node_name: my-node
+      dataset: error-getting-controller-pod
+      pods_to_evict:
+        - my-daemonset-pod
+      raises: true
+      raise_msg: "An eRrOr OcCurreD geTting a Penguin"
 
   # Check how eviction is retried on temporary failure
   eviction-retry:
@@ -433,6 +457,17 @@ datasets:
           controller: true
           name: my-daemonset
 
+    unknown-controller-pod: &unknown_controller_pod
+      <<: *base_pod
+      metadata:
+        <<: *base_pod_meta
+        name: my-custom-pod
+        owner_references:
+        - api_version: unkown/v1
+          kind: Unknown
+          controller: true
+          name: my-unknown-controller
+
     common-replicaset: &common_replicaset
       api_version: apps/v1
       kind: ReplicaSet
@@ -511,6 +546,17 @@ datasets:
   orphaned-daemonset-pod:
     <<: *single_daemonset_dataset
     daemonsets: []
+
+  error-getting-controller-pod:
+    <<: *single_daemonset_dataset
+    daemonsets:
+      - <<: *common_daemonset
+        raiseError: "An eRrOr OcCurreD geTting a Penguin"
+
+  unknown-controller-pod:
+    <<: *empty_dataset
+    pods:
+      - *unknown_controller_pod
 
   multiple-pods:
     <<: *single_replicaset_dataset

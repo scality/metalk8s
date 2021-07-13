@@ -8,6 +8,7 @@ import contextlib
 import copy
 from unittest.mock import MagicMock, patch
 
+from salt.exceptions import CommandExecutionError
 from salt.utils import dictupdate
 
 from tests.unit import utils
@@ -139,24 +140,28 @@ class KubernetesAPIMock:
 
     def get_resource(self, kind, apiVersion):
         resource = self.resources.get((apiVersion, kind), None)
-        assert resource is not None, "'{}/{}' is not a known resource ({})".format(
-            apiVersion,
-            kind,
-            ", ".join(
-                "{vk[0]}/{vk[1]}: {r}".format(r=resource, vk=versionkind)
-                for versionkind, resource in self.resources.items()
-            ),
-        )
+        if resource is None:
+            raise ValueError(
+                "Unknown object type provided: {}/{}. Make sure it is"
+                " registered properly".format(apiVersion, kind)
+            )
+
         return resource
 
     def get_object(self, name, kind, apiVersion, **kwargs):
-        resource = self.get_resource(kind, apiVersion)
+        try:
+            resource = self.get_resource(kind, apiVersion)
+        except ValueError as exc:
+            raise CommandExecutionError("Invalid manifest") from exc
+
         objects = self.api.retrieve(resource, name=name, **kwargs)
         res = objects[0] if objects else None
         print(
             "Called get_object %s/%s name=%s kwargs=%r - %r"
             % (apiVersion, kind, name, kwargs, res)
         )
+        if res and "raiseError" in res:
+            raise CommandExecutionError(res["raiseError"])
         return res
 
     def list_objects(
