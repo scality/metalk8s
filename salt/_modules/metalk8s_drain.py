@@ -159,6 +159,7 @@ class Drain(object):
         ignore_daemonset=False,
         timeout=0,
         delete_local_data=False,
+        best_effort=False,
         **kwargs
     ):
         self._node_name = node_name
@@ -167,6 +168,7 @@ class Drain(object):
         self._ignore_daemonset = ignore_daemonset
         self._timeout = timeout or (2 ** 64 - 1)
         self._delete_local_data = delete_local_data
+        self._best_effort = best_effort
         self._kwargs = kwargs
 
     node_name = property(operator.attrgetter("_node_name"))
@@ -405,6 +407,7 @@ class Drain(object):
                 after the specified timeout value
         """
         self.start_timer()
+        evicted_pods = []
         for pod in pods:
             while self.check_timer():
                 evicted = evict_pod(
@@ -414,10 +417,14 @@ class Drain(object):
                     **self._kwargs
                 )
                 if evicted:
+                    evicted_pods.append(pod)
+                    break
+
+                if self._best_effort:
                     break
                 time.sleep(5)  # kubectl waits 5 seconds
 
-        self.wait_for_eviction(pods)
+        self.wait_for_eviction(evicted_pods)
 
     def wait_for_eviction(self, pods):
         """Wait for pods deletion.
@@ -544,6 +551,7 @@ def node_drain(
     ignore_daemonset=False,
     timeout=0,
     delete_local_data=False,
+    best_effort=False,
     dry_run=False,
     **kwargs
 ):
@@ -555,6 +563,8 @@ def node_drain(
       - ignore_daemonset  : ignore daemonsets in eviction process
       - timeout           : drain process timeout value
       - delete_local_data : force deletion for pods with local storage
+      - best_effort       : try to drain the node as much as possible but do not
+                            retry/fail if unable to evict some pods
       - dry_run           : only run pod selection process, not eviction
 
     Keyword args: connection parameters, passed through to connection utility
@@ -570,6 +580,7 @@ def node_drain(
         ignore_daemonset=ignore_daemonset,
         timeout=timeout,
         delete_local_data=delete_local_data,
+        best_effort=best_effort,
         **kwargs
     )
     __salt__["metalk8s_kubernetes.cordon_node"](node_name, **kwargs)

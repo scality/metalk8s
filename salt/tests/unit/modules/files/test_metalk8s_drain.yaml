@@ -312,7 +312,7 @@ drain:
     # Retry until eviction isn't locked
     - node_name: my-node
       dataset: blocked-eviction
-      events:
+      events: &blocked_eviction_events
         # evict_pods sleeps 5 seconds between each eviction attempt, so we will
         # try to evict twice with an error, and third attempt will work
         8:
@@ -326,6 +326,13 @@ drain:
             name: my-replicaset-pod
             namespace: my-namespace
       eviction_attempts: 3
+
+    # Best effort do not retry
+    - node_name: my-node
+      dataset: blocked-eviction
+      events: *blocked_eviction_events
+      eviction_attempts: 1
+      best_effort: True
 
   waiting-for-eviction:
     # Instantaneous
