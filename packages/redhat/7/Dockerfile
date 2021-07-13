@@ -29,4 +29,11 @@ RUN yum install -y --setopt=skip_missing_names_on_install=False \
         && \
     yum clean all
 
+# Workaround to avoid metalink error
+# `[Errno -1] repomd.xml does not match metalink for epel-source`
+# NOTE: This is only a workaround and will likely need to be removed at
+# some point
+RUN sed -i -e 's/^#baseurl=/baseurl=/' -e 's/^metalink=/#metalink=/' \
+    /etc/yum.repos.d/epel.repo
+
 RUN useradd -m build
