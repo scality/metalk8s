@@ -34,10 +34,12 @@ Feature: Monitoring is up and running
 
     Scenario: Pod metrics can be retrieved using metrics.k8s.io/v1beta1
         Given the Kubernetes API is available
+        And pods with label 'app.kubernetes.io/name=prometheus-adapter' are 'Ready'
         Then a pod with label 'component=kube-apiserver' in namespace 'kube-system' has metrics
 
     Scenario: Node metrics can be retrieved using metrics.k8s.io/v1beta1
         Given the Kubernetes API is available
+        And pods with label 'app.kubernetes.io/name=prometheus-adapter' are 'Ready'
         Then a node with label 'node-role.kubernetes.io/bootstrap=' has metrics
 
     Scenario: Ensure deployed Prometheus rules match the default
