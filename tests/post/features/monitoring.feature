@@ -11,6 +11,7 @@ Feature: Monitoring is up and running
         And we have 1 running pod labeled 'alertmanager=prometheus-operator-alertmanager' in namespace 'metalk8s-monitoring'
         And we have 1 running pod labeled 'app.kubernetes.io/name=grafana' in namespace 'metalk8s-monitoring'
         And we have 1 running pod labeled 'app.kubernetes.io/name=kube-state-metrics' in namespace 'metalk8s-monitoring'
+        And we have 1 running pod labeled 'app.kubernetes.io/name=prometheus-adapter' in namespace 'metalk8s-monitoring'
         And we have 1 running pod labeled 'app=prometheus-node-exporter' in namespace 'metalk8s-monitoring' on node 'bootstrap'
 
     Scenario: Monitored components statuses
@@ -27,16 +28,18 @@ Feature: Monitoring is up and running
 
     Scenario: The metrics.k8s.io/v1beta1 API is available
         Given the Kubernetes API is available
-        And we have 1 running pod labeled 'name=prometheus-adapter' in namespace 'metalk8s-monitoring'
+        And pods with label 'app.kubernetes.io/name=prometheus-adapter' are 'Ready'
         And the 'v1beta1.metrics.k8s.io' APIService exists
         Then the 'v1beta1.metrics.k8s.io' APIService is Available
 
     Scenario: Pod metrics can be retrieved using metrics.k8s.io/v1beta1
         Given the Kubernetes API is available
+        And pods with label 'app.kubernetes.io/name=prometheus-adapter' are 'Ready'
         Then a pod with label 'component=kube-apiserver' in namespace 'kube-system' has metrics
 
     Scenario: Node metrics can be retrieved using metrics.k8s.io/v1beta1
         Given the Kubernetes API is available
+        And pods with label 'app.kubernetes.io/name=prometheus-adapter' are 'Ready'
         Then a node with label 'node-role.kubernetes.io/bootstrap=' has metrics
 
     Scenario: Ensure deployed Prometheus rules match the default
