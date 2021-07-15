@@ -28,7 +28,7 @@ Feature: Monitoring is up and running
 
     Scenario: The metrics.k8s.io/v1beta1 API is available
         Given the Kubernetes API is available
-        And we have 1 running pod labeled 'name=prometheus-adapter' in namespace 'metalk8s-monitoring'
+        And pods with label 'app.kubernetes.io/name=prometheus-adapter' are 'Ready'
         And the 'v1beta1.metrics.k8s.io' APIService exists
         Then the 'v1beta1.metrics.k8s.io' APIService is Available
 

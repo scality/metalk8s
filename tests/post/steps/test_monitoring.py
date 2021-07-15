@@ -49,6 +49,13 @@ def test_monitored_components(host):
 
 
 @scenario(
+    "../features/monitoring.feature", "The metrics.k8s.io/v1beta1 API is available"
+)
+def test_apiservice_available(host):
+    pass
+
+
+@scenario(
     "../features/monitoring.feature",
     "Pod metrics can be retrieved using metrics.k8s.io/v1beta1",
 )
