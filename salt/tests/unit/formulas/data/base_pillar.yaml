@@ -8,19 +8,19 @@ metalk8s:
   debug: false
   endpoints:
     repositories:
-      hostname: null
-      ip: 51.68.68.162
-      node_name: bootstrap
-      ports:
-        http: 8080
+      - hostname: null
+        ip: 51.68.68.162
+        node_name: bootstrap
+        ports:
+          http: 8080
     salt-master:
-      hostname: null
-      ip: 51.68.68.162
-      node_name: bootstrap
-      ports:
-        api: 4507
-        publisher: 4505
-        requestserver: 4506
+      - hostname: null
+        ip: 51.68.68.162
+        node_name: bootstrap
+        ports:
+          api: 4507
+          publisher: 4505
+          requestserver: 4506
   etcd:
     members:
       - client_urls:
