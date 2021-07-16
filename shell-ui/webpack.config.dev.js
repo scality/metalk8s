@@ -23,14 +23,12 @@ module.exports = (env) => ({
   devServer: {
     port: process.env.PORT || 8084,
     historyApiFallback: {
-      rewrites: [
-        { from: /^\/.*$/, to: '/shell/index.html' },
-      ]
+      rewrites: [{ from: /^\/.*$/, to: '/shell/index.html' }],
     },
     contentBase: 'public',
     proxy: [
       {
-        context: ['/static/js'],
+        context: ['/static/js', '/.well-known'],
         target: 'http://localhost:3000',
         secure: false,
       },
@@ -39,7 +37,7 @@ module.exports = (env) => ({
         target: controlPlaneBaseUrl,
         secure: false,
       },
-    ]
+    ],
   },
   plugins: [
     ...common.plugins(),
@@ -47,6 +45,6 @@ module.exports = (env) => ({
       'process.env': {
         NODE_ENV: JSON.stringify('development'),
       },
-    })
+    }),
   ],
 });
