@@ -95,6 +95,9 @@ module.exports = (env) => ({
       exposes: {
         './FederableApp': './src/FederableApp.js',
         './platformLibrary': './src/services/platformlibrary/k8s.js',
+        './alerts/AlertProvider':
+          './src/services/alertlibrary/AlertProvider.js',
+        './alerts/alertHooks': './src/services/alertlibrary/alertHooks.js',
       },
       shared: {
         ...Object.fromEntries(

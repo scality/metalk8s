@@ -5,7 +5,7 @@ import { useRefreshEffect } from '../services/utils';
 import NodePageContent from './NodePageContent';
 import { PageContainer } from '../components/style/CommonLayoutStyle';
 import { getNodeListData } from '../services/NodeUtils';
-import { useAlerts } from './AlertProvider';
+import { useAlerts } from '../services/alertlibrary/alertHooks';
 import { useTheme } from 'styled-components';
 
 const NodePage = (props) => {
