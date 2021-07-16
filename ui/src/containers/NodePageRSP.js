@@ -36,7 +36,7 @@ import {
   NODE_ALERTS_GROUP,
   PORT_NODE_EXPORTER,
 } from '../constants';
-import { useAlerts } from './AlertProvider';
+import { useAlerts } from '../services/alertlibrary/alertHooks';
 import { useIntl } from 'react-intl';
 import { useTypedSelector } from '../hooks';
 

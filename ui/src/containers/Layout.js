@@ -16,7 +16,7 @@ import { setIntlAction } from '../ducks/config';
 import CreateVolume from './CreateVolume';
 import { useTypedSelector } from '../hooks';
 import { Suspense } from 'react';
-import AlertProvider from './AlertProvider';
+import AlertProvider from '../services/alertlibrary/AlertProvider';
 
 const NodeCreateForm = React.lazy(() => import('./NodeCreateForm'));
 const NodePage = React.lazy(() => import('./NodePage'));

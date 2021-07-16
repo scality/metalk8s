@@ -12,7 +12,7 @@ import {
 } from 'react-table';
 import { EmptyTable, SearchInput } from '@scality/core-ui';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
-import { useAlerts } from './AlertProvider';
+import { useAlerts } from '../services/alertlibrary/alertHooks';
 import CircleStatus from '../components/CircleStatus';
 import { TextBadge } from '../components/style/CommonLayoutStyle';
 import {

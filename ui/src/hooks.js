@@ -13,7 +13,7 @@ import {
 } from './constants';
 import { compareHealth, useURLQuery } from './services/utils';
 import type { V1NodeList } from '@kubernetes/client-node';
-import { useAlerts } from './containers/AlertProvider';
+import { useAlerts } from './services/alertlibrary/alertHooks';
 import { getVolumeListData } from './services/NodeVolumesUtils';
 import { filterAlerts, getHealthStatus } from './services/alertUtils';
 

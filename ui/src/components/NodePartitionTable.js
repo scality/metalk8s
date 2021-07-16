@@ -11,7 +11,7 @@ import {
 } from '../services/prometheus/fetchMetrics';
 import CircleStatus from './CircleStatus';
 import { getNodePartitionsTableData } from '../services/NodeVolumesUtils';
-import { useAlerts } from '../containers/AlertProvider';
+import { useAlerts } from '../services/alertlibrary/alertHooks';
 import {
   NODE_FILESYSTEM_SPACE_FILLINGUP,
   NODE_FILESYSTEM_ALMOST_OUTOF_SPACE,

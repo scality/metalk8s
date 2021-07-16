@@ -16,7 +16,7 @@ import {
   PORT_NODE_EXPORTER,
 } from '../constants';
 import { computeVolumeGlobalStatus } from '../services/NodeVolumesUtils';
-import { useAlerts } from '../containers/AlertProvider';
+import { useAlerts } from '../services/alertlibrary/alertHooks';
 import {
   LeftSideInstanceList,
   NoInstanceSelectedContainer,
