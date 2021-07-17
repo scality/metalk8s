@@ -129,7 +129,7 @@ const NodePageRSP = (props) => {
     <Tabs>
       <Tabs.Tab
         path={`${url}/overview`}
-        label="Overview"
+        label={intl.formatMessage({ id: 'overview' })}
         data-cy="overview_tab_node_page"
       >
         <NodePageOverviewTab
@@ -154,7 +154,7 @@ const NodePageRSP = (props) => {
       </Tabs.Tab>
       <Tabs.Tab
         path={`${url}/metrics`}
-        label="Metrics"
+        label={intl.formatMessage({ id: 'metrics' })}
         data-cy={'metrics_tab_node_page'}
       >
         <NodePageMetricsTab
