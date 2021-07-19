@@ -25,7 +25,7 @@ Delete old Dex Deployment:
     - kind: Deployment
     - apiVersion: apps/v1
     - wait:
-        attempts: 10
+        attempts: 20
         sleep: 10
 
 {%- endif %}
