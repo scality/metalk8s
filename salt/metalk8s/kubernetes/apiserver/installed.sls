@@ -141,6 +141,7 @@ Make sure kube-apiserver container is up and ready:
     - cri.wait_container:
       - name: kube-apiserver
       - state: running
+      - timeout: 120
     - onchanges:
       - metalk8s: Create kube-apiserver Pod manifest
     - require:
