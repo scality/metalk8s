@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { useHistory } from 'react-router';
 import { FormattedDate, FormattedTime } from 'react-intl';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import {
   fontSize,
   padding,
@@ -160,7 +160,7 @@ const VolumeDetailCard = (props) => {
   const location = useLocation();
   const intl = useIntl();
   const query = new URLSearchParams(location.search);
-  const theme = useSelector((state) => state.config.theme);
+  const theme = useTheme();
 
   const deleteVolume = (deleteVolumeName) =>
     dispatch(deleteVolumeAction(deleteVolumeName));

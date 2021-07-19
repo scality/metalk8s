@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useHistory } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { LineChart, Dropdown, Button } from '@scality/core-ui';
 import {
   fetchVolumeStatsAction,
@@ -66,7 +66,7 @@ const MetricsTab = (props) => {
   const history = useHistory();
   const intl = useIntl();
   const query = new URLSearchParams(history?.location?.search);
-  const theme = useSelector((state) => state.config.theme);
+  const theme = useTheme();
   const metricsTimeSpan = useSelector(
     (state) => state.app.monitoring.volumeStats.metricsTimeSpan,
   );
