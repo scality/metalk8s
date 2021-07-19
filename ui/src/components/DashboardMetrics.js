@@ -1,5 +1,5 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { useQuery } from 'react-query';
 import { Button } from '@scality/core-ui';
 import { padding } from '@scality/core-ui/dist/style/theme';
@@ -8,7 +8,6 @@ import { useIntl } from 'react-intl';
 
 import { fetchConfig } from '../services/api';
 import {
-  useTypedSelector,
   useNodes,
   useMetricsTimeSpan,
   useNodeAddressesSelector,
@@ -92,7 +91,7 @@ export const colorRange = [
 ];
 
 const DashboardMetrics = () => {
-  const theme = useTypedSelector((state) => state.config.theme);
+  const theme = useTheme();
   const nodeAddresses = useNodeAddressesSelector(useNodes());
   const [metricsTimeSpan] = useMetricsTimeSpan();
   const intl = useIntl();
