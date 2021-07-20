@@ -81,7 +81,7 @@ orchestrate_bootstrap() {
       "         'ip': $control_plane_ip,"
       "         'ports': {'http': 8080}"
       "      }],"
-      "      'salt-master': {'ip': $control_plane_ip}"
+      "      'salt-master': [{'ip': $control_plane_ip}]"
       "    }"
       "  }"
       "}"

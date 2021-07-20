@@ -51,12 +51,12 @@ Get metalk8s:control_plane_ip grain:
             },
             'volumes': None,
             'endpoints': {
-                'salt-master': {
+                'salt-master': [{
                     'ip': bootstrap_grains['control_plane_ip'],
                     'ports': {
                         'api': 4507,
                     },
-                },
+                }],
                 'repositories': [{
                     'ip': bootstrap_grains['control_plane_ip'],
                     'ports': {
