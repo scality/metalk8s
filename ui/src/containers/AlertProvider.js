@@ -3,16 +3,31 @@ import React, { type Node } from 'react';
 import { useIntl } from 'react-intl';
 import { useTypedSelector } from '../hooks';
 import { ErrorBoundary } from 'react-error-boundary';
-import type { FilterLabels } from '../services/alertUtils';
+import type { FilterLabels, Alert } from '../services/alertUtils';
 import { ErrorPage500 } from '@scality/core-ui';
 import {
   ComponentWithFederatedImports,
   FederatedComponent,
 } from '@scality/module-federation';
+import { STATUS_HEALTH } from '../constants';
+
+export type Status = 'healthy' | 'warning' | 'critical';
 
 const alertGlobal = {};
 export const useAlerts = (filters: FilterLabels) => {
   return alertGlobal.hooks.useAlerts(filters);
+};
+
+export const useHighestSeverityAlerts = (filters: FilterLabels) => {
+  return alertGlobal.hooks.useHighestSeverityAlerts(filters);
+};
+
+export const useAlertLibrary = () => {
+  return alertGlobal.hooks;
+};
+
+export const highestAlertToStatus = (alerts?: Alert[]): Status => {
+  return (alerts?.[0] && ((alerts[0].severity: any): Status)) || STATUS_HEALTH;
 };
 
 const InternalAlertProvider = ({
