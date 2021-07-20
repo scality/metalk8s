@@ -19,6 +19,7 @@ export const formatNodesPromRangeForChart = (
     if (
       result[index] &&
       result[index].status === 'success' &&
+      result[index].data.result[0] &&
       result[index].data.result[0].values.length
     ) {
       const matrixResult: RangeMatrixResult = result[index].data;
