@@ -165,6 +165,6 @@
   "dashboard": "Dashboard",
   "required_fields": "* Champs requis",
   "salt_login_error_title": "L'authentification aupres de Salt a échoué",
-  "salt_login_error_message": "Certaines fonctionalité de l'interface peuvent ne pas fonctionner (deploiement d'un nouveau node ou affichage des IPs d'un node). Veuillez essayer de vous deconnecter et de vous reconnecter, ou si l'erreur persiste merci de bien vouloir contacter votre support."
-
+  "salt_login_error_message": "Certaines fonctionalité de l'interface peuvent ne pas fonctionner (deploiement d'un nouveau node ou affichage des IPs d'un node). Veuillez essayer de vous deconnecter et de vous reconnecter, ou si l'erreur persiste merci de bien vouloir contacter votre support.",
+  "inventory": "Inventaire"
 }

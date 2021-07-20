@@ -165,5 +165,6 @@
   "dashboard": "Dashboard",
   "required_fields": "* Required fields",
   "salt_login_error_title": "An error occurred when authenticating on salt API",
-  "salt_login_error_message": "Some features of the UI may not work as expected (cluster expansion and displaying nodes IPs). Please try to logout and login again or contact your support if this error persist."
+  "salt_login_error_message": "Some features of the UI may not work as expected (cluster expansion and displaying nodes IPs). Please try to logout and login again or contact your support if this error persist.",
+  "inventory": "Inventory"
 }
