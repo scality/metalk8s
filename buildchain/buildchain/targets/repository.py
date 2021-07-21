@@ -87,7 +87,8 @@ class Repository(base.CompositeTarget):
     builder = property(operator.attrgetter("_builder"))
     packages = property(operator.attrgetter("_packages"))
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def fullname(self) -> str:
         """Repository full name."""
 
