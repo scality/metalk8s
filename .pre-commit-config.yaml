@@ -24,7 +24,7 @@ repos:
         # Linting for non-salt files (buildchain and python not executed
         # by salt directly)
         additional_dependencies:
-          - 'pyenchant~=2.0'
+          - 'pyenchant~=3.2'
           - 'doit~=0.32.0'
           - 'docker~=4.1.0'
           - 'PyYAML~=5.3.1'
@@ -46,7 +46,7 @@ repos:
         name: Lint Salt Formulas tests
         files: salt/tests/unit/formulas/.*\.py
         additional_dependencies:
-          - 'pyenchant~=2.0'
+          - 'pyenchant~=3.2'
           - 'salt==3002.5'
           - pytest
           - Jinja2
@@ -76,7 +76,7 @@ repos:
         files: ^(salt/tests/unit/formulas/.*\.py)$
         args: [--strict]
         additional_dependencies:
-          - 'pyenchant~=2.0'
+          - 'pyenchant~=3.2'
           - pytest
 
   - repo: https://github.com/warpnet/salt-lint
