@@ -17,7 +17,7 @@ Configure salt minion:
     - defaults:
         debug: {{ metalk8s.debug }}
         {#- NOTE: We only consider a single master for the moment #}
-        master_hostname: {{ metalk8s.endpoints['salt-master'].ip }}
+        master_hostname: {{ metalk8s.endpoints['salt-master'][0].ip }}
         minion_id: {{ grains.id }}
         saltenv: {{ saltenv }}
     - watch_in:

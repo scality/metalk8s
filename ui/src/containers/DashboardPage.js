@@ -4,6 +4,7 @@ import { useHistory } from 'react-router';
 import { UseQueryOptions } from 'react-query';
 import styled from 'styled-components';
 import DashboardMetrics from '../components/DashboardMetrics';
+import DashboardInventory from '../components/DashboardInventory';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { Dropdown } from '@scality/core-ui';
 
@@ -30,7 +31,7 @@ const DashboardGrid = styled.div`
 
   > div {
     background-color: ${(props) => {
-      return props.theme.backgroundLevel2;
+      return props.theme.backgroundLevel3;
     }};
     color: ${(props) => props.theme.textPrimary};
     padding: 2px ${padding.smaller};
@@ -40,6 +41,7 @@ const DashboardGrid = styled.div`
   }
   .health {
     grid-area: health;
+    background-color: ${(props) => props.theme.backgroundLevel2};
   }
   .inventory {
     grid-area: inventory;
@@ -152,7 +154,9 @@ const DashboardPage = (props: {}) => {
         />
       </div>
       <div className="health">Global Health</div>
-      <div className="inventory">Inventory</div>
+      <div className="inventory">
+        <DashboardInventory />
+      </div>
       <div className="network">Network</div>
       <div className="metrics">
         <DashboardMetrics />

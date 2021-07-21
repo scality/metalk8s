@@ -10,6 +10,8 @@ import {
   queryTimeSpansCodes,
   REFRESH_METRICS_GRAPH,
   SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
+  VOLUME_CONDITION_LINK,
+  STATUS_NONE,
 } from './constants';
 import { compareHealth, useURLQuery } from './services/utils';
 import type { V1NodeList } from '@kubernetes/client-node';
@@ -128,6 +130,7 @@ export const useVolumesWithAlerts = (nodeName?: string) => {
   const volumeListData = useTypedSelector((state) =>
     getVolumeListData(state, null, nodeName),
   );
+
   //This forces alerts to have been fetched at least once (watchdog alert should be present)
   // before rendering volume list
   // TODO enhance this using useAlerts status
@@ -136,12 +139,15 @@ export const useVolumesWithAlerts = (nodeName?: string) => {
     const volumeAlerts = filterAlerts(alerts, {
       persistentvolumeclaim: volume.persistentvolumeclaim,
     });
+    // For the unbound volume, the health status should be none.
+    const isVolumeBound = volume.status === VOLUME_CONDITION_LINK;
     const volumeHealth = getHealthStatus(volumeAlerts);
     return {
       ...volume,
-      health: volumeHealth,
+      health: isVolumeBound ? volumeHealth : STATUS_NONE,
     };
   });
+
   volumeListWithStatus.sort((volumeA, volumeB) =>
     compareHealth(volumeB.health, volumeA.health),
   );

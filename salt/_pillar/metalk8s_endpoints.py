@@ -42,12 +42,6 @@ def ext_pillar(minion_id, pillar, kubeconfig):  # pylint: disable=unused-argumen
                 except CommandExecutionError as exc:
                     errors.append(str(exc))
 
-                # NOTE: This is needed for downgrade as this pillar
-                # is used for downgrade
-                # To be removed in 2.11
-                if len(service_endpoints) == 1:
-                    service_endpoints = service_endpoints[0]
-
                 endpoints.update({service: service_endpoints})
 
         if errors:

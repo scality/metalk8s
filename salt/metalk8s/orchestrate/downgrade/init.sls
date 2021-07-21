@@ -113,33 +113,6 @@ Deploy Kubernetes service config objects:
   - require_in:
     - salt: Deploy Kubernetes objects
 
-{#- With new Dex Helm chart the Deployment label selector changed but this field
-    is immutable so we need to remove the deployment in order to be able to deploy
-    the new one #}
-{#- NOTE: This can be removed in development/2.11 #}
-{#- NOTE: We do this here as we want this Dex service to be unavaible the least time
-    and since we are in downgrade we do not manage the Dex salt states #}
-
-{#- Only remove it `if dest_version < 2.10.0` #}
-
-{%- if salt.pkg.version_cmp(dest_version, '2.10.0') == -1 %}
-
-Delete Dex Deployment:
-  metalk8s_kubernetes.object_absent:
-    - name: dex
-    - namespace: metalk8s-auth
-    - kind: Deployment
-    - apiVersion: apps/v1
-    - wait:
-        attempts: 10
-        sleep: 10
-    - require:
-      - salt: Deploy Kubernetes service config objects
-    - require_in:
-      - salt: Deploy Kubernetes objects
-
-{%- endif %}
-
 Deploy Kubernetes objects:
   salt.runner:
     - name: state.orchestrate

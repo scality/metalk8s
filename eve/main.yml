@@ -888,9 +888,9 @@ stages:
             - bootstrap-restore
           haltOnFailure: true
       - TriggerStages:
-          name: Trigger publish-images stage
+          name: Trigger publish stage
           stage_names:
-            - publish-images
+            - publish
           haltOnFailure: true
           doStepIf: "%(prop:publish_images:-false)s"
       - ShellCommand: *add_final_status_artifact_success
