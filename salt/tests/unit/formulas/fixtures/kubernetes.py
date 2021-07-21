@@ -40,9 +40,10 @@ class KubernetesMock:
 
     def _get_item_list(self, api_version: APIVersion, kind: Kind) -> ItemList:
         try:
-            return self.data[api_version][kind]
+            item = self.data[api_version][kind]
         except KeyError:
             pytest.fail(f"No data in Kubernetes mock for '{api_version}/{kind}'")
+        return item
 
     def get(
         self,
