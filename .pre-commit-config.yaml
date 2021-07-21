@@ -84,7 +84,7 @@ repos:
           - pytest
 
   - repo: https://github.com/warpnet/salt-lint
-    rev: v0.5.2
+    rev: v0.6.1
     hooks:
       - id: salt-lint
 
