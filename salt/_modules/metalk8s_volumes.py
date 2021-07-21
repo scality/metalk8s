@@ -189,7 +189,8 @@ class Volume:
     def __init__(self, volume):
         self._volume = volume
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def exists(self):  # pragma: no cover
         """Does the backing storage device exists?"""
         return
@@ -199,7 +200,8 @@ class Volume:
         """Create the backing storage device."""
         return
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def is_cleaned_up(self):  # pragma: no cover
         """Check if the backing storage device is cleaned up."""
         return
@@ -214,7 +216,8 @@ class Volume:
         size = __salt__["disk.dump"](self.persistent_path)["getsize64"]
         return {"size": size, "path": self.persistent_path}
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def path(self):  # pragma: no cover
         """Path to the backing device."""
         return
