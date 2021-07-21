@@ -1,5 +1,5 @@
 import logging
-from collections import Mapping
+from collections.abc import Mapping
 
 import salt.utils.dictupdate
 import salt.utils.files
