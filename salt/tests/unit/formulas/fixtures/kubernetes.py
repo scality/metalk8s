@@ -13,7 +13,6 @@ ItemList = List[Any]
 K8sData = Dict[APIVersion, Dict[Kind, ItemList]]
 
 
-# pylint: disable=too-few-public-methods
 class KubernetesMock:
     """Simple object for mocking basic API calls on an in-memory K8s dataset."""
 
