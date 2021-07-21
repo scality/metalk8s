@@ -52,13 +52,15 @@ repos:
           - Jinja2
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.812
+    rev: v0.910
     hooks:
       - id: mypy
         # We want this hook to be part of "pylint" so that if we run
         # `pre-commit run pylint` we include this hook
         alias: pylint
         name: Python typing (buildchain)
+        additional_dependencies:
+          - 'types-PyYAML~=5.4'
         # Only check typing for typed files
         files: >
           (?x)^(
@@ -77,6 +79,8 @@ repos:
         args: [--strict]
         additional_dependencies:
           - 'pyenchant~=3.2'
+          - 'types-PyYAML~=5.4'
+          - 'types-Jinja2~=2.11'
           - pytest
 
   - repo: https://github.com/warpnet/salt-lint
