@@ -161,13 +161,13 @@ def _bytestring_representer(dumper: yaml.BaseDumper, data: Any) -> Any:
 def _yaml_dump(data: Sequence[Any], fp: IO[Any]) -> None:
     dumper = yaml.SafeDumper(fp, sort_keys=False)
     dumper.add_representer(YAMLDocument.Literal, _literal_representer)  # type: ignore
-    dumper.add_representer(  # type: ignore
-        YAMLDocument.ByteString, _bytestring_representer
+    dumper.add_representer(
+        YAMLDocument.ByteString, _bytestring_representer  # type: ignore
     )
     try:
         dumper.open()  # type: ignore
         for document in data:
-            dumper.represent(document)  # type: ignore
+            dumper.represent(document)
         dumper.close()  # type: ignore
     finally:
         dumper.dispose()  # type: ignore

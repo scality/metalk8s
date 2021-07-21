@@ -377,11 +377,8 @@ class KubernetesOverrides(DictOption):
                         existing
                         for existing in api_group[obj["kind"]]
                         if not all(
-                            [
-                                existing["metadata"].get(key)
-                                == obj["metadata"].get(key)
-                                for key in ["name", "namespace"]
-                            ]
+                            existing["metadata"].get(key) == obj["metadata"].get(key)
+                            for key in ["name", "namespace"]
                         )
                     ]
             if action == "edit":

@@ -13,7 +13,6 @@ ItemList = List[Any]
 K8sData = Dict[APIVersion, Dict[Kind, ItemList]]
 
 
-# pylint: disable=too-few-public-methods
 class KubernetesMock:
     """Simple object for mocking basic API calls on an in-memory K8s dataset."""
 
@@ -40,9 +39,10 @@ class KubernetesMock:
 
     def _get_item_list(self, api_version: APIVersion, kind: Kind) -> ItemList:
         try:
-            return self.data[api_version][kind]
+            item = self.data[api_version][kind]
         except KeyError:
             pytest.fail(f"No data in Kubernetes mock for '{api_version}/{kind}'")
+        return item
 
     def get(
         self,
