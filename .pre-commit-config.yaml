@@ -17,7 +17,7 @@ repos:
           - --diff
 
   - repo: https://github.com/pycqa/pylint
-    rev: pylint-2.6.0
+    rev: v2.9.5
     hooks:
       - id: pylint
         name: Lint Python (non-salt)
