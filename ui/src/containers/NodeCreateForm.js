@@ -4,7 +4,8 @@ import styled from 'styled-components';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import { useHistory } from 'react-router';
-import { Button, Checkbox, Input, Toggle } from '@scality/core-ui';
+import { Checkbox, Input, Toggle } from '@scality/core-ui';
+import { Button } from '@scality/core-ui/dist/next';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import isEmpty from 'lodash.isempty';
 import {
@@ -298,14 +299,14 @@ const NodeCreateForm = () => {
                     <div>
                       <div>
                         <Button
-                          text={intl.formatMessage({ id: 'cancel' })}
+                          label={intl.formatMessage({ id: 'cancel' })}
                           type="button"
-                          outlined
+                          variant="outline"
                           onClick={() => history.goBack()}
                         />
                         <Button
-                          text={intl.formatMessage({ id: 'create' })}
-                          variant={'buttonPrimary'}
+                          label={intl.formatMessage({ id: 'create' })}
+                          variant="primary"
                           type="submit"
                           disabled={
                             !dirty ||

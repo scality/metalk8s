@@ -1,7 +1,7 @@
 // @flow
 import React from 'react';
 import styled from 'styled-components';
-import { Button } from '@scality/core-ui';
+import { Button } from '@scality/core-ui/dist/next';
 import { NodeTab } from './style/CommonLayoutStyle';
 import { useIntl } from 'react-intl';
 import { padding } from '@scality/core-ui/dist/style/theme';
@@ -35,19 +35,20 @@ const NodePagePartitionTab = (props: Object) => {
     <NodeTab>
       <TitleContainer>
         {api && api.url_grafana && (
-          <Button
-            text={intl.formatMessage({ id: 'advanced_metrics' })}
-            variant={'buttonSecondary'}
-            onClick={() => {}}
-            icon={<i className="fas fa-external-link-alt" />}
-            size={'small'}
-            // We can't redirect to the Node(detailed) Filesystem Detail catagory.
+          <a
+            // We can't redirect to the Node(detailed) Filesystem Detail category.
             // So we hardcode the panel ID to redirect to 'File Nodes Free' chart
             href={`${api.url_grafana}/d/${GRAFANA_DASHBOARDS.nodes}?var-DS_PROMETHEUS=Prometheus&var-job=node-exporter&var-name=${hostnameLabel}&viewPanel=41`}
             target="_blank"
             rel="noopener noreferrer"
-            data-cy="advanced_metrics_node_detailed_file_node_free"
-          />
+          >
+            <Button
+              label={intl.formatMessage({ id: 'advanced_metrics' })}
+              variant={'secondary'}
+              icon={<i className="fas fa-external-link-alt" />}
+              data-cy="advanced_metrics_node_detailed_file_node_free"
+            />
+          </a>
         )}
       </TitleContainer>
       <NodePartitionTable instanceIP={instanceIP} />

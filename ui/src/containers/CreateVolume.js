@@ -11,14 +11,8 @@ import {
 } from 'formik';
 import * as yup from 'yup';
 import styled from 'styled-components';
-import {
-  Input,
-  Button,
-  Banner,
-  Tooltip,
-  Checkbox,
-  Loader,
-} from '@scality/core-ui';
+import { Input, Banner, Tooltip, Checkbox, Loader } from '@scality/core-ui';
+import { Button } from '@scality/core-ui/dist/next';
 import isEmpty from 'lodash.isempty';
 import {
   fetchStorageClassAction,
@@ -501,8 +495,9 @@ const CreateVolume = (props) => {
 
                   if (hasLabelPrefix) {
                     const prefix = value.split('/')[0];
-                    const isLabelPrefixMatched =
-                      labelNamePrefixRegex.test(prefix);
+                    const isLabelPrefixMatched = labelNamePrefixRegex.test(
+                      prefix,
+                    );
                     error = intl.formatMessage(
                       isLabelPrefixMatched
                         ? { id: 'label_name_error' }
@@ -745,11 +740,11 @@ const CreateVolume = (props) => {
                             onChange={handleChange('labelValue')}
                           />
                           <Button
-                            text={intl.formatMessage({ id: 'add' })}
+                            label={intl.formatMessage({ id: 'add' })}
                             type="button"
                             onClick={addLabel}
                             data-cy="add-volume-labels-button"
-                            variant={'buttonSecondary'}
+                            variant={'secondary'}
                             disabled={
                               errors.labelValue ||
                               errors.labelName ||
@@ -765,7 +760,6 @@ const CreateVolume = (props) => {
                                 <LabelsValue>{values.labels[key]}</LabelsValue>
                                 <Button
                                   icon={<i className="fas fa-lg fa-trash" />}
-                                  inverted={true}
                                   type="button"
                                   onClick={() => removeLabel(key)}
                                 />
@@ -915,15 +909,15 @@ const CreateVolume = (props) => {
                   )}
                   <ActionContainer>
                     <Button
-                      text={intl.formatMessage({ id: 'cancel' })}
+                      label={intl.formatMessage({ id: 'cancel' })}
                       type="button"
-                      outlined
+                      variant="outline"
                       onClick={() => history.goBack()}
                     />
                     <Button
-                      text={intl.formatMessage({ id: 'create' })}
+                      label={intl.formatMessage({ id: 'create' })}
                       type="submit"
-                      variant={'buttonPrimary'}
+                      variant={'primary'}
                       disabled={!dirty || !isEmpty(errors) || values.labelName}
                       data-cy="submit-create-volume"
                     />

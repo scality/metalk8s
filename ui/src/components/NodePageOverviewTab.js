@@ -8,7 +8,8 @@ import {
   fontWeight,
 } from '@scality/core-ui/dist/style/theme';
 import ActiveAlertsCounter from './ActiveAlertsCounter';
-import { Button, Steppers, Loader } from '@scality/core-ui';
+import { Steppers, Loader } from '@scality/core-ui';
+import { Button } from '@scality/core-ui/dist/next';
 import isEmpty from 'lodash.isempty';
 import { deployNodeAction } from '../ducks/app/nodes';
 import { NodeTab } from './style/CommonLayoutStyle';
@@ -197,16 +198,17 @@ const NodePageOverviewTab = (props) => {
           {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN && !currentNodeReturnByK8S.internalIP ? (
             !currentNodeReturnByK8S?.deploying ? (
               <DeployButton
-                text={intl.formatMessage({ id: 'deploy' })}
-                variant="buttonSecondary"
+                label={intl.formatMessage({ id: 'deploy' })}
+                variant="secondary"
                 onClick={() => {
                   dispatch(deployNodeAction({ nodeName }));
                 }}
               />
             ) : (
               <DeployButton
-                text={intl.formatMessage({ id: 'deploying' })}
+                label={intl.formatMessage({ id: 'deploying' })}
                 disabled
+                variant="primary"
                 icon={<Loader size="smaller" />}
               />
             )
