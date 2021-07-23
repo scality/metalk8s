@@ -2,7 +2,8 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
-import { Button, Input } from '@scality/core-ui';
+import { Input } from '@scality/core-ui';
+import { Button } from '@scality/core-ui/dist/next';
 import { brand, padding } from '@scality/core-ui/dist/style/theme';
 import styled from 'styled-components';
 import { authenticateAction } from '../ducks/login';
@@ -95,7 +96,8 @@ const LoginForm = (props) => {
       />
       <Button
         type="submit"
-        text={intl.messages.submit}
+        variant="primary"
+        label={intl.messages.submit}
         disabled={!dirty || !isEmpty(errors)}
       />
       {asyncErrors && asyncErrors.authentication && (

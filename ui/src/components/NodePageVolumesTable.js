@@ -7,12 +7,12 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
 import {
-  Button,
   ProgressBar,
   Tooltip,
   EmptyTable,
   ConstrainedText,
 } from '@scality/core-ui';
+import { Button } from '@scality/core-ui/dist/next';
 import { useIntl } from 'react-intl';
 import {
   VOLUME_CONDITION_LINK,
@@ -235,10 +235,9 @@ function Table({ columns, data, nodeName, volumeName, theme }) {
             <div className="th">
               <ActionContainer>
                 <CreateVolumeButton
-                  size="small"
-                  variant={'buttonSecondary'}
-                  text={intl.formatMessage({ id: 'create_new_volume' })}
-                  icon={<i className="fas fa-plus"></i>}
+                  variant={'secondary'}
+                  label={intl.formatMessage({ id: 'create_new_volume' })}
+                  icon={<i className="fas fa-plus" />}
                   onClick={() => {
                     // depends on if we add node filter
                     if (nodeName) {
@@ -297,7 +296,7 @@ function Table({ columns, data, nodeName, volumeName, theme }) {
               {intl.formatMessage({ id: 'no_volume_found' })}
             </EmptyTable>
           ) : null}
-          {/* <AutoSizer> is a <div/> so it breaks the table layout, 
+          {/* <AutoSizer> is a <div/> so it breaks the table layout,
           we need to use <div/> for all the parts of table(thead, tbody, tr, td...) and retrieve the defaullt styles by className. */}
           <AutoSizer>
             {({ height, width }) => (

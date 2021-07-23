@@ -3,7 +3,8 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import styled, { useTheme } from 'styled-components';
-import { LineChart, Loader, Dropdown, Button, Toggle } from '@scality/core-ui';
+import { LineChart, Loader, Dropdown, Toggle } from '@scality/core-ui';
+import { Button } from '@scality/core-ui/dist/next';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import {
   updateNodeStatsFetchArgumentAction,
@@ -526,16 +527,18 @@ const NodePageMetricsTab = ({
           {showAvg && !avgStatsData['cpuUsage'].length ? <Loader /> : null}
         </MetricsToggleWrapper>
         {api && api.url_grafana && (
-          <Button
-            text={intl.formatMessage({ id: 'advanced_metrics' })}
-            variant={'buttonSecondary'}
-            icon={<i className="fas fa-external-link-alt" />}
-            size={'small'}
+          <a
             href={`${api.url_grafana}/dashboard/db/nodes-detailed?var-DS_PROMETHEUS=Prometheus&var-job=node-exporter&var-name=${hostnameLabel}`}
             target="_blank"
             rel="noopener noreferrer"
             data-cy="advanced_metrics_node_detailed"
-          />
+          >
+            <Button
+              label={intl.formatMessage({ id: 'advanced_metrics' })}
+              variant={'secondary'}
+              icon={<i className="fas fa-external-link-alt" />}
+            />
+          </a>
         )}
         <Dropdown
           items={metricsTimeSpanDropdownItems}

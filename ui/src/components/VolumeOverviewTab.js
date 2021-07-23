@@ -19,7 +19,8 @@ import {
   STATUS_WARNING,
   LVM_LOGICAL_VOLUME,
 } from '../constants';
-import { Button, Modal, ProgressBar, Loader } from '@scality/core-ui';
+import { Modal, ProgressBar, Loader } from '@scality/core-ui';
+import { Button } from '@scality/core-ui/dist/next';
 import { useIntl } from 'react-intl';
 import { VolumeTab } from './style/CommonLayoutStyle';
 import { formatSizeForDisplay } from '../services/utils';
@@ -32,7 +33,7 @@ const VolumeDetailCardContainer = styled.div`
 
 const VolumeTitleSection = styled.div`
   color: ${(props) => props.theme.textPrimary};
-  padding: ${padding.large} 0 ${padding.larger} ${padding.large};
+  padding: ${padding.large} ${padding.base} ${padding.larger} ${padding.large};
   display: flex;
   justify-content: space-between;
 `;
@@ -66,15 +67,6 @@ const ClickableInformationValue = styled.span`
   font-size: ${fontSize.base};
   font-weight: ${fontWeight.semibold};
   cursor: pointer;
-`;
-
-const DeleteButton = styled(Button)`
-  height: 30px;
-  font-size: ${fontSize.small};
-  margin: 0px ${padding.base} ${padding.base} 0;
-  ${(props) => {
-    if (props.disabled) return { opacity: 0.2 };
-  }};
 `;
 
 const VolumeGraph = styled.div`
@@ -164,8 +156,10 @@ const VolumeDetailCard = (props) => {
 
   const deleteVolume = (deleteVolumeName) =>
     dispatch(deleteVolumeAction(deleteVolumeName));
-  const [isDeleteConfirmationModalOpen, setisDeleteConfirmationModalOpen] =
-    useState(false);
+  const [
+    isDeleteConfirmationModalOpen,
+    setisDeleteConfirmationModalOpen,
+  ] = useState(false);
 
   // Confirm the deletion
   const onClickDeleteButton = (deleteVolumeName, nodeName) => {
@@ -220,10 +214,10 @@ const VolumeDetailCard = (props) => {
           <CircleStatus className="fas fa-circle" status={health} />
           <VolumeName>{name}</VolumeName>
         </div>
-        <DeleteButton
-          variant="buttonDelete"
+        <Button
+          variant="danger"
           icon={<i className="fas fa-sm fa-trash" />}
-          text={intl.formatMessage({ id: 'delete_volume' })}
+          label={intl.formatMessage({ id: 'delete_volume' })}
           onClick={(e) => {
             e.stopPropagation();
             setisDeleteConfirmationModalOpen(true);
@@ -394,18 +388,18 @@ const VolumeDetailCard = (props) => {
           footer={
             <NotificationButtonGroup>
               <CancelButton
-                outlined
-                text={intl.formatMessage({ id: 'cancel' })}
+                variant="outline"
+                label={intl.formatMessage({ id: 'cancel' })}
                 onClick={onClickCancelButton}
               />
               <Button
-                variant="buttonDelete"
-                text={intl.formatMessage({ id: 'delete' })}
+                variant="danger"
+                label={intl.formatMessage({ id: 'delete' })}
                 onClick={() => {
                   onClickDeleteButton(name, nodeName);
                 }}
                 data-cy="confirm_deletion_button"
-              ></Button>
+              />
             </NotificationButtonGroup>
           }
         >
