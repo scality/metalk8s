@@ -1,5 +1,7 @@
 # CHANGELOG
 
+## Release 2.11.0 (in development)
+
 ## Release 2.10.1 (in development)
 
 ## Release 2.10.0
