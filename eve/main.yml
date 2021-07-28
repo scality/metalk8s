@@ -1882,7 +1882,7 @@ stages:
           command: >
               major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
               minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
-              git tag --list "$major.$(( $minor-1 )).*" | tail -1
+              git tag --sort=taggerdate --list "$major.$(( $minor-1 )).*" | tail -1
       - SetPropertyFromCommand:
           name: Set the minor version flag
           property: minor_present
