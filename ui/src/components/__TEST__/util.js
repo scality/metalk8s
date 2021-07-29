@@ -10,6 +10,8 @@ import { applyMiddleware, compose, createStore } from 'redux';
 import createSagaMiddleware from 'redux-saga';
 import reducer from '../../ducks/reducer';
 import translations_en from '../../translations/en';
+import { Router } from 'react-router-dom';
+import { createMemoryHistory } from 'history';
 
 const composeEnhancers =
   typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
@@ -30,6 +32,8 @@ export const waitForLoadingToFinish = () =>
   );
 
 const AllTheProviders = ({ children }) => {
+  const history = createMemoryHistory();
+
   const queryClient = new QueryClient();
   const theme = {
     brand: {
@@ -58,15 +62,17 @@ const AllTheProviders = ({ children }) => {
     },
   };
   return (
-    <IntlProvider locale="en" messages={translations_en}>
-      <Provider store={store}>
-        <QueryClientProvider client={queryClient}>
-          <AlertProvider>
-            <ThemeProvider theme={theme}>{children}</ThemeProvider>
-          </AlertProvider>
-        </QueryClientProvider>
-      </Provider>
-    </IntlProvider>
+    <Router history={history}>
+      <IntlProvider locale="en" messages={translations_en}>
+        <Provider store={store}>
+          <QueryClientProvider client={queryClient}>
+            <AlertProvider>
+              <ThemeProvider theme={theme}>{children}</ThemeProvider>
+            </AlertProvider>
+          </QueryClientProvider>
+        </Provider>
+      </IntlProvider>
+    </Router>
   );
 };
 
