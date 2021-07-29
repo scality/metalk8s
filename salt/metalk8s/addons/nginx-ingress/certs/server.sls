@@ -1,4 +1,5 @@
 {%- from "metalk8s/map.jinja" import certificates with context %}
+{%- from "metalk8s/map.jinja" import coredns with context %}
 {%- from "metalk8s/map.jinja" import nginx_ingress with context %}
 
 {%- set private_key_path = "/etc/metalk8s/pki/nginx-ingress/workload-plane-server.key" %}
@@ -29,7 +30,7 @@ Create Workload-Plane Ingress server private key:
     'nginx-ingress-workload-plane',
     'nginx-ingress-workload-plane.metalk8s-ingress',
     'nginx-ingress-workload-plane.metalk8s-ingress.svc',
-    'nginx-ingress-workload-plane.metalk8s-ingress.svc.cluster.local',
+    'nginx-ingress-workload-plane.metalk8s-ingress.svc.{{ coredns.cluster_domain }}',
     grains.metalk8s.workload_plane_ip,
 ] %}
 
