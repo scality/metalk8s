@@ -29,14 +29,50 @@ export const getServicesAlertSelectors = (): FilterLabels => {
   };
 };
 
+export const getK8SMasterAlertSelectors = (): FilterLabels => {
+  return {
+    alertname: ['K8sMasterServicesAtRisk', 'K8sMasterServicesDegraded'],
+  };
+};
+
+export const getBootstrapAlertSelectors = (): FilterLabels => {
+  return { alertname: ['BootstrapServicesDegraded'] };
+};
+
+export const getMonitoringAlertSelectors = (): FilterLabels => {
+  return {
+    alertname: ['MonitoringServiceAtRisk', 'MonitoringServiceDegraded'],
+  };
+};
+
+export const getAlertingAlertSelectors = (): FilterLabels => {
+  return {
+    alertname: ['AlertingServiceAtRisk', 'AlertingServiceDegraded'],
+  };
+};
+
+export const getLoggingAlertSelectors = (): FilterLabels => {
+  return { alertname: ['LoggingServiceAtRisk', 'LoggingServiceDegraded'] };
+};
+
+export const getDashboardingAlertSelectors = (): FilterLabels => {
+  return { alertname: ['DashboardingServiceDegraded'] };
+};
+
+export const getIngressControllerAlertSelectors = (): FilterLabels => {
+  return { alertname: ['IngressControllerDegraded'] };
+};
+
+export const getAuthenticationAlertSelectors = (): FilterLabels => {
+  return { alertname: ['AuthenticationDegraded'] };
+};
+
 /**
  *
  * @param {FilterLabels} filters
  * @returns An array of alerts with the highest severity
  */
-export const useHighestSeverityAlerts = (
-  filters: FilterLabels,
-): Alert[] => {
+export const useHighestSeverityAlerts = (filters: FilterLabels): Alert[] => {
   const query = useAlerts(filters);
   const filteredAlerts = query && query.alerts;
 
@@ -50,7 +86,7 @@ export const useHighestSeverityAlerts = (
  *
  * @returns react query result
  */
- export function useAlerts(filters: FilterLabels) {
+export function useAlerts(filters: FilterLabels) {
   const query = useContext(AlertContext);
   if (!query) {
     throw new Error(
