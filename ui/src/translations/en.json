@@ -171,5 +171,7 @@
   "authentication": "Authentication",
   "access": "Access",
   "observability": "Observability",
-  "core": "Core"
+  "core": "Core",
+  "view_details": "View details",
+  "start": "Start"
 }

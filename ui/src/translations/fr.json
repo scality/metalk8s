@@ -171,5 +171,7 @@
   "authentication": "Authentification",
   "access": "Accès",
   "observability": "Observabilité",
-  "core": "Noyau"
+  "core": "Noyau",
+  "view_details": "Voir détails",
+  "start": "Début"
 }

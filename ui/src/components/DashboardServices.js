@@ -3,7 +3,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { useIntl } from 'react-intl';
-import { Tooltip } from '@scality/core-ui';
+import { Tooltip, StatusText } from '@scality/core-ui';
 import {
   spacing,
   fontSize,
@@ -11,6 +11,7 @@ import {
 } from '@scality/core-ui/dist/style/theme';
 
 import type { Alert } from '../services/alertUtils';
+import type { Status } from '../containers/AlertProvider';
 import { PageSubtitle } from '../components/style/CommonLayoutStyle';
 import {
   useAlertLibrary,
@@ -18,12 +19,8 @@ import {
   highestAlertToStatus,
 } from '../containers/AlertProvider';
 import CircleStatus from './CircleStatus';
-import {
-  STATUS_WARNING,
-  STATUS_CRITICAL,
-  STATUS_SUCCESS,
-  STATUS_HEALTH,
-} from '../constants.js';
+import { STATUS_HEALTH } from '../constants.js';
+import { formatDateToMid1 } from '../services/utils';
 
 const ServiceItems = styled.div`
   display: flex;
@@ -92,29 +89,7 @@ const NonHealthyPopUpItem = styled.div`
   width: 100%;
   display: flex;
   margin: ${spacing.sp4} ${spacing.sp14};
-`;
-
-const NonHealthyPopUpSeverity = styled.div`
-  color: ${(props) => {
-    const theme = props.theme;
-    let color;
-
-    switch (props.status) {
-      case STATUS_HEALTH:
-      case STATUS_SUCCESS:
-        color = theme.statusHealthy;
-        break;
-      case STATUS_WARNING:
-        color = theme.statusWarning;
-        break;
-      case STATUS_CRITICAL:
-        color = theme.statusCritical;
-        break;
-      default:
-        color = theme.statusHealthy;
-    }
-    return color;
-  }};
+  align-items: center;
 `;
 
 const ClickableIcon = styled.i`
@@ -127,22 +102,10 @@ const ServiceItem = ({
   alerts,
 }: {
   label: string,
-  status: string,
+  status: Status,
   alerts: Alert[],
 }) => {
-  let date = null;
-
-  const getStartDate = (alerts: Alert[]) => {
-    // Check we only have alerts and set startsAt properties
-    const filtered = alerts.filter((item) => item && item.startsAt);
-    // Sort to make sure we have oldest alert first
-    filtered.sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt));
-
-    if (filtered[0] && filtered[0].startsAt) return filtered[0].startsAt;
-    return '';
-  };
-
-  if (alerts.length) date = new Date(getStartDate(alerts));
+  const intl = useIntl();
 
   if (!alerts.length && status === STATUS_HEALTH)
     return (
@@ -166,25 +129,19 @@ const ServiceItem = ({
           }}
           overlay={
             <NonHealthyPopUp>
-              <NonHealthyPopUpTitle>View details</NonHealthyPopUpTitle>
+              <NonHealthyPopUpTitle>
+                {intl.formatMessage({ id: 'view_details' })}
+              </NonHealthyPopUpTitle>
               <NonHealthyPopUpItem>
-                <label>Severity</label>
-                <NonHealthyPopUpSeverity status={status}>
-                  {status}
-                </NonHealthyPopUpSeverity>
+                <label>{intl.formatMessage({ id: 'severity' })}</label>
+                <StatusText status={status}>{status}</StatusText>
               </NonHealthyPopUpItem>
-              {
-                // Checking date validity
-                date instanceof Date && !isNaN(date) && (
-                  <NonHealthyPopUpItem>
-                    <label>Start</label>
-                    <div>
-                      {`${date.toISOString().split('T')[0]}
-              ${date.toISOString().split('T')[1].slice(0, 8)}`}
-                    </div>
-                  </NonHealthyPopUpItem>
-                )
-              }
+              {alerts[0] && alerts[0].startsAt && (
+                <NonHealthyPopUpItem>
+                  <label>{intl.formatMessage({ id: 'start' })}</label>
+                  <div>{formatDateToMid1(alerts[0].startsAt)}</div>
+                </NonHealthyPopUpItem>
+              )}
             </NonHealthyPopUp>
           }
         >
@@ -207,52 +164,56 @@ const DashboardServices = () => {
   const alertsLibrary = useAlertLibrary();
 
   // K8s Master
-  const k8sAlerts = useHighestSeverityAlerts(
+  const k8sHighestSeverityAlert = useHighestSeverityAlerts(
     alertsLibrary.getK8SMasterAlertSelectors(),
   );
-  const k8sStatus = highestAlertToStatus(k8sAlerts);
+  const k8sStatus = highestAlertToStatus(k8sHighestSeverityAlert);
 
   // Bootstrap
-  const bootstrapAlerts = useHighestSeverityAlerts(
+  const bootstrapHighestSeverityAlert = useHighestSeverityAlerts(
     alertsLibrary.getBootstrapAlertSelectors(),
   );
-  const bootstrapStatus = highestAlertToStatus(bootstrapAlerts);
+  const bootstrapStatus = highestAlertToStatus(bootstrapHighestSeverityAlert);
 
   // Monitoring
-  const monitoringAlerts = useHighestSeverityAlerts(
+  const monitoringHighestSeverityAlert = useHighestSeverityAlerts(
     alertsLibrary.getMonitoringAlertSelectors(),
   );
-  const monitoringStatus = highestAlertToStatus(monitoringAlerts);
+  const monitoringStatus = highestAlertToStatus(monitoringHighestSeverityAlert);
 
   // Alerting
-  const alertingAlerts = useHighestSeverityAlerts(
+  const alertingHighestSeverityAlert = useHighestSeverityAlerts(
     alertsLibrary.getAlertingAlertSelectors(),
   );
-  const alertingStatus = highestAlertToStatus(alertingAlerts);
+  const alertingStatus = highestAlertToStatus(alertingHighestSeverityAlert);
 
   // Logging
-  const loggingAlerts = useHighestSeverityAlerts(
+  const loggingHighestSeverityAlert = useHighestSeverityAlerts(
     alertsLibrary.getLoggingAlertSelectors(),
   );
-  const loggingStatus = highestAlertToStatus(loggingAlerts);
+  const loggingStatus = highestAlertToStatus(loggingHighestSeverityAlert);
 
   // Dashboarding
-  const dashboardingAlerts = useHighestSeverityAlerts(
+  const dashboardingHighestSeverityAlert = useHighestSeverityAlerts(
     alertsLibrary.getDashboardingAlertSelectors(),
   );
-  const dashboardingStatus = highestAlertToStatus(dashboardingAlerts);
+  const dashboardingStatus = highestAlertToStatus(
+    dashboardingHighestSeverityAlert,
+  );
 
   // Ingress Controller
-  const ingressAlerts = useHighestSeverityAlerts(
+  const ingressHighestSeverityAlert = useHighestSeverityAlerts(
     alertsLibrary.getIngressControllerAlertSelectors(),
   );
-  const ingressStatus = highestAlertToStatus(ingressAlerts);
+  const ingressStatus = highestAlertToStatus(ingressHighestSeverityAlert);
 
   // Authentication
-  const authenticationAlerts = useHighestSeverityAlerts(
+  const authenticationHighestSeverityAlert = useHighestSeverityAlerts(
     alertsLibrary.getAuthenticationAlertSelectors(),
   );
-  const authenticationStatus = highestAlertToStatus(authenticationAlerts);
+  const authenticationStatus = highestAlertToStatus(
+    authenticationHighestSeverityAlert,
+  );
 
   return (
     <div>
@@ -267,12 +228,12 @@ const DashboardServices = () => {
         <ServiceItem
           label={'K8s master'}
           status={k8sStatus}
-          alerts={k8sAlerts}
+          alerts={k8sHighestSeverityAlert}
         />
         <ServiceItem
           label={'Bootstrap'}
           status={bootstrapStatus}
-          alerts={bootstrapAlerts}
+          alerts={bootstrapHighestSeverityAlert}
         />
       </ServiceItems>
       <ServiceItems>
@@ -282,22 +243,22 @@ const DashboardServices = () => {
         <ServiceItem
           label={'Monitoring'}
           status={monitoringStatus}
-          alerts={monitoringAlerts}
+          alerts={monitoringHighestSeverityAlert}
         />
         <ServiceItem
           label={'Alerting'}
           status={alertingStatus}
-          alerts={alertingAlerts}
+          alerts={alertingHighestSeverityAlert}
         />
         <ServiceItem
           label={'Logging'}
           status={loggingStatus}
-          alerts={loggingAlerts}
+          alerts={loggingHighestSeverityAlert}
         />
         <ServiceItem
           label={'Dashboarding'}
           status={dashboardingStatus}
-          alerts={dashboardingAlerts}
+          alerts={dashboardingHighestSeverityAlert}
         />
       </ServiceItems>
       <ServiceItems>
@@ -307,12 +268,12 @@ const DashboardServices = () => {
         <ServiceItem
           label={'Ingress Controller'}
           status={ingressStatus}
-          alerts={ingressAlerts}
+          alerts={ingressHighestSeverityAlert}
         />
         <ServiceItem
           label={intl.formatMessage({ id: 'authentication' })}
           status={authenticationStatus}
-          alerts={authenticationAlerts}
+          alerts={authenticationHighestSeverityAlert}
         />
       </ServiceItems>
     </div>
