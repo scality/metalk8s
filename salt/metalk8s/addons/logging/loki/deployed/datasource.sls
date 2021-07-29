@@ -21,5 +21,5 @@ Deploy ConfigMap for Loki datasource:
             - name: Loki
               type: loki
               access: proxy
-              url: http://loki.metalk8s-logging.svc.cluster.local:3100/
+              url: http://loki.metalk8s-logging:3100/
               version: 1
