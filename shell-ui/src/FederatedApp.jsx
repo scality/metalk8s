@@ -8,6 +8,7 @@ import {
   lazy,
   Suspense,
   type Node,
+  useRef,
   useMemo,
 } from 'react';
 import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
@@ -36,7 +37,11 @@ import {
   useConfigRetriever,
   useDiscoveredViews,
 } from './initFederation/ConfigurationProviders';
-import { Route, Switch, Router } from 'react-router-dom';
+import {
+  Route,
+  Switch,
+  Router,
+} from 'react-router-dom';
 import {
   ShellConfigProvider,
   useShellConfig,
@@ -126,16 +131,7 @@ function ProtectedFederatedRoute({
   return <></>;
 }
 
-function InternalApp(): Node {
-  const navbarConfigUrl = '/shell/config.json'; // TODO find a way to inject this
-  const [federatedComponent, setFederatedComponent] =
-    useState<FederatedComponentProps | null>(null);
-
-  const history = useMemo(() => {
-    const history = createBrowserHistory({});
-    return history;
-  }, []);
-
+function InternalRouter(): Node {
   const discoveredViews = useDiscoveredViews();
   const { retrieveConfiguration } = useConfigRetriever();
 
@@ -164,14 +160,27 @@ function InternalApp(): Node {
     }));
 
   return (
+    <>
+      <Switch>
+        {routes.map((route) => (
+          <Route key={route.path} {...route} />
+        ))}
+      </Switch>
+    </>
+  );
+}
+
+function InternalApp(): Node {
+  const history = useMemo(() => {
+    const history = createBrowserHistory({});
+    return history;
+  }, []);
+
+  return (
     <Router history={history}>
       <ShellHistoryProvider>
         <SolutionsNavbar>
-          <Switch>
-            {routes.map((route) => (
-              <Route key={route.path} {...route} />
-            ))}
-          </Switch>
+          <InternalRouter />
         </SolutionsNavbar>
       </ShellHistoryProvider>
     </Router>
@@ -194,7 +203,7 @@ function WithInitFederationProviders({ children }: { children: Node }) {
 export default function App(): Node {
   return (
     <ScrollbarWrapper>
-      <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={queryClient} contextSharing={true}>
         <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
           <WithInitFederationProviders>
             <InternalApp />
