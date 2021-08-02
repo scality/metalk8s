@@ -258,7 +258,7 @@ export const nodesRefreshingSelector = (state) => state.app.nodes.isRefreshing;
 export const historySelector = (state) => state.history;
 export const isSaltAPIAuthenticatedSelector = (state) => state.login.salt;
 const nodeListSelector = (state) => state.app.nodes.list;
-const intlSelector = (state) => state.app.config.intl;
+const intlSelector = (state) => state.config.intl;
 
 // Sagas
 export function* fetchClusterVersion() {
