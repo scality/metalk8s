@@ -5,7 +5,8 @@ import { UseQueryOptions } from 'react-query';
 import styled from 'styled-components';
 import DashboardMetrics from '../components/DashboardMetrics';
 import DashboardInventory from '../components/DashboardInventory';
-import { padding } from '@scality/core-ui/dist/style/theme';
+import DashboardServices from '../components/DashboardServices';
+import { padding, spacing } from '@scality/core-ui/dist/style/theme';
 import { Dropdown } from '@scality/core-ui';
 
 import {
@@ -34,7 +35,7 @@ const DashboardGrid = styled.div`
       return props.theme.backgroundLevel3;
     }};
     color: ${(props) => props.theme.textPrimary};
-    padding: 2px ${padding.smaller};
+    padding: 2px ${spacing.sp4};
     .sc-vegachart svg {
       background-color: inherit !important;
     }
@@ -45,6 +46,7 @@ const DashboardGrid = styled.div`
   }
   .inventory {
     grid-area: inventory;
+    padding: ${spacing.sp8} ${spacing.sp12};
   }
   .alerts {
     grid-area: alerts;
@@ -156,6 +158,7 @@ const DashboardPage = (props: {}) => {
       <div className="health">Global Health</div>
       <div className="inventory">
         <DashboardInventory />
+        <DashboardServices />
       </div>
       <div className="network">Network</div>
       <div className="metrics">

@@ -1,14 +1,8 @@
 //@flow
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { setupServer } from 'msw/node';
-import { rest } from 'msw';
 import DashboardInventory from './DashboardInventory';
-import {
-  waitForLoadingToFinish,
-  render,
-  FAKE_CONTROL_PLANE_IP,
-} from './__TEST__/util';
+import { waitForLoadingToFinish, render } from './__TEST__/util';
 import type { Alert } from '../services/alertUtils';
 import { useHighestSeverityAlerts } from '../containers/AlertProvider';
 import {
