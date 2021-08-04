@@ -176,7 +176,7 @@ export function* manageLocalStorage() {
 
 export function* refreshJobStatus(job) {
   const result = yield call(ApiSalt.printJob, job.jid);
-  const intl = yield call(intlSelector);
+  const intl = yield select(intlSelector);
   if (result.error) {
     yield put(
       addNotificationErrorAction({
