@@ -116,28 +116,45 @@ export function useLogOut() {
   let auth;
   try {
     auth = useOauth2Auth();
-  } catch(e) {
+  } catch (e) {
     //If an exception is raised here it is likely because the app is not using OIDC auth kind, so we can ignore this
-    console.log('Failed to retrieve auth informations for OIDC auth kind', e)
+    console.log('Failed to retrieve auth informations for OIDC auth kind', e);
   }
 
-  return {logOut: useCallback(() => {
-    if (!authConfig) {
-      return;
-    }
-  
-    if (authConfig.kind === 'OAuth2Proxy') {
-      throw new Error('OAuth2Proxy authentication kind is not yet supported');
-    }
-    if (auth && auth.userManager) {
-      auth.userManager.revokeAccessToken();
-      if (authConfig.providerLogout) {
-        auth.userManager.signoutRedirect();
-      } else {
-        auth.userManager.removeUser();
-        location.reload();
+  return {
+    logOut: useCallback(() => {
+      if (!authConfig) {
+        return;
       }
-    }
-  }, [JSON.stringify(authConfig), auth])}
-  
+
+      if (authConfig.kind === 'OAuth2Proxy') {
+        throw new Error('OAuth2Proxy authentication kind is not yet supported');
+      }
+      if (auth && auth.userManager) {
+        auth.userManager.revokeAccessToken();
+        if (authConfig.providerLogout) {
+          auth.userManager.signoutRedirect().catch((e) => {
+            if (e.message === 'no end session endpoint') {
+              console.log(
+                "OIDC provider doesn't support end session endpoint, fallback to clearing document cookies",
+              );
+              document.cookie.split(';').forEach(function (c) {
+                document.cookie =
+                  c.trim().split('=')[0] +
+                  '=;' +
+                  'expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+              });
+            } else {
+              console.error(e);
+            }
+            auth.userManager.removeUser();
+            location.reload();
+          });
+        } else {
+          auth.userManager.removeUser();
+          location.reload();
+        }
+      }
+    }, [JSON.stringify(authConfig), auth]),
+  };
 }
