@@ -9,7 +9,7 @@ import {
 } from 'oidc-react';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
 import { getUserGroups } from '../navbar/auth/permissionUtils';
-import { WebStorageStateStore } from 'oidc-client';
+import { MetadataService, WebStorageStateStore } from 'oidc-client';
 
 export function AuthProvider({ children }: { children: Node }) {
   const { authConfig } = useAuthConfig();
@@ -23,6 +23,24 @@ export function AuthProvider({ children }: { children: Node }) {
   }
 
   return <OAuth2AuthProvider>{children}</OAuth2AuthProvider>;
+}
+
+function defaultDexConnectorMetadataService(connectorId: string) {
+  class DexDefaultConnectorMetadataService extends MetadataService {
+    getAuthorizationEndpoint() {
+      return this._getMetadataProperty('authorization_endpoint').then(
+        (authorizationEndpoint) => {
+          const queryParamas = new URLSearchParams(window.location.search);
+          if (!queryParamas.has('displayLoginChoice')) {
+            return authorizationEndpoint + '?connector_id=' + connectorId;
+          }
+          return authorizationEndpoint;
+        },
+      );
+    }
+  }
+
+  return DexDefaultConnectorMetadataService;
 }
 
 function OAuth2AuthProvider({ children }: { children: Node }) {
@@ -39,6 +57,9 @@ function OAuth2AuthProvider({ children }: { children: Node }) {
     loadUserInfo: true,
     automaticSilentRenew: true,
     monitorSession: false,
+    MetadataServiceCtor: authConfig.defaultDexConnector
+      ? defaultDexConnectorMetadataService(authConfig.defaultDexConnector)
+      : MetadataService,
     userStore: new WebStorageStateStore({ store: localStorage }),
   });
 

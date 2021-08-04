@@ -28,7 +28,8 @@ export type OIDCConfig = {
   clientId: string,
   responseType: string,
   scopes: string,
-  providerLogout?: boolean
+  providerLogout?: boolean,
+  defaultDexConnector?: string,
 };
 
 type RuntimeWebFinger = {
