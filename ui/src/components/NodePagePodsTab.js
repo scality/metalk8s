@@ -13,6 +13,7 @@ import {
   STATUS_PENDING,
   STATUS_FAILED,
   STATUS_UNKNOWN,
+  GRAFANA_DASHBOARDS,
 } from '../constants';
 import { useIntl } from 'react-intl';
 
@@ -199,7 +200,7 @@ const NodePagePodsTab = (props) => {
               }
             >
               <ExternalLink
-                href={`${config.api.url_grafana}/dashboard/db/logs?orgId=1&var-logs=Loki&var-logmetrics=Prometheus&var-metrics=Prometheus&var-podlogs=.*&var-systemlogs=.%2B&var-deployment=calico-kube-controllers&var-pod=${value}`}
+                href={`${config.api.url_grafana}/d/${GRAFANA_DASHBOARDS.logs}?orgId=1&var-logs=Loki&var-logmetrics=Prometheus&var-metrics=Prometheus&var-podlogs=.*&var-systemlogs=.%2B&var-deployment=calico-kube-controllers&var-pod=${value}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
