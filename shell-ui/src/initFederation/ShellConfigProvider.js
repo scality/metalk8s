@@ -5,12 +5,12 @@ import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
 import { useQuery } from 'react-query';
 
 if (!window.shellContexts) {
-    window.shellContexts = {};
-  }
-  
-  if (!window.shellContexts.ShellConfigContext) {
-    window.shellContexts.ShellConfigContext = createContext(null);
-  }
+  window.shellContexts = {};
+}
+
+if (!window.shellContexts.ShellConfigContext) {
+  window.shellContexts.ShellConfigContext = createContext(null);
+}
 
 export type Theme = {
   logoPath: string,
@@ -33,7 +33,6 @@ export type Theme = {
     backgroundLevel4: string,
     textPrimary: string,
     textSecondary: string,
-    textTertiary: string,
     textReverse: string,
     textLink: string,
   },
@@ -42,8 +41,8 @@ export type Theme = {
 export type NavbarEntry = {
   groups?: string[],
   label?: {
-      en: string,
-      fr: string,
+    en: string,
+    fr: string,
   },
   kind?: string,
   view?: string,
@@ -90,7 +89,9 @@ export const ShellConfigProvider = ({ shellConfigUrl, children }): Node => {
   );
 
   return (
-    <window.shellContexts.ShellConfigContext.Provider value={{ config, status }}>
+    <window.shellContexts.ShellConfigContext.Provider
+      value={{ config, status }}
+    >
       {(status === 'idle' || status === 'loading') && (
         <Loader size="massive" centered={true} aria-label="loading" />
       )}

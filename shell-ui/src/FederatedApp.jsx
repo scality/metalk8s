@@ -15,7 +15,6 @@ import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
 import ReactDOM from 'react-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import ErrorPage500 from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
-import ScrollbarWrapper from '@scality/core-ui/dist/components/scrollbarwrapper/ScrollbarWrapper.component';
 import { ThemeProvider as StyledComponentsProvider } from 'styled-components';
 import type { Theme } from './navbar/theme';
 import { SolutionsNavbar, type Browser } from './navbar';
@@ -202,14 +201,12 @@ function WithInitFederationProviders({ children }: { children: Node }) {
 
 export default function App(): Node {
   return (
-    <ScrollbarWrapper>
-      <QueryClientProvider client={queryClient} contextSharing={true}>
-        <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
-          <WithInitFederationProviders>
-            <InternalApp />
-          </WithInitFederationProviders>
-        </ShellConfigProvider>
-      </QueryClientProvider>
-    </ScrollbarWrapper>
+    <QueryClientProvider client={queryClient} contextSharing={true}>
+      <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
+        <WithInitFederationProviders>
+          <InternalApp />
+        </WithInitFederationProviders>
+      </ShellConfigProvider>
+    </QueryClientProvider>
   );
 }

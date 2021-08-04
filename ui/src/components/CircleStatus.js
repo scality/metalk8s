@@ -27,13 +27,13 @@ const Circle = styled.i`
         color = theme.statusCritical;
         break;
       case STATUS_NONE:
-        color = theme.textTertiary;
+        color = theme.textSecondary;
         break;
       case STATUS_HEALTH:
         color = theme.statusHealthy;
         break;
       default:
-        color = theme.textTertiary;
+        color = theme.textSecondary;
     }
     return color;
   }};

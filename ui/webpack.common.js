@@ -27,9 +27,9 @@ module.exports = (env) => ({
    */
   performance: {
     hints: 'error',
-    // ~732 KiB for production
-    // ~4.06 MiB for development because flow increase the size of assets.
-    maxAssetSize: process.env.NODE_ENV === 'production' ? 750000 : 5000000,
+    // ~3.58 MiB for production
+    // ~10.49 MiB for development because flow increase the size of assets.
+    maxAssetSize: process.env.NODE_ENV === 'production' ? 3800000 : 11000000,
     assetFilter: (assetFilename) => {
       return (
         !assetFilename.endsWith('.map.gz') && assetFilename.endsWith('.gz')

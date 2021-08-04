@@ -25,7 +25,6 @@ export type Brand = {
   backgroundLevel4: string,
   textPrimary: string,
   textSecondary: string,
-  textTertiary: string,
   textReverse: string,
   textLink: string,
 };

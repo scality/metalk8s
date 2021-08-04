@@ -109,7 +109,7 @@ export const MetricsActionContainer = styled.div`
 
   .sc-dropdown > div {
     background-color: ${(props) => props.theme.backgroundLevel4};
-    border: 1px solid ${(props) => props.theme.textTertiary};
+    border: 1px solid ${(props) => props.theme.textSecondary};
     border-radius: 3px;
   }
 `;

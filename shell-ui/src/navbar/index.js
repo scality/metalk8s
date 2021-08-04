@@ -17,6 +17,7 @@ import packageJson from '../../package.json';
 const { version } = packageJson;
 import './library';
 import { useConfig } from '../initFederation/ConfigurationProviders';
+import ScrollbarWrapper from '@scality/core-ui/dist/components/scrollbarwrapper/ScrollbarWrapper.component';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
 export type SolutionsNavbarProps = {
   children?: Node,
@@ -32,15 +33,17 @@ export const SolutionsNavbar = ({ children }: SolutionsNavbarProps): Node => {
         {(theme, themeName) => (
           <>
             <StyledComponentsProvider theme={theme.brand}>
-              <Navbar
-                logo={
-                  config?.themes?.[themeName].logoPath ||
-                  `/brand/assets/logo-${themeName}.svg`
-                }
-                userGroupsMapping={config.userGroupsMapping}
-              >
-                {children}
-              </Navbar>
+              <ScrollbarWrapper>
+                <Navbar
+                  logo={
+                    config?.themes?.[themeName].logoPath ||
+                    `/brand/assets/logo-${themeName}.svg`
+                  }
+                  userGroupsMapping={config.userGroupsMapping}
+                >
+                  {children}
+                </Navbar>
+              </ScrollbarWrapper>
             </StyledComponentsProvider>
           </>
         )}

@@ -41,7 +41,7 @@ const LoginFormContainer = styled.div`
 
 const Error = styled.span`
   display: block;
-  color: ${brand.danger};
+  color: ${brand.statusCritical};
 `;
 
 const LogoContainer = styled.div`

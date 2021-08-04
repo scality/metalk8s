@@ -60,7 +60,7 @@ const NavbarDropDownItemLabel = styled.div`
 
 const NavbarDropDownItemExternal = styled.div`
   padding-left: 10px;
-  color: ${(props) => props.theme.secondary};
+  color: ${(props) => props.theme.selectedActive};
 `;
 
 const Item = ({
@@ -243,7 +243,7 @@ export const Navbar = ({
       type: 'dropdown',
       text: userData?.username || '',
       icon: (
-        <span style={{ color: brand.textTertiary }}>
+        <span style={{ color: brand.textSecondary }}>
           <i className="fas fa-user-cog"></i>
         </span>
       ),
