@@ -13,7 +13,8 @@ import { SearchInput } from '@scality/core-ui';
 import { useURLQuery } from '../services/utils';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
-import { Button, EmptyTable } from '@scality/core-ui';
+import { EmptyTable } from '@scality/core-ui';
+import { Button } from '@scality/core-ui/dist/next';
 import { useIntl } from 'react-intl';
 import { compareHealth, useTableSortURLSync } from '../services/utils';
 import {
@@ -203,10 +204,9 @@ function GlobalFilter({
         data-cy="node_list_search"
       />
       <CreateNodeButton
-        size="base"
-        variant="buttonPrimary"
-        text={intl.formatMessage({ id: 'create_new_node' })}
-        icon={<i className="fas fa-plus"></i>}
+        variant="primary"
+        label={intl.formatMessage({ id: 'create_new_node' })}
+        icon={<i className="fas fa-plus" />}
         onClick={() => {
           history.push('/nodes/create');
         }}

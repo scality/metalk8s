@@ -16,12 +16,12 @@ import { useURLQuery } from '../services/utils';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import CircleStatus from './CircleStatus';
 import {
-  Button,
   ProgressBar,
   Tooltip,
   SearchInput,
   EmptyTable,
 } from '@scality/core-ui';
+import { Button } from '@scality/core-ui/dist/next';
 import { useIntl } from 'react-intl';
 import TableRow from './TableRow';
 import {
@@ -259,10 +259,9 @@ function Table({
             <div className="th">
               <ActionContainer>
                 <CreateVolumeButton
-                  size="base"
-                  variant={'buttonPrimary'}
-                  text={intl.formatMessage({ id: 'create_new_volume' })}
-                  icon={<i className="fas fa-plus"></i>}
+                  variant={'primary'}
+                  label={intl.formatMessage({ id: 'create_new_volume' })}
+                  icon={<i className="fas fa-plus" />}
                   onClick={() => {
                     // depends on if we add node filter
                     if (nodeName) {
