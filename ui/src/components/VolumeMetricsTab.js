@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { useHistory } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import styled, { useTheme } from 'styled-components';
-import { LineChart, Dropdown, Button } from '@scality/core-ui';
+import { LineChart, Dropdown } from '@scality/core-ui';
+import { Button } from '@scality/core-ui/dist/next';
 import {
   fetchVolumeStatsAction,
   updateVolumeStatsAction,
@@ -314,17 +315,18 @@ const MetricsTab = (props) => {
       <MetricGraphCardContainer>
         <MetricsActionContainer>
           {config.api?.url_grafana && volumeNamespace && volumePVCName && (
-            <Button
-              text={intl.formatMessage({ id: 'advanced_metrics' })}
-              variant={'buttonSecondary'}
-              onClick={() => {}}
-              icon={<i className="fas fa-external-link-alt" />}
-              size={'small'}
+            <a
               href={`${config.api.url_grafana}/dashboard/db/kubernetes-persistent-volumes?var-namespace=${volumeNamespace}&var-volume=${volumePVCName}`}
               target="_blank"
               rel="noopener noreferrer"
               data-cy="advanced_metrics_volume_detailed"
-            />
+            >
+              <Button
+                label={intl.formatMessage({ id: 'advanced_metrics' })}
+                variant={'secondary'}
+                icon={<i className="fas fa-external-link-alt" />}
+              />
+            </a>
           )}
           {volumeCondition === VOLUME_CONDITION_LINK && (
             <Dropdown

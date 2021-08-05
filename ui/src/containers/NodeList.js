@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
-import { Table, Button, Loader } from '@scality/core-ui';
+import { Table, Loader } from '@scality/core-ui';
+import { Button } from '@scality/core-ui/dist/next';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import {
   deployNodeAction,
@@ -88,12 +89,12 @@ const NodeList = () => {
           return (
             <span className="status">
               <Button
-                text={intl.formatMessage({ id: 'deploy' })}
+                variant="primary"
+                label={intl.formatMessage({ id: 'deploy' })}
                 onClick={(event) => {
                   event.stopPropagation();
                   deployNode(rowData);
                 }}
-                size="smaller"
               />
             </span>
           );
@@ -102,13 +103,13 @@ const NodeList = () => {
           return (
             <span className="status">
               <Button
-                text={intl.formatMessage({ id: 'deploying' })}
+                variant="primary"
+                label={intl.formatMessage({ id: 'deploying' })}
                 onClick={(event) => {
                   event.stopPropagation();
                   history.push(`/nodes/${rowData.name}/deploy`);
                 }}
                 icon={<Loader size="smaller" />}
-                size="smaller"
               />
             </span>
           );
@@ -144,7 +145,8 @@ const NodeList = () => {
     <PageContainer>
       <ActionContainer>
         <Button
-          text={intl.formatMessage({ id: 'create_new_node' })}
+          variant="primary"
+          label={intl.formatMessage({ id: 'create_new_node' })}
           onClick={() => history.push('/nodes/create')}
           icon={<i className="fas fa-plus" />}
         />

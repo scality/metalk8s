@@ -492,15 +492,15 @@
         "severity": "critical"
     },
     {
-        "message": "Filesystem has less than 5% space left.",
+        "message": "Filesystem has less than 20% space left.",
         "name": "NodeFilesystemAlmostOutOfSpace",
-        "query": "(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_size_bytes{fstype!=\"\",job=\"node-exporter\"} * 100 < 5 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "query": "(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_size_bytes{fstype!=\"\",job=\"node-exporter\"} * 100 < 20 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
         "severity": "warning"
     },
     {
-        "message": "Filesystem has less than 3% space left.",
+        "message": "Filesystem has less than 12% space left.",
         "name": "NodeFilesystemAlmostOutOfSpace",
-        "query": "(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_size_bytes{fstype!=\"\",job=\"node-exporter\"} * 100 < 3 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "query": "(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_size_bytes{fstype!=\"\",job=\"node-exporter\"} * 100 < 12 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
         "severity": "critical"
     },
     {
@@ -516,15 +516,15 @@
         "severity": "critical"
     },
     {
-        "message": "Filesystem has less than 5% inodes left.",
+        "message": "Filesystem has less than 15% inodes left.",
         "name": "NodeFilesystemAlmostOutOfFiles",
-        "query": "(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_files{fstype!=\"\",job=\"node-exporter\"} * 100 < 5 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "query": "(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_files{fstype!=\"\",job=\"node-exporter\"} * 100 < 15 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
         "severity": "warning"
     },
     {
-        "message": "Filesystem has less than 3% inodes left.",
+        "message": "Filesystem has less than 8% inodes left.",
         "name": "NodeFilesystemAlmostOutOfFiles",
-        "query": "(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_files{fstype!=\"\",job=\"node-exporter\"} * 100 < 3 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "query": "(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_files{fstype!=\"\",job=\"node-exporter\"} * 100 < 8 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
         "severity": "critical"
     },
     {

@@ -1,7 +1,7 @@
 import React from 'react';
 import styled, { useTheme } from 'styled-components';
 import { useQuery } from 'react-query';
-import { Button } from '@scality/core-ui';
+import { Button } from '@scality/core-ui/dist/next';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { lighten, darken } from 'polished';
 import { useIntl } from 'react-intl';
@@ -163,16 +163,18 @@ const DashboardMetrics = () => {
       <PanelActions>
         <PageSubtitle>{intl.formatMessage({ id: 'metrics' })}</PageSubtitle>
         {configQuery.isSuccess && configQuery.data.url_grafana && (
-          <Button
-            text={intl.formatMessage({ id: 'advanced_metrics' })}
-            variant={'buttonSecondary'}
-            icon={<i className="fas fa-external-link-alt" />}
-            size={'small'}
+          <a
             href={`${configQuery.data.url_grafana}/dashboard/db/nodes-detailed`}
             target="_blank"
             rel="noopener noreferrer"
             data-cy="advanced_metrics_node_detailed"
-          />
+          >
+            <Button
+              label={intl.formatMessage({ id: 'advanced_metrics' })}
+              variant={'secondary'}
+              icon={<i className="fas fa-external-link-alt" />}
+            />
+          </a>
         )}
       </PanelActions>
       <GraphsWrapper>

@@ -80,12 +80,12 @@ KubeVersionMismatch,warning,Different semantic versions of Kubernetes components
 KubeClientErrors,warning,Kubernetes API server client is experiencing errors.
 NodeFilesystemSpaceFillingUp,warning,Filesystem is predicted to run out of space within the next 24 hours.
 NodeFilesystemSpaceFillingUp,critical,Filesystem is predicted to run out of space within the next 4 hours.
-NodeFilesystemAlmostOutOfSpace,warning,Filesystem has less than 5% space left.
-NodeFilesystemAlmostOutOfSpace,critical,Filesystem has less than 3% space left.
+NodeFilesystemAlmostOutOfSpace,warning,Filesystem has less than 20% space left.
+NodeFilesystemAlmostOutOfSpace,critical,Filesystem has less than 12% space left.
 NodeFilesystemFilesFillingUp,warning,Filesystem is predicted to run out of inodes within the next 24 hours.
 NodeFilesystemFilesFillingUp,critical,Filesystem is predicted to run out of inodes within the next 4 hours.
-NodeFilesystemAlmostOutOfFiles,warning,Filesystem has less than 5% inodes left.
-NodeFilesystemAlmostOutOfFiles,critical,Filesystem has less than 3% inodes left.
+NodeFilesystemAlmostOutOfFiles,warning,Filesystem has less than 15% inodes left.
+NodeFilesystemAlmostOutOfFiles,critical,Filesystem has less than 8% inodes left.
 NodeNetworkReceiveErrs,warning,Network interface is reporting many receive errors.
 NodeNetworkTransmitErrs,warning,Network interface is reporting many transmit errors.
 NodeHighNumberConntrackEntriesUsed,warning,Number of conntrack are getting close to the limit
