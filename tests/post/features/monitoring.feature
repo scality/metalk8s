@@ -52,3 +52,7 @@ Feature: Monitoring is up and running
         And the Prometheus API is available
         And a test Volume 'test-monitoring1' exists
         Then I can get I/O stats for this test Volume's device
+
+    Scenario: Expected Grafana dashboards are available
+        Given the Grafana API is available
+        Then the deployed dashboards match the expected ones

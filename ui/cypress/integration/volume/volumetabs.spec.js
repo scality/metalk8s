@@ -97,7 +97,7 @@ describe('Volume page metrics tab', () => {
       .should('have.attr', 'href')
       .and(
         'to.have.string',
-        'grafana/dashboard/db/kubernetes-persistent-volumes?var-namespace=metalk8s-monitoring&var-volume=alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-0',
+        'grafana/d/919b92a8e8041bd567af9edab12c840c?var-namespace=metalk8s-monitoring&var-volume=alertmanager-prometheus-operator-alertmanager-db-alertmanager-prometheus-operator-alertmanager-0',
       );
   });
 

@@ -15,17 +15,9 @@ from tests import kube_utils
 
 # Constants {{{
 
-ALERT_RULE_FILE_NAME = "alerting_rules.json"
-ALERT_RULE_FILE_PATH = (
-    pathlib.Path(__file__)
-    / ".."
-    / ".."
-    / ".."
-    / ".."
-    / "tools"
-    / "rule_extractor"
-    / ALERT_RULE_FILE_NAME
-).resolve()
+REPO_ROOT = pathlib.Path(__file__).parent / "../../.."
+ALERT_RULE_FILE = REPO_ROOT / "tools/rule_extractor/alerting_rules.json"
+DASHBOARD_UIDS_FILE = REPO_ROOT / "charts/grafana_dashboard_uids.json"
 
 NODE_EXPORTER_PORT = 9100
 
@@ -86,6 +78,11 @@ def test_volume_metrics(host):
     pass
 
 
+@scenario("../features/monitoring.feature", "Expected Grafana dashboards are available")
+def test_expected_grafana_dashboards(host):
+    pass
+
+
 # }}}
 # Given {{{
 
@@ -95,6 +92,14 @@ def check_prometheus_api(prometheus_api):
     try:
         prometheus_api.get_targets()
     except utils.PrometheusApiError as exc:
+        pytest.fail(str(exc))
+
+
+@given("the Grafana API is available")
+def check_grafana_api(grafana_api):
+    try:
+        grafana_api.get_admin_stats()
+    except utils.GrafanaApiError as exc:
         pytest.fail(str(exc))
 
 
@@ -257,7 +262,7 @@ def volume_has_io_stats(host, ssh_config, prometheus_api, test_volume):
     utils.retry(_volume_has_io_stats, times=60, wait=3)
 
 
-@then("the deployed Prometheus alert rules are the same as the default " "alert rules")
+@then("the deployed Prometheus alert rules are the same as the default alert rules")
 def check_deployed_rules(host, prometheus_api):
     try:
         deployed_rules = prometheus_api.get_rules()
@@ -285,21 +290,72 @@ def check_deployed_rules(host, prometheus_api):
                 deployed_alert_rules.append(fixup_alerting_rule)
 
     try:
-        with open(ALERT_RULE_FILE_PATH) as f:
-            try:
-                default_alert_rules = json.load(f)
-            except json.JSONDecodeError as exc:
-                pytest.fail(
-                    "Failed to decode JSON from {}: {!s}".format(
-                        ALERT_RULE_FILE_PATH, exc
-                    )
-                )
+        alert_rules_str = ALERT_RULE_FILE.read_text(encoding="utf-8")
     except IOError as exc:
-        pytest.fail("Failed to open file {}: {!s}".format(ALERT_RULE_FILE_NAME, exc))
+        pytest.fail(f"Failed to read file {ALERT_RULE_FILE}: {exc!s}")
+
+    try:
+        default_alert_rules = json.loads(alert_rules_str)
+    except json.JSONDecodeError as exc:
+        pytest.fail(f"Failed to decode JSON from {ALERT_RULE_FILE}: {exc!s}")
 
     assert (
         default_alert_rules == deployed_alert_rules
     ), "Expected default Prometheus rules to be equal to deployed rules."
+
+
+@then("the deployed dashboards match the expected ones")
+def check_grafana_dashboards(host, grafana_api):
+    try:
+        deployed_dashboards = grafana_api.get_dashboards()
+    except utils.GrafanaAPIError as exc:
+        pytest.fail(str(exc))
+
+    try:
+        expected_dashboards_str = DASHBOARD_UIDS_FILE.read_text(encoding="utf-8")
+    except IOError as exc:
+        pytest.fail(f"Failed to read file {DASHBOARD_UIDS_FILE}: {exc!s}")
+
+    try:
+        expected_dashboards = json.loads(expected_dashboards_str)
+    except json.JSONDecodeError as exc:
+        pytest.fail(f"Failed to decode JSON from {DASHBOARD_UIDS_FILE}: {exc!s}")
+
+    uid_mismatches = []
+    extra_dashboards = []
+    missing_dashboards = list(expected_dashboards.keys())
+    for dashboard in deployed_dashboards:
+        db_title = dashboard["title"]
+        if db_title not in expected_dashboards:
+            extra_dashboards.append(db_title)
+            continue
+
+        missing_dashboards.remove(db_title)
+        db_uid = dashboard["uid"]
+        expected_uid = expected_dashboards[db_title]
+        if db_uid != expected_uid:
+            uid_mismatches.append((db_title, expected_uid, db_uid))
+
+    errors = []
+    if missing_dashboards:
+        db_list = "', '".join(missing_dashboards)
+        errors.append(f"Missing dashboard(s): '{db_list}'")
+
+    if extra_dashboards:
+        db_list = "', '".join(extra_dashboards)
+        errors.append(f"Extra dashboard(s): '{db_list}'")
+
+    if uid_mismatches:
+        mismatches_list = ", ".join(
+            f"'{title}' (expected '{expected}', found '{found}')"
+            for title, expected, found in uid_mismatches
+        )
+        errors.append(f"UID mismatch(es): {mismatches_list}")
+
+    if errors:
+        pytest.fail(
+            "\n".join(["Deployed dashboards do not match expectations:", *errors])
+        )
 
 
 # }}}

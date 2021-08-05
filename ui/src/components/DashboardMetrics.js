@@ -19,6 +19,7 @@ import {
   lineColor4,
   SAMPLE_DURATION_LAST_SEVEN_DAYS,
   REFRESH_METRICS_GRAPH,
+  GRAFANA_DASHBOARDS,
 } from '../constants';
 import { getTooltipConfig } from './LinechartSpec';
 import {
@@ -164,7 +165,7 @@ const DashboardMetrics = () => {
         <PageSubtitle>{intl.formatMessage({ id: 'metrics' })}</PageSubtitle>
         {configQuery.isSuccess && configQuery.data.url_grafana && (
           <a
-            href={`${configQuery.data.url_grafana}/dashboard/db/nodes-detailed`}
+            href={`${configQuery.data.url_grafana}/d/${GRAFANA_DASHBOARDS.nodes}`}
             target="_blank"
             rel="noopener noreferrer"
             data-cy="advanced_metrics_node_detailed"
