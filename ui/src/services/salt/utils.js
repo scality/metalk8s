@@ -86,7 +86,10 @@ export function getJobStatusFromPrintJob(result, jid) {
   // add error handling when indicating the error inside the JSON
   if (job && job['Error']) {
     status.completed = true;
-    const returner = Object.values(job['Result'])[0].return;
+    const returner = Object.values(job['Result'])?.[0]?.return;
+    if (!returner) {
+      return { ...status};
+    }
     status = { ...status, ...parseJobError(returner) };
   }
 
