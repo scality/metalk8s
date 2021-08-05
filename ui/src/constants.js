@@ -124,3 +124,10 @@ export const lineColor1 = '#245A83';
 export const lineColor2 = '#808080';
 export const lineColor3 = '#A04EC9';
 export const lineColor4 = '#C6B38A';
+
+// Grafana dashboard UIDs (for stable links)
+export const GRAFANA_DASHBOARDS = {
+  logs: "a7e130cb82be229d6f3edbfd0a438001",
+  nodes: "node-exporter-full",
+  volumes: "919b92a8e8041bd567af9edab12c840c",
+};
