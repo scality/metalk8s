@@ -1,6 +1,4 @@
 //@flow
-import '@fortawesome/fontawesome-free/css/all.css';
-
 import React from 'react';
 import Layout from './Layout';
 

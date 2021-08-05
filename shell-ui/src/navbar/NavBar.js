@@ -18,13 +18,13 @@ import {
   isEntryAccessibleByTheUser,
   normalizePath,
 } from './auth/permissionUtils';
-import { prefetch } from 'quicklink';
 import { useTheme } from 'styled-components';
 import { useLanguage } from './lang';
 import { useThemeName } from './theme';
 import { useIntl } from 'react-intl';
 import { useAuth, useLogOut } from '../auth/AuthProvider';
 import {
+  useConfigRetriever,
   useDiscoveredViews,
   useLinkOpener,
 } from '../initFederation/ConfigurationProviders';
@@ -107,6 +107,28 @@ const Link = ({
   );
 };
 
+function prefetch(url: string) {
+  return new Promise((resolve, reject) => {
+    const existingElement = [
+      ...(document.head?.querySelectorAll("script") || []),
+    ].find(
+      (scriptElement) => scriptElement.attributes.src?.value === url
+    );
+    if (existingElement) {
+      resolve();
+    }
+
+    const script = document.createElement('script');
+    script.src = url;
+    script.async = true;
+    script.onload = resolve;
+    script.onerror = reject;
+
+    document.head?.appendChild(script);
+  });
+}
+
+
 export const Navbar = ({
   logo,
   canChangeLanguage,
@@ -170,6 +192,32 @@ export const Navbar = ({
     (tab) => tab.navbarGroup === 'subLogin',
   );
   const selectedSubLoginTab = selectedSubLoginTabs.pop();
+
+
+  //Preload non current route
+  const { retrieveConfiguration } = useConfigRetriever();
+  useEffect(() => {
+    accessibleViews.forEach(view =>{
+      if (!view.isFederated) {
+        return;
+      }
+
+      //Check if it is the current route
+      if ((selectedMainTab?.isFederated && view.app.name === selectedMainTab.app.name && view.view.path === selectedMainTab.view.path) ||
+        (selectedSubLoginTab?.isFederated && view.app.name === selectedSubLoginTab.app.name && view.view.path === selectedSubLoginTab.view.path)) {
+          return;
+      }
+
+      const remoteEntryUrl = view.app.url + retrieveConfiguration({
+        configType: 'build',
+        name: view.app.name,
+      }).spec.remoteEntryPath;
+
+      prefetch(remoteEntryUrl).catch(e => console.error(`Failed to preload ${remoteEntryUrl}`, e));
+    })
+
+  }, [JSON.stringify(accessibleViews)]);
+
 
   const tabs = accessibleViews
     .filter((accessibleView) => accessibleView.navbarGroup === 'main')
