@@ -1165,6 +1165,11 @@
         "label": null,
         "multi": true,
         "name": "level",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
         "options": [
           {
             "selected": true,
