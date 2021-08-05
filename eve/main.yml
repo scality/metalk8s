@@ -148,7 +148,7 @@ models:
         elif [ "$DEBUG_STEPS" = all ]; then
           RUN_STEP=1
           REASON="\"debug\" property set to \"all\""
-        elif [[ "$DEBUG_STEPS" =~ ^[a-z\-]+(~[a-z\-]+)*$ ]]; then
+        elif [[ "$DEBUG_STEPS" =~ ^[a-z0-9\-]+(~[a-z0-9\-]+)*$ ]]; then
           IFS="~" read -ra SELECTED <<< "$DEBUG_STEPS"
           for selected in "${SELECTED[@]}"; do
             if [ "$selected" = "$STEP_NAME" ]; then

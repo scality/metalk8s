@@ -22,9 +22,9 @@ spec:
           threshold: 20
       node_filesystem_almost_out_of_space:
         warning:
-          available: 5  # Percentage of free space left
+          available: 20  # Percentage of free space left
         critical:
-          available: 3
+          available: 12
       node_filesystem_files_filling_up:
         warning:
           hours: 24  # Hours before there is no inode left
@@ -34,9 +34,9 @@ spec:
           threshold: 20
       node_filesystem_almost_out_of_files:
         warning:
-          available: 5  # Percentage of free inodes left
+          available: 15  # Percentage of free inodes left
         critical:
-          available: 3
+          available: 8
       node_network_receive_errors:
         warning:
           error_rate: 0.01  # Rate of receive errors for the last 2m
