@@ -1,6 +1,34 @@
 # CHANGELOG
+## Release 2.10.2 (in development)
 
-## Release 2.10.1 (in development)
+
+## Release 2.10.1
+### Enhancements
+
+- Improve performance of Shell UI when switching between navigation entries
+  (PR[#3469](https://github.com/scality/metalk8s/pull/3469))
+
+### Bug fixes
+
+- Fix a few issues in MetalK8s UI with error handling for Nodes deployment
+  (PR[#3477](https://github.com/scality/metalk8s/pull/3477))
+
+- [#3480](https://github.com/scality/metalk8s/issues/3480) - Switch Grafana
+  base image to Ubuntu (and bump to 8.0.6) to handle DNS `SERVFAIL` errors
+  gracefully
+  (PR[#3481](https://github.com/scality/metalk8s/pull/3481))
+
+- [#3474](https://github.com/scality/metalk8s/issues/3474) - Lower the alert
+  thresholds for low filesystem available space and inodes to react before
+  kubelet starts evicting pods
+  (PR[#3479](https://github.com/scality/metalk8s/pull/3479))
+
+- Fix "Logs" dashboard in Grafana (templating error)
+  (PR[#3484](https://github.com/scality/metalk8s/pull/3484))
+
+- [#3475](https://github.com/scality/metalk8s/issues/3475) - Fix broken links
+  in MetalK8s UI for "Advanced Metrics" in Nodes and Volumes pages
+  (PR[#3483](https://github.com/scality/metalk8s/pull/3483))
 
 ## Release 2.10.0
 ### Enhancements
