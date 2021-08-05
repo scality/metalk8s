@@ -6,7 +6,7 @@ import { NodeTab } from './style/CommonLayoutStyle';
 import { useIntl } from 'react-intl';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import NodePartitionTable from './NodePartitionTable';
-import { PORT_NODE_EXPORTER } from '../constants';
+import { GRAFANA_DASHBOARDS, PORT_NODE_EXPORTER } from '../constants';
 import { useTypedSelector } from '../hooks';
 
 const TitleContainer = styled.div`
@@ -43,7 +43,7 @@ const NodePagePartitionTab = (props: Object) => {
             size={'small'}
             // We can't redirect to the Node(detailed) Filesystem Detail catagory.
             // So we hardcode the panel ID to redirect to 'File Nodes Free' chart
-            href={`${api.url_grafana}/dashboard/db/nodes-detailed?var-DS_PROMETHEUS=Prometheus&var-job=node-exporter&var-name=${hostnameLabel}&viewPanel=41`}
+            href={`${api.url_grafana}/d/${GRAFANA_DASHBOARDS.nodes}?var-DS_PROMETHEUS=Prometheus&var-job=node-exporter&var-name=${hostnameLabel}&viewPanel=41`}
             target="_blank"
             rel="noopener noreferrer"
             data-cy="advanced_metrics_node_detailed_file_node_free"

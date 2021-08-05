@@ -29,6 +29,8 @@ It performs the following tasks:
 import argparse
 import copy
 import io
+import json
+import pathlib
 import re
 import sys
 import subprocess
@@ -210,6 +212,29 @@ def remove_prometheus_rules(template, drop_rules):
     return updated_template
 
 
+DASHBOARD_UIDS_FILE = pathlib.Path(__file__).parent / "grafana_dashboard_uids.json"
+DASHBOARD_UIDS = json.loads(DASHBOARD_UIDS_FILE.read_text())
+
+
+def patch_grafana_dashboards(manifest):
+    for fname in manifest["data"]:
+        dashboard = json.loads(manifest["data"][fname])
+        title = dashboard.get("title")
+        assert title in DASHBOARD_UIDS, f"Found unknown Grafana dashboard: '{title}'"
+        found_uid = dashboard.get("uid")
+        expected_uid = DASHBOARD_UIDS[title]
+        if found_uid:
+            assert found_uid == expected_uid, (
+                f"UID mismatch for Grafana dashboard '{title}': "
+                f"found '{found_uid}', expected '{expected_uid}'"
+            )
+        else:
+            dashboard["uid"] = expected_uid
+            manifest["data"][fname] = json.dumps(dashboard, indent=4, sort_keys=True)
+
+    return manifest
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("name", help="Denotes the name of the chart")
@@ -307,12 +332,16 @@ def main():
             drop_prometheus_rules = yaml.safe_load(fd)
 
     def fixup(doc):
-        if (
-            drop_prometheus_rules
-            and isinstance(doc, dict)
-            and doc.get("kind") == "PrometheusRule"
-        ):
-            doc = remove_prometheus_rules(doc, drop_prometheus_rules)
+        if isinstance(doc, dict):
+            kind = doc.get("kind")
+            if drop_prometheus_rules and kind == "PrometheusRule":
+                doc = remove_prometheus_rules(doc, drop_prometheus_rules)
+            if (
+                kind == "ConfigMap"
+                and doc.get("metadata", {}).get("labels", {}).get("grafana_dashboard")
+                == "1"
+            ):
+                doc = patch_grafana_dashboards(doc)
 
         return (
             fixup_metadata(namespace=args.namespace, doc=fixup_doc(doc=doc))

@@ -265,7 +265,12 @@ def ssh_config(request):
 
 @pytest.fixture
 def prometheus_api(control_plane_ingress_ep):
-    return utils.PrometheusApi(endpoint=control_plane_ingress_ep)
+    return utils.PrometheusApi(endpoint=f"{control_plane_ingress_ep}/api/prometheus")
+
+
+@pytest.fixture
+def grafana_api(control_plane_ingress_ep):
+    return utils.GrafanaAPI(endpoint=f"{control_plane_ingress_ep}/grafana")
 
 
 def count_running_pods(request, k8s_client, pods_count, label, namespace, node):

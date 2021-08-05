@@ -189,48 +189,52 @@ def get_pillar(host, key, local=False):
         return json.loads(output)["local"]
 
 
-class PrometheusApiError(Exception):
-    pass
+class BaseAPIError(Exception):
+    """Some error occurred when using a `BaseAPI` subclass."""
 
 
-class PrometheusApi:
-    def __init__(self, host=None, port=9090, endpoint=None):
-        self.endpoint = endpoint
+class BaseAPI:
+    ERROR_CLS = BaseAPIError
 
-        if not self.endpoint:
-            self.endpoint = "https://{}:{}".format(host, port)
-
+    def __init__(self, endpoint):
+        self.endpoint = endpoint.rstrip("/")
         self.session = requests_retry_session()
 
     def request(self, method, route, **kwargs):
+        kwargs.setdefault("verify", False)
         try:
-            kwargs.setdefault("verify", False)
             response = self.session.request(
-                method,
-                "{}/api/prometheus/api/v1/{}".format(self.endpoint, route),
-                **kwargs
+                method, f"{self.endpoint}/{route.lstrip('/')}", **kwargs
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as exc:
-            raise PrometheusApiError(exc)
+            raise self.ERROR_CLS(exc)
 
         try:
             return response.json()
         except ValueError as exc:
-            raise PrometheusApiError(exc)
+            raise self.ERROR_CLS(exc)
+
+
+class PrometheusApiError(BaseAPIError):
+    pass
+
+
+class PrometheusApi(BaseAPI):
+    ERROR_CLS = PrometheusApiError
 
     def query(self, metric_name, **query_matchers):
         matchers = [
             '{}="{}"'.format(key, value) for key, value in query_matchers.items()
         ]
         query_string = metric_name + "{" + ",".join(matchers) + "}"
-        return self.request("GET", "query", params={"query": query_string})
+        return self.request("GET", "api/v1/query", params={"query": query_string})
 
     def get_alerts(self, **kwargs):
-        return self.request("GET", "alerts", **kwargs)
+        return self.request("GET", "api/v1/alerts", **kwargs)
 
     def get_rules(self, **kwargs):
-        return self.request("GET", "rules", **kwargs)
+        return self.request("GET", "api/v1/rules", **kwargs)
 
     def find_rules(self, name=None, group=None, labels=None, **kwargs):
         if not labels:
@@ -251,4 +255,21 @@ class PrometheusApi:
         return rules
 
     def get_targets(self, **kwargs):
-        return self.request("GET", "targets", **kwargs)
+        return self.request("GET", "api/v1/targets", **kwargs)
+
+
+class GrafanaAPIError(BaseAPIError):
+    pass
+
+
+class GrafanaAPI(BaseAPI):
+    ERROR_CLS = GrafanaAPIError
+
+    def get_admin_stats(self):
+        # FIXME: this user should not exist... but it's helpful in tests O:)
+        return self.request("GET", "api/admin/stats", auth=("admin", "admin"))
+
+    def get_dashboards(self):
+        return self.request(
+            "GET", "api/search", auth=("admin", "admin"), params={"type": "dash-db"}
+        )

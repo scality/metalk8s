@@ -26,6 +26,7 @@ import {
   SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
   SAMPLE_FREQUENCY_LAST_ONE_HOUR,
   queryTimeSpansCodes,
+  GRAFANA_DASHBOARDS,
 } from '../constants';
 import { useIntl } from 'react-intl';
 import {
@@ -320,7 +321,7 @@ const MetricsTab = (props) => {
               onClick={() => {}}
               icon={<i className="fas fa-external-link-alt" />}
               size={'small'}
-              href={`${config.api.url_grafana}/dashboard/db/kubernetes-persistent-volumes?var-namespace=${volumeNamespace}&var-volume=${volumePVCName}`}
+              href={`${config.api.url_grafana}/d/${GRAFANA_DASHBOARDS.volumes}?var-namespace=${volumeNamespace}&var-volume=${volumePVCName}`}
               target="_blank"
               rel="noopener noreferrer"
               data-cy="advanced_metrics_volume_detailed"

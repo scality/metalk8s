@@ -87,7 +87,7 @@ describe('Node page metrics tab', () => {
       .should('have.attr', 'href')
       .and(
         'to.have.string',
-        'grafana/dashboard/db/nodes-detailed?var-DS_PROMETHEUS=Prometheus&var-job=node-exporter&var-name=zenkotda-master-0.novalocal',
+        'grafana/d/node-exporter-full?var-DS_PROMETHEUS=Prometheus&var-job=node-exporter&var-name=zenkotda-master-0.novalocal',
       );
   });
 

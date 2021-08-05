@@ -38,6 +38,7 @@ import {
   SAMPLE_FREQUENCY_LAST_ONE_HOUR,
   queryTimeSpansCodes,
   PORT_NODE_EXPORTER,
+  GRAFANA_DASHBOARDS,
 } from '../constants';
 import { useIntl } from 'react-intl';
 import { useTypedSelector } from '../hooks';
@@ -531,7 +532,7 @@ const NodePageMetricsTab = ({
             variant={'buttonSecondary'}
             icon={<i className="fas fa-external-link-alt" />}
             size={'small'}
-            href={`${api.url_grafana}/dashboard/db/nodes-detailed?var-DS_PROMETHEUS=Prometheus&var-job=node-exporter&var-name=${hostnameLabel}`}
+            href={`${api.url_grafana}/d/${GRAFANA_DASHBOARDS.nodes}?var-DS_PROMETHEUS=Prometheus&var-job=node-exporter&var-name=${hostnameLabel}`}
             target="_blank"
             rel="noopener noreferrer"
             data-cy="advanced_metrics_node_detailed"
