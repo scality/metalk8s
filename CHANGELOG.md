@@ -1,6 +1,8 @@
 # CHANGELOG
 ## Release 2.10.2 (in development)
-
+### Bug fixes
+- Fix the link to documentation from the UI navigation bar
+  (PR[#3486](https://github.com/scality/metalk8s/pull/3486))
 
 ## Release 2.10.1
 ### Enhancements
