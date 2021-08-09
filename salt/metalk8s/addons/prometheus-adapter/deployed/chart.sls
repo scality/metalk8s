@@ -435,7 +435,7 @@ spec:
       - emptyDir: {}
         name: tmp
 ---
-apiVersion: apiregistration.k8s.io/v1beta1
+apiVersion: apiregistration.k8s.io/v1
 kind: APIService
 metadata:
   labels:
@@ -458,7 +458,7 @@ spec:
   version: v1beta1
   versionPriority: 100
 ---
-apiVersion: apiregistration.k8s.io/v1beta1
+apiVersion: apiregistration.k8s.io/v1
 kind: APIService
 metadata:
   labels:
