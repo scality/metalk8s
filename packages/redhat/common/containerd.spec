@@ -1,5 +1,5 @@
 %global goipath github.com/containerd/containerd
-Version:        1.4.3
+Version:        1.4.8
 
 %if %{defined fedora}
 %gometa
@@ -232,6 +232,9 @@ install -D -p -m 0644 %{S:3} %{buildroot}%{_sysctldir}/60-containerd.conf
 
 
 %changelog
+* Thu Jul 29 2021 Nicolas Trangez <nicolas.trangez@scality.com> - 1.4.8-1
+- Latest upstream
+
 * Fri Mar 19 2021 Nicolas Trangez <nicolas.trangez@scality.com> - 1.4.3-3
 - Only configure 'fs.may_detach_mounts' on EL7
 
