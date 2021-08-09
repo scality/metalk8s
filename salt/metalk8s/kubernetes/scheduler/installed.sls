@@ -26,7 +26,6 @@ Create kube-scheduler Pod manifest:
           - --leader-elect=true
           - --port=0
         # }
-          - --bind-address={{ grains['metalk8s']['control_plane_ip'] }}
           - --v={{ 2 if metalk8s.debug else 0 }}
         requested_cpu: 100m
         ports:
