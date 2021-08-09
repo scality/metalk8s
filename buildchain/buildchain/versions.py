@@ -117,8 +117,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="etcd",
-        version="3.4.13-0",
-        digest="sha256:4ad90a11b55313b182afc186b9876c8e891531b8db4c9bf1541953021618d0e2",
+        version="3.5.0-0",
+        digest="sha256:9ce33ba33d8e738a5b85ed50b5080ac746deceed4a7496c550927a7a19ca3b6d",
     ),
     Image(
         name="grafana",

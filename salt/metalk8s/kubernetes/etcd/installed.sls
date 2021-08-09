@@ -112,7 +112,7 @@ Waiting for etcd running:
       - {{ certificates.server.files.etcd.path }}
       - /etc/kubernetes/pki/etcd/server.key
     - status: 200
-    - match: '{"health":"true"}'
+    - match: '{"health":"true","reason":""}'
     - require:
       - module: Delay after etcd pod deployment
 
