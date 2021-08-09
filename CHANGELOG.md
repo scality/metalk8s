@@ -2,6 +2,9 @@
 ## Release 2.11.0 (in development)
 ### Enhancements
 
+- Bump Kubernetes version to 1.22.1
+  (PR[#3525](https://github.com/scality/metalk8s/pull/3525))
+
 - Bump `containerd` version to 1.4.8 (PR [#3466](https://github.com/scality/metalk8s/pull/3466)).
 
 - Bump Calico version to 3.20.0

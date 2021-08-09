@@ -74,7 +74,6 @@ Create kube-apiserver Pod manifest:
           - --etcd-certfile={{ certificates.client.files['apiserver-etcd'].path }}
           - --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key
           - --etcd-servers={{ etcd_servers | join(",") }}
-          - --insecure-port=0
           - --kubelet-client-certificate={{ certificates.client.files['apiserver-kubelet'].path }}
           - --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key
           - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
