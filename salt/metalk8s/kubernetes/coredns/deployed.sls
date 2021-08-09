@@ -25,7 +25,9 @@ Create coredns ConfigMap:
                   ttl 30
                 }
                 prometheus :9153
-                forward . /etc/resolv.conf
+                forward . /etc/resolv.conf {
+                  max_concurrent 1000
+                }
                 cache 30
                 loop
                 reload
@@ -65,12 +67,15 @@ Create coredns service:
           - name: dns
             port: 53
             protocol: UDP
+            targetPort: 53
           - name: dns-tcp
             port: 53
             protocol: TCP
+            targetPort: 53
           - name: metrics
             port: 9153
             protocol: TCP
+            targetPort: 9153
     - require:
       - metalk8s_kubernetes: Create coredns deployment
 
@@ -107,6 +112,13 @@ Create coredns cluster role:
           - nodes
           verbs:
           - get
+        - apiGroups:
+          - discovery.k8s.io
+          resources:
+          - endpointslices
+          verbs:
+          - list
+          - watch
 
 Create coredns cluster role binding:
   metalk8s_kubernetes.object_present:
