@@ -28,6 +28,6 @@
   "Loki": "g6fe30815b172c9da7e813c15ddfe607",
   "Logs": "a7e130cb82be229d6f3edbfd0a438001",
   "Fluent Bit": "fluentbit",
-  "NGINX Ingress controller": "nginx",
-  "Request Handling Performance": "4GFbkOsZk"
+  "NGINX Ingress Controller": "nginx",
+  "NGINX Ingress Request Handling Performance": "4GFbkOsZk"
 }
