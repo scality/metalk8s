@@ -3,7 +3,9 @@
 ### Enhancements
 - Bump `containerd` version to 1.4.8 (PR [#3466](https://github.com/scality/metalk8s/pull/3466)).
 
-## Release 2.10.2 (in development)
+## Release 2.10.3 (in development)
+
+## Release 2.10.2
 ### Bug fixes
 - Fix the link to documentation from the UI navigation bar
   (PR[#3486](https://github.com/scality/metalk8s/pull/3486))
