@@ -318,6 +318,9 @@ def main():
         "--values",
         args.values,
         "--include-crds",
+        "--api-versions",
+        # Used by APIService (available since Kubernetes 1.10)
+        "apiregistration.k8s.io/v1",
         args.path,
     ]
 
