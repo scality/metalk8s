@@ -15,9 +15,9 @@ from tests import kube_utils
 
 # Constants {{{
 
-REPO_ROOT = pathlib.Path(__file__).parent / "../../.."
-ALERT_RULE_FILE = REPO_ROOT / "tools/rule_extractor/alerting_rules.json"
-DASHBOARD_UIDS_FILE = REPO_ROOT / "charts/grafana_dashboard_uids.json"
+LOCAL_DIR = pathlib.Path(__file__).parent
+ALERT_RULE_FILE = LOCAL_DIR / "../../../tools/rule_extractor/alerting_rules.json"
+DASHBOARD_UIDS_FILE = LOCAL_DIR / "files/grafana_dashboard_uids.json"
 
 NODE_EXPORTER_PORT = 9100
 

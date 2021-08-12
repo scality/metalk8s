@@ -212,24 +212,43 @@ def remove_prometheus_rules(template, drop_rules):
     return updated_template
 
 
-DASHBOARD_UIDS_FILE = pathlib.Path(__file__).parent / "grafana_dashboard_uids.json"
-DASHBOARD_UIDS = json.loads(DASHBOARD_UIDS_FILE.read_text())
+DASHBOARD_PATCHES_FILE = (
+    pathlib.Path(__file__).parent / "grafana_dashboard_patches.json"
+)
+DASHBOARD_PATCHES = json.loads(DASHBOARD_PATCHES_FILE.read_text())
+
+
+def set_value_at(obj, path, value):
+    key, _, rem_path = path.partition(".")
+    if isinstance(obj, dict):
+        if rem_path:
+            set_value_at(obj[key], rem_path, value)
+        else:
+            obj[key] = value
+    elif isinstance(obj, list):
+        index = int(key)
+        if rem_path:
+            assert index < len(obj)
+            set_value_at(obj[index], rem_path, value)
+        else:
+            assert index <= len(obj)
+            if index == len(obj):
+                obj.append(value)
+            else:
+                obj[index] = value
+    else:
+        raise ValueError(f'Cannot assign to "{type(obj)!r}" object.')
 
 
 def patch_grafana_dashboards(manifest):
     for fname in manifest["data"]:
         dashboard = json.loads(manifest["data"][fname])
         title = dashboard.get("title")
-        assert title in DASHBOARD_UIDS, f"Found unknown Grafana dashboard: '{title}'"
-        found_uid = dashboard.get("uid")
-        expected_uid = DASHBOARD_UIDS[title]
-        if found_uid:
-            assert found_uid == expected_uid, (
-                f"UID mismatch for Grafana dashboard '{title}': "
-                f"found '{found_uid}', expected '{expected_uid}'"
-            )
-        else:
-            dashboard["uid"] = expected_uid
+        assert title, f"Invalid Grafana dashboard: title={title!r}"
+        patch = DASHBOARD_PATCHES.get(title)
+        if patch is not None:
+            for path, value in patch.items():
+                set_value_at(dashboard, path, value)
             manifest["data"][fname] = json.dumps(dashboard, indent=4, sort_keys=True)
 
     return manifest
