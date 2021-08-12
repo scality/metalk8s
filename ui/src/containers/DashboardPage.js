@@ -6,6 +6,7 @@ import styled from 'styled-components';
 import DashboardMetrics from '../components/DashboardMetrics';
 import DashboardInventory from '../components/DashboardInventory';
 import DashboardServices from '../components/DashboardServices';
+import DashboardGlobalHealth from '../components/DashboardGlobalHealth';
 import { padding, spacing } from '@scality/core-ui/dist/style/theme';
 import { Dropdown } from '@scality/core-ui';
 
@@ -155,7 +156,9 @@ const DashboardPage = (props: {}) => {
           variant="backgroundLevel1"
         />
       </div>
-      <div className="health">Global Health</div>
+      <div className="health">
+        <DashboardGlobalHealth />
+      </div>
       <div className="inventory">
         <DashboardInventory />
         <DashboardServices />

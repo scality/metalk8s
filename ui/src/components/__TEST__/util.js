@@ -12,6 +12,7 @@ import reducer from '../../ducks/reducer';
 import translations_en from '../../translations/en';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
+import ConfigProvider from '../../containers/ConfigProvider';
 
 const composeEnhancers =
   typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
@@ -66,9 +67,11 @@ const AllTheProviders = ({ children }) => {
       <IntlProvider locale="en" messages={translations_en}>
         <Provider store={store}>
           <QueryClientProvider client={queryClient}>
-            <AlertProvider>
-              <ThemeProvider theme={theme}>{children}</ThemeProvider>
-            </AlertProvider>
+            <ConfigProvider>
+              <AlertProvider>
+                <ThemeProvider theme={theme}>{children}</ThemeProvider>
+              </AlertProvider>
+            </ConfigProvider>
           </QueryClientProvider>
         </Provider>
       </IntlProvider>
