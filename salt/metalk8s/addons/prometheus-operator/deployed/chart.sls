@@ -27034,7 +27034,9 @@ data:
         "schemaVersion": 13,
         "sharedCrosshair": false,
         "style": "dark",
-        "tags": [],
+        "tags": [
+            "etcd"
+        ],
         "templating": {
             "list": [
                 {
@@ -27054,8 +27056,8 @@ data:
                 {
                     "allValue": null,
                     "current": {
-                        "text": "prod",
-                        "value": "prod"
+                        "text": "kube-etcd",
+                        "value": "kube-etcd"
                     },
                     "datasource": "$datasource",
                     "hide": 2,
@@ -27066,7 +27068,7 @@ data:
                     "options": [],
                     "query": "label_values(etcd_server_has_leader, job)",
                     "refresh": 1,
-                    "regex": "",
+                    "regex": "/^(?!loki).*$/",
                     "sort": 2,
                     "tagValuesQuery": "",
                     "tags": [],

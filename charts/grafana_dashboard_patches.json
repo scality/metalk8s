@@ -1,0 +1,21 @@
+{
+  "etcd": {
+    "tags": ["etcd"],
+    "templating.list.1.regex": "/^(?!loki).*$/",
+    "templating.list.1.current.text": "kube-etcd",
+    "templating.list.1.current.value": "kube-etcd",
+    "uid": "c2f4e12cdf69feb95caa41a5a1b423d9"
+  },
+  "USE Method / Cluster": {
+    "uid": "3e97d1d02672cdd0861f4c97c64f89b2"
+  },
+  "USE Method / Node": {
+    "uid": "fac67cfbe174d3ef53eb473d73d9212f"
+  },
+  "Nodes": {
+    "uid": "fa49a4706d07a042595b664c87fb33ea"
+  },
+  "Prometheus / Overview": {
+    "uid": "prometheus-overview"
+  }
+}

@@ -5,4 +5,3 @@ include:
   - .chart
   - .services
   - .datasource
-  - .dashboard

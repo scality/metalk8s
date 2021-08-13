@@ -2,4 +2,5 @@ include:
   - .namespace
   - .tls-secret
   - .chart
-  - .dashboard
+  - metalk8s.addons.prometheus-operator.deployed.namespace
+  - .dashboards

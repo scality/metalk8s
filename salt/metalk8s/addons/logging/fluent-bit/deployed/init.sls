@@ -1,4 +1,3 @@
 include:
   - .configmap
   - .chart
-  - .dashboard

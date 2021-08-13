@@ -32,7 +32,6 @@ import abc
 import importlib
 from pathlib import Path
 import sys
-import textwrap
 from typing import Any, Dict, Iterator, Tuple, Union
 
 from buildchain import config
@@ -267,57 +266,16 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     ),
     Path("salt/metalk8s/addons/dex/deployed/nginx-ingress-ca-cert-configmap.sls"),
     Path("salt/metalk8s/addons/logging/deployed/init.sls"),
-    targets.TemplateFile(
-        task_name="logs dashboard.sls",
-        source=constants.ROOT.joinpath(
-            "salt/metalk8s/addons/logging/deployed/dashboard.sls.in"
-        ),
-        destination=constants.ISO_ROOT.joinpath(
-            "salt/metalk8s/addons/logging/deployed/dashboard.sls"
-        ),
-        context={
-            "LogsDashboard": textwrap.indent(
-                LOGS_DASHBOARD.read_text(encoding="utf-8"), 12 * " "
-            )
-        },
-        file_dep=[LOGS_DASHBOARD],
-    ),
+    Path("salt/metalk8s/addons/logging/deployed/dashboards.sls"),
     Path("salt/metalk8s/addons/logging/deployed/namespace.sls"),
+    Path("salt/metalk8s/addons/logging/deployed/files/fluent-bit.json"),
+    Path("salt/metalk8s/addons/logging/deployed/files/logs.json"),
+    Path("salt/metalk8s/addons/logging/deployed/files/loki.json"),
     Path("salt/metalk8s/addons/logging/fluent-bit/deployed/chart.sls"),
     Path("salt/metalk8s/addons/logging/fluent-bit/deployed/configmap.sls"),
-    targets.TemplateFile(
-        task_name="fluent-bit dashboard.sls",
-        source=constants.ROOT.joinpath(
-            "salt/metalk8s/addons/logging/fluent-bit/deployed/dashboard.sls.in"
-        ),
-        destination=constants.ISO_ROOT.joinpath(
-            "salt/metalk8s/addons/logging/fluent-bit/deployed/dashboard.sls"
-        ),
-        context={
-            "FluentBitDashboard": textwrap.indent(
-                FLUENT_BIT_DASHBOARD.read_text(encoding="utf-8"), 12 * " "
-            )
-        },
-        file_dep=[FLUENT_BIT_DASHBOARD],
-    ),
     Path("salt/metalk8s/addons/logging/fluent-bit/deployed/init.sls"),
     Path("salt/metalk8s/addons/logging/loki/config/loki.yaml"),
     Path("salt/metalk8s/addons/logging/loki/deployed/chart.sls"),
-    targets.TemplateFile(
-        task_name="loki dashboard.sls",
-        source=constants.ROOT.joinpath(
-            "salt/metalk8s/addons/logging/loki/deployed/dashboard.sls.in"
-        ),
-        destination=constants.ISO_ROOT.joinpath(
-            "salt/metalk8s/addons/logging/loki/deployed/dashboard.sls"
-        ),
-        context={
-            "LokiDashboard": textwrap.indent(
-                LOKI_DASHBOARD.read_text(encoding="utf-8"), 12 * " "
-            )
-        },
-        file_dep=[LOKI_DASHBOARD],
-    ),
     Path("salt/metalk8s/addons/logging/loki/deployed/datasource.sls"),
     Path("salt/metalk8s/addons/logging/loki/deployed/init.sls"),
     Path("salt/metalk8s/addons/logging/loki/deployed/loki-configuration-secret.sls"),
@@ -325,6 +283,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/logging/loki/deployed/services.sls"),
     Path("salt/metalk8s/addons/prometheus-adapter/deployed/chart.sls"),
     Path("salt/metalk8s/addons/prometheus-adapter/deployed/init.sls"),
+    Path("salt/metalk8s/addons/prometheus-operator/macros.j2"),
     Path("salt/metalk8s/addons/prometheus-operator/post-cleanup.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/post-downgrade.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/post-upgrade.sls"),
@@ -420,19 +379,11 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/nginx-ingress/deployed/chart.sls"),
     Path("salt/metalk8s/addons/nginx-ingress/deployed/namespace.sls"),
     Path("salt/metalk8s/addons/nginx-ingress/deployed/tls-secret.sls"),
-    targets.TemplateFile(
-        task_name="nginx-ingress dashboard.sls",
-        source=constants.ROOT.joinpath(
-            "salt/metalk8s/addons/nginx-ingress/deployed/dashboard.sls.in"
-        ),
-        destination=constants.ISO_ROOT.joinpath(
-            "salt/metalk8s/addons/nginx-ingress/deployed/dashboard.sls"
-        ),
-        context={
-            key: textwrap.indent(dashboard.read_text(encoding="utf-8"), 12 * " ")
-            for key, dashboard in NGINX_INGRESS_DASHBOARDS.items()
-        },
-        file_dep=list(NGINX_INGRESS_DASHBOARDS.values()),
+    Path("salt/metalk8s/addons/nginx-ingress/deployed/dashboards.sls"),
+    Path("salt/metalk8s/addons/nginx-ingress/deployed/files/ingress-nginx.json"),
+    Path(
+        "salt/metalk8s/addons/nginx-ingress/deployed/files/",
+        "ingress-nginx-performance.json",
     ),
     Path("salt/metalk8s/addons/nginx-ingress-control-plane/certs/init.sls"),
     Path("salt/metalk8s/addons/nginx-ingress-control-plane/certs/server.sls"),

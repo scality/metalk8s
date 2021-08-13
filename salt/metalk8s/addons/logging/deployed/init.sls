@@ -2,4 +2,5 @@ include:
   - .namespace
   - metalk8s.addons.logging.loki.deployed
   - metalk8s.addons.logging.fluent-bit.deployed
-  - .dashboard
+  - metalk8s.addons.prometheus-operator.deployed.namespace
+  - .dashboards
