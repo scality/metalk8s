@@ -67,8 +67,40 @@ Create metalk8s-ui-config ConfigMap:
 
 {%- else %}
 
+  {%- if metalk8s_shell_ui_config is not none %}
+    {%- set config_data = metalk8s_shell_ui_config.data['config.yaml'] | load_yaml %}
+
+    {%- if config_data.apiVersion == 'addons.metalk8s.scality.com/v1alpha1' and 'oidc' in config_data.spec %}
+
+Create metalk8s-ui-config ConfigMap:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: metalk8s-ui-config
+          namespace: metalk8s-ui
+        data:
+          config.yaml: |-
+            apiVersion: addons.metalk8s.scality.com/v1alpha2
+            kind: UIConfig
+            spec:
+              kind: "OIDC"
+              {{ config_data.spec.oidc | yaml(False) | indent(14) }}
+
+    {%- else %}
+
 metalk8s-ui-config ConfigMap already exist:
   test.succeed_without_changes: []
+
+    {%- endif %}
+
+  {%- else %}
+
+metalk8s-ui-config ConfigMap already exist:
+  test.succeed_without_changes: []
+
+  {%- endif %}
 
 {%- endif %}
 
@@ -251,6 +283,30 @@ Convert old Metalk8s Shell UI ServiceConfiguration to new format:
                     en: "About"
                     fr: "À propos"
                     icon: "fas fa-question-circle"
+              {%- endif %}
+              {%- if 'oidc' in config_data.spec %}
+              oidc:
+                {{ config_data.spec.oidc | yaml(False) | indent(16) }}
+              {%- endif %}
+              {%- if 'userGroupsMapping' in config_data.spec %}
+              userGroupsMapping:
+                {{ config_data.spec.userGroupsMapping | yaml(False) | indent(16) }}
+              {%- endif %}
+              {%- if 'logo' in config_data.spec %}
+              logo:
+                {{ config_data.spec.logo | yaml(False) | indent(16) }}
+              {%- endif %}
+              {%- if 'favicon' in config_data.spec %}
+              favicon:
+                {{ config_data.spec.favicon | yaml(False) | indent(16) }}
+              {%- endif %}
+              {%- if 'canChangeLanguage' in config_data.spec %}
+              canChangeLanguage:
+                {{ config_data.spec.canChangeLanguage | yaml(False) | indent(16) }}
+              {%- endif %}
+              {%- if 'canChangeTheme' in config_data.spec %}
+              canChangeTheme:
+                {{ config_data.spec.canChangeTheme | yaml(False) | indent(16) }}
               {%- endif %}
 
   {%- elif config_data.apiVersion == 'addons.metalk8s.scality.com/v1alpha2' %}
