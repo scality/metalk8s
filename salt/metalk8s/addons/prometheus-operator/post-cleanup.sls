@@ -1,40 +1,57 @@
 {#- For the Prometheus-operator chart, after a cluster upgrade/downgrade some
     remnants of the old installation might remain such as PrometheusRules.
-    This state is meant to cleanup old PrometheusRules marked with labels of
-    an old Metalk8s version #}
+    This state is meant to cleanup old PrometheusRules and Grafana dashboards
+    marked with labels of an old Metalk8s version #}
 
 {%- set version = pillar.metalk8s.cluster_version %}
+{%- set old_obj_selector = [
+        "app.kubernetes.io/part-of=metalk8s",
+        "metalk8s.scality.com/version!=" ~ version,
+] | join(",") %}
 
-{#- Todo: In future, we might need to provide a complete list of object kind
-    and apiversions that require cleanup. For now, we only handle
-    PrometheusRules #}
+{%- set groups_to_cleanup = [
+    {
+        "apiVersion": "monitoring.coreos.com/v1",
+        "kind": "PrometheusRule",
+        "selector": old_obj_selector,
+    },
+    {
+        "apiVersion": "v1",
+        "kind": "ConfigMap",
+        "selector": old_obj_selector ~ ",grafana_dashboard=1",
+    },
+] %}
 
-{%- set prometheus_rules_to_remove = salt.metalk8s_kubernetes.list_objects(
-        kind="PrometheusRule",
-        apiVersion="monitoring.coreos.com/v1",
-        namespace="metalk8s-monitoring",
-        label_selector="app.kubernetes.io/part-of=metalk8s,metalk8s.scality.com/version!=" ~ version
-    ) %}
+{%- set ns = namespace(found_objects_to_clean=false) %}
+{%- for group in groups_to_cleanup %}
+  {%- set found = salt.metalk8s_kubernetes.list_objects(
+          kind=group.kind,
+          apiVersion=group.apiVersion,
+          namespace="metalk8s-monitoring",
+          label_selector=group.selector,
+  ) %}
 
-{%- if prometheus_rules_to_remove %}
+  {%- if found %}
+    {%- set ns.found_objects_to_clean = true %}
+    {%- for obj in found %}
 
-{%- for prometheus_rule in prometheus_rules_to_remove %}
-
-Delete old PrometheusRule {{ prometheus_rule['metadata']['name'] }}:
+Delete old {{ group.kind }} {{ obj.metadata.name }}:
   metalk8s_kubernetes.object_absent:
-    - name: {{ prometheus_rule['metadata']['name'] }}
-    - namespace: {{ prometheus_rule['metadata']['namespace'] }}
-    - kind: {{ prometheus_rule['kind'] }}
-    - apiVersion: {{ prometheus_rule['apiVersion'] }}
+    - name: {{ obj.metadata.name }}
+    - namespace: {{ obj.metadata.namespace }}
+    - kind: {{ group.kind }}
+    - apiVersion: {{ group.apiVersion }}
     - wait:
         attempts: 10
         sleep: 10
 
+    {%- endfor %}
+  {%- endif %}
 {%- endfor %}
 
-{%- else %}
+{%- if not ns.found_objects_to_clean %}
 
-No PrometheusRule to cleanup:
+Found nothing to clean up:
   test.succeed_without_changes: []
 
 {%- endif %}
