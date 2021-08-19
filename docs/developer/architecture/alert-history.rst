@@ -249,6 +249,51 @@ Expose Loki API
 The Loki API must be reachable via the web UI, therefore it must be exposed
 through an ingress as it is already done for Prometheus or Alertmanager APIs.
 
+Global Health Component Implementation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In order to build the Global Health Component the UI queries loki API to
+retrieve past alerts. The users have the ability to select a timespan for
+which they want to retrieve the alerts. The UI is using this timespan to
+query loki for alerts firing during this period. However Alertmanager is
+repeating webhooks for long running alerts to metalk8s-alert-logger at a
+defined pace in its configuration. This means that for example if an alert
+is firing since 6hours and alertmanager is configured to repeat the
+notification each 12 hours, querying loki for the last hour won't list that
+alert. Additionnaly if alertmanager or loki or the platform itself goes down
+old alerts won't be closed and new ones will be fired by alertmanager.
+
+This leads to several issues that the UI have to solve when querying Loki to
+display the alert history:
+#. When the platform/alertmanager/loki goes down the UI has to compute the
+end time of an alert and set it to the end time period start timestamp.
+#. The alerts are duplicated in loki so the UI has to regroup them by
+fingerprint and start time.
+
+We propose here to implement a useHistoryAlert hook in metalk8s ui which can
+be reused to retrieve past alerts. This useHistoryAlert takes a list of
+filters as a parameter. These filters allow consumers to search for alert
+history of alerts matching a specific set of labels or annotations. The
+signature of the hook is:
+`useHistoryAlert(filters: {[label: string]: string}): Alert[]`.
+
+This hook is used in conjonction with an `AlertHistoryProvider` which is
+responsible of alert fetching and transformation. It uses `useMetricsTimeSpan`
+hook to retrieve the period selected by the user and uses this period to fetch
+alerts on loki. It additionnaly retriveves platform/monitoring unavailbility
+periods by querying for alertmanager number of firing alerts metrics on
+Prometheus API. If the selected timespan is smaller than alertmanager
+notification period (period after which alertmanager recall Metalk8s alert
+logger to signify that the alert is still firing), the hook is then fetching
+the alerts for this period of time at minimum to ensure long firing alerts
+retrieval.
+
+Once the downtime periods are retrieved they are converted to an UI alert
+object with a specific severity set to `unavailable` so that we can display
+an unavailable segment on the Global health bar.
+
+  .. image:: img/useAlertHistoryDesign.png
+
 Grafana dashboard
 ~~~~~~~~~~~~~~~~~
 
