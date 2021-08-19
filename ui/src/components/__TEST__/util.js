@@ -12,7 +12,8 @@ import reducer from '../../ducks/reducer';
 import translations_en from '../../translations/en';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
-import ConfigProvider from '../../containers/ConfigProvider';
+import { MetricsTimeSpanProvider } from '../../hooks';
+import AlertHistoryProvider from '../../containers/AlertHistoryProvider';
 
 const composeEnhancers =
   typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
@@ -32,7 +33,7 @@ export const waitForLoadingToFinish = () =>
     { timeout: 4000 },
   );
 
-const AllTheProviders = ({ children }) => {
+export const AllTheProviders = ({ children }) => {
   const history = createMemoryHistory();
 
   const queryClient = new QueryClient();
@@ -67,11 +68,13 @@ const AllTheProviders = ({ children }) => {
       <IntlProvider locale="en" messages={translations_en}>
         <Provider store={store}>
           <QueryClientProvider client={queryClient}>
-            <ConfigProvider>
-              <AlertProvider>
-                <ThemeProvider theme={theme}>{children}</ThemeProvider>
-              </AlertProvider>
-            </ConfigProvider>
+            <AlertProvider>
+              <MetricsTimeSpanProvider>
+                <AlertHistoryProvider>
+                  <ThemeProvider theme={theme}>{children}</ThemeProvider>
+                </AlertHistoryProvider>
+              </MetricsTimeSpanProvider>
+            </AlertProvider>
           </QueryClientProvider>
         </Provider>
       </IntlProvider>

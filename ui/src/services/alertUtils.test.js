@@ -204,7 +204,7 @@ it('should format the history alert', () => {
       description:
         'etcd cluster "kube-etcd": member communication with f38477b69f3c6f6b is taking 0.3727360000000002s on etcd instance 10.200.5.55:2381.',
       startsAt: '2021-03-10T11:29:45.279Z',
-      endsAt: new Date().toISOString(),
+      endsAt: null,
       severity: 'warning',
       documentationUrl: '',
       labels: {

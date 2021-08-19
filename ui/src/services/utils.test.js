@@ -5,6 +5,7 @@ import {
   useTableSortURLSync,
   linuxDrivesNamingIncrement,
   formatDateToMid1,
+  getNullSegments,
 } from './utils';
 
 const testcases = [
@@ -230,4 +231,106 @@ it('should return 00:00', () => {
     );
   const result = formatDateToMid1(Date.now());
   expect(result).toEqual('2019-05-14 00:00');
+});
+
+describe('getNullSegments', () => {
+  it('should return 0 segments when no points are missing', () => {
+    //S
+    const segments = [
+      [0, 1],
+      [1, 2],
+    ];
+    //E
+    const nullSegments = getNullSegments(segments);
+    //V
+    expect(nullSegments).toHaveLength(0);
+  });
+
+  it('should return 0 segments when given array is empty', () => {
+    //S
+    const segments = [];
+    //E
+    const nullSegments = getNullSegments(segments);
+    //V
+    expect(nullSegments).toHaveLength(0);
+  });
+
+  it('should return 0 segments when given array is falsy', () => {
+    //S
+    const segments = null;
+    //E
+    const nullSegments = getNullSegments(segments);
+    //V
+    expect(nullSegments).toHaveLength(0);
+  });
+
+  it('should throw when given array is invalid', () => {
+    //S
+    const segments = [{ hello: 'world' }, null];
+    //E + V
+    expect(() => getNullSegments(segments)).toThrow();
+  });
+
+  it('should return 1 segment when given array contains one null point in the middle', () => {
+    //S
+    const segments = [
+      [1, 1],
+      [2, 2],
+      [3, null],
+      [4, 2],
+    ];
+    //E
+    const nullSegments = getNullSegments(segments);
+    //V
+    expect(nullSegments).toHaveLength(1);
+    expect(nullSegments).toContainEqual({ startsAt: 3, endsAt: 4 });
+  });
+
+  it('should return 1 segment when given array contains null points in the beginning', () => {
+    //S
+    const segments = [
+      [1, null],
+      [2, null],
+      [3, 1],
+      [4, 2],
+    ];
+    //E
+    const nullSegments = getNullSegments(segments);
+    //V
+    expect(nullSegments).toHaveLength(1);
+    expect(nullSegments).toContainEqual({ startsAt: 1, endsAt: 3 });
+  });
+
+  it('should return 1 segment when given array contains null points in the end', () => {
+    //S
+    const segments = [
+      [1, null],
+      [2, null],
+      [3, null],
+      [4, null],
+    ];
+    //E
+    const nullSegments = getNullSegments(segments);
+    //V
+    expect(nullSegments).toHaveLength(1);
+    expect(nullSegments).toContainEqual({ startsAt: 1, endsAt: null });
+  });
+
+  it('should return several segments when given array contains multiple null points', () => {
+    //S
+    const segments = [
+      [1, null],
+      [2, null],
+      [3, 1],
+      [4, null],
+    ];
+    //E
+    const nullSegments = getNullSegments(segments);
+    //V
+    expect(nullSegments).toHaveLength(2);
+    expect(nullSegments).toStrictEqual([
+      { startsAt: 1, endsAt: 3 },
+      { startsAt: 4, endsAt: null },
+    ]);
+  });
 });

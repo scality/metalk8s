@@ -195,7 +195,7 @@ export const getHealthStatus = (
 
 /*
 Format the alerts from Loki.
-We need to remove the alerts with the same ID, because the same alert may be retriggered by multiple times.
+We need to remove the alerts with the same fingerprint and starts date, because the same alert may be retriggered by multiple times.
 */
 export const formatHistoryAlerts = (streamValues: StreamValue): Alert[] => {
   const alerts = streamValues[0].values.reduce((agg, value) => {
@@ -203,13 +203,13 @@ export const formatHistoryAlerts = (streamValues: StreamValue): Alert[] => {
 
     return {
       ...agg,
-      [alert.fingerprint]: {
+      [`${alert.fingerprint}-${alert.startsAt}`]: {
         id: alert.fingerprint,
         summary: (alert.annotations && alert.annotations.summary) || '',
         description: alert.annotations.description || alert.annotations.message,
         startsAt: alert.startsAt,
         endsAt:
-          alert.status === 'firing' ? new Date().toISOString() : alert.endsAt,
+          alert.status === 'firing' ? null : alert.endsAt,
         severity: alert.labels.severity,
         documentationUrl:
           (alert.annotations && alert.annotations.runbook_url) || '',
@@ -228,6 +228,6 @@ export const formatHistoryAlerts = (streamValues: StreamValue): Alert[] => {
       },
     };
   }, {});
-  //$FlowFixMe Array<mixed> incompatible with Alert[];
+  //$flow-disable-line Array<mixed> incompatible with Alert[];
   return Object.values(alerts);
 };

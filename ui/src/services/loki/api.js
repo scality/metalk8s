@@ -1,9 +1,11 @@
 //@flow
 import ApiClient from '../ApiClient';
-import { removeWarningAlerts, formatHistoryAlerts } from '../alertUtils';
+import { formatHistoryAlerts } from '../alertUtils';
 import type { Alert } from '../alertUtils';
 
-const METALK8S_HISTORY_ALERTS_QUERY = `{namespace="metalk8s-monitoring",container="alert-logger"}`;
+const METALK8S_HISTORY_ALERTS_QUERY = `{namespace="metalk8s-monitoring",container="metalk8s-alert-logger"}`;
+
+export const LOKI_RE_NOTIFICATION_INTERVAL = 12 * 60 * 60 * 1000;
 
 let lokiApiClient: ?ApiClient = null;
 
@@ -46,7 +48,9 @@ export function getAlertsLoki(start: string, end: string): Promise<Alert[]> {
 
   return lokiApiClient
     .get(
-      `/loki/api/v1/query_range?start=${start}&end=${end}&query=${METALK8S_HISTORY_ALERTS_QUERY}`,
+      //We set limit to 1000 because the default number of lines retrievable is 100 which is
+      //not enough to fill the global health component with 7 days of data
+      `/loki/api/v1/query_range?start=${start}&end=${end}&limit=1000&query=${METALK8S_HISTORY_ALERTS_QUERY}`,
     )
     .then((resolve) => {
       if (resolve.error) {
@@ -55,7 +59,7 @@ export function getAlertsLoki(start: string, end: string): Promise<Alert[]> {
       return resolve;
     })
     .then((result: LokiQueryResult) => {
-      return removeWarningAlerts(formatHistoryAlerts(result.data.result));
+      return formatHistoryAlerts(result.data.result).filter(alert => ['critical', 'warning', 'unavailable'].includes(alert.severity));
     });
 }
 

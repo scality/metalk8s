@@ -314,6 +314,29 @@ export function addMissingDataPoint(
   return newValues;
 }
 
+export function getNullSegments(points: [[number, number | null]]): {startsAt: number, endsAt?: number}[] {
+  if (!points) return [];
+  const segments = points.map((point, index) => {
+    if (index === points.length -1) {
+      return {startsAt: point[0], endsAt: null, value: point[1]};
+    }
+    return {startsAt: point[0], endsAt: points[index + 1][0], value: point[1]};
+  })
+  const nullSegments = segments.filter(segment => segment.value === null);
+  return nullSegments.reduce((mergedNullSegments, segment) => {
+    if (mergedNullSegments.length > 0) {
+      const lastNullSegment = mergedNullSegments[mergedNullSegments.length - 1];
+
+      if (lastNullSegment.endsAt === segment.startsAt) {
+        mergedNullSegments[mergedNullSegments.length - 1] = {startsAt: lastNullSegment.startsAt, endsAt: segment.endsAt};
+        return mergedNullSegments;
+      }
+    }
+
+    return [...mergedNullSegments, {startsAt: segment.startsAt, endsAt: segment.endsAt}];
+  },[]);
+}
+
 // A custom hook that builds on useLocation to parse the query string.
 export const useURLQuery = () => {
   return new URLSearchParams(useLocation().search);

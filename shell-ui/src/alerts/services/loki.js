@@ -2,7 +2,7 @@
 import { removeWarningAlerts, formatHistoryAlerts } from './alertUtils';
 import type { Alert } from './alertUtils';
 
-const METALK8S_HISTORY_ALERTS_QUERY = `{namespace="metalk8s-monitoring",container="alert-logger"}`;
+const METALK8S_HISTORY_ALERTS_QUERY = `{namespace="metalk8s-monitoring",container="metalk8s-alert-logger"}`;
 
 export type StreamValue = {
   stream: {

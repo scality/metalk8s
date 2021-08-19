@@ -1,5 +1,5 @@
 // @flow
-import { queryPrometheus, queryPrometheusRange } from './api';
+import { queryPrometheus } from './api';
 import { PORT_NODE_EXPORTER } from '../../constants';
 import type { PrometheusQueryResult } from './api';
 
@@ -29,27 +29,4 @@ export function queryNodeFSSize(
     }
     return resolve;
   });
-}
-
-export function queryPromtheusMetrics(
-  frequency: number,
-  startingTimeISO: string,
-  currentTimeISO: string,
-  promQuery: string,
-): Promise<PrometheusQueryResult> {
-  const promPromise = queryPrometheusRange(
-    startingTimeISO,
-    currentTimeISO,
-    frequency,
-    promQuery,
-  );
-  if (promPromise) {
-    return promPromise.then((resolve) => {
-      if (resolve.error) {
-        throw resolve.error;
-      }
-      return resolve;
-    });
-  }
-  return Promise.reject();
 }

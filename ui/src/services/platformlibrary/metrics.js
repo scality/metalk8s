@@ -1,6 +1,10 @@
 import { PORT_NODE_EXPORTER } from '../../constants';
 import { queryPromtheusMetrics } from '../prometheus/fetchMetrics';
 import type { NodesState } from '../../ducks/app/nodes';
+import { queryPrometheusRange } from '../prometheus/api';
+import { addMissingDataPoint } from '@scality/core-ui/dist/components/linetemporalchart/ChartUtil';
+import { getNullSegments } from '../utils';
+import { getAlertsLoki } from '../loki/api';
 
 export type TimeSpanProps = {
   startingTimeISO: string,
@@ -738,4 +742,71 @@ export const getVolumeLatencyReadQuery = (
     volumeLatencyReadQuery,
     timespanProps,
   );
+};
+
+export const getAlertsHistoryQuery = ({
+  startingTimeISO,
+  currentTimeISO,
+  frequency,
+}: TimeSpanProps): typeof useQuery => {
+  const query = `sum(alertmanager_alerts)`;
+
+  const alertManagerDowntimePromise = queryPrometheusRange(
+    frequency,
+    startingTimeISO,
+    currentTimeISO,
+    encodeURIComponent(query),
+  )?.then((resolve) => {
+    if (resolve.error) {
+      throw resolve.error;
+    }
+    const points = addMissingDataPoint(
+      resolve.data.result[0].values,
+      new Date(startingTimeISO),
+      new Date(currentTimeISO) - new Date(startingTimeISO),
+      frequency,
+    );
+    return getNullSegments(points).map((segment) => ({
+      startsAt: new Date(segment.startsAt * 1000).toISOString(),
+      endsAt: new Date(segment.endsAt * 1000).toISOString(),
+      severity: 'unavailable',
+      id: `unavailable-${segment.startsAt}`,
+      labels: { alertname: 'PlatformDegraded' },
+      description:
+        'Alerting services were unavailable during this period of time',
+    }));
+  });
+
+  return {
+    queryKey: ['alertsHistory', startingTimeISO],
+    queryFn: () => {
+      return Promise.all([
+        getAlertsLoki(startingTimeISO, currentTimeISO),
+        alertManagerDowntimePromise,
+      ]).then(([alerts, downTimes]) => {
+        const rawAlerts = [
+          ...alerts.map((alert) => {
+            if (alert.endsAt === null) {
+              const endsAtSegment = downTimes.find(
+                (downTime) => downTime.startsAt > alert.startsAt,
+              ) || { startsAt: new Date().toISOString() };
+              return { ...alert, endsAt: endsAtSegment.startsAt };
+            }
+            return alert;
+          }),
+          ...downTimes,
+        ];
+
+        rawAlerts.sort((alertA, alertB) =>
+          alertB.startsAt > alertA.startsAt ? -1 : 1,
+        );
+        return rawAlerts;
+      });
+    },
+    initialData: [],
+    // refetch the alerts every 60 seconds
+    refetchInterval: 60000, // TODO manage this refresh interval gloabally ?
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  };
 };
