@@ -47,7 +47,7 @@ sphinxcontrib-spelling==7.2.1  # via -r docs/requirements.in
 stevedore==3.3.0          # via doc8
 tornado==6.1              # via livereload
 typing-extensions==3.10.0.0  # via importlib-metadata
-urllib3==1.26.4           # via requests
+urllib3==1.26.6           # via requests
 zipp==3.4.1               # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
