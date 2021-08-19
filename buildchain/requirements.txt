@@ -7,10 +7,10 @@
 certifi==2020.12.5        # via requests
 chardet==4.0.0            # via requests
 cloudpickle==1.6.0        # via doit
-docker==4.1.0             # via -r /home/alexandre/work/scm/metalk8s/worktrees/improvement/3217-buildchain-verbosity/buildchain/requirements.in
-git+git://github.com/pydoit/doit.git@baa3713bb0f3230e1bcbfe956a1dd01fd27ebed9#egg=doit  # via -r /home/alexandre/work/scm/metalk8s/worktrees/improvement/3217-buildchain-verbosity/buildchain/requirements.in
+docker==4.1.0             # via -r buildchain/requirements.in
+git+git://github.com/pydoit/doit.git@baa3713bb0f3230e1bcbfe956a1dd01fd27ebed9#egg=doit  # via -r buildchain/requirements.in
 idna==2.10                # via requests
-pyyaml==5.3.1             # via -r /home/alexandre/work/scm/metalk8s/worktrees/improvement/3217-buildchain-verbosity/buildchain/requirements.in
+pyyaml==5.3.1             # via -r buildchain/requirements.in
 requests==2.25.1          # via docker
 six==1.15.0               # via docker, websocket-client
 urllib3==1.26.4           # via requests
