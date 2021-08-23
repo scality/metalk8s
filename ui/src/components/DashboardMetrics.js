@@ -1,12 +1,10 @@
 //@flow
 import React from 'react';
 import styled from 'styled-components';
-import { useQuery } from 'react-query';
 import { Button, SyncedCursorCharts } from '@scality/core-ui/dist/next';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { useIntl } from 'react-intl';
 
-import { fetchConfig } from '../services/api';
 import { GRAFANA_DASHBOARDS } from '../constants';
 import {
   GraphWrapper as GraphWrapperCommon,
@@ -17,6 +15,7 @@ import DashboardChartCpuUsage from './DashboardChartCpuUsage';
 import DashboardChartThroughput from './DashboardChartThroughput';
 import DashboardChartSystemLoad from './DashboardChartSystemLoad';
 import DashboardChartMemory from './DashboardChartMemory';
+import { useTypedSelector } from '../hooks';
 
 const MetricsContainer = styled.div`
   padding: 2px ${padding.smaller};
@@ -53,15 +52,15 @@ const DashboardMetrics = () => {
   const intl = useIntl();
 
   // App config, used to generated Advanced metrics button link
-  const configQuery = useQuery('appConfig', fetchConfig);
+  const { url_grafana } = useTypedSelector(state => state.config.api);
 
   return (
     <MetricsContainer id="dashboard-metrics-container">
       <PanelActions>
         <PageSubtitle>{intl.formatMessage({ id: 'metrics' })}</PageSubtitle>
-        {configQuery.isSuccess && configQuery.data.url_grafana && (
+        {url_grafana && (
           <a
-            href={`${configQuery.data.url_grafana}/d/${GRAFANA_DASHBOARDS.nodes}`}
+            href={`${url_grafana}/d/${GRAFANA_DASHBOARDS.nodes}`}
             target="_blank"
             rel="noopener noreferrer"
             data-cy="advanced_metrics_node_detailed"
