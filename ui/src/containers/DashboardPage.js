@@ -18,6 +18,9 @@ import {
 
 import { useURLQuery } from '../services/utils';
 import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
+import GlobalHealthBarComponent from '@scality/core-ui/dist/components/globalhealthbar/GlobalHealthBar.component';
+import { useHistoryAlerts } from './AlertHistoryProvider';
+import { getMetricsTimeValues } from '../services/prometheus/fetchMetrics';
 
 const DashboardGrid = styled.div`
   display: grid;
@@ -89,7 +92,15 @@ const DashboardGrid = styled.div`
 const DashboardPage = (props: {}) => {
   const history = useHistory();
   const query = useURLQuery();
-  const { value, label } = useMetricsTimeSpan();
+
+  const [metricsTimeSpan] = useMetricsTimeSpan();
+
+  const { currentTimeISO, startingTimeISO } = getMetricsTimeValues(
+    metricsTimeSpan
+  );
+
+  const {alerts} = useHistoryAlerts({ alertname: ['PlatformAtRisk', 'PlatformDegraded'] });
+
   // Write the selected timespan in URL
   const writeUrlTimeSpan = (timespan: string) => {
     let formatted = queryTimeSpansCodes.find((item) => item.value === timespan);
@@ -111,11 +122,11 @@ const DashboardPage = (props: {}) => {
     onClick: () => {
       writeUrlTimeSpan(option);
     },
-    selected: label === option,
+    selected: queryTimeSpansCodes.find(timespan => timespan.duration === metricsTimeSpan)?.label === option,
   }));
 
   const metricsTimeSpanDropdownItems = metricsTimeSpanItems.filter(
-    (mTS) => mTS.label !== value,
+    (mTS) => mTS.label !== queryTimeSpansCodes.find(timespan => timespan.duration === metricsTimeSpan)?.label,
   );
 
   return (
@@ -124,7 +135,7 @@ const DashboardPage = (props: {}) => {
         <Dropdown
           icon={<i className="fas fa-calendar-minus" />}
           items={metricsTimeSpanDropdownItems}
-          text={label}
+          text={queryTimeSpansCodes.find(timespan => timespan.duration === metricsTimeSpan)?.value}
           size="small"
           data-cy="metrics_timespan_selection"
           variant="backgroundLevel1"
@@ -132,6 +143,12 @@ const DashboardPage = (props: {}) => {
       </div>
       <div className="health">
         <DashboardGlobalHealth />
+        Global Health
+        <GlobalHealthBarComponent
+          id={'platform_globalhealth'}
+          alerts={alerts || []}
+          start={startingTimeISO}
+          end={currentTimeISO} />
       </div>
       <div className="inventory">
         <DashboardInventory />
