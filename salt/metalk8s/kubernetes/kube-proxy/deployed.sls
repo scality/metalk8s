@@ -202,7 +202,7 @@ Deploy kube-proxy (RoleBinding):
         metadata:
           name: kube-proxy
           namespace: kube-system
-        role_ref:
+        roleRef:
           apiGroup: rbac.authorization.k8s.io
           kind: Role
           name: kube-proxy

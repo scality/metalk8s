@@ -60,7 +60,7 @@ Create coredns service:
         spec:
           selector:
             k8s-app: kube-dns
-          cluster_ip: {{ cluster_dns_ip }}
+          clusterIP: {{ cluster_dns_ip }}
           ports:
           - name: dns
             port: 53
@@ -115,7 +115,7 @@ Create coredns cluster role binding:
         kind: ClusterRoleBinding
         metadata:
           name: system:coredns
-        role_ref:
+        roleRef:
           apiGroup: rbac.authorization.k8s.io
           kind: ClusterRole
           name: system:coredns

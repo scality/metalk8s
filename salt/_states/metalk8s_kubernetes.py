@@ -178,9 +178,7 @@ def object_updated(name, manifest=None, **kwargs):
             cmp_manifest = None
 
     if cmp_manifest:
-        new_obj = __utils__["metalk8s_kubernetes.camel_to_snake"](cmp_manifest)
-
-        if not __utils__["dictdiffer.recursive_diff"](obj, new_obj).diffs:
+        if not __utils__["dictdiffer.recursive_diff"](obj, cmp_manifest).diffs:
             ret["comment"] = "The object is already good"
             return ret
 

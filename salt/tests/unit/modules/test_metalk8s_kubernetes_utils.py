@@ -3,9 +3,9 @@ import os.path
 from unittest import TestCase
 from unittest.mock import MagicMock, mock_open, patch
 
-from kubernetes.client.rest import ApiException
 from parameterized import param, parameterized
 from salt.exceptions import CommandExecutionError
+from urllib3.exceptions import HTTPError
 import yaml
 
 import metalk8s_kubernetes_utils
@@ -39,8 +39,7 @@ class Metalk8sKubernetesUtilsTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
     @parameterized.expand(
         [
-            ("kubernetes.client"),
-            ("kubernetes.config"),
+            ("kubernetes"),
             (("urllib3.exceptions", "urllib3")),
         ]
     )
@@ -99,23 +98,25 @@ class Metalk8sKubernetesUtilsTestCase(TestCase, mixins.LoaderModuleMockMixin):
     def test_get_version_info(
         self,
         result,
-        get_code_raise=False,
+        k8s_connection_raise=False,
         raises=False,
     ):
         """
         Tests the return of `get_version_info` function
         """
         kubeconfig_mock = MagicMock(return_value=("my_kubeconfig.conf", "my_context"))
-        api_instance_mock = MagicMock()
 
-        get_code_mock = api_instance_mock.return_value.get_code
-        if get_code_raise:
-            get_code_mock.side_effect = ApiException("Failed to get version info")
-        get_code_mock.return_value.to_dict.return_value = result
+        dynamic_client_mock = MagicMock()
+        dynamic_client_mock.version = {"kubernetes": result}
+
+        dynamic_mock = MagicMock()
+        dynamic_mock.DynamicClient.return_value = dynamic_client_mock
+        if k8s_connection_raise:
+            dynamic_mock.DynamicClient.side_effect = HTTPError("Failed to connect")
 
         with patch("metalk8s_kubernetes_utils.get_kubeconfig", kubeconfig_mock), patch(
-            "kubernetes.config.new_client_from_config", MagicMock()
-        ), patch("kubernetes.client.VersionApi", api_instance_mock):
+            "kubernetes.dynamic", dynamic_mock
+        ), patch("kubernetes.config", MagicMock()):
             if raises:
                 self.assertRaisesRegex(
                     CommandExecutionError,
@@ -124,7 +125,6 @@ class Metalk8sKubernetesUtilsTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 )
             else:
                 self.assertEqual(metalk8s_kubernetes_utils.get_version_info(), result)
-            get_code_mock.assert_called()
 
     @parameterized.expand(
         [

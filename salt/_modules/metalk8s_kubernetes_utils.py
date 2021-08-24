@@ -12,15 +12,10 @@ import salt.utils.yaml
 
 MISSING_DEPS = []
 try:
-    import kubernetes.client
+    import kubernetes
     from kubernetes.client.rest import ApiException
 except ImportError:
-    MISSING_DEPS.append("kubernetes.client")
-
-try:
-    import kubernetes.config
-except ImportError:
-    MISSING_DEPS.append("kubernetes.config")
+    MISSING_DEPS.append("kubernetes")
 
 try:
     from urllib3.exceptions import HTTPError
@@ -89,18 +84,13 @@ def get_version_info(**kwargs):
     """
     kubeconfig, context = get_kubeconfig(**kwargs)
 
-    api_client = kubernetes.config.new_client_from_config(
-        config_file=kubeconfig, context=context
-    )
-
-    api_instance = kubernetes.client.VersionApi(api_client=api_client)
-
     try:
-        version_info = api_instance.get_code()
+        client = kubernetes.dynamic.DynamicClient(
+            kubernetes.config.new_client_from_config(kubeconfig, context)
+        )
+        return client.version["kubernetes"]
     except (ApiException, HTTPError) as exc:
         raise CommandExecutionError("Failed to get version info") from exc
-
-    return version_info.to_dict()
 
 
 def ping(**kwargs):

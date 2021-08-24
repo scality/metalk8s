@@ -54,7 +54,7 @@ def get_cluster_version(kubeconfig=None):
         return __utils__["pillar_utils.errors_to_dict"](
             "Unable to read namespace information {}".format(exc)
         )
-    annotations = namespace["metadata"]["annotations"]
+    annotations = namespace["metadata"].get("annotations", {})
     annotation_key = "metalk8s.scality.com/cluster-version"
     if not annotations or annotation_key not in annotations:
         return __utils__["pillar_utils.errors_to_dict"](
@@ -64,26 +64,12 @@ def get_cluster_version(kubeconfig=None):
     return annotations[annotation_key]
 
 
-def iso_timestamp_converter(timestamp):
-    if timestamp is None:
-        return None
-    return timestamp.isoformat()
-
-
 def get_storage_classes(kubeconfig=None):
     storage_classes = {}
     storageclass_list = __salt__["metalk8s_kubernetes.list_objects"](
         kind="StorageClass", apiVersion="storage.k8s.io/v1", kubeconfig=kubeconfig
     )
     for storageclass in storageclass_list:
-        # Need to convert the datetime object in storageclass to ISO format in
-        # order to make them serializable.
-        storageclass["metadata"]["creation_timestamp"] = iso_timestamp_converter(
-            storageclass["metadata"]["creation_timestamp"]
-        )
-        storageclass["metadata"]["deletion_timestamp"] = iso_timestamp_converter(
-            storageclass["metadata"]["deletion_timestamp"]
-        )
         storage_classes[storageclass["metadata"]["name"]] = storageclass
 
     return storage_classes

@@ -54,7 +54,7 @@ class Metalk8sDrainTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
     @parameterized.expand(
         [
-            ("missing kubernetes", "kubernetes.client.rest"),
+            ("missing kubernetes", "kubernetes"),
             ("missing urllib3", "urllib3.exceptions"),
         ]
     )
@@ -109,16 +109,16 @@ class Metalk8sDrainTestCase(TestCase, mixins.LoaderModuleMockMixin):
             elif create_raises == "HTTPError":
                 raise HTTPError()
 
-        get_kind_info_mock = MagicMock()
-        create_mock = get_kind_info_mock.return_value.client.create
-        create_mock.side_effect = _create_mock
+        create_mock = MagicMock(side_effect=_create_mock)
 
-        utils_dict = {
-            "metalk8s_kubernetes.get_kind_info": get_kind_info_mock,
-        }
-        with patch.dict(metalk8s_drain.__utils__, utils_dict), capture_logs(
-            metalk8s_drain.log, logging.DEBUG
-        ) as captured:
+        dynamic_client_mock = MagicMock()
+        dynamic_client_mock.request.side_effect = create_mock
+
+        dynamic_mock = MagicMock()
+        dynamic_mock.DynamicClient.return_value = dynamic_client_mock
+        with patch("kubernetes.dynamic", dynamic_mock), patch(
+            "kubernetes.config", MagicMock()
+        ), capture_logs(metalk8s_drain.log, logging.DEBUG) as captured:
             if raises:
                 self.assertRaisesRegex(
                     CommandExecutionError, result, metalk8s_drain.evict_pod, **kwargs

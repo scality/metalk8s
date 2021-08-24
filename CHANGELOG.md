@@ -3,6 +3,11 @@
 ### Enhancements
 - Bump `containerd` version to 1.4.8 (PR [#3466](https://github.com/scality/metalk8s/pull/3466)).
 
+- [#3487](https://github.com/scality/metalk8s/issues/3487) - Make Salt
+  Kubernetes execution module more flexible relying on `DynamicClient`
+  from `python-kubernetes`
+  (PR[#3510](https://github.com/scality/metalk8s/pull/3510))
+
 ## Release 2.10.3 (in development)
 ### Enhancements
 

@@ -21,9 +21,11 @@ MISSING_DEPS = []
 
 try:
     import kubernetes.client as k8s_client
+    import kubernetes
+    from kubernetes.dynamic.exceptions import ResourceNotFoundError
     from kubernetes.client.rest import ApiException
 except ImportError:
-    MISSING_DEPS.append("kubernetes.client")
+    MISSING_DEPS.append("kubernetes")
 
 try:
     from urllib3.exceptions import HTTPError
@@ -40,34 +42,19 @@ def __virtual__():
         error_msg = "Missing dependencies: {}".format(", ".join(MISSING_DEPS))
         return False, error_msg
 
-    if "metalk8s_kubernetes.get_kind_info" not in __utils__:
-        return False, "Missing `metalk8s_kubernetes` utils module"
-
     return __virtualname__
-
-
-def _extract_obj_and_kind_info(manifest, force_custom_object=False):
-    try:
-        kind_info = __utils__["metalk8s_kubernetes.get_kind_info"](manifest)
-        obj = __utils__["metalk8s_kubernetes.convert_manifest_to_object"](
-            manifest, force_custom_object=force_custom_object
-        )
-    except ValueError as exc:
-        raise CommandExecutionError("Invalid manifest") from exc
-
-    return obj, kind_info
 
 
 def _handle_error(exception, action):
     """Wrap an exception raised during a call to the K8s API.
 
-    Note that 'retrieve' and 'delete' will not re-raise if the error is just
+    Note that 'get' and 'delete' will not re-raise if the error is just
     a "404 NOT FOUND", and instead return `None`.
     """
     base_msg = "Failed to {} object".format(action)
 
     if (
-        action in ["delete", "retrieve"]
+        action in ["delete", "get"]
         and isinstance(exception, ApiException)
         and exception.status == 404
     ):
@@ -80,10 +67,10 @@ def _object_manipulation_function(action):
     """Generate an execution function based on a CRUD method to use."""
     assert action in (
         "create",
-        "retrieve",
+        "get",
         "replace",
         "delete",
-        "update",
+        "patch",
     ), 'Method "{}" is not supported'.format(action)
 
     def method(
@@ -101,11 +88,11 @@ def _object_manipulation_function(action):
     ):
         if manifest is None:
             if (
-                action in ["retrieve", "delete", "update"]
+                action in ["get", "delete", "patch"]
                 and name
                 and kind
                 and apiVersion
-                and (action != "update" or patch)
+                and (action != "patch" or patch)
             ):
                 # Build a simple manifest using kwargs information as
                 # get/delete do not need a full body
@@ -132,11 +119,11 @@ def _object_manipulation_function(action):
 
         if not manifest:
             needed_params = ['"manifest"', '"name" (path to a file)']
-            if action in ["retrieve", "delete", "update"]:
+            if action in ["get", "delete", "patch"]:
                 needed_params.append(
                     " and ".join(
                         ['"name"', '"kind"', '"apiVersion"']
-                        + (['"patch"'] if action == "update" else [])
+                        + (['"patch"'] if action == "patch" else [])
                     )
                 )
             raise CommandExecutionError(
@@ -159,26 +146,35 @@ def _object_manipulation_function(action):
 
         log.debug("%sing object with manifest: %s", action[:-1].capitalize(), manifest)
 
-        obj, kind_info = _extract_obj_and_kind_info(
-            manifest,
-            # NOTE: For "retrieve", "delete" and "update" we don't need a full
-            # kubernetes object we only need "kind", "apiVersion", "name"
-            # (, "namespace")(and a patch for "update"), so we can not
-            # create a Python kubernetes objects as some required field may
-            # not be in the manifest
-            force_custom_object=action in ["retrieve", "delete", "update"],
+        kubeconfig, context = __salt__["metalk8s_kubernetes.get_kubeconfig"](**kwargs)
+
+        client = kubernetes.dynamic.DynamicClient(
+            kubernetes.config.new_client_from_config(kubeconfig, context)
         )
+
+        try:
+            api = client.resources.get(
+                api_version=manifest["apiVersion"], kind=manifest["kind"]
+            )
+        except ResourceNotFoundError as exc:
+            raise CommandExecutionError(
+                "Kind '{}' from apiVersion '{}' is unknown".format(
+                    manifest["kind"], manifest["apiVersion"]
+                )
+            ) from exc
+
+        method_func = getattr(api, action)
 
         call_kwargs = {}
         if action != "create":
-            call_kwargs["name"] = obj.metadata.name
-        if kind_info.scope == "namespaced":
-            call_kwargs["namespace"] = obj.metadata.namespace
+            call_kwargs["name"] = manifest["metadata"]["name"]
+        if api.namespaced:
+            call_kwargs["namespace"] = manifest["metadata"].get("namespace")
         if action == "delete":
             call_kwargs["body"] = k8s_client.V1DeleteOptions(
                 propagation_policy="Foreground"
             )
-        elif action == "update":
+        elif action == "patch":
             if patch:
                 call_kwargs["body"] = patch
             else:
@@ -189,39 +185,30 @@ def _object_manipulation_function(action):
                 call_kwargs["body"]["metadata"].pop("name")
                 # Namespace may be empty so add a default to not failing
                 call_kwargs["body"]["metadata"].pop("namespace", None)
-        elif action != "retrieve":
-            call_kwargs["body"] = obj
+        elif action != "get":
+            call_kwargs["body"] = manifest
 
         if action == "replace" and old_object:
             # Some attributes have to be preserved
             # otherwise exceptions will be thrown
-            if "resource_version" in old_object["metadata"]:
-                call_kwargs["body"].metadata.resource_version = old_object["metadata"][
-                    "resource_version"
-                ]
             if "resourceVersion" in old_object["metadata"]:
-                call_kwargs["body"].metadata.resourceVersion = old_object["metadata"][
-                    "resourceVersion"
-                ]
-            # Keep `cluster_ip` and `health_check_node_port` if not present in the body
-            if obj.api_version == "v1" and obj.kind == "Service":
-                if not call_kwargs["body"].spec.cluster_ip:
-                    call_kwargs["body"].spec.cluster_ip = old_object["spec"][
-                        "cluster_ip"
-                    ]
-                if (
-                    obj.spec.type == "LoadBalancer"
-                    and not call_kwargs["body"].spec.health_check_node_port
+                call_kwargs["body"]["metadata"]["resourceVersion"] = old_object[
+                    "metadata"
+                ]["resourceVersion"]
+            # Keep `clusterIP` and `healthCheckNodePort` if not present in the body
+            if api.api_version == "v1" and api.kind == "Service":
+                if not call_kwargs["body"]["spec"].get("clusterIP"):
+                    call_kwargs["body"]["spec"]["clusterIP"] = old_object["spec"].get(
+                        "clusterIP"
+                    )
+                if call_kwargs["body"]["spec"].get(
+                    "type"
+                ) == "LoadBalancer" and not call_kwargs["body"]["spec"].get(
+                    "healthCheckNodePort"
                 ):
-                    call_kwargs["body"].spec.health_check_node_port = old_object[
+                    call_kwargs["body"]["spec"]["healthCheckNodePort"] = old_object[
                         "spec"
-                    ]["health_check_node_port"]
-
-        kubeconfig, context = __salt__["metalk8s_kubernetes.get_kubeconfig"](**kwargs)
-
-        client = kind_info.client
-        client.configure(config_file=kubeconfig, context=context)
-        method_func = getattr(client, action)
+                    ].get("healthCheckNodePort")
 
         log.debug("Running '%s' with: %s", action, call_kwargs)
 
@@ -231,7 +218,6 @@ def _object_manipulation_function(action):
             return _handle_error(exc, action)
 
         # NOTE: result is always either a standard `kubernetes.client` model,
-        # or a `CustomObject` as defined in the __utils__ module.
         return result.to_dict()
 
     base_doc = """
@@ -270,7 +256,7 @@ def _object_manipulation_function(action):
             base_doc=base_doc,
             cmd=action,
         )
-    elif action in ["retrieve", "delete"]:
+    elif action in ["get", "delete"]:
         method.__doc__ = """{base_doc}
     Ability to {verb} an object using object description 'name', 'kind'
     and 'apiVersion'.
@@ -289,12 +275,12 @@ def _object_manipulation_function(action):
             ),
             base_doc=base_doc,
             verb=action,
-            cmd="get" if action == "retrieve" else action,
+            cmd=action,
         )
-    elif action == "update":
+    elif action == "patch":
         method.__doc__ = """{base_doc}
     Ability to {verb} an object using object description and a patch 'name',
-    'kind', 'apiVersion' and patch'.
+    'kind', 'apiVersion' and 'patch'.
 
     CLI Examples:
 
@@ -316,7 +302,7 @@ def _object_manipulation_function(action):
             patch2=str([{"op": "remove", "path": "/metadata/labels/test.12"}]),
             base_doc=base_doc,
             verb=action,
-            cmd=action,
+            cmd="update",
         )
 
     return method
@@ -325,8 +311,8 @@ def _object_manipulation_function(action):
 create_object = _object_manipulation_function("create")
 delete_object = _object_manipulation_function("delete")
 replace_object = _object_manipulation_function("replace")
-get_object = _object_manipulation_function("retrieve")
-update_object = _object_manipulation_function("update")
+get_object = _object_manipulation_function("get")
+update_object = _object_manipulation_function("patch")
 
 
 # Check if a specific object exists
@@ -364,42 +350,38 @@ def list_objects(
         salt-call metalk8s_kubernetes.list_objects kind="Pod" apiVersion="v1" namespace="kube-system"
         salt-call metalk8s_kubernetes.list_objects kind="Pod" apiVersion="v1" all_namespaces=True field_selector="spec.nodeName=bootstrap"
     """
+    kubeconfig, context = __salt__["metalk8s_kubernetes.get_kubeconfig"](**kwargs)
+
+    client = kubernetes.dynamic.DynamicClient(
+        kubernetes.config.new_client_from_config(kubeconfig, context)
+    )
     try:
-        kind_info = __utils__["metalk8s_kubernetes.get_kind_info"](
-            {
-                "kind": kind,
-                "apiVersion": apiVersion,
-            }
-        )
-    except ValueError as exc:
+        api = client.resources.get(api_version=apiVersion, kind=kind)
+    except ResourceNotFoundError as exc:
         raise CommandExecutionError(
-            'Unsupported resource "{}/{}"'.format(apiVersion, kind)
+            "Kind '{}' from apiVersion '{}' is unknown".format(kind, apiVersion)
         ) from exc
+    api = client.resources.get(api_version=apiVersion, kind=kind)
 
     call_kwargs = {}
     if all_namespaces:
         call_kwargs["all_namespaces"] = True
-    elif kind_info.scope == "namespaced":
+    elif api.namespaced:
         call_kwargs["namespace"] = namespace
     if field_selector:
         call_kwargs["field_selector"] = field_selector
     if label_selector:
         call_kwargs["label_selector"] = label_selector
 
-    kubeconfig, context = __salt__["metalk8s_kubernetes.get_kubeconfig"](**kwargs)
-
-    client = kind_info.client
-    client.configure(config_file=kubeconfig, context=context)
-
     try:
-        result = client.list(**call_kwargs)
+        result = api.get(**call_kwargs)
     except (ApiException, HTTPError) as exc:
         base_msg = 'Failed to list resources "{}/{}"'.format(apiVersion, kind)
         if "namespace" in call_kwargs:
             base_msg += ' in namespace "{}"'.format(namespace)
         raise CommandExecutionError(base_msg) from exc
 
-    return [obj.to_dict() for obj in result.items]
+    return result.to_dict()["items"]
 
 
 def get_object_digest(path=None, checksum="sha256", *args, **kwargs):

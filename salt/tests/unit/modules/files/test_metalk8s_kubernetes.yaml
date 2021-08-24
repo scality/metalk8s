@@ -4,14 +4,32 @@ common_tests:
   - raises: True
     result: 'Must provide one of .* to .* object'
 
-  # Error invalid manifest
+  # Error invalid manifest no apiVersion
   - manifest:
       invalid: manifest
       content: wrong
       a: b
-    info_scope: null
     raises: True
-    result: "Invalid manifest"
+    result: "apiVersion"
+
+  # Error invalid manifest no kind
+  - manifest:
+      apiVersion: v1
+      invalid: manifest
+      content: wrong
+      a: b
+    raises: True
+    result: "kind"
+
+  # Error unknown object
+  - manifest:
+      apiVersion: v42
+      kind: Banana
+      spec:
+        abc: def
+    namespaced: null
+    raises: True
+    result: "Kind 'Banana' from apiVersion 'v42' is unknown"
 
   # Error giving manifest and name (manifest file path)
   - name: /path/to/my/manifest.yaml
@@ -202,7 +220,7 @@ replace_object:
       kind: Node
       metadata:
         name: my_node
-        resource_version: "123456"
+        resourceVersion: "123456"
     result: &simple_node_replace_result
       apiVersion: v1
       kind: Node
@@ -249,21 +267,22 @@ replace_object:
           heritage: salt
         resourceVersion: "123456"
 
-  # Replace service object (special case we need to keep cluster_ip)
+  # Replace service object (special case we need to keep clusterIP)
   - manifest:
       apiVersion: v1
       kind: Service
       metadata:
         name: my_service
+      spec: {}
     old_object:
       # Old object is considered as k8s object so snake case
       apiVersion: v1
       kind: Service
       metadata:
         name: my_service
-        resource_version: "123456"
+        resourceVersion: "123456"
       spec:
-        cluster_ip: "10.11.12.13"
+        clusterIP: "10.11.12.13"
     result:
       apiVersion: v1
       kind: Service
@@ -277,11 +296,11 @@ replace_object:
       spec:
         clusterIP: "10.11.12.13"
 
-  # Replace service object (special case: cluster_ip set in the manifest and
+  # Replace service object (special case: clusterIP set in the manifest and
   # old_object, keep the manifest one)
   # NOTE: This test just ensure we keep the one from input manifest and not
   #       replace it with the one from old_object, but in practice apiServer
-  #       will reject this call since cluster_ip is immutable field
+  #       will reject this call since clusterIP is immutable field
   - manifest:
       apiVersion: v1
       kind: Service
@@ -295,9 +314,9 @@ replace_object:
       kind: Service
       metadata:
         name: my_service
-        resource_version: "123456"
+        resourceVersion: "123456"
       spec:
-        cluster_ip: "10.11.12.13"
+        clusterIP: "10.11.12.13"
     result:
       apiVersion: v1
       kind: Service
@@ -311,7 +330,7 @@ replace_object:
       spec:
         clusterIP: "20.21.22.23"
 
-  # Replace service object (special case we need to keep health_check_node_port)
+  # Replace service object (special case we need to keep healthCheckNodePort)
   - manifest:
       apiVersion: v1
       kind: Service
@@ -325,11 +344,11 @@ replace_object:
       kind: Service
       metadata:
         name: my_service
-        resource_version: "123456"
+        resourceVersion: "123456"
       spec:
         type: LoadBalancer
-        cluster_ip: "10.11.12.13"
-        health_check_node_port: "12345"
+        clusterIP: "10.11.12.13"
+        healthCheckNodePort: 12345
     result:
       apiVersion: v1
       kind: Service
@@ -343,13 +362,13 @@ replace_object:
       spec:
         type: LoadBalancer
         clusterIP: "10.11.12.13"
-        healthCheckNodePort: "12345"
+        healthCheckNodePort: 12345
 
-  # Replace service object (special case: health_check_node_port set in the manifest
+  # Replace service object (special case: healthCheckNodePort set in the manifest
   # and old_object, keep the manifest one)
   # NOTE: This test just ensure we keep the one from input manifest and not
   #       replace it with the one from old_object, but in practice apiServer
-  #       will reject this call since health_check_node_port is immutable field
+  #       will reject this call since healthCheckNodePort is immutable field
   - manifest:
       apiVersion: v1
       kind: Service
@@ -358,18 +377,18 @@ replace_object:
       spec:
         clusterIP: "10.11.12.13"
         type: LoadBalancer
-        healthCheckNodePort: "12345"
+        healthCheckNodePort: 12345
     old_object:
       # Old object is considered as k8s object so snake case
       apiVersion: v1
       kind: Service
       metadata:
         name: my_service
-        resource_version: "123456"
+        resourceVersion: "123456"
       spec:
-        cluster_ip: "10.11.12.13"
+        clusterIP: "10.11.12.13"
         type: LoadBalancer
-        health_check_node_port: "9876"
+        healthCheckNodePort: 9876
     result:
       apiVersion: v1
       kind: Service
@@ -383,7 +402,7 @@ replace_object:
       spec:
         clusterIP: "10.11.12.13"
         type: LoadBalancer
-        healthCheckNodePort: "12345"
+        healthCheckNodePort: 12345
 
   # Error when replacing object
   - manifest:
@@ -454,7 +473,7 @@ get_object:
     name: my_pod
     api_status_code: 0
     raises: True
-    result: Failed to retrieve object
+    result: Failed to get object
 
 update_object:
   # Simple Node update (using manifest)
@@ -505,7 +524,7 @@ update_object:
     kind: Node
     name: my_node
     raises: True
-    result: 'Must provide one of "manifest" or "name" \(path to a file\) or "name" and "kind" and "apiVersion" and "patch" to update object.'
+    result: 'Must provide one of "manifest" or "name" \(path to a file\) or "name" and "kind" and "apiVersion" and "patch" to patch object.'
 
   # Error when updating object
   - apiVersion: v1
@@ -516,7 +535,7 @@ update_object:
         labels:
           my.new.label: my-new-label
     raises: True
-    result: Failed to update object
+    result: Failed to patch object
 
 list_objects:
   # Simple list Pod
@@ -531,7 +550,7 @@ list_objects:
   # Simple list Node
   - apiVersion: v1
     kind: Node
-    info_scope: cluster
+    namespaced: False
     result: *list_object_result
 
   # List Pod for a specific namespace
@@ -580,12 +599,12 @@ list_objects:
       label_selector: "my.simple.label=abcd"
     result: *list_object_result
 
-  # Invalid object listing
-  - apiVersion: v1
-    kind: MyInvalidKind
-    info_scope: null
+  # Error listing invalid object
+  - apiVersion: v42
+    kind: Banana
+    namespaced: null
     raises: True
-    result: 'Unsupported resource "v1/MyInvalidKind"'
+    result: "Kind 'Banana' from apiVersion 'v42' is unknown"
 
   # Error when listing namespaced resource (default namespace)
   - apiVersion: v1
@@ -605,7 +624,7 @@ list_objects:
   # Error when listing cluster resource
   - apiVersion: v1
     kind: Node
-    info_scope: cluster
+    namespaced: False
     api_status_code: 0
     raises: True
     result: 'Failed to list resources "v1/Node"'

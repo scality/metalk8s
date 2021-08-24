@@ -16,8 +16,8 @@ import time
 from salt.exceptions import CommandExecutionError
 
 try:
+    import kubernetes
     from kubernetes.client.rest import ApiException
-    from kubernetes.client.models.v1_delete_options import V1DeleteOptions
     from kubernetes.client.models.v1_object_meta import V1ObjectMeta
     from kubernetes.client.models.v1beta1_eviction import V1beta1Eviction
     from urllib3.exceptions import HTTPError
@@ -68,7 +68,7 @@ def _mirrorpod_filter(pod):
     """
     mirror_annotation = "kubernetes.io/config.mirror"
 
-    annotations = pod["metadata"]["annotations"]
+    annotations = pod["metadata"].get("annotations")
     if annotations and mirror_annotation in annotations:
         return False, ""
     return True, ""
@@ -81,8 +81,8 @@ def _has_local_storage(pod):
       - pod: kubernetes pod object
     Returns: True if the pod uses local storage, False if not
     """
-    for volume in pod["spec"]["volumes"]:
-        if volume["empty_dir"] is not None:
+    for volume in pod["spec"].get("volumes", []):
+        if volume.get("emptyDir") is not None:
             return True
     return False
 
@@ -98,9 +98,9 @@ def _get_controller_of(pod):
       - pod: kubernetes pod object
     Returns: the reference to a controller object
     """
-    if pod["metadata"]["owner_references"]:
-        for owner_ref in pod["metadata"]["owner_references"]:
-            if owner_ref["controller"]:
+    if pod["metadata"].get("ownerReferences"):
+        for owner_ref in pod["metadata"]["ownerReferences"]:
+            if owner_ref.get("controller"):
                 return owner_ref
     return None
 
@@ -233,7 +233,7 @@ class Drain(object):
             return __salt__["metalk8s_kubernetes.get_object"](
                 name=controller_ref["name"],
                 kind=controller_ref["kind"],
-                apiVersion=controller_ref["api_version"],
+                apiVersion=controller_ref["apiVersion"],
                 namespace=namespace,
                 **self._kwargs
             )
@@ -494,11 +494,7 @@ def evict_pod(name, namespace="default", grace_period=1, **kwargs):
     Returns: whether the eviction was successfully created or not
     Raises: CommandExecutionError in case of API error
     """
-    kind_info = __utils__["metalk8s_kubernetes.get_kind_info"](
-        {"kind": "PodEviction", "apiVersion": "v1"}
-    )
-
-    delete_options = V1DeleteOptions()
+    delete_options = kubernetes.client.V1DeleteOptions()
     if grace_period >= 0:
         delete_options.grace_period = grace_period
 
@@ -506,13 +502,22 @@ def evict_pod(name, namespace="default", grace_period=1, **kwargs):
 
     kubeconfig, context = __salt__["metalk8s_kubernetes.get_kubeconfig"](**kwargs)
 
-    client = kind_info.client
-    client.configure(config_file=kubeconfig, context=context)
+    client = kubernetes.dynamic.DynamicClient(
+        kubernetes.config.new_client_from_config(kubeconfig, context)
+    )
+
+    # DynamicClient does not handle Pod eviction, so compute the path manually
+    path = (
+        client.resources.get(api_version="v1", kind="Pod").path(
+            name=name, namespace=namespace
+        )
+        + "/eviction"
+    )
 
     try:
-        client.create(
-            name=name,
-            namespace=namespace,
+        client.request(
+            "post",
+            path,
             body=V1beta1Eviction(delete_options=delete_options, metadata=object_meta),
         )
     except (ApiException, HTTPError) as exc:

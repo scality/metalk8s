@@ -30,7 +30,7 @@ def _node_set_unschedulable(name, value, **kwargs):
     ret["result"] = True
     ret["changes"] = {
         "old": {"unschedulable": unschedulable},
-        "new": {"unschedulable": res["spec"]["unschedulable"]},
+        "new": {"unschedulable": res["spec"].get("unschedulable")},
     }
     ret["comment"] = "Node {0} {1}ed".format(name, action)
 

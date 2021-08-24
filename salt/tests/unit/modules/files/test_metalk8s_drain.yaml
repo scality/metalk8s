@@ -390,12 +390,12 @@ drain:
 datasets:
   __common:
     base-pod: &base_pod
-      api_version: v1
+      apiVersion: v1
       kind: Pod
       metadata: &base_pod_meta
         name: my-pod
         namespace: my-namespace
-        owner_references: null
+        ownerReferences: null
         annotations: {}
         uid: ede4ed1b-9a5e-4168-961c-b1bdad691ec7
       spec: &base_pod_spec
@@ -416,7 +416,7 @@ datasets:
         <<: *base_pod_spec
         volumes:
         - name: tmp-volume
-          empty_dir: {}
+          emptyDir: {}
 
     static-pod: &static_pod
       <<: *base_pod
@@ -433,8 +433,8 @@ datasets:
       metadata:
         <<: *base_pod_meta
         name: my-finished-pod
-        owner_references:
-        - api_version: batch/v1
+        ownerReferences:
+        - apiVersion: batch/v1
           kind: Job
           controller: true
           name: my-job
@@ -447,8 +447,8 @@ datasets:
       metadata: &replicaset_pod_meta
         <<: *base_pod_meta
         name: my-replicaset-pod
-        owner_references:
-        - api_version: apps/v1
+        ownerReferences:
+        - apiVersion: apps/v1
           kind: ReplicaSet
           controller: true
           name: my-replicaset
@@ -458,8 +458,8 @@ datasets:
       metadata:
         <<: *base_pod_meta
         name: my-daemonset-pod
-        owner_references:
-        - api_version: apps/v1
+        ownerReferences:
+        - apiVersion: apps/v1
           kind: DaemonSet
           controller: true
           name: my-daemonset
@@ -469,28 +469,28 @@ datasets:
       metadata:
         <<: *base_pod_meta
         name: my-custom-pod
-        owner_references:
-        - api_version: unkown/v1
+        ownerReferences:
+        - apiVersion: unkown/v1
           kind: Unknown
           controller: true
           name: my-unknown-controller
 
     common-replicaset: &common_replicaset
-      api_version: apps/v1
+      apiVersion: apps/v1
       kind: ReplicaSet
       metadata:
         name: my-replicaset
         namespace: my-namespace
 
     common-daemonset: &common_daemonset
-      api_version: apps/v1
+      apiVersion: apps/v1
       kind: DaemonSet
       metadata:
         name: my-daemonset
         namespace: my-namespace
 
     common-job: &common_job
-      api_version: batch/v1
+      apiVersion: batch/v1
       kind: Job
       metadata:
         name: my-job
@@ -598,7 +598,7 @@ datasets:
     <<: *single_replicaset_dataset
     evictionmocks:
       - kind: EvictionMock
-        api_version: __tests__
+        apiVersion: __tests__
         pod: my-namespace/my-replicaset-pod
         locked: true
 
@@ -606,6 +606,6 @@ datasets:
     <<: *single_replicaset_dataset
     evictionmocks:
       - kind: EvictionMock
-        api_version: __tests__
+        apiVersion: __tests__
         pod: my-namespace/my-replicaset-pod
         raises: true

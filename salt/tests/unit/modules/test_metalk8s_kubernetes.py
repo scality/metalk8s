@@ -3,6 +3,7 @@ import os.path
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
+from kubernetes.dynamic.exceptions import ResourceNotFoundError
 from kubernetes.client.rest import ApiException
 from parameterized import param, parameterized
 from salt.utils import dictupdate, hashutils
@@ -22,6 +23,26 @@ with open(YAML_TESTS_FILE) as fd:
     YAML_TESTS_CASES = yaml.safe_load(fd)
 
 
+def _mock_k8s_dynamic(namespaced, action, mock):
+    def _resources_get_mock(api_version, kind):
+        if namespaced is None:
+            raise ResourceNotFoundError("Error !!")
+        obj = MagicMock()
+        obj.api_version = api_version
+        obj.kind = kind
+        obj.namespaced = namespaced
+        setattr(obj, action, mock)
+        return obj
+
+    dynamic_client_mock = MagicMock()
+    dynamic_client_mock.resources.get.side_effect = _resources_get_mock
+
+    dynamic_mock = MagicMock()
+    dynamic_mock.DynamicClient.return_value = dynamic_client_mock
+
+    return dynamic_mock
+
+
 class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
     TestCase for `metalk8s_kubernetes` module
@@ -31,51 +52,6 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
     @staticmethod
     def loader_module_globals():
-        def _manifest_to_object_mock(manifest, **_):
-            # Simulate k8s object for key used in the module
-            # It's not really robust but here we only test the
-            # `metalk8s_kubernetes` module
-            obj = MagicMock()
-
-            obj.api_version = manifest.get("apiVersion")
-            obj.kind = manifest.get("kind")
-
-            meta = manifest.get("metadata", {})
-            obj.metadata.name = meta.get("name")
-            obj.metadata.namespace = meta.get("namespace")
-            obj.metadata.resourceVersion = meta.get("resourceVersion")
-            obj.metadata.resource_version = meta.get("resource_version")
-
-            obj.spec.cluster_ip = manifest.get("spec", {}).get("clusterIP")
-            obj.spec.health_check_node_port = manifest.get("spec", {}).get(
-                "healthCheckNodePort"
-            )
-            obj.spec.type = manifest.get("spec", {}).get("type")
-
-            def _to_dict():
-                if obj.metadata.resourceVersion:
-                    meta["resourceVersion"] = obj.metadata.resourceVersion
-                if obj.metadata.resource_version:
-                    meta["resourceVersion"] = obj.metadata.resource_version
-                if obj.spec.cluster_ip:
-                    manifest.setdefault("spec", {})["clusterIP"] = obj.spec.cluster_ip
-                    if "cluster_ip" in manifest.get("spec", {}):
-                        del manifest["spec"]["cluster_ip"]
-                if obj.spec.type:
-                    manifest.setdefault("spec", {})["type"] = obj.spec.type
-                if obj.spec.health_check_node_port:
-                    manifest.setdefault("spec", {})[
-                        "healthCheckNodePort"
-                    ] = obj.spec.health_check_node_port
-                    if "health_check_node_port" in manifest.get("spec", {}):
-                        del manifest["spec"]["health_check_node_port"]
-
-                return manifest
-
-            obj.to_dict.side_effect = _to_dict
-
-            return obj
-
         salt_dict = {
             "metalk8s_kubernetes.get_kubeconfig": MagicMock(
                 return_value=("/my/kube/config", "my-context")
@@ -104,15 +80,7 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         # Consider we have no slots in these tests
         salt_obj.metalk8s.format_slots.side_effect = lambda manifest: manifest
 
-        return {
-            "__utils__": {
-                "metalk8s_kubernetes.get_kind_info": MagicMock(),
-                "metalk8s_kubernetes.convert_manifest_to_object": MagicMock(
-                    side_effect=_manifest_to_object_mock
-                ),
-            },
-            "__salt__": salt_obj,
-        }
+        return {"__salt__": salt_obj}
 
     def assertDictContainsSubset(self, subdict, maindict):
         return self.assertEqual(dict(maindict, **subdict), maindict)
@@ -124,7 +92,12 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         reload(metalk8s_kubernetes)
         self.assertEqual(metalk8s_kubernetes.__virtual__(), "metalk8s_kubernetes")
 
-    @parameterized.expand(["kubernetes.client", ("urllib3.exceptions", "urllib3")])
+    @parameterized.expand(
+        [
+            "kubernetes",
+            ("urllib3.exceptions", "urllib3"),
+        ]
+    )
     def test_virtual_fail_import(self, import_error_on, dep_error=None):
         """
         Tests the return of `__virtual__` function, fail import
@@ -139,18 +112,6 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 ),
             )
 
-    def test_virtual_no_utils(self):
-        """
-        Tests the return of `__virtual__` function, missing kubernetes utils
-        """
-        with patch.dict(metalk8s_kubernetes.__utils__):
-            metalk8s_kubernetes.__utils__.pop("metalk8s_kubernetes.get_kind_info")
-            reload(metalk8s_kubernetes)
-            self.assertEqual(
-                metalk8s_kubernetes.__virtual__(),
-                (False, "Missing `metalk8s_kubernetes` utils module"),
-            )
-
     @utils.parameterized_from_cases(
         YAML_TESTS_CASES["create_object"] + YAML_TESTS_CASES["common_tests"]
     )
@@ -159,7 +120,7 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         result,
         raises=False,
         api_status_code=None,
-        info_scope="cluster",
+        namespaced=False,
         manifest_file_content=None,
         called_with=None,
         **kwargs
@@ -174,16 +135,14 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     status=api_status_code, reason="An error has occurred"
                 )
 
-            # body == object
-            return body
+            obj = MagicMock()
+            obj.to_dict.return_value = body
+            return obj
 
-        get_kind_info_mock = MagicMock()
-        if not info_scope:
-            get_kind_info_mock.side_effect = ValueError("An error has occurred")
-        get_kind_info_mock.return_value.scope = info_scope
-
-        create_mock = get_kind_info_mock.return_value.client.create
-        create_mock.side_effect = _create_mock
+        create_mock = MagicMock(side_effect=_create_mock)
+        dynamic_mock = _mock_k8s_dynamic(
+            namespaced=namespaced, action="create", mock=create_mock
+        )
 
         manifest_read_mock = MagicMock()
         # None = IOError
@@ -195,13 +154,12 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         else:
             manifest_read_mock.return_value = manifest_file_content
 
-        utils_dict = {"metalk8s_kubernetes.get_kind_info": get_kind_info_mock}
         salt_dict = {
             "metalk8s_kubernetes.read_and_render_yaml_file": manifest_read_mock
         }
-        with patch.dict(metalk8s_kubernetes.__utils__, utils_dict), patch.dict(
-            metalk8s_kubernetes.__salt__, salt_dict
-        ):
+        with patch("kubernetes.dynamic", dynamic_mock), patch(
+            "kubernetes.config", MagicMock()
+        ), patch.dict(metalk8s_kubernetes.__salt__, salt_dict):
             if raises:
                 self.assertRaisesRegex(
                     Exception, result, metalk8s_kubernetes.create_object, **kwargs
@@ -220,7 +178,7 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         result,
         raises=False,
         api_status_code=None,
-        info_scope="namespaced",
+        namespaced=True,
         manifest_file_content=None,
         called_with=None,
         **kwargs
@@ -241,13 +199,10 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
             res.to_dict.return_value = "<{} deleted object dict>".format(name)
             return res
 
-        get_kind_info_mock = MagicMock()
-        if not info_scope:
-            get_kind_info_mock.side_effect = ValueError("An error has occurred")
-        get_kind_info_mock.return_value.scope = info_scope
-
-        delete_mock = get_kind_info_mock.return_value.client.delete
-        delete_mock.side_effect = _delete_mock
+        delete_mock = MagicMock(side_effect=_delete_mock)
+        dynamic_mock = _mock_k8s_dynamic(
+            namespaced=namespaced, action="delete", mock=delete_mock
+        )
 
         manifest_read_mock = MagicMock()
         # None = IOError
@@ -259,13 +214,12 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         else:
             manifest_read_mock.return_value = manifest_file_content
 
-        utils_dict = {"metalk8s_kubernetes.get_kind_info": get_kind_info_mock}
         salt_dict = {
             "metalk8s_kubernetes.read_and_render_yaml_file": manifest_read_mock
         }
-        with patch.dict(metalk8s_kubernetes.__utils__, utils_dict), patch.dict(
-            metalk8s_kubernetes.__salt__, salt_dict
-        ):
+        with patch("kubernetes.dynamic", dynamic_mock), patch(
+            "kubernetes.config", MagicMock()
+        ), patch.dict(metalk8s_kubernetes.__salt__, salt_dict):
             if raises:
                 self.assertRaisesRegex(
                     Exception, result, metalk8s_kubernetes.delete_object, **kwargs
@@ -284,7 +238,7 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         result,
         raises=False,
         api_status_code=None,
-        info_scope="cluster",
+        namespaced=False,
         manifest_file_content=None,
         called_with=None,
         **kwargs
@@ -299,16 +253,14 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     status=api_status_code, reason="An error has occurred"
                 )
 
-            # body == object
-            return body
+            obj = MagicMock()
+            obj.to_dict.return_value = body
+            return obj
 
-        get_kind_info_mock = MagicMock()
-        if not info_scope:
-            get_kind_info_mock.side_effect = ValueError("An error has occurred")
-        get_kind_info_mock.return_value.scope = info_scope
-
-        replace_mock = get_kind_info_mock.return_value.client.replace
-        replace_mock.side_effect = _replace_mock
+        replace_mock = MagicMock(side_effect=_replace_mock)
+        dynamic_mock = _mock_k8s_dynamic(
+            namespaced=namespaced, action="replace", mock=replace_mock
+        )
 
         manifest_read_mock = MagicMock()
         # None = IOError
@@ -320,13 +272,12 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         else:
             manifest_read_mock.return_value = manifest_file_content
 
-        utils_dict = {"metalk8s_kubernetes.get_kind_info": get_kind_info_mock}
         salt_dict = {
             "metalk8s_kubernetes.read_and_render_yaml_file": manifest_read_mock
         }
-        with patch.dict(metalk8s_kubernetes.__utils__, utils_dict), patch.dict(
-            metalk8s_kubernetes.__salt__, salt_dict
-        ):
+        with patch("kubernetes.dynamic", dynamic_mock), patch(
+            "kubernetes.config", MagicMock()
+        ), patch.dict(metalk8s_kubernetes.__salt__, salt_dict):
             if raises:
                 self.assertRaisesRegex(
                     Exception, result, metalk8s_kubernetes.replace_object, **kwargs
@@ -347,7 +298,7 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         result,
         raises=False,
         api_status_code=None,
-        info_scope="namespaced",
+        namespaced=True,
         manifest_file_content=None,
         called_with=None,
         **kwargs
@@ -356,7 +307,7 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         Tests the return of `get_object` function
         """
 
-        def _retrieve_mock(name, **_):
+        def _get_mock(name, **_):
             if api_status_code is not None:
                 raise ApiException(
                     status=api_status_code, reason="An error has occurred"
@@ -368,13 +319,10 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
             res.to_dict.return_value = "<{} object dict>".format(name)
             return res
 
-        get_kind_info_mock = MagicMock()
-        if not info_scope:
-            get_kind_info_mock.side_effect = ValueError("An error has occurred")
-        get_kind_info_mock.return_value.scope = info_scope
-
-        retrieve_mock = get_kind_info_mock.return_value.client.retrieve
-        retrieve_mock.side_effect = _retrieve_mock
+        get_mock = MagicMock(side_effect=_get_mock)
+        dynamic_mock = _mock_k8s_dynamic(
+            namespaced=namespaced, action="get", mock=get_mock
+        )
 
         manifest_read_mock = MagicMock()
         # None = IOError
@@ -386,24 +334,21 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         else:
             manifest_read_mock.return_value = manifest_file_content
 
-        utils_dict = {"metalk8s_kubernetes.get_kind_info": get_kind_info_mock}
         salt_dict = {
             "metalk8s_kubernetes.read_and_render_yaml_file": manifest_read_mock
         }
-        with patch.dict(metalk8s_kubernetes.__utils__, utils_dict), patch.dict(
-            metalk8s_kubernetes.__salt__, salt_dict
-        ):
+        with patch("kubernetes.dynamic", dynamic_mock), patch(
+            "kubernetes.config", MagicMock()
+        ), patch.dict(metalk8s_kubernetes.__salt__, salt_dict):
             if raises:
                 self.assertRaisesRegex(
                     Exception, result, metalk8s_kubernetes.get_object, **kwargs
                 )
             else:
                 self.assertEqual(metalk8s_kubernetes.get_object(**kwargs), result)
-                retrieve_mock.assert_called_once()
+                get_mock.assert_called_once()
                 if called_with:
-                    self.assertDictContainsSubset(
-                        called_with, retrieve_mock.call_args[1]
-                    )
+                    self.assertDictContainsSubset(called_with, get_mock.call_args[1])
 
     @utils.parameterized_from_cases(
         YAML_TESTS_CASES["update_object"] + YAML_TESTS_CASES["common_tests"]
@@ -413,7 +358,7 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         result,
         raises=False,
         initial_obj=None,
-        info_scope="cluster",
+        namespaced=False,
         manifest_file_content=None,
         called_with=None,
         **kwargs
@@ -422,7 +367,7 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         Tests the return of `update_object` function
         """
 
-        def _update_mock(body, **_):
+        def _patch_mock(body, **_):
             if not initial_obj:
                 raise ApiException(status=0, reason="An error has occurred")
 
@@ -431,13 +376,10 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
             res.to_dict.return_value = dictupdate.update(initial_obj, body)
             return res
 
-        get_kind_info_mock = MagicMock()
-        if not info_scope:
-            get_kind_info_mock.side_effect = ValueError("An error has occurred")
-        get_kind_info_mock.return_value.scope = info_scope
-
-        update_mock = get_kind_info_mock.return_value.client.update
-        update_mock.side_effect = _update_mock
+        patch_mock = MagicMock(side_effect=_patch_mock)
+        dynamic_mock = _mock_k8s_dynamic(
+            namespaced=namespaced, action="patch", mock=patch_mock
+        )
 
         manifest_read_mock = MagicMock()
         # None = IOError
@@ -449,22 +391,21 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         else:
             manifest_read_mock.return_value = manifest_file_content
 
-        utils_dict = {"metalk8s_kubernetes.get_kind_info": get_kind_info_mock}
         salt_dict = {
             "metalk8s_kubernetes.read_and_render_yaml_file": manifest_read_mock
         }
-        with patch.dict(metalk8s_kubernetes.__utils__, utils_dict), patch.dict(
-            metalk8s_kubernetes.__salt__, salt_dict
-        ):
+        with patch("kubernetes.dynamic", dynamic_mock), patch(
+            "kubernetes.config", MagicMock()
+        ), patch.dict(metalk8s_kubernetes.__salt__, salt_dict):
             if raises:
                 self.assertRaisesRegex(
                     Exception, result, metalk8s_kubernetes.update_object, **kwargs
                 )
             else:
                 self.assertEqual(metalk8s_kubernetes.update_object(**kwargs), result)
-                update_mock.assert_called_once()
+                patch_mock.assert_called_once()
                 if called_with:
-                    self.assertDictContainsSubset(called_with, update_mock.call_args[1])
+                    self.assertDictContainsSubset(called_with, patch_mock.call_args[1])
 
     @parameterized.expand(
         [
@@ -496,7 +437,7 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         result,
         raises=False,
         api_status_code=None,
-        info_scope="namespaced",
+        namespaced=True,
         called_with=None,
         **kwargs
     ):
@@ -510,27 +451,25 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     status=api_status_code, reason="An error has occurred"
                 )
 
-            res = MagicMock()
             # Do not return a real list object as it does not bring any value
             # in this test
-            obj1 = MagicMock()
-            obj1.to_dict.return_value = "<my first object dict>"
-            obj2 = MagicMock()
-            obj2.to_dict.return_value = "<my second object dict>"
-
-            res.items = [obj1, obj2]
+            res = MagicMock()
+            res.to_dict.return_value = {
+                "items": [
+                    "<my first object dict>",
+                    "<my second object dict>",
+                ]
+            }
             return res
 
-        get_kind_info_mock = MagicMock()
-        if not info_scope:
-            get_kind_info_mock.side_effect = ValueError("An error has occurred")
-        get_kind_info_mock.return_value.scope = info_scope
+        list_mock = MagicMock(side_effect=_list_mock)
+        dynamic_mock = _mock_k8s_dynamic(
+            namespaced=namespaced, action="get", mock=list_mock
+        )
 
-        list_mock = get_kind_info_mock.return_value.client.list
-        list_mock.side_effect = _list_mock
-
-        utils_dict = {"metalk8s_kubernetes.get_kind_info": get_kind_info_mock}
-        with patch.dict(metalk8s_kubernetes.__utils__, utils_dict):
+        with patch("kubernetes.dynamic", dynamic_mock), patch(
+            "kubernetes.config", MagicMock()
+        ):
             if raises:
                 self.assertRaisesRegex(
                     Exception, result, metalk8s_kubernetes.list_objects, **kwargs
