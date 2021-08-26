@@ -58,6 +58,7 @@
   "prometheus_unavailable": "Prometheus is unavailable",
   "down": "Down",
   "alerts": "Alerts",
+  "global_health": "Global Health",
   "node_creation": "Node creation",
   "node_creation_success": "Node {name} has been created successfully.",
   "node_creation_failed": "Node {name} creation has failed.",

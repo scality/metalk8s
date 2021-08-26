@@ -58,6 +58,7 @@
   "prometheus_unavailable": "Prometheus n'est pas disponible",
   "down": "H.S",
   "alerts": "Alertes",
+  "global_health": "Santé Globale",
   "node_creation": "Création du nœud",
   "node_creation_success": "Le nœud {name} a été créé avec succèss",
   "node_creation_failed": "La création du nœud {name} a échoué.",

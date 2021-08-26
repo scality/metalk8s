@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { spacing } from '@scality/core-ui/dist/style/theme';
 import DashboardAlerts from './DashboardAlerts';
+import DashboardHealthBar from './DashboardHealthBar';
 
 const GlobalHealthContainer = styled.div`
   display: flex;
@@ -31,7 +32,9 @@ const GlobalHealthContainer = styled.div`
 const DashboardGlobalHealth = () => {
   return (
     <GlobalHealthContainer>
-      <div className="healthbar">GlobalHealth</div>
+      <div className="healthbar">
+        <DashboardHealthBar />
+      </div>
       <div className="alerts">
         <DashboardAlerts />
       </div>

@@ -1,6 +1,7 @@
 //@flow
 export const REFRESH_TIMEOUT = 15000;
 export const REFRESH_METRICS_GRAPH = 60000;
+export const REFRESH_GLOBAL_HEALTH_BAR = 300000;
 export const FR_LANG = 'FR';
 export const EN_LANG = 'EN';
 export const LANGUAGE = 'language';
@@ -127,7 +128,7 @@ export const lineColor4 = '#C6B38A';
 
 // Grafana dashboard UIDs (for stable links)
 export const GRAFANA_DASHBOARDS = {
-  logs: "a7e130cb82be229d6f3edbfd0a438001",
-  nodes: "node-exporter-full",
-  volumes: "919b92a8e8041bd567af9edab12c840c",
+  logs: 'a7e130cb82be229d6f3edbfd0a438001',
+  nodes: 'node-exporter-full',
+  volumes: '919b92a8e8041bd567af9edab12c840c',
 };

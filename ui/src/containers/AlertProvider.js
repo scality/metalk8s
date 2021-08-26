@@ -9,9 +9,9 @@ import {
   ComponentWithFederatedImports,
   FederatedComponent,
 } from '@scality/module-federation';
-import { STATUS_HEALTH } from '../constants';
+import { STATUS_HEALTH, STATUS_WARNING, STATUS_CRITICAL } from '../constants';
 
-export type Status = 'healthy' | 'warning' | 'critical';
+export type Status = STATUS_HEALTH | STATUS_WARNING | STATUS_CRITICAL;
 
 const alertGlobal = {};
 export const useAlerts = (filters: FilterLabels) => {
