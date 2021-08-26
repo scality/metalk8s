@@ -12,6 +12,7 @@ Architecture Documents
    configurations
    control-plane-ingress
    deployment
+   interaction-with-k8s-from-salt
    logs
    metalk8s-ui
    monitoring
