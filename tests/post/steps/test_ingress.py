@@ -52,8 +52,8 @@ def context():
 def teardown(context, host, ssh_config, version, k8s_client):
     yield
     if "node_to_uncordon" in context:
-        k8s_client.patch_node(
-            context["node_to_uncordon"], {"spec": {"unschedulable": False}}
+        k8s_client.resources.get(api_version="v1", kind="Node").patch(
+            name=context["node_to_uncordon"], body={"spec": {"unschedulable": False}}
         )
 
     if "bootstrap_to_restore" in context:
@@ -146,16 +146,19 @@ def stop_cp_ingress_vip_node(context, k8s_client):
     context["node_to_uncordon"] = node_name
 
     # Cordon node
-    k8s_client.patch_node(node_name, {"spec": {"unschedulable": True}})
+    k8s_client.resources.get(api_version="v1", kind="Node").patch(
+        name=node_name, body={"spec": {"unschedulable": True}}
+    )
 
+    pod_k8s_client = k8s_client.resources.get(api_version="v1", kind="Pod")
     # Delete Control Plane Ingress Controller from node
-    cp_ingress_pods = k8s_client.list_namespaced_pod(
-        "metalk8s-ingress",
+    cp_ingress_pods = pod_k8s_client.get(
+        namespace="metalk8s-ingress",
         label_selector="app.kubernetes.io/instance=ingress-nginx-control-plane",
         field_selector="spec.nodeName={}".format(node_name),
     )
     for pod in cp_ingress_pods.items:
-        k8s_client.delete_namespaced_pod(pod.metadata.name, pod.metadata.namespace)
+        pod_k8s_client.delete(name=pod.metadata.name, namespace=pod.metadata.namespace)
 
 
 @when(parsers.parse("we set control plane ingress IP to node '{node_name}' IP"))
@@ -230,8 +233,8 @@ def get_node_hosting_cp_ingress_vip(k8s_client):
         "involvedObject.kind=Service",
         "involvedObject.name=ingress-nginx-control-plane-controller",
     ]
-    events = k8s_client.list_namespaced_event(
-        "metalk8s-ingress",
+    events = k8s_client.resources.get(api_version="v1", kind="Event").get(
+        namespace="metalk8s-ingress",
         field_selector=",".join(field_selectors),
     )
 
@@ -239,7 +242,7 @@ def get_node_hosting_cp_ingress_vip(k8s_client):
 
     match = None
     for event in sorted(
-        events.items, key=lambda event: event.last_timestamp, reverse=True
+        events.items, key=lambda event: event.lastTimestamp, reverse=True
     ):
         match = re.search(r'announcing from node "(?P<node>.+)"', event.message)
         if match is not None:

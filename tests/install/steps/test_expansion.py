@@ -30,7 +30,9 @@ def declare_node(host, ssh_config, version, k8s_client, node_type, node_name):
     """Declare the given node in Kubernetes."""
     node_ip = get_node_ip(host, node_name, ssh_config)
     node_manifest = get_node_manifest(node_type, version, node_ip, node_name)
-    k8s_client.create_node(body=node_from_manifest(node_manifest))
+    k8s_client.resources.get(api_version="v1", kind="Node").create(
+        body=node_from_manifest(node_manifest)
+    )
 
 
 @when(parsers.parse('we deploy the node "{node_name}"'))
@@ -72,7 +74,7 @@ def deploy_node(host, ssh_config, version, node_name):
 def check_node_is_registered(k8s_client, node_name):
     """Check if the given node is registered in Kubernetes."""
     try:
-        k8s_client.read_node(node_name)
+        k8s_client.resources.get(api_version="v1", kind="Node").get(name=node_name)
     except k8s.client.rest.ApiException as exn:
         pytest.fail(str(exn))
 
@@ -83,7 +85,11 @@ def check_node_status(k8s_client, node_name, expected_status):
 
     def _check_node_status():
         try:
-            status = k8s_client.read_node_status(node_name).status
+            status = (
+                k8s_client.resources.get(api_version="v1", kind="Node")
+                .get(name=node_name)
+                .status
+            )
         except k8s.client.rest.ApiException as exn:
             raise AssertionError(exn)
         # If really not ready, status may not have been pushed yet.

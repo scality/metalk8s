@@ -80,7 +80,7 @@ def check_cp_ingress_pod_and_container(request, host, k8s_client, control_plane_
 
         for pod in pods:
             assert all(
-                container.ready == True for container in pod.status.container_statuses
+                container.ready == True for container in pod.status.containerStatuses
             )
 
     utils.retry(

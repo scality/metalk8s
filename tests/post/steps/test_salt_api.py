@@ -184,10 +184,10 @@ def have_no_perms(host, context):
 
 
 def _login_salt_api_sa(address, k8s_client, name, namespace, username=None):
-    service_account = k8s_client.read_namespaced_service_account(
-        name=name, namespace=namespace
-    )
-    secret = k8s_client.read_namespaced_secret(
+    service_account = k8s_client.resources.get(
+        api_version="v1", kind="ServiceAccount"
+    ).get(name=name, namespace=namespace)
+    secret = k8s_client.resources.get(api_version="v1", kind="Secret").get(
         name=service_account.secrets[0].name, namespace=namespace
     )
     token = base64.decodebytes(secret.data["token"].encode("utf-8"))

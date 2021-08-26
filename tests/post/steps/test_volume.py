@@ -301,7 +301,7 @@ def check_pv_label(name, key, value, pv_client):
         pv = pv_client.get(name)
         assert pv is not None, "PersistentVolume {} not found".format(name)
         labels = pv.metadata.labels
-        assert key in labels, "Label {} is missing".format(key)
+        assert key in labels.keys(), "Label {} is missing".format(key)
         assert (
             labels[key] == value
         ), "Unexpected value for label {}: expected {}, got {}".format(
@@ -388,10 +388,14 @@ def check_volume_deletion_marker(name, volume_client):
 def check_file_content_inside_pod(volume_name, path, content, k8s_client):
     name = "{}-pod".format(volume_name)
 
+    # NOTE: We use Kubernetes client instead of DynamicClient as it
+    # ease the execution of command in a Pod
+    client = k8s.client.CoreV1Api(api_client=k8s_client.client)
+
     def _check_file_content():
         try:
             result = k8s.stream.stream(
-                k8s_client.connect_get_namespaced_pod_exec,
+                client.connect_get_namespaced_pod_exec,
                 name=name,
                 namespace="default",
                 command=["cat", path],
@@ -420,7 +424,9 @@ def check_file_content_inside_pod(volume_name, path, content, k8s_client):
 def check_storage_is_created(context, host, name):
     volume = context.get(name)
     assert volume is not None, "volume {} not found in context".format(name)
-    assert "sparseLoopDevice" in volume["spec"], "unsupported volume type for this step"
+    assert (
+        "sparseLoopDevice" in volume["spec"].keys()
+    ), "unsupported volume type for this step"
     uuid = volume["metadata"]["uid"]
     capacity = volume["spec"]["sparseLoopDevice"]["size"]
     # Check that the sparse file exists and has the proper size.
@@ -438,7 +444,9 @@ def check_storage_is_created(context, host, name):
 def check_storage_is_deleted(context, host, name):
     volume = context.get(name)
     assert volume is not None, "volume {} not found in context".format(name)
-    assert "sparseLoopDevice" in volume["spec"], "unsupported volume type for this step"
+    assert (
+        "sparseLoopDevice" in volume["spec"].keys()
+    ), "unsupported volume type for this step"
     uuid = volume["metadata"]["uid"]
     # Check that the sparse file is deleted.
     path = "/var/lib/metalk8s/storage/sparse/{}".format(uuid)

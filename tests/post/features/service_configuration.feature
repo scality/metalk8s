@@ -8,7 +8,7 @@ Feature: Cluster and Services Configurations
         When we update the CSC 'spec.deployment.replicas' to '3'
         And we apply the 'metalk8s.addons.dex.deployed' state
         And we wait for the rollout of 'deploy/dex' in namespace 'metalk8s-auth' to complete
-        Then we have '3' at 'status.available_replicas' for 'dex' Deployment in namespace 'metalk8s-auth'
+        Then we have '3' at 'status.availableReplicas' for 'dex' Deployment in namespace 'metalk8s-auth'
 
     Scenario: Update Admin static user password
         Given the Kubernetes API is available

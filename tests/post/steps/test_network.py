@@ -13,7 +13,7 @@ def test_all_listening_processes(host):
 
 @given("we run on an untainted single node")
 def running_on_single_node_untainted(k8s_client):
-    nodes = k8s_client.list_node()
+    nodes = k8s_client.resources.get(api_version="v1", kind="Node").get()
 
     if len(nodes.items) != 1:
         pytest.skip("We skip multi nodes clusters for this test")

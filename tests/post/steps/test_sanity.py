@@ -1,3 +1,4 @@
+import kubernetes.client
 from kubernetes.client import AppsV1Api
 from kubernetes.client.rest import ApiException
 import pytest
@@ -6,15 +7,6 @@ from pytest_bdd import scenario, given, then, parsers
 from tests import kube_utils
 from tests import utils
 
-# Fixtures {{{
-
-
-@pytest.fixture
-def apps_client(k8s_apiclient):
-    return AppsV1Api(api_client=k8s_apiclient)
-
-
-# }}}
 # Scenarios {{{
 
 
@@ -142,8 +134,12 @@ def read_pod_logs(k8s_client, label, namespace):
         _wait_for_pod, times=10, wait=3, name="wait for pod labeled '{}'".format(label)
     )
 
+    # NOTE: We use Kubernetes client instead of DynamicClient as it
+    # ease the retrieving of Pod logs
+    client = kubernetes.client.CoreV1Api(api_client=k8s_client.client)
+
     for container in pod.spec.containers:
-        logs = k8s_client.read_namespaced_pod_log(
+        logs = client.read_namespaced_pod_log(
             pod.metadata.name, namespace, container=container.name
         )
 
@@ -154,11 +150,12 @@ def read_pod_logs(k8s_client, label, namespace):
 
 @then("the static Pod <name> in the <namespace> namespace runs on <role> nodes")
 def check_static_pod(k8s_client, name, namespace, role):
+    node_k8s_client = k8s_client.resources.get(api_version="v1", kind="Node")
     if role == "all":
-        nodes = k8s_client.list_node()
+        nodes = node_k8s_client.get()
     else:
         role_label = "node-role.kubernetes.io/{}=".format(role)
-        nodes = k8s_client.list_node(label_selector=role_label)
+        nodes = node_k8s_client.get(label_selector=role_label)
 
     pod_names = ["{}-{}".format(name, node.metadata.name) for node in nodes.items]
     for pod_name in pod_names:
@@ -185,18 +182,18 @@ def check_static_pod(k8s_client, name, namespace, role):
         "replicas available"
     )
 )
-def check_deployment(apps_client, name, namespace):
+def check_deployment(k8s_client, name, namespace):
     def _wait_for_deployment():
         try:
-            deploy = apps_client.read_namespaced_deployment(
-                name=name, namespace=namespace
-            )
+            deploy = k8s_client.resources.get(
+                api_version="apps/v1", kind="Deployment"
+            ).get(name=name, namespace=namespace)
         except ApiException as exc:
             if exc.status == 404:
                 pytest.fail("Deployment '{}/{}' does not exist".format(namespace, name))
             raise
 
-        assert deploy.spec.replicas == deploy.status.available_replicas, (
+        assert deploy.spec.replicas == deploy.status.availableReplicas, (
             "Deployment is not ready yet (desired={desired}, "
             "available={status.available_replicas}, "
             "unavailable={status.unavailable_replicas})"
@@ -217,12 +214,12 @@ def check_deployment(apps_client, name, namespace):
         "Pods ready"
     )
 )
-def check_daemonset(apps_client, name, namespace):
+def check_daemonset(k8s_client, name, namespace):
     def _wait_for_daemon_set():
         try:
-            daemon_set = apps_client.read_namespaced_daemon_set(
-                name=name, namespace=namespace
-            )
+            daemon_set = k8s_client.resources.get(
+                api_version="apps/v1", kind="DaemonSet"
+            ).get(name=name, namespace=namespace)
         except ApiException as exc:
             if exc.status == 404:
                 pytest.fail("DaemonSet '{}/{}' does not exist".format(namespace, name))
@@ -250,12 +247,12 @@ def check_daemonset(apps_client, name, namespace):
     "the StatefulSet <name> in the <namespace> namespace has all desired "
     "replicas available"
 )
-def check_statefulset(apps_client, name, namespace):
+def check_statefulset(k8s_client, name, namespace):
     def _wait_for_stateful_set():
         try:
-            stateful_set = apps_client.read_namespaced_stateful_set(
-                name=name, namespace=namespace
-            )
+            stateful_set = k8s_client.resources.get(
+                api_version="apps/v1", kind="StatefulSet"
+            ).get(name=name, namespace=namespace)
         except ApiException as exc:
             if exc.status == 404:
                 pytest.fail(
@@ -264,10 +261,10 @@ def check_statefulset(apps_client, name, namespace):
             raise
 
         desired = stateful_set.spec.replicas
-        ready = stateful_set.status.ready_replicas
+        ready = stateful_set.status.readyReplicas
         assert desired == ready, (
             "StatefulSet is not ready yet (desired={}, ready={})"
-        ).format(desired, available)
+        ).format(desired, ready)
 
     utils.retry(
         _wait_for_stateful_set,

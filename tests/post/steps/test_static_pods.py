@@ -106,7 +106,9 @@ def set_up_static_pod(host, nodename, k8s_client, utils_image, transient_files):
         name="wait for Pod '{}'".format(fullname),
     )
 
-    pod = k8s_client.read_namespaced_pod(name=fullname, namespace="default")
+    pod = k8s_client.resources.get(api_version="v1", kind="Pod").get(
+        name=fullname, namespace="default"
+    )
     return pod.metadata.uid
 
 
@@ -150,7 +152,9 @@ def check_static_pod_changed(host, nodename, k8s_client, static_pod_id):
         name="wait for Pod '{}' to be reloaded".format(fullname),
     )
 
-    pod = k8s_client.read_namespaced_pod(name=fullname, namespace="default")
+    pod = k8s_client.resources.get(api_version="v1", kind="Pod").get(
+        name=fullname, namespace="default"
+    )
 
     assert pod.metadata.uid != static_pod_id
 

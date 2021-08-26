@@ -1,10 +1,11 @@
+import datetime
 import os
 import pathlib
 import time
 import uuid
 import yaml
 
-from kubernetes import client
+import kubernetes.client
 import pytest
 from pytest_bdd import scenario, given, when, then, parsers
 
@@ -58,8 +59,11 @@ def test_logging_pipeline_is_working(host):
 @given("the Loki API is available")
 def check_loki_api(k8s_client):
     def _check_loki_ready():
+        # NOTE: We use Kubernetes client instead of DynamicClient as it
+        # ease the "service proxy path"
+        client = kubernetes.client.CoreV1Api(api_client=k8s_client.client)
         try:
-            response = k8s_client.connect_get_namespaced_service_proxy_with_path(
+            response = client.connect_get_namespaced_service_proxy_with_path(
                 "loki:http-metrics", "metalk8s-logging", path="ready"
             )
         except Exception as exc:  # pylint: disable=broad-except
@@ -81,8 +85,13 @@ def set_up_logger_pod(k8s_client, utils_image):
     name = manifest["metadata"]["name"]
     namespace = manifest["metadata"]["namespace"]
 
-    result = k8s_client.create_namespaced_pod(body=manifest, namespace=namespace)
-    pod_creation_ts = int(result.metadata.creation_timestamp.timestamp())
+    pod_k8s_client = k8s_client.resources.get(api_version="v1", kind="Pod")
+    result = pod_k8s_client.create(body=manifest, namespace=namespace)
+    pod_creation_ts = int(
+        datetime.datetime.strptime(
+            result.metadata.creationTimestamp, "%Y-%m-%dT%H:%M:%SZ"
+        ).timestamp()
+    )
 
     utils.retry(
         kube_utils.check_pod_status(
@@ -98,10 +107,10 @@ def set_up_logger_pod(k8s_client, utils_image):
 
     yield pod_creation_ts
 
-    k8s_client.delete_namespaced_pod(
+    pod_k8s_client.delete(
         name=name,
         namespace=namespace,
-        body=client.V1DeleteOptions(
+        body=kubernetes.client.V1DeleteOptions(
             grace_period_seconds=0,
         ),
     )
@@ -131,7 +140,7 @@ def push_log_to_loki(k8s_client, context):
             }
         ]
     }
-    response = k8s_client.api_client.call_api(
+    response = k8s_client.client.call_api(
         "/api/v1/namespaces/{namespace}/services/{name}/proxy/{path}",
         "POST",
         path_params,
@@ -236,7 +245,7 @@ def query_loki_api(k8s_client, content, route="query"):
         "namespace": "metalk8s-logging",
         "path": "loki/api/v1/{0}".format(route),
     }
-    response = k8s_client.api_client.call_api(
+    response = k8s_client.client.call_api(
         "/api/v1/namespaces/{namespace}/services/{name}/proxy/{path}",
         "GET",
         path_params,

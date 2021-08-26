@@ -5,8 +5,6 @@ import yaml
 import pytest
 from pytest_bdd import scenario, given, then, when, parsers
 
-from kubernetes.client import AppsV1Api
-
 from tests import utils
 
 # Scenarios {{{
@@ -88,7 +86,7 @@ def apply_csc(csc, state):
     )
 )
 def get_deployments(
-    k8s_apiclient,
+    k8s_client,
     value,
     path,
     deployment,
@@ -96,10 +94,11 @@ def get_deployments(
 ):
     def _wait_for_deployment():
         try:
-            k8s_appsv1_client = AppsV1Api(api_client=k8s_apiclient)
-            response = k8s_appsv1_client.read_namespaced_deployment(
-                name=deployment, namespace=namespace
-            ).to_dict()
+            response = (
+                k8s_client.resources.get(api_version="apps/v1", kind="Deployment")
+                .get(name=deployment, namespace=namespace)
+                .to_dict()
+            )
         except Exception as exc:
             pytest.fail(
                 "Unable to read {} Deployment with error: {!s}".format(deployment, exc)
@@ -164,7 +163,7 @@ class ClusterServiceConfiguration:
     CSC_KEY = "config.yaml"
 
     def __init__(self, k8s_client, name, namespace, host, ssh_config, version):
-        self.client = k8s_client
+        self.client = k8s_client.resources.get(api_version="v1", kind="ConfigMap")
         self.name = name
         self.namespace = namespace
         self.host = host
@@ -178,7 +177,7 @@ class ClusterServiceConfiguration:
             return self.csc
 
         try:
-            response = self.client.read_namespaced_config_map(self.name, self.namespace)
+            response = self.client.get(name=self.name, namespace=self.namespace)
         except Exception as exc:
             raise ClusterServiceConfigurationError(
                 "Unable to read {} ConfigMap in namespace {} with error: {!s}".format(
@@ -225,7 +224,7 @@ class ClusterServiceConfiguration:
         }
 
         try:
-            self.client.patch_namespaced_config_map(self.name, self.namespace, patch)
+            self.client.patch(name=self.name, namespace=self.namespace, body=patch)
         except Exception as exc:
             raise ClusterServiceConfigurationError(
                 "Unable to patch ConfigMap {} in namespace {} with error {!s}".format(

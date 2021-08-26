@@ -108,9 +108,7 @@ def get_pods(
     if label:
         kwargs["label_selector"] = label
 
-    if namespace:
-        return k8s_client.list_namespaced_pod(namespace=namespace, **kwargs).items
-    return k8s_client.list_pod_for_all_namespaces(**kwargs).items
+    return k8s_client.resources.get(api_version="v1", kind="Pod").get(**kwargs).items
 
 
 def check_pod_status(k8s_client, name, namespace="default", state="Running"):
@@ -123,7 +121,9 @@ def check_pod_status(k8s_client, name, namespace="default", state="Running"):
 
     def _check_pod_status():
         try:
-            pod = k8s_client.read_namespaced_pod(name=name, namespace=namespace)
+            pod = k8s_client.resources.get(api_version="v1", kind="Pod").get(
+                name=name, namespace=namespace
+            )
         except ApiException as err:
             if err.status == 404:
                 raise AssertionError("Pod not yet created")
@@ -142,9 +142,19 @@ def check_pod_status(k8s_client, name, namespace="default", state="Running"):
 class Client(abc.ABC):
     """Helper class for manipulation of K8s resources in tests."""
 
-    def __init__(self, k8s_client, kind, retry_count, retry_delay):
-        self._client = k8s_client
+    def __init__(
+        self,
+        k8s_client,
+        kind,
+        api_version="v1",
+        namespace=None,
+        retry_count=10,
+        retry_delay=2,
+    ):
         self._kind = kind
+        self._api_version = api_version
+        self._namespace = namespace
+        self._client = k8s_client.resources.get(api_version=api_version, kind=kind)
         self._count = retry_count
         self._delay = retry_delay
 
@@ -202,10 +212,7 @@ class Client(abc.ABC):
         def _check_deletion_marker():
             obj = self.get(name)
             assert obj is not None, "{} {} not found".format(self._kind, name)
-            if isinstance(obj, dict):
-                tstamp = obj["metadata"].get("deletionTimestamp")
-            else:
-                tstamp = obj.metadata.deletion_timestamp
+            tstamp = obj["metadata"].get("deletionTimestamp")
             assert tstamp is not None, "{} {} is not marked for deletion".format(
                 self._kind, name
             )
@@ -217,29 +224,26 @@ class Client(abc.ABC):
             name="checking that {} {} is marked for deletion".format(self._kind, name),
         )
 
-    @abc.abstractmethod
     def list(self):
         """Return a list of existing objects."""
-        pass
+        return self._client.get(namespace=self._namespace).items
 
-    @abc.abstractmethod
     def _create(self, body):
         """Create a new object using the given body."""
-        pass
+        return self._client.create(body=body, namespace=self._namespace)
 
-    @abc.abstractmethod
     def _get(self, name):
         """Return the object identified by `name`, raise if not found."""
-        pass
+        return self._client.get(name=name, namespace=self._namespace)
 
-    @abc.abstractmethod
     def _delete(self, name):
         """Delete the object identified by `name`.
 
         The object may be simply marked for deletion and stay around for a
         while.
         """
-        pass
+        body = kubernetes.client.V1DeleteOptions()
+        return self._client.delete(name=name, namespace=self._namespace, body=body)
 
 
 # }}}
@@ -248,53 +252,29 @@ class Client(abc.ABC):
 
 class VolumeClient(Client):
     def __init__(self, k8s_client, ssh_config):
-        super().__init__(k8s_client, kind="Volume", retry_count=30, retry_delay=4)
         self._ssh_config = ssh_config
-        self._group = "storage.metalk8s.scality.com"
-        self._version = "v1alpha1"
-        self._plural = "volumes"
-
-    def list(self):
-        return self._client.list_cluster_custom_object(
-            group=self._group, version=self._version, plural=self._plural
-        )["items"]
+        super().__init__(
+            k8s_client,
+            kind="Volume",
+            api_version="storage.metalk8s.scality.com/v1alpha1",
+            retry_count=30,
+            retry_delay=4,
+        )
 
     def _create(self, body):
         # Fixup the node name.
         body["spec"]["nodeName"] = utils.get_node_name(
             body["spec"]["nodeName"], self._ssh_config
         )
-        self._client.create_cluster_custom_object(
-            group=self._group, version=self._version, plural=self._plural, body=body
-        )
-
-    def _get(self, name):
-        return self._client.get_cluster_custom_object(
-            group=self._group, version=self._version, plural=self._plural, name=name
-        )
-
-    def _delete(self, name):
-        body = kubernetes.client.V1DeleteOptions()
-        self._client.delete_cluster_custom_object(
-            group=self._group,
-            version=self._version,
-            plural=self._plural,
-            name=name,
-            body=body,
-            grace_period_seconds=0,
-        )
+        self._client.create(body=body)
 
     def wait_for_status(self, name, status, wait_for_device_name=False):
         def _wait_for_status():
             volume = self.get(name)
             assert volume is not None, "Volume not found"
 
-            try:
-                actual_status = volume["status"]
-            except KeyError:
-                assert (
-                    status == "Unknown"
-                ), "Unexpected status: expected {}, got none".format(status)
+            actual_status = volume.get("status")
+            assert actual_status, f"Unexpected status expected {status}, got none"
 
             phase = self.compute_phase(actual_status)
             assert phase == status, "Unexpected status: expected {}, got {}".format(
@@ -303,7 +283,7 @@ class VolumeClient(Client):
 
             if wait_for_device_name:
                 assert (
-                    "deviceName" in actual_status
+                    "deviceName" in actual_status.keys()
                 ), "Volume status.deviceName has not been reconciled"
 
             return volume
@@ -345,24 +325,7 @@ class VolumeClient(Client):
 
 class PersistentVolumeClient(Client):
     def __init__(self, k8s_client):
-        super().__init__(
-            k8s_client, kind="PersistentVolume", retry_count=10, retry_delay=2
-        )
-
-    def list(self):
-        return self._client.list_persistent_volume().items
-
-    def _create(self, body):
-        self._client.create_persistent_volume(body=body)
-
-    def _get(self, name):
-        return self._client.read_persistent_volume(name)
-
-    def _delete(self, name):
-        body = kubernetes.client.V1DeleteOptions()
-        self._client.delete_persistent_volume(
-            name=name, body=body, grace_period_seconds=0
-        )
+        super().__init__(k8s_client, kind="PersistentVolume")
 
 
 # }}}
@@ -371,41 +334,18 @@ class PersistentVolumeClient(Client):
 
 class PersistentVolumeClaimClient(Client):
     def __init__(self, k8s_client, namespace="default"):
-        super().__init__(
-            k8s_client, kind="PersistentVolumeClaim", retry_count=10, retry_delay=2
-        )
-        self._namespace = namespace
+        super().__init__(k8s_client, kind="PersistentVolumeClaim", namespace=namespace)
 
     def create_for_volume(self, volume, pv):
         """Create a PVC matching the given volume."""
         assert pv is not None, "PersistentVolume {} not found".format(volume)
         body = PVC_TEMPLATE.format(
             volume_name=volume,
-            storage_class=pv.spec.storage_class_name,
-            access=pv.spec.access_modes[0],
+            storage_class=pv.spec.storageClassName,
+            access=pv.spec.accessModes[0],
             size=pv.spec.capacity["storage"],
         )
         self.create_from_yaml(body)
-
-    def list(self):
-        return self._client.list_namespaced_persistent_volume_claim(
-            namespace=self._namespace
-        ).items
-
-    def _create(self, body):
-        self._client.create_namespaced_persistent_volume_claim(
-            namespace=self._namespace, body=body
-        )
-
-    def _get(self, name):
-        return self._client.read_namespaced_persistent_volume_claim(
-            name=name, namespace=self._namespace
-        )
-
-    def _delete(self, name):
-        self._client.delete_namespaced_persistent_volume_claim(
-            name=name, namespace=self._namespace, grace_period_seconds=0
-        )
 
 
 # }}}
@@ -414,9 +354,9 @@ class PersistentVolumeClaimClient(Client):
 
 class PodClient(Client):
     def __init__(self, k8s_client, image, namespace="default"):
-        super().__init__(k8s_client, kind="Pod", retry_count=30, retry_delay=2)
+        super().__init__(k8s_client, kind="Pod", namespace=namespace, retry_count=30)
+        self._k8s_client = k8s_client
         self._image = image
-        self._namespace = namespace
 
     def create_with_volume(self, volume_name, command):
         """Create a pod using the specified volume."""
@@ -431,25 +371,15 @@ class PodClient(Client):
         # Wait for the Pod to be up and running.
         pod_name = "{}-pod".format(volume_name)
         utils.retry(
-            check_pod_status(self._client, pod_name),
+            check_pod_status(self._k8s_client, pod_name),
             times=self._count,
             wait=self._delay,
             name="wait for pod {}".format(pod_name),
         )
 
-    def list(self):
-        return self._client.list_namespaced_pod(namespace=self._namespace).items
-
-    def _create(self, body):
-        self._client.create_namespaced_pod(namespace=self._namespace, body=body)
-
-    def _get(self, name):
-        return self._client.read_namespaced_pod(name=name, namespace=self._namespace)
-
     def _delete(self, name):
-        self._client.delete_namespaced_pod(
-            name=name, namespace=self._namespace, grace_period_seconds=0
-        )
+        body = kubernetes.client.V1DeleteOptions(grace_period_seconds=0)
+        return self._client.delete(name=name, namespace=self._namespace, body=body)
 
 
 # }}}
@@ -458,19 +388,12 @@ class PodClient(Client):
 
 class StorageClassClient(Client):
     def __init__(self, k8s_client):
-        super().__init__(k8s_client, kind="StorageClass", retry_count=10, retry_delay=2)
-
-    def list(self):
-        return self._client.list_storage_class().items
-
-    def _create(self, body):
-        self._client.create_storage_class(body=body)
-
-    def _get(self, name):
-        return self._client.read_storage_class(name=name)
-
-    def _delete(self, name):
-        self._client.delete_storage_class(name=name, grace_period_seconds=0)
+        super().__init__(
+            k8s_client,
+            kind="StorageClass",
+            api_version="storage.k8s.io/v1",
+            retry_count=10,
+        )
 
 
 # }}}

@@ -21,7 +21,9 @@ def utils_pod(k8s_client, utils_image):
     manifest["spec"]["containers"][0]["image"] = utils_image
     pod_name = manifest["metadata"]["name"]
 
-    k8s_client.create_namespaced_pod(body=manifest, namespace="default")
+    pod_k8s_client = k8s_client.resources.get(api_version="v1", kind="Pod")
+
+    pod_k8s_client.create(body=manifest, namespace="default")
 
     # Wait for the Pod to be ready
     utils.retry(
@@ -36,7 +38,7 @@ def utils_pod(k8s_client, utils_image):
     yield pod_name
 
     # Clean-up resources
-    k8s_client.delete_namespaced_pod(
+    pod_k8s_client.delete(
         name=pod_name,
         namespace="default",
         body=client.V1DeleteOptions(

@@ -12,10 +12,8 @@ from tests import kube_utils, utils
 
 
 @pytest.fixture
-def volume_client(k8s_apiclient, ssh_config):
-    return kube_utils.VolumeClient(
-        CustomObjectsApi(api_client=k8s_apiclient), ssh_config
-    )
+def volume_client(k8s_client, ssh_config):
+    return kube_utils.VolumeClient(k8s_client, ssh_config)
 
 
 @pytest.fixture
@@ -34,8 +32,8 @@ def pod_client(k8s_client, utils_image):
 
 
 @pytest.fixture
-def sc_client(k8s_apiclient):
-    return kube_utils.StorageClassClient(StorageV1Api(api_client=k8s_apiclient))
+def sc_client(k8s_client):
+    return kube_utils.StorageClassClient(k8s_client)
 
 
 # }}}
@@ -119,7 +117,7 @@ def test_volume(volume_client, name):
 
 @given("we are on a multi node cluster")
 def check_multi_node(k8s_client):
-    nodes = k8s_client.list_node()
+    nodes = k8s_client.resources.get(api_version="v1", kind="Node").get()
 
     if len(nodes.items) == 1:
         pytest.skip("We skip single node cluster for this test")

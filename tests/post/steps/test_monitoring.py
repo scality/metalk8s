@@ -3,7 +3,6 @@ import pathlib
 import random
 import string
 
-import kubernetes.client
 from kubernetes.client.rest import ApiException
 
 import pytest
@@ -104,12 +103,14 @@ def check_grafana_api(grafana_api):
 
 
 @given(parsers.parse("the '{name}' APIService exists"))
-def apiservice_exists(host, name, k8s_apiclient, request):
-    client = kubernetes.client.ApiregistrationV1Api(api_client=k8s_apiclient)
+def apiservice_exists(host, name, k8s_client, request):
+    client = k8s_client.resources.get(
+        api_version="apiregistration.k8s.io/v1", kind="APIService"
+    )
 
     def _check_object_exists():
         try:
-            _ = client.read_api_service(name)
+            _ = client.get(name=name)
         except ApiException as err:
             if err.status == 404:
                 raise AssertionError("APIService not yet created")
@@ -156,12 +157,14 @@ def check_job_health(prometheus_api, job, namespace, health):
 
 
 @then(parsers.parse("the '{name}' APIService is {condition}"))
-def apiservice_condition_met(name, condition, k8s_apiclient):
-    client = kubernetes.client.ApiregistrationV1Api(api_client=k8s_apiclient)
+def apiservice_condition_met(name, condition, k8s_client):
+    client = k8s_client.resources.get(
+        api_version="apiregistration.k8s.io/v1", kind="APIService"
+    )
 
     def _check_object_exists():
         try:
-            svc = client.read_api_service(name)
+            svc = client.get(name=name)
 
             ok = False
             for cond in svc.status.conditions:
@@ -183,9 +186,9 @@ def apiservice_condition_met(name, condition, k8s_apiclient):
 @then(
     parsers.parse("a pod with label '{label}' in namespace '{namespace}' has metrics")
 )
-def pod_has_metrics(label, namespace, k8s_apiclient):
+def pod_has_metrics(label, namespace, k8s_client):
     def _pod_has_metrics():
-        result = k8s_apiclient.call_api(
+        result = k8s_client.client.call_api(
             resource_path="/apis/metrics.k8s.io/v1beta1/" "namespaces/{namespace}/pods",
             method="GET",
             response_type=object,
@@ -210,9 +213,9 @@ def pod_has_metrics(label, namespace, k8s_apiclient):
 
 
 @then(parsers.parse("a node with label '{label}' has metrics"))
-def node_has_metrics(label, k8s_apiclient):
+def node_has_metrics(label, k8s_client):
     def _node_has_metrics():
-        result = k8s_apiclient.call_api(
+        result = k8s_client.client.call_api(
             resource_path="/apis/metrics.k8s.io/v1beta1/nodes",
             method="GET",
             response_type=object,

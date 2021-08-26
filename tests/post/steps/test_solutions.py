@@ -7,8 +7,6 @@ import requests.exceptions
 import pytest
 from pytest_bdd import scenario, given, then, when, parsers
 
-import kubernetes.client
-from kubernetes.client import AppsV1Api
 from kubernetes.client.rest import ApiException
 
 from tests import kube_utils
@@ -53,7 +51,7 @@ def test_deploy_solution(host):
 
 
 @given(parsers.parse("no Solution '{name}' is imported"))
-def is_absent_solution(host, name, k8s_client):
+def is_absent_solution(host, name):
     with host.sudo():
         assert (
             name not in host.mount_point.get_mountpoints()
@@ -285,7 +283,7 @@ def read_solution_environment(k8s_client, name):
 
 
 @then(parsers.parse("we have no Solution '{name}' archive mounted"))
-def no_solution_mountpoint(host, name, k8s_client):
+def no_solution_mountpoint(host, name):
     with host.sudo():
         assert (
             name not in host.mount_point.get_mountpoints()
@@ -323,7 +321,11 @@ def no_solution_config(host):
 
 def get_configmap(k8s_client, name, namespace):
     try:
-        response = k8s_client.read_namespaced_config_map(name, namespace).to_dict()
+        response = (
+            k8s_client.resources.get(api_version="v1", kind="ConfigMap")
+            .get(name=name, namespace=namespace)
+            .to_dict()
+        )
     except Exception as exc:
         if isinstance(exc, ApiException) and exc.status == 404:
             return None
@@ -333,7 +335,7 @@ def get_configmap(k8s_client, name, namespace):
 
 def get_environment(k8s_client, name):
     try:
-        response = k8s_client.list_namespace(
+        response = k8s_client.resources.get(api_version="v1", kind="Namespace").get(
             label_selector="{}={}".format(ENVIRONMENT_LABEL, name)
         )
     except (ApiException) as exc:
