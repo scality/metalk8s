@@ -8,6 +8,7 @@ import {
   waitForLoadingToFinish,
   render,
   FAKE_CONTROL_PLANE_IP,
+  AllTheProviders,
 } from './__TEST__/util';
 import { initialize as initializeProm } from '../services/prometheus/api';
 import { initialize as initializeAM } from '../services/alertmanager/api';
@@ -72,6 +73,22 @@ jest.mock('../containers/AlertProvider', () => ({
 
 const server = setupServer(
   rest.get(
+    `http://${FAKE_CONTROL_PLANE_IP}:8443/api/prometheus/api/v1/query_range`,
+    (req, res, ctx) => {
+      const result = {
+        status: 'success',
+        data: {
+          resultType: 'matrix',
+          result: [{
+            values: []
+          }],
+        },
+      };
+      // return success status
+      return res(ctx.json(result));
+    },
+  ),
+  rest.get(
     `http://${FAKE_CONTROL_PLANE_IP}:8443/api/prometheus/api/v1/query`,
     (req, res, ctx) => {
       const result = {
@@ -119,6 +136,7 @@ describe('the system partition table', () => {
 
     const { getByLabelText } = render(
       <NodePartitionTable instanceIP={'192.168.1.29'} />,
+      { wrapper: AllTheProviders },
     );
     expect(getByLabelText('loading')).toBeInTheDocument();
 

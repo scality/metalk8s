@@ -1,7 +1,7 @@
 //@flow
 import React from 'react';
 import styled from 'styled-components';
-import { Button, SyncedCursorCharts } from '@scality/core-ui/dist/next';
+import { Button } from '@scality/core-ui/dist/next';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { useIntl } from 'react-intl';
 
@@ -16,6 +16,7 @@ import DashboardChartThroughput from './DashboardChartThroughput';
 import DashboardChartSystemLoad from './DashboardChartSystemLoad';
 import DashboardChartMemory from './DashboardChartMemory';
 import { useTypedSelector } from '../hooks';
+import { SyncedCursorCharts } from '@scality/core-ui/dist/components/vegachartv2/SyncedCursorCharts';
 
 const MetricsContainer = styled.div`
   padding: 2px ${padding.smaller};

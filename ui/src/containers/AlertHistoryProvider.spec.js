@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react-hooks';
 import { setupServer } from 'msw/node';
 import { rest } from 'msw';
-import { MetricsTimeSpanProvider } from '../hooks';
+import { MetricsTimeSpanProvider } from '@scality/core-ui/dist/next';
 import AlertHistoryProvider, { useHistoryAlerts } from './AlertHistoryProvider';
 import { FAKE_CONTROL_PLANE_IP, waitFor } from '../components/__TEST__/util';
 import { makeQueryRangeResult } from '../../cypress/support/mockUtils';
@@ -10,12 +10,15 @@ import { initialize as initializeAM } from '../services/alertmanager/api';
 import { initialize as initializeLoki } from '../services/loki/api';
 import { MemoryRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import StartTimeProvider from './StartTimeProvider';
 
 const wrapper = ({ children }) => (
   <MemoryRouter>
     <QueryClientProvider client={new QueryClient()}>
       <MetricsTimeSpanProvider>
-        <AlertHistoryProvider>{children}</AlertHistoryProvider>
+        <StartTimeProvider>
+          <AlertHistoryProvider>{children}</AlertHistoryProvider>
+        </StartTimeProvider>
       </MetricsTimeSpanProvider>
     </QueryClientProvider>
   </MemoryRouter>

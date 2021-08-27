@@ -176,5 +176,6 @@
   "core": "Noyau",
   "view_details": "Voir détails",
   "start": "Début",
-  "no_data_available_for_metrics": "Aucune donnée disponible pour afficher les Métriques"
+  "no_data_available_for_metrics": "Aucune donnée disponible pour afficher les Métriques",
+  "global_health_explanation": "L'indicateur de santé generale frounit une information sur le status de votre Platform pour une periode donnée.\nLe statut des Volumes et des Noeuds, celui du Reseau et des Services sont supervisés.\nUn cercle de couleur verte signifie que la Platform est en bonne santé.\nUn cercle de couleur orange signifie que la Platform est degradé mais pas en danger.\nUn cercle de couleur verte signifie que la Platform est degradée et en danger.\nSurvolez les sgements du graphique pour plus de details."
 }

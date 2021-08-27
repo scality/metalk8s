@@ -176,5 +176,6 @@
   "core": "Core",
   "view_details": "View details",
   "start": "Start",
-  "no_data_available_for_metrics": "No data available for displaying the Metrics"
+  "no_data_available_for_metrics": "No data available for displaying the Metrics",
+  "global_health_explanation": "The Global Health is the overall status of your Platform over a specific period.\nThe statuses of the Volumes and Nodes, the Network and the Services are monitored.\n(circle with StatusHealthy) OK, the Platform is healthy.\n(circle with StatusWarning) Warning, the Platform is degraded but not at risk.\n(circle with StatusCritical) Critical status, the Platform is degraded and at risk.\nHover or click on an alert segment on the Global Health bar for more details."
 }

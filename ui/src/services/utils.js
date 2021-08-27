@@ -15,6 +15,7 @@ import {
   STATUS_NONE,
   STATUS_HEALTH,
 } from '../constants';
+import { NAN_STRING } from '@scality/core-ui/dist/components/constants';
 
 export function prettifyBytes(bytes, decimals) {
   var units = ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
@@ -314,7 +315,7 @@ export function addMissingDataPoint(
   return newValues;
 }
 
-export function getNullSegments(points: [[number, number | null]]): {startsAt: number, endsAt?: number}[] {
+export function getNaNSegments(points: [[number, number | null]]): {startsAt: number, endsAt?: number}[] {
   if (!points) return [];
   const segments = points.map((point, index) => {
     if (index === points.length -1) {
@@ -322,7 +323,7 @@ export function getNullSegments(points: [[number, number | null]]): {startsAt: n
     }
     return {startsAt: point[0], endsAt: points[index + 1][0], value: point[1]};
   })
-  const nullSegments = segments.filter(segment => segment.value === null);
+  const nullSegments = segments.filter(segment => segment.value === NAN_STRING);
   return nullSegments.reduce((mergedNullSegments, segment) => {
     if (mergedNullSegments.length > 0) {
       const lastNullSegment = mergedNullSegments[mergedNullSegments.length - 1];

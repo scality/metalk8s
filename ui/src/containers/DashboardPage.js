@@ -8,7 +8,6 @@ import DashboardServices from '../components/DashboardServices';
 import DashboardGlobalHealth from '../components/DashboardGlobalHealth';
 import { padding, spacing } from '@scality/core-ui/dist/style/theme';
 import { Dropdown } from '@scality/core-ui';
-
 import {
   LAST_SEVEN_DAYS,
   LAST_TWENTY_FOUR_HOURS,
@@ -18,9 +17,7 @@ import {
 
 import { useURLQuery } from '../services/utils';
 import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
-import GlobalHealthBarComponent from '@scality/core-ui/dist/components/globalhealthbar/GlobalHealthBar.component';
-import { useHistoryAlerts } from './AlertHistoryProvider';
-import { getMetricsTimeValues } from '../services/prometheus/fetchMetrics';
+import { SyncedCursorCharts } from '@scality/core-ui/dist/components/vegachartv2/SyncedCursorCharts';
 
 const DashboardGrid = styled.div`
   display: grid;
@@ -93,13 +90,7 @@ const DashboardPage = (props: {}) => {
   const history = useHistory();
   const query = useURLQuery();
 
-  const [metricsTimeSpan] = useMetricsTimeSpan();
-
-  const { currentTimeISO, startingTimeISO } = getMetricsTimeValues(
-    metricsTimeSpan
-  );
-
-  const {alerts} = useHistoryAlerts({ alertname: ['PlatformAtRisk', 'PlatformDegraded'] });
+  const { label } = useMetricsTimeSpan();
 
   // Write the selected timespan in URL
   const writeUrlTimeSpan = (timespan: string) => {
@@ -122,11 +113,15 @@ const DashboardPage = (props: {}) => {
     onClick: () => {
       writeUrlTimeSpan(option);
     },
-    selected: queryTimeSpansCodes.find(timespan => timespan.duration === metricsTimeSpan)?.label === option,
+    selected:
+      queryTimeSpansCodes.find((item) => item.label === label)?.label ===
+      option,
   }));
 
   const metricsTimeSpanDropdownItems = metricsTimeSpanItems.filter(
-    (mTS) => mTS.label !== queryTimeSpansCodes.find(timespan => timespan.duration === metricsTimeSpan)?.label,
+    (mTS) =>
+      mTS.label !==
+      queryTimeSpansCodes.find((item) => item.label === label)?.label,
   );
 
   return (
@@ -135,29 +130,25 @@ const DashboardPage = (props: {}) => {
         <Dropdown
           icon={<i className="fas fa-calendar-minus" />}
           items={metricsTimeSpanDropdownItems}
-          text={queryTimeSpansCodes.find(timespan => timespan.duration === metricsTimeSpan)?.value}
+          text={label}
           size="small"
           data-cy="metrics_timespan_selection"
           variant="backgroundLevel1"
         />
       </div>
-      <div className="health">
-        <DashboardGlobalHealth />
-        Global Health
-        <GlobalHealthBarComponent
-          id={'platform_globalhealth'}
-          alerts={alerts || []}
-          start={startingTimeISO}
-          end={currentTimeISO} />
-      </div>
-      <div className="inventory">
-        <DashboardInventory />
-        <DashboardServices />
-      </div>
-      <div className="network">Network</div>
-      <div className="metrics">
-        <DashboardMetrics />
-      </div>
+      <SyncedCursorCharts>
+        <div className="health">
+          <DashboardGlobalHealth />
+        </div>
+        <div className="inventory">
+          <DashboardInventory />
+          <DashboardServices />
+        </div>
+        <div className="network">Network</div>
+        <div className="metrics">
+          <DashboardMetrics />
+        </div>
+      </SyncedCursorCharts>
     </DashboardGrid>
   );
 };

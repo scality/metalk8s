@@ -3,7 +3,7 @@ import { queryPromtheusMetrics } from '../prometheus/fetchMetrics';
 import type { NodesState } from '../../ducks/app/nodes';
 import { queryPrometheusRange } from '../prometheus/api';
 import { addMissingDataPoint } from '@scality/core-ui/dist/components/linetemporalchart/ChartUtil';
-import { getNullSegments } from '../utils';
+import { getNaNSegments } from '../utils';
 import { getAlertsLoki } from '../loki/api';
 
 export type TimeSpanProps = {
@@ -751,10 +751,11 @@ export const getAlertsHistoryQuery = ({
 }: TimeSpanProps): typeof useQuery => {
   const query = `sum(alertmanager_alerts)`;
 
+  
   const alertManagerDowntimePromise = queryPrometheusRange(
-    frequency,
     startingTimeISO,
     currentTimeISO,
+    frequency,
     encodeURIComponent(query),
   )?.then((resolve) => {
     if (resolve.error) {
@@ -762,11 +763,11 @@ export const getAlertsHistoryQuery = ({
     }
     const points = addMissingDataPoint(
       resolve.data.result[0].values,
-      new Date(startingTimeISO),
-      new Date(currentTimeISO) - new Date(startingTimeISO),
+      Date.parse(startingTimeISO) / 1000,
+      Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
       frequency,
     );
-    return getNullSegments(points).map((segment) => ({
+    return getNaNSegments(points).map((segment) => ({
       startsAt: new Date(segment.startsAt * 1000).toISOString(),
       endsAt: new Date(segment.endsAt * 1000).toISOString(),
       severity: 'unavailable',
@@ -803,9 +804,6 @@ export const getAlertsHistoryQuery = ({
         return rawAlerts;
       });
     },
-    initialData: [],
-    // refetch the alerts every 60 seconds
-    refetchInterval: 60000, // TODO manage this refresh interval gloabally ?
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   };

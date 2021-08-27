@@ -136,7 +136,7 @@
   },
   "jest": {
     "transformIgnorePatterns": [
-      "/node_modules/(?!vega-lite)"
+      "/node_modules/(?!vega-lite).*"
     ],
     "testMatch": [
       "<rootDir>/src/**/__tests__/**/*.[jt]s?(x)",

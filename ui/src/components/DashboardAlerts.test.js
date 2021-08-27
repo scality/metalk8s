@@ -1,5 +1,5 @@
 import { STATUS_CRITICAL, STATUS_WARNING } from '../constants';
-import { render } from './__TEST__/util';
+import { AllTheProviders, render } from './__TEST__/util';
 import DashboardAlerts from './DashboardAlerts';
 import { fireEvent } from '@testing-library/react';
 import { useAlerts } from '../containers/AlertProvider';
@@ -63,7 +63,7 @@ describe('the dashboard alerts sub-panel', () => {
     (useAlerts: any).mockImplementation(() => ({
       alerts: [...alertsWarning, ...alertsCritical],
     }));
-    const { getByTestId } = render(<DashboardAlerts />);
+    const { getByTestId } = render(<DashboardAlerts />, {wrapper: AllTheProviders});
 
     expect(getByTestId('all-alert-badge')).toHaveTextContent('3');
     expect(getByTestId('warning-alert-badge')).toHaveTextContent('2');
@@ -74,7 +74,7 @@ describe('the dashboard alerts sub-panel', () => {
   test('should display no active alerts message if there is no alert', () => {
     (useAlerts: any).mockImplementation(() => ({ alerts: [] }));
     const { queryByTestId, getByTestId, getByText } = render(
-      <DashboardAlerts />,
+      <DashboardAlerts />, {wrapper: AllTheProviders}
     );
 
     expect(getByText('No active alerts')).toBeInTheDocument();
@@ -88,7 +88,7 @@ describe('the dashboard alerts sub-panel', () => {
     (useAlerts: any).mockImplementation(() => ({
       alerts: [...alertsWarning, ...alertsCritical],
     }));
-    const { getByTestId } = render(<DashboardAlerts />);
+    const { getByTestId } = render(<DashboardAlerts />, {wrapper: AllTheProviders});
 
     const viewAllLink = getByTestId('view-all-link');
     fireEvent.click(viewAllLink);

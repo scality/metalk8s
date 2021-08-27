@@ -1,15 +1,16 @@
 //@flow
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useRef } from 'react';
 import { useQuery } from 'react-query';
 import { filterAlerts } from '../services/alertUtils';
 import type { FilterLabels } from '../services/alertUtils';
-import { useMetricsTimeSpan } from '../hooks';
 import { useStartingTimeStamp } from './StartTimeProvider';
 import { getAlertsHistoryQuery } from '../services/platformlibrary/metrics';
+import { useMetricsTimeSpan } from '@scality/core-ui/dist/components/linetemporalchart/MetricTimespanProvider';
 
 const AlertHistoryContext = createContext<null>(null);
 
 export function useHistoryAlerts(filters?: FilterLabels) {
+  const previousAlertsRef = useRef([]);
   const query = useContext(AlertHistoryContext);
   if (!query) {
     throw new Error(
@@ -17,12 +18,11 @@ export function useHistoryAlerts(filters?: FilterLabels) {
     );
   } else if (query.status === 'success') {
     const alerts = filterAlerts(query.data, filters);
-
-    const newQuery = { ...query, alerts };
-    delete newQuery.data;
-    return newQuery;
+    previousAlertsRef.current = alerts;
   }
-  return query;
+  const newQuery = { ...query, alerts: previousAlertsRef.current };
+  delete newQuery.data;
+  return newQuery;
 }
 
 const AlertHistoryProvider = ({ children }: any) => {
