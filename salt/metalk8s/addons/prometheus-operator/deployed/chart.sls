@@ -57731,11 +57731,10 @@ spec:
         key: node-role.kubernetes.io/infra
         operator: Exists
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    kubernetes.io/ingress.class: nginx-control-plane
     nginx.ingress.kubernetes.io/rewrite-target: /$2
   labels:
     app.kubernetes.io/instance: prometheus-operator
@@ -57748,14 +57747,18 @@ metadata:
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
 spec:
+  ingressClassName: nginx-control-plane
   rules:
   - host: null
     http:
       paths:
       - backend:
-          serviceName: prometheus-operator-grafana
-          servicePort: 80
+          service:
+            name: prometheus-operator-grafana
+            port:
+              number: 80
         path: /grafana(/|$)(.*)
+        pathType: Prefix
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: Alertmanager
