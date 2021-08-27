@@ -158,8 +158,7 @@ def check_go_codegen() -> Optional[doit.exceptions.TaskError]:
     cwd = constants.STORAGE_OPERATOR_ROOT
     git_diff = [config.ExtCommand.GIT.value, "diff"]
     base = subprocess.check_output(git_diff)
-    for target in ("k8s", "crds"):
-        cmd = [config.ExtCommand.OPERATOR_SDK.value, "generate", target]
+    for cmd in constants.OPERATOR_SDK_GENERATE_CMDS:
         subprocess.check_call(cmd, cwd=cwd)
     current = subprocess.check_output(git_diff)
     # If the diff changed after running the code generation that means that

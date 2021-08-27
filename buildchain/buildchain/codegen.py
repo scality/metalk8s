@@ -9,7 +9,6 @@ from typing import Callable, Iterator, Tuple
 
 import doit  # type: ignore
 
-from buildchain import config
 from buildchain import constants
 from buildchain import types
 from buildchain import utils
@@ -25,11 +24,8 @@ def codegen_go() -> types.TaskDict:
     """Generate Go code using operator-sdk."""
     cwd = constants.STORAGE_OPERATOR_ROOT
     actions = []
-    for target in ("k8s", "crds"):
-        cmd = " ".join(
-            map(shlex.quote, [config.ExtCommand.OPERATOR_SDK.value, "generate", target])
-        )
-        actions.append(doit.action.CmdAction(cmd, cwd=cwd))
+    for cmd in constants.OPERATOR_SDK_GENERATE_CMDS:
+        actions.append(doit.action.CmdAction(" ".join(map(shlex.quote, cmd)), cwd=cwd))
 
     return {
         "name": "go",

@@ -66,9 +66,11 @@ type VolumeSpec struct {
 }
 
 // Describes the PersistentVolume that will be created to back the Volume.
+// +k8s:openapi-gen=true
 type PersistentVolumeTemplateSpec struct {
 	// Standard object's metadata.
 	// +optional
+	// +kubebuilder:pruning:PreserveUnknownFields
 	Metadata metav1.ObjectMeta `json:"metadata,omitempty"`
 	// Specification of the Persistent Volume.
 	// +optional
