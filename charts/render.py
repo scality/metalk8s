@@ -328,6 +328,13 @@ def main():
     parser.add_argument("path", help="Path to the chart directory")
     args = parser.parse_args()
 
+    api_versions = [
+        # Used by APIService (available since Kubernetes 1.10)
+        "apiregistration.k8s.io/v1",
+        # Available since Kubernetes 1.19
+        "networking.k8s.io/v1/Ingress",
+    ]
+
     command = [
         "helm",
         "template",
@@ -337,12 +344,11 @@ def main():
         "--values",
         args.values,
         "--include-crds",
-        "--api-versions",
-        # Used by APIService (available since Kubernetes 1.10)
-        "apiregistration.k8s.io/v1",
         args.path,
     ]
 
+    for api in api_versions:
+        command.extend(["--api-versions", api])
     if args.kube_version:
         command.extend(["--kube-version", args.kube_version])
 
