@@ -1,98 +1,75 @@
-import React, { useCallback } from 'react';
-import { LineChart, Loader } from '@scality/core-ui';
-import { getTooltipConfig, yAxisThroughput } from './LinechartSpec';
-import { colorRange, GraphTitle, GraphWrapper } from './DashboardMetrics';
-import { formatNodesThroughputPromRangeForChart } from '../services/graphUtils';
-import { useQuery } from 'react-query';
+import React, { useRef, useEffect } from 'react';
 import {
-  queryThroughputRead,
-  queryThroughputWrite,
+  LineTemporalChart,
+  useMetricsTimeSpan,
+} from '@scality/core-ui/dist/next';
+import { useQuery, UseQueryOptions } from 'react-query';
+import { GraphWrapper } from './DashboardMetrics';
+import { formatNodesThroughputPromRangeForChart } from '../services/graphUtils';
+import {
+  queryThroughputReadAllInstances,
+  queryThroughputWriteAllInstances,
 } from '../services/prometheus/fetchMetrics';
 import { useNodeAddressesSelector, useNodes } from '../hooks';
-import type { DashboardChartProps } from '../containers/DashboardPage';
+import { useStartingTimeStamp } from '../containers/StartTimeProvider';
 
-const DashboardChartThroughput = (props: DashboardChartProps) => {
+const DashboardChartThroughput = (props: UseQueryOptions) => {
   const nodeAddresses = useNodeAddressesSelector(useNodes());
-
-  const getThroughputColorRange = (size: number): Array<string> => {
-    const res = [];
-
-    for (let i = 0; i < size; i++) {
-      if (colorRange[i]) {
-        // Adding twice the same color to have the same line color for both read and write
-        res.push(colorRange[i]);
-        res.push(colorRange[i]);
-      }
-    }
-    return res;
-  };
-
-  const tooltipConfig = getTooltipConfig(
-    ((nodes) => {
-      let res = [];
-      nodes.forEach((element) => {
-        res.push({
-          field: `${element.name.replace('.', '\\.')}-read`,
-          type: 'quantitative',
-          title: `${element.name}-read`,
-          formatType: 'throughputFormatter',
-        });
-        res.push({
-          field: `${element.name.replace('.', '\\.')}-write`,
-          type: 'quantitative',
-          title: `${element.name}-write`,
-          format: '.2f',
-        });
-      });
-      return res;
-    })(nodeAddresses),
-  );
-
-  const color = {
-    field: 'type',
-    type: 'nominal',
-    scale: {
-      range: getThroughputColorRange(nodeAddresses.length),
-    },
-    legend: null,
-  };
-
+  const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
+  const { sampleFrequency } = useMetricsTimeSpan();
+  const startTimeRef = useRef(startingTimeISO);
+  const chartStartTimeRef = useRef(startingTimeISO); //IMPORTANT: the ref of the previous start time
+  const seriesRef = useRef();
   // Passing nodes table as a react-queries identifier so if a node is added/removed the data are refreshed
   // Also it makes the data to auto-refresh based on the node refresh timeout that is already implemented
-  const throughputQuery = useQuery(
-    ['throughputQuery', nodeAddresses, props.metricsTimeSpan],
-    useCallback(
-      () =>
-        Promise.all([
-          queryThroughputRead(props.metricsTimeSpan),
-          queryThroughputWrite(props.metricsTimeSpan),
-        ]).then((result) =>
-          formatNodesThroughputPromRangeForChart(result, nodeAddresses),
+  const throughputQuery = useQuery({
+    queryKey: ['throughputQuery', nodeAddresses, startingTimeISO],
+    queryFn: () => {
+      startTimeRef.current = startingTimeISO;
+      return Promise.all([
+        queryThroughputReadAllInstances(
+          sampleFrequency,
+          startingTimeISO,
+          currentTimeISO,
         ),
-      [nodeAddresses, props.metricsTimeSpan],
-    ),
-    props.reactQueryOptions,
-  );
+        queryThroughputWriteAllInstances(
+          sampleFrequency,
+          startingTimeISO,
+          currentTimeISO,
+        ),
+      ]).then((result) => {
+        return formatNodesThroughputPromRangeForChart(result, nodeAddresses);
+      });
+    },
+    ...props.reactQueryOptions,
+  });
+  const isthroughtDataLoading = throughputQuery.status === 'loading';
+
+  useEffect(() => {
+    if (!isthroughtDataLoading) {
+      chartStartTimeRef.current = startTimeRef.current;
+      seriesRef.current = throughputQuery.data;
+    }
+  }, [isthroughtDataLoading, nodeAddresses, throughputQuery.data]);
 
   return (
     <GraphWrapper>
-      <GraphTitle>
-        <div>Throughput (MB/s)</div>
-        {throughputQuery.isLoading && <Loader />}
-      </GraphTitle>
-
-      <LineChart
-        id={'dashboard_throughput_id'}
-        data={throughputQuery.data}
-        xAxis={props.xAxis}
-        yAxis={yAxisThroughput}
-        color={color}
-        width={props.graphWidth - 35}
-        height={props.graphHeight}
-        lineConfig={props.lineConfig}
-        tooltip={true}
-        tooltipConfig={tooltipConfig}
-        tooltipTheme={'custom'}
+      <LineTemporalChart
+        series={seriesRef.current || []}
+        title="Disk Throughput"
+        height={150}
+        yAxisType={'symmetrical'}
+        unitRange={[
+          { threshold: 0, label: 'B/s' },
+          { threshold: 1024, label: 'KiB/s' },
+          { threshold: 1024 * 1024, label: 'MiB/s' },
+          { threshold: 1024 * 1024 * 1024, label: 'GiB/s' },
+          { threshold: 1024 * 1024 * 1024 * 1024, label: 'TiB/s' },
+        ]}
+        startingTimeStamp={Date.parse(chartStartTimeRef.current) / 1000}
+        isLegendHided={false}
+        yAxisTitle={'write(+) / read(-)'}
+        isLoading={isthroughtDataLoading}
       />
     </GraphWrapper>
   );

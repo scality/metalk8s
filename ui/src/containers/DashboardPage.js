@@ -1,7 +1,6 @@
 //@flow
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useHistory } from 'react-router';
-import { UseQueryOptions } from 'react-query';
 import styled from 'styled-components';
 import DashboardMetrics from '../components/DashboardMetrics';
 import DashboardInventory from '../components/DashboardInventory';
@@ -18,6 +17,7 @@ import {
 } from '../constants';
 
 import { useURLQuery } from '../services/utils';
+import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 
 const DashboardGrid = styled.div`
   display: grid;
@@ -86,35 +86,10 @@ const DashboardGrid = styled.div`
   }
 `;
 
-export type DashboardChartProps = {
-  metricsTimeSpan: string,
-  xAxis: Object,
-  perNodeColor: Object,
-  graphWidth: number,
-  graphHeight: number,
-  lineConfig: Object,
-  perNodeTooltip: Object,
-  reactQueryOptions: UseQueryOptions,
-};
-
 const DashboardPage = (props: {}) => {
   const history = useHistory();
   const query = useURLQuery();
-  const queryTimeSpan = query.get('from');
-  const [metricsTimeSpan, setMetricsTimeSpan] = useState(
-    LAST_TWENTY_FOUR_HOURS,
-  );
-
-  // Sync url timespan to local timespan
-  useEffect(() => {
-    if (queryTimeSpan) {
-      let formatted = queryTimeSpansCodes.find(
-        (item) => item.label === queryTimeSpan,
-      );
-      if (formatted && formatted.value) setMetricsTimeSpan(formatted.value);
-    }
-  }, [queryTimeSpan]);
-
+  const { metricsTimeSpan } = useMetricsTimeSpan();
   // Write the selected timespan in URL
   const writeUrlTimeSpan = (timespan: string) => {
     let formatted = queryTimeSpansCodes.find((item) => item.value === timespan);
@@ -135,13 +110,19 @@ const DashboardPage = (props: {}) => {
     'data-cy': option,
     onClick: () => {
       writeUrlTimeSpan(option);
-      setMetricsTimeSpan(option);
     },
-    selected: metricsTimeSpan === option,
+    selected:
+      queryTimeSpansCodes.find(
+        (timespan) => timespan.duration === metricsTimeSpan,
+      )?.label === option,
   }));
 
   const metricsTimeSpanDropdownItems = metricsTimeSpanItems.filter(
-    (mTS) => mTS.label !== metricsTimeSpan,
+    (mTS) =>
+      mTS.label !==
+      queryTimeSpansCodes.find(
+        (timespan) => timespan.duration === metricsTimeSpan,
+      )?.label,
   );
 
   return (
@@ -150,7 +131,11 @@ const DashboardPage = (props: {}) => {
         <Dropdown
           icon={<i className="fas fa-calendar-minus" />}
           items={metricsTimeSpanDropdownItems}
-          text={metricsTimeSpan}
+          text={
+            queryTimeSpansCodes.find(
+              (timespan) => timespan.duration === metricsTimeSpan,
+            )?.value
+          }
           size="small"
           data-cy="metrics_timespan_selection"
           variant="backgroundLevel1"

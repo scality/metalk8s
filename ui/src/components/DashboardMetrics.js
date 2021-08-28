@@ -1,38 +1,31 @@
+//@flow
 import React from 'react';
-import styled, { useTheme } from 'styled-components';
-import { useQuery } from 'react-query';
-import { Button } from '@scality/core-ui/dist/next';
+import styled from 'styled-components';
+import { useQuery, UseQueryOptions } from 'react-query';
+import { Button, SyncedCursorCharts } from '@scality/core-ui/dist/next';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { lighten, darken } from 'polished';
 import { useIntl } from 'react-intl';
 
 import { fetchConfig } from '../services/api';
 import {
-  useNodes,
-  useMetricsTimeSpan,
-  useNodeAddressesSelector,
-} from '../hooks';
-import {
   lineColor1,
   lineColor2,
   lineColor3,
   lineColor4,
-  SAMPLE_DURATION_LAST_SEVEN_DAYS,
   REFRESH_METRICS_GRAPH,
   GRAFANA_DASHBOARDS,
 } from '../constants';
-import { getTooltipConfig } from './LinechartSpec';
 import {
   GraphTitle as GraphTitleCommon,
   GraphWrapper as GraphWrapperCommon,
   PageSubtitle,
 } from '../components/style/CommonLayoutStyle';
-import { useDynamicChartSize } from '../services/utils';
 import { expressionFunction } from 'vega';
+import DashboardChartCpuUsage from './DashboardChartCpuUsage';
 import DashboardChartSystemLoad from './DashboardChartSystemLoad';
 import DashboardChartThroughput from './DashboardChartThroughput';
 import DashboardChartMemory from './DashboardChartMemory';
-import DashboardChartCpuUsage from './DashboardChartCpuUsage';
 
 // Custom formatter to display negative value as an absolute value in throughput chart
 expressionFunction('throughputFormatter', function (datum) {
@@ -59,6 +52,7 @@ export const GraphWrapper = styled(GraphWrapperCommon)`
 export const GraphTitle = styled(GraphTitleCommon)`
   padding-top: 0px;
   padding-left: ${padding.small};
+  background-color: yellow;
 `;
 
 const GraphsWrapper = styled.div`
@@ -92,71 +86,16 @@ export const colorRange = [
 ];
 
 const DashboardMetrics = () => {
-  const theme = useTheme();
-  const nodeAddresses = useNodeAddressesSelector(useNodes());
-  const [metricsTimeSpan] = useMetricsTimeSpan();
   const intl = useIntl();
-  // Get dynamic chart size for 1 column, 4 rows
-  const [graphWidth, graphHeight] = useDynamicChartSize(
-    'dashboard-metrics-container',
-    1,
-    4,
-  );
-
-  const xAxis = {
-    field: 'date',
-    type: 'temporal',
-    axis: {
-      // Refer to all the available time format: https://github.com/d3/d3-time-format#locale_format
-      format:
-        metricsTimeSpan < SAMPLE_DURATION_LAST_SEVEN_DAYS
-          ? '%m/%d %H:%M'
-          : '%m/%d',
-      ticks: true,
-      tickCount: 4,
-      labelColor: theme.textSecondary,
-      labelFlush: 20,
-    },
-    title: null,
-  };
-
-  const perNodeColor = {
-    field: 'type',
-    type: 'nominal',
-    scale: {
-      range: colorRange,
-    },
-    legend: null,
-  };
-
-  const perNodeTooltip = getTooltipConfig(
-    nodeAddresses.map((node) => ({
-      field: node.name.replace('.', '\\.'),
-      type: 'quantitative',
-      title: node.name,
-      format: '.2f',
-    })),
-  );
-
-  const lineConfig = { strokeWidth: 1.5 };
 
   // App config, used to generated Advanced metrics button link
   const configQuery = useQuery('appConfig', fetchConfig);
 
-  const chartsConfigProps = {
-    metricsTimeSpan: metricsTimeSpan,
-    xAxis: xAxis,
-    perNodeColor: perNodeColor,
-    graphWidth: graphWidth,
-    graphHeight: graphHeight,
-    lineConfig: lineConfig,
-    perNodeTooltip: perNodeTooltip,
-    reactQueryOptions: {
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-      refetchInterval: REFRESH_METRICS_GRAPH,
-      refetchIntervalInBackground: true,
-    },
+  const reactQueryOptions: UseQueryOptions = {
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchInterval: REFRESH_METRICS_GRAPH,
+    refetchIntervalInBackground: true,
   };
 
   return (
@@ -179,14 +118,12 @@ const DashboardMetrics = () => {
         )}
       </PanelActions>
       <GraphsWrapper>
-        {graphWidth !== 0 && (
-          <>
-            <DashboardChartCpuUsage {...chartsConfigProps} />
-            <DashboardChartMemory {...chartsConfigProps} />
-            <DashboardChartThroughput {...chartsConfigProps} />
-            <DashboardChartSystemLoad {...chartsConfigProps} />
-          </>
-        )}
+        <SyncedCursorCharts>
+          <DashboardChartCpuUsage reactQueryOptions={reactQueryOptions} />
+          <DashboardChartMemory reactQueryOptions={reactQueryOptions} />
+          <DashboardChartSystemLoad reactQueryOptions={reactQueryOptions} />
+          <DashboardChartThroughput reactQueryOptions={reactQueryOptions} />
+        </SyncedCursorCharts>
       </GraphsWrapper>
     </MetricsContainer>
   );

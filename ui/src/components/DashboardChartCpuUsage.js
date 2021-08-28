@@ -1,24 +1,35 @@
-import React from 'react';
-import { LineChart, Loader } from '@scality/core-ui';
-import { yAxisUsage } from './LinechartSpec';
-import { GraphTitle, GraphWrapper } from './DashboardMetrics';
+import React, { useRef, useEffect } from 'react';
+import { LineTemporalChart } from '@scality/core-ui/dist/next';
+import { GraphWrapper } from './DashboardMetrics';
 import { formatNodesPromRangeForChart } from '../services/graphUtils';
-import { useQueries } from 'react-query';
+import { useQueries, UseQueryOptions } from 'react-query';
 import { queryNodeCPUMetrics } from '../services/prometheus/fetchMetrics';
 import { useNodeAddressesSelector, useNodes } from '../hooks';
-import type { DashboardChartProps } from '../containers/DashboardPage';
+import { useStartingTimeStamp } from '../containers/StartTimeProvider';
+import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 
-const DashboardChartCpuUsage = (props: DashboardChartProps) => {
+const DashboardChartCpuUsage = (props: UseQueryOptions) => {
   const nodeAddresses = useNodeAddressesSelector(useNodes());
-
+  const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
+  const startTimeRef = useRef(startingTimeISO);
+  const chartStartTimeRef = useRef(startingTimeISO); //IMPORTANT: the ref of the previous start time
+  const { sampleFrequency } = useMetricsTimeSpan();
+  const seriesRef = useRef();
   // Passing nodes table as a react-queries identifier so if a node is added/removed the data are refreshed
   // Also it makes the data to auto-refresh based on the node refresh timeout that is already implemented
   const cpuDataQuery = useQueries(
     nodeAddresses.map((node) => {
       return {
-        queryKey: ['nodeMetricsCPU', node.name, props.metricsTimeSpan],
-        queryFn: () =>
-          queryNodeCPUMetrics(node.internalIP, props.metricsTimeSpan),
+        queryKey: ['nodeMetricsCPU', node.name, startingTimeISO],
+        queryFn: () => {
+          startTimeRef.current = startingTimeISO;
+          return queryNodeCPUMetrics(
+            node.internalIP,
+            sampleFrequency,
+            startingTimeISO,
+            currentTimeISO,
+          );
+        },
         ...props.reactQueryOptions,
       };
     }),
@@ -26,30 +37,28 @@ const DashboardChartCpuUsage = (props: DashboardChartProps) => {
 
   const isNodeLoading = cpuDataQuery.some((query) => query.isLoading);
 
+  useEffect(() => {
+    if (!isNodeLoading) {
+      chartStartTimeRef.current = startTimeRef.current;
+      seriesRef.current = formatNodesPromRangeForChart(
+        cpuDataQuery.map((query) => query.data),
+        nodeAddresses,
+      );
+    }
+  }, [isNodeLoading, nodeAddresses]);
+
   return (
     <GraphWrapper>
-      <GraphTitle>
-        <div>CPU Usage (%)</div>
-        {isNodeLoading && <Loader />}
-      </GraphTitle>
-      <LineChart
-        id={'dashboard_cpu_id'}
-        data={formatNodesPromRangeForChart(
-          cpuDataQuery.map((query) => query.data),
-          nodeAddresses,
-        )}
-        xAxis={props.xAxis}
-        yAxis={yAxisUsage}
-        color={props.perNodeColor}
-        width={props.graphWidth - 35}
-        height={props.graphHeight}
-        lineConfig={props.lineConfig}
-        tooltip={true}
-        tooltipConfig={props.perNodeTooltip}
-        tooltipTheme={'custom'}
+      <LineTemporalChart
+        series={seriesRef.current || []}
+        height={80}
+        title="CPU Usage"
+        startingTimeStamp={Date.parse(chartStartTimeRef.current) / 1000}
+        yAxisType={'percentage'}
+        isLegendHided={true}
+        isLoading={isNodeLoading}
       />
     </GraphWrapper>
   );
 };
-
 export default DashboardChartCpuUsage;
