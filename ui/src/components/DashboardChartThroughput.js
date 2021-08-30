@@ -43,14 +43,15 @@ const DashboardChartThroughput = (props: UseQueryOptions) => {
     },
     ...props.reactQueryOptions,
   });
-  const isthroughtDataLoading = throughputQuery.status === 'loading';
+
+  const isDataLoading = throughputQuery.status === 'loading';
 
   useEffect(() => {
-    if (!isthroughtDataLoading) {
+    if (!isDataLoading) {
       chartStartTimeRef.current = startTimeRef.current;
       seriesRef.current = throughputQuery.data;
     }
-  }, [isthroughtDataLoading, nodeAddresses, throughputQuery.data]);
+  }, [isDataLoading, nodeAddresses, throughputQuery.data]);
 
   return (
     <GraphWrapper>
@@ -69,7 +70,7 @@ const DashboardChartThroughput = (props: UseQueryOptions) => {
         startingTimeStamp={Date.parse(chartStartTimeRef.current) / 1000}
         isLegendHided={false}
         yAxisTitle={'write(+) / read(-)'}
-        isLoading={isthroughtDataLoading}
+        isLoading={isDataLoading}
       />
     </GraphWrapper>
   );

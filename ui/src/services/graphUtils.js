@@ -73,6 +73,9 @@ export const formatNodesThroughputPromRangeForChart = (
         getTooltipLabel: (metricPrefix: 'read', resource: node.name) => {
           return `${resource}-${metricPrefix}`;
         },
+        getLegendLabel: (_, resource: node.name) => {
+          return node.name;
+        },
       };
     });
 
@@ -88,6 +91,9 @@ export const formatNodesThroughputPromRangeForChart = (
         resource: node.name,
         getTooltipLabel: (metricPrefix: 'read', resource: node.name) => {
           return `${resource}-${metricPrefix}`;
+        },
+        getLegendLabel: (_, resource: node.name) => {
+          return node.name;
         },
       };
     });
