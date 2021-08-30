@@ -6,6 +6,9 @@ controller:
   hostPort:
     enabled: true
 
+  ingressClassResource:
+    default: true
+
   admissionWebhooks:
     enabled: false
 

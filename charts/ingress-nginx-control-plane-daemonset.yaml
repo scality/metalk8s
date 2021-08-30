@@ -7,7 +7,9 @@ controller:
 
   electionID: ingress-control-plane-controller-leader
 
-  ingressClass: nginx-control-plane
+  ingressClassResource:
+    name: nginx-control-plane
+    controllerValue: "k8s.io/ingress-nginx-control-plane"
 
   admissionWebhooks:
     enabled: false

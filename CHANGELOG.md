@@ -1,7 +1,12 @@
 # CHANGELOG
 ## Release 2.11.0 (in development)
 ### Enhancements
+
 - Bump `containerd` version to 1.4.8 (PR [#3466](https://github.com/scality/metalk8s/pull/3466)).
+
+- Bump ingress-nginx chart version to 4.0.1
+  nginx-ingress-controller image has been bumped accordingly to v1.0.0
+  (PR[#3518](https://github.com/scality/metalk8s/pull/3518))
 
 - [#3487](https://github.com/scality/metalk8s/issues/3487) - Make Salt
   Kubernetes execution module more flexible relying on `DynamicClient`
