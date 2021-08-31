@@ -45,6 +45,7 @@ const DashboardChartCpuUsage = (props: UseQueryOptions) => {
         nodeAddresses,
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNodeLoading, nodeAddresses]);
 
   return (

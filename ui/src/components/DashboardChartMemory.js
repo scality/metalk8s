@@ -48,6 +48,7 @@ const DashboardChartMemory = (props: UseQueryOptions) => {
       );
       chartStartTimeRef.current = startTimeRef.current;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDataLoading, nodeAddresses]);
 
   return (

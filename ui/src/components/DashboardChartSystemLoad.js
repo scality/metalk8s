@@ -49,6 +49,7 @@ const DashboardChartSystemLoad = (props: UseQueryOptions) => {
         nodeAddresses,
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDataLoading, nodeAddresses]);
 
   return (

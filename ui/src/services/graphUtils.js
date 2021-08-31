@@ -34,7 +34,7 @@ export const formatNodesPromRangeForChart = (
     const prometheusData = matrixResult?.values; //[number,string][] => {number,string}[] // no need any more
 
     return {
-      data: prometheusData,
+      data: prometheusData || [],
       resource: node.name,
       getTooltipLabel: (_, resource: node.name) => {
         return node.name;
@@ -68,7 +68,7 @@ export const formatNodesThroughputPromRangeForChart = (
 
       return {
         metricPrefix: 'read',
-        data: prometheusReadData,
+        data: prometheusReadData || [],
         resource: node.name,
         getTooltipLabel: (metricPrefix: 'read', resource: node.name) => {
           return `${resource}-${metricPrefix}`;
@@ -87,7 +87,7 @@ export const formatNodesThroughputPromRangeForChart = (
       const prometheusWriteData = nodeWriteData?.values;
       return {
         metricPrefix: 'write',
-        data: prometheusWriteData,
+        data: prometheusWriteData || [],
         resource: node.name,
         getTooltipLabel: (metricPrefix: 'read', resource: node.name) => {
           return `${resource}-${metricPrefix}`;
