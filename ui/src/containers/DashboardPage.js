@@ -89,7 +89,7 @@ const DashboardGrid = styled.div`
 const DashboardPage = (props: {}) => {
   const history = useHistory();
   const query = useURLQuery();
-  const { metricsTimeSpan } = useMetricsTimeSpan();
+  const { value, label } = useMetricsTimeSpan();
   // Write the selected timespan in URL
   const writeUrlTimeSpan = (timespan: string) => {
     let formatted = queryTimeSpansCodes.find((item) => item.value === timespan);
@@ -106,23 +106,16 @@ const DashboardPage = (props: {}) => {
     LAST_TWENTY_FOUR_HOURS,
     LAST_ONE_HOUR,
   ].map((option) => ({
-    label: option,
+    label: option, // is the `value` field in queryTimeSpanCode
     'data-cy': option,
     onClick: () => {
       writeUrlTimeSpan(option);
     },
-    selected:
-      queryTimeSpansCodes.find(
-        (timespan) => timespan.duration === metricsTimeSpan,
-      )?.label === option,
+    selected: label === option,
   }));
 
   const metricsTimeSpanDropdownItems = metricsTimeSpanItems.filter(
-    (mTS) =>
-      mTS.label !==
-      queryTimeSpansCodes.find(
-        (timespan) => timespan.duration === metricsTimeSpan,
-      )?.label,
+    (mTS) => mTS.label !== value,
   );
 
   return (
@@ -131,11 +124,7 @@ const DashboardPage = (props: {}) => {
         <Dropdown
           icon={<i className="fas fa-calendar-minus" />}
           items={metricsTimeSpanDropdownItems}
-          text={
-            queryTimeSpansCodes.find(
-              (timespan) => timespan.duration === metricsTimeSpan,
-            )?.value
-          }
+          text={value}
           size="small"
           data-cy="metrics_timespan_selection"
           variant="backgroundLevel1"
