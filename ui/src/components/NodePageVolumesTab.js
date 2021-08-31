@@ -38,7 +38,7 @@ const NodePageVolumesTab = (props) => {
   const { name } = useParams();
   const dispatch = useDispatch();
 
-  const volumeListData = useVolumesWithAlerts();
+  const volumeListData = useVolumesWithAlerts(name);
 
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
   useRefreshEffect(
