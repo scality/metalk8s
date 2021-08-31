@@ -346,6 +346,7 @@ def main():
         "--values",
         args.values,
         "--include-crds",
+        "--skip-tests",
         args.path,
     ]
 
