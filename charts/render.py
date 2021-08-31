@@ -333,6 +333,8 @@ def main():
         "apiregistration.k8s.io/v1",
         # Available since Kubernetes 1.19
         "networking.k8s.io/v1/Ingress",
+        # Used by ServiceMonitor and other monitoring objects
+        "monitoring.coreos.com/v1",
     ]
 
     command = [
