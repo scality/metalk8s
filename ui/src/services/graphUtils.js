@@ -78,3 +78,10 @@ export const formatNodesThroughputPromRangeForChart = (
 
   return null;
 };
+
+export const formatNodesControlPlanePromRangeForChart = (
+  result: Promise<PrometheusQueryResult>[],
+  nodes: Array<{ internalIP: string, name: string }>,
+): FormattedChartNodesPromRange => {
+  return [];
+};

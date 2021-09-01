@@ -7,6 +7,8 @@ import DashboardMetrics from '../components/DashboardMetrics';
 import DashboardInventory from '../components/DashboardInventory';
 import DashboardServices from '../components/DashboardServices';
 import DashboardGlobalHealth from '../components/DashboardGlobalHealth';
+import DashboardNetwork from '../components/DashboardNetwork';
+import { SyncedCursorCharts } from '@scality/core-ui/dist/next';
 import { padding, spacing } from '@scality/core-ui/dist/style/theme';
 import { Dropdown } from '@scality/core-ui';
 
@@ -146,27 +148,31 @@ const DashboardPage = (props: {}) => {
 
   return (
     <DashboardGrid>
-      <div className="header">
-        <Dropdown
-          icon={<i className="fas fa-calendar-minus" />}
-          items={metricsTimeSpanDropdownItems}
-          text={metricsTimeSpan}
-          size="small"
-          data-cy="metrics_timespan_selection"
-          variant="backgroundLevel1"
-        />
-      </div>
-      <div className="health">
-        <DashboardGlobalHealth />
-      </div>
-      <div className="inventory">
-        <DashboardInventory />
-        <DashboardServices />
-      </div>
-      <div className="network">Network</div>
-      <div className="metrics">
-        <DashboardMetrics />
-      </div>
+      <SyncedCursorCharts>
+        <div className="header">
+          <Dropdown
+            icon={<i className="fas fa-calendar-minus" />}
+            items={metricsTimeSpanDropdownItems}
+            text={metricsTimeSpan}
+            size="small"
+            data-cy="metrics_timespan_selection"
+            variant="backgroundLevel1"
+          />
+        </div>
+        <div className="health">
+          <DashboardGlobalHealth />
+        </div>
+        <div className="inventory">
+          <DashboardInventory />
+          <DashboardServices />
+        </div>
+        <div className="network">
+          <DashboardNetwork />
+        </div>
+        <div className="metrics">
+          <DashboardMetrics />
+        </div>
+      </SyncedCursorCharts>
     </DashboardGrid>
   );
 };

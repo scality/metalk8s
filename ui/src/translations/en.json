@@ -170,6 +170,7 @@
   "salt_login_error_message": "Some features of the UI may not work as expected (cluster expansion and displaying nodes IPs). Please try to logout and login again or contact your support if this error persist.",
   "inventory": "Inventory",
   "services": "Services",
+  "network:": "Network",
   "authentication": "Authentication",
   "access": "Access",
   "observability": "Observability",
