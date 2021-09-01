@@ -365,9 +365,9 @@ def dex_login(username, password, should_fail, control_plane_ingress_ep):
     )
     get_auth_start = time.time()
     try:
-        auth_page = session.post(
-            control_plane_ingress_ep + "/oidc/auth?",
-            data={
+        auth_page = session.get(
+            control_plane_ingress_ep + "/oidc/auth/local?",
+            params={
                 "response_type": "id_token",
                 "client_id": "metalk8s-ui",
                 "scope": "openid audience:server:client_id:oidc-auth-client",
@@ -390,11 +390,11 @@ def dex_login(username, password, should_fail, control_plane_ingress_ep):
     auth_form = auth_page.text
 
     # The form action looks like:
-    # <a href="/oidc/auth/local?req=ovc5qdll5zznlubewjok266rl" target="_self">
-    next_path_match = re.search(r'href=[\'"](?P<next_path>/oidc/\S+)[\'"] ', auth_form)
+    # <form method="post" action="/oidc/auth/local/login?back=&amp;amp;state=ABCD">
+    next_path_match = re.search(r'action=[\'"](?P<next_path>/oidc/\S+)[\'"]', auth_form)
     assert (
         next_path_match is not None
-    ), "Could not find an anchor with `href='/oidc/...'` in Dex response:\n{}".format(
+    ), "Could not find an anchor with `action='/oidc/...'` in Dex response:\n{}".format(
         auth_form
     )
     next_path = next_path_match.group("next_path")

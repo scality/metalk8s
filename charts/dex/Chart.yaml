@@ -1,11 +1,12 @@
 annotations:
   artifacthub.io/changes: |
-    - Added support for priority class name
+    - kind: added
+      description: "`clusterIP` value to control the IP when using ClusterIP service type"
   artifacthub.io/images: |
     - name: dex
-      image: ghcr.io/dexidp/dex:v2.28.1
+      image: ghcr.io/dexidp/dex:v2.30.0
 apiVersion: v2
-appVersion: 2.28.1
+appVersion: 2.30.0
 description: OpenID Connect (OIDC) identity and OAuth 2.0 provider with pluggable
   connectors.
 home: https://dexidp.io/
@@ -25,4 +26,4 @@ sources:
 - https://github.com/dexidp/dex
 - https://github.com/dexidp/helm-charts/tree/master/charts/dex
 type: application
-version: 0.4.0
+version: 0.6.3

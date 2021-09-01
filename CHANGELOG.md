@@ -8,6 +8,10 @@
   nginx-ingress-controller image has been bumped accordingly to v1.0.0
   (PR[#3518](https://github.com/scality/metalk8s/pull/3518))
 
+- Bump Dex chart version to v0.6.3, Dex image has been bumped accordingly
+  to v2.30.0
+  (PR[#3519](https://github.com/scality/metalk8s/pull/3519))
+
 - [#3487](https://github.com/scality/metalk8s/issues/3487) - Make Salt
   Kubernetes execution module more flexible relying on `DynamicClient`
   from `python-kubernetes`

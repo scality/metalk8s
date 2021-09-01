@@ -122,6 +122,9 @@ service:
   # -- Kubernetes [service type](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types).
   type: ClusterIP
 
+  # -- Internal cluster service IP (when applicable)
+  clusterIP: ""
+
   ports:
     http:
       # -- HTTP service port

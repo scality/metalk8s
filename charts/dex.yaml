@@ -51,7 +51,7 @@ volumeMounts:
   - name: https-tls
     mountPath: /etc/dex/tls/https/server
   - name: dex-login
-    mountPath: /web/themes/scality
+    mountPath: /srv/dex/web/themes/scality
   - name: nginx-ingress-ca-cert
     mountPath: /etc/ssl/certs/nginx-ingress-ca.crt
     subPath: ca.crt

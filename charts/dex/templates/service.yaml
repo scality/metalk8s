@@ -10,8 +10,8 @@ metadata:
   {{- end }}
 spec:
   type: {{ .Values.service.type }}
-  {{- if hasKey .Values.service "clusterIP" }}
-  clusterIP: {{ .Values.service.clusterIP | quote }}
+  {{- with .Values.service.clusterIP }}
+  clusterIP: {{ . }}
   {{- end }}
   ports:
     - name: http

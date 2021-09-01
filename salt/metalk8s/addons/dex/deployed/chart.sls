@@ -14,8 +14,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.28.1
-    helm.sh/chart: dex-0.4.0
+    app.kubernetes.io/version: 2.30.0
+    helm.sh/chart: dex-0.6.3
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -28,8 +28,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.28.1
-    helm.sh/chart: dex-0.4.0
+    app.kubernetes.io/version: 2.30.0
+    helm.sh/chart: dex-0.6.3
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -55,8 +55,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.28.1
-    helm.sh/chart: dex-0.4.0
+    app.kubernetes.io/version: 2.30.0
+    helm.sh/chart: dex-0.6.3
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -77,8 +77,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.28.1
-    helm.sh/chart: dex-0.4.0
+    app.kubernetes.io/version: 2.30.0
+    helm.sh/chart: dex-0.6.3
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -113,8 +113,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.28.1
-    helm.sh/chart: dex-0.4.0
+    app.kubernetes.io/version: 2.30.0
+    helm.sh/chart: dex-0.6.3
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -147,7 +147,7 @@ spec:
         env:
         - name: KUBERNETES_POD_NAMESPACE
           value: metalk8s-auth
-        image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.28.1
+        image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.30.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -176,7 +176,7 @@ spec:
           readOnly: true
         - mountPath: /etc/dex/tls/https/server
           name: https-tls
-        - mountPath: /web/themes/scality
+        - mountPath: /srv/dex/web/themes/scality
           name: dex-login
         - mountPath: /etc/ssl/certs/nginx-ingress-ca.crt
           name: nginx-ingress-ca-cert
@@ -217,8 +217,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.28.1
-    helm.sh/chart: dex-0.4.0
+    app.kubernetes.io/version: 2.30.0
+    helm.sh/chart: dex-0.6.3
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
