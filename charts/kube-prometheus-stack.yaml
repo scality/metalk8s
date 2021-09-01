@@ -168,8 +168,8 @@ grafana:
 
   ingress:
     enabled: true
+    ingressClassName: nginx-control-plane
     annotations:
-      kubernetes.io/ingress.class: nginx-control-plane
       nginx.ingress.kubernetes.io/rewrite-target: /$2
     path: /grafana(/|$)(.*)
     hosts:

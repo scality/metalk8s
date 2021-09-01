@@ -85,15 +85,18 @@ metadata:
 spec:
   clusterIP: {% endraw -%}{{ salt.metalk8s_network.get_oidc_service_ip() }}{%- raw %}
   ports:
-  - name: http
+  - appProtocol: http
+    name: http
     port: 5556
     protocol: TCP
     targetPort: http
-  - name: https
+  - appProtocol: https
+    name: https
     port: 5554
     protocol: TCP
     targetPort: https
-  - name: telemetry
+  - appProtocol: http
+    name: telemetry
     port: 5558
     protocol: TCP
     targetPort: telemetry
@@ -204,11 +207,10 @@ spec:
           name: nginx-ingress-ca-cert
         name: nginx-ingress-ca-cert
 ---
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    kubernetes.io/ingress.class: nginx-control-plane
     nginx.ingress.kubernetes.io/backend-protocol: HTTPS
   labels:
     app.kubernetes.io/instance: dex
@@ -221,13 +223,17 @@ metadata:
   name: dex
   namespace: metalk8s-auth
 spec:
+  ingressClassName: nginx-control-plane
   rules:
   - host: null
     http:
       paths:
       - backend:
-          serviceName: dex
-          servicePort: 5554
+          service:
+            name: dex
+            port:
+              number: 5554
         path: /oidc
+        pathType: Prefix
 
 {% endraw %}

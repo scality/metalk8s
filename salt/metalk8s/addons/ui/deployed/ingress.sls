@@ -13,7 +13,7 @@
 {%- set stripped_base_path = metalk8s_ui_config.spec.basePath.strip('/') %}
 {%- set normalized_base_path = '/' ~ stripped_base_path %}
 
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: metalk8s-ui-proxies-https
@@ -28,21 +28,27 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: '/$2'
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    kubernetes.io/ingress.class: "nginx-control-plane"
 spec:
+  ingressClassName: "nginx-control-plane"
   rules:
   - http:
       paths:
       - path: /api/kubernetes(/|$)(.*)
+        pathType: Prefix
         backend:
-          serviceName: kubernetes-api
-          servicePort: 443
+          service:
+            name: kubernetes-api
+            port:
+              number: 443
       - path: /api/salt(/|$)(.*)
+        pathType: Prefix
         backend:
-          serviceName: salt-api
-          servicePort: 4507
+          service:
+            name: salt-api
+            port:
+              number: 4507
 ---
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: metalk8s-ui-proxies-http
@@ -54,30 +60,39 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     heritage: metalk8s
   annotations:
-    kubernetes.io/ingress.class: "nginx-control-plane"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     nginx.ingress.kubernetes.io/cors-allow-headers: "Access-Control-Allow-Origin"
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/rewrite-target: '/$2'
     nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
+  ingressClassName: "nginx-control-plane"
   rules:
   - http:
       paths:
       - path: /api/prometheus(/|$)(.*)
+        pathType: Prefix
         backend:
-          serviceName: prometheus-api
-          servicePort: 9090
+          service:
+            name: prometheus-api
+            port:
+              number: 9090
       - path: /api/alertmanager(/|$)(.*)
+        pathType: Prefix
         backend:
-          serviceName: alertmanager-api
-          servicePort: 9093
+          service:
+            name: alertmanager-api
+            port:
+              number: 9093
       - path: /api/loki(/|$)(.*)
+        pathType: Prefix
         backend:
-          serviceName: loki-api
-          servicePort: 3100
+          service:
+            name: loki-api
+            port:
+              number: 3100
 ---
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: metalk8s-ui
@@ -90,9 +105,9 @@ metadata:
     heritage: metalk8s
   annotations:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    kubernetes.io/ingress.class: "nginx-control-plane"
     nginx.ingress.kubernetes.io/rewrite-target: /$1
 spec:
+  ingressClassName: "nginx-control-plane"
   rules:
   - http:
       paths:
@@ -107,16 +122,18 @@ spec:
     "/(" + stripped_base_path + ".*)",
 ] %}
       - path: {{ path }}
+        pathType: Prefix
         backend:
-          serviceName: metalk8s-ui
-          servicePort: 80
+          service:
+            name: metalk8s-ui
+            port:
+              number: 80
 {% endfor %}
 ---
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    kubernetes.io/ingress.class: nginx-control-plane
     nginx.ingress.kubernetes.io/backend-protocol: HTTP
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/rewrite-target: '/docs/$2'
@@ -129,10 +146,14 @@ metadata:
   name: metalk8s-docs
   namespace: metalk8s-ui
 spec:
+  ingressClassName: "nginx-control-plane"
   rules:
   - http:
       paths:
       - path: /docs/{{ stripped_base_path }}(/|$)(.*)
+        pathType: Prefix
         backend:
-          serviceName: metalk8s-ui
-          servicePort: 80
+          service:
+            name: metalk8s-ui
+            port:
+              number: 80
