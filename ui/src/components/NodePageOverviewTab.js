@@ -195,7 +195,7 @@ const NodePageOverviewTab = (props) => {
             <CircleStatus status={currentNode?.health?.health}></CircleStatus>
             <NodeName>{nodeName}</NodeName>
           </div>
-          {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN ? (
+          {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN && !currentNodeReturnByK8S.internalIP ? (
             !currentNodeReturnByK8S?.deploying ? (
               <DeployButton
                 label={intl.formatMessage({ id: 'deploy' })}

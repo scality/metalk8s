@@ -117,10 +117,13 @@ const NodePageRSP = (props) => {
 
   const alertList = useAlerts({
     alertname: NODE_ALERTS_GROUP,
-    instance: `${instanceIP}:${PORT_NODE_EXPORTER}`,
   });
 
-  const alertsNode = (alertList && alertList.alerts) || [];
+  const alertsNode = ((alertList && alertList.alerts) || []).filter(
+    (alert) =>
+      alert.labels.instance === `${instanceIP}:${PORT_NODE_EXPORTER}` ||
+      alert.labels.node === name,
+  );
 
   return name && currentNode ? (
     <Tabs>
