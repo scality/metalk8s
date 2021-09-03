@@ -23,6 +23,9 @@
 - Bump Kubernetes version to 1.21.4
   (PR[#3495](https://github.com/scality/metalk8s/pull/3495))
 
+- Fix UI issues in multi nodes environment when a node
+  is unavailable (PR[#3521](https://github.com/scality/metalk8s/pull/3521))
+
 ## Release 2.10.2
 ### Bug fixes
 - Fix the link to documentation from the UI navigation bar

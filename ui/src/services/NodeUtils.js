@@ -10,13 +10,18 @@ import {
   API_STATUS_NOT_READY,
   API_STATUS_UNKNOWN,
   API_STATUS_DEPLOYING,
+  STATUS_HEALTH,
 } from '../constants';
 import { compareHealth } from './utils';
 import type { IPInterfaces } from './salt/api';
 import type { RootState } from '../ducks/reducer';
 import type { NodesState } from '../ducks/app/nodes';
 import type { Brand } from '../services/api';
-import { getHealthStatus, filterAlerts, type Alert } from '../services/alertUtils';
+import {
+  getHealthStatus,
+  filterAlerts,
+  type Alert,
+} from '../services/alertUtils';
 
 const METALK8S_CONTROL_PLANE_IP = 'metalk8s:control_plane_ip';
 const METALK8S_WORKLOAD_PLANE_IP = 'metalk8s:workload_plane_ip';
@@ -56,33 +61,35 @@ const IPsInfoSelector = (state) => state.app.nodes.IPsInfo;
 const nodesSelector = (state) => state.app.nodes.list;
 
 // Return the data used by the Node list table
-export const getNodeListData = (alerts: Array<Alert>, brand: Brand) => createTypedSelector<NodetableList>(
-  (
-    nodes: $PropertyType<NodesState, 'list'>,
-    nodeIPsInfo: NodesState
-  ) => {
-    const mapped =
-      nodes.map((node) => {
-        const conditions = node.conditions;
-        const IPsInfo = nodeIPsInfo[node.name];
-        let statusTextColor, health;
+export const getNodeListData = (alerts: Array<Alert>, brand: Brand) =>
+  createTypedSelector<NodetableList>(
+    (nodes: $PropertyType<NodesState, 'list'>, nodeIPsInfo: NodesState) => {
+      const mapped =
+        nodes.map((node) => {
+          const conditions = node.conditions;
+          const IPsInfo = nodeIPsInfo[node.name];
+          let statusTextColor, health;
 
-        const alertsNode = filterAlerts(alerts, {
-          alertname: NODE_ALERTS_GROUP,
-          instance: `${node.internalIP}:${PORT_NODE_EXPORTER}`,
-        });
+          const alertsNode = filterAlerts(alerts, {
+            alertname: NODE_ALERTS_GROUP,
+          }).filter(
+            (alert) =>
+              alert.labels.instance ===
+                `${node.internalIP}:${PORT_NODE_EXPORTER}` ||
+              alert.labels.node === node.name,
+          );
 
-        const totalAlertsCounter = alertsNode.length;
-        const criticalAlertsCounter = alertsNode.filter(
-          (alert) => alert.labels.severity === STATUS_CRITICAL,
-        ).length;
-        const warningAlertsCounter = alertsNode.filter(
-          (alert) => alert.labels.severity === STATUS_WARNING,
-        ).length;
+          const totalAlertsCounter = alertsNode.length;
+          const criticalAlertsCounter = alertsNode.filter(
+            (alert) => alert.labels.severity === STATUS_CRITICAL,
+          ).length;
+          const warningAlertsCounter = alertsNode.filter(
+            (alert) => alert.labels.severity === STATUS_WARNING,
+          ).length;
 
-        health = getHealthStatus(alertsNode);
-        const computedStatus = [];
-        /*  The rules of the color of the node status
+          health = getHealthStatus(alertsNode);
+          const computedStatus = [];
+          /*  The rules of the color of the node status
          <green>  when status.conditions['Ready'] == True and all other conditions are false
          <yellow> when status.conditions['Ready'] == True and some other conditions are true
          <red>    when status.conditions['Ready'] == False
@@ -105,43 +112,48 @@ export const getNodeListData = (alerts: Array<Alert>, brand: Brand) => createTyp
           } else if (node.status !== API_STATUS_READY) {
             statusTextColor = brand.statusCritical;
             computedStatus.push(API_STATUS_NOT_READY);
-            health = STATUS_NONE;
+            //If no alert is raised on the node but kubernetes
+            //report a non-ready node we set the node health to NONE
+            //else we set it to the highest alert status raised on the node.
+            if (health === STATUS_HEALTH) {
+              health = STATUS_NONE;
+            }
           } else {
             statusTextColor = brand.textSecondary;
             computedStatus.push(API_STATUS_UNKNOWN);
             health = STATUS_NONE;
           }
 
-        return {
-          // According to the design, the IPs of Control Plane and Workload Plane are in the same Cell with Name
-          name: {
-            name: node.name,
-            controlPlaneIP: IPsInfo?.controlPlane?.ip,
-            workloadPlaneIP: IPsInfo?.workloadPlane?.ip,
-          },
-          status: {
-            status: node.status,
-            conditions: node.conditions,
-            statusTextColor,
-            computedStatus,
-          },
-          roles: node.roles,
-          health: {
-            health,
-            totalAlertsCounter,
-            criticalAlertsCounter,
-            warningAlertsCounter,
-          },
-        };
-      }) || [];
+          return {
+            // According to the design, the IPs of Control Plane and Workload Plane are in the same Cell with Name
+            name: {
+              name: node.name,
+              controlPlaneIP: IPsInfo?.controlPlane?.ip,
+              workloadPlaneIP: IPsInfo?.workloadPlane?.ip,
+            },
+            status: {
+              status: node.status,
+              conditions: node.conditions,
+              statusTextColor,
+              computedStatus,
+            },
+            roles: node.roles,
+            health: {
+              health,
+              totalAlertsCounter,
+              criticalAlertsCounter,
+              warningAlertsCounter,
+            },
+          };
+        }) || [];
 
-    return mapped.sort((a, b) =>
-      compareHealth(b.health.health, a.health.health),
-    );
-  },
-  nodesSelector,
-  IPsInfoSelector,
-);
+      return mapped.sort((a, b) =>
+        compareHealth(b.health.health, a.health.health),
+      );
+    },
+    nodesSelector,
+    IPsInfoSelector,
+  );
 
 /*
 This function returns the IP and interface of Control Plane and Workload Plane for each Node
