@@ -36,6 +36,9 @@ export const VOLUME_CONDITION_UNLINK = 'unlink';
 export const VOLUME_CONDITION_LINK = 'link';
 
 // metrics chart
+export const YAXIS_TITLE_IN_OUT = 'in(+) / out(-)';
+export const YAXIS_TITLE_WRITE_READ = 'write(+) / read(-)';
+
 export const LAST_SEVEN_DAYS = 'Last 7 days';
 export const LAST_TWENTY_FOUR_HOURS = 'Last 24 hours';
 export const LAST_ONE_HOUR = 'Last 1 hour';

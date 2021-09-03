@@ -170,6 +170,7 @@
   "salt_login_error_message": "Certaines fonctionalité de l'interface peuvent ne pas fonctionner (deploiement d'un nouveau node ou affichage des IPs d'un node). Veuillez essayer de vous deconnecter et de vous reconnecter, ou si l'erreur persiste merci de bien vouloir contacter votre support.",
   "inventory": "Inventaire",
   "services": "Services",
+  "network": "Réseau",
   "authentication": "Authentification",
   "access": "Accès",
   "observability": "Observabilité",

@@ -12,6 +12,7 @@ import {
 } from '../services/prometheus/fetchMetrics';
 import { useNodeAddressesSelector, useNodes } from '../hooks';
 import { useStartingTimeStamp } from '../containers/StartTimeProvider';
+import { YAXIS_TITLE_WRITE_READ } from '../constants';
 
 const DashboardChartThroughput = (props: UseQueryOptions) => {
   const nodeAddresses = useNodeAddressesSelector(useNodes());
@@ -57,7 +58,7 @@ const DashboardChartThroughput = (props: UseQueryOptions) => {
     <GraphWrapper>
       <LineTemporalChart
         series={seriesRef.current || []}
-        title="Disk Throughput"
+        title='Disk Throughput'
         height={150}
         yAxisType={'symmetrical'}
         unitRange={[
@@ -69,7 +70,7 @@ const DashboardChartThroughput = (props: UseQueryOptions) => {
         ]}
         startingTimeStamp={Date.parse(chartStartTimeRef.current) / 1000}
         isLegendHided={false}
-        yAxisTitle={'write(+) / read(-)'}
+        yAxisTitle={YAXIS_TITLE_WRITE_READ}
         isLoading={isDataLoading}
       />
     </GraphWrapper>

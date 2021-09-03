@@ -2,7 +2,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useQuery, UseQueryOptions } from 'react-query';
-import { Button, SyncedCursorCharts } from '@scality/core-ui/dist/next';
+import { Button } from '@scality/core-ui/dist/next';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { useIntl } from 'react-intl';
 
@@ -80,12 +80,10 @@ const DashboardMetrics = () => {
         )}
       </PanelActions>
       <GraphsWrapper>
-        <SyncedCursorCharts>
-          <DashboardChartCpuUsage reactQueryOptions={reactQueryOptions} />
-          <DashboardChartMemory reactQueryOptions={reactQueryOptions} />
-          <DashboardChartSystemLoad reactQueryOptions={reactQueryOptions} />
-          <DashboardChartThroughput reactQueryOptions={reactQueryOptions} />
-        </SyncedCursorCharts>
+        <DashboardChartCpuUsage reactQueryOptions={reactQueryOptions} />
+        <DashboardChartMemory reactQueryOptions={reactQueryOptions} />
+        <DashboardChartSystemLoad reactQueryOptions={reactQueryOptions} />
+        <DashboardChartThroughput reactQueryOptions={reactQueryOptions} />
       </GraphsWrapper>
     </MetricsContainer>
   );

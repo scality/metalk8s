@@ -132,3 +132,57 @@ export function queryThroughputWriteAllInstances(
     return resolve;
   });
 }
+
+export function queryControlPlaneInAllInstances(
+  sampleFrequency: number,
+  startingTimeISO: string,
+  currentTimeISO: string,
+  nodesIPsInfo: any,
+  nodes: Array<{ internalIP: string, name: string }>,
+): Promise<PrometheusQueryResult>[] {
+  return Object.keys(nodesIPsInfo).map((nodeName) => {
+    const instanceIP = nodes.find((node) => node.name === nodeName)?.internalIP ?? '';
+    const controlPlaneInterface =
+      nodesIPsInfo[nodeName]?.controlPlane?.interface;
+    const controlPlaneNetworkBandwidthInQuery = `sum(irate(node_network_receive_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${controlPlaneInterface}"}[5m]))`;
+
+    return queryPrometheusRange(
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      controlPlaneNetworkBandwidthInQuery,
+    )?.then((resolve) => {
+      if (resolve.error) {
+        throw resolve.error;
+      }
+      return { nodeName, ...resolve };
+    });
+  });
+}
+
+export function queryControlPlaneOutAllInstances(
+  sampleFrequency: number,
+  startingTimeISO: string,
+  currentTimeISO: string,
+  nodesIPsInfo: any,
+  nodes: Array<{ internalIP: string, name: string }>,
+): Promise<PrometheusQueryResult>[] {
+  return Object.keys(nodesIPsInfo).map((nodeName) => {
+    const instanceIP = nodes.find((node) => node.name === nodeName)?.internalIP ?? '';
+    const controlPlaneInterface =
+      nodesIPsInfo[nodeName]?.controlPlane?.interface;
+    const controlPlaneNetworkBandwidthOutQuery = `sum(irate(node_network_transmit_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${controlPlaneInterface}"}[5m]))`;
+
+    return queryPrometheusRange(
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      controlPlaneNetworkBandwidthOutQuery,
+    )?.then((resolve) => {
+      if (resolve.error) {
+        throw resolve.error;
+      }
+      return { nodeName, ...resolve };
+    });
+  });
+}
