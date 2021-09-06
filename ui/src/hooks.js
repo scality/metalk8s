@@ -72,6 +72,10 @@ export const useNodeAddressesSelector = (
   });
 };
 
+export type Plane = { ip: string, interface: string };
+export type NodesIPs = {
+  [string]: { workloadPlane: Plane, ControlPlane: Plane },
+};
 export type MetricsTimeSpan = number;
 export type MetricsTimeSpanSetter = (metricsTimeSpan: MetricsTimeSpan) => void;
 export type MetricsTimeSpanContextValue = {
@@ -153,3 +157,6 @@ export const useVolumesWithAlerts = (nodeName?: string) => {
   );
   return volumeListWithStatus;
 };
+
+export const useNodesIPsSelector = (): NodesIPs =>
+  useTypedSelector((state) => state.app.nodes.IPsInfo);

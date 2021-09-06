@@ -32,3 +32,5 @@ junit/
 /_build/
 
 vagrant_config.rb
+
+.idea

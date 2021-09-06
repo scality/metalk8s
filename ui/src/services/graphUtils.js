@@ -157,5 +157,51 @@ export const formatNodesControlPlanePromRangeForChart = (
 export const formatNodesWorkloadPlanePromRangeForChart = (
   result: Promise<PrometheusQueryResult>[],
 ): FormattedChartNodesPromRange => {
-  return [];
+  const resultAllNodesIn = result[0];
+  const resultAllNodesOut = result[1];
+
+  const isInSuccess = !resultAllNodesIn.some(
+    (inQuery) => inQuery.status !== 'success',
+  );
+  const isOutSuccess = !resultAllNodesOut.some(
+    (outQuery) => outQuery.status !== 'success',
+  );
+
+  if (resultAllNodesIn && isInSuccess && resultAllNodesOut && isOutSuccess) {
+    const tempIn = resultAllNodesIn.map((nodeInResult) => {
+      const prometheusInData = nodeInResult.data?.result?.[0]?.values;
+      const nodeName = nodeInResult.nodeName;
+
+      return {
+        metricPrefix: 'in',
+        data: prometheusInData || [],
+        resource: nodeName,
+        getTooltipLabel: (metricPrefix: 'in', resource: nodeName) => {
+          return `${resource}-${metricPrefix}`;
+        },
+        getLegendLabel: (_) => {
+          return nodeName;
+        },
+      };
+    });
+
+    const tempOut = resultAllNodesOut.map((nodeOutResult) => {
+      const prometheusInData = nodeOutResult.data?.result?.[0]?.values;
+      const nodeName = nodeOutResult.nodeName;
+
+      return {
+        metricPrefix: 'out',
+        data: prometheusInData || [],
+        resource: nodeName,
+        getTooltipLabel: (metricPrefix: 'out', resource: nodeName) => {
+          return `${resource}-${metricPrefix}`;
+        },
+        getLegendLabel: (_) => {
+          return nodeName;
+        },
+      };
+    });
+
+    return tempIn.concat(tempOut);
+  }
 };

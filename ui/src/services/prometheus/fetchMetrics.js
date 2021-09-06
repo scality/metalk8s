@@ -2,6 +2,7 @@
 import { queryPrometheus, queryPrometheusRange } from './api';
 import { PORT_NODE_EXPORTER } from '../../constants';
 import type { PrometheusQueryResult } from './api';
+import type { NodesIPs } from '../../hooks';
 
 export function queryNodeFSUsage(
   instanceIP: string,
@@ -137,11 +138,12 @@ export function queryControlPlaneInAllInstances(
   sampleFrequency: number,
   startingTimeISO: string,
   currentTimeISO: string,
-  nodesIPsInfo: any,
+  nodesIPsInfo: NodesIPs,
   nodes: Array<{ internalIP: string, name: string }>,
 ): Promise<PrometheusQueryResult>[] {
   return Object.keys(nodesIPsInfo).map((nodeName) => {
-    const instanceIP = nodes.find((node) => node.name === nodeName)?.internalIP ?? '';
+    const instanceIP =
+      nodes.find((node) => node.name === nodeName)?.internalIP ?? '';
     const controlPlaneInterface =
       nodesIPsInfo[nodeName]?.controlPlane?.interface;
     const controlPlaneNetworkBandwidthInQuery = `sum(irate(node_network_receive_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${controlPlaneInterface}"}[5m]))`;
@@ -164,11 +166,12 @@ export function queryControlPlaneOutAllInstances(
   sampleFrequency: number,
   startingTimeISO: string,
   currentTimeISO: string,
-  nodesIPsInfo: any,
+  nodesIPsInfo: NodesIPs,
   nodes: Array<{ internalIP: string, name: string }>,
 ): Promise<PrometheusQueryResult>[] {
   return Object.keys(nodesIPsInfo).map((nodeName) => {
-    const instanceIP = nodes.find((node) => node.name === nodeName)?.internalIP ?? '';
+    const instanceIP =
+      nodes.find((node) => node.name === nodeName)?.internalIP ?? '';
     const controlPlaneInterface =
       nodesIPsInfo[nodeName]?.controlPlane?.interface;
     const controlPlaneNetworkBandwidthOutQuery = `sum(irate(node_network_transmit_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${controlPlaneInterface}"}[5m]))`;
@@ -178,6 +181,63 @@ export function queryControlPlaneOutAllInstances(
       currentTimeISO,
       sampleFrequency,
       controlPlaneNetworkBandwidthOutQuery,
+    )?.then((resolve) => {
+      if (resolve.error) {
+        throw resolve.error;
+      }
+      return { nodeName, ...resolve };
+    });
+  });
+}
+
+export function queryWorkloadPlaneInAllInstances(
+  sampleFrequency: number,
+  startingTimeISO: string,
+  currentTimeISO: string,
+  nodesIPsInfo: NodesIPs,
+  nodes: Array<{ internalIP: string, name: string }>,
+): Promise<PrometheusQueryResult>[] {
+  return Object.keys(nodesIPsInfo).map((nodeName) => {
+    const instanceIP =
+      nodes.find((node) => node.name === nodeName)?.internalIP ?? '';
+    const workloadPlaneInterface =
+      nodesIPsInfo[nodeName]?.workloadPlane?.interface;
+    const workloadPlaneNetworkBandwidthInQuery = `sum(irate(node_network_receive_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${workloadPlaneInterface}"}[5m]))`;
+
+    return queryPrometheusRange(
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      workloadPlaneNetworkBandwidthInQuery,
+    )?.then((resolve) => {
+      if (resolve.error) {
+        throw resolve.error;
+      }
+      return { nodeName, ...resolve };
+    });
+  });
+}
+
+export function queryWorkloadPlaneOutAllInstances(
+  sampleFrequency: number,
+  startingTimeISO: string,
+  currentTimeISO: string,
+  nodesIPsInfo: NodesIPs,
+  nodes: Array<{ internalIP: string, name: string }>,
+): Promise<PrometheusQueryResult>[] {
+  return Object.keys(nodesIPsInfo).map((nodeName) => {
+    const instanceIP =
+      nodes.find((node) => node.name === nodeName)?.internalIP ?? '';
+    console.log({ nodesIPsInfo });
+    const workloadPlaneInterface =
+      nodesIPsInfo[nodeName]?.workloadPlane?.interface;
+    const workloadPlaneNetworkBandwidthOutQuery = `sum(irate(node_network_transmit_bytes_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}",device="${workloadPlaneInterface}"}[5m]))`;
+
+    return queryPrometheusRange(
+      startingTimeISO,
+      currentTimeISO,
+      sampleFrequency,
+      workloadPlaneNetworkBandwidthOutQuery,
     )?.then((resolve) => {
       if (resolve.error) {
         throw resolve.error;

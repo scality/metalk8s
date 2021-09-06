@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
 import { useQuery, UseQueryOptions } from 'react-query';
 import { useStartingTimeStamp } from '../containers/StartTimeProvider';
 import {
@@ -11,11 +10,16 @@ import { GraphWrapper } from './DashboardMetrics';
 import { LineTemporalChart } from '@scality/core-ui/dist/next';
 import { formatNodesControlPlanePromRangeForChart } from '../services/graphUtils';
 import { YAXIS_TITLE_IN_OUT } from '../constants';
-import { useNodeAddressesSelector, useNodes } from '../hooks';
+import {
+  useNodeAddressesSelector,
+  useNodes,
+  useNodesIPsSelector,
+} from '../hooks';
 
 const DashboardNetworkControlPlane = (props: UseQueryOptions) => {
   const nodeAddresses = useNodeAddressesSelector(useNodes());
-  const nodesIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
+  const nodesIPsInfo = useNodesIPsSelector();
+  console.log({ nodesIPsInfo });
   const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
   const startTimeRef = useRef(startingTimeISO);
   const { sampleFrequency } = useMetricsTimeSpan();
@@ -51,7 +55,12 @@ const DashboardNetworkControlPlane = (props: UseQueryOptions) => {
     },
   });
 
-  const isDataLoading = controlPlaneQuery.status === 'loading';
+  console.log({ controlPlaneQuery });
+
+  const isDataLoading =
+    controlPlaneQuery.status === 'loading' ||
+    (controlPlaneQuery.data.length === 0 &&
+      controlPlaneQuery.status === 'success');
 
   useEffect(() => {
     if (!isDataLoading) {
@@ -76,7 +85,7 @@ const DashboardNetworkControlPlane = (props: UseQueryOptions) => {
             { threshold: 1024 * 1024 * 1024, label: 'GiB/s' },
             { threshold: 1024 * 1024 * 1024 * 1024, label: 'TiB/s' },
           ]}
-          yAxisTitle = {YAXIS_TITLE_IN_OUT}
+          yAxisTitle={YAXIS_TITLE_IN_OUT}
           isLegendHided={false}
           isLoading={isDataLoading}
         />
