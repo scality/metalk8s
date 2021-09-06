@@ -28,7 +28,7 @@ Create fluent-bit ConfigMap:
         data:
           fluent-bit.conf: |-
             [SERVICE]
-                HTTP_Server    On
+                HTTP_Server    Off
                 HTTP_Listen    0.0.0.0
                 HTTP_PORT      2020
                 Flush          1
