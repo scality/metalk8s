@@ -18,7 +18,7 @@ Image = namedtuple("Image", ("name", "version", "digest"))
 
 # Project-wide versions {{{
 
-CALICO_VERSION: str = "3.19.1"
+CALICO_VERSION: str = "3.20.0"
 K8S_VERSION: str = "1.21.4"
 SALT_VERSION: str = "3002.7"
 CONTAINERD_VERSION: str = "1.4.8"
@@ -98,12 +98,12 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     Image(
         name="calico-node",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:bc4a631d553b38fdc169ea4cb8027fa894a656e80d68d513359a4b9d46836b55",
+        digest="sha256:7f9aa7e31fbcea7be64b153f8bcfd494de023679ec10d851a05667f0adb42650",
     ),
     Image(
         name="calico-kube-controllers",
         version=_version_prefix(CALICO_VERSION),
-        digest="sha256:904458fe1bd56f995ef76e2c4d9a6831c506cc80f79e8fc0182dc059b1db25a4",
+        digest="sha256:a850ce8daa84433a5641900693b0f8bc8e5177a4aa4cac8cf4b6cd8c24fd9886",
     ),
     Image(
         name="coredns",
