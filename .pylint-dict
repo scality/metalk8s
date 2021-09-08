@@ -61,6 +61,7 @@ rpmlint
 rpmspec
 runtime
 saltenv
+serializable
 scality
 sdk
 skopeo
