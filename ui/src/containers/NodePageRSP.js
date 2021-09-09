@@ -10,8 +10,6 @@ import { getPodsListData } from '../services/PodUtils';
 import { useURLQuery, useRefreshEffect } from '../services/utils';
 import {
   updateNodeStatsFetchArgumentAction,
-  refreshNodeStatsAction,
-  stopRefreshNodeStatsAction,
   fetchNodeUNameInfoAction,
 } from '../ducks/app/monitoring';
 import {
@@ -38,7 +36,6 @@ import {
 } from '../constants';
 import { useAlerts } from './AlertProvider';
 import { useIntl } from 'react-intl';
-import { useTypedSelector } from '../hooks';
 
 // <NodePageRSP> fetches the data for all the tabs given the current selected Node
 // handles the refresh for the metrics tab
@@ -76,7 +73,6 @@ const NodePageRSP = (props) => {
 
   const showAvg = queryShowAvg === 'true' ? true : nodeMetricsShowAvg;
 
-  useRefreshEffect(refreshNodeStatsAction, stopRefreshNodeStatsAction);
   useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
 
   // Retrieve the podlist data
@@ -84,18 +80,14 @@ const NodePageRSP = (props) => {
   const podsListData = getPodsListData(name, pods);
   const nodes = useSelector((state) => state.app.nodes.list);
   const volumes = useSelector((state) => state.app.volumes.list);
-  const nodeStats = useTypedSelector(
-    (state) => state.app.monitoring.nodeStats.metrics,
-  );
-  const avgStats = useTypedSelector(
-    (state) => state.app.monitoring.nodeStats.metricsAvg,
-  );
 
   const nodesIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
   const instanceIP =
     nodes?.find((node) => node.name === name)?.internalIP ?? '';
-  const controlPlaneInterface = nodesIPsInfo[name]?.controlPlane?.interface;
-  const workloadPlaneInterface = nodesIPsInfo[name]?.workloadPlane?.interface;
+  const controlPlaneInterface =
+    nodesIPsInfo[name]?.controlPlane?.interface ?? '';
+  const workloadPlaneInterface =
+    nodesIPsInfo[name]?.workloadPlane?.interface ?? '';
   const currentNode = nodeTableData?.find((node) => node.name.name === name);
 
   useEffect(() => {
@@ -226,9 +218,10 @@ const NodePageRSP = (props) => {
             render={() => (
               <NodePageMetricsTab
                 nodeName={name}
-                nodeStats={nodeStats}
-                avgStats={avgStats}
                 instanceIP={instanceIP}
+                controlPlaneInterface={controlPlaneInterface}
+                workloadPlaneInterface={workloadPlaneInterface}
+                nodesIPsInfo={nodesIPsInfo}
               />
             )}
           />
