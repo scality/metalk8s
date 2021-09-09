@@ -7,15 +7,15 @@ Feature: Solutions
         And the Solution Configuration file is absent
         When we import a Solution archive '/var/tmp/example-solution.iso'
         Then Solution archive 'example-solution' is imported correctly
-        And Solution 'example-solution' version '1.0.0' is available
-        When we activate Solution 'example-solution' version '1.0.0'
-        Then Solution 'example-solution' version '1.0.0' is activated
+        And Solution 'example-solution' version '1.0.2' is available
+        When we activate Solution 'example-solution' version '1.0.2'
+        Then Solution 'example-solution' version '1.0.2' is activated
         And CRD 'versionservers.example-solution.metalk8s.scality.com' exists in Kubernetes API
         And CRD 'clockservers.example-solution.metalk8s.scality.com' exists in Kubernetes API
         When we create a solution environment 'example-environment'
         Then solution environment 'example-environment' is available
         When we remove Taints on node 'bootstrap' before deployment
-        And we deploy Solution 'example-solution' in environment 'example-environment' with version '1.0.0'
+        And we deploy Solution 'example-solution' in environment 'example-environment' with version '1.0.2'
         Then we have 1 running pod labeled 'app=example-solution-operator' in namespace 'example-environment'
         When we deactivate Solution 'example-solution'
         And we delete Solution 'example-solution' in environment 'example-environment'

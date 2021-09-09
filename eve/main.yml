@@ -655,28 +655,28 @@ models:
       # OR if solution_base_url not set
       # "<solution_repo>/<solution_version>/<solution_archive>"
       # default to:
-      # "https://github.com/scality/metalk8s-solution-example/releases/download/1.0.0/example-solution-1.0.0.iso"
+      # "https://github.com/scality/metalk8s-solution-example/releases/download/1.0.0/example-solution-1.0.2.iso"
       <<: *retrieve_iso
       doStepIf: "%(prop:install_solution:-false)s"
       name: Retrieve Solution archive
       env:
         <<: *_env_retrieve_artifact_retry
         BASE_URL: >-
-          %(prop:solution_base_url:-%(prop:solution_repo:-https://github.com/scality/metalk8s-solution-example/releases/download)s/%(prop:solution_version:-1.0.0)s)s
-        FILE_SOURCE: "%(prop:solution_archive:-example-solution-1.0.0.iso)s"
-        FILE_DEST: "%(prop:solution_archive:-example-solution-1.0.0.iso)s"
+          %(prop:solution_base_url:-%(prop:solution_repo:-https://github.com/scality/metalk8s-solution-example/releases/download)s/%(prop:solution_version:-1.0.2)s)s
+        FILE_SOURCE: "%(prop:solution_archive:-example-solution-1.0.2.iso)s"
+        FILE_DEST: "%(prop:solution_archive:-example-solution-1.0.2.iso)s"
   - ShellCommand: &copy_solution_archive_bootstrap_ssh
       doStepIf: "%(prop:install_solution:-false)s"
       name: Copy Solution archive to bootstrap
       <<: *copy_iso_bootstrap_ssh
       env: &_env_copy_solution_archive_bootstrap_ssh
         <<: *_env_copy_iso_bootstrap_ssh
-        ARCHIVE: "%(prop:solution_archive:-example-solution-1.0.0.iso)s"
+        ARCHIVE: "%(prop:solution_archive:-example-solution-1.0.2.iso)s"
   - ShellCommand: &import_solution
       doStepIf: "%(prop:install_solution:-false)s"
       name: Import Solution archive
       env:
-        SOLUTION_ARCHIVE: "%(prop:solution_archive:-example-solution-1.0.0.iso)s"
+        SOLUTION_ARCHIVE: "%(prop:solution_archive:-example-solution-1.0.2.iso)s"
         METALK8S_MOUNTPOINT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
       command: >
         ssh -F ssh_config bootstrap
@@ -689,7 +689,7 @@ models:
       name: Activate Solution
       env:
         SOLUTION_NAME: "%(prop:solution_name:-example-solution)s"
-        SOLUTION_VERSION: "%(prop:solution_version:-1.0.0)s"
+        SOLUTION_VERSION: "%(prop:solution_version:-1.0.2)s"
         METALK8S_MOUNTPOINT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
       command: >
         ssh -F ssh_config bootstrap
@@ -730,7 +730,7 @@ models:
       env:
         ENVIRONMENT_NAME: "%(prop:solution_env_name:-example-environment)s"
         SOLUTION_NAME: "%(prop:solution_name:-example-solution)s"
-        SOLUTION_VERSION: "%(prop:solution_version:-1.0.0)s"
+        SOLUTION_VERSION: "%(prop:solution_version:-1.0.2)s"
         METALK8S_MOUNTPOINT: "/srv/scality/metalk8s-%(prop:metalk8s_version)s"
       command: >
         ssh -F ssh_config bootstrap
@@ -908,11 +908,11 @@ stages:
       - SetProperty:
           name: Set Example Solution version property
           property: example_solution_version
-          value: 1.0.0
+          value: 1.0.2
       - SetProperty:
           name: Set Example Solution version next property
           property: example_solution_version_next
-          value: 1.0.1
+          value: 1.0.3
       - TriggerStages:
           name: Trigger Solutions framework tests
           stage_names:
