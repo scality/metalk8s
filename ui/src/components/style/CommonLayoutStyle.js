@@ -80,6 +80,7 @@ export const TabsItemsStyle = styled.div`
     padding: 0;
     flex: 1;
     background-color: ${(props) => props.theme.backgroundLevel4};
+    overflow: scroll; //TODO: should be handled in the new tabs, to be checked.
   }
 `;
 
