@@ -630,7 +630,10 @@ export const getVolumeLatencyWriteQuery = (
     instanceIp,
     deviceName,
   );
-  const volumeLatencyWriteQuery = `sum(irate(node_disk_write_time_seconds_total${prometheusFilters}[5m]) / irate(node_disk_writes_completed_total${prometheusFilters}[5m])) * 1000000`;
+  const volumeLatencyWriteQuery = `sum(
+      irate(node_disk_write_time_seconds_total${prometheusFilters}[5m]) /
+      (irate(node_disk_writes_completed_total${prometheusFilters}[5m]) > 0) or
+      irate(node_disk_write_time_seconds_total${prometheusFilters}[5m]) > bool 0) * 1000000`;
   return getPrometheusQuery(
     ['volumeLatencyWrite', instanceIp, deviceName],
     volumeLatencyWriteQuery,
@@ -647,7 +650,10 @@ export const getVolumeLatencyReadQuery = (
     instanceIp,
     deviceName,
   );
-  const volumeLatencyReadQuery = `sum(irate(node_disk_read_time_seconds_total${prometheusFilters}[5m]) / irate(node_disk_reads_completed_total${prometheusFilters}[5m])) * 1000000`;
+  const volumeLatencyReadQuery = `sum(
+    irate(node_disk_read_time_seconds_total${prometheusFilters}[5m]) /
+    (irate(node_disk_reads_completed_total${prometheusFilters}[5m]) > 0) or
+    irate(node_disk_read_time_seconds_total${prometheusFilters}[5m]) > bool 0) * 1000000`;
   return getPrometheusQuery(
     ['volumeLatencyRead', instanceIp, deviceName],
     volumeLatencyReadQuery,
