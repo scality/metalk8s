@@ -2,53 +2,59 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
-import styled, { useTheme } from 'styled-components';
-import { LineChart, Loader, Dropdown, Button, Toggle } from '@scality/core-ui';
-import { padding } from '@scality/core-ui/dist/style/theme';
+import { useIntl } from 'react-intl';
+import styled from 'styled-components';
+import { Dropdown, Button, Toggle } from '@scality/core-ui';
+import { spacing } from '@scality/core-ui/dist/style/theme';
+import { queryTimeSpansCodes } from '@scality/core-ui/dist/components/constants';
 import {
-  updateNodeStatsFetchArgumentAction,
-  MonitoringMetrics,
-} from '../ducks/app/monitoring';
-import {
-  yAxisUsage,
-  yAxis,
-  getTooltipConfig,
-} from '../components/LinechartSpec';
+  useMetricsTimeSpan,
+  SyncedCursorCharts,
+} from '@scality/core-ui/dist/next';
+import { updateNodeStatsFetchArgumentAction } from '../ducks/app/monitoring';
 import {
   NodeTab,
   MetricsActionContainer,
-  GraphTitle,
   GraphWrapper,
 } from '../components/style/CommonLayoutStyle';
-import {
-  addMissingDataPoint,
-  fromUnixTimestampToDate,
-  useURLQuery,
-  useDynamicChartSize,
-} from '../services/utils';
+import { useURLQuery } from '../services/utils';
 import {
   LAST_SEVEN_DAYS,
   LAST_TWENTY_FOUR_HOURS,
   LAST_ONE_HOUR,
-  SAMPLE_DURATION_LAST_SEVEN_DAYS,
-  SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
-  SAMPLE_DURATION_LAST_ONE_HOUR,
-  SAMPLE_FREQUENCY_LAST_SEVEN_DAYS,
-  SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
-  SAMPLE_FREQUENCY_LAST_ONE_HOUR,
-  queryTimeSpansCodes,
   PORT_NODE_EXPORTER,
   GRAFANA_DASHBOARDS,
 } from '../constants';
-import { useIntl } from 'react-intl';
 import { useTypedSelector } from '../hooks';
+import {
+  getCPUUsageQuery,
+  getCPUUsageAvgQuery,
+  getIOPSWriteQuery,
+  getIOPSReadQuery,
+  getIOPSWriteAvgQuery,
+  getIOPSReadAvgQuery,
+  getSystemLoadQuery,
+  getSystemLoadAvgQuery,
+  getMemoryQuery,
+  getMemoryAvgQuery,
+  getControlPlaneBandWidthInQuery,
+  getControlPlaneBandWidthOutQuery,
+  getControlPlaneBandWidthAvgInQuery,
+  getControlPlaneBandWidthAvgOutQuery,
+  getWorkloadPlaneBandWidthInQuery,
+  getWorkloadPlaneBandWidthOutQuery,
+  getWorkloadPlaneBandWidthAvgInQuery,
+  getWorkloadPlaneBandWidthAvgOutQuery,
+} from '../services/platformlibrary/metrics';
+import MetricChart from '../components/MetricChart';
+import MetricSymmetricalChart from '../components/MetricSymmetricalChart';
 
 const GraphGrid = styled.div`
   display: grid;
   gap: 8px;
   grid-template:
     'cpuusage systemload' 1fr
-    'memory iops ' 1fr
+    'memory iops' 1fr
     'cpbandwidth wpbandwidth' 1fr
     / 1fr 1fr;
   .sc-vegachart svg {
@@ -57,8 +63,8 @@ const GraphGrid = styled.div`
   .cpuusage {
     grid-area: cpuusage;
   }
-  .systemLoad {
-    grid-area: systemLoad;
+  .systemload {
+    grid-area: systemload;
   }
   .memory {
     grid-area: memory;
@@ -72,7 +78,10 @@ const GraphGrid = styled.div`
   .wpbandwidth {
     grid-area: wpbandwidth;
   }
-  padding-left: ${padding.small};
+  padding-left: ${spacing.sp12};
+  .sc-tabs-item-content {
+    overflow: scroll;
+  }
 `;
 
 const MetricsToggleWrapper = styled.div`
@@ -81,35 +90,33 @@ const MetricsToggleWrapper = styled.div`
   flex: 1;
 
   .sc-toggle {
-    margin-right: ${padding.small};
+    margin-right: ${spacing.sp8};
   }
 `;
 
 const NodePageMetricsTab = ({
   nodeName,
-  nodeStats,
   instanceIP,
-  avgStats,
+  controlPlaneInterface,
+  workloadPlaneInterface,
+  nodesIPsInfo,
 }: {
   nodeName: string,
-  nodeStats: MonitoringMetrics,
   instanceIP: string,
-  avgStats: MonitoringMetrics,
+  controlPlaneInterface: string,
+  workloadPlaneInterface: string,
+  nodesIPsInfo: [],
 }) => {
   const dispatch = useDispatch();
-  const theme = useTheme();
   const history = useHistory();
   const query = useURLQuery();
   const intl = useIntl();
   const api = useTypedSelector((state) => state.config.api);
-  const metricsTimeSpan = useTypedSelector(
-    (state) => state.app.monitoring.nodeStats.metricsTimeSpan,
-  );
+  const { label } = useMetricsTimeSpan();
+
   const showAvg = useTypedSelector(
     (state) => state.app.monitoring.nodeStats.showAvg,
   );
-
-  const [graphWidth, graphHeight] = useDynamicChartSize('graph_container');
 
   // To redirect to the right Node(Detailed) dashboard in Grafana
   const unameInfos = useTypedSelector(
@@ -120,363 +127,12 @@ const NodePageMetricsTab = ({
       unameInfo?.metric?.instance === `${instanceIP}:${PORT_NODE_EXPORTER}`,
   )?.metric?.nodename;
 
-  let sampleDuration = null;
-  let sampleFrequency = null;
-  if (metricsTimeSpan === LAST_SEVEN_DAYS) {
-    // do the query every 1 hour
-    sampleDuration = SAMPLE_DURATION_LAST_SEVEN_DAYS;
-    sampleFrequency = SAMPLE_FREQUENCY_LAST_SEVEN_DAYS;
-  } else if (metricsTimeSpan === LAST_TWENTY_FOUR_HOURS) {
-    // do the query every 1 minute
-    sampleDuration = SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS;
-    sampleFrequency = SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS;
-  } else if (metricsTimeSpan === LAST_ONE_HOUR) {
-    // do the query every 1 second
-    sampleDuration = SAMPLE_DURATION_LAST_ONE_HOUR;
-    sampleFrequency = SAMPLE_FREQUENCY_LAST_ONE_HOUR;
-  }
-
-  // slot[0] => timestamp
-  // slot[1] => value
-  // We need to manually add the missing data points due to the shutdown of VM
-  const queryStartingTime = nodeStats?.queryStartingTime;
-  const operateMetricRawData = (metricRawData) =>
-    addMissingDataPoint(
-      metricRawData,
-      queryStartingTime,
-      sampleDuration,
-      sampleFrequency,
-    );
-
-  const typedMetrics = {
-    cpuUsage: 'CPU Usage',
-    systemLoad: 'System Load',
-    memory: 'Memory',
-    iopsRead: 'Read',
-    iopsWrite: 'Write',
-    controlPlaneNetworkBandwidthIn: 'In',
-    controlPlaneNetworkBandwidthOut: 'Out',
-    workloadPlaneNetworkBandwidthIn: 'In',
-    workloadPlaneNetworkBandwidthOut: 'Out',
-  };
-
-  const typedAvgMetrics = {
-    cpuUsage: 'cluster avg',
-    systemLoad: 'cluster avg',
-    memory: 'cluster avg',
-    iopsRead: 'read avg',
-    iopsWrite: 'write avg',
-    controlPlaneNetworkBandwidthIn: 'in avg',
-    controlPlaneNetworkBandwidthOut: 'out avg',
-    workloadPlaneNetworkBandwidthIn: 'in avg',
-    workloadPlaneNetworkBandwidthOut: 'out avg',
-  };
-
-  const nodeStatsData = Object.keys(nodeStats).reduce((acc, metricName) => {
-    const data = operateMetricRawData(nodeStats[metricName][0]?.values);
-
-    let extra = {};
-    const metricType = typedMetrics[metricName];
-    if (metricType !== undefined) extra.type = metricType;
-
-    /*
-     ** Using 'symbol': 'A' because vega-lite internally assign the plain line
-     ** to the first alphabetical item when strokeDash is used
-     */
-    acc[metricName] = data.map((slot) => ({
-      date: fromUnixTimestampToDate(slot[0]),
-      y: slot[1],
-      symbol: 'A',
-      ...extra,
-    }));
-    return acc;
-  }, {});
-
-  const avgStatsData = Object.keys(avgStats).reduce((acc, metricName) => {
-    const data = operateMetricRawData(avgStats[metricName][0]?.values);
-
-    let extra = {};
-    const metricType = typedAvgMetrics[metricName];
-    if (metricType !== undefined) extra.type = metricType;
-
-    acc[metricName] = data.map((slot) => ({
-      date: fromUnixTimestampToDate(slot[0]),
-      y: slot[1],
-      symbol: 'Cluster avg',
-      ...extra,
-    }));
-    return acc;
-  }, {});
-
-  let cpuData = nodeStatsData['cpuUsage'];
-  let systemLoadData = nodeStatsData['systemLoad'];
-  let memoryData = nodeStatsData['memory'];
-  // Combine the read/write, in/out into one dataset
-  let iopsData = nodeStatsData['iopsRead'].concat(nodeStatsData['iopsWrite']);
-  let controlPlaneNetworkBandwidthData = nodeStatsData[
-    'controlPlaneNetworkBandwidthIn'
-  ].concat(nodeStatsData['controlPlaneNetworkBandwidthOut']);
-  let workloadPlaneNetworkBandwidthData = nodeStatsData[
-    'workloadPlaneNetworkBandwidthIn'
-  ].concat(nodeStatsData['workloadPlaneNetworkBandwidthOut']);
-
-  if (showAvg) {
-    cpuData = cpuData.concat(avgStatsData['cpuUsage']);
-    systemLoadData = systemLoadData.concat(avgStatsData['systemLoad']);
-    memoryData = memoryData.concat(avgStatsData['memory']);
-    iopsData = iopsData
-      .concat(avgStatsData['iopsRead'])
-      .concat(avgStatsData['iopsWrite']);
-    controlPlaneNetworkBandwidthData = controlPlaneNetworkBandwidthData
-      .concat(avgStatsData['controlPlaneNetworkBandwidthIn'])
-      .concat(avgStatsData['controlPlaneNetworkBandwidthOut']);
-    workloadPlaneNetworkBandwidthData = workloadPlaneNetworkBandwidthData
-      .concat(avgStatsData['workloadPlaneNetworkBandwidthIn'])
-      .concat(avgStatsData['workloadPlaneNetworkBandwidthOut']);
-  }
-
-  // Tooltip Custom Spec
-  const ttpCPUSpec = [
-    {
-      field: 'CPU Usage',
-      type: 'quantitative',
-      title: `CPU Usage - ${nodeName}`,
-      format: '.1f',
-    },
-  ];
-  const ttpSystemLoadSpec = [
-    {
-      field: 'System Load',
-      type: 'quantitative',
-      title: `System Load - ${nodeName}`,
-      format: '.1f',
-    },
-  ];
-  const ttpMemorySpec = [
-    {
-      field: 'Memory',
-      type: 'quantitative',
-      title: `Memory - ${nodeName}`,
-      format: '.1f',
-    },
-  ];
-  const ttpIOPSSpec = [
-    {
-      field: `Read`,
-      type: 'quantitative',
-      title: `Read - ${nodeName}`,
-      format: '.1f',
-    },
-    {
-      field: 'Write',
-      type: 'quantitative',
-      title: `Write - ${nodeName}`,
-      format: '.1f',
-    },
-  ];
-  const ttpInOutSpec = [
-    {
-      field: 'In',
-      type: 'quantitative',
-      title: `In - ${nodeName}`,
-      format: '.2f',
-    },
-    {
-      field: 'Out',
-      type: 'quantitative',
-      title: `Out - ${nodeName}`,
-      format: '.2f',
-    },
-  ];
-
-  const clusterAvgLocale = intl.formatMessage({ id: 'cluster_avg' });
-  if (showAvg) {
-    ttpCPUSpec.push({
-      field: 'cluster avg',
-      type: 'quantitative',
-      title: `CPU Usage - ${clusterAvgLocale}`,
-      format: '.1f',
-    });
-    ttpSystemLoadSpec.push({
-      field: 'cluster avg',
-      type: 'quantitative',
-      title: `System Load - ${clusterAvgLocale}`,
-      format: '.1f',
-    });
-    ttpMemorySpec.push({
-      field: 'cluster avg',
-      type: 'quantitative',
-      title: `Memory - ${clusterAvgLocale}`,
-      format: '.1f',
-    });
-    ttpIOPSSpec.push(
-      {
-        field: 'read avg',
-        type: 'quantitative',
-        title: `Read - ${clusterAvgLocale}`,
-        format: '.1f',
-      },
-      {
-        field: 'write avg',
-        type: 'quantitative',
-        title: `Write - ${clusterAvgLocale}`,
-        format: '.1f',
-      },
-    );
-    ttpInOutSpec.push(
-      {
-        field: 'in avg',
-        type: 'quantitative',
-        title: `In - ${clusterAvgLocale}`,
-        format: '.2f',
-      },
-      {
-        field: 'out avg',
-        type: 'quantitative',
-        title: `Out - ${clusterAvgLocale}`,
-        format: '.2f',
-      },
-    );
-  }
-  const tooltipConfigCPU = getTooltipConfig(ttpCPUSpec);
-  const tooltipConfigSystemLoad = getTooltipConfig(ttpSystemLoadSpec);
-  const tooltipConfigMemory = getTooltipConfig(ttpMemorySpec);
-  const tooltipConfigIops = getTooltipConfig(ttpIOPSSpec);
-  const tooltipConfigInOut = getTooltipConfig(ttpInOutSpec);
-
-  const xAxis = {
-    field: 'date',
-    type: 'temporal',
-    axis: {
-      // Refer to all the available time format: https://github.com/d3/d3-time-format#locale_format
-      format:
-        metricsTimeSpan === (LAST_ONE_HOUR || LAST_TWENTY_FOUR_HOURS)
-          ? '%H:%M'
-          : '%m/%d',
-      // Boolean value that determines whether the axis should include ticks.
-      ticks: true,
-      tickCount: 4,
-      labelColor: theme.textSecondary,
-    },
-    title: null,
-  };
-
-  const strokeDashConfig = {
-    field: 'symbol',
-    type: 'nominal',
-    legend: {
-      direction: 'horizontal',
-      orient: 'bottom',
-      title: null,
-      values: [`${clusterAvgLocale}.`],
-      symbolSize: 300,
-      labelFontSize: 12,
-    },
-  };
-
-  const opacityConfig = {
-    condition: {
-      test: 'datum.symbol == "Cluster avg"',
-      value: 0.5,
-    },
-    value: 1,
-  };
-
-  // the `read` and `out` should be the same color
-  // the `write` and `in` should be the same color
-  const colorCPU = {
-    field: 'type',
-    type: 'nominal',
-    scale: { range: ['#9645c2'] },
-    legend: {
-      direction: 'horizontal',
-      orient: 'bottom',
-      title: null,
-      values: showAvg ? ['CPU Usage'] : [''],
-      labelFontSize: 12,
-      symbolSize: 300,
-    },
-  };
-
-  const colorSystemLoad = {
-    field: 'type',
-    type: 'nominal',
-    scale: { range: ['#9645c2'] },
-    legend: {
-      direction: 'horizontal',
-      orient: 'bottom',
-      title: null,
-      values: showAvg ? ['System Load'] : [''],
-      labelFontSize: 12,
-      symbolSize: 300,
-    },
-  };
-
-  const colorMemory = {
-    field: 'type',
-    type: 'nominal',
-    scale: { range: ['#9645c2'] },
-    legend: {
-      direction: 'horizontal',
-      orient: 'bottom',
-      title: null,
-      values: showAvg ? ['Memory'] : [''],
-      labelFontSize: 12,
-      symbolSize: 300,
-    },
-  };
-
-  const colorsWriteRead = {
-    field: 'type',
-    type: 'nominal',
-    legend: {
-      direction: 'horizontal',
-      orient: 'bottom',
-      title: null,
-      symbolType: 'stroke',
-      symbolSize: 300,
-      labelFontSize: 12,
-      columnPadding: 15,
-      symbolStrokeWidth: 2,
-      values: ['Read', 'Write'],
-    },
-    domain: ['Read', 'Write'],
-    scale: {
-      range: showAvg
-        ? ['#9645c2', '#bfaa7f', '#9645c2', '#bfaa7f']
-        : ['#9645c2', '#bfaa7f'],
-    },
-  };
-
-  const colorsInOut = {
-    field: 'type',
-    type: 'nominal',
-    legend: {
-      direction: 'horizontal',
-      orient: 'bottom',
-      title: null,
-      symbolType: 'stroke',
-      symbolSize: 300,
-      labelFontSize: 12,
-      columnPadding: 15,
-      symbolStrokeWidth: 2,
-      values: ['In', 'Out'],
-    },
-    domain: ['In', 'Out'],
-    scale: {
-      range: showAvg
-        ? ['#bfaa7f', '#9645c2', '#bfaa7f', '#9645c2']
-        : ['#bfaa7f', '#9645c2'],
-    },
-  };
-  const lineConfig = { strokeWidth: 1.5 };
-
   // write the selected timespan in URL
-  const writeUrlTimeSpan = (timespan) => {
-    let formatted = queryTimeSpansCodes.find((item) => item.value === timespan);
+  const writeUrlTimeSpan = (label) => {
+    let formatted = queryTimeSpansCodes.find((item) => item.label === label);
 
     if (formatted) {
-      query.set('from', formatted.label);
+      query.set('from', formatted.query);
       history.push({ search: query.toString() });
     }
   };
@@ -496,16 +152,14 @@ const NodePageMetricsTab = ({
     label: option,
     'data-cy': option,
     onClick: () => {
-      dispatch(updateNodeStatsFetchArgumentAction({ metricsTimeSpan: option }));
+      //dispatch(updateNodeStatsFetchArgumentAction({ metricsTimeSpan: option }));
       writeUrlTimeSpan(option);
     },
-    selected: metricsTimeSpan === option,
+    selected: label === option,
   }));
-
   const metricsTimeSpanDropdownItems = metricsTimeSpanItems.filter(
-    (mTS) => mTS.label !== metricsTimeSpan,
+    (mTS) => mTS.label !== label,
   );
-
   return (
     <NodeTab>
       <MetricsActionContainer>
@@ -524,7 +178,6 @@ const NodePageMetricsTab = ({
               );
             }}
           />
-          {showAvg && !avgStatsData['cpuUsage'].length ? <Loader /> : null}
         </MetricsToggleWrapper>
         {api && api.url_grafana && (
           <Button
@@ -540,160 +193,114 @@ const NodePageMetricsTab = ({
         )}
         <Dropdown
           items={metricsTimeSpanDropdownItems}
-          text={metricsTimeSpan}
+          text={label}
           size="small"
           data-cy="metrics_timespan_selection"
         />
       </MetricsActionContainer>
-      <GraphGrid id="graph_container">
-        <GraphWrapper className="cpuusage">
-          <GraphTitle>
-            <div>CPU Usage (%)</div>
-            {!cpuData.length && <Loader />}
-          </GraphTitle>
-          {graphWidth !== 0 && (
-            <LineChart
-              id={'node_cpu_usage_id'}
-              data={cpuData.length ? cpuData : []}
-              xAxis={xAxis}
-              yAxis={cpuData.length ? yAxisUsage : yAxis}
-              color={colorCPU}
-              width={graphWidth}
-              height={graphHeight}
-              tooltip={true}
-              tooltipConfig={tooltipConfigCPU}
-              lineConfig={lineConfig}
-              strokeDashEncodingConfig={showAvg && strokeDashConfig}
-              opacityEncodingConfig={opacityConfig}
-              tooltipTheme={'custom'}
-            />
-          )}
-        </GraphWrapper>
-        <GraphWrapper className="systemload">
-          <GraphTitle>
-            <div>CPU System Load (%)</div>
-            {!systemLoadData.length && <Loader />}
-          </GraphTitle>
-          {graphWidth !== 0 && (
-            <LineChart
-              id={'node_system_load_id'}
-              data={systemLoadData ? systemLoadData : []}
-              xAxis={xAxis}
-              yAxis={yAxis}
-              color={colorSystemLoad}
-              width={graphWidth}
-              height={graphHeight}
-              tooltip={true}
-              tooltipConfig={tooltipConfigSystemLoad}
-              lineConfig={lineConfig}
-              strokeDashEncodingConfig={showAvg && strokeDashConfig}
-              opacityEncodingConfig={opacityConfig}
-              tooltipTheme={'custom'}
-            />
-          )}
-        </GraphWrapper>
-
-        <GraphWrapper className="memory">
-          <GraphTitle>
-            <div> Memory (%)</div>
-            {!memoryData.length && <Loader />}
-          </GraphTitle>
-          {graphWidth !== 0 && (
-            <LineChart
-              id={'node_memory_id'}
-              data={memoryData.length ? memoryData : []}
-              xAxis={xAxis}
-              yAxis={memoryData.length ? yAxisUsage : yAxis}
-              color={colorMemory}
-              width={graphWidth}
-              height={graphHeight}
-              tooltip={true}
-              tooltipConfig={tooltipConfigMemory}
-              lineConfig={lineConfig}
-              strokeDashEncodingConfig={showAvg && strokeDashConfig}
-              opacityEncodingConfig={opacityConfig}
-              tooltipTheme={'custom'}
-            />
-          )}
-        </GraphWrapper>
-        <GraphWrapper className="iops">
-          <GraphTitle>
-            <div>IOPS</div>
-            {!iopsData.length && <Loader />}
-          </GraphTitle>
-          {graphWidth !== 0 && (
-            <LineChart
-              id={'node_IOPS_id'}
-              data={iopsData.length ? iopsData : []}
-              xAxis={xAxis}
-              yAxis={yAxis}
-              color={colorsWriteRead}
-              width={graphWidth}
-              height={graphHeight}
-              tooltip={true}
-              tooltipConfig={tooltipConfigIops}
-              lineConfig={lineConfig}
-              strokeDashEncodingConfig={showAvg && strokeDashConfig}
-              opacityEncodingConfig={opacityConfig}
-              tooltipTheme={'custom'}
-            />
-          )}
-        </GraphWrapper>
-        <GraphWrapper className="cpbandwidth">
-          <GraphTitle>
-            <div>Control Plane Bandwidth (MB/s)</div>
-            {!controlPlaneNetworkBandwidthData.length && <Loader />}
-          </GraphTitle>
-          {graphWidth !== 0 && (
-            <LineChart
-              id={'node_control_plane_bandwidth_id'}
-              data={
-                controlPlaneNetworkBandwidthData.length
-                  ? controlPlaneNetworkBandwidthData
-                  : []
-              }
-              xAxis={xAxis}
-              yAxis={yAxis}
-              color={colorsInOut}
-              width={graphWidth}
-              height={graphHeight}
-              tooltip={true}
-              tooltipConfig={tooltipConfigInOut}
-              lineConfig={lineConfig}
-              strokeDashEncodingConfig={showAvg && strokeDashConfig}
-              opacityEncodingConfig={opacityConfig}
-              tooltipTheme={'custom'}
-            />
-          )}
-        </GraphWrapper>
-        <GraphWrapper className="wpbandwidth">
-          <GraphTitle>
-            <div>Workload Plane Bandwidth (MB/s)</div>
-            {!workloadPlaneNetworkBandwidthData.length && <Loader />}
-          </GraphTitle>
-          {graphWidth !== 0 && (
-            <LineChart
-              id={'node_workload_plane_bandwidth_id'}
-              data={
-                workloadPlaneNetworkBandwidthData.length
-                  ? workloadPlaneNetworkBandwidthData
-                  : []
-              }
-              xAxis={xAxis}
-              yAxis={yAxis}
-              color={colorsInOut}
-              width={graphWidth}
-              height={graphHeight}
-              tooltip={true}
-              tooltipConfig={tooltipConfigInOut}
-              lineConfig={lineConfig}
-              strokeDashEncodingConfig={showAvg && strokeDashConfig}
-              opacityEncodingConfig={opacityConfig}
-              tooltipTheme={'custom'}
-            />
-          )}
-        </GraphWrapper>
-      </GraphGrid>
+      <SyncedCursorCharts>
+        <GraphGrid id="graph_container">
+          <GraphWrapper className="cpuusage">
+            <MetricChart
+              title={'CPU Usage'}
+              yAxisType={'percentage'}
+              nodeName={nodeName}
+              instanceIP={instanceIP}
+              showAvg={showAvg}
+              getMetricQuery={getCPUUsageQuery}
+              getMetricAvgQuery={getCPUUsageAvgQuery}
+            ></MetricChart>
+          </GraphWrapper>
+          <GraphWrapper className="systemload">
+            <MetricChart
+              title={'CPU System Load'}
+              yAxisType={'default'}
+              nodeName={nodeName}
+              instanceIP={instanceIP}
+              showAvg={showAvg}
+              getMetricQuery={getSystemLoadQuery}
+              getMetricAvgQuery={getSystemLoadAvgQuery}
+            ></MetricChart>
+          </GraphWrapper>
+          <GraphWrapper className="memory">
+            <MetricChart
+              title={'Memory'}
+              yAxisType={'percentage'}
+              nodeName={nodeName}
+              instanceIP={instanceIP}
+              showAvg={showAvg}
+              getMetricQuery={getMemoryQuery}
+              getMetricAvgQuery={getMemoryAvgQuery}
+            ></MetricChart>
+          </GraphWrapper>
+          <GraphWrapper className="iops">
+            <MetricSymmetricalChart
+              title={'IOPS'}
+              yAxisTitle={'write(+) / read(-)'}
+              yAxisType={'symmetrical'}
+              nodeName={nodeName}
+              instanceIP={instanceIP}
+              showAvg={showAvg}
+              getMetricAboveQuery={getIOPSWriteQuery}
+              getMetricBelowQuery={getIOPSReadQuery}
+              getMetricAboveAvgQuery={getIOPSWriteAvgQuery}
+              getMetricBelowAvgQuery={getIOPSReadAvgQuery}
+              metricPrefixAbove={'write'}
+              metricPrefixBelow={'read'}
+            ></MetricSymmetricalChart>
+          </GraphWrapper>
+          <GraphWrapper className="cpbandwidth">
+            <MetricSymmetricalChart
+              title={'Control Plane Bandwidth'}
+              yAxisTitle={'in(+) / out(-)'}
+              yAxisType={'symmetrical'}
+              nodeName={nodeName}
+              instanceIP={instanceIP}
+              showAvg={showAvg}
+              nodesIPsInfo={nodesIPsInfo}
+              getMetricAboveQuery={getControlPlaneBandWidthInQuery}
+              getMetricBelowQuery={getControlPlaneBandWidthOutQuery}
+              getMetricAboveAvgQuery={getControlPlaneBandWidthAvgInQuery}
+              getMetricBelowAvgQuery={getControlPlaneBandWidthAvgOutQuery}
+              metricPrefixAbove={'in'}
+              metricPrefixBelow={'out'}
+              planeInterface={controlPlaneInterface}
+              unitRange={[
+                { threshold: 0, label: 'B/s' },
+                { threshold: 1024, label: 'KiB/s' },
+                { threshold: 1024 * 1024, label: 'MiB/s' },
+                { threshold: 1024 * 1024 * 1024, label: 'GiB/s' },
+                { threshold: 1024 * 1024 * 1024 * 1024, label: 'TiB/s' },
+              ]}
+            ></MetricSymmetricalChart>
+          </GraphWrapper>
+          <GraphWrapper className="wpbandwidth">
+            <MetricSymmetricalChart
+              title={'Workload Plane Bandwidth'}
+              yAxisTitle={'in(+) / out(-)'}
+              yAxisType={'symmetrical'}
+              nodeName={nodeName}
+              instanceIP={instanceIP}
+              showAvg={showAvg}
+              nodesIPsInfo={nodesIPsInfo}
+              getMetricAboveQuery={getWorkloadPlaneBandWidthInQuery}
+              getMetricBelowQuery={getWorkloadPlaneBandWidthOutQuery}
+              getMetricAboveAvgQuery={getWorkloadPlaneBandWidthAvgInQuery}
+              getMetricBelowAvgQuery={getWorkloadPlaneBandWidthAvgOutQuery}
+              metricPrefixAbove={'in'}
+              metricPrefixBelow={'out'}
+              planeInterface={workloadPlaneInterface}
+              unitRange={[
+                { threshold: 0, label: 'B/s' },
+                { threshold: 1024, label: 'KiB/s' },
+                { threshold: 1024 * 1024, label: 'MiB/s' },
+                { threshold: 1024 * 1024 * 1024, label: 'GiB/s' },
+                { threshold: 1024 * 1024 * 1024 * 1024, label: 'TiB/s' },
+              ]}
+            ></MetricSymmetricalChart>
+          </GraphWrapper>
+        </GraphGrid>
+      </SyncedCursorCharts>
     </NodeTab>
   );
 };
