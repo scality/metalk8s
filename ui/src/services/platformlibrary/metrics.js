@@ -8,6 +8,26 @@ export type TimeSpanProps = {
   frequency: number,
 };
 
+const getPrometheusQuery = (
+  queryKey: string[],
+  prometheusQuery: string,
+  { startingTimeISO, currentTimeISO, frequency }: TimeSpanProps,
+): typeof useQuery => {
+  return {
+    queryKey,
+    queryFn: () => {
+      return queryPromtheusMetrics(
+        frequency,
+        startingTimeISO,
+        currentTimeISO,
+        encodeURIComponent(prometheusQuery),
+      );
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  };
+};
+
 // the queries for the metrics
 // TODO: we may want to merge useStartingTimeStamp() and useMetricsTimeSpan(), so the all props related to timespan will be returned in one object
 export const getCPUUsageQuery = (
@@ -509,4 +529,127 @@ export const getIOPSReadAvgQuery = (
     refetchOnWindowFocus: false,
     enabled: showAvg,
   };
+};
+
+export const getVolumeUsageQuery = (
+  pvcName: string,
+  namespace: string,
+  timespanProps: TimeSpanProps,
+): typeof useQuery => {
+  const prometheusFilters = `{namespace="${namespace}",persistentvolumeclaim="${pvcName}"}`;
+  const volumeUsageQuery = `kubelet_volume_stats_used_bytes${prometheusFilters} / kubelet_volume_stats_capacity_bytes${prometheusFilters}`;
+  return getPrometheusQuery(
+    ['volumeUsage', pvcName, namespace],
+    volumeUsageQuery,
+    timespanProps,
+  );
+};
+
+const getNodeDevicePrometheusFilter = (
+  instanceIp: string,
+  deviceName: string,
+) => {
+  return `{instance="${instanceIp}:${PORT_NODE_EXPORTER}",device="${deviceName}"}`;
+};
+
+export const getVolumeThroughputReadQuery = (
+  instanceIp: string,
+  deviceName: string,
+  timespanProps: TimeSpanProps,
+): typeof useQuery => {
+  const prometheusFilters = getNodeDevicePrometheusFilter(
+    instanceIp,
+    deviceName,
+  );
+  const volumeThroughputReadQuery = `sum(irate(node_disk_read_bytes_total${prometheusFilters}[1m]))`;
+  return getPrometheusQuery(
+    ['volumeThroughputRead', instanceIp, deviceName],
+    volumeThroughputReadQuery,
+    timespanProps,
+  );
+};
+
+export const getVolumeThroughputWriteQuery = (
+  instanceIp: string,
+  deviceName: string,
+  timespanProps: TimeSpanProps,
+): typeof useQuery => {
+  const prometheusFilters = getNodeDevicePrometheusFilter(
+    instanceIp,
+    deviceName,
+  );
+  const volumeThroughputWriteQuery = `sum(irate(node_disk_written_bytes_total${prometheusFilters}[1m]))`;
+  return getPrometheusQuery(
+    ['volumeThroughputWrite', instanceIp, deviceName],
+    volumeThroughputWriteQuery,
+    timespanProps,
+  );
+};
+
+export const getVolumeIOPSReadQuery = (
+  instanceIp: string,
+  deviceName: string,
+  timespanProps: TimeSpanProps,
+): typeof useQuery => {
+  const prometheusFilters = getNodeDevicePrometheusFilter(
+    instanceIp,
+    deviceName,
+  );
+  const volumeIOPSReadQuery = `sum(irate(node_disk_reads_completed_total${prometheusFilters}[5m]))`;
+  return getPrometheusQuery(
+    ['volumeIOPSRead', instanceIp, deviceName],
+    volumeIOPSReadQuery,
+    timespanProps,
+  );
+};
+
+export const getVolumeIOPSWriteQuery = (
+  instanceIp: string,
+  deviceName: string,
+  timespanProps: TimeSpanProps,
+): typeof useQuery => {
+  const prometheusFilters = getNodeDevicePrometheusFilter(
+    instanceIp,
+    deviceName,
+  );
+  const volumeIOPSWriteQuery = `sum(irate(node_disk_writes_completed_total${prometheusFilters}[5m]))`;
+  return getPrometheusQuery(
+    ['volumeIOPSWrite', instanceIp, deviceName],
+    volumeIOPSWriteQuery,
+    timespanProps,
+  );
+};
+
+export const getVolumeLatencyWriteQuery = (
+  instanceIp: string,
+  deviceName: string,
+  timespanProps: TimeSpanProps,
+): typeof useQuery => {
+  const prometheusFilters = getNodeDevicePrometheusFilter(
+    instanceIp,
+    deviceName,
+  );
+  const volumeLatencyWriteQuery = `sum(irate(node_disk_write_time_seconds_total${prometheusFilters}[5m]) / irate(node_disk_writes_completed_total${prometheusFilters}[5m])) * 1000000`;
+  return getPrometheusQuery(
+    ['volumeLatencyWrite', instanceIp, deviceName],
+    volumeLatencyWriteQuery,
+    timespanProps,
+  );
+};
+
+export const getVolumeLatencyReadQuery = (
+  instanceIp: string,
+  deviceName: string,
+  timespanProps: TimeSpanProps,
+): typeof useQuery => {
+  const prometheusFilters = getNodeDevicePrometheusFilter(
+    instanceIp,
+    deviceName,
+  );
+  const volumeLatencyReadQuery = `sum(irate(node_disk_read_time_seconds_total${prometheusFilters}[5m]) / irate(node_disk_reads_completed_total${prometheusFilters}[5m])) * 1000000`;
+  return getPrometheusQuery(
+    ['volumeLatencyRead', instanceIp, deviceName],
+    volumeLatencyReadQuery,
+    timespanProps,
+  );
 };
