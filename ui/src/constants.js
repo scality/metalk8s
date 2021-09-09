@@ -54,6 +54,7 @@ export const QUERY_LAST_ONE_HOUR = 'now-1h';
 
 export const PORT_NODE_EXPORTER = '9100';
 
+// deprecated should retrieve from core-ui
 export const queryTimeSpansCodes = [
   {
     label: QUERY_LAST_SEVEN_DAYS,
@@ -120,10 +121,10 @@ export const CIRCLE_BASE_SIZE = 'CIRCLE_BASE_SIZE';
 export const CIRCLE_DOUBLE_SIZE = 'CIRCLE_DOUBLE_SIZE';
 
 // LineChart colors
-export const lineColor1 = '#245A83';
-export const lineColor2 = '#808080';
-export const lineColor3 = '#A04EC9';
-export const lineColor4 = '#C6B38A';
+export const lineColor1 = '#A14FBF';
+export const lineColor2 = '#BE9A40';
+export const lineColor3 = '#4BE4E2';
+export const lineColor4 = '#DC90F1';
 
 // Grafana dashboard UIDs (for stable links)
 export const GRAFANA_DASHBOARDS = {
@@ -131,3 +132,7 @@ export const GRAFANA_DASHBOARDS = {
   nodes: "node-exporter-full",
   volumes: "919b92a8e8041bd567af9edab12c840c",
 };
+
+// Height of the charts
+export const HEIGHT_DEFAULT_CHART = 120;
+export const HEIGHT_SYMMETRICAL_CHART = 160;
