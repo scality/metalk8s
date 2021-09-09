@@ -65,14 +65,14 @@ const MetricChart = ({
       chartStartTimeRef.current = startTimeRef.current;
       seriesRef.current = getSingleResourceSerie(
         metricQuery.data,
-        nodeIPAddress,
+        nodeIPAddress.name,
       );
     } else if (!isMetricAvgDataLoading && !isMetricDataLoading && showAvg) {
       // show cluster average
       chartStartTimeRef.current = startTimeRef.current;
       seriesRef.current = getSingleResourceSerie(
         metricQuery.data,
-        nodeIPAddress,
+        nodeIPAddress.name,
         metricAvgQuery.data,
       );
     }

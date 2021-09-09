@@ -81,7 +81,7 @@ export const formatNodesThroughputPromRangeForChart = (
 
 export const getSingleResourceSerie = (
   result: PrometheusQueryResult,
-  nodeIPAddress?: { internalIP: string, name: string },
+  resource: string,
   resultAvg?: PrometheusQueryResult,
 ): Serie[] => {
   const series = [];
@@ -91,7 +91,7 @@ export const getSingleResourceSerie = (
     const prometheusData = matrixResult?.values ?? [];
     const singleSerie = {
       data: prometheusData,
-      resource: nodeIPAddress.name,
+      resource,
       getTooltipLabel: (_, resource) => {
         return resource;
       },

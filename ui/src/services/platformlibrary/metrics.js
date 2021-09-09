@@ -13,6 +13,7 @@ const getPrometheusQuery = (
   prometheusQuery: string,
   { startingTimeISO, currentTimeISO, frequency }: TimeSpanProps,
 ): typeof useQuery => {
+  queryKey.push(startingTimeISO);
   return {
     queryKey,
     queryFn: () => {
@@ -537,7 +538,7 @@ export const getVolumeUsageQuery = (
   timespanProps: TimeSpanProps,
 ): typeof useQuery => {
   const prometheusFilters = `{namespace="${namespace}",persistentvolumeclaim="${pvcName}"}`;
-  const volumeUsageQuery = `kubelet_volume_stats_used_bytes${prometheusFilters} / kubelet_volume_stats_capacity_bytes${prometheusFilters}`;
+  const volumeUsageQuery = `kubelet_volume_stats_used_bytes${prometheusFilters} / kubelet_volume_stats_capacity_bytes${prometheusFilters} * 100`;
   return getPrometheusQuery(
     ['volumeUsage', pvcName, namespace],
     volumeUsageQuery,
