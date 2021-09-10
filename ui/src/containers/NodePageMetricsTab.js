@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useIntl } from 'react-intl';
 import styled from 'styled-components';
-import { Dropdown, Button, Toggle } from '@scality/core-ui';
+import { Dropdown, Button, Toggle, BasicText } from '@scality/core-ui';
 import { spacing } from '@scality/core-ui/dist/style/theme';
 import { queryTimeSpansCodes } from '@scality/core-ui/dist/components/constants';
 import {
@@ -94,6 +94,12 @@ const MetricsToggleWrapper = styled.div`
   }
 `;
 
+const NoDataAvailable = styled.div`
+  display: flex;
+  padding-top: ${spacing.sp40};
+  justify-content: center;
+`;
+
 const NodePageMetricsTab = ({
   nodeName,
   instanceIP,
@@ -164,20 +170,22 @@ const NodePageMetricsTab = ({
     <NodeTab>
       <MetricsActionContainer>
         <MetricsToggleWrapper>
-          <Toggle
-            name="showAvg"
-            label={intl.formatMessage({ id: 'show_cluster_avg' })}
-            toggle={showAvg}
-            value={showAvg}
-            onChange={(e: SyntheticEvent<HTMLInputElement>) => {
-              writeShowAvg(e.currentTarget.checked);
-              dispatch(
-                updateNodeStatsFetchArgumentAction({
-                  showAvg: e.currentTarget.checked,
-                }),
-              );
-            }}
-          />
+          {instanceIP && (
+            <Toggle
+              name="showAvg"
+              label={intl.formatMessage({ id: 'show_cluster_avg' })}
+              toggle={showAvg}
+              value={showAvg}
+              onChange={(e: SyntheticEvent<HTMLInputElement>) => {
+                writeShowAvg(e.currentTarget.checked);
+                dispatch(
+                  updateNodeStatsFetchArgumentAction({
+                    showAvg: e.currentTarget.checked,
+                  }),
+                );
+              }}
+            />
+          )}
         </MetricsToggleWrapper>
         {api && api.url_grafana && (
           <Button
@@ -189,118 +197,133 @@ const NodePageMetricsTab = ({
             target="_blank"
             rel="noopener noreferrer"
             data-cy="advanced_metrics_node_detailed"
+            disabled={instanceIP === ''}
           />
         )}
-        <Dropdown
-          items={metricsTimeSpanDropdownItems}
-          text={label}
-          size="small"
-          data-cy="metrics_timespan_selection"
-        />
+        {instanceIP && (
+          <Dropdown
+            items={metricsTimeSpanDropdownItems}
+            text={label}
+            size="small"
+            data-cy="metrics_timespan_selection"
+          />
+        )}
       </MetricsActionContainer>
-      <SyncedCursorCharts>
-        <GraphGrid id="graph_container">
-          <GraphWrapper className="cpuusage">
-            <MetricChart
-              title={'CPU Usage'}
-              yAxisType={'percentage'}
-              nodeName={nodeName}
-              instanceIP={instanceIP}
-              showAvg={showAvg}
-              getMetricQuery={getCPUUsageQuery}
-              getMetricAvgQuery={getCPUUsageAvgQuery}
-            ></MetricChart>
-          </GraphWrapper>
-          <GraphWrapper className="systemload">
-            <MetricChart
-              title={'CPU System Load'}
-              yAxisType={'default'}
-              nodeName={nodeName}
-              instanceIP={instanceIP}
-              showAvg={showAvg}
-              getMetricQuery={getSystemLoadQuery}
-              getMetricAvgQuery={getSystemLoadAvgQuery}
-            ></MetricChart>
-          </GraphWrapper>
-          <GraphWrapper className="memory">
-            <MetricChart
-              title={'Memory'}
-              yAxisType={'percentage'}
-              nodeName={nodeName}
-              instanceIP={instanceIP}
-              showAvg={showAvg}
-              getMetricQuery={getMemoryQuery}
-              getMetricAvgQuery={getMemoryAvgQuery}
-            ></MetricChart>
-          </GraphWrapper>
-          <GraphWrapper className="iops">
-            <MetricSymmetricalChart
-              title={'IOPS'}
-              yAxisTitle={'write(+) / read(-)'}
-              yAxisType={'symmetrical'}
-              nodeName={nodeName}
-              instanceIP={instanceIP}
-              showAvg={showAvg}
-              getMetricAboveQuery={getIOPSWriteQuery}
-              getMetricBelowQuery={getIOPSReadQuery}
-              getMetricAboveAvgQuery={getIOPSWriteAvgQuery}
-              getMetricBelowAvgQuery={getIOPSReadAvgQuery}
-              metricPrefixAbove={'write'}
-              metricPrefixBelow={'read'}
-            ></MetricSymmetricalChart>
-          </GraphWrapper>
-          <GraphWrapper className="cpbandwidth">
-            <MetricSymmetricalChart
-              title={'Control Plane Bandwidth'}
-              yAxisTitle={'in(+) / out(-)'}
-              yAxisType={'symmetrical'}
-              nodeName={nodeName}
-              instanceIP={instanceIP}
-              showAvg={showAvg}
-              nodesIPsInfo={nodesIPsInfo}
-              getMetricAboveQuery={getControlPlaneBandWidthInQuery}
-              getMetricBelowQuery={getControlPlaneBandWidthOutQuery}
-              getMetricAboveAvgQuery={getControlPlaneBandWidthAvgInQuery}
-              getMetricBelowAvgQuery={getControlPlaneBandWidthAvgOutQuery}
-              metricPrefixAbove={'in'}
-              metricPrefixBelow={'out'}
-              planeInterface={controlPlaneInterface}
-              unitRange={[
-                { threshold: 0, label: 'B/s' },
-                { threshold: 1024, label: 'KiB/s' },
-                { threshold: 1024 * 1024, label: 'MiB/s' },
-                { threshold: 1024 * 1024 * 1024, label: 'GiB/s' },
-                { threshold: 1024 * 1024 * 1024 * 1024, label: 'TiB/s' },
-              ]}
-            ></MetricSymmetricalChart>
-          </GraphWrapper>
-          <GraphWrapper className="wpbandwidth">
-            <MetricSymmetricalChart
-              title={'Workload Plane Bandwidth'}
-              yAxisTitle={'in(+) / out(-)'}
-              yAxisType={'symmetrical'}
-              nodeName={nodeName}
-              instanceIP={instanceIP}
-              showAvg={showAvg}
-              nodesIPsInfo={nodesIPsInfo}
-              getMetricAboveQuery={getWorkloadPlaneBandWidthInQuery}
-              getMetricBelowQuery={getWorkloadPlaneBandWidthOutQuery}
-              getMetricAboveAvgQuery={getWorkloadPlaneBandWidthAvgInQuery}
-              getMetricBelowAvgQuery={getWorkloadPlaneBandWidthAvgOutQuery}
-              metricPrefixAbove={'in'}
-              metricPrefixBelow={'out'}
-              planeInterface={workloadPlaneInterface}
-              unitRange={[
-                { threshold: 0, label: 'B/s' },
-                { threshold: 1024, label: 'KiB/s' },
-                { threshold: 1024 * 1024, label: 'MiB/s' },
-                { threshold: 1024 * 1024 * 1024, label: 'GiB/s' },
-                { threshold: 1024 * 1024 * 1024 * 1024, label: 'TiB/s' },
-              ]}
-            ></MetricSymmetricalChart>
-          </GraphWrapper>
-        </GraphGrid>
-      </SyncedCursorCharts>
+      {instanceIP ? (
+        <SyncedCursorCharts>
+          <GraphGrid id="graph_container">
+            <GraphWrapper className="cpuusage">
+              <MetricChart
+                title={'CPU Usage'}
+                yAxisType={'percentage'}
+                nodeName={nodeName}
+                instanceIP={instanceIP}
+                showAvg={showAvg}
+                getMetricQuery={getCPUUsageQuery}
+                getMetricAvgQuery={getCPUUsageAvgQuery}
+              ></MetricChart>
+            </GraphWrapper>
+            <GraphWrapper className="systemload">
+              <MetricChart
+                title={'CPU System Load'}
+                yAxisType={'default'}
+                nodeName={nodeName}
+                instanceIP={instanceIP}
+                showAvg={showAvg}
+                getMetricQuery={getSystemLoadQuery}
+                getMetricAvgQuery={getSystemLoadAvgQuery}
+              ></MetricChart>
+            </GraphWrapper>
+            <GraphWrapper className="memory">
+              <MetricChart
+                title={'Memory'}
+                yAxisType={'percentage'}
+                nodeName={nodeName}
+                instanceIP={instanceIP}
+                showAvg={showAvg}
+                getMetricQuery={getMemoryQuery}
+                getMetricAvgQuery={getMemoryAvgQuery}
+              ></MetricChart>
+            </GraphWrapper>
+            <GraphWrapper className="iops">
+              <MetricSymmetricalChart
+                title={'IOPS'}
+                yAxisTitle={'write(+) / read(-)'}
+                yAxisType={'symmetrical'}
+                nodeName={nodeName}
+                instanceIP={instanceIP}
+                showAvg={showAvg}
+                getMetricAboveQuery={getIOPSWriteQuery}
+                getMetricBelowQuery={getIOPSReadQuery}
+                getMetricAboveAvgQuery={getIOPSWriteAvgQuery}
+                getMetricBelowAvgQuery={getIOPSReadAvgQuery}
+                metricPrefixAbove={'write'}
+                metricPrefixBelow={'read'}
+              ></MetricSymmetricalChart>
+            </GraphWrapper>
+            <GraphWrapper className="cpbandwidth">
+              <MetricSymmetricalChart
+                title={'Control Plane Bandwidth'}
+                yAxisTitle={'in(+) / out(-)'}
+                yAxisType={'symmetrical'}
+                nodeName={nodeName}
+                instanceIP={instanceIP}
+                showAvg={showAvg}
+                nodesIPsInfo={nodesIPsInfo}
+                getMetricAboveQuery={getControlPlaneBandWidthInQuery}
+                getMetricBelowQuery={getControlPlaneBandWidthOutQuery}
+                getMetricAboveAvgQuery={getControlPlaneBandWidthAvgInQuery}
+                getMetricBelowAvgQuery={getControlPlaneBandWidthAvgOutQuery}
+                metricPrefixAbove={'in'}
+                metricPrefixBelow={'out'}
+                planeInterface={controlPlaneInterface}
+                unitRange={[
+                  { threshold: 0, label: 'B/s' },
+                  { threshold: 1024, label: 'KiB/s' },
+                  { threshold: 1024 * 1024, label: 'MiB/s' },
+                  { threshold: 1024 * 1024 * 1024, label: 'GiB/s' },
+                  { threshold: 1024 * 1024 * 1024 * 1024, label: 'TiB/s' },
+                ]}
+              ></MetricSymmetricalChart>
+            </GraphWrapper>
+            <GraphWrapper className="wpbandwidth">
+              <MetricSymmetricalChart
+                title={'Workload Plane Bandwidth'}
+                yAxisTitle={'in(+) / out(-)'}
+                yAxisType={'symmetrical'}
+                nodeName={nodeName}
+                instanceIP={instanceIP}
+                showAvg={showAvg}
+                nodesIPsInfo={nodesIPsInfo}
+                getMetricAboveQuery={getWorkloadPlaneBandWidthInQuery}
+                getMetricBelowQuery={getWorkloadPlaneBandWidthOutQuery}
+                getMetricAboveAvgQuery={getWorkloadPlaneBandWidthAvgInQuery}
+                getMetricBelowAvgQuery={getWorkloadPlaneBandWidthAvgOutQuery}
+                metricPrefixAbove={'in'}
+                metricPrefixBelow={'out'}
+                planeInterface={workloadPlaneInterface}
+                unitRange={[
+                  { threshold: 0, label: 'B/s' },
+                  { threshold: 1024, label: 'KiB/s' },
+                  { threshold: 1024 * 1024, label: 'MiB/s' },
+                  { threshold: 1024 * 1024 * 1024, label: 'GiB/s' },
+                  { threshold: 1024 * 1024 * 1024 * 1024, label: 'TiB/s' },
+                ]}
+              ></MetricSymmetricalChart>
+            </GraphWrapper>
+          </GraphGrid>
+        </SyncedCursorCharts>
+      ) : (
+        <NoDataAvailable>
+          <BasicText>
+            <i
+              className="fas fa-exclamation-triangle"
+              style={{ paddingRight: `${spacing.sp4}` }}
+            ></i>
+            {intl.formatMessage({ id: 'no_data_available_for_metrics' })}
+          </BasicText>
+        </NoDataAvailable>
+      )}
     </NodeTab>
   );
 };
