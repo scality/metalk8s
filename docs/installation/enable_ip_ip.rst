@@ -13,8 +13,10 @@ only for cross-subnet communication.
 IP-in-IP_ is needed for any network which enforces source and
 destination fields of IP packets to correspond to the MAC address(es).
 
-To configure IP-in-IP_ encapsulation for all communications, run
-the following command:
+To configure IP-in-IP_ encapsulation for all communications, refer to
+the :ref:`Bootstrap Configuration` section.
+
+If the cluster is already deployed, use the following command:
 
 .. code-block:: shell
 

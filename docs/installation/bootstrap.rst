@@ -70,6 +70,9 @@ Configuration
         apiServer:
           featureGates:
             <feature_gate_name>: True
+        cni:
+          calico:
+            ipipMode: CrossSubnet
 
 The ``networks`` field specifies a range of IP addresses written in CIDR
 notation for it's various subfields.
@@ -159,12 +162,17 @@ the bootstrap script is executed, those ISOs are automatically mounted and the
 system is configured to re-mount them automatically after a reboot.
 
 The ``kubernetes`` field can be omitted if you do not have any specific
-Kubernetes `Feature Gates`_ to enable or disable.
-If you need to enable or disable specific features for ``kube-apiserver``
+configuration needs.
+
+If you need to enable or disable specific `Kubernetes API features`_
 configure the corresponding entries in the
 ``kubernetes.apiServer.featureGates`` mapping.
 
-.. _Feature Gates: https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/
+If you need to always use IP in IP encapsulation (e.g. your network does
+not authorize IP packets from unknown origins),
+you must set ``kubernetes.cni.calico.ipipMode`` to ``Always``.
+
+.. _Kubernetes API Features: https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/
 
 .. _Bootstrap SSH Provisioning:
 
