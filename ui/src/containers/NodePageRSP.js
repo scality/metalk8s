@@ -1,10 +1,8 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { Switch, Route } from 'react-router-dom';
-import { useHistory, useLocation, useRouteMatch } from 'react-router';
-import { Tabs } from '@scality/core-ui';
-import { useTheme } from 'styled-components';
+import { useRouteMatch } from 'react-router';
+import { Tabs } from '@scality/core-ui/dist/next';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { getPodsListData } from '../services/PodUtils';
 import { useURLQuery, useRefreshEffect } from '../services/utils';
@@ -29,7 +27,6 @@ import NodePageDetailsTab from '../components/NodeDetailsTab';
 import {
   TextBadge,
   NoInstanceSelected,
-  TabsItemsStyle,
 } from '../components/style/CommonLayoutStyle';
 import {
   queryTimeSpansCodes,
@@ -44,13 +41,10 @@ import { useTypedSelector } from '../hooks';
 // handles the refresh for the metrics tab
 const NodePageRSP = (props) => {
   const { nodeTableData } = props;
-  const history = useHistory();
-  const location = useLocation();
   const dispatch = useDispatch();
   const intl = useIntl();
-  const { path, url } = useRouteMatch();
+  const { url } = useRouteMatch();
   const { name } = useParams();
-  const theme = useTheme();
   // Initialize the `metricsTimeSpan` in saga state base on the URL query.
   // In order to keep the selected timespan for metrics tab when switch between the tabs.
   const query = useURLQuery();
@@ -131,132 +125,74 @@ const NodePageRSP = (props) => {
       alert.labels.node === name,
   );
 
-  const isHealthTabActive = location.pathname.endsWith('/overview');
-  const isAlertsTabActive = location.pathname.endsWith('/alerts');
-  const isMetricsTabActive = location.pathname.endsWith('/metrics');
-  const isVolumesTabActive = location.pathname.endsWith('/volumes');
-  const isPodsTabActive = location.pathname.endsWith('/pods');
-  const isSystemDevicesTabActive = location.pathname.endsWith('/partitions');
-  const isDetailsTabActive = location.pathname.endsWith('/details');
-
-  const queryString = query?.toString();
-
-  const items = [
-    {
-      selected: isHealthTabActive,
-      title: 'Overview',
-      onClick: () =>
-        history.push(`${url}/overview${queryString && `?${queryString}`}`),
-      'data-cy': 'overview_tab_node_page',
-    },
-    {
-      selected: isAlertsTabActive,
-      title: (
-        <span>
-          {intl.formatMessage({ id: 'alerts' })}
-          {alertsNode && alertsNode.length ? (
-            <TextBadge variant={'infoPrimary'}>{alertsNode.length}</TextBadge>
-          ) : null}
-        </span>
-      ),
-      onClick: () =>
-        history.push(`${url}/alerts${queryString && `?${queryString}`}`),
-      'data-cy': 'alerts_tab_node_page',
-    },
-    {
-      selected: isMetricsTabActive,
-      title: 'Metrics',
-      onClick: () =>
-        history.push(`${url}/metrics${queryString && `?${queryString}`}`),
-      'data-cy': 'metrics_tab_node_page',
-    },
-    {
-      selected: isVolumesTabActive,
-      title: intl.formatMessage({ id: 'volumes' }),
-      onClick: () =>
-        history.push(`${url}/volumes${queryString && `?${queryString}`}`),
-      'data-cy': 'volumes_tab_node_page',
-    },
-    {
-      selected: isPodsTabActive,
-      title: intl.formatMessage({ id: 'pods' }),
-      onClick: () =>
-        history.push(`${url}/pods${queryString && `?${queryString}`}`),
-      'data-cy': 'pods_tab_node_page',
-    },
-    {
-      selected: isSystemDevicesTabActive,
-      title: 'Partitions',
-      onClick: () =>
-        history.push(`${url}/partitions${queryString && `?${queryString}`}`),
-      'data-cy': 'partition_tab_node_page',
-    },
-    {
-      selected: isDetailsTabActive,
-      title: intl.formatMessage({ id: 'details' }),
-      onClick: () =>
-        history.push(`${url}/details${queryString && `?${queryString}`}`),
-      'data-cy': 'details_tab_node_page',
-    },
-  ];
-
   return name && currentNode ? (
-    <TabsItemsStyle>
-      <Tabs items={items} activeTabColor={theme.backgroundLevel4}>
-        <Switch>
-          <Route
-            path={`${path}/overview`}
-            render={() => (
-              <NodePageOverviewTab
-                pods={pods}
-                nodeTableData={nodeTableData}
-                volumes={volumes}
-                nodes={nodes}
-              />
-            )}
-          />
-          <Route
-            path={`${path}/alerts`}
-            render={() => (
-              <NodePageAlertsTab alertsNode={alertsNode}></NodePageAlertsTab>
-            )}
-          />
-          <Route
-            path={`${path}/metrics`}
-            render={() => (
-              <NodePageMetricsTab
-                nodeName={name}
-                nodeStats={nodeStats}
-                avgStats={avgStats}
-                instanceIP={instanceIP}
-              />
-            )}
-          />
-          <Route
-            path={`${path}/volumes`}
-            render={() => <NodePageVolumesTab></NodePageVolumesTab>}
-          />
-          <Route
-            path={`${path}/pods`}
-            render={() => (
-              <NodePagePodsTab pods={podsListData}></NodePagePodsTab>
-            )}
-          />
-          <Route
-            path={`${path}/partitions`}
-            render={() => (
-              <NodePagePartitionTabs
-                instanceIP={instanceIP}
-              ></NodePagePartitionTabs>
-            )}
-          />
-          <Route
-            path={`${path}/details`}
-            render={() => <NodePageDetailsTab></NodePageDetailsTab>}
-          />
-        </Switch>
-      </Tabs>
-    </TabsItemsStyle>
+    <Tabs>
+      <Tabs.Tab
+        path={`${url}/overview`}
+        label="Overview"
+        data-cy="overview_tab_node_page"
+      >
+        <NodePageOverviewTab
+          nodeName={name}
+          pods={pods}
+          nodeTableData={nodeTableData}
+          volumes={volumes}
+          nodes={nodes}
+        />
+      </Tabs.Tab>
+      <Tabs.Tab
+        path={`${url}/alerts`}
+        label={intl.formatMessage({ id: 'alerts' })}
+        textBadge={
+          alertsNode && alertsNode.length ? (
+            <TextBadge variant={'infoPrimary'}>{alertsNode.length}</TextBadge>
+          ) : null
+        }
+        data-cy="alerts_tab_node_page"
+      >
+        <NodePageAlertsTab alertsNode={alertsNode} />
+      </Tabs.Tab>
+      <Tabs.Tab
+        path={`${url}/metrics`}
+        label="Metrics"
+        data-cy={'metrics_tab_node_page'}
+      >
+        <NodePageMetricsTab
+          nodeName={name}
+          nodeStats={nodeStats}
+          avgStats={avgStats}
+          instanceIP={instanceIP}
+        />
+      </Tabs.Tab>
+      <Tabs.Tab
+        data-cy="volumes_tab_node_page"
+        path={`${url}/volumes`}
+        label={intl.formatMessage({ id: 'volumes' })}
+      >
+        <NodePageVolumesTab nodeName={name} />
+      </Tabs.Tab>
+      <Tabs.Tab
+        path={`${url}/pods`}
+        data-cy="pods_tab_node_page"
+        label={intl.formatMessage({ id: 'pods' })}
+      >
+        <NodePagePodsTab pods={podsListData} />
+      </Tabs.Tab>
+      <Tabs.Tab
+        data-cy="partition_tab_node_page"
+        path={`${url}/partitions`}
+        label="Partitions"
+      >
+        <NodePagePartitionTabs instanceIP={instanceIP} />
+      </Tabs.Tab>
+      <Tabs.Tab
+        data-cy="details_tab_node_page"
+        label={intl.formatMessage({ id: 'details' })}
+        path={`${url}/details`}
+      >
+        <NodePageDetailsTab />
+      </Tabs.Tab>
+    </Tabs>
   ) : (
     <NoInstanceSelected>
       {name

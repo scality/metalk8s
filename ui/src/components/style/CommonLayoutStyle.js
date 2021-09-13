@@ -51,38 +51,6 @@ export const PageContentContainer = styled.div`
   width: 100%;
 `;
 
-export const TabsItemsStyle = styled.div`
-  height: 100%;
-  .sc-tabs {
-    margin: 0;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-  .sc-tabs-bar {
-    height: 2.8rem;
-  }
-  .sc-tabs-item {
-    margin-right: 0.3rem;
-    background-color: ${(props) => props.theme.backgroundLevel3};
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-    height: 2.8rem;
-    .sc-tabs-item-title {
-      height: 2.8rem;
-      font-size: 1rem;
-      border-top-left-radius: 4px;
-      border-top-right-radius: 4px;
-      padding: 0.7rem 0 0 0.2rem;
-    }
-  }
-  .sc-tabs-item-content {
-    padding: 0;
-    flex: 1;
-    background-color: ${(props) => props.theme.backgroundLevel4};
-  }
-`;
-
 export const TextBadge = styled.span`
   background-color: ${(props) => props.theme[props.variant]};
   color: ${(props) => props.theme.textReverse};

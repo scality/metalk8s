@@ -1,7 +1,6 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FormattedDate, FormattedTime } from 'react-intl';
-import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import {
   padding,
@@ -114,15 +113,13 @@ const ErrorLabel = styled.span`
 `;
 
 const NodePageOverviewTab = (props) => {
-  const { nodeTableData, nodes, volumes, pods } = props;
+  const { nodeTableData, nodes, volumes, pods, nodeName } = props;
   const intl = useIntl();
-  // Retrieve the node name from URL parameter
-  const { name } = useParams();
   const dispatch = useDispatch();
 
   const jobs = useSelector((state) =>
     state.app.salt.jobs.filter(
-      (job) => job.type === 'deploy-node' && job.node === name,
+      (job) => job.type === 'deploy-node' && job.node === nodeName,
     ),
   );
 
@@ -172,19 +169,21 @@ const NodePageOverviewTab = (props) => {
   const activeStep = success ? steps.length : steps.length - 1;
 
   // The node object used by Node List Table
-  const currentNode = nodeTableData?.find((node) => node.name.name === name);
-  const currentNodeReturnByK8S = nodes?.find((node) => node.name === name);
+  const currentNode = nodeTableData?.find(
+    (node) => node.name.name === nodeName,
+  );
+  const currentNodeReturnByK8S = nodes?.find((node) => node.name === nodeName);
 
   const creationTimestamp = currentNodeReturnByK8S
     ? new Date(currentNodeReturnByK8S.creationTimestamp)
     : '';
 
   const volumesAttachedCurrentNode = volumes?.filter(
-    (volume) => volume.spec.nodeName === name,
+    (volume) => volume.spec.nodeName === nodeName,
   );
 
   const podsScheduledOnCurrentNode = pods?.filter(
-    (pod) => pod.nodeName === name,
+    (pod) => pod.nodeName === nodeName,
   );
 
   return (
@@ -193,7 +192,7 @@ const NodePageOverviewTab = (props) => {
         <NodeNameContainer>
           <div>
             <CircleStatus status={currentNode?.health?.health}></CircleStatus>
-            <NodeName>{name}</NodeName>
+            <NodeName>{nodeName}</NodeName>
           </div>
           {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN && !currentNodeReturnByK8S.internalIP ? (
             !currentNodeReturnByK8S?.deploying ? (
@@ -201,7 +200,7 @@ const NodePageOverviewTab = (props) => {
                 text={intl.formatMessage({ id: 'deploy' })}
                 variant="buttonSecondary"
                 onClick={() => {
-                  dispatch(deployNodeAction({ name }));
+                  dispatch(deployNodeAction({ nodeName }));
                 }}
               />
             ) : (
@@ -311,7 +310,7 @@ const NodePageOverviewTab = (props) => {
               <InfoMessage>
                 {intl.formatMessage(
                   { id: 'no_deployment_found' },
-                  { name: name },
+                  { name: nodeName },
                 )}
               </InfoMessage>
             ) : activeJob.completed && isEmpty(activeJob.status) ? (
