@@ -3682,9 +3682,11 @@ spec:
               value: cidr={{ networks.workload_plane.cidr | join(',') }}
             # Enable IPIP
             # Note: In MetalK8s we want to use IPIP encapsulation
-            #       only for cross subnet communication.
+            #       only for cross subnet communication, except on specific
+            #       environment (e.g. VM) where there is some restrictions
+            #       and we may need to always use it.
             - name: CALICO_IPV4POOL_IPIP
-              value: "CrossSubnet"
+              value: {{ pillar.get("kubernetes", {}).get("cni", {}).get("calico": {}).get("ipipMode") | default("CrossSubnet") }}
             # Enable or Disable VXLAN on the default IP pool.
             - name: CALICO_IPV4POOL_VXLAN
               value: "Never"
