@@ -135,6 +135,7 @@
     "stepDefinitions": "cypress/integration/e2e"
   },
   "jest": {
+    "transformIgnorePatterns": ["/node_modules/(?!vega-lite)"],
     "testMatch": [
       "<rootDir>/src/**/__tests__/**/*.[jt]s?(x)",
       "<rootDir>/src/**/?(*.)+(spec|test).[jt]s?(x)"
