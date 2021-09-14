@@ -9,7 +9,7 @@ import {
 } from 'oidc-react';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
 import { getUserGroups } from '../navbar/auth/permissionUtils';
-import { WebStorageStateStore } from 'oidc-client';
+import { MetadataService, WebStorageStateStore } from 'oidc-client';
 
 export function AuthProvider({ children }: { children: Node }) {
   const { authConfig } = useAuthConfig();
@@ -23,6 +23,24 @@ export function AuthProvider({ children }: { children: Node }) {
   }
 
   return <OAuth2AuthProvider>{children}</OAuth2AuthProvider>;
+}
+
+function defaultDexConnectorMetadataService(connectorId: string) {
+  class DexDefaultConnectorMetadataService extends MetadataService {
+    getAuthorizationEndpoint() {
+      return this._getMetadataProperty('authorization_endpoint').then(
+        (authorizationEndpoint) => {
+          const queryParamas = new URLSearchParams(window.location.search);
+          if (!queryParamas.has('displayLoginChoice')) {
+            return authorizationEndpoint + '?connector_id=' + connectorId;
+          }
+          return authorizationEndpoint;
+        },
+      );
+    }
+  }
+
+  return DexDefaultConnectorMetadataService;
 }
 
 function OAuth2AuthProvider({ children }: { children: Node }) {
@@ -39,6 +57,9 @@ function OAuth2AuthProvider({ children }: { children: Node }) {
     loadUserInfo: true,
     automaticSilentRenew: true,
     monitorSession: false,
+    MetadataServiceCtor: authConfig.defaultDexConnector
+      ? defaultDexConnectorMetadataService(authConfig.defaultDexConnector)
+      : MetadataService,
     userStore: new WebStorageStateStore({ store: localStorage }),
   });
 
@@ -95,28 +116,45 @@ export function useLogOut() {
   let auth;
   try {
     auth = useOauth2Auth();
-  } catch(e) {
+  } catch (e) {
     //If an exception is raised here it is likely because the app is not using OIDC auth kind, so we can ignore this
-    console.log('Failed to retrieve auth informations for OIDC auth kind', e)
+    console.log('Failed to retrieve auth informations for OIDC auth kind', e);
   }
 
-  return {logOut: useCallback(() => {
-    if (!authConfig) {
-      return;
-    }
-  
-    if (authConfig.kind === 'OAuth2Proxy') {
-      throw new Error('OAuth2Proxy authentication kind is not yet supported');
-    }
-    if (auth && auth.userManager) {
-      auth.userManager.revokeAccessToken();
-      if (authConfig.providerLogout) {
-        auth.userManager.signoutRedirect();
-      } else {
-        auth.userManager.removeUser();
-        location.reload();
+  return {
+    logOut: useCallback(() => {
+      if (!authConfig) {
+        return;
       }
-    }
-  }, [JSON.stringify(authConfig), auth])}
-  
+
+      if (authConfig.kind === 'OAuth2Proxy') {
+        throw new Error('OAuth2Proxy authentication kind is not yet supported');
+      }
+      if (auth && auth.userManager) {
+        auth.userManager.revokeAccessToken();
+        if (authConfig.providerLogout) {
+          auth.userManager.signoutRedirect().catch((e) => {
+            if (e.message === 'no end session endpoint') {
+              console.log(
+                "OIDC provider doesn't support end session endpoint, fallback to clearing document cookies",
+              );
+              document.cookie.split(';').forEach(function (c) {
+                document.cookie =
+                  c.trim().split('=')[0] +
+                  '=;' +
+                  'expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+              });
+            } else {
+              console.error(e);
+            }
+            auth.userManager.removeUser();
+            location.reload();
+          });
+        } else {
+          auth.userManager.removeUser();
+          location.reload();
+        }
+      }
+    }, [JSON.stringify(authConfig), auth]),
+  };
 }
