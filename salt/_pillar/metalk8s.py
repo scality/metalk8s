@@ -94,13 +94,18 @@ def _load_networks(config_data):
     # MetalLB disabled by default
     networks_data["controlPlane"].setdefault("metalLB", {}).setdefault("enabled", False)
 
-    if networks_data["controlPlane"]["metalLB"]["enabled"] and not networks_data[
-        "controlPlane"
-    ].get("ingress", {}).get("ip"):
-        errors.append(
-            "'ip' for 'ingress' in 'controlPlane' network is mandatory when 'metalLB'"
-            "is enabled"
-        )
+    if networks_data["controlPlane"]["metalLB"]["enabled"]:
+        if not networks_data["controlPlane"].get("ingress", {}).get("ip"):
+            errors.append(
+                "'ip' for 'ingress' in 'controlPlane' network is mandatory when "
+                "'metalLB' is enabled"
+            )
+        if len(networks_data["controlPlane"]["cidr"]) > 1:
+            errors.append(
+                "Enabling 'metalLB' requires a single 'cidr' in "
+                "'controlPlane' network, see "
+                "https://github.com/scality/metalk8s/issues/3502"
+            )
 
     if errors:
         return __utils__["pillar_utils.errors_to_dict"](errors)
