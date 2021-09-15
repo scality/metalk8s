@@ -1,20 +1,11 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-hooks';
 import {
   sortCapacity,
-  addMissingDataPoint,
   fromMilliSectoAge,
   useTableSortURLSync,
   linuxDrivesNamingIncrement,
   formatDateToMid1,
 } from './utils';
-import { MetricsTimeSpanProvider, useMetricsTimeSpan } from '../hooks';
-import {
-  QUERY_LAST_ONE_HOUR,
-  QUERY_LAST_SEVEN_DAYS,
-  SAMPLE_DURATION_LAST_ONE_HOUR,
-  SAMPLE_DURATION_LAST_SEVEN_DAYS,
-  SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
-} from '../constants';
 
 const testcases = [
   { storageCapacity: '1Ki' },
@@ -119,118 +110,6 @@ it('test the sort with a custom sortBy', () => {
   ]);
 });
 
-// test for addMissingDataPoint function
-const originalValue = [
-  [0, 0],
-  [1, 1],
-  [2, 2],
-  [3, 3],
-  [4, 4],
-  [5, 5],
-  [6, 6],
-  [8, 8],
-  [9, 9],
-  [10, 10],
-];
-const startingTimeStamp = 0;
-const sampleDuration = 11;
-const sampleFrequency = 1;
-const newValues = [
-  [0, 0],
-  [1, 1],
-  [2, 2],
-  [3, 3],
-  [4, 4],
-  [5, 5],
-  [6, 6],
-  [7, null],
-  [8, 8],
-  [9, 9],
-  [10, 10],
-];
-it('should add missing data point with null', () => {
-  const result = addMissingDataPoint(
-    originalValue,
-    startingTimeStamp,
-    sampleDuration,
-    sampleFrequency,
-  );
-  expect(result).toEqual(newValues);
-});
-
-it('should return an empty array when the original dataset is empty', () => {
-  const result = addMissingDataPoint(
-    [],
-    startingTimeStamp,
-    sampleDuration,
-    sampleFrequency,
-  );
-  expect(result).toEqual([]);
-});
-
-it('should return an empty array when the starting timestamp is undefined', () => {
-  const result = addMissingDataPoint(
-    originalValue,
-    undefined,
-    sampleDuration,
-    sampleFrequency,
-  );
-  expect(result).toEqual([]);
-});
-
-it('should return an empty array when sample duration is less than or equal to zero', () => {
-  const result = addMissingDataPoint(
-    originalValue,
-    startingTimeStamp,
-    0,
-    sampleFrequency,
-  );
-  expect(result).toEqual([]);
-});
-
-it('should return an empty array when sample frequency is less than or equal to zero', () => {
-  const result = addMissingDataPoint(
-    originalValue,
-    startingTimeStamp,
-    sampleDuration,
-    -1,
-  );
-  expect(result).toEqual([]);
-});
-
-it('should return an empty array when sample frequency is undefined', () => {
-  const result = addMissingDataPoint(
-    originalValue,
-    startingTimeStamp,
-    sampleDuration,
-    undefined,
-  );
-  expect(result).toEqual([]);
-});
-
-const originalValueWithAllZero = [
-  [0, 0],
-  [1, 0],
-  [2, 0],
-  [3, 0],
-  [4, 0],
-  [5, 0],
-  [6, 0],
-  [7, 0],
-  [8, 0],
-  [9, 0],
-  [10, 0],
-];
-it('should return all zero when the original dataset is all zero', () => {
-  const result = addMissingDataPoint(
-    originalValueWithAllZero,
-    startingTimeStamp,
-    sampleDuration,
-    sampleFrequency,
-  );
-  expect(result).toEqual(originalValueWithAllZero);
-});
-
 // test for fromMilliSectoAge
 it('should return undefined if {milliSecTime} is zero or negative number', () => {
   const result = fromMilliSectoAge(0);
@@ -266,62 +145,6 @@ jest.mock('react-router-dom', () => {
     }),
     useLocation: () => location,
   };
-});
-
-describe('useMetricsTimeSpan hook', () => {
-  it('should render properly with the provider', () => {
-    const wrapper = ({ children }) => (
-      <MetricsTimeSpanProvider>{children}</MetricsTimeSpanProvider>
-    );
-
-    const { result } = renderHook(() => useMetricsTimeSpan(), { wrapper });
-    expect(result.error).not.toEqual(
-      Error(
-        "useMetricsTimeSpan hook can't be use outside <MetricsTimeSpanProvider/>",
-      ),
-    );
-  });
-
-  it('should throw an error if no provider', () => {
-    const { result } = renderHook(() => useMetricsTimeSpan());
-    expect(result.error).toEqual(
-      Error(
-        "useMetricsTimeSpan hook can't be use outside <MetricsTimeSpanProvider/>",
-      ),
-    );
-  });
-
-  it('setter/getter should set/get context value', () => {
-    const wrapper = ({ children }) => (
-      <MetricsTimeSpanProvider>{children}</MetricsTimeSpanProvider>
-    );
-    const { result } = renderHook(() => useMetricsTimeSpan(), { wrapper });
-    expect(typeof result.current[1]).toBe('function');
-    expect(result.current[0]).toEqual(SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS);
-    act(() => result.current[1](2000));
-    expect(result.current[0]).toEqual(2000);
-  });
-
-  it('should modify urlQuery if set context value', () => {
-    const wrapper = ({ children }) => (
-      <MetricsTimeSpanProvider>{children}</MetricsTimeSpanProvider>
-    );
-    jest
-      .spyOn(URLSearchParams.prototype, 'get')
-      .mockReturnValue(QUERY_LAST_SEVEN_DAYS);
-    const metricHook = renderHook(() => useMetricsTimeSpan(), {
-      wrapper,
-    });
-    expect(metricHook.result.current[0]).toBe(SAMPLE_DURATION_LAST_SEVEN_DAYS);
-
-    jest
-      .spyOn(URLSearchParams.prototype, 'get')
-      .mockReturnValue(QUERY_LAST_ONE_HOUR);
-    const metricHook2 = renderHook(() => useMetricsTimeSpan(), {
-      wrapper,
-    });
-    expect(metricHook2.result.current[0]).toBe(SAMPLE_DURATION_LAST_ONE_HOUR);
-  });
 });
 
 describe('useTableSortURLSync hook', () => {

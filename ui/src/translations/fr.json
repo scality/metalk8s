@@ -175,5 +175,6 @@
   "observability": "Observabilité",
   "core": "Noyau",
   "view_details": "Voir détails",
-  "start": "Début"
+  "start": "Début",
+  "no_data_available_for_metrics": "Aucune donnée disponible pour afficher les Métriques"
 }

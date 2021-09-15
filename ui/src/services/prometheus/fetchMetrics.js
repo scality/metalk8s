@@ -33,6 +33,7 @@ export function queryNodeFSSize(
   });
 }
 
+//TODO: To be removed
 const getMetricsTimeValues = (
   timeSpan: MetricsTimeSpan,
 ): {
@@ -57,11 +58,8 @@ export function queryNodeCPUMetrics(
   timeSpan: MetricsTimeSpan,
 ): Promise<PrometheusQueryResult> {
   const cpuUsageQuery = `100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle",instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}[5m])) * 100)`;
-  const {
-    startingTimeISO,
-    currentTimeISO,
-    sampleFrequency,
-  } = getMetricsTimeValues(timeSpan);
+  const { startingTimeISO, currentTimeISO, sampleFrequency } =
+    getMetricsTimeValues(timeSpan);
 
   return queryPrometheusRange(
     startingTimeISO,
@@ -81,11 +79,8 @@ export function queryNodeMemoryMetrics(
   timeSpan: MetricsTimeSpan,
 ): ?Promise<PrometheusQueryResult> {
   const memoryQuery = `sum(100 - ((node_memory_MemAvailable_bytes{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"} * 100) / node_memory_MemTotal_bytes{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}))`;
-  const {
-    startingTimeISO,
-    currentTimeISO,
-    sampleFrequency,
-  } = getMetricsTimeValues(timeSpan);
+  const { startingTimeISO, currentTimeISO, sampleFrequency } =
+    getMetricsTimeValues(timeSpan);
   return queryPrometheusRange(
     startingTimeISO,
     currentTimeISO,
@@ -104,11 +99,8 @@ export function queryNodeLoadMetrics(
   timeSpan: MetricsTimeSpan,
 ): ?Promise<PrometheusQueryResult> {
   const systemLoadQuery = `avg(node_load1{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}) / count(count(node_cpu_seconds_total{instance=~"${instanceIP}:${PORT_NODE_EXPORTER}"}) by (cpu)) * 100`;
-  const {
-    startingTimeISO,
-    currentTimeISO,
-    sampleFrequency,
-  } = getMetricsTimeValues(timeSpan);
+  const { startingTimeISO, currentTimeISO, sampleFrequency } =
+    getMetricsTimeValues(timeSpan);
 
   return queryPrometheusRange(
     startingTimeISO,
@@ -127,11 +119,8 @@ export function queryThroughputRead(
   timeSpan: MetricsTimeSpan,
 ): Promise<PrometheusQueryResult> {
   const nodeThroughputReadQuery = `sum(sum(irate(node_disk_read_bytes_total[1m])) by (instance, device) * 0.000001) by(instance)`;
-  const {
-    startingTimeISO,
-    currentTimeISO,
-    sampleFrequency,
-  } = getMetricsTimeValues(timeSpan);
+  const { startingTimeISO, currentTimeISO, sampleFrequency } =
+    getMetricsTimeValues(timeSpan);
 
   return queryPrometheusRange(
     startingTimeISO,
@@ -150,17 +139,33 @@ export function queryThroughputWrite(
   timeSpan: MetricsTimeSpan,
 ): Promise<PrometheusQueryResult> {
   const nodeThroughputWriteQuery = `sum(sum(irate(node_disk_written_bytes_total[1m])) by (instance, device) * 0.000001)by(instance)`;
-  const {
-    startingTimeISO,
-    currentTimeISO,
-    sampleFrequency,
-  } = getMetricsTimeValues(timeSpan);
+  const { startingTimeISO, currentTimeISO, sampleFrequency } =
+    getMetricsTimeValues(timeSpan);
 
   return queryPrometheusRange(
     startingTimeISO,
     currentTimeISO,
     sampleFrequency,
     nodeThroughputWriteQuery,
+  )?.then((resolve) => {
+    if (resolve.error) {
+      throw resolve.error;
+    }
+    return resolve;
+  });
+}
+
+export function queryPromtheusMetrics(
+  frequency: number,
+  startingTimeISO: string,
+  currentTimeISO: string,
+  promQuery: string,
+): PrometheusQueryResult {
+  return queryPrometheusRange(
+    startingTimeISO,
+    currentTimeISO,
+    frequency,
+    promQuery,
   )?.then((resolve) => {
     if (resolve.error) {
       throw resolve.error;

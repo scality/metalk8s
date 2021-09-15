@@ -38,14 +38,16 @@
 - Bump Salt version to 3002.7
   (PR [#3524](https://github.com/scality/metalk8s/pull/3524))
 
-- Fix UI issues in multi nodes environment when a node
-  is unavailable (PR[#3521](https://github.com/scality/metalk8s/pull/3521))
+- Improve UI metrics charts (cursor synchronisation when hovering a chart, better tooltip with coloured legend and unit, lot of bug fixes when data is missing, symmetrical charts to compare read/write in/out metrics) (PR[#3529](https://github.com/scality/metalk8s/pull/3529))
 
 ## Bug fixes
 
 - Enforce a single subnet for control plane when using a
   MetalLB-managed VIP for Ingress
   (PR [#3533](https://github.com/scality/metalk8s/pull/3533))
+
+- Fix UI issues in multi nodes environment when a node
+  is unavailable (PR[#3521](https://github.com/scality/metalk8s/pull/3521))
 
 ## Release 2.10.2
 ### Bug fixes
