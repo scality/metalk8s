@@ -3,7 +3,8 @@
 import React from 'react';
 import { useQuery } from 'react-query';
 import styled, { css } from 'styled-components';
-import { Card, Loader } from '@scality/core-ui';
+import Card from '@scality/core-ui/dist/components/card/Card.component';
+import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
 import {
   spacing,
   fontSize,

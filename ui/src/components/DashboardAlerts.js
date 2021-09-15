@@ -8,7 +8,10 @@ import {
   useDiscoveredViews,
 } from '../containers/ConfigProvider';
 import { useHistory } from 'react-router';
-import { EmphaseText, SecondaryText } from '@scality/core-ui';
+import {
+  EmphaseText,
+  SecondaryText,
+} from '@scality/core-ui/dist/components/text/Text.component';
 import { useAlerts } from '../containers/AlertProvider';
 
 const AlertsContainer = styled.div`
