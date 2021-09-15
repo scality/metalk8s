@@ -12,7 +12,6 @@ import {
   SPARSE_LOOP_DEVICE,
   RAW_BLOCK_DEVICE,
   LVM_LOGICAL_VOLUME,
-  PORT_NODE_EXPORTER,
 } from '../constants';
 import { computeVolumeGlobalStatus } from '../services/NodeVolumesUtils';
 import { useAlerts } from './AlertProvider';
@@ -46,7 +45,6 @@ const VolumePageContent = (props) => {
     pVList,
     pVCList,
     pods,
-    volumeStats,
     currentVolumeObject,
     loading,
   } = props;
@@ -105,55 +103,16 @@ const VolumePageContent = (props) => {
 
   // prepare the data for <PerformanceGraphCard>
   const deviceName = volume?.status?.deviceName;
-  let instance;
+  let instanceIp;
 
   if (!node.internalIP) {
     // find the node name of this volume
     const nodeName = volume?.spec?.nodeName;
     const currentNode = nodes.find((node) => node.name === nodeName);
-    instance = `${currentNode?.internalIP}:${PORT_NODE_EXPORTER}`;
+    instanceIp = currentNode?.internalIP;
   } else {
-    instance = `${node?.internalIP}:${PORT_NODE_EXPORTER}`;
+    instanceIp = node?.internalIP;
   }
-
-  const queryStartingTime = volumeStats?.queryStartingTime;
-  const volumeUsage = volumeStats?.volumeUsage?.find(
-    (vU) => vU.metric.persistentvolumeclaim === PVCName,
-  )?.values;
-  const volumeThroughputWrite = volumeStats?.volumeThroughputWrite?.find(
-    (vTW) =>
-      vTW.metric.instance === instance && vTW.metric.device === deviceName,
-  )?.values;
-  const volumeThroughputRead = volumeStats?.volumeThroughputRead?.find(
-    (vTR) =>
-      vTR.metric.instance === instance && vTR.metric.device === deviceName,
-  )?.values;
-  const volumeLatencyWrite = volumeStats?.volumeLatencyWrite?.find(
-    (vL) => vL.metric.instance === instance && vL.metric.device === deviceName,
-  )?.values;
-  const volumeLatencyRead = volumeStats?.volumeLatencyRead?.find(
-    (vL) => vL.metric.instance === instance && vL.metric.device === deviceName,
-  )?.values;
-  const volumeIOPSRead = volumeStats?.volumeIOPSRead?.find(
-    (vIOPSR) =>
-      vIOPSR.metric.instance === instance &&
-      vIOPSR.metric.device === deviceName,
-  )?.values;
-  const volumeIOPSWrite = volumeStats?.volumeIOPSWrite?.find(
-    (vIOPSW) =>
-      vIOPSW.metric.instance === instance &&
-      vIOPSW.metric.device === deviceName,
-  )?.values;
-  const volumeMetricGraphData = {
-    volumeUsage,
-    volumeThroughputWrite,
-    volumeThroughputRead,
-    volumeLatencyWrite,
-    volumeLatencyRead,
-    volumeIOPSRead,
-    volumeIOPSWrite,
-    queryStartingTime,
-  };
 
   /*
    ** Used to determine if a first loading has happened
@@ -273,7 +232,8 @@ const VolumePageContent = (props) => {
                 >
                   <VolumeMetricsTab
                     volumeName={currentVolumeName}
-                    volumeMetricGraphData={volumeMetricGraphData}
+                    deviceName={deviceName}
+                    instanceIp={instanceIp}
                     // the volume condition compute base on the `status` and `bound/unbound`
                     volumeCondition={currentVolume?.status}
                     volumePVCName={PVCName}

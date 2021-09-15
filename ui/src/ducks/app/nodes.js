@@ -164,7 +164,12 @@ export type NodesState = {
   clusterVersion: string,
   isRefreshing: boolean,
   isLoading: boolean,
-  IPsInfo: any, // TODO: define the type of this
+  IPsInfo: {
+    [nodeName: string]: {
+      controlPlane?: { interface?: string, ip?: string },
+      workloadPlane?: { interface?: string, ip?: string },
+    },
+  },
   currentNodeObject: any, // TODO: define the type of this
   list: {
     name: string,

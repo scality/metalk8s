@@ -175,5 +175,6 @@
   "observability": "Observability",
   "core": "Core",
   "view_details": "View details",
-  "start": "Start"
+  "start": "Start",
+  "no_data_available_for_metrics": "No data available for displaying the Metrics"
 }
