@@ -19,7 +19,7 @@ export const getVolumesAlertSelectors = (): FilterLabels => {
 
 export const getNetworksAlertSelectors = (): FilterLabels => {
   return {
-    alertname: ['ControlPlaneNetworkDegraded', 'WorkloadPlaneNetworkDegraded'],
+    alertname: ['NetworkDegraded'],
   };
 };
 

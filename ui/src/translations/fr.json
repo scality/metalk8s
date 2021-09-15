@@ -137,6 +137,7 @@
   "used_by": "Utilisé Par",
   "backend_disk": "Backend Disk",
   "metrics": "Métrique",
+  "network": "Réseau",
   "advanced_metrics": "Métrique avancée",
   "volume_is_not_bound": "Le volume n'est pas encore lié",
   "no_active_alerts": "Aucune alerte active",
