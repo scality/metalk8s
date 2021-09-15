@@ -1,164 +1,22 @@
 // @flow
 import React from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
 import { useIntl } from 'react-intl';
-import Tooltip from '@scality/core-ui/dist/components/tooltip/Tooltip.component';
-import { StatusText } from '@scality/core-ui/dist/components/text/Text.component';
-import {
-  spacing,
-  fontSize,
-  fontWeight,
-} from '@scality/core-ui/dist/style/theme';
+import { spacing } from '@scality/core-ui/dist/style/theme';
 
-import type { Alert } from '../services/alertUtils';
-import type { Status } from '../containers/AlertProvider';
 import { PageSubtitle } from '../components/style/CommonLayoutStyle';
 import {
   useAlertLibrary,
   useHighestSeverityAlerts,
   highestAlertToStatus,
 } from '../containers/AlertProvider';
-import CircleStatus from './CircleStatus';
-import { STATUS_HEALTH } from '../constants.js';
-import { formatDateToMid1 } from '../services/utils';
+import HealthItem from './HealthItem.js';
 
 const ServiceItems = styled.div`
   display: flex;
   flex-direction: column;
   padding: ${spacing.sp4};
 `;
-
-const ServiceItemLabelWrapper = styled.div`
-  display: flex;
-  align-items: baseline;
-`;
-
-const ServiceItemLabel = styled.div`
-  margin-left: ${spacing.sp8};
-`;
-
-const ServiceItemElement = styled.div`
-  padding: ${spacing.sp4};
-`;
-
-const ClickableServiceItemElement = styled(ServiceItemElement)`
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  :hover {
-    background-color: ${(props) => props.theme.highlight};
-  }
-`;
-
-const NonHealthyServiceItemElement = styled.div`
-  cursor: pointer;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-
-  a {
-    text-decoration: none;
-    color: inherit;
-    width: 100%;
-    display: flex;
-    align-items: center;
-  }
-`;
-
-const NonHealthyPopUp = styled.div`
-  display: flex;
-  flex-direction: column;
-  font-size: ${fontSize.base};
-
-  label {
-    width: 25%;
-    margin-right: ${spacing.sp8};
-    color: ${(props) => props.theme.textSecondary};
-    text-align: right;
-  }
-`;
-
-const NonHealthyPopUpTitle = styled.div`
-  font-weight: ${fontWeight.bold}
-  text-align: center;
-`;
-
-const NonHealthyPopUpItem = styled.div`
-  width: 100%;
-  display: flex;
-  margin: ${spacing.sp4} ${spacing.sp14};
-  align-items: center;
-`;
-
-const ClickableIcon = styled.i`
-  self-align: flex-end;
-`;
-
-const ServiceItem = ({
-  label,
-  status,
-  alerts,
-}: {
-  label: string,
-  status: Status,
-  alerts: Alert[],
-}) => {
-  const intl = useIntl();
-
-  if (!alerts.length && status === STATUS_HEALTH)
-    return (
-      <ServiceItemElement aria-label={label}>
-        <ServiceItemLabelWrapper>
-          <CircleStatus status={status} />
-          <ServiceItemLabel>{label}</ServiceItemLabel>
-        </ServiceItemLabelWrapper>
-      </ServiceItemElement>
-    );
-  else
-    return (
-      <NonHealthyServiceItemElement>
-        <Tooltip
-          // Right placement to avoid Z index issues between left sidebar and tooltip or out of screen tooltip displays
-          placement="top"
-          overlayStyle={{
-            // em sizing to handle font-size change on large screens
-            width: '20em',
-            height: '100%',
-          }}
-          overlay={
-            <NonHealthyPopUp>
-              <NonHealthyPopUpTitle>
-                {intl.formatMessage({ id: 'view_details' })}
-              </NonHealthyPopUpTitle>
-              <NonHealthyPopUpItem>
-                <label>{intl.formatMessage({ id: 'severity' })}</label>
-                <StatusText status={status}>{status}</StatusText>
-              </NonHealthyPopUpItem>
-              {alerts[0] && alerts[0].startsAt && (
-                <NonHealthyPopUpItem>
-                  <label>{intl.formatMessage({ id: 'start' })}</label>
-                  <div>{formatDateToMid1(alerts[0].startsAt)}</div>
-                </NonHealthyPopUpItem>
-              )}
-            </NonHealthyPopUp>
-          }
-        >
-          <Link to="/alerts" data-testid="alert-link">
-            <ClickableServiceItemElement aria-label={label}>
-              <ServiceItemLabelWrapper>
-                <CircleStatus status={status} />
-                <ServiceItemLabel>{label}</ServiceItemLabel>
-              </ServiceItemLabelWrapper>
-              <ClickableIcon className="fas fa-angle-right" />
-            </ClickableServiceItemElement>
-          </Link>
-        </Tooltip>
-      </NonHealthyServiceItemElement>
-    );
-};
 
 const DashboardServices = () => {
   const intl = useIntl();
@@ -226,12 +84,12 @@ const DashboardServices = () => {
         <PageSubtitle aria-label="core">
           {intl.formatMessage({ id: 'core' })}
         </PageSubtitle>
-        <ServiceItem
+        <HealthItem
           label={'K8s master'}
           status={k8sStatus}
           alerts={k8sHighestSeverityAlert}
         />
-        <ServiceItem
+        <HealthItem
           label={'Bootstrap'}
           status={bootstrapStatus}
           alerts={bootstrapHighestSeverityAlert}
@@ -241,22 +99,22 @@ const DashboardServices = () => {
         <PageSubtitle aria-label="observability">
           {intl.formatMessage({ id: 'observability' })}
         </PageSubtitle>
-        <ServiceItem
+        <HealthItem
           label={'Monitoring'}
           status={monitoringStatus}
           alerts={monitoringHighestSeverityAlert}
         />
-        <ServiceItem
+        <HealthItem
           label={'Alerting'}
           status={alertingStatus}
           alerts={alertingHighestSeverityAlert}
         />
-        <ServiceItem
+        <HealthItem
           label={'Logging'}
           status={loggingStatus}
           alerts={loggingHighestSeverityAlert}
         />
-        <ServiceItem
+        <HealthItem
           label={'Dashboarding'}
           status={dashboardingStatus}
           alerts={dashboardingHighestSeverityAlert}
@@ -266,12 +124,12 @@ const DashboardServices = () => {
         <PageSubtitle aria-label="access">
           {intl.formatMessage({ id: 'access' })}
         </PageSubtitle>
-        <ServiceItem
+        <HealthItem
           label={'Ingress Controller'}
           status={ingressStatus}
           alerts={ingressHighestSeverityAlert}
         />
-        <ServiceItem
+        <HealthItem
           label={intl.formatMessage({ id: 'authentication' })}
           status={authenticationStatus}
           alerts={authenticationHighestSeverityAlert}

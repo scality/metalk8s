@@ -6,6 +6,7 @@ import DashboardMetrics from '../components/DashboardMetrics';
 import DashboardInventory from '../components/DashboardInventory';
 import DashboardServices from '../components/DashboardServices';
 import DashboardGlobalHealth from '../components/DashboardGlobalHealth';
+import DashboardNetwork from '../components/DashboardNetwork';
 import { padding, spacing } from '@scality/core-ui/dist/style/theme';
 import { Dropdown } from '@scality/core-ui';
 import {
@@ -57,6 +58,7 @@ const DashboardGrid = styled.div`
   }
   .network {
     grid-area: network;
+    display: flex;
   }
   .header {
     grid-area: header;
@@ -144,7 +146,9 @@ const DashboardPage = (props: {}) => {
           <DashboardInventory />
           <DashboardServices />
         </div>
-        <div className="network">Network</div>
+        <div className="network">
+          <DashboardNetwork />
+        </div>
         <div className="metrics">
           <DashboardMetrics />
         </div>

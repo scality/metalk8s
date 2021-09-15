@@ -1,7 +1,7 @@
 //@flow
 import React from 'react';
 import { screen } from '@testing-library/react';
-import DashboardServices from './DashboardServices';
+import DashboardPlane from './DashboardPlane';
 import { render } from './__TEST__/util';
 import type { Alert } from '../services/alertUtils';
 import { useHighestSeverityAlerts } from '../containers/AlertProvider';
@@ -32,14 +32,7 @@ jest.mock('../containers/AlertProvider', () => ({
   default: ({ children }) => <>{children}</>,
   useHighestSeverityAlerts: jest.fn(),
   useAlertLibrary: () => ({
-    getK8SMasterAlertSelectors: () => {},
-    getBootstrapAlertSelectors: () => {},
-    getMonitoringAlertSelectors: () => {},
-    getAlertingAlertSelectors: () => {},
-    getLoggingAlertSelectors: () => {},
-    getDashboardingAlertSelectors: () => {},
-    getIngressControllerAlertSelectors: () => {},
-    getAuthenticationAlertSelectors: () => {},
+    getNetworksAlertSelectors: () => {},
   }),
   highestAlertToStatus: (alerts?: Alert[]): string => {
     return (alerts?.[0] && ((alerts[0].severity: any): string)) || 'healthy';
@@ -67,43 +60,43 @@ jest.mock('../containers/ConfigProvider', () => ({
   ],
 }));
 
-describe('the dashboard inventory panel', () => {
-  test('displays the services panel and display all 8 green statuses when no alerts are present', async () => {
+const NB_ITEMS = 2;
+
+describe("the dashboard network's plane panel", () => {
+  test("displays the network's plane panel and display 2 green statuses when no alerts are present", async () => {
     // Have to any type jest.fn function to avoid Flow warning for mockImplementation()
     (useHighestSeverityAlerts: any).mockImplementation(() => noAlerts);
-
-    // Render
-    render(<DashboardServices />);
-
-    // Verify
-    expect(screen.getAllByLabelText(`status ${STATUS_HEALTH}`)).toHaveLength(8);
+    render(<DashboardPlane />);
+    expect(screen.getAllByLabelText(`status ${STATUS_HEALTH}`)).toHaveLength(
+      NB_ITEMS,
+    );
   });
 
-  test('displays the services panel and display all 8 warning statuses when warning alerts are present as well as link to the alerts page', async () => {
+  test('displays 2 warning statuses when warning alerts are present as well as link to the alerts page', async () => {
     // Have to any type jest.fn function to avoid Flow warning for mockImplementation()
     (useHighestSeverityAlerts: any).mockImplementation(() => alertsWarning);
 
     // Render
-    render(<DashboardServices />);
+    render(<DashboardPlane />);
 
     // Verify
     expect(screen.getAllByLabelText(`status ${STATUS_WARNING}`)).toHaveLength(
-      8,
+      NB_ITEMS,
     );
-    expect(screen.getAllByTestId('alert-link')).toHaveLength(8);
+    expect(screen.getAllByTestId('alert-link')).toHaveLength(NB_ITEMS);
   });
 
-  test('displays the services panel and display all 8 critical statuses when warning alerts are present as well as link to the alerts page', async () => {
+  test('displays 2 critical statuses when warning alerts are present as well as link to the alerts page', async () => {
     // Have to any type jest.fn function to avoid Flow warning for mockImplementation()
     (useHighestSeverityAlerts: any).mockImplementation(() => alertsCritical);
 
     // Render
-    render(<DashboardServices />);
+    render(<DashboardPlane />);
 
     // Verify
     expect(screen.getAllByLabelText(`status ${STATUS_CRITICAL}`)).toHaveLength(
-      8,
+      NB_ITEMS,
     );
-    expect(screen.getAllByTestId('alert-link')).toHaveLength(8);
+    expect(screen.getAllByTestId('alert-link')).toHaveLength(NB_ITEMS);
   });
 });
