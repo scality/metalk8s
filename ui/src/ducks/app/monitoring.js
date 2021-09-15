@@ -180,6 +180,11 @@ export default function reducer(state = defaultState, action = {}) {
         ...state,
         volumeCurrentStats: { ...state.volumeCurrentStats, ...action.payload },
       };
+    case UPDATE_NODESTATS_FETCH_ARG:
+      return {
+        ...state,
+        nodeStats: { ...state.nodeStats, ...action.payload },
+      };
     case UPDATE_NODE_UNAME_INFO:
       return {
         ...state,
