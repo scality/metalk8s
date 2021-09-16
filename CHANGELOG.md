@@ -2,8 +2,8 @@
 ## Release 2.11.0 (in development)
 ### Enhancements
 
-- Bump Kubernetes version to 1.22.1
-  (PR[#3525](https://github.com/scality/metalk8s/pull/3525))
+- Bump Kubernetes version to 1.22.2
+  (PR[#3538](https://github.com/scality/metalk8s/pull/3538))
 
 - Bump etcd version to 3.5.0-0
   (PR[#3525](https://github.com/scality/metalk8s/pull/3525))
