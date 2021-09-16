@@ -32,8 +32,8 @@
 ## Release 2.10.3 (in development)
 ### Enhancements
 
-- Bump Kubernetes version to 1.21.4
-  (PR[#3495](https://github.com/scality/metalk8s/pull/3495))
+- Bump Kubernetes version to 1.21.5
+  (PR[#3537](https://github.com/scality/metalk8s/pull/3537))
 
 - Bump Salt version to 3002.7
   (PR [#3524](https://github.com/scality/metalk8s/pull/3524))
