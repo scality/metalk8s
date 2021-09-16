@@ -10,6 +10,12 @@ python = "^3.6"
 treelib = "^1.6"
 PyYAML = "^5.4"
 
+# Optional dependencies
+Click = { version = "^8.0", optional = true }
+
+[tool.poetry.extras]
+cli = ["Click"]
+
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
 pylint = "^2.11.1"
