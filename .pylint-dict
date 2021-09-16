@@ -1,4 +1,6 @@
 API
+alertname
+alertstate
 arg
 basename
 buildargs
@@ -51,8 +53,10 @@ nginx
 pdf
 parameterized
 prebuilt
+prometheus
 py
 readonly
+recursing
 renderer
 repo
 reprepro
@@ -72,11 +76,13 @@ tmp
 tmpfs
 tojson
 tox
+treelib
 txt
 ui
 uptodate
 xenial
 yaml
+AlertRule
 Dockerfile
 GPG
 IP
@@ -85,4 +91,5 @@ Jinja
 JsonReporter
 LZ77
 Mio
+RulesGroup
 UI

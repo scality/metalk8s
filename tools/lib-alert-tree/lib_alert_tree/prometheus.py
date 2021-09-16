@@ -1,8 +1,11 @@
 """Classes for storing and serializing Prometheus alert rules."""
 
 import abc
+import operator
 
 import yaml
+
+EXACT_MATCH_LABELS = frozenset(["alertstate", "alertname", "severity"])
 
 
 class Serializable(metaclass=abc.ABCMeta):
@@ -61,6 +64,27 @@ class AlertRule(Serializable):
             "annotations": self.annotations,
             "labels": self.labels,
         }
+
+    def format_labels(self, **updates):
+        """Format labels (and optional updates) as a string."""
+        return ", ".join(
+            f"{key}='{val}'" if key in EXACT_MATCH_LABELS else f"{key}=~'{val}'"
+            for key, val in sorted(
+                dict(self.labels, **updates).items(),
+                key=operator.itemgetter(0),
+            )
+        )
+
+    @property
+    def query(self):
+        """The PromQL query for selecting this alert."""
+        labels_str = self.format_labels(alertname=self.name, alertstate="firing")
+        return f"ALERTS{{{labels_str}}}"
+
+    @property
+    def child_id(self):
+        """A short representation of this alert, for use in annotations."""
+        return f"{self.name}{{{self.format_labels()}}}"
 
 
 class RulesGroup(Serializable):

@@ -33,9 +33,29 @@ labels:
 """.lstrip()
 
 
-def test_alert_rule():
+def test_alert_rule_repr():
     """Check serializing an 'AlertRule'."""
     assert repr(EXAMPLE_ALERT) == EXAMPLE_ALERT_STR
+
+
+def test_alert_rule_format_labels():
+    """Check the 'AlertRule.format_labels' method."""
+    test_rule = prometheus.AlertRule(
+        "test", severity="warning", labels={"somelabel": "somevalue"}
+    )
+
+    assert test_rule.format_labels() == "severity='warning', somelabel=~'somevalue'"
+    assert test_rule.format_labels(otherlabel="othervalue", alertstate="firing") == (
+        "alertstate='firing', otherlabel=~'othervalue', severity='warning', "
+        "somelabel=~'somevalue'"
+    )
+
+    # Also test properties relying on `format_labels`
+    assert test_rule.query == (
+        "ALERTS{alertname='test', alertstate='firing', severity='warning', "
+        "somelabel=~'somevalue'}"
+    )
+    assert test_rule.child_id == "test{severity='warning', somelabel=~'somevalue'}"
 
 
 EXAMPLE_GROUP = prometheus.RulesGroup("example", rules=[EXAMPLE_ALERT])
