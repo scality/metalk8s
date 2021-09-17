@@ -5,7 +5,10 @@ import {
   useMetricsTimeSpan,
 } from '@scality/core-ui/dist/next';
 import { useStartingTimeStamp } from '../containers/StartTimeProvider';
-import { getSeriesForSymmetricalChart, getSingleResourceSerie } from '../services/graphUtils';
+import {
+  getSeriesForSymmetricalChart,
+  getSingleResourceSerie,
+} from '../services/graphUtils';
 import {
   getVolumeIOPSReadQuery,
   getVolumeIOPSWriteQuery,
@@ -17,7 +20,10 @@ import {
 } from '../services/platformlibrary/metrics';
 import type { UseQueryResult } from 'react-query';
 import type { TimeSpanProps } from '../services/platformlibrary/metrics';
-import { YAXIS_TITLE_READ_WRITE } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
+import {
+  UNIT_RANGE_BS,
+  YAXIS_TITLE_READ_WRITE,
+} from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
 
 const useSingleChartSerie = ({
   getQuery,
@@ -48,13 +54,10 @@ const useSingleChartSerie = ({
   useEffect(() => {
     if (!isLoading) {
       chartStartTimeRef.current = startTimeRef.current;
-      seriesRef.current = getSingleResourceSerie(
-        query.data,
-        resourceName,
-      );
+      seriesRef.current = getSingleResourceSerie(query.data, resourceName);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]);
+  }, [isLoading, resourceName]);
 
   return {
     series: seriesRef.current || [],
@@ -115,7 +118,7 @@ const useSymetricalChartSeries = ({
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]);
+  }, [isLoading, resourceName]);
 
   return {
     series: seriesRef.current || [],
@@ -151,13 +154,7 @@ export const VolumeThroughputChart = ({
       startingTimeStamp={startingTimeStamp}
       yAxisType={'symmetrical'}
       yAxisTitle={YAXIS_TITLE_READ_WRITE}
-      unitRange={[
-        { threshold: 0, label: 'B/s' },
-        { threshold: 1024, label: 'KiB/s' },
-        { threshold: 1024 * 1024, label: 'MiB/s' },
-        { threshold: 1024 * 1024 * 1024, label: 'GiB/s' },
-        { threshold: 1024 * 1024 * 1024 * 1024, label: 'TiB/s' },
-      ]}
+      unitRange={UNIT_RANGE_BS}
       isLoading={isLoading}
       isLegendHided={false}
     />
@@ -246,9 +243,10 @@ export const VolumeUsageChart = ({
   volumeName: string,
 }) => {
   const { series, startingTimeStamp, isLoading } = useSingleChartSerie({
-    getQuery: (timeSpanProps: TimeSpanProps) => getVolumeUsageQuery(pvcName, namespace, timeSpanProps),
-    resourceName: volumeName
-  })
+    getQuery: (timeSpanProps: TimeSpanProps) =>
+      getVolumeUsageQuery(pvcName, namespace, timeSpanProps),
+    resourceName: volumeName,
+  });
 
   return (
     <LineTemporalChart
@@ -262,4 +260,3 @@ export const VolumeUsageChart = ({
     />
   );
 };
-
