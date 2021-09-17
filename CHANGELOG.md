@@ -29,7 +29,8 @@
   from `python-kubernetes`
   (PR[#3510](https://github.com/scality/metalk8s/pull/3510))
 
-## Release 2.10.3 (in development)
+## Release 2.10.4 (in development)
+## Release 2.10.3
 ### Enhancements
 
 - Bump Kubernetes version to 1.21.5
