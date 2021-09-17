@@ -1,5 +1,5 @@
 import {
-  formatNodesPromRangeForChart,
+  getMultiResourceSeriesForChart,
   formatNodesThroughputPromRangeForChart,
 } from './graphUtils';
 import { fromUnixTimestampToDate } from './utils';
@@ -192,7 +192,7 @@ const testFailedThroughputData = [
 ];
 
 it('format data properly for "per node" chart on successful request', () => {
-  const res = formatNodesPromRangeForChart(testPromData, testNodesData);
+  const res = getMultiResourceSeriesForChart(testPromData, testNodesData);
   // Check node concatenation
   expect(res.length).toEqual(10);
 
@@ -212,7 +212,7 @@ it('format data properly for "per node" chart on successful request', () => {
 });
 
 it('does not process failed "per node" metrics data', () => {
-  const res = formatNodesPromRangeForChart(testFailedData, testNodesData);
+  const res = getMultiResourceSeriesForChart(testFailedData, testNodesData);
   expect(res.length).toEqual(0);
 });
 

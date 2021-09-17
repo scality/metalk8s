@@ -54,6 +54,25 @@ export const getCPUUsageQuery = (
   };
 };
 
+export const getNodesCPUUsageQuery = (timespanProps: TimeSpanProps) => {
+  const { startingTimeISO, currentTimeISO, frequency } = timespanProps;
+  const cpuNodesUsagePrometheusQuery =
+    '100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)';
+  return {
+    queryKey: ['NodesCpuUsage', startingTimeISO],
+    queryFn: () => {
+      return queryPromtheusMetrics(
+        frequency,
+        startingTimeISO,
+        currentTimeISO,
+        cpuNodesUsagePrometheusQuery,
+      );
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  };
+};
+
 export const getCPUUsageAvgQuery = (
   timespanProps: TimeSpanProps,
   showAvg: boolean,
@@ -131,6 +150,25 @@ export const getMemoryQuery = (
 
   return {
     queryKey: ['Memory', instanceIP, startingTimeISO],
+    queryFn: () => {
+      return queryPromtheusMetrics(
+        frequency,
+        startingTimeISO,
+        currentTimeISO,
+        memoryPrometheusQuery,
+      );
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  };
+};
+
+export const getNodesMemoryQuery = (timespanProps: TimeSpanProps) => {
+  const { startingTimeISO, currentTimeISO, frequency } = timespanProps;
+  const memoryPrometheusQuery = `sum(100 - ((node_memory_MemAvailable_bytes * 100) / node_memory_MemTotal_bytes)) by(instance)`;
+
+  return {
+    queryKey: ['NodesMemory', startingTimeISO],
     queryFn: () => {
       return queryPromtheusMetrics(
         frequency,
@@ -583,6 +621,28 @@ export const getVolumeThroughputWriteQuery = (
   return getPrometheusQuery(
     ['volumeThroughputWrite', instanceIp, deviceName],
     volumeThroughputWriteQuery,
+    timespanProps,
+  );
+};
+
+export const getNodesThroughputReadQuery = (
+  timespanProps: TimeSpanProps,
+): typeof useQuery => {
+  const nodesThroughputReadQuery = `sum(sum(irate(node_disk_read_bytes_total[1m])) by (instance, device))by(instance)`;
+  return getPrometheusQuery(
+    ['NodesThroughputReadQuery'],
+    nodesThroughputReadQuery,
+    timespanProps,
+  );
+};
+
+export const getNodesThroughputWriteQuery = (
+  timespanProps: TimeSpanProps,
+): typeof useQuery => {
+  const nodesThroughputWriteQuery = `sum(sum(irate(node_disk_written_bytes_total[1m])) by (instance, device))by(instance)`;
+  return getPrometheusQuery(
+    ['NodesThroughputWriteQuery'],
+    nodesThroughputWriteQuery,
     timespanProps,
   );
 };

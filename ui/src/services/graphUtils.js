@@ -1,83 +1,87 @@
-import { fromUnixTimestampToDate } from './utils';
 import type {
   PrometheusQueryResult,
   RangeMatrixResult,
 } from './prometheus/api';
-import { lineColor1 } from '../constants';
+import { lineColor1, PORT_NODE_EXPORTER } from '../constants';
 import { type Serie } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
-export type FormattedChartNodePromRange = {
-  date: Date,
-  type: string,
-  y: string,
-};
-export type FormattedChartNodesPromRange = Array<FormattedChartNodePromRange>;
-export const formatNodesPromRangeForChart = (
-  result: Promise<PrometheusQueryResult>[],
+
+export const getMultiResourceSeriesForChart = (
+  results: PrometheusQueryResult,
   nodes: Array<{ internalIP: string, name: string }>,
-): FormattedChartNodesPromRange => {
-  const reduced = nodes.reduce((acc, node, index) => {
-    let temp = [];
-    if (
-      result[index] &&
-      result[index].status === 'success' &&
-      result[index].data.result[0] &&
-      result[index].data.result[0].values.length
-    ) {
-      const matrixResult: RangeMatrixResult = result[index].data;
-      temp = matrixResult.result[0].values.map((item) => ({
-        date: fromUnixTimestampToDate(item[0]),
-        type: node.name,
-        y: item[1],
-      }));
-    }
-    return acc.concat(temp);
-  }, []);
-  return reduced;
+): Serie[] => {
+  return nodes.map((node, index) => {
+    const internalIP = node.internalIP;
+    const matrixResult: RangeMatrixResult =
+      results?.data.result.find(
+        (i) => i?.metric?.instance === `${internalIP}:${PORT_NODE_EXPORTER}`,
+      ) || results[index]; // for the memory, the metric field is empty :(
+
+    return convertMatrixResultToSerie(matrixResult, node.name);
+  });
 };
 
-export const formatNodesThroughputPromRangeForChart = (
-  result: Promise<PrometheusQueryResult>[],
+export const getMultipleSymmetricalSeries = (
+  resultAbove: PrometheusQueryResult,
+  resultBelow: PrometheusQueryResult,
+  metricPrefixAbove: string,
+  metricPrefixBelow: string,
   nodes: Array<{ internalIP: string, name: string }>,
-): FormattedChartNodesPromRange => {
-  const readRes = result[0];
-  const writeRes = result[1];
-
+): Serie[] => {
   if (
-    readRes &&
-    readRes.status === 'success' &&
-    writeRes &&
-    writeRes.status === 'success'
+    resultAbove &&
+    resultAbove.status === 'success' &&
+    resultBelow &&
+    resultBelow.status === 'success'
   ) {
-    const reduced = nodes.reduce((acc, node) => {
-      let tempRead = [];
-      let tempWrite = [];
-
-      const nodeReadData = readRes.data?.result?.find(
-        (item) => item.metric?.instance.split(':')[0] === node.internalIP,
-      );
-      const nodeWriteData = writeRes.data?.result?.find(
-        (item) => item.metric?.instance.split(':')[0] === node.internalIP,
+    return nodes.flatMap((node) => {
+      const aboveData = resultAbove?.data?.result?.find(
+        (item) =>
+          item.metric?.instance === `${node.internalIP}:${PORT_NODE_EXPORTER}`,
       );
 
-      if (nodeReadData)
-        tempRead = nodeReadData.values.map((item) => ({
-          date: fromUnixTimestampToDate(item[0]),
-          type: `${node.name}-read`,
-          y: 0 - item[1],
-        }));
-      if (nodeWriteData)
-        tempWrite = nodeWriteData.values.map((item) => ({
-          date: fromUnixTimestampToDate(item[0]),
-          type: `${node.name}-write`,
-          y: item[1],
-        }));
+      const belowData = resultBelow?.data?.result?.find(
+        (item) =>
+          item.metric?.instance === `${node.internalIP}:${PORT_NODE_EXPORTER}`,
+      );
 
-      return acc.concat(tempRead).concat(tempWrite);
-    }, []);
-    return reduced;
+      return [
+        {
+          ...convertMatrixResultToSerie(aboveData, node.name),
+          metricPrefix: metricPrefixAbove,
+          getTooltipLabel: (metricPrefix: string, resource: string) => {
+            return `${resource}-${metricPrefix}`;
+          },
+        },
+        {
+          ...convertMatrixResultToSerie(belowData, node.name),
+          metricPrefix: metricPrefixBelow,
+          getTooltipLabel: (metricPrefix: string, resource: string) => {
+            return `${resource}-${metricPrefix}`;
+          },
+          getLegendLabel: null, //disable legend to avoid duplicated entries
+        },
+      ];
+    });
   }
+  return [];
+};
 
-  return null;
+const convertMatrixResultToSerie = (
+  matrixResult: RangeMatrixResult,
+  resource: string,
+): Serie => {
+  const prometheusData = matrixResult?.values ?? [];
+  return {
+    data: prometheusData,
+    resource,
+    getTooltipLabel: (_, resource) => {
+      return resource;
+    },
+    getLegendLabel: (_, resource) => {
+      return resource;
+    },
+    isLineDashed: false,
+  };
 };
 
 export const getSingleResourceSerie = (
@@ -89,35 +93,19 @@ export const getSingleResourceSerie = (
 
   if (result && result.status === 'success') {
     const matrixResult: RangeMatrixResult = result?.data?.result[0];
-    const prometheusData = matrixResult?.values ?? [];
+
     const singleSerie = {
-      data: prometheusData,
-      resource,
-      getTooltipLabel: (_, resource) => {
-        return resource;
-      },
-      getLegendLabel: (_, resource) => {
-        return resource;
-      },
-      isLineDashed: false,
-      color: lineColor1,
+      ...convertMatrixResultToSerie(matrixResult, resource),
+      color: resultAvg ? lineColor1 : undefined, // when we display the average, average serie color should match with the metric color
     };
     series.push(singleSerie);
   }
 
   if (resultAvg && resultAvg.status === 'success') {
     const avgMatrixResult = resultAvg?.data?.result[0];
-    const prometheusAvgData = avgMatrixResult?.values ?? [];
+
     series.push({
-      data: prometheusAvgData,
-      resource: 'Cluster Avg.',
-      getTooltipLabel: (_, resource) => {
-        return resource;
-      },
-      getLegendLabel: (_, resource) => {
-        return resource;
-      },
-      isLineDashed: true,
+      ...convertMatrixResultToSerie(avgMatrixResult, 'Cluster Avg.'),
       color: lineColor1,
     });
   }
