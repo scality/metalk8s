@@ -50,6 +50,7 @@ mkdir
 mkisofs
 mypy
 nginx
+observability
 pdf
 parameterized
 prebuilt
