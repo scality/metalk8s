@@ -151,6 +151,7 @@ def task_livedoc() -> types.TaskDict:
         "doc": task_livedoc.__doc__,
         "actions": [doit.tools.LongRunning("tox -e docs -- livehtml")],
         "uptodate": [False],
+        "task_dep": ["check_for:tox"],
     }
 
 

@@ -56,6 +56,7 @@ def format_python() -> types.TaskDict:
         "doc": format_python.__doc__,
         "actions": [["tox", "-e", "lint", "black"]],
         "file_dep": python_files,
+        "task_dep": ["check_for:tox"],
     }
 
 
