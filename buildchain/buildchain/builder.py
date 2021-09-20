@@ -113,12 +113,23 @@ SHELL_UI_BUILDER: LocalImage = _builder_image(
     ],
 )
 
+ALERT_TREE_BUILDER: LocalImage = _builder_image(
+    name="alert-tree",
+    dockerfile=constants.LIB_ALERT_TREE_ROOT / "Dockerfile",
+    build_context=constants.LIB_ALERT_TREE_ROOT,
+    file_dep=[
+        constants.LIB_ALERT_TREE_ROOT / "poetry.lock",
+        constants.LIB_ALERT_TREE_ROOT / "pyproject.toml",
+    ],
+)
+
 
 BUILDERS: Tuple[LocalImage, ...] = (
     DOC_BUILDER,
     GO_BUILDER,
     UI_BUILDER,
     SHELL_UI_BUILDER,
+    ALERT_TREE_BUILDER,
 ) + tuple(RPM_BUILDER.values())
 
 
