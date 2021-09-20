@@ -101,7 +101,7 @@ class FileTree(base.CompositeTarget):
                 continue
             task = target.task
             task["basename"] = self.basename
-            task["name"] = "{}/{}".format(self._root, task["name"])
+            task["name"] = str(_get_destination(target).relative_to(self.destination))
             task["task_dep"].extend(self._get_task_dep_for_copy())
             tasks.append(task)
         return tasks
