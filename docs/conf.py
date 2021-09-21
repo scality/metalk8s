@@ -26,6 +26,11 @@ sys.path.insert(0, str(_buildchain_path.resolve()))
 from buildchain import constants
 from buildchain import versions
 
+# `lib_alert_tree` tooling library
+_lib_alert_tree_path = pathlib.Path(__file__) / "../../tools/lib-alert-tree"
+sys.path.insert(0, str(_lib_alert_tree_path.resolve()))
+
+
 # -- Environment toggles -----------------------------------------------------
 
 ON_RTD = os.environ.get("READTHEDOCS") == "True"
@@ -89,6 +94,7 @@ for infos in volumes_values["volume_types"].values():
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "sphinx.ext.autodoc",
     "sphinx.ext.todo",
     "sphinx.ext.ifconfig",
     "sphinx.ext.githubpages",

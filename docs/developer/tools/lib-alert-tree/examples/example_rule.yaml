@@ -1,0 +1,54 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels: {}
+  name: example.rules
+  namespace: example
+spec:
+  groups:
+  - name: warning.rules
+    rules:
+    - alert: ExampleDegraded
+      annotations:
+        children: FooBarDegraded{severity='warning'}, QuxNotProgressing{severity='warning'}
+        summary: The example app is degraded.
+      expr: (ALERTS{alertname='FooBarDegraded', alertstate='firing', severity='warning'}
+        or ALERTS{alertname='QuxNotProgressing', alertstate='firing', severity='warning'})
+        >= 1
+      for: 5m
+      labels:
+        severity: warning
+    - alert: FooBarDegraded
+      annotations:
+        children: FooServiceTooManyErrors{severity='warning'}, BarAlmostOutOfSpace{bar=~'baz',
+          severity='warning'}
+        summary: The FooBar service is degraded.
+      expr: (ALERTS{alertname='FooServiceTooManyErrors', alertstate='firing', severity='warning'}
+        or ALERTS{alertname='BarAlmostOutOfSpace', alertstate='firing', bar=~'baz',
+        severity='warning'}) >= 1
+      for: 1m
+      labels:
+        severity: warning
+  - name: critical.rules
+    rules:
+    - alert: ExampleAtRisk
+      annotations:
+        children: FooBarAtRisk{severity='critical'}, QuxNotProgressing{severity='critical'}
+        summary: The example app is at risk.
+      expr: (ALERTS{alertname='FooBarAtRisk', alertstate='firing', severity='critical'}
+        or ALERTS{alertname='QuxNotProgressing', alertstate='firing', severity='critical'})
+        >= 1
+      for: 5m
+      labels:
+        severity: critical
+    - alert: FooBarAtRisk
+      annotations:
+        children: FooServiceTooManyErrors{severity='critical'}, BarAlmostOutOfSpace{bar=~'baz',
+          severity='critical'}
+        summary: The FooBar service is at risk.
+      expr: (ALERTS{alertname='FooServiceTooManyErrors', alertstate='firing', severity='critical'}
+        or ALERTS{alertname='BarAlmostOutOfSpace', alertstate='firing', bar=~'baz',
+        severity='critical'}) >= 1
+      for: 1m
+      labels:
+        severity: critical
