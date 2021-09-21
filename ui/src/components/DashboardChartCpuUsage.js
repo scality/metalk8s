@@ -16,6 +16,7 @@ const DashboardChartCpuUsage = () => {
     transformPrometheusDataToSeries: useCallback(
       (prometheusResult) =>
         getMultiResourceSeriesForChart(prometheusResult, nodeAddresses),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       [JSON.stringify(nodeAddresses)],
     ),
   });
@@ -28,7 +29,7 @@ const DashboardChartCpuUsage = () => {
         title="CPU Usage"
         startingTimeStamp={startingTimeStamp}
         yAxisType={'percentage'}
-        isLegendHided={false}
+        isLegendHided={true}
         isLoading={isLoading}
       />
     </GraphWrapper>

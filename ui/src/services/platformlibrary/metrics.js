@@ -119,6 +119,25 @@ export const getSystemLoadQuery = (
   };
 };
 
+export const getNodesSystemLoadQuery = (timespanProps: TimeSpanProps) => {
+  const { startingTimeISO, currentTimeISO, frequency } = timespanProps;
+  const systemLoadPrometheusQuery = `(avg(node_load1) by (instance) / ignoring(container,endpoint,job,namespace,pod,service) count(node_cpu_seconds_total{mode="idle"}) without(cpu,mode)) * 100`;
+
+  return {
+    queryKey: ['SystemLoad', startingTimeISO],
+    queryFn: () => {
+      return queryPromtheusMetrics(
+        frequency,
+        startingTimeISO,
+        currentTimeISO,
+        systemLoadPrometheusQuery,
+      );
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  };
+};
+
 export const getSystemLoadAvgQuery = (
   timespanProps: TimeSpanProps,
   showAvg: boolean,

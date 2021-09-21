@@ -15,9 +15,8 @@ import {
 
 import DashboardChartCpuUsage from './DashboardChartCpuUsage';
 import DashboardChartThroughput from './DashboardChartThroughput';
-// import DashboardChartSystemLoad from './DashboardChartSystemLoad';
-// import DashboardChartThroughput from './DashboardChartThroughput';
-// import DashboardChartMemory from './DashboardChartMemory';
+import DashboardChartSystemLoad from './DashboardChartSystemLoad';
+import DashboardChartMemory from './DashboardChartMemory';
 
 const MetricsContainer = styled.div`
   padding: 2px ${padding.smaller};
@@ -78,8 +77,8 @@ const DashboardMetrics = () => {
       <GraphsWrapper>
         <SyncedCursorCharts>
           <DashboardChartCpuUsage />
-          {/* <DashboardChartMemory reactQueryOptions={reactQueryOptions} />
-          <DashboardChartSystemLoad reactQueryOptions={reactQueryOptions} />*/}
+          <DashboardChartMemory />
+          <DashboardChartSystemLoad />
           <DashboardChartThroughput />
         </SyncedCursorCharts>
       </GraphsWrapper>
