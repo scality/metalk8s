@@ -12,9 +12,9 @@ export const getMultiResourceSeriesForChart = (
   return nodes.map((node, index) => {
     const internalIP = node.internalIP;
     const matrixResult: RangeMatrixResult =
-      results?.data.result.find(
+      results?.data?.result?.find(
         (i) => i?.metric?.instance === `${internalIP}:${PORT_NODE_EXPORTER}`,
-      ) || results[index]; // for the memory, the metric field is empty :(
+      ) || results[index];
 
     return convertMatrixResultToSerie(matrixResult, node.name);
   });
@@ -27,43 +27,36 @@ export const getMultipleSymmetricalSeries = (
   metricPrefixBelow: string,
   nodes: Array<{ internalIP: string, name: string }>,
 ): Serie[] => {
-  if (
-    resultAbove &&
-    resultAbove.status === 'success' &&
-    resultBelow &&
-    resultBelow.status === 'success'
-  ) {
-    return nodes.flatMap((node) => {
-      const aboveData = resultAbove?.data?.result?.find(
-        (item) =>
-          item.metric?.instance === `${node.internalIP}:${PORT_NODE_EXPORTER}`,
-      );
+  // TODO: Throw the error if we got error status from Promethues API, and handle the error at React-query level
+  return nodes.flatMap((node) => {
+    const aboveData = resultAbove?.data?.result?.find(
+      (item) =>
+        item.metric?.instance === `${node.internalIP}:${PORT_NODE_EXPORTER}`,
+    );
 
-      const belowData = resultBelow?.data?.result?.find(
-        (item) =>
-          item.metric?.instance === `${node.internalIP}:${PORT_NODE_EXPORTER}`,
-      );
+    const belowData = resultBelow?.data?.result?.find(
+      (item) =>
+        item.metric?.instance === `${node.internalIP}:${PORT_NODE_EXPORTER}`,
+    );
 
-      return [
-        {
-          ...convertMatrixResultToSerie(aboveData, node.name),
-          metricPrefix: metricPrefixAbove,
-          getTooltipLabel: (metricPrefix: string, resource: string) => {
-            return `${resource}-${metricPrefix}`;
-          },
+    return [
+      {
+        ...convertMatrixResultToSerie(aboveData, node.name),
+        metricPrefix: metricPrefixAbove,
+        getTooltipLabel: (metricPrefix: string, resource: string) => {
+          return `${resource}-${metricPrefix}`;
         },
-        {
-          ...convertMatrixResultToSerie(belowData, node.name),
-          metricPrefix: metricPrefixBelow,
-          getTooltipLabel: (metricPrefix: string, resource: string) => {
-            return `${resource}-${metricPrefix}`;
-          },
-          getLegendLabel: null, //disable legend to avoid duplicated entries
+      },
+      {
+        ...convertMatrixResultToSerie(belowData, node.name),
+        metricPrefix: metricPrefixBelow,
+        getTooltipLabel: (metricPrefix: string, resource: string) => {
+          return `${resource}-${metricPrefix}`;
         },
-      ];
-    });
-  }
-  return [];
+        getLegendLabel: null, //disable legend to avoid duplicated entries
+      },
+    ];
+  });
 };
 
 const convertMatrixResultToSerie = (

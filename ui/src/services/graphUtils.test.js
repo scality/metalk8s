@@ -1,74 +1,36 @@
 import {
   getMultiResourceSeriesForChart,
-  formatNodesThroughputPromRangeForChart,
+  getMultipleSymmetricalSeries,
 } from './graphUtils';
-import { fromUnixTimestampToDate } from './utils';
 
-const testPromData = [
-  {
-    status: 'success',
-    data: {
-      resultType: 'matrix',
-      result: [
-        {
-          metric: {},
-          values: [
-            [1620724265, '29.84965469788186'],
-            [1620727865, '29.921830869711798'],
-            [1620731465, '29.835760477410332'],
-            [1620735065, '29.818792314356614'],
-            [1620738665, '29.994621830058193'],
-          ],
-        },
-      ],
-    },
+const testPromData = {
+  status: 'success',
+  data: {
+    resultType: 'matrix',
+    result: [
+      {
+        metric: { instance: '192.168.1.1:9100' },
+        values: [
+          [1620724265, '29.84965469788186'],
+          [1620727865, '29.921830869711798'],
+          [1620731465, '29.835760477410332'],
+          [1620735065, '29.818792314356614'],
+          [1620738665, '29.994621830058193'],
+        ],
+      },
+      {
+        metric: { instance: '192.168.1.2:9100' },
+        values: [
+          [1620724265, '29.84965469788186'],
+          [1620727865, '29.921830869711798'],
+          [1620731465, '29.835760477410332'],
+          [1620735065, '29.818792314356614'],
+          [1620738665, '29.994621830058193'],
+        ],
+      },
+    ],
   },
-  {
-    status: 'success',
-    data: {
-      resultType: 'matrix',
-      result: [
-        {
-          metric: {},
-          values: [
-            [1620724265, '29.84965469788186'],
-            [1620727865, '29.921830869711798'],
-            [1620731465, '29.835760477410332'],
-            [1620735065, '29.818792314356614'],
-            [1620738665, '29.994621830058193'],
-          ],
-        },
-      ],
-    },
-  },
-];
-
-const testFailedData = [
-  {
-    status: 'error',
-    data: {
-      resultType: 'matrix',
-      result: [
-        {
-          metric: {},
-          values: [],
-        },
-      ],
-    },
-  },
-  {
-    status: 'error',
-    data: {
-      resultType: 'matrix',
-      result: [
-        {
-          metric: {},
-          values: [],
-        },
-      ],
-    },
-  },
-];
+};
 
 const testNodesData = [
   {
@@ -81,182 +43,238 @@ const testNodesData = [
   },
 ];
 
-const testThroughputData = [
-  {
-    status: 'success',
-    data: {
-      resultType: 'matrix',
-      result: [
-        {
-          metric: {
-            instance: '192.168.1.1:9100',
-          },
-          values: [
-            [1620727967, '0'],
-            [1620731567, '1'],
-            [1620735167, '2'],
-            [1620738767, '3'],
-            [1620742367, '4'],
-          ],
-        },
-        {
-          metric: {
-            instance: '192.168.1.2:9100',
-          },
-          values: [
-            [1620727967, '0'],
-            [1620731567, '1'],
-            [1620735167, '2'],
-            [1620738767, '3'],
-            [1620742367, '4'],
-          ],
-        },
+it('returns the data set within series for multi resources chart', () => {
+  const multiResourceSeries = getMultiResourceSeriesForChart(
+    testPromData,
+    testNodesData,
+  );
+  const expectSeries = [
+    {
+      data: [
+        [1620724265, '29.84965469788186'],
+        [1620727865, '29.921830869711798'],
+        [1620731465, '29.835760477410332'],
+        [1620735065, '29.818792314356614'],
+        [1620738665, '29.994621830058193'],
       ],
+      resource: 'node1',
+      getLegendLabel: expect.anything(),
+      getTooltipLabel: expect.anything(),
+      isLineDashed: false,
     },
-  },
-  {
-    status: 'success',
-    data: {
-      resultType: 'matrix',
-      result: [
-        {
-          metric: {
-            instance: '192.168.1.1:9100',
-          },
-          values: [
-            [1620727967, '0'],
-            [1620731567, '1'],
-            [1620735167, '2'],
-            [1620738767, '3'],
-            [1620742367, '4'],
-          ],
-        },
-        {
-          metric: {
-            instance: '192.168.1.2:9100',
-          },
-          values: [
-            [1620727967, '0'],
-            [1620731567, '1'],
-            [1620735167, '2'],
-            [1620738767, '3'],
-            [1620742367, '4'],
-          ],
-        },
+    {
+      data: [
+        [1620724265, '29.84965469788186'],
+        [1620727865, '29.921830869711798'],
+        [1620731465, '29.835760477410332'],
+        [1620735065, '29.818792314356614'],
+        [1620738665, '29.994621830058193'],
       ],
+      resource: 'node2',
+      getLegendLabel: expect.anything(),
+      getTooltipLabel: expect.anything(),
+      isLineDashed: false,
     },
-  },
-];
-
-const testFailedThroughputData = [
-  {
-    status: 'error',
-    data: {
-      resultType: 'matrix',
-      result: [
-        {
-          metric: {
-            instance: '192.168.1.1:9100',
-          },
-          values: [],
-        },
-        {
-          metric: {
-            instance: '192.168.1.2:9100',
-          },
-          values: [],
-        },
-      ],
-    },
-  },
-  {
-    status: 'error',
-    data: {
-      resultType: 'matrix',
-      result: [
-        {
-          metric: {
-            instance: '192.168.1.1:9100',
-          },
-          values: [],
-        },
-        {
-          metric: {
-            instance: '192.168.1.2:9100',
-          },
-          values: [],
-        },
-      ],
-    },
-  },
-];
-
-it('format data properly for "per node" chart on successful request', () => {
-  const res = getMultiResourceSeriesForChart(testPromData, testNodesData);
-  // Check node concatenation
-  expect(res.length).toEqual(10);
-
-  // Check if process all data from each node
-  const node1Items = res.filter((item) => item.type === 'node1');
-  const node2Items = res.filter((item) => item.type === 'node2');
-  expect(node1Items.length).toEqual(5);
-  expect(node2Items.length).toEqual(5);
-
-  // Check data formatting
-  const goodFormatting = {
-    date: fromUnixTimestampToDate(testPromData[0].data.result[0].values[0][0]),
-    type: testNodesData[0].name,
-    y: testPromData[0].data.result[0].values[0][1],
-  };
-  expect(res[0]).toEqual(goodFormatting);
+  ];
+  expect(multiResourceSeries).toMatchObject(expectSeries);
 });
 
-it('does not process failed "per node" metrics data', () => {
-  const res = getMultiResourceSeriesForChart(testFailedData, testNodesData);
-  expect(res.length).toEqual(0);
-});
-
-it('format data properly for "throughput" chart on successful request', () => {
-  const res = formatNodesThroughputPromRangeForChart(
-    testThroughputData,
+it('returns the correct labels for tooltip and legend for multi resources chart', () => {
+  const multiResourceSeries = getMultiResourceSeriesForChart(
+    testPromData,
     testNodesData,
   );
 
-  // Check node concatenation
-  expect(res.length).toEqual(20);
-
-  // Check if both read and write data are processed for each node
-  const node1ReadItems = res.filter((item) => item.type === 'node1-read');
-  const node2ReadItems = res.filter((item) => item.type === 'node2-read');
-  const node1WriteItems = res.filter((item) => item.type === 'node1-write');
-  const node2WriteItems = res.filter((item) => item.type === 'node2-write');
-  expect(node1ReadItems.length).toEqual(5);
-  expect(node2ReadItems.length).toEqual(5);
-  expect(node1WriteItems.length).toEqual(5);
-  expect(node2WriteItems.length).toEqual(5);
-
-  // Check data formatting
-  const goodFormatting = {
-    date: fromUnixTimestampToDate(
-      testThroughputData[0].data.result[0].values[0][0],
-    ),
-    type: `${testNodesData[0].name}-read`,
-    y: parseFloat(testThroughputData[0].data.result[0].values[0][1]),
-  };
-  expect(res[0]).toEqual(goodFormatting);
-
-  // Check read data are converted to negative values
-  const readRegex = new RegExp('-read$');
-  const readItems = res.filter((item) => readRegex.test(item.type));
-  expect(readItems.length).toEqual(10);
-  const testNeg = readItems.filter((item) => item.y <= 0);
-  expect(testNeg.length).toEqual(10);
+  expect(multiResourceSeries[0].getTooltipLabel('', 'node1')).toEqual('node1');
+  expect(multiResourceSeries[1].getTooltipLabel('', 'node2')).toEqual('node2');
 });
 
-it('does not process failed "throughput" metrics data', () => {
-  const res = formatNodesThroughputPromRangeForChart(
-    testFailedThroughputData,
+// test getMultipleSymmetricalSeries()
+const promethusResultAbove = {
+  status: 'success',
+  data: {
+    resultType: 'matrix',
+    result: [
+      {
+        metric: {
+          instance: '192.168.1.1:9100',
+        },
+        values: [
+          [1620727967, '10'],
+          [1620731567, '11'],
+          [1620735167, '12'],
+          [1620738767, '13'],
+          [1620742367, '14'],
+        ],
+      },
+      {
+        metric: {
+          instance: '192.168.1.2:9100',
+        },
+        values: [
+          [1620727967, '20'],
+          [1620731567, '21'],
+          [1620735167, '22'],
+          [1620738767, '23'],
+          [1620742367, '24'],
+        ],
+      },
+    ],
+  },
+};
+
+const promethusResultBelow = {
+  status: 'success',
+  data: {
+    resultType: 'matrix',
+    result: [
+      {
+        metric: {
+          instance: '192.168.1.1:9100',
+        },
+        values: [
+          [1620727967, '15'],
+          [1620731567, '16'],
+          [1620735167, '17'],
+          [1620738767, '18'],
+          [1620742367, '19'],
+        ],
+      },
+      {
+        metric: {
+          instance: '192.168.1.2:9100',
+        },
+        values: [
+          [1620727967, '25'],
+          [1620731567, '26'],
+          [1620735167, '27'],
+          [1620738767, '28'],
+          [1620742367, '29'],
+        ],
+      },
+    ],
+  },
+};
+
+it('returns the series for multi resources symmetrical chart', () => {
+  const series = getMultipleSymmetricalSeries(
+    promethusResultAbove,
+    promethusResultBelow,
+    'write',
+    'read',
     testNodesData,
   );
-  expect(res).toBeNull();
+
+  const expectSymmetricalSeries = [
+    {
+      data: [
+        [1620727967, '10'],
+        [1620731567, '11'],
+        [1620735167, '12'],
+        [1620738767, '13'],
+        [1620742367, '14'],
+      ],
+      resource: 'node1',
+      isLineDashed: false,
+      metricPrefix: 'write',
+      getLegendLabel: expect.anything(),
+      getTooltipLabel: expect.anything(),
+    },
+    {
+      data: [
+        [1620727967, '15'],
+        [1620731567, '16'],
+        [1620735167, '17'],
+        [1620738767, '18'],
+        [1620742367, '19'],
+      ],
+      resource: 'node1',
+      isLineDashed: false,
+      metricPrefix: 'read',
+      getLegendLabel: null,
+      getTooltipLabel: expect.anything(),
+    },
+    {
+      data: [
+        [1620727967, '20'],
+        [1620731567, '21'],
+        [1620735167, '22'],
+        [1620738767, '23'],
+        [1620742367, '24'],
+      ],
+      resource: 'node2',
+      isLineDashed: false,
+      metricPrefix: 'write',
+      getLegendLabel: expect.anything(),
+      getTooltipLabel: expect.anything(),
+    },
+    {
+      data: [
+        [1620727967, '25'],
+        [1620731567, '26'],
+        [1620735167, '27'],
+        [1620738767, '28'],
+        [1620742367, '29'],
+      ],
+      resource: 'node2',
+      isLineDashed: false,
+      metricPrefix: 'read',
+      getLegendLabel: null,
+      getTooltipLabel: expect.anything(),
+    },
+  ];
+
+  expect(series).toMatchObject(expectSymmetricalSeries);
+});
+
+it('returns the correct labels for tooltip and legend for multi resources symmetrical chart', () => {
+  const series = getMultipleSymmetricalSeries(
+    promethusResultAbove,
+    promethusResultBelow,
+    'write',
+    'read',
+    testNodesData,
+  );
+
+  //resource: 'node1'
+  expect(
+    series
+      .find(
+        (serie) => serie.resource === 'node1' && serie.metricPrefix === 'write',
+      )
+      .getTooltipLabel('write', 'node1'),
+  ).toEqual('node1-write');
+
+  expect(
+    series
+      .find(
+        (serie) => serie.resource === 'node1' && serie.metricPrefix === 'read',
+      )
+      .getTooltipLabel('read', 'node1'),
+  ).toEqual('node1-read');
+
+  //resource: 'node2'
+  expect(
+    series
+      .find(
+        (serie) => serie.resource === 'node2' && serie.metricPrefix === 'write',
+      )
+      .getLegendLabel('write', 'node2'),
+  ).toEqual('node2');
+
+  expect(
+    series
+      .find(
+        (serie) => serie.resource === 'node2' && serie.metricPrefix === 'write',
+      )
+      .getTooltipLabel('write', 'node2'),
+  ).toEqual('node2-write');
+
+  expect(
+    series
+      .find(
+        (serie) => serie.resource === 'node2' && serie.metricPrefix === 'write',
+      )
+      .getTooltipLabel('read', 'node2'),
+  ).toEqual('node2-read');
 });
