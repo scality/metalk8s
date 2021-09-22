@@ -46,6 +46,10 @@ export function getAlertsLoki(start: string, end: string): Promise<Alert[]> {
     throw new Error('lokiApiClient should be defined');
   }
 
+  if (new Date(end).getTime() - new Date(start).getTime() < LOKI_RE_NOTIFICATION_INTERVAL) {
+    start = new Date(new Date(end).getTime() - LOKI_RE_NOTIFICATION_INTERVAL).toISOString();
+  }
+
   return lokiApiClient
     .get(
       //We set limit to 1000 because the default number of lines retrievable is 100 which is
