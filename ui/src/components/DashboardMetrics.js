@@ -16,7 +16,6 @@ import DashboardChartThroughput from './DashboardChartThroughput';
 import DashboardChartSystemLoad from './DashboardChartSystemLoad';
 import DashboardChartMemory from './DashboardChartMemory';
 import { useTypedSelector } from '../hooks';
-import { SyncedCursorCharts } from '@scality/core-ui/dist/components/vegachartv2/SyncedCursorCharts';
 
 const MetricsContainer = styled.div`
   padding: 2px ${padding.smaller};
@@ -53,7 +52,7 @@ const DashboardMetrics = () => {
   const intl = useIntl();
 
   // App config, used to generated Advanced metrics button link
-  const { url_grafana } = useTypedSelector(state => state.config.api);
+  const { url_grafana } = useTypedSelector((state) => state.config.api);
 
   return (
     <MetricsContainer id="dashboard-metrics-container">
@@ -75,12 +74,10 @@ const DashboardMetrics = () => {
         )}
       </PanelActions>
       <GraphsWrapper>
-        <SyncedCursorCharts>
-          <DashboardChartCpuUsage />
-          <DashboardChartMemory />
-          <DashboardChartSystemLoad />
-          <DashboardChartThroughput />
-        </SyncedCursorCharts>
+        <DashboardChartCpuUsage />
+        <DashboardChartMemory />
+        <DashboardChartSystemLoad />
+        <DashboardChartThroughput />
       </GraphsWrapper>
     </MetricsContainer>
   );
