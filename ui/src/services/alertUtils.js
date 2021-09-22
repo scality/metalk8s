@@ -198,7 +198,7 @@ Format the alerts from Loki.
 We need to remove the alerts with the same fingerprint and starts date, because the same alert may be retriggered by multiple times.
 */
 export const formatHistoryAlerts = (streamValues: StreamValue): Alert[] => {
-  const alerts = streamValues[0].values.reduce((agg, value) => {
+  const alerts = streamValues[0]?.values.reduce((agg, value) => {
     const alert = JSON.parse(value[1]);
 
     return {
@@ -229,5 +229,5 @@ export const formatHistoryAlerts = (streamValues: StreamValue): Alert[] => {
     };
   }, {});
   //$flow-disable-line Array<mixed> incompatible with Alert[];
-  return Object.values(alerts);
+  return Object.values(alerts||{});
 };
