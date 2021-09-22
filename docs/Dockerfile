@@ -12,7 +12,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         enchant \
         curl \
         git \
-        latexmk \
         make \
         plantuml \
         graphviz \
@@ -20,10 +19,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         python3 \
         python3-pip \
         python3-setuptools \
-        texlive-fonts-extra \
-        texlive-fonts-recommended \
-        texlive-latex-extra \
-        texlive-latex-recommended \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*

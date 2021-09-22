@@ -6,6 +6,11 @@
   when observing the cluster state (used in the UI Overview page)
   (PR[#3540](https://github.com/scality/metalk8s/pull/3540))
 
+### Removals
+
+- Removed the PDF support for documentation, replaced it with the HTML output
+  in the ISO (PR[#3540](https://github.com/scality/metalk8s/pull/3540))
+
 ### Enhancements
 
 - Bump Kubernetes version to 1.22.2

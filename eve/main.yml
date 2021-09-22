@@ -1131,9 +1131,7 @@ stages:
               docs/_build/*
       - ShellCommand:
           name: Build documentation with Scality theme
-          command: >-
-            rm -rf docs/_build &&
-            ./docs/entrypoint.sh html latexpdf
+          command: rm -rf docs/_build && ./docs/entrypoint.sh html
           env:
             BUILD_DIR: "%(prop:builddir)s/build/docs/_build"
           haltOnFailure: true
@@ -1150,7 +1148,6 @@ stages:
           <<: *upload_artifacts
           urls:
             - docs/html/index.html
-            - docs/latex/MetalK8s.pdf
             - docs/CHANGELOG.md
       - ShellCommand:
           <<: *add_final_status_artifact_success
