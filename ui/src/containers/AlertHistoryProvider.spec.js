@@ -437,10 +437,10 @@ describe('useHistoryAlerts', () => {
 
     expect(result.current.alerts).toStrictEqual([
       {
-        startsAt: '2021-08-22T09:58:57.000Z',
+        startsAt: '2021-08-22T09:48:00.000Z',
         endsAt: '2021-08-23T09:58:57.000Z',
         severity: 'unavailable',
-        id: 'unavailable-1629626337',
+        id: 'unavailable-1629625680',
         labels: { alertname: 'PlatformDegraded' },
         description: 'Alerting services were unavailable during this period of time'
       }
