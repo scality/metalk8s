@@ -63,7 +63,7 @@ const DashboardGlobalHealth = () => {
       <div className='healthbar'  style={{ flexDirection: 'column'}}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <SpacedBox style={{ display: 'flex', alignItems: 'center' }} mr={20}>
-            <SpacedBox mr={10}>
+            <SpacedBox mr={8}>
               <EmphaseText style={{ letterSpacing: spacing.sp2 }}>
                 Global Health
               </EmphaseText>
