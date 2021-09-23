@@ -14,7 +14,6 @@ import {
   LAST_SEVEN_DAYS,
   LAST_TWENTY_FOUR_HOURS,
   LAST_ONE_HOUR,
-  queryTimeSpansCodes,
   GRAFANA_DASHBOARDS,
 } from '../constants';
 import { useIntl } from 'react-intl';
@@ -30,6 +29,7 @@ import {
   VolumeUsageChart,
 } from './VolumeCharts';
 import { SyncedCursorCharts } from '@scality/core-ui/dist/components/vegachartv2/SyncedCursorCharts';
+import { queryTimeSpansCodes } from '@scality/core-ui/dist/components/constants';
 
 const MetricGraphCardContainer = styled.div`
   min-height: 270px;

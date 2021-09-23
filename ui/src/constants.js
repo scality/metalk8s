@@ -54,28 +54,6 @@ export const QUERY_LAST_ONE_HOUR = 'now-1h';
 
 export const PORT_NODE_EXPORTER = '9100';
 
-// deprecated should retrieve from core-ui
-export const queryTimeSpansCodes = [
-  {
-    label: QUERY_LAST_SEVEN_DAYS,
-    value: LAST_SEVEN_DAYS,
-    duration: SAMPLE_DURATION_LAST_SEVEN_DAYS,
-    frequency: SAMPLE_FREQUENCY_LAST_SEVEN_DAYS,
-  },
-  {
-    label: QUERY_LAST_TWENTY_FOUR_HOURS,
-    value: LAST_TWENTY_FOUR_HOURS,
-    duration: SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
-    frequency: SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
-  },
-  {
-    label: QUERY_LAST_ONE_HOUR,
-    value: LAST_ONE_HOUR,
-    duration: SAMPLE_DURATION_LAST_ONE_HOUR,
-    frequency: SAMPLE_FREQUENCY_LAST_ONE_HOUR,
-  },
-];
-
 // alert
 export const NODE_FILESYSTEM_SPACE_FILLINGUP = 'NodeFilesystemSpaceFillingUp';
 export const NODE_FILESYSTEM_ALMOST_OUTOF_SPACE =

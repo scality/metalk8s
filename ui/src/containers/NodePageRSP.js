@@ -27,12 +27,12 @@ import {
   NoInstanceSelected,
 } from '../components/style/CommonLayoutStyle';
 import {
-  queryTimeSpansCodes,
   NODE_ALERTS_GROUP,
   PORT_NODE_EXPORTER,
 } from '../constants';
 import { useAlerts } from './AlertProvider';
 import { useIntl } from 'react-intl';
+import { queryTimeSpansCodes } from '@scality/core-ui/dist/components/constants';
 
 // <NodePageRSP> fetches the data for all the tabs given the current selected Node
 // handles the refresh for the metrics tab

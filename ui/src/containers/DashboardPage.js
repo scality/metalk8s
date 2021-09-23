@@ -12,12 +12,12 @@ import {
   LAST_SEVEN_DAYS,
   LAST_TWENTY_FOUR_HOURS,
   LAST_ONE_HOUR,
-  queryTimeSpansCodes,
 } from '../constants';
 
 import { useURLQuery } from '../services/utils';
 import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import { SyncedCursorCharts } from '@scality/core-ui/dist/components/vegachartv2/SyncedCursorCharts';
+import { queryTimeSpansCodes } from '@scality/core-ui/dist/components/constants';
 
 const DashboardGrid = styled.div`
   display: grid;
