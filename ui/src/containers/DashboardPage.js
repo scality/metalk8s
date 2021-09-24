@@ -5,10 +5,10 @@ import DashboardMetrics from '../components/DashboardMetrics';
 import DashboardInventory from '../components/DashboardInventory';
 import DashboardServices from '../components/DashboardServices';
 import DashboardGlobalHealth from '../components/DashboardGlobalHealth';
-import DashboardNetwork from '../components/DashboardNetwork';
 import { padding, spacing } from '@scality/core-ui/dist/style/theme';
 import { SyncedCursorCharts } from '@scality/core-ui/dist/components/vegachartv2/SyncedCursorCharts';
 import TimespanSelector from './TimespanSelector';
+import DashboardCPBandwidthChart from '../components/DashboardCPBandwidthChart';
 
 const DashboardGrid = styled.div`
   display: grid;
@@ -93,7 +93,14 @@ const DashboardPage = () => {
           <DashboardServices />
         </div>
         <div className="network">
-          <DashboardNetwork />
+          <DashboardCPBandwidthChart
+            title="ControlPlane Bandwidth"
+            plane="controlPlane"
+          ></DashboardCPBandwidthChart>
+          <DashboardCPBandwidthChart
+            title="WorkloadPlane Bandwidth"
+            plane="workloadPlane"
+          ></DashboardCPBandwidthChart>
         </div>
         <div className="metrics">
           <DashboardMetrics />

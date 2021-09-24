@@ -8,6 +8,7 @@ import { Button } from '@scality/core-ui/dist/next';
 import { spacing } from '@scality/core-ui/dist/style/theme';
 import { useIntl } from 'react-intl';
 import { SyncedCursorCharts } from '@scality/core-ui/dist/next';
+import { UNIT_RANGE_BS } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
 import { updateNodeStatsFetchArgumentAction } from '../ducks/app/monitoring';
 import {
   NodeTab,
@@ -236,13 +237,7 @@ const NodePageMetricsTab = ({
                 metricPrefixAbove={'in'}
                 metricPrefixBelow={'out'}
                 planeInterface={controlPlaneInterface}
-                unitRange={[
-                  { threshold: 0, label: 'B/s' },
-                  { threshold: 1024, label: 'KiB/s' },
-                  { threshold: 1024 * 1024, label: 'MiB/s' },
-                  { threshold: 1024 * 1024 * 1024, label: 'GiB/s' },
-                  { threshold: 1024 * 1024 * 1024 * 1024, label: 'TiB/s' },
-                ]}
+                unitRange={UNIT_RANGE_BS}
               ></MetricSymmetricalChart>
             </GraphWrapper>
             <GraphWrapper className="wpbandwidth">
@@ -261,13 +256,7 @@ const NodePageMetricsTab = ({
                 metricPrefixAbove={'in'}
                 metricPrefixBelow={'out'}
                 planeInterface={workloadPlaneInterface}
-                unitRange={[
-                  { threshold: 0, label: 'B/s' },
-                  { threshold: 1024, label: 'KiB/s' },
-                  { threshold: 1024 * 1024, label: 'MiB/s' },
-                  { threshold: 1024 * 1024 * 1024, label: 'GiB/s' },
-                  { threshold: 1024 * 1024 * 1024 * 1024, label: 'TiB/s' },
-                ]}
+                unitRange={UNIT_RANGE_BS}
               ></MetricSymmetricalChart>
             </GraphWrapper>
           </GraphGrid>

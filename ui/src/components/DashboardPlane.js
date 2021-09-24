@@ -1,6 +1,7 @@
 import React from 'react';
 import { useIntl } from 'react-intl';
 import styled from 'styled-components';
+import { spacing } from '@scality/core-ui/dist/style/theme';
 import {
   useAlertLibrary,
   useHighestSeverityAlerts,
@@ -9,7 +10,7 @@ import {
 import { PageSubtitle } from './style/CommonLayoutStyle';
 import { PanelActions, NetworkContainer } from './DashboardNetwork';
 import HealthItem from './HealthItem.js';
-import { spacing } from '@scality/core-ui/dist/style/theme';
+import DashboardBandwidthChart from './DashboardBandwidthChart';
 
 const PlanesContainer = styled.div`
   padding-left: ${spacing.sp8};
@@ -21,6 +22,10 @@ const PlaneContainer = styled.div`
   display: flex;
   flex-direction: row;
   margin-right: ${spacing.sp40};
+`;
+
+const ChartContainer = styled.div`
+  margin-top: ${spacing.sp24};
 `;
 
 const DashboardPlane = () => {
@@ -55,6 +60,16 @@ const DashboardPlane = () => {
           />
         </PlaneContainer>
       </PlanesContainer>
+      <ChartContainer>
+        <DashboardBandwidthChart
+          title="ControlPlane Bandwidth"
+          plane="controlPlane"
+        ></DashboardBandwidthChart>
+        <DashboardBandwidthChart
+          title="WorkloadPlane Bandwidth"
+          plane="workloadPlane"
+        ></DashboardBandwidthChart>
+      </ChartContainer>
     </NetworkContainer>
   );
 };

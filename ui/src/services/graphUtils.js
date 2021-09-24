@@ -26,17 +26,24 @@ export const getMultipleSymmetricalSeries = (
   metricPrefixAbove: string,
   metricPrefixBelow: string,
   nodes: Array<{ internalIP: string, name: string }>,
+  nodesPlaneInterface?: { [nodeName: string]: { interface: string } },
 ): Serie[] => {
   // TODO: Throw the error if we got error status from Promethues API, and handle the error at React-query level
   return nodes.flatMap((node) => {
-    const aboveData = resultAbove?.data?.result?.find(
-      (item) =>
-        item.metric?.instance === `${node.internalIP}:${PORT_NODE_EXPORTER}`,
+    const aboveData = resultAbove?.data?.result?.find((item) =>
+      nodesPlaneInterface
+        ? item.metric?.instance ===
+            `${node.internalIP}:${PORT_NODE_EXPORTER}` &&
+          item.metric?.device === nodesPlaneInterface[node.name].interface
+        : item.metric?.instance === `${node.internalIP}:${PORT_NODE_EXPORTER}`,
     );
 
-    const belowData = resultBelow?.data?.result?.find(
-      (item) =>
-        item.metric?.instance === `${node.internalIP}:${PORT_NODE_EXPORTER}`,
+    const belowData = resultBelow?.data?.result?.find((item) =>
+      nodesPlaneInterface
+        ? item.metric?.instance ===
+            `${node.internalIP}:${PORT_NODE_EXPORTER}` &&
+          item.metric?.device === nodesPlaneInterface[node.name].interface
+        : item.metric?.instance === `${node.internalIP}:${PORT_NODE_EXPORTER}`,
     );
 
     return [
@@ -179,4 +186,26 @@ export const getSeriesForSymmetricalChart = (
     series.push(serieAvgBelow);
   }
   return series;
+};
+
+export const getNodesInterfacesString = (nodeIPsInfo): string => {
+  const planeInterfaces = [];
+
+  for (const planeIP of Object.values(nodeIPsInfo)) {
+    const controlPlaneInterface = planeIP?.controlPlane?.interface;
+    const workloadlPlaneInterface = planeIP?.workloadPlane?.interface;
+    if (
+      planeInterfaces.indexOf(controlPlaneInterface) === -1 &&
+      controlPlaneInterface
+    ) {
+      planeInterfaces.push(controlPlaneInterface);
+    }
+    if (
+      planeInterfaces.indexOf(workloadlPlaneInterface) === -1 &&
+      workloadlPlaneInterface
+    ) {
+      planeInterfaces.push(workloadlPlaneInterface);
+    }
+  }
+  return planeInterfaces.join('|');
 };
