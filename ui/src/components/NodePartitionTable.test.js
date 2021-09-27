@@ -122,7 +122,7 @@ const server = setupServer(
 
 describe('the system partition table', () => {
   beforeAll(() => {
-    server.listen();
+    server.listen({onUnhandledRequest: 'warn'});
   });
 
   test('displays the table', async () => {
