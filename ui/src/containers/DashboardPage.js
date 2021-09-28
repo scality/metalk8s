@@ -78,7 +78,7 @@ const DashboardGrid = styled.div`
   }
 `;
 
-const DashboardPage = (props: {}) => {
+const DashboardPage = () => {
   return (
     <DashboardGrid>
       <div className="header">
