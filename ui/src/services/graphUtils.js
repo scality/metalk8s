@@ -197,24 +197,11 @@ export const getSeriesForSymmetricalChart = (
   return series;
 };
 
-export const getNodesInterfacesString = (nodeIPsInfo): string => {
-  const planeInterfaces = [];
-
-  for (const planeIP of Object.values(nodeIPsInfo)) {
-    const controlPlaneInterface = planeIP?.controlPlane?.interface;
-    const workloadlPlaneInterface = planeIP?.workloadPlane?.interface;
-    if (
-      planeInterfaces.indexOf(controlPlaneInterface) === -1 &&
-      controlPlaneInterface
-    ) {
-      planeInterfaces.push(controlPlaneInterface);
-    }
-    if (
-      planeInterfaces.indexOf(workloadlPlaneInterface) === -1 &&
-      workloadlPlaneInterface
-    ) {
-      planeInterfaces.push(workloadlPlaneInterface);
-    }
-  }
-  return planeInterfaces.join('|');
+export const getNodesInterfacesString = (nodeIPsInfo): [] => {
+  const interfaces = Object.values(nodeIPsInfo).flatMap((plane) => [
+    plane?.controlPlane?.interface,
+    plane?.workloadPlane?.interface,
+  ]);
+  const uniqueInterfaces = [...new Set(interfaces)];
+  return uniqueInterfaces;
 };

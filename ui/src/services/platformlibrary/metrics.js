@@ -505,12 +505,14 @@ export const getWorkloadPlaneBandWidthAvgOutQuery = (
 // then we do filter base on the interface of the node which we can retrieve from Salt API
 export const getNodesPlanesBandwidthInQuery = (
   timespanProps,
-  devices: string,
+  devices: string[],
 ) => {
-  const nodesPlanesBandwidthInQuery = `avg(irate(node_network_receive_bytes_total{device=~"${devices}"}[5m])) by (instance,device)`;
+  const nodesPlanesBandwidthInQuery = `avg(irate(node_network_receive_bytes_total{device=~"${devices.join(
+    '|',
+  )}"}[5m])) by (instance,device)`;
 
   return getPrometheusQuery(
-    ['NodesPlanesBandwidthIn', devices],
+    ['NodesPlanesBandwidthIn', ...devices],
     nodesPlanesBandwidthInQuery,
     timespanProps,
   );
@@ -518,12 +520,14 @@ export const getNodesPlanesBandwidthInQuery = (
 
 export const getNodesPlanesBandwidthOutQuery = (
   timespanProps,
-  devices: string,
+  devices: string[],
 ) => {
-  const nodePlanesBandwidthOutQuery = `avg(irate(node_network_transmit_bytes_total{device=~"${devices}"}[5m])) by (instance,device)`;
+  const nodePlanesBandwidthOutQuery = `avg(irate(node_network_transmit_bytes_total{device=~"${devices.join(
+    '|',
+  )}"}[5m])) by (instance,device)`;
 
   return getPrometheusQuery(
-    ['NodesPlanesBandwidthOut', devices],
+    ['NodesPlanesBandwidthOut', ...devices],
     nodePlanesBandwidthOutQuery,
     timespanProps,
   );
@@ -779,7 +783,6 @@ export const getAlertsHistoryQuery = ({
 }: TimeSpanProps): typeof useQuery => {
   const query = `sum(alertmanager_alerts)`;
 
-  
   const alertManagerDowntimePromise = queryPrometheusRange(
     startingTimeISO,
     currentTimeISO,
