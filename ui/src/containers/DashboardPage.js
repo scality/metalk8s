@@ -8,7 +8,7 @@ import DashboardGlobalHealth from '../components/DashboardGlobalHealth';
 import { padding, spacing } from '@scality/core-ui/dist/style/theme';
 import { SyncedCursorCharts } from '@scality/core-ui/dist/components/vegachartv2/SyncedCursorCharts';
 import TimespanSelector from './TimespanSelector';
-import DashboardCPBandwidthChart from '../components/DashboardCPBandwidthChart';
+import DashboardNetwork from '../components/DashboardNetwork';
 
 const DashboardGrid = styled.div`
   display: grid;
@@ -93,14 +93,7 @@ const DashboardPage = () => {
           <DashboardServices />
         </div>
         <div className="network">
-          <DashboardCPBandwidthChart
-            title="ControlPlane Bandwidth"
-            plane="controlPlane"
-          ></DashboardCPBandwidthChart>
-          <DashboardCPBandwidthChart
-            title="WorkloadPlane Bandwidth"
-            plane="workloadPlane"
-          ></DashboardCPBandwidthChart>
+          <DashboardNetwork />
         </div>
         <div className="metrics">
           <DashboardMetrics />
