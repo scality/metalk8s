@@ -1,21 +1,10 @@
-import React, { useEffect } from 'react';
-import { useHistory } from 'react-router';
-import { useDispatch, useSelector } from 'react-redux';
+//@flow
+import React from 'react';
+import { useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { Dropdown } from '@scality/core-ui';
 import { Button } from '@scality/core-ui/dist/next';
-import {
-  fetchVolumeStatsAction,
-  updateVolumeStatsAction,
-} from '../ducks/app/monitoring';
 import { padding, fontSize, spacing } from '@scality/core-ui/dist/style/theme';
-import {
-  VOLUME_CONDITION_LINK,
-  LAST_SEVEN_DAYS,
-  LAST_TWENTY_FOUR_HOURS,
-  LAST_ONE_HOUR,
-  GRAFANA_DASHBOARDS,
-} from '../constants';
+import { VOLUME_CONDITION_LINK, GRAFANA_DASHBOARDS } from '../constants';
 import { useIntl } from 'react-intl';
 import {
   VolumeTab,
@@ -29,7 +18,7 @@ import {
   VolumeUsageChart,
 } from './VolumeCharts';
 import { SyncedCursorCharts } from '@scality/core-ui/dist/components/vegachartv2/SyncedCursorCharts';
-import { queryTimeSpansCodes } from '@scality/core-ui/dist/components/constants';
+import TimespanSelector from '../containers/TimespanSelector';
 
 const MetricGraphCardContainer = styled.div`
   min-height: 270px;
@@ -79,86 +68,8 @@ const MetricsTab = (props) => {
     volumeNamespace,
     volumePVCName,
   } = props;
-  const dispatch = useDispatch();
-  const history = useHistory();
   const intl = useIntl();
-  const query = new URLSearchParams(history?.location?.search);
-  const metricsTimeSpan = useSelector(
-    (state) => state.app.monitoring.volumeStats.metricsTimeSpan,
-  );
   const config = useSelector((state) => state.config);
-
-  // write the selected timespan in URL
-  const writeUrlTimeSpan = (timespan: string) => {
-    let formatted = queryTimeSpansCodes.find((item) => item.value === timespan);
-
-    if (formatted) {
-      // preserves current query params
-      query.set('from', formatted.label);
-      history.push({ search: query.toString() });
-    }
-  };
-
-  const handleUrlQuery = () => {
-    const urlTimeSpan = queryTimeSpansCodes.find(
-      (item) => item.label === query.get('from'),
-    );
-
-    // If a time span is specified we apply it
-    // Else if a timespan has been set but is not in the URL yet (change of volume) we write it to the URL
-    if (urlTimeSpan) {
-      dispatch(updateVolumeStatsAction({ metricsTimeSpan: urlTimeSpan.value }));
-      updateMetricsGraph();
-    } else if (metricsTimeSpan !== LAST_TWENTY_FOUR_HOURS && !urlTimeSpan) {
-      writeUrlTimeSpan(metricsTimeSpan);
-    }
-  };
-
-  // handle timespan in url query
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(handleUrlQuery, [volumeName, query.get('from'), metricsTimeSpan]);
-
-  const updateMetricsGraph = () => dispatch(fetchVolumeStatsAction());
-
-  // the time span of metrics graph, by default is `Last 24 hours`
-  const metricsTimeSpanItems = [
-    {
-      label: LAST_SEVEN_DAYS,
-      onClick: () => {
-        dispatch(updateVolumeStatsAction({ metricsTimeSpan: LAST_SEVEN_DAYS }));
-        writeUrlTimeSpan(LAST_SEVEN_DAYS);
-        updateMetricsGraph();
-      },
-      selected: metricsTimeSpan === LAST_SEVEN_DAYS,
-      'data-cy': LAST_SEVEN_DAYS,
-    },
-    {
-      label: LAST_TWENTY_FOUR_HOURS,
-      onClick: () => {
-        dispatch(
-          updateVolumeStatsAction({ metricsTimeSpan: LAST_TWENTY_FOUR_HOURS }),
-        );
-        writeUrlTimeSpan(LAST_TWENTY_FOUR_HOURS);
-        updateMetricsGraph();
-      },
-      selected: metricsTimeSpan === LAST_TWENTY_FOUR_HOURS,
-      'data-cy': LAST_TWENTY_FOUR_HOURS,
-    },
-    {
-      label: LAST_ONE_HOUR,
-      onClick: () => {
-        dispatch(updateVolumeStatsAction({ metricsTimeSpan: LAST_ONE_HOUR }));
-        writeUrlTimeSpan(LAST_ONE_HOUR);
-        updateMetricsGraph();
-      },
-      selected: metricsTimeSpan === LAST_ONE_HOUR,
-      'data-cy': LAST_ONE_HOUR,
-    },
-  ];
-
-  const metricsTimeSpanDropdownItems = metricsTimeSpanItems?.filter(
-    (mTS) => mTS.label !== metricsTimeSpan,
-  );
 
   return (
     <VolumeTab>
@@ -178,14 +89,7 @@ const MetricsTab = (props) => {
               />
             </a>
           )}
-          {volumeCondition === VOLUME_CONDITION_LINK && (
-            <Dropdown
-              items={metricsTimeSpanDropdownItems}
-              text={metricsTimeSpan}
-              size="small"
-              data-cy="metrics_timespan_selection"
-            />
-          )}
+          {volumeCondition === VOLUME_CONDITION_LINK && <TimespanSelector />}
         </MetricsActionContainer>
         {volumeCondition === VOLUME_CONDITION_LINK ? (
           <GraphGrid id="graph_container">

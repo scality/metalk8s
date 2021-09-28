@@ -1,6 +1,5 @@
 //@flow
 import React from 'react';
-import { useHistory } from 'react-router';
 import styled from 'styled-components';
 import DashboardMetrics from '../components/DashboardMetrics';
 import DashboardInventory from '../components/DashboardInventory';
@@ -8,17 +7,8 @@ import DashboardServices from '../components/DashboardServices';
 import DashboardGlobalHealth from '../components/DashboardGlobalHealth';
 import DashboardNetwork from '../components/DashboardNetwork';
 import { padding, spacing } from '@scality/core-ui/dist/style/theme';
-import { Dropdown } from '@scality/core-ui';
-import {
-  LAST_SEVEN_DAYS,
-  LAST_TWENTY_FOUR_HOURS,
-  LAST_ONE_HOUR,
-} from '../constants';
-
-import { useURLQuery } from '../services/utils';
-import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import { SyncedCursorCharts } from '@scality/core-ui/dist/components/vegachartv2/SyncedCursorCharts';
-import { queryTimeSpansCodes } from '@scality/core-ui/dist/components/constants';
+import TimespanSelector from './TimespanSelector';
 
 const DashboardGrid = styled.div`
   display: grid;
@@ -89,54 +79,10 @@ const DashboardGrid = styled.div`
 `;
 
 const DashboardPage = (props: {}) => {
-  const history = useHistory();
-  const query = useURLQuery();
-
-  const { label } = useMetricsTimeSpan();
-
-  // Write the selected timespan in URL
-  const writeUrlTimeSpan = (timespan: string) => {
-    let formatted = queryTimeSpansCodes.find((item) => item.value === timespan);
-
-    if (formatted) {
-      query.set('from', formatted.label);
-      history.push({ search: query.toString() });
-    }
-  };
-
-  // Dropdown items
-  const metricsTimeSpanItems = [
-    LAST_SEVEN_DAYS,
-    LAST_TWENTY_FOUR_HOURS,
-    LAST_ONE_HOUR,
-  ].map((option) => ({
-    label: option,
-    'data-cy': option,
-    onClick: () => {
-      writeUrlTimeSpan(option);
-    },
-    selected:
-      queryTimeSpansCodes.find((item) => item.label === label)?.label ===
-      option,
-  }));
-
-  const metricsTimeSpanDropdownItems = metricsTimeSpanItems.filter(
-    (mTS) =>
-      mTS.label !==
-      queryTimeSpansCodes.find((item) => item.label === label)?.label,
-  );
-
   return (
     <DashboardGrid>
       <div className="header">
-        <Dropdown
-          icon={<i className="fas fa-calendar-minus" />}
-          items={metricsTimeSpanDropdownItems}
-          text={label}
-          size="small"
-          data-cy="metrics_timespan_selection"
-          variant="backgroundLevel1"
-        />
+        <TimespanSelector />
       </div>
       <SyncedCursorCharts>
         <div className="health">

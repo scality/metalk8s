@@ -3,15 +3,11 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
-import { Dropdown, Toggle, BasicText } from '@scality/core-ui';
+import { Toggle, BasicText } from '@scality/core-ui';
 import { Button } from '@scality/core-ui/dist/next';
 import { spacing } from '@scality/core-ui/dist/style/theme';
 import { useIntl } from 'react-intl';
-import { queryTimeSpansCodes } from '@scality/core-ui/dist/components/constants';
-import {
-  useMetricsTimeSpan,
-  SyncedCursorCharts,
-} from '@scality/core-ui/dist/next';
+import { SyncedCursorCharts } from '@scality/core-ui/dist/next';
 import { updateNodeStatsFetchArgumentAction } from '../ducks/app/monitoring';
 import {
   NodeTab,
@@ -19,13 +15,7 @@ import {
   GraphWrapper,
 } from '../components/style/CommonLayoutStyle';
 import { useURLQuery } from '../services/utils';
-import {
-  LAST_SEVEN_DAYS,
-  LAST_TWENTY_FOUR_HOURS,
-  LAST_ONE_HOUR,
-  PORT_NODE_EXPORTER,
-  GRAFANA_DASHBOARDS,
-} from '../constants';
+import { PORT_NODE_EXPORTER, GRAFANA_DASHBOARDS } from '../constants';
 import { useTypedSelector } from '../hooks';
 import {
   getCPUUsageQuery,
@@ -49,6 +39,7 @@ import {
 } from '../services/platformlibrary/metrics';
 import MetricChart from '../components/MetricChart';
 import MetricSymmetricalChart from '../components/MetricSymmetricalChart';
+import TimespanSelector from './TimespanSelector';
 
 const GraphGrid = styled.div`
   display: grid;
@@ -119,7 +110,6 @@ const NodePageMetricsTab = ({
   const query = useURLQuery();
   const intl = useIntl();
   const api = useTypedSelector((state) => state.config.api);
-  const { label } = useMetricsTimeSpan();
 
   const showAvg = useTypedSelector(
     (state) => state.app.monitoring.nodeStats.showAvg,
@@ -134,39 +124,12 @@ const NodePageMetricsTab = ({
       unameInfo?.metric?.instance === `${instanceIP}:${PORT_NODE_EXPORTER}`,
   )?.metric?.nodename;
 
-  // write the selected timespan in URL
-  const writeUrlTimeSpan = (label) => {
-    let formatted = queryTimeSpansCodes.find((item) => item.label === label);
-
-    if (formatted) {
-      query.set('from', formatted.query);
-      history.push({ search: query.toString() });
-    }
-  };
-
   // write show avg value in URL
   const writeShowAvg = (showAvgValue) => {
     query.set('avg', showAvgValue);
     history.push({ search: query.toString() });
   };
 
-  // Dropdown items
-  const metricsTimeSpanItems = [
-    LAST_SEVEN_DAYS,
-    LAST_TWENTY_FOUR_HOURS,
-    LAST_ONE_HOUR,
-  ].map((option) => ({
-    label: option,
-    'data-cy': option,
-    onClick: () => {
-      //dispatch(updateNodeStatsFetchArgumentAction({ metricsTimeSpan: option }));
-      writeUrlTimeSpan(option);
-    },
-    selected: label === option,
-  }));
-  const metricsTimeSpanDropdownItems = metricsTimeSpanItems.filter(
-    (mTS) => mTS.label !== label,
-  );
   return (
     <NodeTab>
       <MetricsActionContainer>
@@ -203,14 +166,7 @@ const NodePageMetricsTab = ({
             />
           </a>
         )}
-        {instanceIP && (
-          <Dropdown
-            items={metricsTimeSpanDropdownItems}
-            text={label}
-            size="small"
-            data-cy="metrics_timespan_selection"
-          />
-        )}
+        {instanceIP && <TimespanSelector />}
       </MetricsActionContainer>
       {instanceIP ? (
         <SyncedCursorCharts>
