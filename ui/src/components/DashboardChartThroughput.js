@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { LineTemporalChart } from '@scality/core-ui/dist/next';
 import { GraphWrapper } from './DashboardMetrics';
 import {
@@ -21,7 +21,7 @@ const DashboardChartThroughput = () => {
   const { isLoading, series, startingTimeStamp } = useSymetricalChartSeries({
     getQueryAbove: getNodesThroughputWriteQuery,
     getQueryBelow: getNodesThroughputReadQuery,
-    transformPrometheusDataToSeries: (
+    transformPrometheusDataToSeries: useCallback((
       prometheusResultAbove,
       prometheusResultBelow,
     ) => {
@@ -32,7 +32,7 @@ const DashboardChartThroughput = () => {
         'read',
         nodeAddresses,
       );
-    },
+    }, [JSON.stringify(nodeAddresses)])
   });
 
   return (

@@ -36,31 +36,23 @@ export const useTypedSelector: <TSelected>(
  * It retrieves the nodes data through react-queries
  */
 export const useNodes = (): V1NodeList => {
-  const [nodes, setNodes] = useState([]);
-
   const nodesQuery = useQuery(
     'nodesNames',
     () =>
       coreV1.listNode().then((res) => {
-        if (res.response.statusCode === 200 && res.body?.items)
+        if (res.response.statusCode === 200 && res.body?.items) {
           return res.body?.items;
-        return null;
+        }
+        return [];
       }),
     {
       refetchOnMount: false,
       refetchOnWindowFocus: false,
       refetchInterval: REFRESH_METRICS_GRAPH,
-      refetchIntervalInBackground: true,
     },
   );
 
-  useEffect(() => {
-    if (!nodesQuery.isLoading && nodesQuery.isSuccess) {
-      setNodes(nodesQuery.data);
-    }
-  }, [nodesQuery]);
-
-  return nodes;
+  return nodesQuery.data || [];
 };
 
 export const useNodeAddressesSelector = (
@@ -141,7 +133,7 @@ export const useSingleChartSerie = ({
 
   const startTimeRef = useRef(startingTimeISO);
   const chartStartTimeRef = useRef(startingTimeISO);
-  const seriesRef = useRef();
+  const [series, setSeries] = useState([]);
 
   startTimeRef.current = startingTimeISO;
 
@@ -158,13 +150,12 @@ export const useSingleChartSerie = ({
   useEffect(() => {
     if (!isLoading) {
       chartStartTimeRef.current = startTimeRef.current;
-      seriesRef.current = transformPrometheusDataToSeries(query.data);
+      setSeries(transformPrometheusDataToSeries(query.data));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, transformPrometheusDataToSeries]);
+  }, [isLoading, transformPrometheusDataToSeries, query]);
 
   return {
-    series: seriesRef.current || [],
+    series: series,
     startingTimeStamp: Date.parse(chartStartTimeRef.current) / 1000,
     isLoading,
   };
@@ -187,7 +178,7 @@ export const useSymetricalChartSeries = ({
 
   const startTimeRef = useRef(startingTimeISO);
   const chartStartTimeRef = useRef(startingTimeISO);
-  const seriesRef = useRef();
+  const [series, setSeries] = useState([]);
 
   startTimeRef.current = startingTimeISO;
 
@@ -212,16 +203,15 @@ export const useSymetricalChartSeries = ({
   useEffect(() => {
     if (!isLoading) {
       chartStartTimeRef.current = startTimeRef.current;
-      seriesRef.current = transformPrometheusDataToSeries(
+      setSeries(transformPrometheusDataToSeries(
         aboveQuery.data,
         belowQuery.data,
-      );
+      ));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, transformPrometheusDataToSeries]);
+  }, [isLoading, transformPrometheusDataToSeries, aboveQuery, belowQuery]);
 
   return {
-    series: seriesRef.current || [],
+    series: series || [],
     startingTimeStamp: Date.parse(chartStartTimeRef.current) / 1000,
     isLoading,
   };

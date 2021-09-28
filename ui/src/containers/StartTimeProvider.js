@@ -3,8 +3,8 @@ import React, {
   createContext,
   useContext,
   type Node,
-  useState,
   useCallback,
+  useState,
 } from 'react';
 import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import { REFRESH_METRICS_GRAPH } from '../constants';
@@ -20,13 +20,13 @@ export const useStartingTimeStamp = (): {
   startingTimeISO: string,
   currentTimeISO: string,
 } => {
-  const { startingTimeISO, currentTimeISO } = useContext(StartTimeContext);
-  if (!startingTimeISO || !currentTimeISO) {
+  const startTimeContext = useContext(StartTimeContext);
+  if (!startTimeContext) {
     throw new Error(
       'The useStartingTimeStamp hook can only be used within StartTimeProvider.',
     );
   }
-  return { startingTimeISO, currentTimeISO };
+  return startTimeContext;
 };
 
 const StartTimeProvider = ({ children }: { children: Node }) => {
