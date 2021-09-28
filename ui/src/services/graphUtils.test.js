@@ -1,6 +1,7 @@
 import {
   getMultiResourceSeriesForChart,
   getMultipleSymmetricalSeries,
+  fiterMetricValues,
 } from './graphUtils';
 
 const testPromData = {
@@ -277,4 +278,51 @@ it('returns the correct labels for tooltip and legend for multi resources symmet
       )
       .getTooltipLabel('read', 'node2'),
   ).toEqual('node2-read');
+});
+
+// test fiterMetricValuess
+it('selects the result with the expected label', () => {
+  const label = { instance: '192.168.1.1' };
+  const prometheusResult = {
+    data: {
+      result: [
+        {
+          metric: { instance: '192.168.1.1' },
+          values: [0, '0'],
+        },
+        {
+          metric: { instance: '192.168.1.2' },
+          values: [1, '1'],
+        },
+      ],
+    },
+  };
+  const result = fiterMetricValues(prometheusResult, label);
+  expect(result).toEqual({
+    metric: { instance: '192.168.1.1' },
+    values: [0, '0'],
+  });
+});
+
+it('selects the result with the 2 expected labels', () => {
+  const label = { instance: '192.168.1.2', device: 'eth2' };
+  const prometheusResult = {
+    data: {
+      result: [
+        {
+          metric: { instance: '192.168.1.1', device: 'eth1' },
+          values: [0, '0'],
+        },
+        {
+          metric: { instance: '192.168.1.2', device: 'eth2' },
+          values: [1, '1'],
+        },
+      ],
+    },
+  };
+  const result = fiterMetricValues(prometheusResult, label);
+  expect(result).toEqual({
+    metric: { instance: '192.168.1.2', device: 'eth2' },
+    values: [1, '1'],
+  });
 });

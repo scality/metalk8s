@@ -20,6 +20,22 @@ export const getMultiResourceSeriesForChart = (
   });
 };
 
+export const fiterMetricValues = (
+  prometheusResult: PrometheusQueryResult,
+  labels: { instance: string, device?: string },
+): RangeMatrixResult => {
+  if (Object.prototype.hasOwnProperty.call(labels, 'device')) {
+    return prometheusResult.data.result.find(
+      (item) =>
+        item.metric.instance === labels.instance &&
+        item.metric.device === labels.device,
+    );
+  }
+  return prometheusResult.data.result.find(
+    (item) => item.metric.instance === labels.instance,
+  );
+};
+
 export const getMultipleSymmetricalSeries = (
   resultAbove: PrometheusQueryResult,
   resultBelow: PrometheusQueryResult,
@@ -30,21 +46,14 @@ export const getMultipleSymmetricalSeries = (
 ): Serie[] => {
   // TODO: Throw the error if we got error status from Promethues API, and handle the error at React-query level
   return nodes.flatMap((node) => {
-    const aboveData = resultAbove?.data?.result?.find((item) =>
-      nodesPlaneInterface
-        ? item.metric?.instance ===
-            `${node.internalIP}:${PORT_NODE_EXPORTER}` &&
-          item.metric?.device === nodesPlaneInterface[node.name].interface
-        : item.metric?.instance === `${node.internalIP}:${PORT_NODE_EXPORTER}`,
-    );
-
-    const belowData = resultBelow?.data?.result?.find((item) =>
-      nodesPlaneInterface
-        ? item.metric?.instance ===
-            `${node.internalIP}:${PORT_NODE_EXPORTER}` &&
-          item.metric?.device === nodesPlaneInterface[node.name].interface
-        : item.metric?.instance === `${node.internalIP}:${PORT_NODE_EXPORTER}`,
-    );
+    const filterLabels = {
+      instance: `${node.internalIP}:${PORT_NODE_EXPORTER}`,
+    };
+    if (nodesPlaneInterface) {
+      filterLabels.device = nodesPlaneInterface?.[node.name]?.interface;
+    }
+    const aboveData = fiterMetricValues(resultAbove, filterLabels);
+    const belowData = fiterMetricValues(resultBelow, filterLabels);
 
     return [
       {
