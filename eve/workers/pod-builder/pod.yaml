@@ -40,7 +40,7 @@ spec:
         - name: worker-workspace
           mountPath: /home/eve/workspace
     - name: platform-dind-daemon
-      image: docker:19.03.2-dind
+      image: docker:20.10.8-dind
       resources:
         requests:
           cpu: "3"
