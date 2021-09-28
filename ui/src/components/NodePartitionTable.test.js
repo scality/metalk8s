@@ -118,6 +118,218 @@ const server = setupServer(
       return res(ctx.json(result));
     },
   ),
+  rest.get(
+    `http://${FAKE_CONTROL_PLANE_IP}:8443/api/loki/loki/api/v1/query_range`,
+    (req, res, ctx) => {
+      const result = {
+        status: 'success',
+        data: {
+          resultType: 'streams',
+          result: [
+            {
+              stream: {
+                pod: 'metalk8s-alert-logger-b67bf87bc-kdwkz',
+                stream: 'stderr',
+                app: 'metalk8s-alert-logger',
+                container: 'metalk8s-alert-logger',
+                job: 'fluent-bit',
+                namespace: 'metalk8s-monitoring',
+                node: 'mf-210-dev-10.novalocal',
+              },
+              values: [
+                [
+                  '1629707875531297840',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"node-exporter","namespace":"metalk8s-monitoring","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-prometheus-node-exporter","severity":"warning"},"annotations":{"description":"50% of the node-exporter/prometheus-operator-prometheus-node-exporter targets in metalk8s-monitoring namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-23T08:37:25.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"f0b37a44b73d5b4d"}',
+                ],
+                [
+                  '1629707875531247885',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"kube-proxy","namespace":"kube-system","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-kube-proxy","severity":"warning"},"annotations":{"description":"50% of the kube-proxy/prometheus-operator-kube-proxy targets in kube-system namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-23T08:37:25.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"bfc9d3bf855f292b"}',
+                ],
+                [
+                  '1629707305530586315',
+                  '{"status":"firing","labels":{"alertname":"Watchdog","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","severity":"none"},"annotations":{"description":"This is an alert meant to ensure that the entire alerting pipeline is functional.\\nThis alert is always firing, therefore it should always be firing in Alertmanager\\nand always fire against a receiver. There are integrations with various notification\\nmechanisms that send a notification when this alert is not firing. For example the\\n\\"DeadMansSnitch\\" integration in PagerDuty.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-watchdog","summary":"An alert that should always be firing to certify that Alertmanager is working properly."},"startsAt":"2021-08-23T08:26:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=vector%281%29\\u0026g0.tab=1","fingerprint":"fc30b79dbdb0a043"}',
+                ],
+                [
+                  '1629580226958515632',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"kube-proxy","namespace":"kube-system","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-kube-proxy","severity":"warning"},"annotations":{"description":"50% of the kube-proxy/prometheus-operator-kube-proxy targets in kube-system namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"bfc9d3bf855f292b"}',
+                ],
+                [
+                  '1629580226953237917',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"node-exporter","namespace":"metalk8s-monitoring","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-prometheus-node-exporter","severity":"warning"},"annotations":{"description":"50% of the node-exporter/prometheus-operator-prometheus-node-exporter targets in metalk8s-monitoring namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"f0b37a44b73d5b4d"}',
+                ],
+                [
+                  '1629579656791809397',
+                  '{"status":"firing","labels":{"alertname":"Watchdog","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","severity":"none"},"annotations":{"description":"This is an alert meant to ensure that the entire alerting pipeline is functional.\\nThis alert is always firing, therefore it should always be firing in Alertmanager\\nand always fire against a receiver. There are integrations with various notification\\nmechanisms that send a notification when this alert is not firing. For example the\\n\\"DeadMansSnitch\\" integration in PagerDuty.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-watchdog","summary":"An alert that should always be firing to certify that Alertmanager is working properly."},"startsAt":"2021-08-16T08:59:25.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=vector%281%29\\u0026g0.tab=1","fingerprint":"fc30b79dbdb0a043"}',
+                ],
+                [
+                  '1629537026778010423',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"node-exporter","namespace":"metalk8s-monitoring","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-prometheus-node-exporter","severity":"warning"},"annotations":{"description":"50% of the node-exporter/prometheus-operator-prometheus-node-exporter targets in metalk8s-monitoring namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"f0b37a44b73d5b4d"}',
+                ],
+                [
+                  '1629537026777933801',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"kube-proxy","namespace":"kube-system","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-kube-proxy","severity":"warning"},"annotations":{"description":"50% of the kube-proxy/prometheus-operator-kube-proxy targets in kube-system namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"bfc9d3bf855f292b"}',
+                ],
+                [
+                  '1629536456645081557',
+                  '{"status":"firing","labels":{"alertname":"Watchdog","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","severity":"none"},"annotations":{"description":"This is an alert meant to ensure that the entire alerting pipeline is functional.\\nThis alert is always firing, therefore it should always be firing in Alertmanager\\nand always fire against a receiver. There are integrations with various notification\\nmechanisms that send a notification when this alert is not firing. For example the\\n\\"DeadMansSnitch\\" integration in PagerDuty.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-watchdog","summary":"An alert that should always be firing to certify that Alertmanager is working properly."},"startsAt":"2021-08-16T08:59:25.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=vector%281%29\\u0026g0.tab=1","fingerprint":"fc30b79dbdb0a043"}',
+                ],
+                [
+                  '1629493826618100128',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"kube-proxy","namespace":"kube-system","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-kube-proxy","severity":"warning"},"annotations":{"description":"50% of the kube-proxy/prometheus-operator-kube-proxy targets in kube-system namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"bfc9d3bf855f292b"}',
+                ],
+                [
+                  '1629493826617324680',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"node-exporter","namespace":"metalk8s-monitoring","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-prometheus-node-exporter","severity":"warning"},"annotations":{"description":"50% of the node-exporter/prometheus-operator-prometheus-node-exporter targets in metalk8s-monitoring namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"f0b37a44b73d5b4d"}',
+                ],
+                [
+                  '1629493256512899899',
+                  '{"status":"firing","labels":{"alertname":"Watchdog","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","severity":"none"},"annotations":{"description":"This is an alert meant to ensure that the entire alerting pipeline is functional.\\nThis alert is always firing, therefore it should always be firing in Alertmanager\\nand always fire against a receiver. There are integrations with various notification\\nmechanisms that send a notification when this alert is not firing. For example the\\n\\"DeadMansSnitch\\" integration in PagerDuty.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-watchdog","summary":"An alert that should always be firing to certify that Alertmanager is working properly."},"startsAt":"2021-08-16T08:59:25.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=vector%281%29\\u0026g0.tab=1","fingerprint":"fc30b79dbdb0a043"}',
+                ],
+                [
+                  '1629450626478361524',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"kube-proxy","namespace":"kube-system","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-kube-proxy","severity":"warning"},"annotations":{"description":"50% of the kube-proxy/prometheus-operator-kube-proxy targets in kube-system namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"bfc9d3bf855f292b"}',
+                ],
+                [
+                  '1629450626477841630',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"node-exporter","namespace":"metalk8s-monitoring","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-prometheus-node-exporter","severity":"warning"},"annotations":{"description":"50% of the node-exporter/prometheus-operator-prometheus-node-exporter targets in metalk8s-monitoring namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"f0b37a44b73d5b4d"}',
+                ],
+                [
+                  '1629450056375677744',
+                  '{"status":"firing","labels":{"alertname":"Watchdog","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","severity":"none"},"annotations":{"description":"This is an alert meant to ensure that the entire alerting pipeline is functional.\\nThis alert is always firing, therefore it should always be firing in Alertmanager\\nand always fire against a receiver. There are integrations with various notification\\nmechanisms that send a notification when this alert is not firing. For example the\\n\\"DeadMansSnitch\\" integration in PagerDuty.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-watchdog","summary":"An alert that should always be firing to certify that Alertmanager is working properly."},"startsAt":"2021-08-16T08:59:25.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=vector%281%29\\u0026g0.tab=1","fingerprint":"fc30b79dbdb0a043"}',
+                ],
+                [
+                  '1629407426337176558',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"node-exporter","namespace":"metalk8s-monitoring","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-prometheus-node-exporter","severity":"warning"},"annotations":{"description":"50% of the node-exporter/prometheus-operator-prometheus-node-exporter targets in metalk8s-monitoring namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"f0b37a44b73d5b4d"}',
+                ],
+                [
+                  '1629407426337118392',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"kube-proxy","namespace":"kube-system","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-kube-proxy","severity":"warning"},"annotations":{"description":"50% of the kube-proxy/prometheus-operator-kube-proxy targets in kube-system namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"bfc9d3bf855f292b"}',
+                ],
+                [
+                  '1629406856255835472',
+                  '{"status":"firing","labels":{"alertname":"Watchdog","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","severity":"none"},"annotations":{"description":"This is an alert meant to ensure that the entire alerting pipeline is functional.\\nThis alert is always firing, therefore it should always be firing in Alertmanager\\nand always fire against a receiver. There are integrations with various notification\\nmechanisms that send a notification when this alert is not firing. For example the\\n\\"DeadMansSnitch\\" integration in PagerDuty.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-watchdog","summary":"An alert that should always be firing to certify that Alertmanager is working properly."},"startsAt":"2021-08-16T08:59:25.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=vector%281%29\\u0026g0.tab=1","fingerprint":"fc30b79dbdb0a043"}',
+                ],
+                [
+                  '1629364226207205213',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"kube-proxy","namespace":"kube-system","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-kube-proxy","severity":"warning"},"annotations":{"description":"50% of the kube-proxy/prometheus-operator-kube-proxy targets in kube-system namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"bfc9d3bf855f292b"}',
+                ],
+                [
+                  '1629364226207153342',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"node-exporter","namespace":"metalk8s-monitoring","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-prometheus-node-exporter","severity":"warning"},"annotations":{"description":"50% of the node-exporter/prometheus-operator-prometheus-node-exporter targets in metalk8s-monitoring namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"f0b37a44b73d5b4d"}',
+                ],
+                [
+                  '1629363656142721059',
+                  '{"status":"firing","labels":{"alertname":"Watchdog","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","severity":"none"},"annotations":{"description":"This is an alert meant to ensure that the entire alerting pipeline is functional.\\nThis alert is always firing, therefore it should always be firing in Alertmanager\\nand always fire against a receiver. There are integrations with various notification\\nmechanisms that send a notification when this alert is not firing. For example the\\n\\"DeadMansSnitch\\" integration in PagerDuty.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-watchdog","summary":"An alert that should always be firing to certify that Alertmanager is working properly."},"startsAt":"2021-08-16T08:59:25.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=vector%281%29\\u0026g0.tab=1","fingerprint":"fc30b79dbdb0a043"}',
+                ],
+                [
+                  '1629321026093608878',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"kube-proxy","namespace":"kube-system","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-kube-proxy","severity":"warning"},"annotations":{"description":"50% of the kube-proxy/prometheus-operator-kube-proxy targets in kube-system namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"bfc9d3bf855f292b"}',
+                ],
+                [
+                  '1629321026092823411',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"node-exporter","namespace":"metalk8s-monitoring","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-prometheus-node-exporter","severity":"warning"},"annotations":{"description":"50% of the node-exporter/prometheus-operator-prometheus-node-exporter targets in metalk8s-monitoring namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"f0b37a44b73d5b4d"}',
+                ],
+                [
+                  '1629320456041614491',
+                  '{"status":"firing","labels":{"alertname":"Watchdog","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","severity":"none"},"annotations":{"description":"This is an alert meant to ensure that the entire alerting pipeline is functional.\\nThis alert is always firing, therefore it should always be firing in Alertmanager\\nand always fire against a receiver. There are integrations with various notification\\nmechanisms that send a notification when this alert is not firing. For example the\\n\\"DeadMansSnitch\\" integration in PagerDuty.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-watchdog","summary":"An alert that should always be firing to certify that Alertmanager is working properly."},"startsAt":"2021-08-16T08:59:25.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=vector%281%29\\u0026g0.tab=1","fingerprint":"fc30b79dbdb0a043"}',
+                ],
+                [
+                  '1629277825968714769',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"kube-proxy","namespace":"kube-system","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-kube-proxy","severity":"warning"},"annotations":{"description":"50% of the kube-proxy/prometheus-operator-kube-proxy targets in kube-system namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"bfc9d3bf855f292b"}',
+                ],
+                [
+                  '1629277825967805017',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"node-exporter","namespace":"metalk8s-monitoring","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-prometheus-node-exporter","severity":"warning"},"annotations":{"description":"50% of the node-exporter/prometheus-operator-prometheus-node-exporter targets in metalk8s-monitoring namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"f0b37a44b73d5b4d"}',
+                ],
+                [
+                  '1629277255925034096',
+                  '{"status":"firing","labels":{"alertname":"Watchdog","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","severity":"none"},"annotations":{"description":"This is an alert meant to ensure that the entire alerting pipeline is functional.\\nThis alert is always firing, therefore it should always be firing in Alertmanager\\nand always fire against a receiver. There are integrations with various notification\\nmechanisms that send a notification when this alert is not firing. For example the\\n\\"DeadMansSnitch\\" integration in PagerDuty.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-watchdog","summary":"An alert that should always be firing to certify that Alertmanager is working properly."},"startsAt":"2021-08-16T08:59:25.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=vector%281%29\\u0026g0.tab=1","fingerprint":"fc30b79dbdb0a043"}',
+                ],
+                [
+                  '1629234625848652913',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"kube-proxy","namespace":"kube-system","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-kube-proxy","severity":"warning"},"annotations":{"description":"50% of the kube-proxy/prometheus-operator-kube-proxy targets in kube-system namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"bfc9d3bf855f292b"}',
+                ],
+                [
+                  '1629234625848057590',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"node-exporter","namespace":"metalk8s-monitoring","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-prometheus-node-exporter","severity":"warning"},"annotations":{"description":"50% of the node-exporter/prometheus-operator-prometheus-node-exporter targets in metalk8s-monitoring namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"f0b37a44b73d5b4d"}',
+                ],
+                [
+                  '1629234055826279655',
+                  '{"status":"firing","labels":{"alertname":"Watchdog","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","severity":"none"},"annotations":{"description":"This is an alert meant to ensure that the entire alerting pipeline is functional.\\nThis alert is always firing, therefore it should always be firing in Alertmanager\\nand always fire against a receiver. There are integrations with various notification\\nmechanisms that send a notification when this alert is not firing. For example the\\n\\"DeadMansSnitch\\" integration in PagerDuty.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-watchdog","summary":"An alert that should always be firing to certify that Alertmanager is working properly."},"startsAt":"2021-08-16T08:59:25.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=vector%281%29\\u0026g0.tab=1","fingerprint":"fc30b79dbdb0a043"}',
+                ],
+                [
+                  '1629191425734623751',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"kube-proxy","namespace":"kube-system","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-kube-proxy","severity":"warning"},"annotations":{"description":"50% of the kube-proxy/prometheus-operator-kube-proxy targets in kube-system namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"bfc9d3bf855f292b"}',
+                ],
+                [
+                  '1629191425734556286',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"node-exporter","namespace":"metalk8s-monitoring","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-prometheus-node-exporter","severity":"warning"},"annotations":{"description":"50% of the node-exporter/prometheus-operator-prometheus-node-exporter targets in metalk8s-monitoring namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"f0b37a44b73d5b4d"}',
+                ],
+                [
+                  '1629190855718934272',
+                  '{"status":"firing","labels":{"alertname":"Watchdog","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","severity":"none"},"annotations":{"description":"This is an alert meant to ensure that the entire alerting pipeline is functional.\\nThis alert is always firing, therefore it should always be firing in Alertmanager\\nand always fire against a receiver. There are integrations with various notification\\nmechanisms that send a notification when this alert is not firing. For example the\\n\\"DeadMansSnitch\\" integration in PagerDuty.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-watchdog","summary":"An alert that should always be firing to certify that Alertmanager is working properly."},"startsAt":"2021-08-16T08:59:25.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=vector%281%29\\u0026g0.tab=1","fingerprint":"fc30b79dbdb0a043"}',
+                ],
+                [
+                  '1629148225637370582',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"kube-proxy","namespace":"kube-system","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-kube-proxy","severity":"warning"},"annotations":{"description":"50% of the kube-proxy/prometheus-operator-kube-proxy targets in kube-system namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"bfc9d3bf855f292b"}',
+                ],
+                [
+                  '1629148225631328388',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"node-exporter","namespace":"metalk8s-monitoring","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-prometheus-node-exporter","severity":"warning"},"annotations":{"description":"50% of the node-exporter/prometheus-operator-prometheus-node-exporter targets in metalk8s-monitoring namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"f0b37a44b73d5b4d"}',
+                ],
+                [
+                  '1629147655622974778',
+                  '{"status":"firing","labels":{"alertname":"Watchdog","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","severity":"none"},"annotations":{"description":"This is an alert meant to ensure that the entire alerting pipeline is functional.\\nThis alert is always firing, therefore it should always be firing in Alertmanager\\nand always fire against a receiver. There are integrations with various notification\\nmechanisms that send a notification when this alert is not firing. For example the\\n\\"DeadMansSnitch\\" integration in PagerDuty.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-watchdog","summary":"An alert that should always be firing to certify that Alertmanager is working properly."},"startsAt":"2021-08-16T08:59:25.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=vector%281%29\\u0026g0.tab=1","fingerprint":"fc30b79dbdb0a043"}',
+                ],
+                [
+                  '1629105025529967337',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"node-exporter","namespace":"metalk8s-monitoring","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-prometheus-node-exporter","severity":"warning"},"annotations":{"description":"50% of the node-exporter/prometheus-operator-prometheus-node-exporter targets in metalk8s-monitoring namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"f0b37a44b73d5b4d"}',
+                ],
+                [
+                  '1629105025529492733',
+                  '{"status":"firing","labels":{"alertname":"TargetDown","job":"kube-proxy","namespace":"kube-system","prometheus":"metalk8s-monitoring/prometheus-operator-prometheus","service":"prometheus-operator-kube-proxy","severity":"warning"},"annotations":{"description":"50% of the kube-proxy/prometheus-operator-kube-proxy targets in kube-system namespace are down.","runbook_url":"https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown","summary":"One or more targets are unreachable."},"startsAt":"2021-08-16T09:09:55.52Z","endsAt":"0001-01-01T00:00:00Z","generatorURL":"http://prometheus-operator-prometheus.metalk8s-monitoring:9090/graph?g0.expr=100+%2A+%28count+by%28job%2C+namespace%2C+service%29+%28up+%3D%3D+0%29+%2F+count+by%28job%2C+namespace%2C+service%29+%28up%29%29+%3E+10\\u0026g0.tab=1","fingerprint":"bfc9d3bf855f292b"}',
+                ],
+              ],
+            },
+          ],
+          stats: {
+            summary: {
+              bytesProcessedPerSecond: 19975140,
+              linesProcessedPerSecond: 21082,
+              totalBytesProcessed: 70114,
+              totalLinesProcessed: 74,
+              execTime: 0.003510063,
+            },
+            store: {
+              totalChunksRef: 26,
+              totalChunksDownloaded: 26,
+              chunksDownloadTime: 0.00116932,
+              headChunkBytes: 0,
+              headChunkLines: 0,
+              decompressedBytes: 70114,
+              decompressedLines: 74,
+              compressedBytes: 16492,
+              totalDuplicates: 35,
+            },
+            ingester: {
+              totalReached: 1,
+              totalChunksMatched: 0,
+              totalBatches: 0,
+              totalLinesSent: 0,
+              headChunkBytes: 0,
+              headChunkLines: 0,
+              decompressedBytes: 0,
+              decompressedLines: 0,
+              compressedBytes: 0,
+              totalDuplicates: 0,
+            },
+          },
+        },
+      };
+      // return success status
+      return res(ctx.json(result));
+    },
+  ),
 );
 
 describe('the system partition table', () => {
