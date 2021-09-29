@@ -158,6 +158,7 @@ describe('the system partition table', () => {
     jest.useFakeTimers();
     initializeProm(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/prometheus`);
     initializeAM(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/alertmanager`);
+    initializeLoki(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/loki`);
 
     // override the default route with error status
     server.use(
