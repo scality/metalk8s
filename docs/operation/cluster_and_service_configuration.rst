@@ -291,6 +291,40 @@ This value can be overriden:
 
 Then :ref:`apply the configuration<csc-prometheus-apply-cfg>`.
 
+Change Storage Size
+"""""""""""""""""""
+
+Prometheus is deployed with a default storage size of 10Gi.
+However sizing may need to be increased if you add additional
+services to monitor through ServiceMonitor CR and/or want to
+increase retention time.
+The storage size can be overriden:
+
+.. code-block:: yaml
+
+   ---
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: metalk8s-prometheus-config
+     namespace: metalk8s-monitoring
+   data:
+     config.yaml: |-
+       apiVersion: addons.metalk8s.scality.com
+       kind: PrometheusConfig
+       spec:
+         config:
+           storage_size: 30Gi
+
+.. note::
+
+   Supported size units are Ki, Mi, Gi, Ti, Pi, and Ei
+   (kibibyte, mebibyte, gibibyte, tebibyte, pebibyte and exbibyte)
+   or K, M, G, T, P and E
+   (kilobyte, megabyte, gigabyte, terabyte, petabyte and exabyte).
+
+Then :ref:`apply the configuration<csc-prometheus-apply-cfg>`.
+
 Set Retention Size
 """"""""""""""""""
 
@@ -315,7 +349,8 @@ This functionality can be actived:
 
 .. note::
 
-   Supported size units are B, KB, MB, GB, TB and PB.
+   Supported size units are B, KB, MB, GB, TB, PB and EB
+   (kilobyte, megabyte, gigabyte, terabyte, petabyte and exabyte).
 
 .. warning::
 
@@ -324,7 +359,8 @@ This functionality can be actived:
    than `retention_size`. You should at least add a 10% margin to be safe.
    (i.e.: set `retention_size` to 9GB for a 10GB volume)
 
-Both size and time based retentions can be activated at the same time.
+Storage size and both size and time based retentions can be activated at
+the same time.
 
 Then :ref:`apply the configuration<csc-prometheus-apply-cfg>`.
 

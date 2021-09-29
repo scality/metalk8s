@@ -125,7 +125,7 @@ prometheus:
           accessModes: ['ReadWriteOnce']
           resources:
             requests:
-              storage: 10Gi
+              storage: '__var__(prometheus.spec.config.storage_size)'
           selector:
             matchLabels:
               app.kubernetes.io/name: prometheus-operator-prometheus
