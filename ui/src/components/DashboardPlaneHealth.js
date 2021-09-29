@@ -10,7 +10,6 @@ import {
 import { PageSubtitle } from './style/CommonLayoutStyle';
 import { PanelActions, NetworkContainer } from './DashboardNetwork';
 import HealthItem from './HealthItem.js';
-import DashboardBandwidthChart from './DashboardBandwidthChart';
 
 const PlanesContainer = styled.div`
   padding-left: ${spacing.sp8};
@@ -24,11 +23,7 @@ const PlaneContainer = styled.div`
   margin-right: ${spacing.sp40};
 `;
 
-const ChartContainer = styled.div`
-  margin-top: ${spacing.sp24};
-`;
-
-const DashboardPlane = () => {
+const DashboardPlaneHealth = () => {
   const intl = useIntl();
   const alertsLibrary = useAlertLibrary();
 
@@ -60,18 +55,8 @@ const DashboardPlane = () => {
           />
         </PlaneContainer>
       </PlanesContainer>
-      <ChartContainer>
-        <DashboardBandwidthChart
-          title="ControlPlane Bandwidth"
-          plane="controlPlane"
-        ></DashboardBandwidthChart>
-        <DashboardBandwidthChart
-          title="WorkloadPlane Bandwidth"
-          plane="workloadPlane"
-        ></DashboardBandwidthChart>
-      </ChartContainer>
     </NetworkContainer>
   );
 };
 
-export default DashboardPlane;
+export default DashboardPlaneHealth;

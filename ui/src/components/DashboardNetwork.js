@@ -5,7 +5,8 @@ import { useIntl } from 'react-intl';
 import { spacing } from '@scality/core-ui/dist/style/theme';
 import { PageSubtitle } from '../components/style/CommonLayoutStyle';
 
-import DashboardPlane from './DashboardPlane';
+import DashboardPlaneHealth from './DashboardPlaneHealth';
+import DashboardBandwidthChart from './DashboardBandwidthChart';
 
 export const NetworkContainer = styled.div`
   padding: ${spacing.sp2} ${spacing.sp4};
@@ -21,6 +22,10 @@ export const PanelActions = styled.div`
   justify-content: space-between;
 `;
 
+const ChartContainer = styled.div`
+  margin-top: ${spacing.sp24};
+`;
+
 const DashboardNetwork = () => {
   const intl = useIntl();
 
@@ -29,7 +34,19 @@ const DashboardNetwork = () => {
       <PanelActions>
         <PageSubtitle>{intl.formatMessage({ id: 'network' })}</PageSubtitle>
       </PanelActions>
-      <DashboardPlane />
+      <DashboardPlaneHealth />
+      <ChartContainer>
+        <ChartContainer>
+          <DashboardBandwidthChart
+            title="ControlPlane Bandwidth"
+            plane="controlPlane"
+          ></DashboardBandwidthChart>
+          <DashboardBandwidthChart
+            title="WorkloadPlane Bandwidth"
+            plane="workloadPlane"
+          ></DashboardBandwidthChart>
+        </ChartContainer>
+      </ChartContainer>
     </NetworkContainer>
   );
 };
