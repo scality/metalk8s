@@ -511,11 +511,14 @@ export const getNodesPlanesBandwidthInQuery = (
     '|',
   )}"}[5m])) by (instance,device)`;
 
-  return getPrometheusQuery(
-    ['NodesPlanesBandwidthIn', ...devices],
-    nodesPlanesBandwidthInQuery,
-    timespanProps,
-  );
+  return {
+    ...getPrometheusQuery(
+      ['NodesPlanesBandwidthIn', ...devices],
+      nodesPlanesBandwidthInQuery,
+      timespanProps,
+    ),
+    enabled: !!devices?.length,
+  };
 };
 
 export const getNodesPlanesBandwidthOutQuery = (
@@ -526,11 +529,14 @@ export const getNodesPlanesBandwidthOutQuery = (
     '|',
   )}"}[5m])) by (instance,device)`;
 
-  return getPrometheusQuery(
-    ['NodesPlanesBandwidthOut', ...devices],
-    nodePlanesBandwidthOutQuery,
-    timespanProps,
-  );
+  return {
+    ...getPrometheusQuery(
+      ['NodesPlanesBandwidthOut', ...devices],
+      nodePlanesBandwidthOutQuery,
+      timespanProps,
+    ),
+    enabled: !!devices?.length,
+  };
 };
 
 export const getIOPSWriteQuery = (

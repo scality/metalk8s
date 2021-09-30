@@ -48,6 +48,9 @@ const DashboardBandwidthChart = ({
       getNodesPlanesBandwidthOutQuery(timeSpanProps, devices),
     transformPrometheusDataToSeries: useCallback(
       (prometheusResultAbove, prometheusResultBelow) => {
+        if (!prometheusResultAbove || !prometheusResultBelow) {
+          return [];
+        }
         return getMultipleSymmetricalSeries(
           prometheusResultAbove,
           prometheusResultBelow,
