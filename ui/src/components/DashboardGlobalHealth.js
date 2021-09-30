@@ -29,8 +29,8 @@ const GlobalHealthContainer = styled.div`
     flex: 1 0 20%;
   }
   .healthbar {
-    flex: 1 0 40%;
-    padding-left: ${spacing.sp16};
+    flex: 1 0 35%;
+    padding: 0 ${spacing.sp40} 0 ${spacing.sp32};
   }
   .alerts {
     flex: 1 0 40%;
