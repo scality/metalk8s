@@ -30,6 +30,7 @@ const GlobalHealthContainer = styled.div`
   }
   .healthbar {
     flex: 1 0 40%;
+    padding-left: ${spacing.sp16};
   }
   .alerts {
     flex: 1 0 40%;
@@ -39,7 +40,7 @@ const GlobalHealthContainer = styled.div`
     &:not(:first-of-type):before {
       content: '';
       position: relative;
-      margin: 0 ${spacing.sp32} 0 ${spacing.sp16};
+      margin: 0 ${spacing.sp32} 0 0;
       width: ${spacing.sp2};
       background-color: ${(props) => props.theme.backgroundLevel1};
     }

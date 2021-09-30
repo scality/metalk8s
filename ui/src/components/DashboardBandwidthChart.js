@@ -68,6 +68,7 @@ const DashboardBandwidthChart = ({
         title={title}
         startingTimeStamp={startingTimeStamp}
         yAxisType={'symmetrical'}
+        yAxisTitle={'in(+) / out(-)'}
         isLegendHided={false}
         isLoading={isLoading}
         unitRange={UNIT_RANGE_BS}

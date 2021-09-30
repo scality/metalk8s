@@ -1,10 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useIntl } from 'react-intl';
-
 import { spacing } from '@scality/core-ui/dist/style/theme';
 import { PageSubtitle } from '../components/style/CommonLayoutStyle';
-
 import DashboardPlaneHealth from './DashboardPlaneHealth';
 import DashboardBandwidthChart from './DashboardBandwidthChart';
 
@@ -13,6 +11,7 @@ export const NetworkContainer = styled.div`
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  width: 100%;
 `;
 
 export const PanelActions = styled.div`
@@ -23,7 +22,8 @@ export const PanelActions = styled.div`
 `;
 
 const ChartContainer = styled.div`
-  margin-top: ${spacing.sp24};
+  flex-grow: 1;
+  width: 100%;
 `;
 
 const DashboardNetwork = () => {
@@ -36,16 +36,16 @@ const DashboardNetwork = () => {
       </PanelActions>
       <DashboardPlaneHealth />
       <ChartContainer>
-        <ChartContainer>
-          <DashboardBandwidthChart
-            title="ControlPlane Bandwidth"
-            plane="controlPlane"
-          ></DashboardBandwidthChart>
-          <DashboardBandwidthChart
-            title="WorkloadPlane Bandwidth"
-            plane="workloadPlane"
-          ></DashboardBandwidthChart>
-        </ChartContainer>
+        <DashboardBandwidthChart
+          title="ControlPlane Bandwidth"
+          plane="controlPlane"
+        ></DashboardBandwidthChart>
+      </ChartContainer>
+      <ChartContainer>
+        <DashboardBandwidthChart
+          title="WorkloadPlane Bandwidth"
+          plane="workloadPlane"
+        ></DashboardBandwidthChart>
       </ChartContainer>
     </NetworkContainer>
   );
