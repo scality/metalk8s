@@ -501,6 +501,44 @@ export const getWorkloadPlaneBandWidthAvgOutQuery = (
   };
 };
 
+// this query is to get the bandwidth for all interfaces eth0, eth1 and eth2
+// then we do filter base on the interface of the node which we can retrieve from Salt API
+export const getNodesPlanesBandwidthInQuery = (
+  timespanProps,
+  devices: string[],
+) => {
+  const nodesPlanesBandwidthInQuery = `avg(irate(node_network_receive_bytes_total{device=~"${devices.join(
+    '|',
+  )}"}[5m])) by (instance,device)`;
+
+  return {
+    ...getPrometheusQuery(
+      ['NodesPlanesBandwidthIn', ...devices],
+      nodesPlanesBandwidthInQuery,
+      timespanProps,
+    ),
+    enabled: !!devices?.length,
+  };
+};
+
+export const getNodesPlanesBandwidthOutQuery = (
+  timespanProps,
+  devices: string[],
+) => {
+  const nodePlanesBandwidthOutQuery = `avg(irate(node_network_transmit_bytes_total{device=~"${devices.join(
+    '|',
+  )}"}[5m])) by (instance,device)`;
+
+  return {
+    ...getPrometheusQuery(
+      ['NodesPlanesBandwidthOut', ...devices],
+      nodePlanesBandwidthOutQuery,
+      timespanProps,
+    ),
+    enabled: !!devices?.length,
+  };
+};
+
 export const getIOPSWriteQuery = (
   instanceIP: string,
   timespanProps: TimeSpanProps,
@@ -751,7 +789,6 @@ export const getAlertsHistoryQuery = ({
 }: TimeSpanProps): typeof useQuery => {
   const query = `sum(alertmanager_alerts)`;
 
-  
   const alertManagerDowntimePromise = queryPrometheusRange(
     startingTimeISO,
     currentTimeISO,

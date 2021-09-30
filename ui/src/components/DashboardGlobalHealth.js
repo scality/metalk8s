@@ -24,20 +24,23 @@ const GlobalHealthContainer = styled.div`
   display: flex;
   align-items: center;
   height: 100%;
-  padding: 0 ${spacing.sp24} 0 ${spacing.sp24};
-
+  padding: 0 ${spacing.sp24} 0 0;
+  .datacenter {
+    flex: 1 0 20%;
+  }
   .healthbar {
-    flex: 1 0 70%;
+    flex: 1 0 35%;
+    padding: 0 ${spacing.sp40} 0 ${spacing.sp32};
   }
   .alerts {
-    flex: 1 0 20%;
+    flex: 1 0 40%;
   }
   & > div {
     display: flex;
     &:not(:first-of-type):before {
       content: '';
       position: relative;
-      margin: 0 ${spacing.sp32} 0 ${spacing.sp32};
+      margin: 0 ${spacing.sp32} 0 0;
       width: ${spacing.sp2};
       background-color: ${(props) => props.theme.backgroundLevel1};
     }
@@ -60,7 +63,8 @@ const DashboardGlobalHealth = () => {
 
   return (
     <GlobalHealthContainer>
-      <div className='healthbar'  style={{ flexDirection: 'column'}}>
+      <div className="datacenter" />
+      <div className="healthbar" style={{ flexDirection: 'column' }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <SpacedBox style={{ display: 'flex', alignItems: 'center' }} mr={20}>
             <SpacedBox mr={8}>

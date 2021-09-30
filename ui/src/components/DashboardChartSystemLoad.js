@@ -28,7 +28,6 @@ const DashboardChartSystemLoad = (props: DashboardChartProps) => {
         height={80}
         title="System Load"
         startingTimeStamp={startingTimeStamp}
-        yAxisType={'percentage'}
         isLegendHided={true}
         isLoading={isLoading}
       />

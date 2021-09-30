@@ -5,10 +5,10 @@ import DashboardMetrics from '../components/DashboardMetrics';
 import DashboardInventory from '../components/DashboardInventory';
 import DashboardServices from '../components/DashboardServices';
 import DashboardGlobalHealth from '../components/DashboardGlobalHealth';
-import DashboardNetwork from '../components/DashboardNetwork';
 import { padding, spacing } from '@scality/core-ui/dist/style/theme';
 import { SyncedCursorCharts } from '@scality/core-ui/dist/components/vegachartv2/SyncedCursorCharts';
 import TimespanSelector from './TimespanSelector';
+import DashboardNetwork from '../components/DashboardNetwork';
 
 const DashboardGrid = styled.div`
   display: grid;

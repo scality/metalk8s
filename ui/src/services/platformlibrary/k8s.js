@@ -1,5 +1,6 @@
 //@flow
 import { useQuery } from 'react-query';
+import { REFRESH_METRICS_GRAPH } from '../../constants';
 
 export const getNodesCountQuery = (
   k8sUrl: string,
@@ -22,7 +23,7 @@ export const getNodesCountQuery = (
         .then((res) => {
           return res.items.length;
         }),
-    refetchInterval: 10000,
+    refetchInterval: REFRESH_METRICS_GRAPH,
     enabled: token ? true : false,
   };
 };
@@ -48,7 +49,7 @@ export const getVolumesCountQuery = (
         .then((res) => {
           return res.items.length;
         }),
-    refetchInterval: 10000,
+    refetchInterval: REFRESH_METRICS_GRAPH,
     enabled: token ? true : false,
   };
 };

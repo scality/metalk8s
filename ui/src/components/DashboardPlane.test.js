@@ -1,7 +1,7 @@
 //@flow
 import React from 'react';
 import { screen } from '@testing-library/react';
-import DashboardPlane from './DashboardPlane';
+import DashboardPlaneHealth from './DashboardPlaneHealth';
 import { render } from './__TEST__/util';
 import type { Alert } from '../services/alertUtils';
 import { useHighestSeverityAlerts } from '../containers/AlertProvider';
@@ -66,7 +66,7 @@ describe("the dashboard network's plane panel", () => {
   test("displays the network's plane panel and display 2 green statuses when no alerts are present", async () => {
     // Have to any type jest.fn function to avoid Flow warning for mockImplementation()
     (useHighestSeverityAlerts: any).mockImplementation(() => noAlerts);
-    render(<DashboardPlane />);
+    render(<DashboardPlaneHealth />);
     expect(screen.getAllByLabelText(`status ${STATUS_HEALTH}`)).toHaveLength(
       NB_ITEMS,
     );
@@ -77,7 +77,7 @@ describe("the dashboard network's plane panel", () => {
     (useHighestSeverityAlerts: any).mockImplementation(() => alertsWarning);
 
     // Render
-    render(<DashboardPlane />);
+    render(<DashboardPlaneHealth />);
 
     // Verify
     expect(screen.getAllByLabelText(`status ${STATUS_WARNING}`)).toHaveLength(
@@ -91,7 +91,7 @@ describe("the dashboard network's plane panel", () => {
     (useHighestSeverityAlerts: any).mockImplementation(() => alertsCritical);
 
     // Render
-    render(<DashboardPlane />);
+    render(<DashboardPlaneHealth />);
 
     // Verify
     expect(screen.getAllByLabelText(`status ${STATUS_CRITICAL}`)).toHaveLength(
