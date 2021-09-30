@@ -152,7 +152,7 @@ export const useSingleChartSerie = ({
       chartStartTimeRef.current = startTimeRef.current;
       setSeries(transformPrometheusDataToSeries(query.data));
     }
-  }, [isLoading, transformPrometheusDataToSeries, query]);
+  }, [isLoading, transformPrometheusDataToSeries]);
 
   return {
     series: series,
@@ -203,12 +203,11 @@ export const useSymetricalChartSeries = ({
   useEffect(() => {
     if (!isLoading) {
       chartStartTimeRef.current = startTimeRef.current;
-      setSeries(transformPrometheusDataToSeries(
-        aboveQuery.data,
-        belowQuery.data,
-      ));
+      setSeries(
+        transformPrometheusDataToSeries(aboveQuery.data, belowQuery.data),
+      );
     }
-  }, [isLoading, transformPrometheusDataToSeries, aboveQuery, belowQuery]);
+  }, [isLoading, transformPrometheusDataToSeries]);
 
   return {
     series: series || [],
