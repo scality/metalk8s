@@ -328,6 +328,37 @@ Both size and time based retentions can be activated at the same time.
 
 Then :ref:`apply the configuration<csc-prometheus-apply-cfg>`.
 
+Set Kubelet metrics scrape tiemout
+""""""""""""""""""""""""""""""""""
+
+In some cases (e.g. when using a lot of sparse loop devices), the kubelet
+metrics endpoint can be very slow to answer and the Prometheus' default 10s
+scrape timeout may not be sufficient.
+To avoid timeouts and thus losing metrics, you can customize the scrape
+timeout as follows:
+
+
+.. code-block:: yaml
+
+   ---
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: metalk8s-prometheus-config
+     namespace: metalk8s-monitoring
+   data:
+     config.yaml: |-
+       apiVersion: addons.metalk8s.scality.com
+       kind: PrometheusConfig
+       spec:
+         config:
+           serviceMonitor:
+             kubelet:
+               scrapeTimeout: 30s
+
+Then :ref:`apply the configuration<csc-prometheus-apply-cfg>`.
+
+
 Predefined Alert Rules Customization
 """"""""""""""""""""""""""""""""""""
 

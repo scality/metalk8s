@@ -244,3 +244,7 @@ kubeControllerManager:
   serviceMonitor:
     https: true
     insecureSkipVerify: true
+
+kubelet:
+  serviceMonitor:
+    scrapeTimeout: "__var__(prometheus.spec.config.serviceMonitor.kubelet.scrapeTimeout)"
