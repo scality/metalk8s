@@ -108,14 +108,6 @@ const Layout = () => {
       },
     ],
   };
-  // Remove the access to dashboard page if no flags property in the config.json,
-  // or no `dashboard` specified in the values.
-  if (
-    (api && !Object.prototype.hasOwnProperty.call(api, 'flags')) ||
-    (api && api.flags && !api.flags.includes('dashboard'))
-  ) {
-    sidebarConfig.actions.shift();
-  }
 
   return (
     <CoreUILayout
@@ -146,10 +138,7 @@ const Layout = () => {
           <PrivateRoute path="/volumes/:name?" component={VolumePage} />
           <PrivateRoute exact path="/about" component={About} />
           <PrivateRoute exact path="/alerts" component={AlertPage} />
-
-          {api && api.flags && api.flags.includes('dashboard') && (
-            <PrivateRoute exact path="/dashboard" component={DashboardPage} />
-          )}
+          <PrivateRoute exact path="/dashboard" component={DashboardPage} />
           <Route
             component={() => (
               <ErrorPage404 data-cy="sc-error-page404" locale={language} />
