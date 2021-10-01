@@ -11,6 +11,7 @@ import {
   highestAlertToStatus,
 } from '../containers/AlertProvider';
 import HealthItem from './HealthItem.js';
+import { DashboardScrollableArea } from '../containers/DashboardPage';
 
 const ServiceItems = styled.div`
   display: flex;
@@ -80,61 +81,63 @@ const DashboardServices = () => {
         {intl.formatMessage({ id: 'services' })}
       </PageSubtitle>
 
-      <ServiceItems>
-        <PageSubtitle aria-label="core">
-          {intl.formatMessage({ id: 'core' })}
-        </PageSubtitle>
-        <HealthItem
-          label={'K8s master'}
-          status={k8sStatus}
-          alerts={k8sHighestSeverityAlert}
-        />
-        <HealthItem
-          label={'Bootstrap'}
-          status={bootstrapStatus}
-          alerts={bootstrapHighestSeverityAlert}
-        />
-      </ServiceItems>
-      <ServiceItems>
-        <PageSubtitle aria-label="observability">
-          {intl.formatMessage({ id: 'observability' })}
-        </PageSubtitle>
-        <HealthItem
-          label={'Monitoring'}
-          status={monitoringStatus}
-          alerts={monitoringHighestSeverityAlert}
-        />
-        <HealthItem
-          label={'Alerting'}
-          status={alertingStatus}
-          alerts={alertingHighestSeverityAlert}
-        />
-        <HealthItem
-          label={'Logging'}
-          status={loggingStatus}
-          alerts={loggingHighestSeverityAlert}
-        />
-        <HealthItem
-          label={'Dashboarding'}
-          status={dashboardingStatus}
-          alerts={dashboardingHighestSeverityAlert}
-        />
-      </ServiceItems>
-      <ServiceItems>
-        <PageSubtitle aria-label="access">
-          {intl.formatMessage({ id: 'access' })}
-        </PageSubtitle>
-        <HealthItem
-          label={'Ingress Controller'}
-          status={ingressStatus}
-          alerts={ingressHighestSeverityAlert}
-        />
-        <HealthItem
-          label={intl.formatMessage({ id: 'authentication' })}
-          status={authenticationStatus}
-          alerts={authenticationHighestSeverityAlert}
-        />
-      </ServiceItems>
+      <DashboardScrollableArea>
+        <ServiceItems>
+          <PageSubtitle aria-label="core">
+            {intl.formatMessage({ id: 'core' })}
+          </PageSubtitle>
+          <HealthItem
+            label={'K8s master'}
+            status={k8sStatus}
+            alerts={k8sHighestSeverityAlert}
+          />
+          <HealthItem
+            label={'Bootstrap'}
+            status={bootstrapStatus}
+            alerts={bootstrapHighestSeverityAlert}
+          />
+        </ServiceItems>
+        <ServiceItems>
+          <PageSubtitle aria-label="observability">
+            {intl.formatMessage({ id: 'observability' })}
+          </PageSubtitle>
+          <HealthItem
+            label={'Monitoring'}
+            status={monitoringStatus}
+            alerts={monitoringHighestSeverityAlert}
+          />
+          <HealthItem
+            label={'Alerting'}
+            status={alertingStatus}
+            alerts={alertingHighestSeverityAlert}
+          />
+          <HealthItem
+            label={'Logging'}
+            status={loggingStatus}
+            alerts={loggingHighestSeverityAlert}
+          />
+          <HealthItem
+            label={'Dashboarding'}
+            status={dashboardingStatus}
+            alerts={dashboardingHighestSeverityAlert}
+          />
+        </ServiceItems>
+        <ServiceItems>
+          <PageSubtitle aria-label="access">
+            {intl.formatMessage({ id: 'access' })}
+          </PageSubtitle>
+          <HealthItem
+            label={'Ingress Controller'}
+            status={ingressStatus}
+            alerts={ingressHighestSeverityAlert}
+          />
+          <HealthItem
+            label={intl.formatMessage({ id: 'authentication' })}
+            status={authenticationStatus}
+            alerts={authenticationHighestSeverityAlert}
+          />
+        </ServiceItems>
+      </DashboardScrollableArea>
     </div>
   );
 };

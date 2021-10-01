@@ -16,17 +16,18 @@ import DashboardChartThroughput from './DashboardChartThroughput';
 import DashboardChartSystemLoad from './DashboardChartSystemLoad';
 import DashboardChartMemory from './DashboardChartMemory';
 import { useTypedSelector } from '../hooks';
+import { DashboardScrollableArea } from '../containers/DashboardPage';
 
 const MetricsContainer = styled.div`
   padding: 2px ${padding.smaller};
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  max-height: 100%;
 `;
 
 export const GraphWrapper = styled(GraphWrapperCommon)`
   position: relative;
-  min-height: 90px;
   padding: 2px 0px;
 
   .sc-loader {
@@ -39,6 +40,7 @@ const GraphsWrapper = styled.div`
   flex-direction: column;
   justify-content: space-around;
   flex-grow: 1;
+  height: 100%;
 `;
 
 const PanelActions = styled.div`
@@ -73,12 +75,16 @@ const DashboardMetrics = () => {
           </a>
         )}
       </PanelActions>
+      <DashboardScrollableArea>
       <GraphsWrapper>
-        <DashboardChartCpuUsage />
-        <DashboardChartMemory />
-        <DashboardChartSystemLoad />
-        <DashboardChartThroughput />
+        
+          <DashboardChartCpuUsage />
+          <DashboardChartMemory />
+          <DashboardChartSystemLoad />
+          <DashboardChartThroughput />
+        
       </GraphsWrapper>
+      </DashboardScrollableArea>
     </MetricsContainer>
   );
 };

@@ -13,6 +13,7 @@ import {
   SecondaryText,
 } from '@scality/core-ui/dist/components/text/Text.component';
 import { useAlerts } from '../containers/AlertProvider';
+import SpacedBox from '@scality/core-ui/dist/components/spacedbox/SpacedBox';
 
 const AlertsContainer = styled.div`
   display: flex;
@@ -36,6 +37,7 @@ const Link = styled.div`
   cursor: pointer;
   margin-left: auto;
   text-decoration: none;
+  text-align: right;
   &:hover {
     text-decoration: underline;
   }
@@ -78,7 +80,7 @@ const DashboardAlerts = () => {
           {intl.formatMessage({ id: 'no_active_alerts' })}
         </SecondaryText>
       ) : (
-        <>
+        <SpacedBox pr={24}>
           <BadgesContainer>
             <div>
               Critical
@@ -108,7 +110,7 @@ const DashboardAlerts = () => {
           >
             {intl.formatMessage({ id: 'view_all' })} >
           </Link>
-        </>
+        </SpacedBox>
       )}
     </AlertsContainer>
   );

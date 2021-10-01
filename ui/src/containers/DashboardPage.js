@@ -78,6 +78,13 @@ const DashboardGrid = styled.div`
   }
 `;
 
+export const DashboardScrollableArea = styled.div`
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  max-height: 100%;
+`
+
 const DashboardPage = () => {
   return (
     <DashboardGrid>

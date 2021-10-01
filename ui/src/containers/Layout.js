@@ -38,7 +38,6 @@ const Layout = () => {
     // eslint-disable-next-line
   }, [language]);
   const isUserLoaded = useTypedSelector((state) => !!state.oidc?.user);
-  const api = useTypedSelector((state) => state.config.api);
   const dispatch = useDispatch();
 
   const removeNotification = (uid) => dispatch(removeNotificationAction(uid));

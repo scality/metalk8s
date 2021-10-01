@@ -11,7 +11,7 @@ import {
   CIRCLE_DOUBLE_SIZE,
 } from '../constants.js';
 
-const Circle = styled.i`
+export const StatusIcon = styled.i`
   color: ${(props) => {
     const theme = props.theme;
     let color;
@@ -45,7 +45,7 @@ class CircleStatus extends React.Component {
     if (size === undefined || size === CIRCLE_BASE_SIZE) {
       if (status === STATUS_NONE) {
         return (
-          <Circle
+          <StatusIcon
             className="far fa-circle"
             status={status}
             aria-label={`status ${status}`}
@@ -53,7 +53,7 @@ class CircleStatus extends React.Component {
         );
       } else {
         return (
-          <Circle
+          <StatusIcon
             className="fas fa-circle"
             status={status}
             aria-label={`status ${status}`}
@@ -63,7 +63,7 @@ class CircleStatus extends React.Component {
     } else if (size === CIRCLE_DOUBLE_SIZE) {
       if (status === STATUS_NONE) {
         return (
-          <Circle
+          <StatusIcon
             className="far fa-circle fa-2x"
             status={status}
             aria-label={`status ${status}`}
@@ -71,7 +71,7 @@ class CircleStatus extends React.Component {
         );
       } else {
         return (
-          <Circle
+          <StatusIcon
             className="fas fa-circle fa-2x"
             status={status}
             aria-label={`status ${status}`}

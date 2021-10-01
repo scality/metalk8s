@@ -5,6 +5,7 @@ import { spacing } from '@scality/core-ui/dist/style/theme';
 import { PageSubtitle } from '../components/style/CommonLayoutStyle';
 import DashboardPlaneHealth from './DashboardPlaneHealth';
 import DashboardBandwidthChart from './DashboardBandwidthChart';
+import { DashboardScrollableArea } from '../containers/DashboardPage';
 
 export const NetworkContainer = styled.div`
   padding: ${spacing.sp2} ${spacing.sp4};
@@ -34,19 +35,21 @@ const DashboardNetwork = () => {
       <PanelActions>
         <PageSubtitle>{intl.formatMessage({ id: 'network' })}</PageSubtitle>
       </PanelActions>
-      <DashboardPlaneHealth />
-      <ChartContainer>
-        <DashboardBandwidthChart
-          title="ControlPlane Bandwidth"
-          plane="controlPlane"
-        ></DashboardBandwidthChart>
-      </ChartContainer>
-      <ChartContainer>
-        <DashboardBandwidthChart
-          title="WorkloadPlane Bandwidth"
-          plane="workloadPlane"
-        ></DashboardBandwidthChart>
-      </ChartContainer>
+      <DashboardScrollableArea style={{display: 'flex', flexDirection: 'column', flexGrow: '1'}}>
+        <DashboardPlaneHealth />
+        <ChartContainer>
+          <DashboardBandwidthChart
+            title="ControlPlane Bandwidth"
+            plane="controlPlane"
+          ></DashboardBandwidthChart>
+        </ChartContainer>
+        <ChartContainer>
+          <DashboardBandwidthChart
+            title="WorkloadPlane Bandwidth"
+            plane="workloadPlane"
+          ></DashboardBandwidthChart>
+        </ChartContainer>
+      </DashboardScrollableArea>
     </NetworkContainer>
   );
 };

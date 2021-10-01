@@ -98,7 +98,7 @@ const HealthItem = ({
   label: string,
   status: Status,
   alerts: Alert[],
-  showArrow: boolean,
+  showArrow?: boolean,
 }) => {
   const intl = useIntl();
   const { openLink } = useLinkOpener();
