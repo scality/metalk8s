@@ -6,7 +6,7 @@ import type { FilterLabels, Alert } from './services/alertUtils';
 import { getHealthStatus, filterAlerts } from './services/alertUtils';
 
 export const getPlatformAlertSelectors = (): FilterLabels => {
-  return { alertname: ['PlatformAtRisk', 'PlatformDegraded'] };
+  return { alertname: ['ClusterAtRisk', 'ClusterDegraded'] };
 };
 
 export const getNodesAlertSelectors = (): FilterLabels => {
@@ -31,7 +31,10 @@ export const getServicesAlertSelectors = (): FilterLabels => {
 
 export const getK8SMasterAlertSelectors = (): FilterLabels => {
   return {
-    alertname: ['K8sMasterServicesAtRisk', 'K8sMasterServicesDegraded'],
+    alertname: [
+      'KubernetesControlPlaneAtRisk',
+      'KubernetesControlPlaneDegraded',
+    ],
   };
 };
 
@@ -52,7 +55,7 @@ export const getAlertingAlertSelectors = (): FilterLabels => {
 };
 
 export const getLoggingAlertSelectors = (): FilterLabels => {
-  return { alertname: ['LoggingServiceAtRisk', 'LoggingServiceDegraded'] };
+  return { alertname: ['LoggingServiceDegraded'] };
 };
 
 export const getDashboardingAlertSelectors = (): FilterLabels => {
@@ -60,11 +63,11 @@ export const getDashboardingAlertSelectors = (): FilterLabels => {
 };
 
 export const getIngressControllerAlertSelectors = (): FilterLabels => {
-  return { alertname: ['IngressControllerDegraded'] };
+  return { alertname: ['IngressControllerServicesDegraded'] };
 };
 
 export const getAuthenticationAlertSelectors = (): FilterLabels => {
-  return { alertname: ['AuthenticationDegraded'] };
+  return { alertname: ['AuthenticationServiceDegraded'] };
 };
 
 /**
