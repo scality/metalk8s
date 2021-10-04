@@ -60866,6 +60866,7 @@ spec:
       - __metrics_path__
       targetLabel: metrics_path
     scheme: https
+    scrapeTimeout: {% endraw -%}{{ prometheus.spec.config.serviceMonitor.kubelet.scrapeTimeout }}{%- raw %}
     tlsConfig:
       caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
       insecureSkipVerify: true
