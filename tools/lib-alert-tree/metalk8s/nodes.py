@@ -1,12 +1,13 @@
 """Node-related (system level) alerts."""
 
-from lib_alert_tree.models import ExistingAlert as Existing, severity_pair
+from lib_alert_tree.models import ExistingAlert as Existing, Relationship, severity_pair
 
 SYSTEM_PARTITION_WARNING, SYSTEM_PARTITION_CRITICAL = severity_pair(
     name="SystemPartition",
     summary_name=(
         "The system partition {{ $labels.mountpoint }} on node {{ $labels.instance }}"
     ),
+    relationship=Relationship.ANY,
     warning_children=[
         Existing.warning("NodeFilesystemAlmostOutOfSpace"),
         Existing.warning("NodeFilesystemAlmostOutOfFiles"),
@@ -25,6 +26,7 @@ SYSTEM_PARTITION_WARNING, SYSTEM_PARTITION_CRITICAL = severity_pair(
 NODE_WARNING, NODE_CRITICAL = severity_pair(
     name="Node",
     summary_name="The node {{ $labels.instance }}",
+    relationship=Relationship.ANY,
     warning_children=[
         Existing.warning("KubeNodeNotReady"),
         Existing.warning("KubeNodeReadinessFlapping"),

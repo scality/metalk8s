@@ -127,9 +127,7 @@ class DerivedAlert(BaseAlert):
     root, using the `build_tree` method.
     """
 
-    def __init__(
-        self, name, children, relationship=Relationship.ANY, group_by=None, **params
-    ):
+    def __init__(self, name, children, relationship, group_by=None, **params):
         self.name = name
         self.children = children
         if not isinstance(relationship, Relationship):

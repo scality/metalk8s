@@ -1,6 +1,5 @@
 """Check the behavior of each model."""
 
-import builtins
 import textwrap
 from unittest import mock
 
@@ -73,12 +72,7 @@ class TestBaseAlert:
         )
         assert test_alert.pretty_str == expected_pretty
 
-        def _no_click_import(name, *args, **kwargs):
-            if name == "click":
-                raise ImportError
-            return builtins.__import__(name, *args, **kwargs)
-
-        with mock.patch("builtins.__import__", _no_click_import):
+        with mock.patch("lib_alert_tree.models.CLICK_AVAILABLE", False):
             assert (
                 test_alert.pretty_str
                 == "test{severity='warning', somelabel=~'someval'}"
@@ -153,11 +147,13 @@ class TestDerivedAlert:
         """Check how trees are recursively built."""
         root = models.DerivedAlert.warning(
             "Root",
+            relationship=models.Relationship.ANY,
             children=[
                 models.ExistingAlert.warning("Child1"),
                 models.ExistingAlert.critical("Child2"),
                 models.DerivedAlert.warning(
                     "Parent1",
+                    relationship=models.Relationship.ANY,
                     children=[
                         models.ExistingAlert.warning("Child3"),
                         models.ExistingAlert.warning("Child4"),
@@ -187,6 +183,7 @@ class TestDerivedAlert:
         """Check how properties are passed in the 'AlertRule' data container."""
         test_alert = models.DerivedAlert.warning(
             name="Test",
+            relationship=models.Relationship.ANY,
             children=[
                 models.ExistingAlert.warning("Child1"),
                 models.ExistingAlert.critical("Child2"),
@@ -215,6 +212,7 @@ def test_severity_pair():
     """Check the 'severity_pair' helper behavior."""
     test_warning, test_critical = models.severity_pair(
         name="Test",
+        relationship=models.Relationship.ANY,
         summary_name="The test object",
         summary_plural=False,
         warning_children=[models.ExistingAlert.warning("Child1")],

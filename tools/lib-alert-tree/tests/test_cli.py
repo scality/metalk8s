@@ -7,16 +7,19 @@ import click
 from click.testing import CliRunner
 
 from lib_alert_tree import cli
-from lib_alert_tree.models import DerivedAlert as D, ExistingAlert as E, severity_pair
+from lib_alert_tree.models import DerivedAlert as D, ExistingAlert as E
+from lib_alert_tree.models import Relationship, severity_pair
 
 ROOT_W, ROOT_C = severity_pair(
     name="Root",
+    relationship=Relationship.ANY,
     summary_name="The root",
     warning_children=[
         E.warning("Child1", somelabel="somevalue"),
         E.critical("Child2"),
         D.warning(
             "Parent1",
+            relationship=Relationship.ANY,
             children=[E.warning("Child3"), E.warning("Child4")],
             duration="1m",
         ),

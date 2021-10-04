@@ -2,7 +2,7 @@
 
 import textwrap
 
-from lib_alert_tree.models import DerivedAlert as D
+from lib_alert_tree.models import DerivedAlert as D, Relationship
 from lib_alert_tree import kubernetes
 
 
@@ -10,7 +10,9 @@ def test_daemonset_alerts():
     """Check DaemonSet alerts."""
     # pylint: disable=line-too-long
     test = D.warning(
-        "test", children=kubernetes.daemonset_alerts("my-ds", namespace="my-ns")
+        "test",
+        children=kubernetes.daemonset_alerts("my-ds", namespace="my-ns"),
+        relationship=Relationship.ANY,
     )
     assert (
         test.build_tree().show(stdout=False)
@@ -29,7 +31,9 @@ def test_deployment_alerts():
     """Check Deployment alerts."""
     # pylint: disable=line-too-long
     test = D.warning(
-        "test", children=kubernetes.deployment_alerts("my-deploy", namespace="my-ns")
+        "test",
+        children=kubernetes.deployment_alerts("my-deploy", namespace="my-ns"),
+        relationship=Relationship.ANY,
     )
     assert (
         test.build_tree().show(stdout=False)
@@ -46,7 +50,9 @@ def test_deployment_alerts():
 def test_pod_alerts():
     """Check Pod alerts."""
     test = D.warning(
-        "test", children=kubernetes.pod_alerts("my-pod", namespace="my-ns")
+        "test",
+        children=kubernetes.pod_alerts("my-pod", namespace="my-ns"),
+        relationship=Relationship.ANY,
     )
     assert (
         test.build_tree().show(stdout=False)
@@ -63,7 +69,9 @@ def test_statefulset_alerts():
     """Check StatefulSet alerts."""
     # pylint: disable=line-too-long
     test = D.warning(
-        "test", children=kubernetes.statefulset_alerts("my-sts", namespace="my-ns")
+        "test",
+        children=kubernetes.statefulset_alerts("my-sts", namespace="my-ns"),
+        relationship=Relationship.ANY,
     )
     assert (
         test.build_tree().show(stdout=False)

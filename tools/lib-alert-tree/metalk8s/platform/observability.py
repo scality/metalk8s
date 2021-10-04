@@ -1,6 +1,6 @@
 """Alerts hierarchy for the observability services (monitoring, alerting, logging)."""
 
-from lib_alert_tree.models import ExistingAlert as Existing, severity_pair
+from lib_alert_tree.models import ExistingAlert as Existing, Relationship, severity_pair
 from lib_alert_tree.kubernetes import (
     deployment_alerts,
     daemonset_alerts,
@@ -10,6 +10,7 @@ from lib_alert_tree.kubernetes import (
 MONITORING_WARNING, MONITORING_CRITICAL = severity_pair(
     name="MonitoringService",
     summary_name="The monitoring service",
+    relationship=Relationship.ANY,
     warning_children=[
         Existing.warning("PrometheusTargetLimitHit"),
         Existing.warning("PrometheusTSDBReloadsFailing"),
@@ -58,6 +59,7 @@ MONITORING_WARNING, MONITORING_CRITICAL = severity_pair(
 ALERTING_WARNING, ALERTING_CRITICAL = severity_pair(
     name="AlertingService",
     summary_name="The alerting service",
+    relationship=Relationship.ANY,
     warning_children=[
         Existing.warning("AlertmanagerFailedReload"),
         *statefulset_alerts(
@@ -77,6 +79,7 @@ ALERTING_WARNING, ALERTING_CRITICAL = severity_pair(
 LOGGING_WARNING, _ = severity_pair(
     name="LoggingService",
     summary_name="The logging service",
+    relationship=Relationship.ANY,
     warning_children=[
         *statefulset_alerts("loki", severity="warning", namespace="metalk8s-logging"),
         *daemonset_alerts(
@@ -89,6 +92,7 @@ LOGGING_WARNING, _ = severity_pair(
 DASHBOARD_WARNING, _ = severity_pair(
     name="DashboardingService",
     summary_name="The dashboarding service",
+    relationship=Relationship.ANY,
     warning_children=[
         *deployment_alerts(
             "prometheus-operator-grafana",
@@ -103,6 +107,7 @@ OBSERVABILITY_WARNING, OBSERVABILITY_CRITICAL = severity_pair(
     name="ObservabilityServices",
     summary_name="The observability services",
     summary_plural=True,
+    relationship=Relationship.ANY,
     warning_children=[
         MONITORING_WARNING,
         ALERTING_WARNING,

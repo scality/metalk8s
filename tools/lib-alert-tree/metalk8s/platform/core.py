@@ -1,11 +1,12 @@
 """Alerts around the Kubernetes control plane and bootstrap services."""
 
-from lib_alert_tree.models import ExistingAlert as Existing, severity_pair
+from lib_alert_tree.models import ExistingAlert as Existing, Relationship, severity_pair
 from lib_alert_tree.kubernetes import deployment_alerts, pod_alerts
 
 K8S_CONTROL_WARNING, K8S_CONTROL_CRITICAL = severity_pair(
     name="KubernetesControlPlane",
     summary_name="The Kubernetes control plane",
+    relationship=Relationship.ANY,
     warning_children=[
         Existing.warning("KubeAPIErrorBudgetBurn"),
         Existing.warning("etcdHighNumberOfFailedGRPCRequests"),
@@ -56,6 +57,7 @@ BOOTSTRAP_WARNING, _ = severity_pair(
     name="BootstrapServices",
     summary_name="The MetalK8s Bootstrap services",
     summary_plural=True,
+    relationship=Relationship.ANY,
     warning_children=[
         *pod_alerts("repositories-.*", severity="warning", namespace="kube-system"),
         *pod_alerts("salt-master-.*", severity="warning", namespace="kube-system"),
@@ -71,6 +73,7 @@ CORE_WARNING, CORE_CRITICAL = severity_pair(
     name="CoreServices",
     summary_name="The Core services",
     summary_plural=True,
+    relationship=Relationship.ANY,
     warning_children=[K8S_CONTROL_WARNING, BOOTSTRAP_WARNING],
     critical_children=[K8S_CONTROL_CRITICAL],
     duration="1m",

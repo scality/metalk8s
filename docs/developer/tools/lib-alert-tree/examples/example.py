@@ -12,18 +12,19 @@ FOO_CRITICAL = Existing("FooServiceTooManyErrors", severity="critical")
 BAR_BAZ_WARNING = Existing.warning("BarAlmostOutOfSpace", bar="baz")
 BAR_BAZ_CRITICAL = Existing.critical("BarAlmostOutOfSpace", bar="baz")
 
-# Derived alerts are built from a list of children and a relationship type (the default
-# is to fire if any of the children is firing).
+# Derived alerts are built from a list of children and a relationship type.
 # To be serialized into valid Prometheus configuration, some other attributes are
 # required.
 FOOBAR_WARNING = Derived.warning(
     "FooBarDegraded",
+    relationship=Relationship.ANY,
     children=[FOO_WARNING, BAR_BAZ_WARNING],
     duration="1m",
     summary="The FooBar service is degraded.",
 )
 FOOBAR_CRITICAL = Derived.critical(
     "FooBarAtRisk",
+    relationship=Relationship.ALL,
     children=[FOO_CRITICAL, BAR_BAZ_CRITICAL],
     duration="1m",
     summary="The FooBar service is at risk.",
@@ -33,6 +34,7 @@ FOOBAR_CRITICAL = Derived.critical(
 ROOT_WARNING, ROOT_CRITICAL = severity_pair(
     "Example",
     summary_name="The example app",
+    relationship=Relationship.ANY,
     warning_children=[FOOBAR_WARNING, Existing.warning("QuxNotProgressing")],
     critical_children=[FOOBAR_CRITICAL, Existing.critical("QuxNotProgressing")],
     duration="5m",
