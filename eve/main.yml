@@ -1289,6 +1289,7 @@ stages:
             - unit_tests_crd_client_generator
             - unit_tests_storage_operator
             - unit_tests_salt
+            - unit_tests_lib_alert_tree
 
   unit_tests_ui:
     _metalk8s_internal_info:
@@ -1500,6 +1501,48 @@ stages:
             <<: *_env_final_status_artifact_success
             <<: *_unit-test_salt_junit_info
             STEP_NAME: unit_tests_salt
+      - Upload: *upload_final_status_artifact
+
+  unit_tests_lib_alert_tree:
+    _metalk8s_internal_info:
+      junit_info: &_unit_test_lib_alert_tree_junit_info
+        TEST_SUITE: unit test
+        TEST_NAME: lib-alert-tree
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-unit-tests/pod.yaml
+      images:
+        docker-unit-tests:
+          context: 'tools/lib-alert-tree'
+          dockerfile: eve/workers/pod-unit-tests/lib-alert-tree/Dockerfile
+      vars:
+        name: "metalk8s-unit-tests-lib-alert-tree-worker"
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            <<: *_unit-test_salt_junit_info
+            STEP_NAME: unit_tests_lib_alert_tree
+      - ShellCommand: *yum_clean_all
+      - ShellCommand:
+          name: Install lib_alert_tree
+          command: poetry install -E cli
+          haltOnFailure: true
+          workdir: &_workdir_lib_alert_tree >-
+            %(prop:builddir)s/build/tools/lib-alert-tree
+      - ShellCommand:
+          name: Run all lib_alert_tree unit tests
+          command: poetry run pytest -vv
+          haltOnFailure: true
+          workdir: *_workdir_lib_alert_tree
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            <<: *_unit-test_salt_junit_info
+            STEP_NAME: unit_tests_lib_alert_tree
       - Upload: *upload_final_status_artifact
 
   single-node-downgrade-centos:
