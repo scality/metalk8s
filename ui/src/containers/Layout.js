@@ -122,7 +122,7 @@ const Layout = () => {
           <PrivateRoute
             exact
             path="/"
-            component={() => <Redirect to="/nodes" />}
+            component={() => <Redirect to="/dashboard" />}
           />
           <PrivateRoute exact path="/nodes/create" component={NodeCreateForm} />
           <PrivateRoute
