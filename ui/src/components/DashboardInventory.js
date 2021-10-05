@@ -24,6 +24,7 @@ import {
   useHighestSeverityAlerts,
   highestAlertToStatus,
 } from '../containers/AlertProvider';
+import { useHistory } from 'react-router';
 
 const InventoryContainer = styled.div`
   padding: 0px ${spacing.sp2};
@@ -87,7 +88,7 @@ const DashboardInventory = () => {
   const { data: nodesCount } = useQuery(
     getNodesCountQuery(config || '', token),
   );
-
+  const history = useHistory();
   return (
     <InventoryContainer>
       <PageSubtitle aria-label="inventory">
@@ -100,6 +101,9 @@ const DashboardInventory = () => {
             headerBackgroundColor="backgroundLevel1"
             bodyBackgroundColor="backgroundLevel2"
             aria-label="nodes"
+            onClick={() => {
+              history.push('/nodes');
+            }}
           >
             <Card.Header>
               <div>{intl.formatMessage({ id: 'nodes' })}</div>
@@ -126,6 +130,9 @@ const DashboardInventory = () => {
             headerBackgroundColor="backgroundLevel1"
             bodyBackgroundColor="backgroundLevel2"
             aria-label="volumes"
+            onClick={() => {
+              history.push('/volumes');
+            }}
           >
             <Card.Header>
               <div>{intl.formatMessage({ id: 'volumes' })}</div>
