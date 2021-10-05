@@ -4,6 +4,8 @@ import copy
 import functools
 import ipaddress
 import json
+import random
+import string
 from typing import Any, Callable, Dict, List, Optional, Type
 from unittest.mock import MagicMock
 
@@ -62,7 +64,7 @@ class SaltMock:
         try:
             minion_info = self._minions[minion]
         except KeyError:
-            pytest.fail(f"SalMock has no minion '{minion}' configured")
+            pytest.fail(f"SaltMock has no minion '{minion}' configured")
 
         grains = copy.deepcopy(self._grains)
         grains["id"] = minion
@@ -487,6 +489,13 @@ def pkg_version_cmp(left: str, right: str) -> int:
     if left_clean == right_clean:
         return 0
     return 1
+
+
+@register_basic("random.get_str")
+def random_get_str(length: int = 20) -> str:
+    """Generate a random string of specific length."""
+    allowed_chars = string.ascii_letters + string.digits + string.punctuation
+    return "".join(random.choices(allowed_chars, k=length))
 
 
 # }}}
