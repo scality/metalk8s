@@ -103,8 +103,8 @@ const DashboardAlerts = () => {
           </BadgesContainer>
           <Link
             onClick={() => {
-              history.push('/alerts');
               openLink(alertView);
+              history.replace('/alerts');
             }}
             data-testid="view-all-link"
           >
