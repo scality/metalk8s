@@ -13,6 +13,8 @@ certificates:
         watched: True
   server:
     files:
+      backup-server:
+        watched: True
       control-plane-ingress:
         watched: True
       dex:

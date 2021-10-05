@@ -208,6 +208,10 @@
   'default': {}
 }, merge=defaults.get('kubeadm_kubeconfig')) %}
 
+{%- set backup_server = salt['grains.filter_by']({
+  'default': {}
+}, merge=defaults.get('backup_server')) %}
+
 {% set dex = salt['grains.filter_by']({
   'default': {}
 }, merge=defaults.get('dex')) %}

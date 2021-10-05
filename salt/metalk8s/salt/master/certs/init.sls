@@ -12,5 +12,6 @@ include:
   - metalk8s.addons.nginx-ingress-control-plane.certs
   - metalk8s.addons.nginx-ingress.certs
   - metalk8s.addons.dex.certs
+  - metalk8s.backup.certs.server
   - .etcd-client
   - .salt-api

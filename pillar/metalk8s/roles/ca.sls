@@ -23,6 +23,10 @@ mine_functions:
     - mine_function: hashutil.base64_encodefile
     - /etc/metalk8s/pki/nginx-ingress/ca.crt
 
+  backup_server_ca_b64:
+    - mine_function: hashutil.base64_encodefile
+    - /etc/metalk8s/pki/backup-server/ca.crt
+
 x509_signing_policies:
   kube_apiserver_client_policy:
     - minions: '*'
@@ -64,5 +68,11 @@ x509_signing_policies:
     - minions: '*'
     - signing_private_key: /etc/metalk8s/pki/dex/ca.key
     - signing_cert: /etc/metalk8s/pki/dex/ca.crt
+    - keyUsage: critical digitalSignature, keyEncipherment
+    - extendedKeyUsage: serverAuth
+  backup_server_policy:
+    - minions: '*'
+    - signing_private_key: /etc/metalk8s/pki/backup-server/ca.key
+    - signing_cert: /etc/metalk8s/pki/backup-server/ca.crt
     - keyUsage: critical digitalSignature, keyEncipherment
     - extendedKeyUsage: serverAuth
