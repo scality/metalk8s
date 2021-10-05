@@ -1,4 +1,6 @@
 API
+alertname
+alertstate
 arg
 basename
 buildargs
@@ -48,11 +50,14 @@ mkdir
 mkisofs
 mypy
 nginx
+observability
 pdf
 parameterized
 prebuilt
+prometheus
 py
 readonly
+recursing
 renderer
 repo
 reprepro
@@ -61,6 +66,7 @@ rpmlint
 rpmspec
 runtime
 saltenv
+serializable
 scality
 sdk
 skopeo
@@ -71,11 +77,13 @@ tmp
 tmpfs
 tojson
 tox
+treelib
 txt
 ui
 uptodate
 xenial
 yaml
+AlertRule
 Dockerfile
 GPG
 IP
@@ -84,4 +92,5 @@ Jinja
 JsonReporter
 LZ77
 Mio
+RulesGroup
 UI

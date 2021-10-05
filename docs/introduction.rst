@@ -9,11 +9,6 @@
          Version: |version|
          Git Revision: |release|
 
-.. only:: latex
-
-   Introduction
-   ============
-
 MetalK8s_ is an opinionated Kubernetes_ distribution with a focus on long-term
 on-prem deployments, launched by Scality_ to deploy its Zenko_ solution in
 customer datacenters.

@@ -11,6 +11,7 @@ from typing import Any, Callable, Dict, IO, Mapping, Sequence
 
 import yaml
 
+from buildchain import constants
 from buildchain import types
 from buildchain import utils
 
@@ -107,7 +108,9 @@ class SerializedData(base.AtomicTarget):
                 "title": utils.title_with_target1(
                     "RENDER {}".format(self._renderer.value)
                 ),
-                "doc": 'Render file "{}" with "{}"'.format(self._dest, self._renderer),
+                "doc": 'Render file "{}" with "{}"'.format(
+                    self._dest.relative_to(constants.ROOT), self._renderer
+                ),
                 "actions": [self._run],
             }
         )

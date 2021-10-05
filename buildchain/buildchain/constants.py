@@ -113,6 +113,11 @@ SKOPEO_COPY_DEFAULT_ARGS: List[str] = [
 ]
 
 # }}}
+# Alert tree definitions {{{
+LIB_ALERT_TREE_ROOT = ROOT / "tools/lib-alert-tree"
+ALERT_TREE_SOURCES: FrozenSet[Path] = frozenset(LIB_ALERT_TREE_ROOT.rglob("*.py"))
+
+# }}}
 # Only keep directories and top-level Go source files.
 STORAGE_OPERATOR_FMT_ARGS: FrozenSet[str] = frozenset(
     [

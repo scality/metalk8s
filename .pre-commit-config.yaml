@@ -28,12 +28,16 @@ repos:
           - 'doit~=0.32.0'
           - 'docker~=4.1.0'
           - 'PyYAML~=5.3.1'
+          - 'pytest~=5.4'
+          - 'Click~=8.0'
+          - 'treelib~=1.6'
         files: >
           (?x)^(
               buildchain/dodo\.py|
               buildchain/buildchain/.*\.py|
               packages/debian/common/download_packages\.py|
-              salt/metalk8s/volumes/files/sparse_volume_cleanup\.py
+              salt/metalk8s/volumes/files/sparse_volume_cleanup\.py|
+              tools/lib-alert-tree/.*\.py
           )$
       - id: pylint
         name: Lint Salt

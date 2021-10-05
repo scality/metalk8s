@@ -63,6 +63,7 @@ class ExtCommand(enum.Enum):
     VAGRANT = os.getenv("VAGRANT_BIN", "vagrant")
     OPERATOR_SDK = os.getenv("OPERATOR_SDK_BIN", "operator-sdk")
     GOFMT = os.getenv("GOFMT_BIN", "gofmt")
+    TOX = os.getenv("TOX_BIN", "tox")
 
     @property
     def command_name(self) -> str:

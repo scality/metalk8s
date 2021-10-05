@@ -2,6 +2,7 @@ Developer Guide
 ===============
 
 .. toctree::
+   :maxdepth: 2
 
    architecture/index
    building/index
@@ -9,3 +10,4 @@ Developer Guide
    deploy/index
    development/index
    solutions/index
+   tools/index

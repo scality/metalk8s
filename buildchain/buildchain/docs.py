@@ -4,18 +4,13 @@
 
 This module provides task to:
 - build the doc as HTML
-- build the doc as PDF
-- add the generated PDF into the ISO
+- add the generated HTML to the ISO
 
-Overview;
+Overview:
 
-               ┌──────────┐
-           ───>│ doc:html │
-┌───────┐╱     └──────────┘
-│  doc  │
-└───────┘╲     ┌──────────┐
-           ───>│ doc:pdf  │
-               └──────────┘
+┌───────┐    ┌──────────┐
+│  doc  │───>│ doc:html │
+└───────┘    └──────────┘
 
 ┌─────────┐
 │ livedoc │
@@ -44,9 +39,6 @@ from buildchain import utils
 
 
 DocTarget = namedtuple("DocTarget", ("name", "command", "target"))
-DOC_PDF_FILE: Path = constants.DOCS_BUILD_ROOT / "latex/{}.pdf".format(
-    config.PROJECT_NAME
-)
 
 
 def task_documentation() -> types.TaskDict:
@@ -77,18 +69,18 @@ def task__doc_mkdir_build_root() -> types.TaskDict:
     return task
 
 
-def task__doc_deploy() -> types.TaskDict:
-    """Deploy the documentation on the ISO."""
-    source = DOC_PDF_FILE
-    target = constants.ISO_DOCS_ROOT / "user-guide.pdf"
-    return {
-        "title": utils.title_with_target1("COPY"),
-        "actions": [(coreutils.cp_file, (source, target))],
-        "targets": [target],
-        "task_dep": ["_doc_mkdir_iso_root"],
-        "file_dep": [source],
-        "clean": True,
-    }
+def task__doc_deploy() -> Iterator[types.TaskDict]:
+    """Deploy the HTML documentation on the ISO."""
+    yield from targets.FileTree(
+        basename="_doc_deploy",
+        files=[
+            path.relative_to(constants.DOCS_BUILD_ROOT / "html")
+            for path in coreutils.ls_files_rec(constants.DOCS_BUILD_ROOT / "html")
+        ],
+        destination_directory=constants.ISO_DOCS_ROOT,
+        source_prefix=constants.DOCS_BUILD_ROOT / "html",
+        task_dep=["doc"],
+    ).execution_plan
 
 
 def task_doc() -> Iterator[types.TaskDict]:
@@ -104,7 +96,6 @@ def task_doc() -> Iterator[types.TaskDict]:
             command="html",
             target=constants.DOCS_BUILD_ROOT / "html/index.html",
         ),
-        DocTarget(name="pdf", command="latexpdf", target=DOC_PDF_FILE),
     )
     for target in doc_targets:
         doc_format = target.name.upper()
@@ -151,6 +142,7 @@ def task_livedoc() -> types.TaskDict:
         "doc": task_livedoc.__doc__,
         "actions": [doit.tools.LongRunning("tox -e docs -- livehtml")],
         "uptodate": [False],
+        "task_dep": ["check_for:tox"],
     }
 
 

@@ -12,11 +12,16 @@ Note that:
 - you can speed up the build by spawning more workers, e.g. ``./doit.sh -n 4``.
 - you can have a JSON output with ``./doit.sh --reporter json``
 
-When a task is prefixed by:
+The execution of tasks is printed to standard output. Each line shows a state
+prefix, the task type, the task name, and an optional duration.
 
-- ``--``: the task is skipped because already up-to-date
-- ``.``: the task is executed
-- ``!!``: the task is ignored.
+Tasks can be in one of four states:
+
+- ``STARTED``: the execution started
+- ``SUCCESS``: the execution suceeded
+- ``ERROR``: the execution failed (more details will be printed to standard
+  error)
+- ``SKIPPED``: the task is skipped because already up-to-date
 
 Main tasks
 ----------

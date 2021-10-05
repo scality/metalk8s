@@ -96,6 +96,7 @@ def lint_shell() -> types.TaskDict:
         "doc": lint_shell.__doc__,
         "actions": [["tox", "-e", "lint-shell"]],
         "file_dep": shell_scripts,
+        "task_dep": ["check_for:tox"],
     }
 
 
@@ -114,6 +115,7 @@ def lint_yaml() -> types.TaskDict:
             constants.ROOT / "eve/main.yml",
             constants.ROOT / "salt/metalk8s/defaults.yaml",
         ],
+        "task_dep": ["check_for:tox"],
     }
 
 
@@ -130,6 +132,7 @@ def lint_sls() -> types.TaskDict:
         "doc": lint_sls.__doc__,
         "actions": [["tox", "-e", "lint", "salt-lint"]],
         "file_dep": sls_files,
+        "task_dep": ["check_for:tox"],
     }
 
 

@@ -34,8 +34,10 @@ from pathlib import Path
 import sys
 from typing import Any, Dict, Iterator, Tuple, Union
 
+from buildchain import builder
 from buildchain import config
 from buildchain import constants
+from buildchain import docker_command
 from buildchain import targets
 from buildchain import types
 from buildchain import utils
@@ -125,7 +127,7 @@ class StaticContainerRegistry(_StaticContainerRegistryBase):
         server_root: str,
         name_prefix: str,
         destination: Path,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         """Configure the static-container-registry script.
 
@@ -152,6 +154,50 @@ class StaticContainerRegistry(_StaticContainerRegistryBase):
             with_constants=False,
         )
         return parts
+
+
+class AlertingRulesManifest(targets.AtomicTarget):
+    """Generate a PrometheusRule YAML manifest using the `lib_alert_tree` CLI."""
+
+    def __init__(self, destination: Path, **kwargs: Any):
+        kwargs.setdefault("task_dep", []).extend(
+            [f"_build_builder:{builder.ALERT_TREE_BUILDER.name}"]
+        )
+        kwargs.setdefault("file_dep", []).extend(constants.ALERT_TREE_SOURCES)
+        super().__init__(targets=[destination], **kwargs)
+
+    @property
+    def task(self) -> types.TaskDict:
+        task = self.basic_task
+        doc = " ".join(self.__doc__.split()) if self.__doc__ else None
+
+        cmd = ["poetry", "run", "python", "-m", "metalk8s"]
+        cmd.extend(["gen-rule", "-o", f"/out/{self.targets[0].name}"])
+        cmd.extend(["--namespace", "metalk8s-monitoring"])
+
+        task.update(
+            {
+                "title": utils.title_with_target1("ALERT_TREE"),
+                "doc": doc,
+                "actions": [
+                    docker_command.DockerRun(
+                        builder=builder.ALERT_TREE_BUILDER,
+                        command=cmd,
+                        mounts=[
+                            utils.bind_ro_mount(
+                                target=Path("/project"),
+                                source=constants.LIB_ALERT_TREE_ROOT,
+                            ),
+                            utils.bind_mount(
+                                target=Path("/out"), source=self.targets[0].parent
+                            ),
+                        ],
+                        run_config={"remove": True},
+                    )
+                ],
+            }
+        )
+        return task
 
 
 PILLAR_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
@@ -216,6 +262,12 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/alert-logger/deployed/deployment.sls"),
     Path("salt/metalk8s/addons/alert-logger/deployed/init.sls"),
     Path("salt/metalk8s/addons/alert-logger/deployed/service.sls"),
+    Path("salt/metalk8s/addons/alert-tree/deployed.sls"),
+    AlertingRulesManifest(
+        destination=constants.ISO_ROOT.joinpath(
+            "salt/metalk8s/addons/alert-tree/files/prometheus_rule.yaml"
+        ),
+    ),
     Path("salt/metalk8s/addons/dex/ca/init.sls"),
     Path("salt/metalk8s/addons/dex/ca/installed.sls"),
     Path("salt/metalk8s/addons/dex/ca/advertised.sls"),
