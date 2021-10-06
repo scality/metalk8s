@@ -1,9 +1,10 @@
 # CHANGELOG
 ## Release 2.11.0 (in development)
+## Release 2.11.0-alpha1
 ### Additions
 
 - Deploy a hierarchy of Prometheus alerts to provide different granularities
-  when observing the cluster state (used in the UI Overview page)
+  when observing the cluster state (used in the UI Dashboard page)
   (PR[#3540](https://github.com/scality/metalk8s/pull/3540))
 
 ### Removals
@@ -39,6 +40,14 @@
   Kubernetes execution module more flexible relying on `DynamicClient`
   from `python-kubernetes`
   (PR[#3510](https://github.com/scality/metalk8s/pull/3510))
+
+- Add Dashboard page to monitor the health and performances of the cluster
+  in MetalK8s UI
+  (PR[#3551](https://github.com/scality/metalk8s/pull/3551),
+  PR[#3522](https://github.com/scality/metalk8s/pull/3522),
+  PR[#3465](https://github.com/scality/metalk8s/pull/3465),
+  PR[#3420](https://github.com/scality/metalk8s/pull/3420),
+  PR[#3501](https://github.com/scality/metalk8s/pull/3501))
 
 ## Release 2.10.4 (in development)
 ## Release 2.10.3
