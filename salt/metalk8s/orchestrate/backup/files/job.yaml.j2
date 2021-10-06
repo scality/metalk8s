@@ -1,0 +1,59 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: backup-replication-{{ node }}
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: backup-replication
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/managed-by: salt
+spec:
+  backoffLimit: 4
+  parallelism: 1
+  ttlSecondsAfterFinished: 120
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: backup-replication
+        app.kubernetes.io/part-of: metalk8s
+        app.kubernetes.io/managed-by: salt
+    spec:
+      nodeName: {{ node }}
+      containers:
+      - name: backup-replication
+        image: {{ image }}
+        command:
+          - wget
+          - --accept="*.tar.gz"
+          - --no-host-directories
+          - --mirror
+          - --ca-certificate=/certificate/ca.crt
+          - --user=$(BACKUP_USERNAME)
+          - --password=$(BACKUP_PASSWORD)
+          - https://backup/
+        env:
+          - name: BACKUP_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: backup-credentials
+                key: username
+          - name: BACKUP_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: backup-credentials
+                key: password
+        volumeMounts:
+        - name: backups
+          mountPath: /backups
+        - name: ca-cert
+          mountPath: /certificate
+        workingDir: /backups
+      restartPolicy: Never
+      volumes:
+        - name: backups
+          hostPath:
+            path: /var/lib/metalk8s/backups
+            type: DirectoryOrCreate
+        - name: ca-cert
+          configMap:
+            name: backup-ca-cert

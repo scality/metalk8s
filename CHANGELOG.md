@@ -7,6 +7,12 @@
   MetalK8s volumes
   (PR[#3566](https://github.com/scality/metalk8s/pull/3566))
 
+### Features Added
+
+- A daily backup of the bootstrap node is now automatically scheduled.
+  All the backups are also replicated onto all the master nodes.
+  (PR [#3557](https://github.com/scality/metalk8s/pull/3557))
+
 ## Release 2.10.3
 ### Enhancements
 

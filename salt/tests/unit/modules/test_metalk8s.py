@@ -621,3 +621,26 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     metalk8s._read_bootstrap_config(),
                     "config",
                 )
+
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["backup_node"])
+    def test_backup_node(self, result, version="2.10.0", archives=None, raises=False):
+        def _cmd_run_all(cmd):
+            ret = {"retcode": 0, "stdout": "OK", "stderr": "Boom!"}
+            if raises:
+                ret["retcode"] = 1
+            return ret
+
+        salt_dict = {"cmd.run_all": MagicMock(side_effect=_cmd_run_all)}
+        pillar_dict = {"metalk8s": {"cluster_version": version}}
+
+        with patch.dict(metalk8s.__salt__, salt_dict), patch.dict(
+            metalk8s.__pillar__, pillar_dict
+        ), patch("metalk8s.get_archives", MagicMock(return_value=archives or {})):
+            if raises:
+                self.assertRaisesRegex(
+                    CommandExecutionError,
+                    result,
+                    metalk8s.backup_node,
+                )
+            else:
+                self.assertEqual(metalk8s.backup_node(), result)

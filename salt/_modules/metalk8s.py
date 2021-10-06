@@ -691,3 +691,27 @@ def configure_archive(archive, remove=False):
     msg = "Archive '{0}' {1}".format(archive, msg)
     log.info(msg)
     return msg
+
+
+def backup_node():
+    metalk8s_version = __pillar__["metalk8s"]["cluster_version"]
+    archives = get_archives()
+
+    try:
+        archive_path = archives[f"metalk8s-{metalk8s_version}"]["path"]
+    except KeyError as exc:
+        raise CommandExecutionError(
+            f"No MetalK8s archive found for version {metalk8s_version}"
+        ) from exc
+
+    backup_script = f"{archive_path}/backup.sh"
+    result = __salt__["cmd.run_all"](cmd=backup_script)
+    log.debug("Result: %r", result)
+
+    if result["retcode"] != 0:
+        output = result.get("stderr") or result["stdout"]
+        raise CommandExecutionError(f"Failed to run {backup_script}: {output}")
+
+    msg = "Backup successfully generated"
+    log.info(msg)
+    return msg

@@ -292,6 +292,15 @@ metalk8s:
           mode: master
           architecture: compact
 
+    backup:
+      files:
+        job.yaml.j2:
+          _cases:
+            "Create job manifest for a node":
+              extra_context:
+                node: master-1
+                image: registry/some-image-name:tag
+
     register_etcd.sls:
       _cases:
         "Target a new master node": &orch_target_master_node

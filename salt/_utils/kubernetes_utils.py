@@ -296,11 +296,25 @@ if HAS_LIBS:
             name="api_service",
         ),
         # }}}
+        # /apis/batch/v1/ {{{
+        ("batch/v1", "Job"): KindInfo(
+            model=k8s_client.V1Job,
+            api_cls=k8s_client.BatchV1Api,
+            name="namespaced_job",
+        ),
+        # }}}
         # /apis/batch/v1beta1/ {{{
         ("batch/v1beta1", "CronJob"): KindInfo(
             model=k8s_client.V1beta1CronJob,
             api_cls=k8s_client.BatchV1beta1Api,
             name="namespaced_cron_job",
+        ),
+        # }}}
+        # /apis/networking.k8s.io/v1/ {{{
+        ("networking.k8s.io/v1", "NetworkPolicy"): KindInfo(
+            model=k8s_client.V1NetworkPolicy,
+            api_cls=k8s_client.NetworkingV1Api,
+            name="namespaced_network_policy",
         ),
         # }}}
         # /apis/networking.k8s.io/v1beta1/ {{{
