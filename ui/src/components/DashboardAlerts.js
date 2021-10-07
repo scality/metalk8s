@@ -18,7 +18,6 @@ import SpacedBox from '@scality/core-ui/dist/components/spacedbox/SpacedBox';
 const AlertsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
 `;
 
 const BadgesContainer = styled.div`
@@ -26,10 +25,6 @@ const BadgesContainer = styled.div`
   & > div {
     margin-right: ${spacing.sp16};
   }
-`;
-
-const TitleContainer = styled.div`
-  width: 100%;
 `;
 
 const Link = styled.div`
@@ -67,14 +62,14 @@ const DashboardAlerts = () => {
 
   return (
     <AlertsContainer>
-      <TitleContainer>
+      <div>
         <EmphaseText>
           {intl.formatMessage({ id: 'platform_active_alerts' })}
         </EmphaseText>
         <TextBadge variant="infoPrimary" data-testid="all-alert-badge">
           {totalAlerts}
         </TextBadge>
-      </TitleContainer>
+      </div>
       {totalAlerts === 0 ? (
         <SecondaryText>
           {intl.formatMessage({ id: 'no_active_alerts' })}
