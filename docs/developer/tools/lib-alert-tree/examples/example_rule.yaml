@@ -1,7 +1,8 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  labels: {}
+  labels:
+    metalk8s.scality.com/monitor: ""
   name: example.rules
   namespace: example
 spec:

@@ -9,7 +9,7 @@ from .models import DerivedAlert
 from .prometheus import PrometheusRule
 
 
-def generate_cli(roots):
+def generate_cli(roots, prometheus_rule_labels=None):
     """Generate a CLI from a dict of root alerts (keys are used for root selection)."""
     try:
         assert next(iter(roots.values()))
@@ -129,7 +129,9 @@ def generate_cli(roots):
             for alert_name, alert in roots.items()
             if alert_name in selected_roots
         ]
-        prometheus_rule = PrometheusRule(name, namespace, groups=groups)
+        prometheus_rule = PrometheusRule(
+            name, namespace, labels=prometheus_rule_labels, groups=groups
+        )
         prometheus_rule.dump(out=out)
 
     return cli
