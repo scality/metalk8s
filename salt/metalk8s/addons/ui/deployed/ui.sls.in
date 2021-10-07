@@ -84,6 +84,7 @@ Create metalk8s-ui ConfigMap:
                   "url_grafana": "/grafana",
                   "url_doc": "/docs",
                   "url_alertmanager": "/api/alertmanager",
+                  "url_loki": "/api/loki",
                   "flags": [],
                   "ui_base_path": "{{ normalized_base_path }}",
                   "url_support": "https://github.com/scality/metalk8s/discussions/new"
