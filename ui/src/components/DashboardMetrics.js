@@ -40,7 +40,6 @@ const GraphsWrapper = styled.div`
   flex-direction: column;
   justify-content: space-around;
   flex-grow: 1;
-  height: 100%;
 `;
 
 const PanelActions = styled.div`
