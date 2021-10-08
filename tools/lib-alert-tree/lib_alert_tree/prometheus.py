@@ -75,6 +75,18 @@ class AlertRule(Serializable):
             )
         )
 
+    def labels_to_json_path_filters(self, **updates):
+        """Build JSON Path filters matching the labels."""
+        return " && ".join(
+            f"@.labels.{key} === '{val}'"
+            if key in EXACT_MATCH_LABELS
+            else f"@.labels.{key}.match(new RegExp('^(?:{val})$'))"
+            for key, val in sorted(
+                dict(self.labels, **updates).items(),
+                key=operator.itemgetter(0),
+            )
+        )
+
     @property
     def query(self):
         """The PromQL query for selecting this alert."""
@@ -85,6 +97,17 @@ class AlertRule(Serializable):
     def child_id(self):
         """A short representation of this alert, for use in annotations."""
         return f"{self.name}{{{self.format_labels()}}}"
+
+    @property
+    def child_json_path(self):
+        """A JSONPath filter expression for selecting this alert as a child.
+
+        This expression will be combined into a full JSONPath query for retrieving
+        all children of a derived alert, exposed in an annotation for consumption
+        by clients (such as UIs).
+        """
+        labels_filters = self.labels_to_json_path_filters(alertname=self.name)
+        return f"({labels_filters})"
 
 
 class RulesGroup(Serializable):

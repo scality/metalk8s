@@ -101,11 +101,21 @@ class TestRelationship:
             models.Relationship.ALL.build_query([models.ExistingAlert("test")])
             == "(ALERTS{alertname='test', alertstate='firing'}) >= 1"
         )
+        assert (
+            models.Relationship.ALL.build_json_path([models.ExistingAlert("test")])
+            == "$[?((@.labels.alertname === 'test'))]"
+        )
         assert models.Relationship.ALL.build_query(
             [models.ExistingAlert("test1"), models.ExistingAlert("test2")]
         ) == (
             "(ALERTS{alertname='test1', alertstate='firing'} and "
             "ALERTS{alertname='test2', alertstate='firing'}) >= 1"
+        )
+        assert models.Relationship.ALL.build_json_path(
+            [models.ExistingAlert("test1"), models.ExistingAlert("test2")]
+        ) == (
+            "$[?((@.labels.alertname === 'test1') && "
+            "(@.labels.alertname === 'test2'))]"
         )
 
         assert models.Relationship.ALL.build_query(
@@ -123,11 +133,21 @@ class TestRelationship:
             models.Relationship.ANY.build_query([models.ExistingAlert("test")])
             == "(ALERTS{alertname='test', alertstate='firing'}) >= 1"
         )
+        assert (
+            models.Relationship.ANY.build_json_path([models.ExistingAlert("test")])
+            == "$[?((@.labels.alertname === 'test'))]"
+        )
         assert models.Relationship.ANY.build_query(
             [models.ExistingAlert("test1"), models.ExistingAlert("test2")]
         ) == (
             "(ALERTS{alertname='test1', alertstate='firing'} or "
             "ALERTS{alertname='test2', alertstate='firing'}) >= 1"
+        )
+        assert models.Relationship.ANY.build_json_path(
+            [models.ExistingAlert("test1"), models.ExistingAlert("test2")]
+        ) == (
+            "$[?((@.labels.alertname === 'test1') || "
+            "(@.labels.alertname === 'test2'))]"
         )
 
         assert models.Relationship.ANY.build_query(
@@ -199,6 +219,9 @@ class TestDerivedAlert:
         }
         assert test_alert.alert_rule.annotations == {
             "children": "Child1{severity='warning'}, Child2{severity='critical'}",
+            "childrenJsonPath": "$[?((@.labels.alertname === 'Child1' && "
+            "@.labels.severity === 'warning') || (@.labels.alertname "
+            "=== 'Child2' && @.labels.severity === 'critical'))]",
             "someannotation": "othervalue",
         }
         assert test_alert.alert_rule.expr == (
@@ -237,6 +260,8 @@ def test_severity_pair():
     }
     assert test_warning.alert_rule.annotations == {
         "children": "Child1{severity='warning'}",
+        "childrenJsonPath": "$[?((@.labels.alertname === 'Child1' && "
+        "@.labels.severity === 'warning'))]",
         "someannotation": "othervalue",
         "summary": "The test object is degraded.",
     }
@@ -257,6 +282,8 @@ def test_severity_pair():
     }
     assert test_critical.alert_rule.annotations == {
         "children": "Child2{severity='critical'}",
+        "childrenJsonPath": "$[?((@.labels.alertname === 'Child2' && "
+        "@.labels.severity === 'critical'))]",
         "someannotation": "othervalue",
         "summary": "The test object is at risk.",
     }

@@ -12,6 +12,9 @@ spec:
     - alert: ExampleDegraded
       annotations:
         children: FooBarDegraded{severity='warning'}, QuxNotProgressing{severity='warning'}
+        childrenJsonPath: $[?((@.labels.alertname === 'FooBarDegraded' &&
+          @.labels.severity === 'warning') || (@.labels.alertname === 'QuxNotProgressing' &&
+          @.labels.severity === 'warning'))]
         summary: The example app is degraded.
       expr: (ALERTS{alertname='FooBarDegraded', alertstate='firing', severity='warning'}
         or ALERTS{alertname='QuxNotProgressing', alertstate='firing', severity='warning'})
@@ -23,6 +26,9 @@ spec:
       annotations:
         children: FooServiceTooManyErrors{severity='warning'}, BarAlmostOutOfSpace{bar=~'baz',
           severity='warning'}
+        childrenJsonPath: $[?((@.labels.alertname === 'FooServiceTooManyErrors' &&
+          @.labels.severity === 'warning') || (@.labels.alertname === 'BarAlmostOutOfSpace' &&
+          @.labels.severity === 'warning' && @.labels.bar.match(new RegExp('^(?:baz)$'))))]
         summary: The FooBar service is degraded.
       expr: (ALERTS{alertname='FooServiceTooManyErrors', alertstate='firing', severity='warning'}
         or ALERTS{alertname='BarAlmostOutOfSpace', alertstate='firing', bar=~'baz',
@@ -35,6 +41,9 @@ spec:
     - alert: ExampleAtRisk
       annotations:
         children: FooBarAtRisk{severity='critical'}, QuxNotProgressing{severity='critical'}
+        childrenJsonPath: $[?((@.labels.alertname === 'FooBarDegraded' &&
+          @.labels.severity === 'critical') || (@.labels.alertname === 'QuxNotProgressing' &&
+          @.labels.severity === 'critical'))]
         summary: The example app is at risk.
       expr: (ALERTS{alertname='FooBarAtRisk', alertstate='firing', severity='critical'}
         or ALERTS{alertname='QuxNotProgressing', alertstate='firing', severity='critical'})
@@ -46,6 +55,9 @@ spec:
       annotations:
         children: FooServiceTooManyErrors{severity='critical'}, BarAlmostOutOfSpace{bar=~'baz',
           severity='critical'}
+        childrenJsonPath: $[?((@.labels.alertname === 'FooServiceTooManyErrors' &&
+          @.labels.severity === 'critical') || (@.labels.alertname === 'BarAlmostOutOfSpace' &&
+          @.labels.severity === 'critical' && @.labels.bar.match(new RegExp('^(?:baz)$'))))]
         summary: The FooBar service is at risk.
       expr: (ALERTS{alertname='FooServiceTooManyErrors', alertstate='firing', severity='critical'}
         or ALERTS{alertname='BarAlmostOutOfSpace', alertstate='firing', bar=~'baz',
