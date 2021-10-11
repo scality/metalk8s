@@ -114,6 +114,7 @@ export const formatActiveAlerts = (alerts: Array<PrometheusAlert>): Alert[] => {
             alert.annotations.selectors.split(',')) ||
           [],
       },
+      childrenJsonPath: alert.annotations.childrenJsonPath || '',
       originalAlert: alert,
     };
   });

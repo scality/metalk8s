@@ -4,6 +4,7 @@ import {
   filterAlerts,
   getHealthStatus,
   formatHistoryAlerts,
+  getChildrenAlerts,
 } from './alertUtils';
 import { alerts } from './alertUtilsData';
 
@@ -248,4 +249,45 @@ it('should format the history alert', () => {
     },
   ];
   expect(result).toEqual(historyAlert);
+});
+
+//test getChildrenAlerts()
+it('filters the alerts and only get MetalK8s alerts', () => {
+  const alerts = [
+    {
+      id: '1',
+      severity: 'critical',
+      labels: {
+        alertname: 'VolumeAtRisk',
+        severity: 'critical',
+      },
+      childrenJsonPath:
+        "$[?((@.labels.alertname === 'KubePersistentVolumeFillingUp' && @.labels.severity === 'critical') || (@.labels.alertname === 'KubePersistentVolumeErrors' && @.labels.severity === 'critical'))]",
+    },
+    {
+      id: '2',
+      severity: 'critical',
+      labels: {
+        alertname: 'KubePersistentVolumeFillingUp',
+        severity: 'critical',
+      },
+      childrenJsonPath: '',
+    },
+    {
+      id: '3',
+      severity: 'critical',
+      labels: {
+        alertname: 'ClusterAtRisk',
+        severity: 'critical',
+      },
+      childrenJsonPath:
+        "$[?((@.labels.alertname === 'NodeAtRisk' && @.labels.severity === 'critical') || (@.labels.alertname === 'PlatformServicesAtRisk' && @.labels.severity === 'critical') || (@.labels.alertname === 'VolumeAtRisk' && @.labels.severity === 'critical'))]",
+    },
+  ];
+  const childrenJsonPath = [
+    "$[?((@.labels.alertname === 'NodeAtRisk' && @.labels.severity === 'critical') || (@.labels.alertname === 'PlatformServicesAtRisk' && @.labels.severity === 'critical') || (@.labels.alertname === 'VolumeAtRisk' && @.labels.severity === 'critical'))]",
+  ];
+
+  const metalK8sAlerts = getChildrenAlerts(childrenJsonPath, alerts);
+  expect(metalK8sAlerts.length).toBe(1);
 });

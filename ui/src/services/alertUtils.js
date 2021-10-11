@@ -1,4 +1,5 @@
 //@flow
+import jp from 'jsonpath';
 import {
   STATUS_CRITICAL,
   STATUS_WARNING,
@@ -27,6 +28,7 @@ export type Alert = {
   originalAlert: PrometheusAlert,
   summary?: string,
   documentationUrl?: string,
+  childrenJsonPath?: string,
 };
 
 // Return boolean if the two alerts have the same labels but different severity
@@ -104,6 +106,7 @@ export const formatActiveAlerts = (alerts: Array<PrometheusAlert>): Alert[] => {
             alert.annotations.selectors.split(',')) ||
           [],
       },
+      childrenJsonPath: alert.annotations.childrenJsonPath || '',
       originalAlert: alert,
     };
   });
@@ -198,36 +201,61 @@ Format the alerts from Loki.
 We need to remove the alerts with the same fingerprint and starts date, because the same alert may be retriggered by multiple times.
 */
 export const formatHistoryAlerts = (streamValues: StreamValue): Alert[] => {
-  const alerts = streamValues[0]?.values.reduce((agg, value) => {
-    const alert = JSON.parse(value[1]);
+  const alerts =
+    streamValues[0] &&
+    streamValues[0].values.reduce((agg, value) => {
+      const alert = JSON.parse(value[1]);
 
-    return {
-      ...agg,
-      [`${alert.fingerprint}-${alert.startsAt}`]: {
-        id: alert.fingerprint,
-        summary: (alert.annotations && alert.annotations.summary) || '',
-        description: alert.annotations.description || alert.annotations.message,
-        startsAt: alert.startsAt,
-        endsAt:
-          alert.status === 'firing' ? null : alert.endsAt,
-        severity: alert.labels.severity,
-        documentationUrl:
-          (alert.annotations && alert.annotations.runbook_url) || '',
-        labels: {
-          ...alert.labels,
-          parents:
-            (alert.annotations.parents &&
-              alert.annotations.parents.split(',')) ||
-            [],
-          selectors:
-            (alert.annotations.selectors &&
-              alert.annotations.selectors.split(',')) ||
-            [],
+      return {
+        ...agg,
+        [`${alert.fingerprint}-${alert.startsAt}`]: {
+          id: alert.fingerprint,
+          summary: (alert.annotations && alert.annotations.summary) || '',
+          description:
+            alert.annotations.description || alert.annotations.message,
+          startsAt: alert.startsAt,
+          endsAt: alert.status === 'firing' ? null : alert.endsAt,
+          severity: alert.labels.severity,
+          documentationUrl:
+            (alert.annotations && alert.annotations.runbook_url) || '',
+          labels: {
+            ...alert.labels,
+            parents:
+              (alert.annotations.parents &&
+                alert.annotations.parents.split(',')) ||
+              [],
+            selectors:
+              (alert.annotations.selectors &&
+                alert.annotations.selectors.split(',')) ||
+              [],
+          },
+          originalAlert: alert,
         },
-        originalAlert: alert,
-      },
-    };
-  }, {});
+      };
+    }, {});
   //$flow-disable-line Array<mixed> incompatible with Alert[];
-  return Object.values(alerts||{});
+  return Object.values(alerts || {});
+};
+
+// recursively to get all the atomic alerts in the build alert tree relate to MetalK8s
+export const getChildrenAlerts = (
+  jsonPaths: string[], // children json path, the first one should be the clusterDegarded or clusterAtRisk
+  allAlerts: Alert[],
+) => {
+  if (!jsonPaths.length) return [];
+  const nodeAlerts = jsonPaths.flatMap((jsonPath) => {
+    if (jsonPath) {
+      return jp.query(allAlerts, jsonPath);
+    }
+    return [];
+  });
+  const jsonPathArr = [];
+  nodeAlerts.forEach((alert) => {
+    if (alert.childrenJsonPath) {
+      jsonPathArr.push(alert.childrenJsonPath);
+    }
+  });
+  // filter out the logical alerts
+  const atomicAlerts = nodeAlerts.filter((alert) => !alert.childrenJsonPath);
+  return [...atomicAlerts, ...getChildrenAlerts(jsonPathArr, allAlerts)];
 };

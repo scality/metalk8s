@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { TextBadge } from './style/CommonLayoutStyle';
 import { useIntl } from 'react-intl';
@@ -12,8 +12,9 @@ import {
   EmphaseText,
   SecondaryText,
 } from '@scality/core-ui/dist/components/text/Text.component';
-import { useAlerts } from '../containers/AlertProvider';
+import { useAlertLibrary, useAlerts } from '../containers/AlertProvider';
 import SpacedBox from '@scality/core-ui/dist/components/spacedbox/SpacedBox';
+import { getChildrenAlerts } from '../services/alertUtils';
 
 const AlertsContainer = styled.div`
   display: flex;
@@ -46,16 +47,18 @@ const DashboardAlerts = () => {
     (view) => view.view.path === '/alerts',
   );
   const intl = useIntl();
+  const alertsLibrary = useAlertLibrary();
+  const topLevelAlerts = useAlerts(alertsLibrary.getPlatformAlertSelectors());
   const alerts = useAlerts({});
-  const leafAlerts = useMemo(
-    () => alerts?.alerts.filter((alert) => !alert.labels.children) || [],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(alerts?.alerts)],
+  // in MetalK8s dashboard, we want to display the number of the alerts only for metalk8s namespace
+  const metalk8sAtomicAlerts = getChildrenAlerts(
+    topLevelAlerts.alerts.map((alert) => alert.childrenJsonPath) || [],
+    alerts.alerts,
   );
-  const criticalAlerts = leafAlerts.filter(
+  const criticalAlerts = metalk8sAtomicAlerts.filter(
     (alert) => alert.severity === 'critical',
   );
-  const warningAlerts = leafAlerts.filter(
+  const warningAlerts = metalk8sAtomicAlerts.filter(
     (alert) => alert.severity === 'warning',
   );
   const totalAlerts = criticalAlerts.length + warningAlerts.length;
