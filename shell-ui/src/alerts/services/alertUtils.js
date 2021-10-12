@@ -110,7 +110,7 @@ export const formatActiveAlerts = (alerts: Array<PrometheusAlert>): Alert[] => {
             alert.annotations.selectors.split(',')) ||
           [],
       },
-      childrenJsonPath: alert.annotations.childrenJsonPath || '',
+      childrenJsonPath: alert.annotations && alert.annotations.childrenJsonPath,
       originalAlert: alert,
     };
   });
