@@ -84,6 +84,9 @@ def get_storage_classes(kubeconfig=None):
         storageclass["metadata"]["deletion_timestamp"] = iso_timestamp_converter(
             storageclass["metadata"]["deletion_timestamp"]
         )
+        for managed_field in storageclass["metadata"]["managed_fields"]:
+            managed_field["time"] = iso_timestamp_converter(managed_field["time"])
+
         storage_classes[storageclass["metadata"]["name"]] = storageclass
 
     return storage_classes
