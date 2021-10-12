@@ -13,7 +13,6 @@ import { compareHealth } from './utils';
 export type Health = 'healthy' | 'warning' | 'critical' | 'none';
 export type FilterLabels = {
   [labelName: string]: string | string[],
-  parents?: string[],
   selectors?: string[],
 };
 
@@ -98,9 +97,6 @@ export const formatActiveAlerts = (alerts: Array<PrometheusAlert>): Alert[] => {
         (alert.annotations && alert.annotations.runbook_url) || '',
       labels: {
         ...alert.labels,
-        parents:
-          (alert.annotations.parents && alert.annotations.parents.split(',')) ||
-          [],
         selectors:
           (alert.annotations.selectors &&
             alert.annotations.selectors.split(',')) ||
@@ -220,10 +216,6 @@ export const formatHistoryAlerts = (streamValues: StreamValue): Alert[] => {
             (alert.annotations && alert.annotations.runbook_url) || '',
           labels: {
             ...alert.labels,
-            parents:
-              (alert.annotations.parents &&
-                alert.annotations.parents.split(',')) ||
-              [],
             selectors:
               (alert.annotations.selectors &&
                 alert.annotations.selectors.split(',')) ||
