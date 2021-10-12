@@ -72,9 +72,11 @@ const GraphGrid = styled.div`
     grid-area: wpbandwidth;
   }
   padding-left: ${spacing.sp12};
-  .sc-tabs-item-content {
-    overflow: scroll;
-  }
+  width: 100%;
+  height: calc(
+    100vh - 48px - 2.857rem - 40px - 2.286rem
+  ); //100vh - navbar height - tab height - padding - action container height
+  overflow-y: auto;
 `;
 
 const MetricsToggleWrapper = styled.div`

@@ -47,9 +47,10 @@ const GraphGrid = styled.div`
     grid-area: iops;
   }
   padding-left: ${spacing.sp12};
-  .sc-tabs-item-content {
-    overflow: scroll;
-  }
+  height: calc(
+    100vh - 48px - 2.857rem - 40px - 2.286rem
+  ); //100vh - navbar height - tab height - padding - action container height
+  overflow-y: auto;
 `;
 
 // No data rendering should be extracted to an common style
