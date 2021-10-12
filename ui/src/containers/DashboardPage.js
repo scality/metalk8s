@@ -94,17 +94,14 @@ const DashboardPage = () => {
         <div className="health">
           <DashboardGlobalHealth />
         </div>
-        <div
-          className="inventory"
-          style={{ height: '100%', overflowY: 'auto' }}
-        >
+        <DashboardScrollableArea className="inventory">
           <DashboardInventory />
           <DashboardServices />
-        </div>
+        </DashboardScrollableArea>
 
-        <div className="network" style={{ height: '100%', overflowY: 'auto' }}>
+        <DashboardScrollableArea className="network">
           <DashboardNetwork />
-        </div>
+        </DashboardScrollableArea>
 
         <div className="metrics">
           <DashboardMetrics />
