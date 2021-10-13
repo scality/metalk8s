@@ -29,20 +29,6 @@ it('should return false when filters has a different property', () => {
   expect(result).toEqual(false);
 });
 
-it('should return false when the labels do not have the parents label', () => {
-  const labels = {
-    node: 'node1',
-    alertname: 'Madalyn',
-  };
-  const filters = {
-    node: 'node1',
-    alertname: 'Madalyn',
-    parents: ['John'],
-  };
-  const result = isAlertSelected(labels, filters);
-  expect(result).toEqual(false);
-});
-
 it('should return true when selectors is the subset of labels', () => {
   const labels = { node: 'node1', alertname: 'Madalyn' };
   const filters = { node: 'node1' };
@@ -55,21 +41,6 @@ it('should return true when filters has more possible values', () => {
   const filters = {
     node: 'node1',
     alertname: ['Madalyn', 'Robin'],
-  };
-  const result = isAlertSelected(labels, filters);
-  expect(result).toEqual(true);
-});
-
-it('should return true when filters has at least one parents label', () => {
-  const labels = {
-    node: 'node1',
-    alertname: 'Madalyn',
-    parents: ['John', 'Jack'],
-  };
-  const filters = {
-    node: 'node1',
-    alertname: 'Madalyn',
-    parents: ['John'],
   };
   const result = isAlertSelected(labels, filters);
   expect(result).toEqual(true);
@@ -219,7 +190,6 @@ it('should format the history alert', () => {
         prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
         service: 'prometheus-operator-kube-etcd',
         severity: 'warning',
-        parents: [],
         selectors: [],
       },
       originalAlert: {
