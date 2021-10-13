@@ -117,7 +117,7 @@ class Relationship(enum.Enum):
         elif self == self.ANY:
             join_by = " or "
 
-        prefix = f"sum by ({', '.join(group_by)}) " if group_by else ""
+        prefix = f"sum by ({', '.join(group_by)}) " if group_by else "sum"
         children_query = join_by.join(child.query for child in children)
         return f"{prefix}({children_query}) >= 1"
 

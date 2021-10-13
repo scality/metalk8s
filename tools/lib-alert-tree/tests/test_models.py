@@ -230,7 +230,7 @@ class TestDerivedAlert:
             "someannotation": "othervalue",
         }
         assert test_alert.alert_rule.expr == (
-            "(ALERTS{alertname='Child1', alertstate='firing', severity='warning'} "
+            "sum(ALERTS{alertname='Child1', alertstate='firing', severity='warning'} "
             "or ALERTS{alertname='Child2', alertstate='firing', severity='critical'}) "
             ">= 1"
         )

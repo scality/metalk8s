@@ -206,9 +206,10 @@ def test_gen_rule():
                   || (@.labels.alertname === 'Child2' && @.labels.severity === 'critical')
                   || (@.labels.alertname === 'Parent1' && @.labels.severity === 'warning'))]
                 summary: The root is degraded.
-              expr: (ALERTS{alertname='Child1', alertstate='firing', severity='warning', somelabel=~'somevalue'}
-                or ALERTS{alertname='Child2', alertstate='firing', severity='critical'} or
-                ALERTS{alertname='Parent1', alertstate='firing', severity='warning'}) >= 1
+              expr: sum(ALERTS{alertname='Child1', alertstate='firing', severity='warning',
+                somelabel=~'somevalue'} or ALERTS{alertname='Child2', alertstate='firing',
+                severity='critical'} or ALERTS{alertname='Parent1', alertstate='firing', severity='warning'})
+                >= 1
               for: 1m
               labels:
                 severity: warning
@@ -218,8 +219,9 @@ def test_gen_rule():
                 childrenJsonPath: $[?((@.labels.alertname === 'Child3' && @.labels.severity
                   === 'warning') || (@.labels.alertname === 'Child4' && @.labels.severity
                   === 'warning'))]
-              expr: (ALERTS{alertname='Child3', alertstate='firing', severity='warning'} or
-                ALERTS{alertname='Child4', alertstate='firing', severity='warning'}) >= 1
+              expr: sum(ALERTS{alertname='Child3', alertstate='firing', severity='warning'}
+                or ALERTS{alertname='Child4', alertstate='firing', severity='warning'}) >=
+                1
               for: 1m
               labels:
                 severity: warning
@@ -232,7 +234,7 @@ def test_gen_rule():
                   === 'critical') || (@.labels.alertname === 'Child4' && @.labels.severity
                   === 'critical'))]
                 summary: The root is at risk.
-              expr: (ALERTS{alertname='Child3', alertstate='firing', severity='critical'}
+              expr: sum(ALERTS{alertname='Child3', alertstate='firing', severity='critical'}
                 or ALERTS{alertname='Child4', alertstate='firing', severity='critical'}) >=
                 1
               for: 1m
