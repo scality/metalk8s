@@ -50,6 +50,13 @@
   PR[#3501](https://github.com/scality/metalk8s/pull/3501))
 
 ## Release 2.10.4 (in development)
+## Bug fixes
+
+- [#3564](https://github.com/scality/metalk8s/issues/3564) - Fix a bug that
+  prevents running salt states using salt-ssh if the target node has some
+  MetalK8s volumes
+  (PR[#3566](https://github.com/scality/metalk8s/pull/3566))
+
 ## Release 2.10.3
 ### Enhancements
 
