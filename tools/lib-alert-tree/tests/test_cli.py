@@ -29,6 +29,9 @@ ROOT_W, ROOT_C = severity_pair(
 )
 
 EXAMPLE_CLI = cli.generate_cli({"root-degraded": ROOT_W, "root-at-risk": ROOT_C})
+EXAMPLE_CLI_WITH_CUSTOM_LABELS = cli.generate_cli(
+    {"root-degraded": ROOT_W, "root-at-risk": ROOT_C}, {"hello": "world"}
+)
 
 
 def test_show_with_colors():
@@ -228,3 +231,28 @@ def test_gen_rule():
         """
         ).lstrip()
     )
+
+
+def test_gen_rule_with_custom_labels():
+    """Check how the 'gen-rule' command works with custom labels."""
+    # pylint: disable=line-too-long
+    outfile = tempfile.mktemp(suffix=".yaml")
+    runner = CliRunner()
+    result = runner.invoke(
+        EXAMPLE_CLI_WITH_CUSTOM_LABELS,
+        ["gen-rule", "--name", "test.rules", "--namespace", "my-ns", "--out", outfile],
+    )
+    assert result.stdout == ""
+    assert result.exit_code == 0
+
+    with open(outfile, "r", encoding="utf-8") as handle:
+        output = handle.read()
+
+    output_lines = output.splitlines()
+    meta_lineno = output_lines.index("metadata:")
+    assert output_lines[meta_lineno : meta_lineno + 4] == [
+        "metadata:",
+        "  labels:",
+        "    hello: world",
+        "  name: test.rules",  # Just checking that we don't have other labels after ours
+    ]

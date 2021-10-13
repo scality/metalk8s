@@ -40,7 +40,10 @@ ROOT_WARNING, ROOT_CRITICAL = severity_pair(
     duration="5m",
 )
 
-main = generate_cli(roots={"warning": ROOT_WARNING, "critical": ROOT_CRITICAL})
+main = generate_cli(
+    roots={"warning": ROOT_WARNING, "critical": ROOT_CRITICAL},
+    prometheus_rule_labels={"metalk8s.scality.com/monitor": ""},
+)
 
 if __name__ == "__main__":
     main()
