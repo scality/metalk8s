@@ -3,3 +3,4 @@ include:
   - metalk8s.kubernetes.sa
   - metalk8s.addons.nginx-ingress.ca
   - metalk8s.addons.dex.ca
+  - metalk8s.backup.certs.ca

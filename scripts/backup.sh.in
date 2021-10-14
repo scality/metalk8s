@@ -12,7 +12,8 @@ TAR_OPTS=(
     "--atime-preserve"
     "--preserve-permissions"
 )
-BACKUP_ARCHIVE="/var/lib/metalk8s/backup_$(date -u +%Y%m%d_%H%M%S).tar.gz"
+BACKUP_ARCHIVE="/var/lib/metalk8s/backups/$(date -u +%Y%m%d_%H%M%S).tar.gz"
+REPLICATION=1
 
 _usage() {
     echo "$(basename "$0") [options]"
@@ -26,15 +27,18 @@ while (( "$#" )); do
   case "$1" in
     -v|--verbose)
       VERBOSE=1
-      shift
       ;;
     -l|--log-file)
       LOGFILE="$2"
-      shift 2
+      shift
       ;;
     -b|--backup-file)
       BACKUP_ARCHIVE="$2"
-      shift 2
+      shift
+      ;;
+    # Disable the backup replication on other master nodes
+    -n|--no-replication)
+      REPLICATION=0
       ;;
     *) # unsupported flags
       echo "Error: Unsupported flag $1" >&2
@@ -42,6 +46,7 @@ while (( "$#" )); do
       exit 1
       ;;
   esac
+  shift
 done
 
 TMPFILES=$(mktemp -d)
@@ -62,69 +67,9 @@ cleanup() {
 
 trap cleanup EXIT
 
-run_quiet() {
-    local name=$1
-    shift 1
-
-    echo -n "> ${name}..."
-    local start
-    start=$(date +%s)
-    set +e
-    "$@" 2>&1 | tee -ia "${LOGFILE}" > "${TMPFILES}/out"
-    local RC=$?
-    set -e
-    local end
-    end=$(date +%s)
-
-    local duration=$(( end - start ))
-
-    if [ $RC -eq 0 ]; then
-        echo " done [${duration}s]"
-    else
-        echo " fail [${duration}s]"
-        cat >/dev/stderr << EOM
-
-Failure while running step '${name}'
-
-Command: $@
-
-Output:
-
-<< BEGIN >>
-EOM
-        cat "${TMPFILES}/out" > /dev/stderr
-
-        cat >/dev/stderr << EOM
-<< END >>
-
-This script will now exit
-
-EOM
-
-        exit 1
-    fi
-}
-
-run_verbose() {
-    local name=$1
-    shift 1
-
-    echo "> ${name}..."
-    "$@"
-}
-
-run() {
-    if [ "$VERBOSE" -eq 1 ]; then
-        run_verbose "${@}"
-    else
-        run_quiet "${@}"
-    fi
-}
-
-die() {
-    echo 1>&2 "$@"
-    return 1
-}
+BASE_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+# shellcheck disable=SC1090
+. "$BASE_DIR"/common.sh
 
 _save_cp() {
     local -r src="$(readlink -f "$1")"
@@ -225,7 +170,16 @@ EOF
     tar "${TAR_OPTS[@]}" -C "$BACKUP_DIR" -cz -f "$BACKUP_ARCHIVE" ./
 }
 
+replicate_archives() {
+    salt_master_exec=(crictl exec -i "$(get_salt_container)")
+
+    "${salt_master_exec[@]}" salt-run --state-output=mixed state.orchestrate \
+	metalk8s.orchestrate.backup.replication \
+	saltenv=metalk8s-@@VERSION
+}
+
 run "Backing up MetalK8s configurations" backup_metalk8s_conf
 run "Backing up CAs certificates and keys" backup_cas
 run "Backing up etcd data" backup_etcd
 run "Creating backup archive '$BACKUP_ARCHIVE'" create_archive
+(( REPLICATION )) && run "Replicating backup archives on master nodes" replicate_archives

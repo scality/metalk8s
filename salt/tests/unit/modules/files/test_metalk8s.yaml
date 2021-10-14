@@ -425,3 +425,18 @@ configure_archive:
     invalid_path: True
     raises: True
     result: Invalid archive path
+
+backup_node:
+  # 0. Ok - Backup succeed
+  - archives: &backup_node_archives
+      metalk8s-2.10.0:
+        path: /tmp
+    result: Backup successfully generated
+  # 1. Nok - Backup script failed
+  - archives: *backup_node_archives
+    raises: True
+    result: "Failed to run /tmp/backup.sh: Boom!"
+  # 2. Nok - No such archive for this MetalK8s version
+  - archives: {}
+    raises: True
+    result: No MetalK8s archive found for version 2.10.0

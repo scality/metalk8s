@@ -137,6 +137,25 @@ metalk8s:
                           active: true
                           mountpoint: /srv/scality/example-solution-1.0.0
 
+
+  backup:
+    deployed:
+      secret-credentials.sls:
+        _cases:
+          "No existing Secret (default)": {}
+          "Secret already exists":
+            k8s_overrides:
+              add:
+                - kind: Secret
+                  apiVersion: v1
+                  metadata:
+                    name: backup-credentials
+                    namespace: kube-system
+                  type: kubernetes.io/basic-auth
+                  data:
+                    username: YmFja3Vw
+                    password: UmpCVTdPRkM0NXpnYkk1Um9YUHR3eW5RcWxmZ3J2
+
   container-engine:
     containerd:
       files:
@@ -272,6 +291,15 @@ metalk8s:
         "Compact cluster": &orch_compact_arch
           mode: master
           architecture: compact
+
+    backup:
+      files:
+        job.yaml.j2:
+          _cases:
+            "Create job manifest for a node":
+              extra_context:
+                node: master-1
+                image: registry/some-image-name:tag
 
     register_etcd.sls:
       _cases:
