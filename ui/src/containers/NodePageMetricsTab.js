@@ -72,10 +72,8 @@ const GraphGrid = styled.div`
     grid-area: wpbandwidth;
   }
   padding-left: ${spacing.sp12};
-  width: 100%;
-  height: calc(
-    100vh - 48px - 2.857rem - 40px - 2.286rem
-  ); //100vh - navbar height - tab height - padding - action container height
+  /* 100vh - navbar height - tab height - padding - action container height */
+  height: calc(100vh - 48px - 2.857rem - 40px - 2.286rem);
   overflow-y: auto;
 `;
 
