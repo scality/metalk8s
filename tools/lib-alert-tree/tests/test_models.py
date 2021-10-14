@@ -91,77 +91,89 @@ def test_existing_alert_severity_check():
     assert models.ExistingAlert("test").labels.get("severity") is None
 
 
-class TestRelationship:
-    """Check the 'Relationship' logic."""
-
-    cases = [
+@pytest.mark.parametrize(
+    "relationship,children,expected_promql,expected_jsonpath",
+    [
         (
             models.Relationship.ALL,
             [models.ExistingAlert("test")],
-            "(ALERTS{alertname='test', alertstate='firing'}) >= 1",
+            "sum(ALERTS{alertname='test', alertstate='firing'}) >= 1",
             "$[?((@.labels.alertname === 'test'))]",
         ),
         (
             models.Relationship.ALL,
             [models.ExistingAlert("test1"), models.ExistingAlert("test2")],
-            "(ALERTS{alertname='test1', alertstate='firing'} and "
-            "ALERTS{alertname='test2', alertstate='firing'}) >= 1",
-            "$[?((@.labels.alertname === 'test1') && "
-            "(@.labels.alertname === 'test2'))]",
-        ),
-        (
-            models.Relationship.ANY,
-            [models.ExistingAlert("test")],
-            "(ALERTS{alertname='test', alertstate='firing'}) >= 1",
-            "$[?((@.labels.alertname === 'test'))]",
-        ),
-        (
-            models.Relationship.ANY,
-            [models.ExistingAlert("test1"), models.ExistingAlert("test2")],
-            "(ALERTS{alertname='test1', alertstate='firing'} or "
+            "sum(ALERTS{alertname='test1', alertstate='firing'} and "
             "ALERTS{alertname='test2', alertstate='firing'}) >= 1",
             "$[?((@.labels.alertname === 'test1') || "
             "(@.labels.alertname === 'test2'))]",
         ),
-    ]
-
-    @pytest.mark.parametrize("relationship,children,expected_promql,expected_jsonpath", cases)
-    @staticmethod
-    def test_without_group_by(relationship, children, expected_promql, expected_jsonpath):
-        """Verify the behavior of 'Relationship' for non group_by cases."""
-        assert (
-            relationship.build_query(children)
-            == expected_promql
-        )
-        assert (
-            relationship.build_json_path(children)
-            == expected_jsonpath
-        )
-
-
-    @staticmethod
-    def test_all_with_group_by():
-        """Verify the behavior of 'Relationship.ALL' for group_by cases."""
-
-        assert models.Relationship.ALL.build_query(
+        (
+            models.Relationship.ANY,
+            [models.ExistingAlert("test")],
+            "sum(ALERTS{alertname='test', alertstate='firing'}) >= 1",
+            "$[?((@.labels.alertname === 'test'))]",
+        ),
+        (
+            models.Relationship.ANY,
             [models.ExistingAlert("test1"), models.ExistingAlert("test2")],
-            group_by=["instance"],
-        ) == (
-            "sum by (instance) (ALERTS{alertname='test1', alertstate='firing'} "
-            "and ALERTS{alertname='test2', alertstate='firing'}) >= 1"
-        )
+            "sum(ALERTS{alertname='test1', alertstate='firing'} or "
+            "ALERTS{alertname='test2', alertstate='firing'}) >= 1",
+            "$[?((@.labels.alertname === 'test1') || "
+            "(@.labels.alertname === 'test2'))]",
+        ),
+    ],
+)
+def test_relationship_without_group_by(
+    relationship, children, expected_promql, expected_jsonpath
+):
+    """Verify the behavior of 'Relationship' for non group_by cases."""
+    assert relationship.build_query(children) == expected_promql
+    assert relationship.build_json_path(children) == expected_jsonpath
 
-    @staticmethod
-    def test_any():
-        """Verify the behavior of 'Relationship.ANY' for group_by cases."""
 
-        assert models.Relationship.ANY.build_query(
+@pytest.mark.parametrize(
+    "relationship,children,expected_promql,expected_jsonpath",
+    [
+        (
+            models.Relationship.ALL,
             [models.ExistingAlert("test1"), models.ExistingAlert("test2")],
+            "sum by (instance) (ALERTS{alertname='test1', alertstate='firing'} and "
+            "ALERTS{alertname='test2', alertstate='firing'}) >= 1",
+            "$[?(((@.labels.alertname === 'test1') || "
+            "(@.labels.alertname === 'test2')) && "
+            "(@.labels.instance === '{{ $labels.instance }}'))]",
+        ),
+        (
+            models.Relationship.ANY,
+            [models.ExistingAlert("test1"), models.ExistingAlert("test2")],
+            "sum by (instance) (ALERTS{alertname='test1', alertstate='firing'} or "
+            "ALERTS{alertname='test2', alertstate='firing'}) >= 1",
+            "$[?(((@.labels.alertname === 'test1') || "
+            "(@.labels.alertname === 'test2')) && "
+            "(@.labels.instance === '{{ $labels.instance }}'))]",
+        ),
+    ],
+)
+def test_relationship_with_group_by(
+    relationship, children, expected_promql, expected_jsonpath
+):
+    """Verify the behavior of 'Relationship' for group_by cases."""
+
+    assert (
+        relationship.build_query(
+            children,
             group_by=["instance"],
-        ) == (
-            "sum by (instance) (ALERTS{alertname='test1', alertstate='firing'} "
-            "or ALERTS{alertname='test2', alertstate='firing'}) >= 1"
         )
+        == expected_promql
+    )
+    assert (
+        relationship.build_json_path(
+            children,
+            group_by=["instance"],
+        )
+        == expected_jsonpath
+    )
 
 
 class TestDerivedAlert:

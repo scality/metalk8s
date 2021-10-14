@@ -121,13 +121,17 @@ class Relationship(enum.Enum):
         children_query = join_by.join(child.query for child in children)
         return f"{prefix}({children_query}) >= 1"
 
-    def build_json_path(self, children):
+    @staticmethod
+    def build_json_path(children, group_by=None):
         """Build a JSON Path to retrieve alert children."""
-        if self == self.ALL:
-            join_by = " && "
-        elif self == self.ANY:
-            join_by = " || "
-        json_path_filters = join_by.join(child.json_path for child in children)
+        json_path_filters = " || ".join(child.json_path for child in children)
+
+        if group_by:
+            group_filters = " && ".join(
+                f"@.labels.{key} === '{{{{ $labels.{key} }}}}'" for key in group_by
+            )
+            return f"$[?(({json_path_filters}) && ({group_filters}))]"
+
         return f"$[?({json_path_filters})]"
 
 
@@ -173,7 +177,9 @@ class DerivedAlert(BaseAlert):
         self.params.setdefault("annotations", {}).update(
             {
                 "children": ", ".join(map(str, self.children)),
-                "childrenJsonPath": self.relationship.build_json_path(self.children),
+                "childrenJsonPath": self.relationship.build_json_path(
+                    self.children, self.group_by
+                ),
             }
         )
         return prometheus.AlertRule(
