@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import styled from 'styled-components';
 import { TextBadge } from './style/CommonLayoutStyle';
 import { useIntl } from 'react-intl';
@@ -51,10 +51,14 @@ const DashboardAlerts = () => {
   const topLevelAlerts = useAlerts(alertsLibrary.getPlatformAlertSelectors());
   const alerts = useAlerts({});
   // in MetalK8s dashboard, we want to display the number of the alerts only for metalk8s namespace
-  const metalk8sAtomicAlerts = getChildrenAlerts(
-    topLevelAlerts.alerts.map((alert) => alert.childrenJsonPath) || [],
-    alerts.alerts,
-  );
+  const metalk8sAtomicAlerts = useMemo(() => {
+    if (topLevelAlerts?.alerts?.length && alerts?.alerts?.length)
+      return getChildrenAlerts(
+        topLevelAlerts.alerts.map((alert) => alert.childrenJsonPath) || [],
+        alerts.alerts,
+      );
+    else return [];
+  }, [JSON.stringify(alerts.alerts), JSON.stringify(topLevelAlerts.alerts)]);
   const criticalAlerts = metalk8sAtomicAlerts.filter(
     (alert) => alert.severity === 'critical',
   );
