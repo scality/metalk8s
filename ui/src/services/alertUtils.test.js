@@ -4,6 +4,7 @@ import {
   filterAlerts,
   getHealthStatus,
   formatHistoryAlerts,
+  getChildrenAlerts,
 } from './alertUtils';
 import { alerts } from './alertUtilsData';
 
@@ -28,20 +29,6 @@ it('should return false when filters has a different property', () => {
   expect(result).toEqual(false);
 });
 
-it('should return false when the labels do not have the parents label', () => {
-  const labels = {
-    node: 'node1',
-    alertname: 'Madalyn',
-  };
-  const filters = {
-    node: 'node1',
-    alertname: 'Madalyn',
-    parents: ['John'],
-  };
-  const result = isAlertSelected(labels, filters);
-  expect(result).toEqual(false);
-});
-
 it('should return true when selectors is the subset of labels', () => {
   const labels = { node: 'node1', alertname: 'Madalyn' };
   const filters = { node: 'node1' };
@@ -54,21 +41,6 @@ it('should return true when filters has more possible values', () => {
   const filters = {
     node: 'node1',
     alertname: ['Madalyn', 'Robin'],
-  };
-  const result = isAlertSelected(labels, filters);
-  expect(result).toEqual(true);
-});
-
-it('should return true when filters has at least one parents label', () => {
-  const labels = {
-    node: 'node1',
-    alertname: 'Madalyn',
-    parents: ['John', 'Jack'],
-  };
-  const filters = {
-    node: 'node1',
-    alertname: 'Madalyn',
-    parents: ['John'],
   };
   const result = isAlertSelected(labels, filters);
   expect(result).toEqual(true);
@@ -218,7 +190,6 @@ it('should format the history alert', () => {
         prometheus: 'metalk8s-monitoring/prometheus-operator-prometheus',
         service: 'prometheus-operator-kube-etcd',
         severity: 'warning',
-        parents: [],
         selectors: [],
       },
       originalAlert: {
@@ -248,4 +219,45 @@ it('should format the history alert', () => {
     },
   ];
   expect(result).toEqual(historyAlert);
+});
+
+//test getChildrenAlerts()
+it('filters the alerts and only get MetalK8s alerts', () => {
+  const alerts = [
+    {
+      id: '1',
+      severity: 'critical',
+      labels: {
+        alertname: 'VolumeAtRisk',
+        severity: 'critical',
+      },
+      childrenJsonPath:
+        "$[?((@.labels.alertname === 'KubePersistentVolumeFillingUp' && @.labels.severity === 'critical') || (@.labels.alertname === 'KubePersistentVolumeErrors' && @.labels.severity === 'critical'))]",
+    },
+    {
+      id: '2',
+      severity: 'critical',
+      labels: {
+        alertname: 'KubePersistentVolumeFillingUp',
+        severity: 'critical',
+      },
+      childrenJsonPath: '',
+    },
+    {
+      id: '3',
+      severity: 'critical',
+      labels: {
+        alertname: 'ClusterAtRisk',
+        severity: 'critical',
+      },
+      childrenJsonPath:
+        "$[?((@.labels.alertname === 'NodeAtRisk' && @.labels.severity === 'critical') || (@.labels.alertname === 'PlatformServicesAtRisk' && @.labels.severity === 'critical') || (@.labels.alertname === 'VolumeAtRisk' && @.labels.severity === 'critical'))]",
+    },
+  ];
+  const childrenJsonPath = [
+    "$[?((@.labels.alertname === 'NodeAtRisk' && @.labels.severity === 'critical') || (@.labels.alertname === 'PlatformServicesAtRisk' && @.labels.severity === 'critical') || (@.labels.alertname === 'VolumeAtRisk' && @.labels.severity === 'critical'))]",
+  ];
+
+  const metalK8sAlerts = getChildrenAlerts(childrenJsonPath, alerts);
+  expect(metalK8sAlerts.length).toBe(1);
 });

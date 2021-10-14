@@ -12,13 +12,13 @@ import {
   EmphaseText,
   SecondaryText,
 } from '@scality/core-ui/dist/components/text/Text.component';
-import { useAlerts } from '../containers/AlertProvider';
+import { useAlertLibrary, useAlerts } from '../containers/AlertProvider';
 import SpacedBox from '@scality/core-ui/dist/components/spacedbox/SpacedBox';
+import { getChildrenAlerts } from '../services/alertUtils';
 
 const AlertsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
 `;
 
 const BadgesContainer = styled.div`
@@ -26,10 +26,6 @@ const BadgesContainer = styled.div`
   & > div {
     margin-right: ${spacing.sp16};
   }
-`;
-
-const TitleContainer = styled.div`
-  width: 100%;
 `;
 
 const Link = styled.div`
@@ -51,30 +47,36 @@ const DashboardAlerts = () => {
     (view) => view.view.path === '/alerts',
   );
   const intl = useIntl();
+  const alertsLibrary = useAlertLibrary();
+  const topLevelAlerts = useAlerts(alertsLibrary.getPlatformAlertSelectors());
   const alerts = useAlerts({});
-  const leafAlerts = useMemo(
-    () => alerts?.alerts.filter((alert) => !alert.labels.children) || [],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(alerts?.alerts)],
-  );
-  const criticalAlerts = leafAlerts.filter(
+  // in MetalK8s dashboard, we want to display the number of the alerts only for metalk8s namespace
+  const metalk8sAtomicAlerts = useMemo(() => {
+    if (topLevelAlerts?.alerts?.length && alerts?.alerts?.length)
+      return getChildrenAlerts(
+        topLevelAlerts.alerts.map((alert) => alert.childrenJsonPath) || [],
+        alerts.alerts,
+      );
+    else return [];
+  }, [JSON.stringify(alerts.alerts), JSON.stringify(topLevelAlerts.alerts)]);
+  const criticalAlerts = metalk8sAtomicAlerts.filter(
     (alert) => alert.severity === 'critical',
   );
-  const warningAlerts = leafAlerts.filter(
+  const warningAlerts = metalk8sAtomicAlerts.filter(
     (alert) => alert.severity === 'warning',
   );
   const totalAlerts = criticalAlerts.length + warningAlerts.length;
 
   return (
     <AlertsContainer>
-      <TitleContainer>
+      <div>
         <EmphaseText>
           {intl.formatMessage({ id: 'platform_active_alerts' })}
         </EmphaseText>
         <TextBadge variant="infoPrimary" data-testid="all-alert-badge">
           {totalAlerts}
         </TextBadge>
-      </TitleContainer>
+      </div>
       {totalAlerts === 0 ? (
         <SecondaryText>
           {intl.formatMessage({ id: 'no_active_alerts' })}

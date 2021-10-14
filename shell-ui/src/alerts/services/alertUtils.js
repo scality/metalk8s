@@ -11,7 +11,6 @@ export const STATUS_HEALTH = 'healthy';
 export type Health = 'healthy' | 'warning' | 'critical' | 'none';
 export type FilterLabels = {
   [labelName: string]: string | string[],
-  parents?: string[],
   selectors?: string[],
 };
 
@@ -106,14 +105,12 @@ export const formatActiveAlerts = (alerts: Array<PrometheusAlert>): Alert[] => {
       labels: {
         ...alert.labels,
         ...alert.annotations,
-        parents:
-          (alert.annotations.parents && alert.annotations.parents.split(',')) ||
-          [],
         selectors:
           (alert.annotations.selectors &&
             alert.annotations.selectors.split(',')) ||
           [],
       },
+      childrenJsonPath: alert.annotations && alert.annotations.childrenJsonPath,
       originalAlert: alert,
     };
   });
@@ -225,10 +222,6 @@ export const formatHistoryAlerts = (streamValues: StreamValue): Alert[] => {
           (alert.annotations && alert.annotations.runbook_url) || '',
         labels: {
           ...alert.labels,
-          parents:
-            (alert.annotations.parents &&
-              alert.annotations.parents.split(',')) ||
-            [],
           selectors:
             (alert.annotations.selectors &&
               alert.annotations.selectors.split(',')) ||

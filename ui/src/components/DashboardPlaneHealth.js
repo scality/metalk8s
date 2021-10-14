@@ -7,8 +7,7 @@ import {
   useHighestSeverityAlerts,
   highestAlertToStatus,
 } from '../containers/AlertProvider';
-import { PageSubtitle } from './style/CommonLayoutStyle';
-import { PanelActions, NetworkContainer } from './DashboardNetwork';
+import { NetworkContainer } from './DashboardNetwork';
 import HealthItem from './HealthItem.js';
 
 const PlanesContainer = styled.div`
@@ -34,9 +33,6 @@ const DashboardPlaneHealth = () => {
 
   return (
     <NetworkContainer>
-      <PanelActions>
-        <PageSubtitle>Planes</PageSubtitle>
-      </PanelActions>
       <PlanesContainer>
         <PlaneContainer>
           <HealthItem

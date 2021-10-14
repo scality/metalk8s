@@ -82,8 +82,7 @@ export const DashboardScrollableArea = styled.div`
   overflow-y: auto;
   overflow-x: hidden;
   height: 100%;
-  max-height: 100%;
-`
+`;
 
 const DashboardPage = () => {
   return (
@@ -95,13 +94,15 @@ const DashboardPage = () => {
         <div className="health">
           <DashboardGlobalHealth />
         </div>
-        <div className="inventory">
+        <DashboardScrollableArea className="inventory">
           <DashboardInventory />
           <DashboardServices />
-        </div>
-        <div className="network">
+        </DashboardScrollableArea>
+
+        <DashboardScrollableArea className="network">
           <DashboardNetwork />
-        </div>
+        </DashboardScrollableArea>
+
         <div className="metrics">
           <DashboardMetrics />
         </div>

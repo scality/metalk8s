@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useQuery, type UseQueryOptions } from 'react-query';
 import {
   LineTemporalChart,
@@ -32,7 +32,8 @@ const MetricChart = ({
 
   const startTimeRef = useRef(startingTimeISO);
   const chartStartTimeRef = useRef(startingTimeISO); //IMPORTANT: the ref of the previous start time
-  const seriesRef = useRef();
+  const [series, setSeries] = useState([]);
+
   startTimeRef.current = startingTimeISO;
 
   const metricQuery = useQuery(
@@ -60,28 +61,39 @@ const MetricChart = ({
   const isMetricAvgDataLoading = metricAvgQuery.isLoading;
 
   useEffect(() => {
-    if (!isMetricDataLoading && !showAvg) {
+    if (!isMetricDataLoading && !showAvg && metricQuery.data) {
       // single node metrics
       chartStartTimeRef.current = startTimeRef.current;
-      seriesRef.current = getSingleResourceSerie(
-        metricQuery.data,
-        nodeIPAddress.name,
-      );
-    } else if (!isMetricAvgDataLoading && !isMetricDataLoading && showAvg) {
+      setSeries(getSingleResourceSerie(metricQuery.data, nodeIPAddress.name));
+    } else if (
+      !isMetricAvgDataLoading &&
+      !isMetricDataLoading &&
+      showAvg &&
+      metricQuery.data &&
+      metricAvgQuery.data
+    ) {
       // show cluster average
       chartStartTimeRef.current = startTimeRef.current;
-      seriesRef.current = getSingleResourceSerie(
-        metricQuery.data,
-        nodeIPAddress.name,
-        metricAvgQuery.data,
+      setSeries(
+        getSingleResourceSerie(
+          metricQuery.data,
+          nodeIPAddress.name,
+          metricAvgQuery.data,
+        ),
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMetricDataLoading, isMetricAvgDataLoading, showAvg]);
+  }, [
+    isMetricDataLoading,
+    isMetricAvgDataLoading,
+    showAvg,
+    JSON.stringify(metricQuery.data),
+    JSON.stringify(metricAvgQuery.data),
+  ]);
 
   return (
     <LineTemporalChart
-      series={seriesRef.current || []}
+      series={series}
       height={HEIGHT_DEFAULT_CHART}
       title={title}
       startingTimeStamp={Date.parse(chartStartTimeRef.current) / 1000}

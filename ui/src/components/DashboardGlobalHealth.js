@@ -30,6 +30,7 @@ const GlobalHealthContainer = styled.div`
   }
   .healthbar {
     flex: 1 0 40%;
+    max-width: 40%;
   }
   .alerts {
     flex: 1 0 40%;
@@ -39,12 +40,18 @@ const GlobalHealthContainer = styled.div`
     &:not(:first-of-type):before {
       content: '';
       position: relative;
-      margin: auto ${spacing.sp32} auto 0;
+      margin: auto 0;
       width: ${spacing.sp2};
       height: 75px;
       background-color: ${(props) => props.theme.backgroundLevel1};
     }
   }
+`;
+
+const HealthBarContainer = styled.div`
+  flex-direction: column;
+  width: 90%;
+  margin: 0 auto;
 `;
 
 const DashboardGlobalHealth = () => {
@@ -74,7 +81,7 @@ const DashboardGlobalHealth = () => {
         <LargerText>{intl.formatMessage({ id: 'platform' })}</LargerText>
       </div>
       <div className="healthbar">
-        <div style={{ flexDirection: 'column', width: '100%' }}>
+        <HealthBarContainer>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <SpacedBox
               style={{ display: 'flex', alignItems: 'center' }}
@@ -118,33 +125,33 @@ const DashboardGlobalHealth = () => {
               </SpacedBox>
             )}
           </div>
-          <SpacedBox
-              mr={20}
-            >
-          <GlobalHealthBarComponent
-            id={'platform_globalhealth'}
-            alerts={
-              historyAlertStatus === 'error'
-                ? [
-                    {
-                      startsAt: startingTimeISO,
-                      endsAt: currentTimeISO,
-                      severity: 'unavailable',
-                      description:
-                        'Failed to load alert history for the selected period',
-                    },
-                  ]
-                : alerts || []
-            }
-            start={startingTimeISO}
-            end={currentTimeISO}
-          />
+          <SpacedBox mr={20}>
+            <GlobalHealthBarComponent
+              id={'platform_globalhealth'}
+              alerts={
+                historyAlertStatus === 'error'
+                  ? [
+                      {
+                        startsAt: startingTimeISO,
+                        endsAt: currentTimeISO,
+                        severity: 'unavailable',
+                        description:
+                          'Failed to load alert history for the selected period',
+                      },
+                    ]
+                  : alerts || []
+              }
+              start={startingTimeISO}
+              end={currentTimeISO}
+            />
           </SpacedBox>
-        </div>
+        </HealthBarContainer>
       </div>
 
       <div className="alerts">
-        <DashboardAlerts />
+        <SpacedBox ml={24}>
+          <DashboardAlerts />
+        </SpacedBox>
       </div>
     </GlobalHealthContainer>
   );

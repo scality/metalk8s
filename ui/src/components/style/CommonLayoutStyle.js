@@ -20,13 +20,14 @@ export const LeftSideInstanceList = styled.div`
   min-height: 696px;
   width: 49%;
   margin-bottom: 20px;
-  min-width: 450px;
+  min-width: 49%;
 `;
 
 export const RightSidePanel = styled.div`
   flex-direction: column;
   width: 51%;
   margin: 0 ${padding.small} ${padding.small} 1px;
+  min-width: 51%;
 `;
 
 export const NoInstanceSelectedContainer = styled.div`
@@ -142,7 +143,7 @@ export const GraphTitle = styled.div`
 `;
 
 export const GraphWrapper = styled.div`
-  padding-left: 0px;
+  max-width: 94%;
 `;
 
 export const TitlePage = styled.div`
