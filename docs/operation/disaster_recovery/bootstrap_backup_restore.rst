@@ -25,7 +25,7 @@ To create a new backup file, run the following command:
 
     /srv/scality/metalk8s-|version|/backup.sh
 
-Backup archives are stored in /var/lib/metalk8s/.
+Backup archives are stored in /var/lib/metalk8s/backups on all master nodes.
 
 Restoring a Bootstrap Node
 **************************

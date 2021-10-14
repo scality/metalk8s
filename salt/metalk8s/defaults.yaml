@@ -177,6 +177,15 @@ front_proxy:
   cert:
     client_signing_policy: front_proxy_client_policy
 
+backup_server:
+  ca:
+    cert:
+      days_valid: 3650
+    signing_policy:
+      days_valid: 365
+  cert:
+    server_signing_policy: backup_server_policy
+
 dex:
   ca:
     cert:
@@ -290,6 +299,12 @@ certificates:
         renew:
           sls:
             - metalk8s.kubernetes.apiserver.installed
+        watched: False
+      backup-server:
+        path: /etc/metalk8s/pki/backup-server/server.crt
+        renew:
+          sls:
+            - metalk8s.backup.certs.server
         watched: False
       control-plane-ingress:
         path: /etc/metalk8s/pki/nginx-ingress/control-plane-server.crt

@@ -4,8 +4,6 @@ import collections
 import re
 from typing import Any, Dict, Iterator, List, Optional
 
-import pytest
-
 
 APIVersion = str
 Kind = str
@@ -41,7 +39,7 @@ class KubernetesMock:
         try:
             item = self.data[api_version][kind]
         except KeyError:
-            pytest.fail(f"No data in Kubernetes mock for '{api_version}/{kind}'")
+            item = []
         return item
 
     def get(
@@ -53,6 +51,8 @@ class KubernetesMock:
     ) -> Optional[Any]:
         """Retrieve an object from the data store."""
         items = self._get_item_list(api_version, kind)
+        if not items:
+            return None
 
         matchers = [self.Matcher(["metadata", "name"], "=", name)]
         if namespace is not None:

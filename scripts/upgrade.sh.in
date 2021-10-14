@@ -193,7 +193,10 @@ patch_kubesystem_namespace() {
 run "Performing Pre-Upgrade checks" precheck_upgrade
 [ $DRY_RUN -eq 1 ] && exit 0
 
-"$BASE_DIR"/backup.sh
+# NOTE: We use --no-replication flag since the backup-server is not available
+# in the previous version of MetalK8s.
+# This flag can safely be removed in MetalK8s 2.12.
+"$BASE_DIR"/backup.sh --no-replication
 
 run "Upgrading bootstrap" upgrade_bootstrap
 run "Setting cluster version to $DESTINATION_VERSION" patch_kubesystem_namespace

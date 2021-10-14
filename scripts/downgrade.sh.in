@@ -190,4 +190,7 @@ run "Downgrading bootstrap" downgrade_bootstrap
 run "Launching the downgrade" launch_downgrade
 run "Launching the post-downgrade" launch_post_downgrade
 
-"$BASE_DIR"/backup.sh
+# NOTE: We use --no-replication flag since the backup-server is not available
+# in the previous version of MetalK8s
+# This flag can safely be removed in MetalK8s 2.12.
+"$BASE_DIR"/backup.sh --no-replication
