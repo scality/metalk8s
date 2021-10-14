@@ -18,6 +18,17 @@ export function useHistoryAlerts(filters?: FilterLabels) {
     );
   } else if (query.status === 'success') {
     const alerts = filterAlerts(query.data, filters);
+    // sort the history alerts by severity, otherwise alert `ClusterDegraded` may override `ClusterAtRisk`
+    alerts.sort((alertA, alertB) => {
+      if (alertA.severity === 'warning' && alertB.severity === 'critical') {
+        return -1;
+      } else if (
+        alertA.severity === 'critical' &&
+        alertB.severity === 'warning'
+      ) {
+        return 1;
+      } else return 0;
+    });
     previousAlertsRef.current = alerts;
   }
   const newQuery = { ...query, alerts: previousAlertsRef.current };
