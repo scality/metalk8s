@@ -6,6 +6,7 @@ import type { Alert } from '../alertUtils';
 const METALK8S_HISTORY_ALERTS_QUERY = `{namespace="metalk8s-monitoring",container="metalk8s-alert-logger"}`;
 
 export const LOKI_RE_NOTIFICATION_INTERVAL = 12 * 60 * 60 * 1000;
+const MAX_ENTRIES_LIMIT = 4999;
 
 let lokiApiClient: ?ApiClient = null;
 
@@ -40,21 +41,31 @@ export function getLast7DaysAlerts(): Promise<Alert[]> {
   return getAlertsLoki(start, end);
 }
 
-// customise the `start` and `end` time to retrieve the history alerts
-export function getAlertsLoki(start: string, end: string): Promise<Alert[]> {
+// WARNING:
+// By using this function may cause performance issue
+// We may need to perform the query many times, in order to retrieve all the metrics for the expected time period.
+export function getAlertsLoki(
+  start: string,
+  end: string,
+): Promise<LokiQueryResult> {
   if (!lokiApiClient) {
     throw new Error('lokiApiClient should be defined');
   }
 
-  if (new Date(end).getTime() - new Date(start).getTime() < LOKI_RE_NOTIFICATION_INTERVAL) {
-    start = new Date(new Date(end).getTime() - LOKI_RE_NOTIFICATION_INTERVAL).toISOString();
+  if (
+    new Date(end).getTime() - new Date(start).getTime() <
+    LOKI_RE_NOTIFICATION_INTERVAL
+  ) {
+    start = new Date(
+      new Date(end).getTime() - LOKI_RE_NOTIFICATION_INTERVAL,
+    ).toISOString();
   }
 
   return lokiApiClient
     .get(
-      //We set limit to 1000 because the default number of lines retrievable is 100 which is
+      //We set limit to 4999 because the default number of lines retrievable is 100 which is
       //not enough to fill the global health component with 7 days of data
-      `/loki/api/v1/query_range?start=${start}&end=${end}&limit=1000&query=${METALK8S_HISTORY_ALERTS_QUERY}`,
+      `/loki/api/v1/query_range?start=${start}&end=${end}&limit=${MAX_ENTRIES_LIMIT}&query=${METALK8S_HISTORY_ALERTS_QUERY}`,
     )
     .then((resolve) => {
       if (resolve.error) {
@@ -62,9 +73,51 @@ export function getAlertsLoki(start: string, end: string): Promise<Alert[]> {
       }
       return resolve;
     })
-    .then((result: LokiQueryResult) => {
-      return formatHistoryAlerts(result.data.result).filter(alert => ['critical', 'warning', 'unavailable'].includes(alert.severity));
+    .then(async (result: LokiQueryResult) => {
+      let resultCount = result.data.result
+        .map((stream) => stream.values.length)
+        .reduce((sum, count) => sum + count, 0);
+      const aggregatedResult = [result];
+      if (resultCount < MAX_ENTRIES_LIMIT) {
+        return result;
+      } else {
+        while (resultCount === MAX_ENTRIES_LIMIT) {
+          // find the smallest timestamp in all the stream entries
+          const lastestTimestamp = result.data.result.map((stream) =>
+            parseInt(stream.values[stream.values.length - 1][0], 10),
+          );
+          const oldestTimestamp = Math.min(...lastestTimestamp);
+          const nextResult = await getAlertsLoki(
+            new Date(oldestTimestamp / 1000000).toISOString(),
+            end,
+          );
+
+          resultCount = nextResult.data.result
+            .map((stream) => stream.values.length)
+            .reduce((sum, count) => sum + count, 0);
+          aggregatedResult.push(nextResult);
+        }
+        // build a fake loki result for aggregatedResult
+        return {
+          status: 'success',
+          data: {
+            resultType: 'streams',
+            result: aggregatedResult.flatMap((result) => result.data.result),
+          },
+        };
+      }
     });
+}
+
+export async function getFormattedLokiAlert(
+  start: string,
+  end: string,
+): Promise<Alert[]> {
+  const lokiQueryResult = await getAlertsLoki(start, end);
+
+  return formatHistoryAlerts(lokiQueryResult.data.result).filter((alert) =>
+    ['critical', 'warning', 'unavailable'].includes(alert.severity),
+  );
 }
 
 // To be checked
