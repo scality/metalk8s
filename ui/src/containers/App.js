@@ -7,7 +7,6 @@ import AlertProvider from './AlertProvider';
 import ConfigProvider from './ConfigProvider';
 import FederatedIntlProvider from './IntlProvider';
 import StartTimeProvider from './StartTimeProvider';
-import AlertHistoryProvider from './AlertHistoryProvider';
 
 const App = () => {
   return (
@@ -16,9 +15,7 @@ const App = () => {
         <ConfigProvider>
           <StartTimeProvider>
             <AlertProvider>
-              <AlertHistoryProvider>
-                <Layout />
-              </AlertHistoryProvider>
+              <Layout />
             </AlertProvider>
           </StartTimeProvider>
         </ConfigProvider>
