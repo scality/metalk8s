@@ -1,5 +1,7 @@
 # CHANGELOG
-## Release 2.10.4 (in development)
+## Release 2.10.5 (in development)
+
+## Release 2.10.4
 ## Bug fixes
 
 - [#3564](https://github.com/scality/metalk8s/issues/3564) - Fix a bug that
