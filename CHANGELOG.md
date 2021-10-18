@@ -1,6 +1,5 @@
 # CHANGELOG
 ## Release 2.11.0 (in development)
-## Release 2.11.0-alpha1
 ### Additions
 
 - Deploy a hierarchy of Prometheus alerts to provide different granularities
@@ -49,7 +48,9 @@
   PR[#3420](https://github.com/scality/metalk8s/pull/3420),
   PR[#3501](https://github.com/scality/metalk8s/pull/3501))
 
-## Release 2.10.4 (in development)
+## Release 2.10.5 (in development)
+
+## Release 2.10.4
 ## Bug fixes
 
 - [#3564](https://github.com/scality/metalk8s/issues/3564) - Fix a bug that
