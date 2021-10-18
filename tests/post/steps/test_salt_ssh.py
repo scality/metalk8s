@@ -23,6 +23,7 @@ def run_state_salt_ssh(host, k8s_client, ssh_config, version, state, role):
     ]
     command = [
         "salt-ssh",
+        "--static",
         "-L",
         ",".join(minions),
         "state.sls",
