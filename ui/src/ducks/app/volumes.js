@@ -30,6 +30,7 @@ import {
   V1StorageClass,
   V1StorageClassList,
 } from '@kubernetes/client-node/dist/gen/model/models';
+import { allSizeUnitsToBytes, bytesToSize } from '../../services/utils';
 
 // Actions
 const FETCH_VOLUMES = 'FETCH_VOLUMES';
@@ -250,7 +251,14 @@ export function* fetchPersistentVolumes(): Generator<
 > {
   const result = yield call(VolumesApi.getPersistentVolumes);
   if (!result.error) {
-    yield put(setPersistentVolumesAction(result.body.items ?? []));
+    //the storage capacity in the spec may not contain the reasonable/correct unit size
+    const pvs = result?.body?.items?.map((item) => {
+      item.spec.capacity.storage = bytesToSize(
+        allSizeUnitsToBytes(item.spec.capacity.storage),
+      );
+      return item;
+    });
+    yield put(setPersistentVolumesAction(pvs ?? []));
   }
   return result;
 }

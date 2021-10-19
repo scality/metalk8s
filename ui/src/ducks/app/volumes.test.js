@@ -36,7 +36,9 @@ it('update the volume', () => {
       }),
     ),
   );
-  expect(gen.next().value).toEqual(call(Metalk8sVolumeClient.getMetalk8sV1alpha1VolumeList));
+  expect(gen.next().value).toEqual(
+    call(Metalk8sVolumeClient.getMetalk8sV1alpha1VolumeList),
+  );
 
   const result = {
     body: {
@@ -90,7 +92,9 @@ it('does not update volume if there is an error', () => {
       }),
     ),
   );
-  expect(gen.next().value).toEqual(call(Metalk8sVolumeClient.getMetalk8sV1alpha1VolumeList));
+  expect(gen.next().value).toEqual(
+    call(Metalk8sVolumeClient.getMetalk8sV1alpha1VolumeList),
+  );
 
   const result = { error: {} };
 
@@ -116,9 +120,11 @@ it('should put a empty array if Volumes is not correct', () => {
       }),
     ),
   );
-  expect(gen.next().value).toEqual(call(Metalk8sVolumeClient.getMetalk8sV1alpha1VolumeList));
+  expect(gen.next().value).toEqual(
+    call(Metalk8sVolumeClient.getMetalk8sV1alpha1VolumeList),
+  );
 
-  const result = { body: {it: 'should not work' }};
+  const result = { body: { it: 'should not work' } };
   expect(gen.next(result).value).toEqual(put(setVolumesAction([])));
   expect(gen.next().value).toEqual(delay(1000));
   expect(gen.next().value).toEqual(
@@ -256,15 +262,15 @@ it('update PVs', () => {
   expect(gen.next().done).toEqual(true);
 });
 
-// TODO figure out whether this test is really helpful, 
+// TODO figure out whether this test is really helpful,
 // it should be an API responsibility to ensure that the returned data is correct and it is enforced by the typing generated from API specification
 // also this test is highly coupled with the implementation, if one change the implementation of the reducer without changing the shape of the state
-// this test will likely fail and have to be refactored whereas no changes was performed on the state present in the redux store. 
+// this test will likely fail and have to be refactored whereas no changes was performed on the state present in the redux store.
 it('should put a empty array if PVs object is not correct', () => {
   const gen = fetchPersistentVolumes();
   expect(gen.next().value).toEqual(call(VolumesApi.getPersistentVolumes));
 
-  const result = { body: { it: 'should not work'} };
+  const result = { body: { it: 'should not work' } };
 
   expect(gen.next(result).value).toEqual(put(setPersistentVolumesAction([])));
   expect(gen.next().done).toEqual(true);
@@ -280,6 +286,148 @@ it('does not update PV if there is an error', () => {
   };
 
   expect(gen.next(result).done).toEqual(true);
+});
+
+it('should format correctly the storage capacity for PVs', () => {
+  const gen = fetchPersistentVolumes();
+  expect(gen.next().value).toEqual(call(VolumesApi.getPersistentVolumes));
+
+  const result = {
+    body: {
+      items: [
+        {
+          metadata: {
+            name: 'yanjin-test',
+            selfLink: '/api/v1/persistentvolumes/yanjin-test',
+            uid: '1e949b2e-7e6f-4ba7-8dd8-eddb73d8455b',
+            resourceVersion: '26098',
+            creationTimestamp: '2019-07-25T16:49:10Z',
+            ownerReferences: [
+              {
+                apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
+                kind: 'Volume',
+                name: 'yanjin-test',
+                uid: '5e417a13-71cd-4b80-81e9-112dff5da750',
+                controller: true,
+                blockOwnerDeletion: true,
+              },
+            ],
+            finalizers: [
+              'storage.metalk8s.scality.com/volume-protection',
+              'kubernetes.io/pv-protection',
+            ],
+          },
+          spec: {
+            capacity: {
+              storage: '5000Mi',
+            },
+            local: {
+              path: '/tmp/foo',
+            },
+            accessModes: ['ReadWriteOnce'],
+            persistentVolumeReclaimPolicy: 'Retain',
+            storageClassName: 'standard',
+            volumeMode: 'Filesystem',
+            nodeAffinity: {
+              required: {
+                nodeSelectorTerms: [
+                  {
+                    matchExpressions: [
+                      {
+                        key: 'kubernetes.io/hostname',
+                        operator: 'In',
+                        values: ['metalk8s-bootstrap.novalocal'],
+                      },
+                    ],
+                    matchFields: [
+                      {
+                        key: 'metadata.name',
+                        operator: 'In',
+                        values: ['metalk8s-bootstrap.novalocal'],
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+          status: {
+            phase: 'Available',
+          },
+        },
+      ],
+    },
+  };
+  const expectedResult = {
+    body: {
+      items: [
+        {
+          metadata: {
+            name: 'yanjin-test',
+            selfLink: '/api/v1/persistentvolumes/yanjin-test',
+            uid: '1e949b2e-7e6f-4ba7-8dd8-eddb73d8455b',
+            resourceVersion: '26098',
+            creationTimestamp: '2019-07-25T16:49:10Z',
+            ownerReferences: [
+              {
+                apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
+                kind: 'Volume',
+                name: 'yanjin-test',
+                uid: '5e417a13-71cd-4b80-81e9-112dff5da750',
+                controller: true,
+                blockOwnerDeletion: true,
+              },
+            ],
+            finalizers: [
+              'storage.metalk8s.scality.com/volume-protection',
+              'kubernetes.io/pv-protection',
+            ],
+          },
+          spec: {
+            capacity: {
+              storage: '4.9 GiB',
+            },
+            local: {
+              path: '/tmp/foo',
+            },
+            accessModes: ['ReadWriteOnce'],
+            persistentVolumeReclaimPolicy: 'Retain',
+            storageClassName: 'standard',
+            volumeMode: 'Filesystem',
+            nodeAffinity: {
+              required: {
+                nodeSelectorTerms: [
+                  {
+                    matchExpressions: [
+                      {
+                        key: 'kubernetes.io/hostname',
+                        operator: 'In',
+                        values: ['metalk8s-bootstrap.novalocal'],
+                      },
+                    ],
+                    matchFields: [
+                      {
+                        key: 'metadata.name',
+                        operator: 'In',
+                        values: ['metalk8s-bootstrap.novalocal'],
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+          status: {
+            phase: 'Available',
+          },
+        },
+      ],
+    },
+  };
+  expect(gen.next(result).value).toEqual(
+    put(setPersistentVolumesAction(expectedResult.body.items)),
+  );
+  expect(gen.next().done).toEqual(true);
 });
 
 //NOTE: we skip those scenarios because we added a step to retrieve the Intl from the redux-store.
@@ -328,7 +476,9 @@ it.skip('create volume with the type sparseloopdevice', () => {
     },
   };
 
-  expect(gen.next(body).value).toEqual(call(Metalk8sVolumeClient.createMetalk8sV1alpha1Volume, body));
+  expect(gen.next(body).value).toEqual(
+    call(Metalk8sVolumeClient.createMetalk8sV1alpha1Volume, body),
+  );
   const result = {
     body: {
       apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
@@ -352,9 +502,9 @@ it.skip('create volume with the type sparseloopdevice', () => {
     },
   };
 
-  const historyMock = {push: jest.fn()};
+  const historyMock = { push: jest.fn() };
   gen.next(result).value;
-  expect(gen.next({history: historyMock}).value).toEqual(
+  expect(gen.next({ history: historyMock }).value).toEqual(
     call(
       historyMock.push,
       `/volumes/${newVolumes[0].name}/overview?node=${newVolumes[0].node}`,
@@ -411,7 +561,9 @@ it.skip('create a volume with the type rawBlockdevice', () => {
     },
   };
 
-  expect(gen.next(body).value).toEqual(call(Metalk8sVolumeClient.createMetalk8sV1alpha1Volume, body));
+  expect(gen.next(body).value).toEqual(
+    call(Metalk8sVolumeClient.createMetalk8sV1alpha1Volume, body),
+  );
   const result = {
     body: {
       apiVersion: 'storage.metalk8s.scality.com/v1alpha1',
@@ -433,9 +585,9 @@ it.skip('create a volume with the type rawBlockdevice', () => {
     },
   };
 
-  const historyMock = {push: jest.fn()};
+  const historyMock = { push: jest.fn() };
   const historyState = gen.next(result).value;
-  expect(gen.next({history: historyMock}).value).toEqual(
+  expect(gen.next({ history: historyMock }).value).toEqual(
     call(
       historyMock.push,
       `/volumes/${newVolumes[0].name}/overview?node=${newVolumes[0].node}`,
@@ -510,7 +662,9 @@ it.skip('does not create a volume when there is an error', () => {
       },
     },
   };
-  expect(gen.next(body).value).toEqual(call(Metalk8sVolumeClient.createMetalk8sV1alpha1Volume, body));
+  expect(gen.next(body).value).toEqual(
+    call(Metalk8sVolumeClient.createMetalk8sV1alpha1Volume, body),
+  );
   const result = { error: {} };
 
   expect(gen.next(result).value.payload.action.type).toEqual(
@@ -592,8 +746,7 @@ it('should refresh the pesistent volume', () => {
             storage: '12345676432',
           },
           local: {
-            path:
-              '/var/lib/metalk8s/storage/sparse/316c0dc0-3cfc-48f3-8062-eb0dd4ce6108',
+            path: '/var/lib/metalk8s/storage/sparse/316c0dc0-3cfc-48f3-8062-eb0dd4ce6108',
           },
           accessModes: ['ReadWriteOnce'],
           persistentVolumeReclaimPolicy: 'Retain',
@@ -731,7 +884,9 @@ it.skip('should display the error notification when there is error in delete vol
 
 it('updates the current volume object on API success', () => {
   const gen = fetchCurrentVolumeObject({ volumeName: 'test' });
-  expect(gen.next().value).toEqual(call(Metalk8sVolumeClient.getMetalk8sV1alpha1Volume, 'test'));
+  expect(gen.next().value).toEqual(
+    call(Metalk8sVolumeClient.getMetalk8sV1alpha1Volume, 'test'),
+  );
   const result = {
     body: {
       resultTest: 'test',
@@ -747,7 +902,9 @@ it('updates the current volume object on API success', () => {
 
 it('does not update the current volume object on API error', () => {
   const gen = fetchCurrentVolumeObject({ volumeName: 'test' });
-  expect(gen.next().value).toEqual(call(Metalk8sVolumeClient.getMetalk8sV1alpha1Volume, 'test'));
+  expect(gen.next().value).toEqual(
+    call(Metalk8sVolumeClient.getMetalk8sV1alpha1Volume, 'test'),
+  );
   const result = {
     error: {
       errorText: 'test',
