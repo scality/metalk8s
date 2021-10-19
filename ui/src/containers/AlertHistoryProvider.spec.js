@@ -388,14 +388,14 @@ const server = setupServer(
 describe('useHistoryAlerts', () => {
   beforeAll(() => {
     jest.useFakeTimers();
-    Date.now = jest.fn(() => 1629712737000)
+    Date.now = jest.fn(() => 1629712737000);
 
     global.Date = class extends Date {
       constructor(date) {
         if (date) {
           return super(date);
         }
-  
+
         return super(1629712737000);
       }
     };
@@ -403,7 +403,7 @@ describe('useHistoryAlerts', () => {
     initializeProm(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/prometheus`);
     initializeAM(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/alertmanager`);
     initializeLoki(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/loki`);
-    server.listen({onUnhandledRequest: 'error'});
+    server.listen({ onUnhandledRequest: 'error' });
   });
 
   it('should render properly with the provider', () => {
@@ -431,7 +431,10 @@ describe('useHistoryAlerts', () => {
   });
 
   it('should retrieve alert history', async () => {
-    const { result } = renderHook(() => useHistoryAlerts({ alertname: 'PlatformDegraded' }), { wrapper });
+    const { result } = renderHook(
+      () => useHistoryAlerts({ alertname: 'ClusterDegraded' }),
+      { wrapper },
+    );
 
     await waitFor(() => expect(result.current.alerts.length).toEqual(1));
 
@@ -441,10 +444,11 @@ describe('useHistoryAlerts', () => {
         endsAt: '2021-08-23T09:58:57.000Z',
         severity: 'unavailable',
         id: 'unavailable-1629625680',
-        labels: { alertname: 'PlatformDegraded' },
-        description: 'Alerting services were unavailable during this period of time'
-      }
-    ])
+        labels: { alertname: 'ClusterDegraded' },
+        description:
+          'Alerting services were unavailable during this period of time',
+      },
+    ]);
   });
 
   afterAll(() => {
