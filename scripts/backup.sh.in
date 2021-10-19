@@ -182,4 +182,7 @@ run "Backing up MetalK8s configurations" backup_metalk8s_conf
 run "Backing up CAs certificates and keys" backup_cas
 run "Backing up etcd data" backup_etcd
 run "Creating backup archive '$BACKUP_ARCHIVE'" create_archive
-(( REPLICATION )) && run "Replicating backup archives on master nodes" replicate_archives
+
+if (( REPLICATION )); then
+    run "Replicating backup archives on master nodes" replicate_archives
+fi
