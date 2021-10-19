@@ -87,7 +87,13 @@ prometheusOperator:
 
 
 prometheus:
+  thanosService:
+    enabled: true
+
   prometheusSpec:
+    thanos:
+      image: '__full_image__(thanos)'
+
     image:
       repository: '__image__(prometheus)'
 
@@ -148,6 +154,10 @@ grafana:
   sidecar:
     image:
       repository: '__image__(k8s-sidecar)'
+
+    datasources:
+      # Service deployed by Thanos
+      url: http://thanos-query-http:10902/
 
   nodeSelector:
     node-role.kubernetes.io/infra: ''

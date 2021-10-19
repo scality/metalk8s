@@ -1,0 +1,27 @@
+---
+{{- if and .Values.query.enabled .Values.query.psp.enabled }}
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: {{ include "thanos.componentname" (list $ "query") }}
+  labels:
+    app.kubernetes.io/name: {{ include "thanos.name" . }}
+    helm.sh/chart: {{ include "thanos.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: query
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  fsGroup:
+    rule: RunAsAny
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  volumes:
+  - secret
+{{- end }}

@@ -222,6 +222,9 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "node-exporter",
         "prometheus",
     ],
+    constants.THANOS_REPOSITORY: [
+        "thanos",
+    ],
 }
 
 REMOTE_NAMES: Dict[str, str] = {

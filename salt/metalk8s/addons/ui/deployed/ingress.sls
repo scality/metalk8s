@@ -74,9 +74,9 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: prometheus-api
+            name: thanos-api
             port:
-              number: 9090
+              number: 10902
       - path: /api/alertmanager(/|$)(.*)
         pathType: Prefix
         backend:

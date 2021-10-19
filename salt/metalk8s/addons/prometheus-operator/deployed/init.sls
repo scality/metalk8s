@@ -7,3 +7,4 @@ include:
   - .service-configuration
   - .chart
   - .prometheus-rules
+  - .thanos-chart

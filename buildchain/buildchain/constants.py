@@ -30,6 +30,7 @@ KUBE_STATE_METRICS_REPOSITORY: str = "k8s.gcr.io/kube-state-metrics"
 PROMETHEUS_ADAPTER_REPOSITORY: str = "docker.io/directxman12"
 PROMETHEUS_OPERATOR_REPOSITORY: str = "quay.io/prometheus-operator"
 PROMETHEUS_REPOSITORY: str = "quay.io/prometheus"
+THANOS_REPOSITORY: str = "quay.io/thanos"
 
 # Paths {{{
 

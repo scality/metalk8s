@@ -41,6 +41,7 @@ Feature: Cluster Sanity Checks
         | metalk8s-monitoring | prometheus-operator-grafana            |
         | metalk8s-monitoring | prometheus-operator-kube-state-metrics |
         | metalk8s-monitoring | prometheus-operator-operator           |
+        | metalk8s-monitoring | thanos-query                           |
         | metalk8s-ui         | metalk8s-ui                            |
 
     Scenario Outline: DaemonSet has desired Pods ready

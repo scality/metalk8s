@@ -210,6 +210,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         version="v0.48.1",
         digest="sha256:2e7b61c86ee8b0aef4f5da8b6a4e51ecef249c9ccf4a329c5aa0c81e3fd074c1",
     ),
+    Image(
+        name="thanos",
+        version="v0.23.1",
+        digest="sha256:2f7d1ddc7877b076efbc3fa626b5003f7f197efbd777cff0eec2b20c2cd68d20",
+    ),
     # Local images
     Image(
         name="metalk8s-alert-logger",

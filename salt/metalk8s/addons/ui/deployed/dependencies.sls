@@ -39,7 +39,7 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: prometheus-api
+  name: thanos-api
   namespace: metalk8s-ui
   labels:
     app: metalk8s-ui
@@ -49,10 +49,10 @@ metadata:
     heritage: metalk8s
 spec:
   type: ExternalName
-  externalName: prometheus-operator-prometheus.metalk8s-monitoring.svc.cluster.local
+  externalName: thanos-query-http.metalk8s-monitoring.svc.cluster.local
   ports:
     - name: http
-      port: 9090
+      port: 10902
 ---
 kind: Service
 apiVersion: v1
