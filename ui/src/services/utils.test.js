@@ -1,11 +1,13 @@
 import { NAN_STRING } from '@scality/core-ui/dist/components/constants';
 import { renderHook } from '@testing-library/react-hooks';
+import { STATUS_CRITICAL, STATUS_HEALTH, STATUS_WARNING } from '../constants';
 import {
   sortCapacity,
   fromMilliSectoAge,
   useTableSortURLSync,
   linuxDrivesNamingIncrement,
   formatDateToMid1,
+  getSegments,
   getNaNSegments,
 } from './utils';
 
@@ -333,5 +335,165 @@ describe('getNaNSegments', () => {
       { startsAt: 1, endsAt: 3 },
       { startsAt: 4, endsAt: null },
     ]);
+  });
+});
+
+describe('getSegments', () => {
+  const cases = [
+    {
+      name: 'Danger, NaN and At risk cases overlapping',
+      pointsDegraded: [
+        [1, 1],
+        [2, 1],
+        [3, 1],
+        [4, 1],
+        [5, NAN_STRING],
+        [6, 1],
+      ],
+      pointsAtRisk: [
+        [1, 0],
+        [2, 0],
+        [3, 1],
+        [4, 1],
+        [5, NAN_STRING],
+        [6, 0],
+      ],
+      expected: [
+        { startsAt: 1, endsAt: 3, type: STATUS_WARNING },
+        { startsAt: 3, endsAt: 5, type: STATUS_CRITICAL },
+        { startsAt: 5, endsAt: 6, type: NAN_STRING },
+        { startsAt: 6, endsAt: null, type: STATUS_WARNING },
+      ],
+    },
+    {
+      name: 'Healthy and NaN overlapping',
+      pointsDegraded: [
+        [1, 0],
+        [2, 0],
+        [3, 0],
+        [4, 0],
+        [5, NAN_STRING],
+        [6, 0],
+      ],
+      pointsAtRisk: [
+        [1, 0],
+        [2, 0],
+        [3, 0],
+        [4, 0],
+        [5, 0],
+        [6, 0],
+      ],
+      expected: [
+        { startsAt: 1, endsAt: 5, type: STATUS_HEALTH },
+        { startsAt: 5, endsAt: 6, type: NAN_STRING },
+        { startsAt: 6, endsAt: null, type: STATUS_HEALTH },
+      ],
+    },
+    {
+      name: 'Healthy',
+      pointsDegraded: [
+        [1, 0],
+        [2, 0],
+        [3, 0],
+        [4, 0],
+        [5, 0],
+        [6, 0],
+      ],
+      pointsAtRisk: [
+        [1, 0],
+        [2, 0],
+        [3, 0],
+        [4, 0],
+        [5, 0],
+        [6, 0],
+      ],
+      expected: [{ startsAt: 1, endsAt: null, type: STATUS_HEALTH }],
+    },
+    {
+      name: 'In danger',
+      pointsDegraded: [
+        [1, 1],
+        [2, 1],
+        [3, 1],
+        [4, 1],
+        [5, 1],
+        [6, 1],
+      ],
+      pointsAtRisk: [
+        [1, 0],
+        [2, 0],
+        [3, 0],
+        [4, 0],
+        [5, 0],
+        [6, 0],
+      ],
+      expected: [{ startsAt: 1, endsAt: null, type: STATUS_WARNING }],
+    },
+    {
+      name: 'At risk',
+      pointsDegraded: [
+        [1, 0],
+        [2, 0],
+        [3, 0],
+        [4, 0],
+        [5, 0],
+        [6, 0],
+      ],
+      pointsAtRisk: [
+        [1, 1],
+        [2, 1],
+        [3, 1],
+        [4, 1],
+        [5, 1],
+        [6, 1],
+      ],
+      expected: [{ startsAt: 1, endsAt: null, type: STATUS_CRITICAL }],
+    },
+    {
+      name: 'Danger unavailable',
+      pointsDegraded: [
+        [1, NAN_STRING],
+        [2, NAN_STRING],
+        [3, NAN_STRING],
+        [4, NAN_STRING],
+        [5, NAN_STRING],
+        [6, NAN_STRING],
+      ],
+      pointsAtRisk: [
+        [1, 1],
+        [2, 1],
+        [3, 1],
+        [4, 1],
+        [5, 1],
+        [6, 1],
+      ],
+      expected: [{ startsAt: 1, endsAt: null, type: NAN_STRING }],
+    },
+    {
+      name: 'At risk unavailable',
+      pointsDegraded: [
+        [1, 1],
+        [2, 1],
+        [3, 1],
+        [4, 1],
+        [5, 1],
+        [6, 1],
+      ],
+      pointsAtRisk: [
+        [1, NAN_STRING],
+        [2, NAN_STRING],
+        [3, NAN_STRING],
+        [4, NAN_STRING],
+        [5, NAN_STRING],
+        [6, NAN_STRING],
+      ],
+      expected: [{ startsAt: 1, endsAt: null, type: NAN_STRING }],
+    },
+  ];
+  cases.forEach(({ name, pointsAtRisk, pointsDegraded, expected }) => {
+    test(`Given ${name} points should be converted to the expected alert segments`, () => {
+      const result = getSegments({ pointsDegraded, pointsAtRisk });
+      expect(result).toStrictEqual(expected);
+    });
   });
 });

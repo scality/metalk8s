@@ -1,10 +1,15 @@
-import { PORT_NODE_EXPORTER } from '../../constants';
+import {
+  PORT_NODE_EXPORTER,
+  STATUS_CRITICAL,
+  STATUS_WARNING,
+} from '../../constants';
 import { queryPromtheusMetrics } from '../prometheus/fetchMetrics';
 import type { NodesState } from '../../ducks/app/nodes';
 import { queryPrometheusRange } from '../prometheus/api';
 import { addMissingDataPoint } from '@scality/core-ui/dist/components/linetemporalchart/ChartUtil';
-import { getNaNSegments } from '../utils';
-import { getAlertsLoki } from '../loki/api';
+import { getNaNSegments, getSegments } from '../utils';
+import { getFormattedLokiAlert } from '../loki/api';
+import { NAN_STRING } from '@scality/core-ui/dist/components/constants';
 
 export type TimeSpanProps = {
   startingTimeISO: string,
@@ -782,6 +787,7 @@ export const getVolumeLatencyReadQuery = (
   );
 };
 
+// which may cause performance issue
 export const getAlertsHistoryQuery = ({
   startingTimeISO,
   currentTimeISO,
@@ -804,12 +810,13 @@ export const getAlertsHistoryQuery = ({
       Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
       frequency,
     );
+
     return getNaNSegments(points).map((segment) => ({
       startsAt: new Date(segment.startsAt * 1000).toISOString(),
       endsAt: new Date(segment.endsAt * 1000).toISOString(),
       severity: 'unavailable',
       id: `unavailable-${segment.startsAt}`,
-      labels: { alertname: 'PlatformDegraded' },
+      labels: { alertname: 'ClusterDegraded' },
       description:
         'Alerting services were unavailable during this period of time',
     }));
@@ -819,7 +826,7 @@ export const getAlertsHistoryQuery = ({
     queryKey: ['alertsHistory', startingTimeISO],
     queryFn: () => {
       return Promise.all([
-        getAlertsLoki(startingTimeISO, currentTimeISO),
+        getFormattedLokiAlert(startingTimeISO, currentTimeISO),
         alertManagerDowntimePromise,
       ]).then(([alerts, downTimes]) => {
         const rawAlerts = [
@@ -840,6 +847,99 @@ export const getAlertsHistoryQuery = ({
         );
         return rawAlerts;
       });
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  };
+};
+
+function convertSegmentToAlert(segment) {
+  const baseSegment = {
+    startsAt: new Date(segment.startsAt * 1000).toISOString(),
+    endsAt: segment.endsAt
+      ? new Date(segment.endsAt * 1000).toISOString()
+      : new Date().toISOString(),
+    severity: segment.type,
+    id: `${segment.type}-${segment.startsAt}`,
+  };
+  switch (segment.type) {
+    default:
+      return { ...baseSegment };
+    case STATUS_WARNING:
+      return {
+        ...baseSegment,
+
+        labels: {
+          alertname: 'ClusterDegraded',
+        },
+        description: 'The cluster is degraded',
+      };
+    case STATUS_CRITICAL:
+      return {
+        ...baseSegment,
+
+        labels: {
+          alertname: 'ClusterAtRisk',
+        },
+        description: 'The cluster is at risk',
+      };
+
+    case NAN_STRING:
+      return {
+        ...baseSegment,
+        severity: 'unavailable',
+        description:
+          'Alerting services were unavailable during this period of time',
+      };
+  }
+}
+
+// Call Prometheus endpoint to get the segments {description: string, startsAt: string, endsAt: string, severity: string}
+// for Cluster alert which will be used by Global Health Component
+export const getClusterAlertSegmentQuery = ({
+  startingTimeISO,
+  currentTimeISO,
+  frequency,
+}: TimeSpanProps): typeof useQuery => {
+  const query = `sum by(alertname) (ALERTS{alertname=~'ClusterAtRisk|ClusterDegraded', alertstate='firing'})`;
+
+  const clusterAlertNumberPromise = queryPrometheusRange(
+    startingTimeISO,
+    currentTimeISO,
+    frequency,
+    encodeURIComponent(query),
+  )?.then((resolve) => {
+    if (resolve.error) {
+      throw resolve.error;
+    }
+    const clusterAtRiskResult = resolve.data.result.find(
+      (result) => result.metric.alertname === 'ClusterAtRisk',
+    );
+    const clusterDegradedResult = resolve.data.result.find(
+      (result) => result.metric.alertname === 'ClusterDegraded',
+    );
+    const pointsAtRisk = addMissingDataPoint(
+      clusterAtRiskResult.values,
+      Date.parse(startingTimeISO) / 1000,
+      Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
+      frequency,
+    );
+    const pointsDegraded = addMissingDataPoint(
+      clusterDegradedResult.values,
+      Date.parse(startingTimeISO) / 1000,
+      Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
+      frequency,
+    );
+
+    return getSegments({ pointsDegraded, pointsAtRisk }).map(
+      convertSegmentToAlert,
+    );
+  });
+
+  return {
+    queryKey: ['clusterAlertsNumber', startingTimeISO],
+    queryFn: () => {
+      return clusterAlertNumberPromise;
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
