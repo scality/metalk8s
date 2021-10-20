@@ -62,13 +62,9 @@ const DashboardGlobalHealth = () => {
   const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
   const alertsLibrary = useAlertLibrary();
 
-  const { frequency } = useMetricsTimeSpan();
+  const { duration } = useMetricsTimeSpan();
   const { data: alertSegments, status: historyAlertStatus } = useQuery(
-    getClusterAlertSegmentQuery({
-      startingTimeISO,
-      currentTimeISO,
-      frequency,
-    }),
+    getClusterAlertSegmentQuery(duration),
   );
   const platformHighestSeverityAlert = useHighestSeverityAlerts(
     alertsLibrary.getPlatformAlertSelectors(),

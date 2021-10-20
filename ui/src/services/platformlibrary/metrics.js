@@ -896,14 +896,13 @@ function convertSegmentToAlert(segment) {
 
 // Call Prometheus endpoint to get the segments {description: string, startsAt: string, endsAt: string, severity: string}
 // for Cluster alert which will be used by Global Health Component
-export const getClusterAlertSegmentQuery = ({
-  startingTimeISO,
-  currentTimeISO,
-  frequency,
-}: TimeSpanProps): typeof useQuery => {
-  const query = `sum by(alertname) (ALERTS{alertname=~'ClusterAtRisk|ClusterDegraded', alertstate='firing'})`;
+export const getClusterAlertSegmentQuery = (duration: number): typeof useQuery => {
+  // We add watchdog alert to identify unavailble segments
+  const query = `sum by(alertname) (ALERTS{alertname=~'ClusterAtRisk|ClusterDegraded|Watchdog', alertstate='firing'})`;
+  // set the frequency to 60s only for global health component to get the precise segments
+  const frequency = 60;
 
-  const clusterAlertNumberPromise = queryPrometheusRange(
+  const clusterAlertNumberPromise = ({startingTimeISO, currentTimeISO, frequency}: TimeSpanProps) => queryPrometheusRange(
     startingTimeISO,
     currentTimeISO,
     frequency,
@@ -918,6 +917,9 @@ export const getClusterAlertSegmentQuery = ({
     const clusterDegradedResult = resolve.data.result.find(
       (result) => result.metric.alertname === 'ClusterDegraded',
     );
+    const watchdogResult = resolve.data.result.find(
+      (result) => result.metric.alertname === 'Watchdog',
+    );
     const pointsAtRisk = addMissingDataPoint(
       clusterAtRiskResult.values,
       Date.parse(startingTimeISO) / 1000,
@@ -930,17 +932,30 @@ export const getClusterAlertSegmentQuery = ({
       Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
       frequency,
     );
+    const pointsWatchdog = addMissingDataPoint(
+      watchdogResult.values,
+      Date.parse(startingTimeISO) / 1000,
+      Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
+      frequency,
+    );
 
-    return getSegments({ pointsDegraded, pointsAtRisk }).map(
+    return getSegments({ pointsDegraded, pointsAtRisk, pointsWatchdog }).map(
       convertSegmentToAlert,
     );
   });
 
   return {
-    queryKey: ['clusterAlertsNumber', startingTimeISO],
+    queryKey: ['clusterAlertsNumber'],
     queryFn: () => {
-      return clusterAlertNumberPromise;
+      
+      const now = new Date().getTime();
+      const endTime = now - (now % (frequency * 1000)); //round minute of current time to make sure we have the same points in the result
+      const startingTimeISO = new Date((endTime / 1000 - duration) * 1000).toISOString()
+      const currentTimeISO = new Date(endTime).toISOString()
+  
+      return clusterAlertNumberPromise({startingTimeISO, currentTimeISO, frequency});
     },
+    refetchInterval: frequency * 1000,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   };
