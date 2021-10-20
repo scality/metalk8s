@@ -35,7 +35,6 @@ export type PrometheusAlert = {
 
 export type AlertLabels = {
   [labelName: string]: string,
-  parents?: string[],
   selectors?: string[],
 };
 

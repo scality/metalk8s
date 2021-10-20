@@ -19,7 +19,9 @@ import { useStartingTimeStamp } from '../containers/StartTimeProvider';
 import LoaderComponent from '@scality/core-ui/dist/components/loader/Loader.component';
 import CircleStatus, { StatusIcon } from './CircleStatus';
 import GlobalHealthBarComponent from '@scality/core-ui/dist/components/globalhealthbar/GlobalHealthBar.component';
-import { useHistoryAlerts } from '../containers/AlertHistoryProvider';
+import { getClusterAlertSegmentQuery } from '../services/platformlibrary/metrics';
+import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
+import { useQuery } from 'react-query';
 
 const GlobalHealthContainer = styled.div`
   display: flex;
@@ -60,8 +62,9 @@ const DashboardGlobalHealth = () => {
   const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
   const alertsLibrary = useAlertLibrary();
 
-  const { alerts, status: historyAlertStatus } = useHistoryAlerts(
-    alertsLibrary.getPlatformAlertSelectors(),
+  const { duration } = useMetricsTimeSpan();
+  const { data: alertSegments, status: historyAlertStatus } = useQuery(
+    getClusterAlertSegmentQuery(duration),
   );
   const platformHighestSeverityAlert = useHighestSeverityAlerts(
     alertsLibrary.getPlatformAlertSelectors(),
@@ -139,7 +142,7 @@ const DashboardGlobalHealth = () => {
                           'Failed to load alert history for the selected period',
                       },
                     ]
-                  : alerts || []
+                  : alertSegments || []
               }
               start={startingTimeISO}
               end={currentTimeISO}

@@ -315,27 +315,122 @@ export function addMissingDataPoint(
   return newValues;
 }
 
-export function getNaNSegments(points: [[number, number | null]]): {startsAt: number, endsAt?: number}[] {
+export function getNaNSegments(
+  points: [[number, number | null]],
+): { startsAt: number, endsAt?: number }[] {
   if (!points) return [];
   const segments = points.map((point, index) => {
-    if (index === points.length -1) {
-      return {startsAt: point[0], endsAt: null, value: point[1]};
+    if (index === points.length - 1) {
+      return { startsAt: point[0], endsAt: null, value: point[1] };
     }
-    return {startsAt: point[0], endsAt: points[index + 1][0], value: point[1]};
-  })
-  const nullSegments = segments.filter(segment => segment.value === NAN_STRING);
+    return {
+      startsAt: point[0],
+      endsAt: points[index + 1][0],
+      value: point[1],
+    };
+  });
+  const nullSegments = segments.filter(
+    (segment) => segment.value === NAN_STRING,
+  );
   return nullSegments.reduce((mergedNullSegments, segment) => {
     if (mergedNullSegments.length > 0) {
       const lastNullSegment = mergedNullSegments[mergedNullSegments.length - 1];
 
       if (lastNullSegment.endsAt === segment.startsAt) {
-        mergedNullSegments[mergedNullSegments.length - 1] = {startsAt: lastNullSegment.startsAt, endsAt: segment.endsAt};
+        mergedNullSegments[mergedNullSegments.length - 1] = {
+          startsAt: lastNullSegment.startsAt,
+          endsAt: segment.endsAt,
+        };
         return mergedNullSegments;
       }
     }
 
-    return [...mergedNullSegments, {startsAt: segment.startsAt, endsAt: segment.endsAt}];
-  },[]);
+    return [
+      ...mergedNullSegments,
+      { startsAt: segment.startsAt, endsAt: segment.endsAt },
+    ];
+  }, []);
+}
+
+export function getSegments({ pointsAtRisk, pointsDegraded, pointsWatchdog }) {
+  return pointsDegraded.reduce((agg, [timestamp, degradedValue], index) => {
+    const atRiskValue = pointsAtRisk[index][1];
+    const currentType =
+    pointsWatchdog[index][1] !== '1'
+        ? NAN_STRING
+        : atRiskValue > 0
+        ? STATUS_CRITICAL
+        : degradedValue > 0
+        ? STATUS_WARNING
+        : STATUS_HEALTH;
+
+    if (agg.length > 0) {
+      const lastValue = agg[agg.length - 1];
+      /*eslint default-case: 0*/
+      switch (lastValue.type) {
+        case STATUS_WARNING:
+          switch (currentType) {
+            case STATUS_WARNING:
+              return agg;
+
+            default:
+              agg[agg.length - 1].endsAt = timestamp;
+              agg.push({
+                startsAt: timestamp,
+                endsAt: null,
+                type: currentType,
+              });
+              return agg;
+          }
+
+        case STATUS_CRITICAL:
+          switch (currentType) {
+            case STATUS_CRITICAL:
+              return agg;
+
+            default:
+              agg[agg.length - 1].endsAt = timestamp;
+              agg.push({
+                startsAt: timestamp,
+                endsAt: null,
+                type: currentType,
+              });
+              return agg;
+          }
+
+        case NAN_STRING:
+          switch (currentType) {
+            case NAN_STRING:
+              return agg;
+
+            default:
+              agg[agg.length - 1].endsAt = timestamp;
+              agg.push({
+                startsAt: timestamp,
+                endsAt: null,
+                type: currentType,
+              });
+              return agg;
+          }
+        case STATUS_HEALTH:
+          switch (currentType) {
+            case STATUS_HEALTH:
+              return agg;
+
+            default:
+              agg[agg.length - 1].endsAt = timestamp;
+              agg.push({
+                startsAt: timestamp,
+                endsAt: null,
+                type: currentType,
+              });
+              return agg;
+          }
+      }
+    }
+
+    return [{ startsAt: timestamp, endsAt: null, type: currentType }];
+  }, []);
 }
 
 // A custom hook that builds on useLocation to parse the query string.
