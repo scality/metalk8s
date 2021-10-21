@@ -442,6 +442,48 @@ extra component.
   define loki storage sizing depending on retention, ingestion rate,
   average size of logs, number of streams, ...
 
+Loki HA
+_______
+
+It is possible to set the hash ring store to :term:`memberlist`, so it relies
+on it and it can discover and communicate with the other Loki instances.
+This way, it allows any instance to replicate, on some or all the other
+instances (depending on the replication factor), every logs it receives.
+Members will be automatically discovered at runtime, by using the Loki
+headless service as the only member.
+
+Note that, if Loki cannot write enough replicas, it will be stuck (blocking
+the whole logging stack), waiting to be able to do so.
+It means, we need to configure the number of replicas depending on
+how many nodes we want to be able to lose without impacting the logging
+services and ensure the logging data resiliency.
+For example, on a 5 nodes cluster, if we configure a replica on each node,
+we can lose 2 nodes (``(number_of_nodes - 1) / 2``), on a 3 nodes cluster,
+we can lose 1 node.
+
+This mode is required to be able to handle an instance failure, if we configure
+fluent-bit to talk to all Loki instances, if one fails, fluent-bit will be
+stuck, waiting to be able to send its data. This way, as we use the service
+to talk to one instance which then replicates the data to other instances, if
+a Loki instance fails, fluent-bit will not know about it and will keep running.
+
+Since we use filesystem as Loki storage backend for the logs, we cannot
+ensure we will have the data if at some point an instance is down or the
+instance loses its volume.
+It means, if we query for this period of time and we hit this very instance
+we will have no data.
+Note that, if the instance is only down for few minutes (depending on the
+quantity of logs of the platform), it will be able to catch up what is still
+in other ingesters memory and not written yet to the storage backend.
+
+To solve this problem, we either need to be able to share this storage
+between all the instances (e.g. NFS), but it is probably a bad idea, either we
+need an extra component in front of the queriers, which takes care of querying
+each instance, deduplicating the entries and returning them.
+We have already considered the Loki Query Frontend, but its goal is only
+to split queries, dispatch the load on the multiple instances and do some
+caching.
+
 Configuration
 ~~~~~~~~~~~~~
 

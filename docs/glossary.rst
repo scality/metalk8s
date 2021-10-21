@@ -96,6 +96,11 @@ Glossary
 
      For more details, see `Loki documentation <https://grafana.com/docs/loki/latest/>`_.
 
+   memberlist
+     memberlist is a Go library that manages cluster membership and member
+     failure detection using a gossip based protocol.
+     memberlist is eventually consistent but converges quickly on average.
+
    Namespace
      A Namespace is a Kubernetes abstraction to support multiple virtual
      clusters backed by the same physical cluster, providing a scope for
