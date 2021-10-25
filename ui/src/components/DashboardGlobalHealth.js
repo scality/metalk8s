@@ -17,7 +17,8 @@ import {
 import { useIntl } from 'react-intl';
 import { useStartingTimeStamp } from '../containers/StartTimeProvider';
 import LoaderComponent from '@scality/core-ui/dist/components/loader/Loader.component';
-import CircleStatus, { StatusIcon } from './CircleStatus';
+import CircleStatus from './CircleStatus';
+import StatusIcon from './StatusIcon';
 import GlobalHealthBarComponent from '@scality/core-ui/dist/components/globalhealthbar/GlobalHealthBar.component';
 import { getClusterAlertSegmentQuery } from '../services/platformlibrary/metrics';
 import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';

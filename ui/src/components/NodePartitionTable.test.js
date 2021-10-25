@@ -357,7 +357,7 @@ describe('the system partition table', () => {
     await waitForLoadingToFinish();
 
     // Verify
-    expect(screen.getByLabelText('status warning')).toBeInTheDocument();
+    expect(screen.getByLabelText('Exclamation-circle status warning')).toBeInTheDocument();
     expect(screen.getByLabelText('97%')).toBeInTheDocument();
     expect(screen.getByText('/mnt/testpart')).toBeInTheDocument();
     // since we use the same query, so the number of global size is the same as usage
