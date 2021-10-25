@@ -1,5 +1,5 @@
 import React from 'react';
-import styled from 'styled-components';
+import { Icon } from '@scality/core-ui';
 
 import {
   STATUS_WARNING,
@@ -11,74 +11,45 @@ import {
   CIRCLE_DOUBLE_SIZE,
 } from '../constants.js';
 
-export const StatusIcon = styled.i`
-  color: ${(props) => {
-    const theme = props.theme;
-    let color;
-
-    switch (props.status) {
-      case STATUS_SUCCESS:
-        color = theme.statusHealthy;
-        break;
-      case STATUS_WARNING:
-        color = theme.statusWarning;
-        break;
-      case STATUS_CRITICAL:
-        color = theme.statusCritical;
-        break;
-      case STATUS_NONE:
-        color = theme.textTertiary;
-        break;
-      case STATUS_HEALTH:
-        color = theme.statusHealthy;
-        break;
-      default:
-        color = theme.textTertiary;
-    }
-    return color;
-  }};
-`;
+const getStyle = (status) => {
+  switch (status) {
+    case STATUS_SUCCESS:
+    case STATUS_HEALTH:
+      return {
+        name: "Check-circle",
+        color: "statusHealthy"
+      }
+    case STATUS_WARNING:
+      return {
+        name: "Exclamation-circle",
+        color: "statusWarning"
+      }
+    case STATUS_CRITICAL:
+      return {
+        name: "Times-circle",
+        color: "statusCritical"
+      }
+    case STATUS_NONE:
+    default: 
+      return {
+        name: "Dot-circle",
+        color: "infoPrimary"
+      }
+  }
+}
 
 class CircleStatus extends React.Component {
+  shouldComponentUpdate({ status }) {
+    return this.props.status !== status;
+  }
+
   render() {
     const { status, size } = this.props;
-    if (size === undefined || size === CIRCLE_BASE_SIZE) {
-      if (status === STATUS_NONE) {
-        return (
-          <StatusIcon
-            className="far fa-circle"
-            status={status}
-            aria-label={`status ${status}`}
-          />
-        );
-      } else {
-        return (
-          <StatusIcon
-            className="fas fa-circle"
-            status={status}
-            aria-label={`status ${status}`}
-          />
-        );
-      }
-    } else if (size === CIRCLE_DOUBLE_SIZE) {
-      if (status === STATUS_NONE) {
-        return (
-          <StatusIcon
-            className="far fa-circle fa-2x"
-            status={status}
-            aria-label={`status ${status}`}
-          />
-        );
-      } else {
-        return (
-          <StatusIcon
-            className="fas fa-circle fa-2x"
-            status={status}
-            aria-label={`status ${status}`}
-          />
-        );
-      }
-    }
+    const { name, color } = getStyle(status);
+    if (size === undefined || size === CIRCLE_BASE_SIZE || size === CIRCLE_DOUBLE_SIZE)
+      return (
+        <Icon name={name} color={color} size={size === CIRCLE_DOUBLE_SIZE ? "2x" : "1x"}/>
+      );
   }
 }
 
