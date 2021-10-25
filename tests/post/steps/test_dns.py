@@ -53,6 +53,11 @@ def test_dns(host):
     pass
 
 
+@scenario("../features/dns_resolution.feature", "DNS pods spreading")
+def test_dns_spread(host):
+    pass
+
+
 @then(parsers.parse("the hostname '{hostname}' should be resolved"))
 def resolve_hostname(utils_pod, host, hostname):
     with host.sudo():

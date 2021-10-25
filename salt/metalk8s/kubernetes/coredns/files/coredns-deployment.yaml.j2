@@ -20,12 +20,14 @@ spec:
       maxUnavailable: 1
   selector:
     matchLabels:
-      k8s-app: kube-dns
+      {{ label_selector | yaml(False) | indent(8) }}
   template:
     metadata:
       labels:
-        k8s-app: kube-dns
+        {{ label_selector | yaml(False) | indent(8) }}
     spec:
+      affinity:
+        {{ affinity | yaml(False) | indent(8) }}
       priorityClassName: system-cluster-critical
       tolerations:
         - key: "CriticalAddonsOnly"

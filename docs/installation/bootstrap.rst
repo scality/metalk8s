@@ -70,6 +70,11 @@ Configuration
         apiServer:
           featureGates:
             <feature_gate_name>: True
+        coreDNS:
+          podAntiAffinity:
+            hard: []
+            soft:
+              - topologyKey: kubernetes.io/hostname
 
 The ``networks`` field specifies a range of IP addresses written in CIDR
 notation for it's various subfields.
@@ -159,10 +164,27 @@ the bootstrap script is executed, those ISOs are automatically mounted and the
 system is configured to re-mount them automatically after a reboot.
 
 The ``kubernetes`` field can be omitted if you do not have any specific
-Kubernetes `Feature Gates`_ to enable or disable.
-If you need to enable or disable specific features for ``kube-apiserver``
-configure the corresponding entries in the
-``kubernetes.apiServer.featureGates`` mapping.
+Kubernetes `Feature Gates`_ to enable or disable and if you are ok with
+defaults kubernetes configuration.
+
+  If you need to enable or disable specific features for ``kube-apiserver``
+  configure the corresponding entries in the
+  ``kubernetes.apiServer.featureGates`` mapping.
+
+  If you want to override the default ``coreDNS`` podAntiAffinity, by default
+  MetalK8s use soft podAntiAffinity on hostname so that if it's possible
+  ``coreDNS`` pods will be spread on different infra nodes.
+  If you have more infra node than ``coreDNS`` replicas (default is 2), you
+  should set hard podAntiAffinity on hostname so that you are sure that
+  ``coreDNS`` pods sit on different node, to do so:
+
+    .. code-block:: yaml
+
+      kubernetes:
+        coreDNS:
+          podAntiAffinity:
+            hard:
+              - topologyKey: kubernetes.io/hostname
 
 .. _Feature Gates: https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/
 

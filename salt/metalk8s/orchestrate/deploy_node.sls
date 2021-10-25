@@ -307,3 +307,18 @@ Kill kube-controller-manager on all master nodes:
         pattern: kube-controller-manager
     - require:
       - salt: Run the highstate
+
+{%- if 'infra' in roles and 'infra' not in skip_roles %}
+
+# Trigger a restart of CoreDNS pods so that "soft anti-affinity" can be applied
+Restart CoreDNS pods:
+  module.run:
+    - metalk8s_kubernetes.rollout_restart:
+      - name: coredns
+      - namespace: kube-system
+      - kind: Deployment
+      - apiVersion: apps/v1
+    - require:
+      - metalk8s_cordon: Uncordon the node
+
+{%- endif %}
