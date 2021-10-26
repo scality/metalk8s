@@ -38,19 +38,14 @@ const getStyle = (status) => {
   }
 }
 
-class CircleStatus extends React.Component {
-  shouldComponentUpdate({ status }) {
-    return this.props.status !== status;
-  }
+const CircleStatus = React.memo((props) => {
+  const { status, size } = props;
+  const { name, color } = getStyle(status);
 
-  render() {
-    const { status, size } = this.props;
-    const { name, color } = getStyle(status);
-    if (size === undefined || size === CIRCLE_BASE_SIZE || size === CIRCLE_DOUBLE_SIZE)
-      return (
-        <Icon name={name} color={color} size={size === CIRCLE_DOUBLE_SIZE ? "2x" : "1x"} aria-label={`status ${status}`}/>
-      );
-  }
-}
+  if (size === undefined || size === CIRCLE_BASE_SIZE || size === CIRCLE_DOUBLE_SIZE)
+    return (
+      <Icon name={name} color={color} size={size === CIRCLE_DOUBLE_SIZE ? "2x" : "1x"} aria-label={`status ${status}`}/>
+    );
+});
 
 export default CircleStatus;

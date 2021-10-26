@@ -11,7 +11,6 @@ import {
 const StatusIcon = styled.i`
   color: ${(props) => {
     const theme = props.theme;
-    console.log(theme);
     let color;
 
     switch (props.status) {
