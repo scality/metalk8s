@@ -48,7 +48,7 @@ class CircleStatus extends React.Component {
     const { name, color } = getStyle(status);
     if (size === undefined || size === CIRCLE_BASE_SIZE || size === CIRCLE_DOUBLE_SIZE)
       return (
-        <Icon name={name} color={color} size={size === CIRCLE_DOUBLE_SIZE ? "2x" : "1x"}/>
+        <Icon name={name} color={color} size={size === CIRCLE_DOUBLE_SIZE ? "2x" : "1x"} aria-label={`status ${status}`}/>
       );
   }
 }
