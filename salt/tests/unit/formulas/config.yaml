@@ -227,6 +227,7 @@ metalk8s:
           _cases:
             "From metalk8s.kubernetes.coredns.deployed":
               extra_context:
+                replicas: 2
                 label_selector:
                   k8s-app: kube-dns
                 affinity:

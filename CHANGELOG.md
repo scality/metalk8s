@@ -7,9 +7,9 @@
   (PR[#3540](https://github.com/scality/metalk8s/pull/3540))
 
 - [#3574](https://github.com/scality/metalk8s/issues/3574) - Allow to manage
-  soft and hard `podAntiAffinity` for `CoreDNS` from Bootstrap configuration
-  file, with a default soft anti-affinity on hostname, so that if it's
-  possible each `CoreDNS` pods will sit on different infra node
+  number of replicas and, soft and hard `podAntiAffinity` for `CoreDNS`
+  from Bootstrap configuration file, with a default soft anti-affinity on
+  hostname, so that if it's possible each `CoreDNS` pods will sit on different infra node
   (PR[#3579](https://github.com/scality/metalk8s/pull/3579))
 
 ### Removals

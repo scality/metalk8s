@@ -3,9 +3,12 @@
 
 {%- set cluster_dns_ip = salt.metalk8s_network.get_cluster_dns_ip() %}
 
+{%- set pillar_coredns = pillar.kubernetes.get("coreDNS", {}) %}
+
+{%- set replicas = pillar_coredns.get("replicas") or 2 %}
 {%- set label_selector = {"k8s-app": "kube-dns"} %}
 
-{%- set pillar_affinities = pillar.kubernetes.get("coreDNS", {}).get("podAntiAffinity", {}) %}
+{%- set pillar_affinities = pillar_coredns.get("podAntiAffinity", {}) %}
 {#- NOTE: The default podAntiAffinity is a soft anti-affinity on hostname #}
 {%- set soft_affinities = pillar_affinities.get("soft") or [{"topologyKey": "kubernetes.io/hostname"}] %}
 {%- set hard_affinities = pillar_affinities.get("hard") or [] %}
@@ -80,6 +83,7 @@ Create coredns deployment:
     - name: salt://{{ slspath }}/files/coredns-deployment.yaml.j2
     - template: jinja
     - defaults:
+        replicas: {{ replicas }}
         label_selector: {{ label_selector | tojson }}
         affinity: {{ affinity | tojson }}
 

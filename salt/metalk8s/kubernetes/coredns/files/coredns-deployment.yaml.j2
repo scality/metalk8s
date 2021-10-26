@@ -13,7 +13,7 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/managed-by: salt
 spec:
-  replicas: 2
+  replicas: {{ replicas }}
   strategy:
     type: RollingUpdate
     rollingUpdate:

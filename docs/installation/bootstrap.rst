@@ -71,6 +71,7 @@ Configuration
           featureGates:
             <feature_gate_name>: True
         coreDNS:
+          replicas: 2
           podAntiAffinity:
             hard: []
             soft:
@@ -171,12 +172,13 @@ defaults kubernetes configuration.
   configure the corresponding entries in the
   ``kubernetes.apiServer.featureGates`` mapping.
 
-  If you want to override the default ``coreDNS`` podAntiAffinity, by default
-  MetalK8s use soft podAntiAffinity on hostname so that if it's possible
-  ``coreDNS`` pods will be spread on different infra nodes.
-  If you have more infra node than ``coreDNS`` replicas (default is 2), you
-  should set hard podAntiAffinity on hostname so that you are sure that
-  ``coreDNS`` pods sit on different node, to do so:
+  If you want to override the default ``coreDNS`` podAntiAffinity or number of
+  replicas, by default MetalK8s deploy 2 replicas and use soft podAntiAffinity
+  on hostname so that if it's possible ``coreDNS`` pods will be spread on
+  different infra nodes.
+  If you have more infra node than ``coreDNS`` replicas, you should set hard
+  podAntiAffinity on hostname so that you are sure that ``coreDNS`` pods sit
+  on different node, to do so:
 
     .. code-block:: yaml
 
