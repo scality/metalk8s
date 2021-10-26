@@ -12,7 +12,7 @@ node "node2" {
 
 package "distributors" {
     [distributor1]
-    [distributor2] 
+    [distributor2]
 }
 
 package "ingesters" {
@@ -30,10 +30,13 @@ package "queriers" {
     [querier2]
 }
 
-collector1 --> distributor1
-collector1 --> distributor2
-collector2 --> distributor1
-collector2 --> distributor2
+collector1 --> service
+collector2 --> service
+
+service --> distributors
+
+distributor1 --> distributor2 : replicate
+distributor2 --> distributor1 : replicate
 
 distributor1 --> ingester1
 distributor2 --> ingester2
