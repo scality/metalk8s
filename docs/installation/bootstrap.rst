@@ -146,7 +146,7 @@ The ``no_proxy`` entry specifies IPs that should be excluded from proxying,
 it must be a list of hosts, IP addresses or IP ranges in CIDR format.
 For example;
 
-   .. code-block:: shell
+   .. code-block:: yaml
 
       no_proxy:
         - localhost
