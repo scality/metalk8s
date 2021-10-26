@@ -9,6 +9,7 @@ module, while other methods can be found in `metalk8s_kubernetes_utils.py`,
 `metalk8s_drain.py` and `metalk8s_cordon.py`.
 """
 
+from datetime import datetime
 import json
 import logging
 import re
@@ -327,6 +328,32 @@ def object_exists(kind, apiVersion, name, **kwargs):
         salt-call metalk8s_kubernetes.object_exists kind="Node" apiVersion="v1" name="MyNode"
     """
     return get_object(kind=kind, apiVersion=apiVersion, name=name, **kwargs) is not None
+
+
+# Equivalent of "kubectl rollout restart"
+def rollout_restart(*args, **kwargs):
+    """
+    Simple helper to trigger a rollout restart of Deployment, DaemonSet, ...
+
+    CLI Examples:
+
+    .. code-block:: bash
+
+        salt-call metalk8s_kubernetes.rollout_restart kind="Deployment" apiVersion="apps/v1" name="MyDeployment" namespace="default"
+    """
+    patch = {
+        "spec": {
+            "template": {
+                "metadata": {
+                    "annotations": {
+                        "kubectl.kubernetes.io/restartedAt": datetime.now().isoformat()
+                    }
+                }
+            }
+        }
+    }
+
+    return update_object(patch=patch, *args, **kwargs)
 
 
 # Listing resources can benefit from a simpler signature

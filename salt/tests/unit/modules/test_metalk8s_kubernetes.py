@@ -431,6 +431,16 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
             )
             get_object_mock.assert_called_once()
 
+    def test_rollout_restart(self):
+        """
+        Tests the return of `rollout_restart` function
+        """
+        update_obj_mock = MagicMock(return_value="patched !!")
+
+        with patch.object(metalk8s_kubernetes, "update_object", update_obj_mock):
+            self.assertEqual(metalk8s_kubernetes.rollout_restart(), "patched !!")
+            update_obj_mock.assert_called_once()
+
     @utils.parameterized_from_cases(YAML_TESTS_CASES["list_objects"])
     def test_list_objects(
         self,
