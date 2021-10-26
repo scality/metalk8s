@@ -2469,7 +2469,7 @@ stages:
           property: bootstrap_backup_archive
           command: >
             ssh -F ssh_config bootstrap
-            "sudo find /var/lib/metalk8s -name 'backup_*.tar.gz'
+            "sudo find /var/lib/metalk8s/backups -name '*.tar.gz'
             -printf '%f\n' | sort | tail -n1"
           workdir: *terraform_workdir
           haltOnFailure: true
@@ -2477,7 +2477,7 @@ stages:
           name: Retrieve the backup archive from the bootstrap node
           command: >
             scp -F ssh_config
-            bootstrap:"/var/lib/metalk8s/%(prop:bootstrap_backup_archive)s"
+            bootstrap:"/var/lib/metalk8s/backups/%(prop:bootstrap_backup_archive)s"
             /tmp
           workdir: *terraform_workdir
           haltOnFailure: true
