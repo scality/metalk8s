@@ -91,52 +91,89 @@ def test_existing_alert_severity_check():
     assert models.ExistingAlert("test").labels.get("severity") is None
 
 
-class TestRelationship:
-    """Check the 'Relationship' logic."""
-
-    @staticmethod
-    def test_all():
-        """Verify the behavior of 'Relationship.ALL'."""
-        assert (
-            models.Relationship.ALL.build_query([models.ExistingAlert("test")])
-            == "(ALERTS{alertname='test', alertstate='firing'}) >= 1"
-        )
-        assert models.Relationship.ALL.build_query(
-            [models.ExistingAlert("test1"), models.ExistingAlert("test2")]
-        ) == (
-            "(ALERTS{alertname='test1', alertstate='firing'} and "
-            "ALERTS{alertname='test2', alertstate='firing'}) >= 1"
-        )
-
-        assert models.Relationship.ALL.build_query(
+@pytest.mark.parametrize(
+    "relationship,children,expected_promql,expected_jsonpath",
+    [
+        (
+            models.Relationship.ALL,
+            [models.ExistingAlert("test")],
+            "sum(ALERTS{alertname='test', alertstate='firing'}) >= 1",
+            "$[?((@.labels.alertname === 'test'))]",
+        ),
+        (
+            models.Relationship.ALL,
             [models.ExistingAlert("test1"), models.ExistingAlert("test2")],
-            group_by=["instance"],
-        ) == (
-            "sum by (instance) (ALERTS{alertname='test1', alertstate='firing'} "
-            "and ALERTS{alertname='test2', alertstate='firing'}) >= 1"
-        )
-
-    @staticmethod
-    def test_any():
-        """Verify the behavior of 'Relationship.ANY'."""
-        assert (
-            models.Relationship.ANY.build_query([models.ExistingAlert("test")])
-            == "(ALERTS{alertname='test', alertstate='firing'}) >= 1"
-        )
-        assert models.Relationship.ANY.build_query(
-            [models.ExistingAlert("test1"), models.ExistingAlert("test2")]
-        ) == (
-            "(ALERTS{alertname='test1', alertstate='firing'} or "
-            "ALERTS{alertname='test2', alertstate='firing'}) >= 1"
-        )
-
-        assert models.Relationship.ANY.build_query(
+            "sum(ALERTS{alertname='test1', alertstate='firing'} and "
+            "ALERTS{alertname='test2', alertstate='firing'}) >= 1",
+            "$[?((@.labels.alertname === 'test1') || "
+            "(@.labels.alertname === 'test2'))]",
+        ),
+        (
+            models.Relationship.ANY,
+            [models.ExistingAlert("test")],
+            "sum(ALERTS{alertname='test', alertstate='firing'}) >= 1",
+            "$[?((@.labels.alertname === 'test'))]",
+        ),
+        (
+            models.Relationship.ANY,
             [models.ExistingAlert("test1"), models.ExistingAlert("test2")],
+            "sum(ALERTS{alertname='test1', alertstate='firing'} or "
+            "ALERTS{alertname='test2', alertstate='firing'}) >= 1",
+            "$[?((@.labels.alertname === 'test1') || "
+            "(@.labels.alertname === 'test2'))]",
+        ),
+    ],
+)
+def test_relationship_without_group_by(
+    relationship, children, expected_promql, expected_jsonpath
+):
+    """Verify the behavior of 'Relationship' for non group_by cases."""
+    assert relationship.build_query(children) == expected_promql
+    assert relationship.build_json_path(children) == expected_jsonpath
+
+
+@pytest.mark.parametrize(
+    "relationship,children,expected_promql,expected_jsonpath",
+    [
+        (
+            models.Relationship.ALL,
+            [models.ExistingAlert("test1"), models.ExistingAlert("test2")],
+            "sum by (instance) (ALERTS{alertname='test1', alertstate='firing'} and "
+            "ALERTS{alertname='test2', alertstate='firing'}) >= 1",
+            "$[?(((@.labels.alertname === 'test1') || "
+            "(@.labels.alertname === 'test2')) && "
+            "(@.labels.instance === '{{ $labels.instance }}'))]",
+        ),
+        (
+            models.Relationship.ANY,
+            [models.ExistingAlert("test1"), models.ExistingAlert("test2")],
+            "sum by (instance) (ALERTS{alertname='test1', alertstate='firing'} or "
+            "ALERTS{alertname='test2', alertstate='firing'}) >= 1",
+            "$[?(((@.labels.alertname === 'test1') || "
+            "(@.labels.alertname === 'test2')) && "
+            "(@.labels.instance === '{{ $labels.instance }}'))]",
+        ),
+    ],
+)
+def test_relationship_with_group_by(
+    relationship, children, expected_promql, expected_jsonpath
+):
+    """Verify the behavior of 'Relationship' for group_by cases."""
+
+    assert (
+        relationship.build_query(
+            children,
             group_by=["instance"],
-        ) == (
-            "sum by (instance) (ALERTS{alertname='test1', alertstate='firing'} "
-            "or ALERTS{alertname='test2', alertstate='firing'}) >= 1"
         )
+        == expected_promql
+    )
+    assert (
+        relationship.build_json_path(
+            children,
+            group_by=["instance"],
+        )
+        == expected_jsonpath
+    )
 
 
 class TestDerivedAlert:
@@ -199,10 +236,13 @@ class TestDerivedAlert:
         }
         assert test_alert.alert_rule.annotations == {
             "children": "Child1{severity='warning'}, Child2{severity='critical'}",
+            "childrenJsonPath": "$[?((@.labels.alertname === 'Child1' && "
+            "@.labels.severity === 'warning') || (@.labels.alertname "
+            "=== 'Child2' && @.labels.severity === 'critical'))]",
             "someannotation": "othervalue",
         }
         assert test_alert.alert_rule.expr == (
-            "(ALERTS{alertname='Child1', alertstate='firing', severity='warning'} "
+            "sum(ALERTS{alertname='Child1', alertstate='firing', severity='warning'} "
             "or ALERTS{alertname='Child2', alertstate='firing', severity='critical'}) "
             ">= 1"
         )
@@ -237,6 +277,8 @@ def test_severity_pair():
     }
     assert test_warning.alert_rule.annotations == {
         "children": "Child1{severity='warning'}",
+        "childrenJsonPath": "$[?((@.labels.alertname === 'Child1' && "
+        "@.labels.severity === 'warning'))]",
         "someannotation": "othervalue",
         "summary": "The test object is degraded.",
     }
@@ -257,6 +299,8 @@ def test_severity_pair():
     }
     assert test_critical.alert_rule.annotations == {
         "children": "Child2{severity='critical'}",
+        "childrenJsonPath": "$[?((@.labels.alertname === 'Child2' && "
+        "@.labels.severity === 'critical'))]",
         "someannotation": "othervalue",
         "summary": "The test object is at risk.",
     }

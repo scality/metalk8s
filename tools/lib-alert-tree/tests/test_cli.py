@@ -201,18 +201,27 @@ def test_gen_rule():
               annotations:
                 children: Child1{severity='warning', somelabel=~'somevalue'}, Child2{severity='critical'},
                   Parent1{severity='warning'}
+                childrenJsonPath: $[?((@.labels.alertname === 'Child1' && @.labels.severity
+                  === 'warning' && @.labels.somelabel.match(new RegExp('^(?:somevalue)$')))
+                  || (@.labels.alertname === 'Child2' && @.labels.severity === 'critical')
+                  || (@.labels.alertname === 'Parent1' && @.labels.severity === 'warning'))]
                 summary: The root is degraded.
-              expr: (ALERTS{alertname='Child1', alertstate='firing', severity='warning', somelabel=~'somevalue'}
-                or ALERTS{alertname='Child2', alertstate='firing', severity='critical'} or
-                ALERTS{alertname='Parent1', alertstate='firing', severity='warning'}) >= 1
+              expr: sum(ALERTS{alertname='Child1', alertstate='firing', severity='warning',
+                somelabel=~'somevalue'} or ALERTS{alertname='Child2', alertstate='firing',
+                severity='critical'} or ALERTS{alertname='Parent1', alertstate='firing', severity='warning'})
+                >= 1
               for: 1m
               labels:
                 severity: warning
             - alert: Parent1
               annotations:
                 children: Child3{severity='warning'}, Child4{severity='warning'}
-              expr: (ALERTS{alertname='Child3', alertstate='firing', severity='warning'} or
-                ALERTS{alertname='Child4', alertstate='firing', severity='warning'}) >= 1
+                childrenJsonPath: $[?((@.labels.alertname === 'Child3' && @.labels.severity
+                  === 'warning') || (@.labels.alertname === 'Child4' && @.labels.severity
+                  === 'warning'))]
+              expr: sum(ALERTS{alertname='Child3', alertstate='firing', severity='warning'}
+                or ALERTS{alertname='Child4', alertstate='firing', severity='warning'}) >=
+                1
               for: 1m
               labels:
                 severity: warning
@@ -221,8 +230,11 @@ def test_gen_rule():
             - alert: RootAtRisk
               annotations:
                 children: Child3{severity='critical'}, Child4{severity='critical'}
+                childrenJsonPath: $[?((@.labels.alertname === 'Child3' && @.labels.severity
+                  === 'critical') || (@.labels.alertname === 'Child4' && @.labels.severity
+                  === 'critical'))]
                 summary: The root is at risk.
-              expr: (ALERTS{alertname='Child3', alertstate='firing', severity='critical'}
+              expr: sum(ALERTS{alertname='Child3', alertstate='firing', severity='critical'}
                 or ALERTS{alertname='Child4', alertstate='firing', severity='critical'}) >=
                 1
               for: 1m

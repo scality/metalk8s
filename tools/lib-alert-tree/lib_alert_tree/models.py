@@ -33,6 +33,11 @@ class BaseAlert(metaclass=abc.ABCMeta):
         """A PromQL query to retrieve the alert represented by this model."""
         return self.alert_rule.query
 
+    @property
+    def json_path(self):
+        """A JSON Path filter to retrieve the alert represented by this model."""
+        return self.alert_rule.child_json_path
+
     def __repr__(self):
         return f"{self.__class__.__qualname__}<{self!s}>"
 
@@ -112,9 +117,22 @@ class Relationship(enum.Enum):
         elif self == self.ANY:
             join_by = " or "
 
-        prefix = f"sum by ({', '.join(group_by)}) " if group_by else ""
+        prefix = f"sum by ({', '.join(group_by)}) " if group_by else "sum"
         children_query = join_by.join(child.query for child in children)
         return f"{prefix}({children_query}) >= 1"
+
+    @staticmethod
+    def build_json_path(children, group_by=None):
+        """Build a JSON Path to retrieve alert children."""
+        json_path_filters = " || ".join(child.json_path for child in children)
+
+        if group_by:
+            group_filters = " && ".join(
+                f"@.labels.{key} === '{{{{ $labels.{key} }}}}'" for key in group_by
+            )
+            return f"$[?(({json_path_filters}) && ({group_filters}))]"
+
+        return f"$[?({json_path_filters})]"
 
 
 class DerivedAlert(BaseAlert):
@@ -157,7 +175,12 @@ class DerivedAlert(BaseAlert):
     @property
     def alert_rule(self):
         self.params.setdefault("annotations", {}).update(
-            {"children": ", ".join(map(str, self.children))}
+            {
+                "children": ", ".join(map(str, self.children)),
+                "childrenJsonPath": self.relationship.build_json_path(
+                    self.children, self.group_by
+                ),
+            }
         )
         return prometheus.AlertRule(
             name=self.name,
