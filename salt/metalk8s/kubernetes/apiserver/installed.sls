@@ -1,5 +1,6 @@
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 {%- from "metalk8s/map.jinja" import certificates with context %}
+{%- from "metalk8s/map.jinja" import coredns with context %}
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
 
@@ -85,7 +86,7 @@ Create kube-apiserver Pod manifest:
           - --requestheader-group-headers=X-Remote-Group
           - --requestheader-username-headers=X-Remote-User
           - --secure-port=6443
-          - --service-account-issuer=https://kubernetes.default.svc.cluster.local
+          - --service-account-issuer=https://kubernetes.default.svc.{{ coredns.cluster_domain }}
           - --service-account-key-file=/etc/kubernetes/pki/sa.pub
           - --service-account-signing-key-file=/etc/kubernetes/pki/sa.key
           - --service-cluster-ip-range={{ networks.service }}

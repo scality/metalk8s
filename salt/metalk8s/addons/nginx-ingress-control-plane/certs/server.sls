@@ -1,4 +1,5 @@
 {%- from "metalk8s/map.jinja" import certificates with context %}
+{%- from "metalk8s/map.jinja" import coredns with context %}
 {%- from "metalk8s/map.jinja" import nginx_ingress with context %}
 
 {%- set private_key_path = "/etc/metalk8s/pki/nginx-ingress/control-plane-server.key" %}
@@ -28,7 +29,7 @@ Create Control-Plane Ingress server private key:
     'nginx-ingress-control-plane',
     'nginx-ingress-control-plane.metalk8s-ingress',
     'nginx-ingress-control-plane.metalk8s-ingress.svc',
-    'nginx-ingress-control-plane.metalk8s-ingress.svc.cluster.local',
+    'nginx-ingress-control-plane.metalk8s-ingress.svc.{{ coredns.cluster_domain }}',
     salt.metalk8s_network.get_control_plane_ingress_ip(),
 ] %}
 

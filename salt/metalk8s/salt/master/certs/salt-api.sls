@@ -1,4 +1,5 @@
 {%- from "metalk8s/map.jinja" import certificates with context %}
+{%- from "metalk8s/map.jinja" import coredns with context %}
 {%- from "metalk8s/map.jinja" import kube_api with context %}
 
 {%- set private_key_path = "/etc/salt/pki/api/salt-api.key" %}
@@ -26,7 +27,7 @@ Create Salt API private key:
     'salt-master',
     'salt-master.kube-system',
     'salt-master.kube-system.svc',
-    'salt-master.kube-system.svc.cluster.local',
+    'salt-master.kube-system.svc.{{ coredns.cluster_domain }}',
     grains['metalk8s']['control_plane_ip'],
 ]
 %}
