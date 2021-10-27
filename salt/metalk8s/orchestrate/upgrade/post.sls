@@ -2,3 +2,4 @@
 
 include:
   - metalk8s.addons.prometheus-operator.post-upgrade
+  - metalk8s.addons.logging.loki.post-upgrade

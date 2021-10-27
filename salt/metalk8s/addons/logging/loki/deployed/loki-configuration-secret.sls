@@ -8,6 +8,12 @@
     )
 %}
 
+{%- if "replication_factor" not in loki.spec.config.ingester.lifecycler.ring %}
+  {%- do loki.spec.config.ingester.lifecycler.ring.update(
+    {"replication_factor": (loki.spec.deployment.replicas / 2) | int + 1}
+  ) %}
+{%- endif %}
+
 Create Loki Configuration Secret:
   metalk8s_kubernetes.object_present:
     - manifest:

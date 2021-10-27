@@ -254,6 +254,63 @@ def patch_grafana_dashboards(manifest):
     return manifest
 
 
+def patch_doc(doc, path, value=None, remove=False):
+    key, _, path = path.partition(":")
+    next_key, _, _ = path.partition(":")
+
+    try:
+        key = int(key)
+    except ValueError:
+        pass
+
+    if next_key:
+        try:
+            int(next_key)
+        except ValueError:
+            default = {}
+        else:
+            default = []
+
+        try:
+            doc[key]
+        except IndexError:
+            doc.append(default)
+        except KeyError:
+            doc[key] = default
+        patch_doc(doc[key], path, value, remove)
+
+    elif remove:
+        del doc[key]
+    elif isinstance(key, int) and key > len(doc) - 1:
+        doc.append(value)
+    else:
+        doc[key] = value
+
+
+def get_patches(arg_patch):
+    patches = []
+    for patch in arg_patch:
+        patch_dict = dict(
+            zip(
+                ("kind", "namespace", "name", "path", "value"),
+                patch.split(",", 4),
+            )
+        )
+
+        try:
+            patch_dict["value"] = json.loads(patch_dict["value"])
+        except json.decoder.JSONDecodeError:
+            raise ValueError(
+                f"Unable to patch object {patch_dict['kind']}/{patch_dict['name']} "
+                f"in namespace {patch_dict['namespace']}: Invalid JSON value "
+                f"'{patch_dict['value']}' for path '{patch_dict['path']}'"
+            )
+
+        patches.append(patch_dict)
+
+    return patches
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("name", help="Denotes the name of the chart")
@@ -324,6 +381,16 @@ def main():
         "--kube-version",
         help="Override default kube-version used by helm",
     )
+    parser.add_argument(
+        "--patch",
+        action="append",
+        default=[],
+        help=(
+            "Patch the resulting manifest. Format is "
+            "'kind,namespace,name,path,value' where `path` is colon separated "
+            "(e.g. 'metadata:name') and `value` is a JSON object."
+        ),
+    )
 
     parser.add_argument("path", help="Path to the chart directory")
     args = parser.parse_args()
@@ -357,12 +424,23 @@ def main():
 
     template = subprocess.check_output(command)
 
+    patches = get_patches(args.patch)
+
     drop_prometheus_rules = {}
     if args.drop_prometheus_rules:
         with open(args.drop_prometheus_rules, "r") as fd:
             drop_prometheus_rules = yaml.safe_load(fd)
 
-    def fixup(doc):
+    def fixup(doc, patches):
+        def _doc_matches(doc, conditions):
+            return all(
+                [
+                    doc.get("metadata", {}).get("name") == conditions["name"],
+                    doc.get("metadata", {}).get("namespace") == conditions["namespace"],
+                    doc["kind"] == conditions["kind"],
+                ]
+            )
+
         if isinstance(doc, dict):
             kind = doc.get("kind")
             if drop_prometheus_rules and kind == "PrometheusRule":
@@ -373,6 +451,9 @@ def main():
                 == "1"
             ):
                 doc = patch_grafana_dashboards(doc)
+            for patch in patches:
+                if _doc_matches(doc, patch):
+                    patch_doc(doc, patch["path"], value=patch["value"])
 
         return (
             fixup_metadata(namespace=args.namespace, doc=fixup_doc(doc=doc))
@@ -407,7 +488,7 @@ def main():
     manifests = []
     for doc in yaml.safe_load_all(template):
         if keep_doc(doc):
-            doc = fixup(doc)
+            doc = fixup(doc, patches)
         if doc and not remove_doc(doc, args.remove_manifests):
             manifests.append(doc)
 
