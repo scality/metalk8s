@@ -244,12 +244,12 @@ extraVolumes: []
 ## Extra volume mounts that will be added to the loki container
 extraVolumeMounts: []
 
-extraPorts: []
 ## Additional ports to the loki services. Useful to expose extra container ports.
-# - port: 11811
-#   protocol: TCP
-#   name: http
-#   targetPort: http
+extraPorts:
+  - port: 7946
+    protocol: TCP
+    name: memberlist
+    targetPort: memberlist
 
 # Extra env variables to pass to the loki container
 env: []

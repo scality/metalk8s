@@ -1,12 +1,3 @@
-{%- set loki_defaults = salt.slsutil.renderer(
-        'salt://metalk8s/addons/logging/loki/config/loki.yaml', saltenv=saltenv
-    )
-%}
-{%- set loki = salt.metalk8s_service_configuration.get_service_conf(
-        'metalk8s-logging', 'metalk8s-loki-config', loki_defaults
-    )
-%}
-
 include:
   - ...deployed.namespace
 
@@ -81,11 +72,10 @@ Create fluent-bit ConfigMap:
                 Name           modify
                 Match          kube.*
                 Remove         logtag
-{%- for index in range(loki.spec.deployment.replicas) %}
             [Output]
                 Name           grafana-loki
                 Match          *
-                Url            http://loki-{{ index }}:3100/loki/api/v1/push
+                Url            http://loki:3100/loki/api/v1/push
                 TenantID       ""
                 BatchWait      1
                 BatchSize      10240
@@ -95,7 +85,6 @@ Create fluent-bit ConfigMap:
                 LabelMapPath   /fluent-bit/etc/labelmap.json
                 LineFormat     json
                 LogLevel       warn
-{%- endfor %}
           labelmap.json: |-
             {
               "kubernetes": {
