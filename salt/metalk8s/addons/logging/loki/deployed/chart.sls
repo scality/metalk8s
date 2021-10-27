@@ -131,6 +131,10 @@ spec:
     port: 3100
     protocol: TCP
     targetPort: http-metrics
+  - name: memberlist
+    port: 7946
+    protocol: TCP
+    targetPort: memberlist
   selector:
     app: loki
     release: loki
@@ -155,6 +159,10 @@ spec:
     port: 3100
     protocol: TCP
     targetPort: http-metrics
+  - name: memberlist
+    port: 7946
+    protocol: TCP
+    targetPort: memberlist
   selector:
     app: loki
     release: loki
@@ -210,6 +218,9 @@ spec:
         ports:
         - containerPort: 3100
           name: http-metrics
+          protocol: TCP
+        - containerPort: 7946
+          name: memberlist
           protocol: TCP
         readinessProbe:
           httpGet:
