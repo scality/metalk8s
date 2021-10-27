@@ -247,6 +247,41 @@ applied with Salt.
                       metalk8s.addons.prometheus-operator.deployed \\
                       saltenv=metalk8s-|version|
 
+.. _csc-grafana-customization:
+
+Grafana Configuration Customization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Add Extra Dashboard
+"""""""""""""""""""
+
+.. code-block:: yaml
+
+   ---
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     labels:
+       grafana_dashboard: '1'
+     name: <grafana-dashboard-name>
+     namespace: metalk8s-monitoring
+   data:
+     <dashboard-filename>.json: |-
+       <dashboard-definition>
+
+.. note::
+
+   The ConfigMap must be deployed in `metalk8s-monitoring` namespace and
+   the `grafana_dashboard: '1'` label in the example above is mandatory
+   for the dashboard to be taken into account.
+
+Then this manifest must be applied.
+
+.. code-block:: shell
+
+    root@bootstrap $ kubectl --kubeconfig=/etc/kubernetes/admin.conf \
+                       apply -f <path-to-the-manifest>
+
 .. _csc-prometheus-customization:
 
 Prometheus Configuration Customization
