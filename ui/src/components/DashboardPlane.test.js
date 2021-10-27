@@ -67,7 +67,7 @@ describe("the dashboard network's plane panel", () => {
     // Have to any type jest.fn function to avoid Flow warning for mockImplementation()
     (useHighestSeverityAlerts: any).mockImplementation(() => noAlerts);
     render(<DashboardPlaneHealth />);
-    expect(screen.getAllByLabelText(`status ${STATUS_HEALTH}`)).toHaveLength(
+    expect(screen.getAllByLabelText(`Check-circle status ${STATUS_HEALTH}`)).toHaveLength(
       NB_ITEMS,
     );
   });
@@ -80,7 +80,7 @@ describe("the dashboard network's plane panel", () => {
     render(<DashboardPlaneHealth />);
 
     // Verify
-    expect(screen.getAllByLabelText(`status ${STATUS_WARNING}`)).toHaveLength(
+    expect(screen.getAllByLabelText(`Exclamation-circle status ${STATUS_WARNING}`)).toHaveLength(
       NB_ITEMS,
     );
     expect(screen.getAllByTestId('alert-link')).toHaveLength(NB_ITEMS);
@@ -94,7 +94,7 @@ describe("the dashboard network's plane panel", () => {
     render(<DashboardPlaneHealth />);
 
     // Verify
-    expect(screen.getAllByLabelText(`status ${STATUS_CRITICAL}`)).toHaveLength(
+    expect(screen.getAllByLabelText(`Times-circle status ${STATUS_CRITICAL}`)).toHaveLength(
       NB_ITEMS,
     );
     expect(screen.getAllByTestId('alert-link')).toHaveLength(NB_ITEMS);
