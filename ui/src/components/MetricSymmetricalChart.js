@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useQuery, type UseQueryOptions } from 'react-query';
 import {
   LineTemporalChart,
@@ -45,7 +45,7 @@ const MetricSymmetricalChart = ({
 
   const startTimeRef = useRef(startingTimeISO);
   const chartStartTimeRef = useRef(startingTimeISO);
-  const seriesRef = useRef();
+  const [series, setSeries] = useState([]);
 
   startTimeRef.current = startingTimeISO;
 
@@ -109,35 +109,62 @@ const MetricSymmetricalChart = ({
     metricBelowAvgQuery.isLoading;
 
   useEffect(() => {
-    if (!isMetricsDataLoading && !showAvg) {
+    if (
+      !isMetricsDataLoading &&
+      !showAvg &&
+      //solve the graph doesn't get updated
+      metricAboveQuery.data &&
+      metricBelowQuery.data
+    ) {
       // disable avg
       chartStartTimeRef.current = startTimeRef.current;
-      seriesRef.current = getSeriesForSymmetricalChart(
-        metricAboveQuery.data,
-        metricBelowQuery.data,
-        nodeIPAddress.name,
-        metricPrefixAbove,
-        metricPrefixBelow,
+      setSeries(
+        getSeriesForSymmetricalChart(
+          metricAboveQuery.data,
+          metricBelowQuery.data,
+          nodeIPAddress.name,
+          metricPrefixAbove,
+          metricPrefixBelow,
+        ),
       );
-    } else if (!isMetricsAvgDataLoading && !isMetricsDataLoading && showAvg) {
+    } else if (
+      !isMetricsAvgDataLoading &&
+      !isMetricsDataLoading &&
+      showAvg &&
+      metricAboveQuery.data &&
+      metricBelowQuery.data &&
+      metricAboveAvgQuery.data &&
+      metricBelowAvgQuery.data
+    ) {
       // enable cluster avg
       chartStartTimeRef.current = startTimeRef.current;
-      seriesRef.current = getSeriesForSymmetricalChart(
-        metricAboveQuery.data,
-        metricBelowQuery.data,
-        nodeIPAddress.name,
-        metricPrefixAbove,
-        metricPrefixBelow,
-        metricAboveAvgQuery.data,
-        metricBelowAvgQuery.data,
+      setSeries(
+        getSeriesForSymmetricalChart(
+          metricAboveQuery.data,
+          metricBelowQuery.data,
+          nodeIPAddress.name,
+          metricPrefixAbove,
+          metricPrefixBelow,
+          metricAboveAvgQuery.data,
+          metricBelowAvgQuery.data,
+        ),
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMetricsDataLoading, isMetricsAvgDataLoading, showAvg]);
+  }, [
+    isMetricsDataLoading,
+    isMetricsAvgDataLoading,
+    showAvg,
+    //solve the graph doesn't get updated
+    JSON.stringify(metricAboveQuery.data),
+    JSON.stringify(metricBelowQuery.data),
+    JSON.stringify(metricAboveAvgQuery.data),
+    JSON.stringify(metricBelowAvgQuery.data),
+  ]);
 
   return (
     <LineTemporalChart
-      series={seriesRef.current || []}
+      series={series}
       height={HEIGHT_SYMMETRICAL_CHART}
       title={title}
       startingTimeStamp={Date.parse(chartStartTimeRef.current) / 1000}

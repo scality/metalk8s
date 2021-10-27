@@ -1,11 +1,9 @@
-import React, { useRef, useEffect } from 'react';
-import { useQuery } from 'react-query';
+import React, { useCallback } from 'react';
+import { LineTemporalChart } from '@scality/core-ui/dist/next';
 import {
-  LineTemporalChart,
-  useMetricsTimeSpan,
-} from '@scality/core-ui/dist/next';
-import { useStartingTimeStamp } from '../containers/StartTimeProvider';
-import { getSeriesForSymmetricalChart, getSingleResourceSerie } from '../services/graphUtils';
+  getSeriesForSymmetricalChart,
+  getSingleResourceSerie,
+} from '../services/graphUtils';
 import {
   getVolumeIOPSReadQuery,
   getVolumeIOPSWriteQuery,
@@ -15,114 +13,12 @@ import {
   getVolumeThroughputWriteQuery,
   getVolumeUsageQuery,
 } from '../services/platformlibrary/metrics';
-import type { UseQueryResult } from 'react-query';
 import type { TimeSpanProps } from '../services/platformlibrary/metrics';
-import { YAXIS_TITLE_READ_WRITE } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
-
-const useSingleChartSerie = ({
-  getQuery,
-  resourceName,
-}: {
-  getQuery: (timeSpanProps: TimeSpanProps) => UseQueryResult,
-  resourceName: string,
-}) => {
-  const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
-  const { frequency } = useMetricsTimeSpan();
-
-  const startTimeRef = useRef(startingTimeISO);
-  const chartStartTimeRef = useRef(startingTimeISO);
-  const seriesRef = useRef();
-
-  startTimeRef.current = startingTimeISO;
-
-  const query = useQuery(
-    getQuery({
-      startingTimeISO,
-      currentTimeISO,
-      frequency,
-    }),
-  );
-
-  const isLoading = query.isLoading;
-
-  useEffect(() => {
-    if (!isLoading) {
-      chartStartTimeRef.current = startTimeRef.current;
-      seriesRef.current = getSingleResourceSerie(
-        query.data,
-        resourceName,
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]);
-
-  return {
-    series: seriesRef.current || [],
-    startingTimeStamp: Date.parse(chartStartTimeRef.current) / 1000,
-    isLoading,
-  };
-};
-
-const useSymetricalChartSeries = ({
-  getQueryAbove,
-  getQueryBelow,
-  aboveQueryPrefix,
-  belowQueryPrefix,
-  resourceName,
-}: {
-  getQueryAbove: (timeSpanProps: TimeSpanProps) => UseQueryResult,
-  getQueryBelow: (timeSpanProps: TimeSpanProps) => UseQueryResult,
-  resourceName: string,
-  aboveQueryPrefix: string,
-  belowQueryPrefix: string,
-}) => {
-  const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
-  const { frequency } = useMetricsTimeSpan();
-
-  const startTimeRef = useRef(startingTimeISO);
-  const chartStartTimeRef = useRef(startingTimeISO);
-  const seriesRef = useRef();
-
-  startTimeRef.current = startingTimeISO;
-
-  const aboveQuery = useQuery(
-    getQueryAbove({
-      startingTimeISO,
-      currentTimeISO,
-      frequency,
-    }),
-  );
-
-  const belowQuery = useQuery(
-    getQueryBelow({
-      startingTimeISO,
-      currentTimeISO,
-      frequency,
-    }),
-  );
-
-  const isLoading = aboveQuery.isLoading || belowQuery.isLoading;
-
-  useEffect(() => {
-    if (!isLoading) {
-      chartStartTimeRef.current = startTimeRef.current;
-      seriesRef.current = getSeriesForSymmetricalChart(
-        belowQuery.data,
-        aboveQuery.data,
-        resourceName,
-        aboveQueryPrefix,
-        belowQueryPrefix,
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]);
-
-  return {
-    series: seriesRef.current || [],
-    startingTimeStamp: Date.parse(chartStartTimeRef.current) / 1000,
-    isLoading,
-  };
-};
+import {
+  UNIT_RANGE_BS,
+  YAXIS_TITLE_READ_WRITE,
+} from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
+import { useSingleChartSerie, useSymetricalChartSeries } from '../hooks';
 
 export const VolumeThroughputChart = ({
   instanceIp,
@@ -138,9 +34,17 @@ export const VolumeThroughputChart = ({
       getVolumeThroughputWriteQuery(instanceIp, deviceName, timeSpanProps),
     getQueryBelow: (timeSpanProps: TimeSpanProps) =>
       getVolumeThroughputReadQuery(instanceIp, deviceName, timeSpanProps),
-    aboveQueryPrefix: 'write',
-    belowQueryPrefix: 'read',
-    resourceName: volumeName,
+    transformPrometheusDataToSeries: useCallback(
+      (prometheusResultAbove, prometheusResultBelow) =>
+        getSeriesForSymmetricalChart(
+          prometheusResultAbove,
+          prometheusResultBelow,
+          volumeName,
+          'write',
+          'read',
+        ),
+      [volumeName],
+    ),
   });
 
   return (
@@ -151,13 +55,7 @@ export const VolumeThroughputChart = ({
       startingTimeStamp={startingTimeStamp}
       yAxisType={'symmetrical'}
       yAxisTitle={YAXIS_TITLE_READ_WRITE}
-      unitRange={[
-        { threshold: 0, label: 'B/s' },
-        { threshold: 1024, label: 'KiB/s' },
-        { threshold: 1024 * 1024, label: 'MiB/s' },
-        { threshold: 1024 * 1024 * 1024, label: 'GiB/s' },
-        { threshold: 1024 * 1024 * 1024 * 1024, label: 'TiB/s' },
-      ]}
+      unitRange={UNIT_RANGE_BS}
       isLoading={isLoading}
       isLegendHided={false}
     />
@@ -178,9 +76,17 @@ export const VolumeLatencyChart = ({
       getVolumeLatencyWriteQuery(instanceIp, deviceName, timeSpanProps),
     getQueryBelow: (timeSpanProps: TimeSpanProps) =>
       getVolumeLatencyReadQuery(instanceIp, deviceName, timeSpanProps),
-    aboveQueryPrefix: 'write',
-    belowQueryPrefix: 'read',
-    resourceName: volumeName,
+    transformPrometheusDataToSeries: useCallback(
+      (prometheusResultAbove, prometheusResultBelow) =>
+        getSeriesForSymmetricalChart(
+          prometheusResultAbove,
+          prometheusResultBelow,
+          volumeName,
+          'write',
+          'read',
+        ),
+      [volumeName],
+    ),
   });
 
   return (
@@ -217,9 +123,17 @@ export const VolumeIOPSChart = ({
       getVolumeIOPSWriteQuery(instanceIp, deviceName, timeSpanProps),
     getQueryBelow: (timeSpanProps: TimeSpanProps) =>
       getVolumeIOPSReadQuery(instanceIp, deviceName, timeSpanProps),
-    aboveQueryPrefix: 'write',
-    belowQueryPrefix: 'read',
-    resourceName: volumeName,
+    transformPrometheusDataToSeries: useCallback(
+      (prometheusResultAbove, prometheusResultBelow) =>
+        getSeriesForSymmetricalChart(
+          prometheusResultAbove,
+          prometheusResultBelow,
+          volumeName,
+          'write',
+          'read',
+        ),
+      [volumeName],
+    ),
   });
 
   return (
@@ -246,9 +160,14 @@ export const VolumeUsageChart = ({
   volumeName: string,
 }) => {
   const { series, startingTimeStamp, isLoading } = useSingleChartSerie({
-    getQuery: (timeSpanProps: TimeSpanProps) => getVolumeUsageQuery(pvcName, namespace, timeSpanProps),
-    resourceName: volumeName
-  })
+    getQuery: (timeSpanProps: TimeSpanProps) =>
+      getVolumeUsageQuery(pvcName, namespace, timeSpanProps),
+    transformPrometheusDataToSeries: useCallback(
+      (prometheusResult) =>
+        getSingleResourceSerie(prometheusResult, volumeName),
+      [volumeName],
+    ),
+  });
 
   return (
     <LineTemporalChart
@@ -262,4 +181,3 @@ export const VolumeUsageChart = ({
     />
   );
 };
-

@@ -1,24 +1,28 @@
 //@flow
-import React, { type Node } from 'react';
-import { useEffect, useState, createContext, useContext } from 'react';
+import React, { type Node, useRef } from 'react';
+import { useEffect, useState, createContext } from 'react';
 import { useSelector } from 'react-redux';
 import { useQuery } from 'react-query';
 
 import type { RootState } from './ducks/reducer';
 import { coreV1 } from './services/k8s/api';
 import {
-  queryTimeSpansCodes,
   REFRESH_METRICS_GRAPH,
   SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
   VOLUME_CONDITION_LINK,
   STATUS_NONE,
 } from './constants';
-import { compareHealth, useURLQuery } from './services/utils';
+import { compareHealth } from './services/utils';
 import type { V1NodeList } from '@kubernetes/client-node';
 import { useAlerts } from './containers/AlertProvider';
 import { getVolumeListData } from './services/NodeVolumesUtils';
 import { filterAlerts, getHealthStatus } from './services/alertUtils';
-
+import { useStartingTimeStamp } from './containers/StartTimeProvider';
+import type { PrometheusQueryResult } from './services/prometheus/api';
+import type { TimeSpanProps } from './services/platformlibrary/metrics';
+import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
+import { type Serie } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
+import type { UseQueryResult } from 'react-query';
 /**
  * It brings automatic strong typing to native useSelector by anotating state with RootState.
  * It should be used instead of useSelector to benefit from RootState typing
@@ -32,31 +36,23 @@ export const useTypedSelector: <TSelected>(
  * It retrieves the nodes data through react-queries
  */
 export const useNodes = (): V1NodeList => {
-  const [nodes, setNodes] = useState([]);
-
   const nodesQuery = useQuery(
     'nodesNames',
     () =>
       coreV1.listNode().then((res) => {
-        if (res.response.statusCode === 200 && res.body?.items)
+        if (res.response.statusCode === 200 && res.body?.items) {
           return res.body?.items;
-        return null;
+        }
+        return [];
       }),
     {
       refetchOnMount: false,
       refetchOnWindowFocus: false,
       refetchInterval: REFRESH_METRICS_GRAPH,
-      refetchIntervalInBackground: true,
     },
   );
 
-  useEffect(() => {
-    if (!nodesQuery.isLoading && nodesQuery.isSuccess) {
-      setNodes(nodesQuery.data);
-    }
-  }, [nodesQuery]);
-
-  return nodes;
+  return nodesQuery.data || [];
 };
 
 export const useNodeAddressesSelector = (
@@ -94,37 +90,6 @@ export const MetricsTimeSpanProvider = ({ children }: { children: Node }) => {
   );
 };
 
-export const useMetricsTimeSpan = (): [
-  MetricsTimeSpan,
-  MetricsTimeSpanSetter,
-] => {
-  const query = useURLQuery();
-  const queryTimeSpan = query.get('from');
-  const metricsTimeSpanContext = useContext(MetricsTimeSpanContext);
-
-  if (!metricsTimeSpanContext) {
-    throw new Error(
-      "useMetricsTimeSpan hook can't be use outside <MetricsTimeSpanProvider/>",
-    );
-  }
-
-  const { metricsTimeSpan, setMetricsTimeSpan } = metricsTimeSpanContext;
-
-  // Sync url timespan to local timespan
-  useEffect(() => {
-    if (queryTimeSpan) {
-      const formatted = queryTimeSpansCodes.find(
-        (item) => item.label === queryTimeSpan,
-      );
-      if (formatted && formatted.duration) {
-        setMetricsTimeSpan(formatted.duration);
-      }
-    }
-  }, [setMetricsTimeSpan, queryTimeSpan]);
-
-  return [metricsTimeSpan, setMetricsTimeSpan];
-};
-
 export const useVolumesWithAlerts = (nodeName?: string) => {
   const { alerts } = useAlerts();
   const volumeListData = useTypedSelector((state) =>
@@ -152,4 +117,106 @@ export const useVolumesWithAlerts = (nodeName?: string) => {
     compareHealth(volumeB.health, volumeA.health),
   );
   return volumeListWithStatus;
+};
+
+export const useSingleChartSerie = ({
+  getQuery,
+  transformPrometheusDataToSeries, //It should be memoised using useCallback
+}: {
+  getQuery: (timeSpanProps: TimeSpanProps) => UseQueryResult,
+  transformPrometheusDataToSeries: (
+    prometheusResult: PrometheusQueryResult,
+  ) => Serie[],
+}) => {
+  const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
+  const { frequency } = useMetricsTimeSpan();
+
+  const startTimeRef = useRef(startingTimeISO);
+  const chartStartTimeRef = useRef(startingTimeISO);
+  const [series, setSeries] = useState([]);
+
+  startTimeRef.current = startingTimeISO;
+
+  const query = useQuery(
+    getQuery({
+      startingTimeISO,
+      currentTimeISO,
+      frequency,
+    }),
+  );
+
+  const isLoading = query.isLoading;
+
+  useEffect(() => {
+    if (!isLoading && query.data) {
+      chartStartTimeRef.current = startTimeRef.current;
+      setSeries(transformPrometheusDataToSeries(query.data));
+    }
+  }, [isLoading, transformPrometheusDataToSeries, JSON.stringify(query.data)]);
+
+  return {
+    series: series,
+    startingTimeStamp: Date.parse(chartStartTimeRef.current) / 1000,
+    isLoading,
+  };
+};
+
+export const useSymetricalChartSeries = ({
+  getQueryAbove,
+  getQueryBelow,
+  transformPrometheusDataToSeries, //It should be memoised using useCallback
+}: {
+  getQueryAbove: (timeSpanProps: TimeSpanProps) => UseQueryResult,
+  getQueryBelow: (timeSpanProps: TimeSpanProps) => UseQueryResult,
+  transformPrometheusDataToSeries: (
+    prometheusResultAbove: PrometheusQueryResult,
+    prometheusResultBelow: PrometheusQueryResult,
+  ) => Serie[],
+}) => {
+  const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
+  const { frequency } = useMetricsTimeSpan();
+
+  const startTimeRef = useRef(startingTimeISO);
+  const chartStartTimeRef = useRef(startingTimeISO);
+  const [series, setSeries] = useState([]);
+
+  startTimeRef.current = startingTimeISO;
+
+  const aboveQuery = useQuery(
+    getQueryAbove({
+      startingTimeISO,
+      currentTimeISO,
+      frequency,
+    }),
+  );
+
+  const belowQuery = useQuery(
+    getQueryBelow({
+      startingTimeISO,
+      currentTimeISO,
+      frequency,
+    }),
+  );
+
+  const isLoading = aboveQuery.isLoading || belowQuery.isLoading;
+
+  useEffect(() => {
+    if (!isLoading) {
+      chartStartTimeRef.current = startTimeRef.current;
+      setSeries(
+        transformPrometheusDataToSeries(aboveQuery.data, belowQuery.data),
+      );
+    }
+  }, [
+    isLoading,
+    transformPrometheusDataToSeries,
+    JSON.stringify(aboveQuery.data),
+    JSON.stringify(belowQuery.data),
+  ]);
+
+  return {
+    series: series || [],
+    startingTimeStamp: Date.parse(chartStartTimeRef.current) / 1000,
+    isLoading,
+  };
 };
