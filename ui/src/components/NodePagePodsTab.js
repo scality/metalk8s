@@ -160,7 +160,7 @@ const NodePagePodsTab = (props) => {
       {
         Header: 'Status',
         accessor: 'status',
-        cellStyle: { width: '100px' },
+        cellStyle: { width: '7rem' },
         Cell: (cellProps) => {
           const { status, numContainer, numContainerRunning } = cellProps.value;
           return status === STATUS_RUNNING ? (
@@ -179,7 +179,7 @@ const NodePagePodsTab = (props) => {
       {
         Header: 'Age',
         accessor: 'age',
-        cellStyle: { width: '60px' },
+        cellStyle: { width: '4.5rem' },
       },
       {
         Header: 'Namespace',
@@ -188,7 +188,7 @@ const NodePagePodsTab = (props) => {
       {
         Header: 'Logs',
         accessor: 'log',
-        cellStyle: { textAlign: 'center', width: '40px' },
+        cellStyle: { textAlign: 'center', width: '2.5rem' },
         Cell: ({ value }) => {
           return (
             <Tooltip

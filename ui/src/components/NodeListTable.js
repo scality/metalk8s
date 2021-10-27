@@ -421,7 +421,7 @@ const NodeListTable = (props) => {
       {
         Header: 'Health',
         accessor: 'health',
-        cellStyle: { textAlign: 'center', width: '70px' },
+        cellStyle: { textAlign: 'center', width: '4.5rem' },
         Cell: (cellProps) => {
           const { health } = cellProps.value;
           return <CircleStatus status={health} />;

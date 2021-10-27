@@ -51,7 +51,7 @@ const InformationSpan = styled.div`
 
 const InformationLabel = styled.span`
   display: inline-block;
-  min-width: 150px;
+  min-width: 7rem;
   font-weight: ${fontWeight.bold};
   font-size: ${fontSize.base};
   color: ${(props) => props.theme.textSecondary};
