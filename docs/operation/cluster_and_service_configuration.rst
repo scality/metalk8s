@@ -247,6 +247,41 @@ applied with Salt.
                       metalk8s.addons.prometheus-operator.deployed \\
                       saltenv=metalk8s-|version|
 
+.. _csc-grafana-customization:
+
+Grafana Configuration Customization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Add Extra Dashboard
+"""""""""""""""""""
+
+.. code-block:: yaml
+
+   ---
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     labels:
+       grafana_dashboard: '1'
+     name: <grafana-dashboard-name>
+     namespace: metalk8s-monitoring
+   data:
+     <dashboard-filename>.json: |-
+       <dashboard-definition>
+
+.. note::
+
+   The ConfigMap must be deployed in `metalk8s-monitoring` namespace and
+   the `grafana_dashboard: '1'` label in the example above is mandatory
+   for the dashboard to be taken into account.
+
+Then this manifest must be applied.
+
+.. code-block:: shell
+
+    root@bootstrap $ kubectl --kubeconfig=/etc/kubernetes/admin.conf \
+                       apply -f <path-to-the-manifest>
+
 .. _csc-prometheus-customization:
 
 Prometheus Configuration Customization
@@ -462,6 +497,48 @@ For more details on Alert Rules, see the official
 `Prometheus alerting rules documentation`_
 
 .. _Prometheus alerting rules documentation: https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/
+
+Adding New Service to Monitor
+"""""""""""""""""""""""""""""
+
+To tell monitor to scrape metrics for a Pod, a new ``ServiceMonitor`` manifest
+must be created.
+
+.. code-block:: yaml
+
+   ---
+   apiVersion: monitoring.coreos.com/v1
+   kind: ServiceMonitor
+   metadata:
+     labels:
+       metalk8s.scality.com/monitor: ''
+     name: <service-monitor-name>
+     namespace: <namespace-name>
+   spec:
+     endpoints:
+       - port: <port-name>
+     namespaceSelector:
+       matchNames:
+         - <namespace-name>
+     selector:
+       matchLabels:
+         app.kubernetes.io/name: <app-name>
+
+.. note::
+
+   The `metalk8s.scality.com/monitor: ''` label in the example above
+   is mandatory for Prometheus to take the new service to monitor into account.
+
+Then this manifest must be applied.
+
+.. code-block:: shell
+
+    root@bootstrap $ kubectl --kubeconfig=/etc/kubernetes/admin.conf \
+                       apply -f <path-to-the-manifest>
+
+For details and an example, see the `Prometheus Operator documentation`_.
+
+.. _Prometheus Operator documentation: https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/user-guides/getting-started.md#related-resources
 
 .. _csc-prometheus-apply-cfg:
 
