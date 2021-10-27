@@ -467,6 +467,48 @@ For more details on Alert Rules, see the official
 
 .. _Prometheus alerting rules documentation: https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/
 
+Adding New Service to Monitor
+"""""""""""""""""""""""""""""
+
+To tell monitor to scrape metrics for a Pod, a new ``ServiceMonitor`` manifest
+must be created.
+
+.. code-block:: yaml
+
+   ---
+   apiVersion: monitoring.coreos.com/v1
+   kind: ServiceMonitor
+   metadata:
+     labels:
+       metalk8s.scality.com/monitor: ''
+     name: <service-monitor-name>
+     namespace: <namespace-name>
+   spec:
+     endpoints:
+       - port: <port-name>
+     namespaceSelector:
+       matchNames:
+         - <namespace-name>
+     selector:
+       matchLabels:
+         app.kubernetes.io/name: <app-name>
+
+.. note::
+
+   The `metalk8s.scality.com/monitor: ''` label in the example above
+   is mandatory for Prometheus to take the new service to monitor into account.
+
+Then this manifest must be applied.
+
+.. code-block:: shell
+
+    root@bootstrap $ kubectl --kubeconfig=/etc/kubernetes/admin.conf \
+                       apply -f <path-to-the-manifest>
+
+For details and an example, see the `Prometheus Operator documentation`_.
+
+.. _Prometheus Operator documentation: https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/user-guides/getting-started.md#related-resources
+
 .. _csc-prometheus-apply-cfg:
 
 Applying configuration
