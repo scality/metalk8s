@@ -32,7 +32,7 @@ import { useLocation } from 'react-router-dom';
 import { matchPath, RouteProps } from 'react-router';
 
 const Logo = styled.img`
-  height: 30px;
+  height: 2.143rem;
 `;
 
 export const LoadingNavbar = ({ logo }: { logo: string }): Node => (

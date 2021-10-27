@@ -12,7 +12,15 @@ import { Steppers, Loader } from '@scality/core-ui';
 import { Button } from '@scality/core-ui/dist/next';
 import isEmpty from 'lodash.isempty';
 import { deployNodeAction } from '../ducks/app/nodes';
-import { NodeTab } from './style/CommonLayoutStyle';
+import {
+  NodeTab,
+  OverviewInformationLabel,
+  OverviewInformationSpan,
+  OverviewInformationValue,
+  OverviewResourceName,
+  ActiveAlertTitle,
+  ActiveAlertWrapper,
+} from './style/CommonLayoutStyle';
 import CircleStatus from './CircleStatus';
 import { API_STATUS_UNKNOWN } from '../constants';
 import { useIntl } from 'react-intl';
@@ -23,33 +31,11 @@ const TabContentContainer = styled.div`
   height: calc(100vh - 40px - 2.8rem);
 `;
 
-const InformationSpan = styled.div`
-  padding: 0 0 ${padding.large} ${padding.large};
-`;
-
-const InformationLabel = styled.span`
-  display: inline-block;
-  min-width: 150px;
-  font-weight: ${fontWeight.bold};
-  font-size: ${fontSize.base};
-  color: ${(props) => props.theme.textSecondary};
-`;
-
-const InformationValue = styled.span`
-  color: ${(props) => props.theme.textPrimary};
-  font-size: ${fontSize.base};
-`;
-
 const NodeNameContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: ${padding.large} 0 ${padding.larger} ${padding.large};
-`;
-
-const NodeName = styled.span`
-  font-size: ${fontSize.larger};
-  padding-left: ${padding.smaller};
 `;
 
 const StatusText = styled.span`
@@ -62,20 +48,6 @@ const Detail = styled.div`
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-`;
-
-const ActiveAlertTitle = styled.div`
-  color: ${(props) => props.theme.textPrimary};
-  font-size: ${fontSize.base};
-  font-weight: ${fontWeight.bold};
-  padding: 0 0 ${padding.base} 0;
-`;
-
-const ActiveAlertWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: 0 ${padding.larger} 0 ${padding.base};
-  width: 200px;
 `;
 
 const DeployButton = styled(Button)`
@@ -193,7 +165,7 @@ const NodePageOverviewTab = (props) => {
         <NodeNameContainer>
           <div>
             <CircleStatus status={currentNode?.health?.health}></CircleStatus>
-            <NodeName>{nodeName}</NodeName>
+            <OverviewResourceName>{nodeName}</OverviewResourceName>
           </div>
           {currentNodeReturnByK8S?.status === API_STATUS_UNKNOWN && !currentNodeReturnByK8S.internalIP ? (
             !currentNodeReturnByK8S?.deploying ? (
@@ -217,25 +189,25 @@ const NodePageOverviewTab = (props) => {
 
         <Detail>
           <div>
-            <InformationSpan>
-              <InformationLabel>Control Plane IP</InformationLabel>
-              <InformationValue>
+            <OverviewInformationSpan>
+              <OverviewInformationLabel>Control Plane IP</OverviewInformationLabel>
+              <OverviewInformationValue>
                 {currentNode?.name?.controlPlaneIP}
-              </InformationValue>
-            </InformationSpan>
-            <InformationSpan>
-              <InformationLabel>Workload Plane IP</InformationLabel>
-              <InformationValue>
+              </OverviewInformationValue>
+            </OverviewInformationSpan>
+            <OverviewInformationSpan>
+              <OverviewInformationLabel>Workload Plane IP</OverviewInformationLabel>
+              <OverviewInformationValue>
                 {currentNode?.name?.workloadPlaneIP}
-              </InformationValue>
-            </InformationSpan>
-            <InformationSpan>
-              <InformationLabel>Roles</InformationLabel>
-              <InformationValue>{currentNode?.roles}</InformationValue>
-            </InformationSpan>
-            <InformationSpan>
-              <InformationLabel>Status</InformationLabel>
-              <InformationValue>
+              </OverviewInformationValue>
+            </OverviewInformationSpan>
+            <OverviewInformationSpan>
+              <OverviewInformationLabel>Roles</OverviewInformationLabel>
+              <OverviewInformationValue>{currentNode?.roles}</OverviewInformationValue>
+            </OverviewInformationSpan>
+            <OverviewInformationSpan>
+              <OverviewInformationLabel>Status</OverviewInformationLabel>
+              <OverviewInformationValue>
                 {currentNode?.status?.computedStatus?.map((cond) => {
                   return (
                     <StatusText
@@ -246,14 +218,14 @@ const NodePageOverviewTab = (props) => {
                     </StatusText>
                   );
                 })}
-              </InformationValue>
-            </InformationSpan>
-            <InformationSpan>
-              <InformationLabel>
+              </OverviewInformationValue>
+            </OverviewInformationSpan>
+            <OverviewInformationSpan>
+              <OverviewInformationLabel>
                 {intl.formatMessage({ id: 'creationTime' })}
-              </InformationLabel>
+              </OverviewInformationLabel>
               {creationTimestamp ? (
-                <InformationValue>
+                <OverviewInformationValue>
                   <FormattedDate
                     value={creationTimestamp}
                     year="numeric"
@@ -266,31 +238,31 @@ const NodePageOverviewTab = (props) => {
                     second="2-digit"
                     value={creationTimestamp}
                   />
-                </InformationValue>
+                </OverviewInformationValue>
               ) : (
                 ''
               )}
-            </InformationSpan>
-            <InformationSpan>
-              <InformationLabel>K8s Version</InformationLabel>
-              <InformationValue>
+            </OverviewInformationSpan>
+            <OverviewInformationSpan>
+              <OverviewInformationLabel>K8s Version</OverviewInformationLabel>
+              <OverviewInformationValue>
                 {currentNodeReturnByK8S?.kubeletVersion}
-              </InformationValue>
-            </InformationSpan>
-            <InformationSpan>
-              <InformationLabel>Volumes</InformationLabel>
-              <InformationValue>
+              </OverviewInformationValue>
+            </OverviewInformationSpan>
+            <OverviewInformationSpan>
+              <OverviewInformationLabel>Volumes</OverviewInformationLabel>
+              <OverviewInformationValue>
                 {volumesAttachedCurrentNode?.length ??
                   intl.formatMessage({ id: 'unknown' })}
-              </InformationValue>
-            </InformationSpan>
-            <InformationSpan>
-              <InformationLabel>Pods</InformationLabel>
-              <InformationValue>
+              </OverviewInformationValue>
+            </OverviewInformationSpan>
+            <OverviewInformationSpan>
+              <OverviewInformationLabel>Pods</OverviewInformationLabel>
+              <OverviewInformationValue>
                 {podsScheduledOnCurrentNode?.length ??
                   intl.formatMessage({ id: 'unknown' })}
-              </InformationValue>
-            </InformationSpan>
+              </OverviewInformationValue>
+            </OverviewInformationSpan>
           </div>
           <ActiveAlertWrapper>
             <ActiveAlertTitle>
