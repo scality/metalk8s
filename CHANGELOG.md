@@ -49,6 +49,10 @@
   PR[#3501](https://github.com/scality/metalk8s/pull/3501))
 
 ## Release 2.10.5 (in development)
+## Enhancements
+
+- Bump Kubernetes version to 1.21.6
+  (PR[#3583](https://github.com/scality/metalk8s/pull/3583))
 
 ## Release 2.10.4
 ## Bug fixes
