@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: backup-replication-{{ node }}
+  name: {{ name }}
   namespace: kube-system
   labels:
     app.kubernetes.io/name: backup-replication
@@ -10,7 +10,7 @@ metadata:
 spec:
   backoffLimit: 4
   parallelism: 1
-  ttlSecondsAfterFinished: 120
+  ttlSecondsAfterFinished: 86400
   template:
     metadata:
       labels:

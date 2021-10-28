@@ -5,6 +5,18 @@
 - Bump Kubernetes version to 1.21.6
   (PR[#3583](https://github.com/scality/metalk8s/pull/3583))
 
+## Bug fixes
+
+- Fix the backup replication Job name which was including the node name,
+  so that he could exceed the limit of 63 characters.
+  (PR[#3584](https://github.com/scality/metalk8s/pull/3584))
+
+- Fluent-bit instances stayed stuck when a Loki instance was down, blocking
+  the whole logging pipeline. It is now fixed as we configure fluent-bit to
+  talk with Loki's service and use memberlist to keep the Loki instances
+  replicated.
+  (PR[#3557](https://github.com/scality/metalk8s/pull/3557))
+
 ## Release 2.10.4
 ## Bug fixes
 

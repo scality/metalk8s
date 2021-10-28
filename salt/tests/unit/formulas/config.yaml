@@ -298,6 +298,7 @@ metalk8s:
           _cases:
             "Create job manifest for a node":
               extra_context:
+                name: replication-backup-012345689abcde
                 node: master-1
                 image: registry/some-image-name:tag
 
