@@ -1,0 +1,46 @@
+store:
+  enabled: false
+
+queryFrontend:
+  enabled: false
+
+compact:
+  enabled: false
+
+bucket:
+  enabled: false
+
+rule:
+  enabled: false
+
+# This one is deployed by Prometheus operator
+sidecar:
+  enabled: false
+
+image:
+  repository: '__image__(thanos)'
+  tag: v0.23.1
+
+query:
+  enabled: true
+
+  replicaLabels:
+    - prometheus_replica
+
+  storeDNSDiscovery: false
+  sidecarDNSDiscovery: false
+  
+  stores:
+    # Service deployed by Prometheus operator to expose Thanos sidecars
+    - dnssrv+_grpc._tcp.prometheus-operator-thanos-discovery
+
+  tolerations:
+    - key: 'node-role.kubernetes.io/bootstrap'
+      operator: 'Exists'
+      effect: 'NoSchedule'
+    - key: 'node-role.kubernetes.io/infra'
+      operator: 'Exists'
+      effect: 'NoSchedule'
+
+  nodeSelector:
+    node-role.kubernetes.io/infra: ''

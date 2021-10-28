@@ -1,0 +1,63 @@
+{{- if .Values.rule.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "thanos.componentname" (list $ "rule") }}-grpc
+  {{- with .Values.rule.grpc.service.annotations }}
+  annotations: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    app.kubernetes.io/name: {{ include "thanos.name" . }}
+    helm.sh/chart: {{ include "thanos.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/version: {{ $.Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: rule
+  {{ with .Values.rule.grpc.service.labels }}{{ toYaml . | indent 4 }}{{ end }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - port: {{ .Values.rule.grpc.port }}
+      protocol: TCP
+      targetPort: grpc
+      name: grpc
+  selector:
+    app.kubernetes.io/name: {{ include "thanos.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: rule
+{{ with .Values.rule.grpc.service.matchLabels }}{{ toYaml . | indent 4 }}{{ end }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "thanos.componentname" (list $ "rule") }}-http
+  {{- with .Values.rule.http.service.annotations }}
+  annotations: {{ toYaml .| nindent 4 }}
+  {{- end }}
+  labels:
+    app.kubernetes.io/name: {{ include "thanos.name" . }}
+    helm.sh/chart: {{ include "thanos.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/version: {{ $.Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: rule
+  {{ with .Values.rule.http.service.labels }}{{ toYaml . | indent 4 }}{{ end }}
+spec:
+  type: {{ .Values.rule.http.service.type }}
+  {{- if .Values.rule.http.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.rule.http.externalTrafficPolicy }}
+  {{- end }}
+  ports:
+    - port: {{ .Values.rule.http.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "thanos.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: rule
+{{ with .Values.rule.http.service.matchLabels }}{{ toYaml . | indent 4 }}{{ end }}
+{{- end }}

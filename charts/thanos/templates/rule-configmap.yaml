@@ -1,0 +1,19 @@
+{{- if and .Values.rule.enabled (empty .Values.rule.ruleOverrideName) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/name: {{ include "thanos.name" . }}
+    helm.sh/chart: {{ include "thanos.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | replace "+" "_" }}
+    app.kubernetes.io/component: rule
+  name: {{ include "thanos.fullname" . }}-rules
+data:
+  {{- $root := . -}}
+  {{- range $key, $value := .Values.rule.ruleFiles }}
+  {{ $key }}: |
+{{ toYaml $value | default "{}" | indent 4 }}
+  {{- end -}}
+{{- end -}}

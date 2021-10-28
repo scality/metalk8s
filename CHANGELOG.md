@@ -48,6 +48,10 @@
   PR[#3420](https://github.com/scality/metalk8s/pull/3420),
   PR[#3501](https://github.com/scality/metalk8s/pull/3501))
 
+- Deploy Thanos querier in front of Prometheus in order to make metrics
+  highly-available when we have multiple Prometheus instances
+  (PR[#3573](https://github.com/scality/metalk8s/pull/3573))
+
 ## Release 2.10.5 (in development)
 ## Enhancements
 

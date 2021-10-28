@@ -20866,7 +20866,7 @@ data:
     datasources:
     - name: Prometheus
       type: prometheus
-      url: http://prometheus-operator-prometheus:9090/
+      url: http://thanos-query-http:10902/
       access: proxy
       isDefault: true
       jsonData:
@@ -57326,6 +57326,33 @@ spec:
     prometheus: prometheus-operator-prometheus
   type: ClusterIP
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: prometheus-operator-thanos-discovery
+    app.kubernetes.io/instance: prometheus-operator
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: prometheus-operator-thanos-discovery
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 16.9.1
+    chart: kube-prometheus-stack-16.9.1
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+    release: prometheus-operator
+  name: prometheus-operator-thanos-discovery
+  namespace: metalk8s-monitoring
+spec:
+  clusterIP: None
+  ports:
+  - name: grpc
+    port: 10901
+    targetPort: grpc
+  selector:
+    app.kubernetes.io/name: prometheus
+    prometheus: prometheus-operator-prometheus
+  type: ClusterIP
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -57930,6 +57957,8 @@ spec:
           matchLabels:
             app.kubernetes.io/name: prometheus-operator-prometheus
         storageClassName: metalk8s
+  thanos:
+    image: {% endraw -%}{{ build_image_name("thanos") }}{%- raw %}
   tolerations:
   - effect: NoSchedule
     key: node-role.kubernetes.io/bootstrap
