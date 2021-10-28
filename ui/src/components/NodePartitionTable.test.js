@@ -107,12 +107,13 @@ describe('the system partition table', () => {
   beforeAll(() => {
     server.listen();
   });
+  beforeEach(() => {
+    // use fake timers to let react query retry immediately after promise failure
+    jest.useFakeTimers();
+  });
 
   test('displays the table', async () => {
     // Setup
-
-    // use fake timers to let react query retry immediately after promise failure
-    jest.useFakeTimers();
     initializeProm(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/prometheus`);
     initializeAM(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/alertmanager`);
     initializeLoki(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/loki`);
@@ -137,9 +138,9 @@ describe('the system partition table', () => {
 
   test('handles server error', async () => {
     // S
-    jest.useFakeTimers();
     initializeProm(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/prometheus`);
     initializeAM(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/alertmanager`);
+    initializeLoki(`http://${FAKE_CONTROL_PLANE_IP}:8443/api/loki`);
 
     // override the default route with error status
     server.use(
