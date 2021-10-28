@@ -10,7 +10,6 @@ Schedule backup replication Job on {{ node }}:
     - name: salt://{{ slspath }}/files/job.yaml.j2
     - template: jinja
     - defaults:
-        name: backup-replication-{{ salt.random.get_str(length=15) | lower }}
         node: {{ node }}
         image: {{ image }}
 
