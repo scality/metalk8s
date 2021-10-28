@@ -27,7 +27,7 @@ Create metalk8s-loki-config ConfigMap:
 
 {%- else %}
 
-metalk8s-loki-config ConfigMap already exist:
+metalk8s-loki-config ConfigMap already exists:
   test.succeed_without_changes: []
 
 {%- endif %}

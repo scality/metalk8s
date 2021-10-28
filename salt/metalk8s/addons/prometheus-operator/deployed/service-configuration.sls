@@ -66,7 +66,7 @@ Create prometheus-config ConfigMap:
 
 {%- else %}
 
-metalk8s-prometheus-config ConfigMap already exist:
+metalk8s-prometheus-config ConfigMap already exists:
   test.succeed_without_changes: []
 
 {%- endif %}
@@ -89,7 +89,7 @@ Create alertmanager-config ConfigMap:
 
 {%- else %}
 
-metalk8s-alertmanager-config ConfigMap already exist:
+metalk8s-alertmanager-config ConfigMap already exists:
   test.succeed_without_changes: []
 
 {%- endif %}
