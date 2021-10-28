@@ -33,56 +33,7 @@ Create Dex ServiceConfiguration (metalk8s-auth/metalk8s-dex-config):
 
 {%- else %}
 
-  {%- set config_data = dex_service_config.data['config.yaml'] | load_yaml %}
-
-  {%- if config_data.apiVersion == 'addons.metalk8s.scality.com' %}
-
-Convert old Dex ServiceConfiguration to new format:
-  metalk8s_kubernetes.object_present:
-    - manifest:
-        apiVersion: v1
-        kind: ConfigMap
-        metadata:
-          name: metalk8s-dex-config
-          namespace: metalk8s-auth
-        data:
-          config.yaml: |-
-            apiVersion: addons.metalk8s.scality.com/v1alpha2
-            kind: DexConfig
-            spec:
-            {%- if 'deployment' in config_data.spec %}
-              deployment:
-                {{ config_data.spec.deployment | yaml(False) | indent(16) }}
-            {%- endif %}
-
-              config:
-            {%- if 'localuserstore' in config_data.spec %}
-                enablePasswordDB: {{ config_data.spec.localuserstore.enabled }}
-                staticPasswords:
-                {{ config_data.spec.localuserstore.userlist | yaml(False)
-                                                            | indent(16) }}
-            {%- endif %}
-
-            {%- if 'connectors' in config_data.spec %}
-                connectors:
-                {{ config_data.spec.connectors | yaml(False) | indent(16) }}
-            {%- endif %}
-
-          {# We backup the previous config, in case of issues #}
-          previous-config.yaml: |-
-            {{ config_data | yaml(False) | indent(12) }}
-
-  {%- elif config_data.apiVersion == 'addons.metalk8s.scality.com/v1alpha2' %}
-
-Dex ServiceConfiguration already exists in expected format:
+Dex ServiceConfiguration already exists:
   test.succeed_without_changes: []
-
-  {%- else %}
-
-Dex ServiceConfiguration has unexpected format:
-  test.fail_without_changes:
-    - comment: Found unexpected apiVersion "{{ config_data.apiVersion }}"
-
-  {%- endif %}
 
 {%- endif %}
