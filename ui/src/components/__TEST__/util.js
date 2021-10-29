@@ -37,7 +37,14 @@ export const waitForLoadingToFinish = () =>
 export const AllTheProviders = ({ children }) => {
   const history = createMemoryHistory();
 
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        // ✅ turns retries off
+        retry: false,
+      },
+    },
+  });
   const theme = {
     brand: {
       alert: '#FFE508',
