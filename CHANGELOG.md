@@ -17,6 +17,9 @@
   replicated.
   (PR[#3557](https://github.com/scality/metalk8s/pull/3557))
 
+- Properly handle `generateName` in our Salt Kubernetes module
+  (PR[#3590](https://github.com/scality/metalk8s/pull/3590))
+
 ## Release 2.10.4
 ## Bug fixes
 
