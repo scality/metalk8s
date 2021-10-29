@@ -1,11 +1,21 @@
 # CHANGELOG
-## Release 2.10.5 (in development)
+## Release 2.10.6 (in development)
+
+## Release 2.10.5
 ## Enhancements
 
 - Bump Kubernetes version to 1.21.6
   (PR[#3583](https://github.com/scality/metalk8s/pull/3583))
 
 ## Bug fixes
+
+- [#3570](https://github.com/scality/metalk8s/issues/3570) - Fix the upgrade
+  script, so that it does not exit 1 just after the initial backup creation
+  (PR[#3571](https://github.com/scality/metalk8s/pull/3571))
+
+- Fix a bug in MetalK8s UI that sometimes display the metrics of the
+  previously selected instance when switching between them
+  (PR[#3580](https://github.com/scality/metalk8s/pull/3580))
 
 - Fix the backup replication Job name which was including the node name,
   so that he could exceed the limit of 63 characters.
