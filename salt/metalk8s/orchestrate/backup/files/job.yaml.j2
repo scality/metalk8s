@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ name }}
+  generateName: backup-replication-
   namespace: kube-system
   labels:
     app.kubernetes.io/name: backup-replication

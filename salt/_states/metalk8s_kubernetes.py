@@ -108,12 +108,36 @@ def object_present(name, manifest=None, **kwargs):
     """
     ret = {"name": name, "changes": {}, "result": True, "comment": ""}
 
+    manifest_content = manifest
+    if not manifest_content:
+        try:
+            manifest_content = __salt__[
+                "metalk8s_kubernetes.read_and_render_yaml_file"
+            ](
+                source=name,
+                template=kwargs.get("template", "jinja"),
+                context=kwargs.get("defaults"),
+                saltenv=__env__,
+            )
+        except Exception:  # pylint: disable=broad-except
+            # Do not fail if we are not able to load the YAML,
+            # let the module raise if needed
+            manifest_content = None
+
     # Only pass `name` if we have no manifest
     name_arg = None if manifest else name
 
-    obj = __salt__["metalk8s_kubernetes.get_object"](
-        name=name_arg, manifest=manifest, saltenv=__env__, **kwargs
-    )
+    manifest_metadata = (manifest_content or {}).get("metadata", {})
+
+    # We skip retrieving if this manifest has a "generateName"
+    # in this case it's a unique object so we just want to create a new one
+    if manifest_metadata.get("generateName"):
+        obj = None
+    else:
+        obj = __salt__["metalk8s_kubernetes.get_object"](
+            name=name_arg, manifest=manifest, saltenv=__env__, **kwargs
+        )
+
     if __opts__["test"]:
         ret["result"] = None
         ret["comment"] = "The object is going to be {}".format(
