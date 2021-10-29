@@ -30,7 +30,14 @@ export const waitForLoadingToFinish = () =>
   );
 
 const AllTheProviders = ({ children }) => {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        // ✅ turns retries off
+        retry: false,
+      },
+    },
+  });
   const theme = {
     brand: {
       alert: '#FFE508',
