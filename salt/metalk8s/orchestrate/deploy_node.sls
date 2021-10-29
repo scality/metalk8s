@@ -98,7 +98,7 @@ Wait minion available ssh:
     - require_in:
       - salt: Set grains
       - salt: Refresh the mine
-      - salt: Cordon the node
+      - metalk8s_cordon: Cordon the node
 {%- endif %}
 
 Sync module on the node:
