@@ -1,5 +1,5 @@
 # CHANGELOG
-## Release 2.10.5 (in development)
+## Release 2.10.5
 ## Enhancements
 
 - Bump Kubernetes version to 1.21.6
