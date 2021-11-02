@@ -8,7 +8,7 @@ LOGFILE=/var/log/metalk8s/upgrade.log
 DRY_RUN=0
 DESTINATION_VERSION=${DESTINATION_VERSION:-@@VERSION}
 # SALTENV must be equal to script version and DESTINATION_VERSION
-# (checked by the precheck orchestrate)
+# (checked by the precheck runner)
 SALTENV="metalk8s-$DESTINATION_VERSION"
 SALT_CALL=${SALT_CALL:-salt-call}
 BASE_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
@@ -168,10 +168,14 @@ upgrade_nodes () {
 
 precheck_upgrade() {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
-    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
-        metalk8s.orchestrate.upgrade.precheck \
+    "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
+        saltenv="$SALTENV"
+    # Due to a bug in salt do not "raises" when we run from CLI
+    # See: https://github.com/saltstack/salt/issues/61173
+    "${SALT_MASTER_CALL[@]}" salt-run metalk8s_checks.upgrade \
+        dest_version="$DESTINATION_VERSION" \
         saltenv="$SALTENV" \
-        pillar="{'metalk8s': {'cluster_version': '$DESTINATION_VERSION'}}"
+        raises=False
 }
 
 # patch the kube-system namespace annotation with <destination-version> input

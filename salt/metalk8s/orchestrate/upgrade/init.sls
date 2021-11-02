@@ -7,9 +7,8 @@
 
 Execute the upgrade prechecks:
   salt.runner:
-    - name: state.orchestrate
-    - mods:
-      - metalk8s.orchestrate.upgrade.precheck
+    - name: metalk8s_checks.upgrade
+    - dest_version: {{ dest_version }}
     - saltenv: {{ saltenv }}
 
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') | sort %}
