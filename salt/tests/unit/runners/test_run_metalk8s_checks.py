@@ -114,3 +114,43 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
             nodes_mock.assert_called_once()
             minions_mock.assert_called_once()
+
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["downgrade"])
+    def test_downgrade(
+        self,
+        result,
+        pillar=None,
+        expect_raise=False,
+        nodes_ret=True,
+        minions_ret=True,
+        **kwargs
+    ):
+        """
+        Tests the return of `downgrade` function
+        """
+        nodes_mock = MagicMock(return_value=nodes_ret)
+        minions_mock = MagicMock(return_value=minions_ret)
+
+        def cmd_mock(fun, *args, **kwargs):
+            if fun == "pkg.version_cmp":
+                return salt.utils.versions.version_cmp(*args, **kwargs)
+            if fun == "metalk8s.get_from_map":
+                return pillar.get("metalk8s")
+            return None
+
+        salt_dict = {"salt.cmd": MagicMock(side_effect=cmd_mock)}
+
+        module_mocks = {"nodes": nodes_mock, "minions": minions_mock}
+
+        with patch.multiple(metalk8s_checks, **module_mocks), patch.dict(
+            metalk8s_checks.__pillar__, pillar or {}
+        ), patch.dict(metalk8s_checks.__salt__, salt_dict):
+            if expect_raise:
+                self.assertRaisesRegex(
+                    CheckError, result, metalk8s_checks.downgrade, **kwargs
+                )
+            else:
+                self.assertEqual(metalk8s_checks.downgrade(**kwargs), result)
+
+            nodes_mock.assert_called_once()
+            minions_mock.assert_called_once()

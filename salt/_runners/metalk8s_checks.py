@@ -160,3 +160,87 @@ def upgrade(dest_version, saltenv, raises=True):
         errors.extend(minions_ready["errors"])
 
     return _handle_errors(errors, raises)
+
+
+def downgrade(dest_version, saltenv, raises=True, bypass_disable=False):
+    """Check that we can start MetalK8s cluster downgrade
+
+    Args:
+        dest_version (string): Destination version for downgrade
+        saltenv (string): Salt environment that will be used for downgrade
+        raises (bool, optional): Whether or not this function should raise. Defaults to True.
+        bypass_disable (bool, optional): Force downgrade if the downgrade path is not supported. Default to False.
+
+    Raises:
+        CheckError: If 'raises' is True and some downgrade conditions are not met
+
+    Returns:
+        dict or True: An error message or True if everything OK
+    """
+    errors = []
+
+    # NOTE: We use `get_from_map` as we want also defaults from `map.jinja`
+    # to be merged
+    metalk8s_pillar = __salt__["salt.cmd"](
+        "metalk8s.get_from_map", "metalk8s", saltenv=saltenv, with_pillar=True
+    )
+
+    # Check that all nodes are in a supported downgrade path
+    # We only support downgrade from one minor version
+    dest = dest_version.split(".")
+    max_version = f"{dest[0]}.{int(dest[1]) + 2}.0"
+
+    newest_node_version = None
+
+    for node_name, node_info in metalk8s_pillar["nodes"].items():
+        if (
+            newest_node_version is None
+            or __salt__["salt.cmd"](
+                "pkg.version_cmp", node_info["version"], newest_node_version
+            )
+            == 1
+        ):
+            newest_node_version = node_info["version"]
+
+        if (
+            __salt__["salt.cmd"]("pkg.version_cmp", max_version, node_info["version"])
+            != 1
+        ):
+            errors.append(
+                "Unable to downgrade from more than 1 minor version, Node "
+                f"{node_name} is in {node_info['version']} and you try to downgrade "
+                f"to {dest_version}"
+            )
+
+    # Check that downgrade minor version is supported
+    if not bypass_disable and not metalk8s_pillar["downgrade"]["enabled"]:
+        dest_minor_version = f"{dest[0]}.{dest[1]}"
+        newest_node_minor_version = newest_node_version.rsplit(".", 1)[0]
+        if dest_minor_version != newest_node_minor_version:
+            errors.append(
+                f"Downgrade is not supported from {newest_node_minor_version} "
+                f"to {dest_minor_version} (see "
+                f"https://github.com/scality/metalk8s/releases/tag/{newest_node_minor_version}.0"
+                " for details)"
+            )
+
+    # When downgrading the saltenv should be at least the newest node version
+    if (
+        __salt__["salt.cmd"](
+            "pkg.version_cmp", saltenv.replace("metalk8s-", ""), newest_node_version
+        )
+        == -1
+    ):
+        errors.append(
+            f"Invalid saltenv '{saltenv}' consider using at least 'metalk8s-{newest_node_version}'"
+        )
+
+    nodes_ready = nodes(node_list=metalk8s_pillar["nodes"].keys(), raises=False)
+    if nodes_ready is not True:
+        errors.extend(nodes_ready["errors"])
+
+    minions_ready = minions(minion_list=metalk8s_pillar["nodes"].keys(), raises=False)
+    if minions_ready is not True:
+        errors.extend(minions_ready["errors"])
+
+    return _handle_errors(errors, raises)

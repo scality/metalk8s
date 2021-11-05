@@ -4,15 +4,12 @@
 
 Execute the downgrade prechecks:
   salt.runner:
-    - name: state.orchestrate
-    - mods:
-      - metalk8s.orchestrate.downgrade.precheck
+    - name: metalk8s_checks.downgrade
+    - dest_version: {{ dest_version }}
     - saltenv: {{ saltenv }}
-    - pillar:
-        orchestrate:
-          dest_version: {{ dest_version }}
-        metalk8s:
-          downgrade: {{ pillar.metalk8s.get('downgrade', {}) | tojson }}
+    {%- if pillar.metalk8s.get('downgrade', {}).get('bypass_disable') %}
+    - bypass_disable: True
+    {%- endif %}
 
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') | sort %}
 {%- set other_nodes = pillar.metalk8s.nodes.keys() | difference(cp_nodes) | sort %}

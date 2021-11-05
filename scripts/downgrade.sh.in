@@ -82,15 +82,15 @@ trap cleanup EXIT
 
 precheck_downgrade () {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
-    "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
-        metalk8s.orchestrate.downgrade.precheck \
+    "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
+        saltenv="$SALTENV"
+    # Due to a bug in salt do not "raises" when we run from CLI
+    # See: https://github.com/saltstack/salt/issues/61173
+    "${SALT_MASTER_CALL[@]}" salt-run metalk8s_checks.downgrade \
+        dest_version="$DESTINATION_VERSION" \
         saltenv="$SALTENV" \
-        pillar="{ \
-            'metalk8s': { \
-                'cluster_version': '$DESTINATION_VERSION' \
-                ${FORCE:+,'downgrade': {'enabled': true\}} \
-            } \
-        }"
+        raises=False \
+        ${FORCE:+bypass_disable=True}
 }
 
 launch_pre_downgrade () {
@@ -112,7 +112,9 @@ launch_post_downgrade () {
 
 launch_downgrade () {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
+    # NOTE: We want to use `$SALTENV` version for the runners
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
+        extmod_whitelist="{'runners': []}" \
         saltenv="metalk8s-$DESTINATION_VERSION"
 
     "${SALT_MASTER_CALL[@]}" salt-run metalk8s_saltutil.sync_auth \
@@ -124,7 +126,7 @@ launch_downgrade () {
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
         metalk8s.orchestrate.downgrade \
         saltenv="$SALTENV" \
-        ${FORCE:+pillar="{'metalk8s': {'downgrade': {'enabled': true}}}"}
+        ${FORCE:+pillar="{'metalk8s': {'downgrade': {'bypass_disable': true}}}"}
 }
 
 downgrade_bootstrap () {
