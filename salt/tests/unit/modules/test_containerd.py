@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 
 from parameterized import parameterized
 
-import containerd
+from _modules import containerd
 
 from tests.unit import mixins
 from tests.unit import utils

@@ -10,7 +10,7 @@ from salt.utils import dictupdate, hashutils
 from salt.exceptions import CommandExecutionError
 import yaml
 
-import metalk8s_kubernetes
+from _modules import metalk8s_kubernetes
 
 from tests.unit import mixins
 from tests.unit import utils
@@ -422,7 +422,7 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         """
         get_object_mock = MagicMock(return_value=get_object_return)
         # Mock `get_object` as we do not want to test this function again here
-        with patch("metalk8s_kubernetes.get_object", get_object_mock):
+        with patch.object(metalk8s_kubernetes, "get_object", get_object_mock):
             self.assertEqual(
                 metalk8s_kubernetes.object_exists(
                     kind="Node", apiVersion="v1", name="my_node"
@@ -490,7 +490,7 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         """
         get_obj_mock = MagicMock(return_value=obj)
 
-        with patch("metalk8s_kubernetes.get_object", get_obj_mock):
+        with patch.object(metalk8s_kubernetes, "get_object", get_obj_mock):
             if raises:
                 self.assertRaisesRegex(
                     Exception, result, metalk8s_kubernetes.get_object_digest, **kwargs

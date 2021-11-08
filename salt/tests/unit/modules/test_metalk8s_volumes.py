@@ -6,7 +6,7 @@ from parameterized import param, parameterized
 from salt.exceptions import CommandExecutionError
 import yaml
 
-import metalk8s_volumes
+from _modules import metalk8s_volumes
 
 from tests.unit import mixins
 from tests.unit import utils
@@ -68,7 +68,7 @@ class Metalk8sVolumesTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
         with patch.dict(metalk8s_volumes.__pillar__, pillar_dict), patch.dict(
             metalk8s_volumes.__salt__, salt_dict
-        ), patch("metalk8s_volumes.device_name", device_name_mock), patch(
+        ), patch.object(metalk8s_volumes, "device_name", device_name_mock), patch(
             "glob.glob", glob_mock
         ), patch(
             "os.path.isfile", is_file_mock
@@ -106,7 +106,7 @@ class Metalk8sVolumesTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
         with patch.dict(metalk8s_volumes.__pillar__, pillar_dict), patch.dict(
             metalk8s_volumes.__salt__, {"lvm.lvcreate": lvcreate_mock}
-        ), patch("metalk8s_volumes.device_name", device_name_mock), patch(
+        ), patch.object(metalk8s_volumes, "device_name", device_name_mock), patch(
             "glob.glob", glob_mock
         ), patch(
             "os.open", MagicMock()
@@ -162,7 +162,7 @@ class Metalk8sVolumesTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
         with patch.dict(metalk8s_volumes.__pillar__, pillar_dict), patch.dict(
             metalk8s_volumes.__utils__, utils_dict
-        ), patch("metalk8s_volumes.device_name", _device_name), patch(
+        ), patch.object(metalk8s_volumes, "device_name", _device_name), patch(
             "glob.glob", glob_mock
         ):
             if raises:
@@ -211,8 +211,8 @@ class Metalk8sVolumesTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
         with patch.dict(metalk8s_volumes.__pillar__, pillar_dict), patch.dict(
             metalk8s_volumes.__salt__, salt_dict
-        ), patch.dict(metalk8s_volumes.__utils__, utils_dict), patch(
-            "metalk8s_volumes.device_name", device_name_mock
+        ), patch.dict(metalk8s_volumes.__utils__, utils_dict), patch.object(
+            metalk8s_volumes, "device_name", device_name_mock
         ), patch(
             "glob.glob", glob_mock
         ):
@@ -238,7 +238,7 @@ class Metalk8sVolumesTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
         with patch.dict(metalk8s_volumes.__pillar__, pillar_dict), patch.object(
             metalk8s_volumes.SparseLoopDevice, "exists", exists
-        ), patch("metalk8s_volumes.device_name", device_name_mock), patch(
+        ), patch.object(metalk8s_volumes, "device_name", device_name_mock), patch(
             "glob.glob", glob_mock
         ):
             if raises:
@@ -263,8 +263,8 @@ class Metalk8sVolumesTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 remove_error = [remove_error]
             remove_mock.side_effect = OSError(*remove_error)
 
-        with patch.dict(metalk8s_volumes.__pillar__, pillar_dict), patch(
-            "metalk8s_volumes.device_name", device_name_mock
+        with patch.dict(metalk8s_volumes.__pillar__, pillar_dict), patch.object(
+            metalk8s_volumes, "device_name", device_name_mock
         ), patch("os.remove", remove_mock):
             if raise_msg:
                 self.assertRaisesRegex(
@@ -314,7 +314,7 @@ class Metalk8sVolumesTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
         with patch.dict(metalk8s_volumes.__pillar__, pillar_dict), patch.dict(
             metalk8s_volumes.__salt__, salt_dict
-        ), patch("metalk8s_volumes.device_name", device_name_mock), patch(
+        ), patch.object(metalk8s_volumes, "device_name", device_name_mock), patch(
             "glob.glob", glob_mock
         ):
             if raises:

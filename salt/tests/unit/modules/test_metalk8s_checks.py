@@ -6,7 +6,7 @@ from parameterized import parameterized
 from salt.exceptions import CheckError
 import yaml
 
-import metalk8s_checks
+from _modules import metalk8s_checks
 
 from tests.unit import mixins
 from tests.unit import utils

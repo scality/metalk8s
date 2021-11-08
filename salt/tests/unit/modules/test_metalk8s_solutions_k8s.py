@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 from parameterized import param, parameterized
 import yaml
 
-import metalk8s_solutions_k8s
+from _modules import metalk8s_solutions_k8s
 
 from tests.unit import mixins
 from tests.unit import utils

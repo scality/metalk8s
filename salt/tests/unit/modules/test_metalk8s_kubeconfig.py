@@ -4,7 +4,7 @@ import yaml
 from unittest import TestCase
 from unittest.mock import MagicMock, mock_open, patch
 
-import metalk8s_kubeconfig
+from _modules import metalk8s_kubeconfig
 
 from tests.unit import mixins
 from tests.unit import utils
@@ -66,8 +66,8 @@ class Metalk8sKubeconfigTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
         with patch("os.path.isfile", os_isfile_mock), patch(
             "os.stat", MagicMock()
-        ), patch("stat.S_IMODE", stat_s_imode_mock), patch(
-            "metalk8s_kubeconfig.fopen", open_mock
+        ), patch("stat.S_IMODE", stat_s_imode_mock), patch.object(
+            metalk8s_kubeconfig, "fopen", open_mock
         ), patch.dict(
             metalk8s_kubeconfig.__salt__, patch_salt_dict
         ):

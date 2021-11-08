@@ -7,7 +7,7 @@ from parameterized import param, parameterized
 from salt.exceptions import CommandExecutionError
 import yaml
 
-import metalk8s_package_manager_yum
+from _modules import metalk8s_package_manager_yum
 
 from tests.unit import mixins
 from tests.unit import utils
@@ -107,8 +107,8 @@ class Metalk8sPackageManagerYumTestCase(TestCase, mixins.LoaderModuleMockMixin):
             return_value={} if list_dependents is None else list_dependents
         )
 
-        with patch.dict(metalk8s_package_manager_yum.__salt__, salt_dict), patch(
-            "metalk8s_package_manager_yum._list_dependents", list_dependents_mock
+        with patch.dict(metalk8s_package_manager_yum.__salt__, salt_dict), patch.object(
+            metalk8s_package_manager_yum, "_list_dependents", list_dependents_mock
         ):
             self.assertEqual(
                 metalk8s_package_manager_yum.list_pkg_dependents(

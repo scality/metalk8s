@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from parameterized import parameterized
 
-import cri
+from _modules import cri
 
 from tests.unit import mixins
 from tests.unit import utils
@@ -116,7 +116,7 @@ class CriTestCase(TestCase, mixins.LoaderModuleMockMixin):
         """
         Tests the return of `available` function
         """
-        with patch("cri.list_images", MagicMock(return_value=images_list)):
+        with patch.object(cri, "list_images", MagicMock(return_value=images_list)):
             self.assertEqual(cri.available(name), result)
 
     @parameterized.expand(

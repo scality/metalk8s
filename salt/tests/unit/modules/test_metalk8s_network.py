@@ -7,7 +7,7 @@ from parameterized import parameterized
 from salt.exceptions import CommandExecutionError
 import yaml
 
-import metalk8s_network
+from _modules import metalk8s_network
 
 from tests.unit import mixins
 from tests.unit import utils

@@ -10,7 +10,7 @@ import salt.renderers.yaml
 import salt.utils.files
 import yaml
 
-import metalk8s
+from _modules import metalk8s
 
 from tests.unit import mixins
 from tests.unit import utils
@@ -242,9 +242,9 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
         if pillar_archives is not None:
             pillar_dict["metalk8s"]["archives"] = pillar_archives
 
-        with patch("metalk8s.archive_info_from_product_txt", infos_mock), patch.dict(
-            metalk8s.__pillar__, pillar_dict
-        ):
+        with patch.object(
+            metalk8s, "archive_info_from_product_txt", infos_mock
+        ), patch.dict(metalk8s.__pillar__, pillar_dict):
             if raises:
                 self.assertRaisesRegex(
                     CommandExecutionError, result, metalk8s.get_archives, archives
@@ -268,7 +268,7 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
         pillar_get_mock = MagicMock()
         pillar_get_mock.return_value.compile_pillar.return_value = pillar_content
 
-        with patch("metalk8s.get_pillar", pillar_get_mock), patch.dict(
+        with patch.object(metalk8s, "get_pillar", pillar_get_mock), patch.dict(
             metalk8s.__pillar__, pillar_content or {}
         ):
             if raises:
@@ -458,9 +458,9 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
         ), patch(
             "os.path.realpath", realpath_mock
         ), patch(
-            "metalk8s.get_hash", get_hash_mock
+            "_modules.metalk8s.get_hash", get_hash_mock
         ), patch(
-            "metalk8s._atomic_copy", atomic_copy_mock
+            "_modules.metalk8s._atomic_copy", atomic_copy_mock
         ):
             actual_result = metalk8s.manage_static_pod_manifest(name, **call_kwargs)
 
@@ -531,8 +531,8 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
         with patch("os.path.isdir", MagicMock(return_value=is_dir)), patch(
             "os.path.isfile", MagicMock(return_value=is_file)
-        ), patch("metalk8s.archive_info_from_tree", info_mock), patch(
-            "metalk8s.archive_info_from_iso", info_mock
+        ), patch.object(metalk8s, "archive_info_from_tree", info_mock), patch(
+            "_modules.metalk8s.archive_info_from_iso", info_mock
         ):
             if raises:
                 self.assertRaisesRegex(
@@ -563,9 +563,13 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
         if invalid_path:
             info_mock.side_effect = CommandExecutionError("Invalid archive path")
 
-        with patch("metalk8s.archive_info_from_product_txt", info_mock), patch(
-            "metalk8s._read_bootstrap_config", MagicMock(return_value=config)
-        ), patch("metalk8s._write_bootstrap_config", MagicMock()):
+        module_mocks = {
+            "archive_info_from_product_txt": info_mock,
+            "_read_bootstrap_config": MagicMock(return_value=config),
+            "_write_bootstrap_config": MagicMock(),
+        }
+
+        with patch.multiple(metalk8s, **module_mocks):
             if raises:
                 self.assertRaisesRegex(
                     CommandExecutionError,
@@ -635,7 +639,9 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
         with patch.dict(metalk8s.__salt__, salt_dict), patch.dict(
             metalk8s.__pillar__, pillar_dict
-        ), patch("metalk8s.get_archives", MagicMock(return_value=archives or {})):
+        ), patch.object(
+            metalk8s, "get_archives", MagicMock(return_value=archives or {})
+        ):
             if raises:
                 self.assertRaisesRegex(
                     CommandExecutionError,

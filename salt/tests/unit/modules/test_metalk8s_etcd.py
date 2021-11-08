@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 from parameterized import parameterized
 from salt.exceptions import CommandExecutionError
 
-import metalk8s_etcd
+from _modules import metalk8s_etcd
 
 from tests.unit import mixins
 from tests.unit import utils
@@ -159,8 +159,8 @@ class Metalk8sEtcdTestCase(TestCase, mixins.LoaderModuleMockMixin):
         etcd3_mock = MagicMock()
         add_member = etcd3_mock.return_value.__enter__.return_value.add_member
         add_member.return_value = "my new node"
-        with patch("etcd3.client", etcd3_mock), patch(
-            "metalk8s_etcd._get_endpoint_up", MagicMock(return_value=endpoint)
+        with patch("etcd3.client", etcd3_mock), patch.object(
+            metalk8s_etcd, "_get_endpoint_up", MagicMock(return_value=endpoint)
         ):
             self.assertEqual(
                 metalk8s_etcd.add_etcd_node(
@@ -206,8 +206,8 @@ class Metalk8sEtcdTestCase(TestCase, mixins.LoaderModuleMockMixin):
         """
         etcd3_mock = MagicMock()
         etcd3_mock.return_value.__enter__.return_value.members = members
-        with patch("etcd3.client", etcd3_mock), patch(
-            "metalk8s_etcd._get_endpoint_up", MagicMock(return_value=endpoint)
+        with patch("etcd3.client", etcd3_mock), patch.object(
+            metalk8s_etcd, "_get_endpoint_up", MagicMock(return_value=endpoint)
         ):
             self.assertEqual(
                 metalk8s_etcd.urls_exist_in_cluster(
@@ -287,7 +287,9 @@ class Metalk8sEtcdTestCase(TestCase, mixins.LoaderModuleMockMixin):
         patch_dict = {"saltutil.runner": MagicMock(side_effect=_saltutil_runner_mock)}
         with patch.dict(metalk8s_etcd.__salt__, patch_dict), patch(
             "etcd3.client", etcd3_mock
-        ), patch("metalk8s_etcd._get_endpoint_up", MagicMock(return_value=endpoint)):
+        ), patch.object(
+            metalk8s_etcd, "_get_endpoint_up", MagicMock(return_value=endpoint)
+        ):
             minion_id = "minion1" if cp_ips else None
             if raises:
                 self.assertRaisesRegex(
@@ -336,8 +338,8 @@ class Metalk8sEtcdTestCase(TestCase, mixins.LoaderModuleMockMixin):
         etcd3_mock = MagicMock()
         etcd3_mock.return_value.__enter__.return_value.members = members
 
-        with patch("etcd3.client", etcd3_mock), patch(
-            "metalk8s_etcd._get_endpoint_up", MagicMock(side_effect=_get_endpoint)
+        with patch("etcd3.client", etcd3_mock), patch.object(
+            metalk8s_etcd, "_get_endpoint_up", MagicMock(side_effect=_get_endpoint)
         ):
             self.assertEqual(
                 metalk8s_etcd.get_etcd_member_list(None if endpoint else "my_endpoint"),

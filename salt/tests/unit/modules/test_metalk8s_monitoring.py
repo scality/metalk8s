@@ -9,7 +9,7 @@ from parameterized import param, parameterized
 from salt.exceptions import CommandExecutionError
 import yaml
 
-import metalk8s_monitoring
+from _modules import metalk8s_monitoring
 
 from tests.unit import mixins
 from tests.unit import utils
@@ -124,9 +124,9 @@ class Metalk8sMonitoringTestCase(TestCase, mixins.LoaderModuleMockMixin):
         silence_id = "d287796c-cf59-4d10-8e5b-d5cc3ff51b9c"
         request_mock.return_value = {"silenceId": silence_id}
 
-        with patch(
-            "metalk8s_monitoring._requests_alertmanager_api", request_mock
-        ), patch("metalk8s_monitoring.datetime") as datetime_mock:
+        with patch.object(
+            metalk8s_monitoring, "_requests_alertmanager_api", request_mock
+        ), patch.object(metalk8s_monitoring, "datetime") as datetime_mock:
             # NOTE: this special mocking is required because datetime.datetime
             # is a built-in, and its methods cannot be patched directly
             datetime_mock.strptime.side_effect = datetime.strptime
@@ -150,7 +150,9 @@ class Metalk8sMonitoringTestCase(TestCase, mixins.LoaderModuleMockMixin):
     def test_delete_silence(self):
         silence_id = "d287796c-cf59-4d10-8e5b-d5cc3ff51b9c"
         request_mock = MagicMock()
-        with patch("metalk8s_monitoring._requests_alertmanager_api", request_mock):
+        with patch.object(
+            metalk8s_monitoring, "_requests_alertmanager_api", request_mock
+        ):
             metalk8s_monitoring.delete_silence(silence_id)
 
         request_mock.assert_called_once()
@@ -169,7 +171,9 @@ class Metalk8sMonitoringTestCase(TestCase, mixins.LoaderModuleMockMixin):
     def test_get_silences(self, _id, response, result, state=None):
         request_mock = MagicMock(return_value=response)
 
-        with patch("metalk8s_monitoring._requests_alertmanager_api", request_mock):
+        with patch.object(
+            metalk8s_monitoring, "_requests_alertmanager_api", request_mock
+        ):
             self.assertEqual(metalk8s_monitoring.get_silences(state=state), result)
 
     @parameterized.expand(
@@ -182,5 +186,7 @@ class Metalk8sMonitoringTestCase(TestCase, mixins.LoaderModuleMockMixin):
     def test_get_alerts(self, _id, response, result, state=None):
         request_mock = MagicMock(return_value=response)
 
-        with patch("metalk8s_monitoring._requests_alertmanager_api", request_mock):
+        with patch.object(
+            metalk8s_monitoring, "_requests_alertmanager_api", request_mock
+        ):
             self.assertEqual(metalk8s_monitoring.get_alerts(state=state), result)

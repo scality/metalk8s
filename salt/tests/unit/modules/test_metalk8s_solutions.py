@@ -7,7 +7,7 @@ from parameterized import param, parameterized
 from salt.exceptions import CommandExecutionError
 import yaml
 
-import metalk8s_solutions
+from _modules import metalk8s_solutions
 
 from tests.unit import mixins
 from tests.unit import utils
@@ -42,8 +42,8 @@ class Metalk8sSolutionsTestCase(TestCase, mixins.LoaderModuleMockMixin):
         if not config:
             open_mock.side_effect = IOError(errno.ENOENT, "No such file or directory")
 
-        with patch("salt.utils.files.fopen", open_mock), patch(
-            "metalk8s_solutions._write_config_file", MagicMock()
+        with patch("salt.utils.files.fopen", open_mock), patch.object(
+            metalk8s_solutions, "_write_config_file", MagicMock()
         ):
             if raises:
                 self.assertRaisesRegex(
@@ -68,12 +68,12 @@ class Metalk8sSolutionsTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 raise CommandExecutionError("Failed to write Solutions config file")
             config = new_config
 
-        read_config_mock = MagicMock(return_value=config)
-        write_config_file_mock = MagicMock(side_effect=_write_config_file_mock)
+        module_mocks = {
+            "read_config": MagicMock(return_value=config),
+            "_write_config_file": MagicMock(side_effect=_write_config_file_mock),
+        }
 
-        with patch("metalk8s_solutions.read_config", read_config_mock), patch(
-            "metalk8s_solutions._write_config_file", write_config_file_mock
-        ):
+        with patch.multiple(metalk8s_solutions, **module_mocks):
             if raises:
                 self.assertRaisesRegex(
                     CommandExecutionError,
@@ -106,15 +106,15 @@ class Metalk8sSolutionsTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 raise Exception("Something bad happened! :/")
             config = data
 
-        list_available_mock = MagicMock(return_value=available or {})
-        read_config_mock = MagicMock(return_value=config)
+        module_mocks = {
+            "list_available": MagicMock(return_value=available or {}),
+            "read_config": MagicMock(return_value=config),
+        }
         yaml_safe_dump_mock = MagicMock(side_effect=_yaml_safe_dump_mock)
 
-        with patch("metalk8s_solutions.list_available", list_available_mock), patch(
-            "metalk8s_solutions.read_config", read_config_mock
-        ), patch("salt.utils.files.fopen", mock_open()), patch(
-            "yaml.safe_dump", yaml_safe_dump_mock
-        ):
+        with patch.multiple(metalk8s_solutions, **module_mocks), patch(
+            "salt.utils.files.fopen", mock_open()
+        ), patch("yaml.safe_dump", yaml_safe_dump_mock):
             if raises:
                 self.assertRaisesRegex(
                     CommandExecutionError,
@@ -151,7 +151,7 @@ class Metalk8sSolutionsTestCase(TestCase, mixins.LoaderModuleMockMixin):
         read_config_mock = MagicMock(return_value=config)
         yaml_safe_dump_mock = MagicMock(side_effect=_yaml_safe_dump_mock)
 
-        with patch("metalk8s_solutions.read_config", read_config_mock), patch(
+        with patch.object(metalk8s_solutions, "read_config", read_config_mock), patch(
             "yaml.safe_dump", yaml_safe_dump_mock
         ), patch("salt.utils.files.fopen", mock_open()):
             if raises:
@@ -227,7 +227,9 @@ class Metalk8sSolutionsTestCase(TestCase, mixins.LoaderModuleMockMixin):
         mountpoint = "/srv/scality/my-solution"
         with patch("os.path.isfile", path_isfile_mock), patch(
             "salt.utils.files.fopen", fopen_mock
-        ), patch("metalk8s_solutions.list_solution_images", list_solution_images_mock):
+        ), patch.object(
+            metalk8s_solutions, "list_solution_images", list_solution_images_mock
+        ):
             if raises:
                 self.assertRaisesRegex(
                     CommandExecutionError,
@@ -279,8 +281,8 @@ class Metalk8sSolutionsTestCase(TestCase, mixins.LoaderModuleMockMixin):
         salt_dict_patch = {
             "mount.active": mount_active_mock,
         }
-        with patch.dict(metalk8s_solutions.__salt__, salt_dict_patch), patch(
-            "metalk8s_solutions.read_solution_manifest", read_solution_manifest_mock
+        with patch.dict(metalk8s_solutions.__salt__, salt_dict_patch), patch.object(
+            metalk8s_solutions, "read_solution_manifest", read_solution_manifest_mock
         ):
             self.assertEqual(metalk8s_solutions.list_available(), result or {})
 

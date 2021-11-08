@@ -16,7 +16,7 @@ from parameterized import parameterized
 import yaml
 
 # Runtime modules
-import metalk8s_drain
+from _modules import metalk8s_drain
 
 # Test modules
 from tests.unit.log_utils import capture_logs, check_captured_logs
@@ -74,12 +74,14 @@ class Metalk8sDrainTestCase(TestCase, mixins.LoaderModuleMockMixin):
         """
         exc = metalk8s_drain.DrainException("something broke")
         self.assertEqual(
-            str(exc), "<<class 'metalk8s_drain.DrainException'>> something broke"
+            str(exc),
+            "<<class '_modules.metalk8s_drain.DrainException'>> something broke",
         )
 
         exc = metalk8s_drain.DrainTimeoutException("too slow!")
         self.assertEqual(
-            str(exc), "<<class 'metalk8s_drain.DrainTimeoutException'>> too slow!"
+            str(exc),
+            "<<class '_modules.metalk8s_drain.DrainTimeoutException'>> too slow!",
         )
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["evict_pod"])
@@ -157,8 +159,8 @@ class Metalk8sDrainTestCase(TestCase, mixins.LoaderModuleMockMixin):
         salt_dict = {
             "metalk8s_kubernetes.cordon_node": cordon_mock,
         }
-        with patch.dict(metalk8s_drain.__salt__, salt_dict), patch(
-            "metalk8s_drain.Drain", drain_cls_mock
+        with patch.dict(metalk8s_drain.__salt__, salt_dict), patch.object(
+            metalk8s_drain, "Drain", drain_cls_mock
         ):
             if cordon_raises:
                 self.assertRaisesRegex(

@@ -8,7 +8,7 @@ from salt.exceptions import CommandExecutionError
 from urllib3.exceptions import HTTPError
 import yaml
 
-import metalk8s_kubernetes_utils
+from _modules import metalk8s_kubernetes_utils
 
 from tests.unit import mixins
 from tests.unit import utils
@@ -114,9 +114,11 @@ class Metalk8sKubernetesUtilsTestCase(TestCase, mixins.LoaderModuleMockMixin):
         if k8s_connection_raise:
             dynamic_mock.DynamicClient.side_effect = HTTPError("Failed to connect")
 
-        with patch("metalk8s_kubernetes_utils.get_kubeconfig", kubeconfig_mock), patch(
-            "kubernetes.dynamic", dynamic_mock
-        ), patch("kubernetes.config", MagicMock()):
+        with patch.object(
+            metalk8s_kubernetes_utils, "get_kubeconfig", kubeconfig_mock
+        ), patch("kubernetes.dynamic", dynamic_mock), patch(
+            "kubernetes.config", MagicMock()
+        ):
             if raises:
                 self.assertRaisesRegex(
                     CommandExecutionError,
@@ -145,7 +147,9 @@ class Metalk8sKubernetesUtilsTestCase(TestCase, mixins.LoaderModuleMockMixin):
             version_info_mock.side_effect = CommandExecutionError(
                 "Failed to get version info"
             )
-        with patch("metalk8s_kubernetes_utils.get_version_info", version_info_mock):
+        with patch.object(
+            metalk8s_kubernetes_utils, "get_version_info", version_info_mock
+        ):
             self.assertEqual(
                 result,
                 metalk8s_kubernetes_utils.ping(),

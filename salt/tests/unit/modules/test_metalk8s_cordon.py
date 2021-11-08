@@ -5,7 +5,7 @@ from parameterized import parameterized
 import salt
 from salt.exceptions import CommandExecutionError
 
-import metalk8s_cordon
+from _modules import metalk8s_cordon
 
 from tests.unit import mixins
 

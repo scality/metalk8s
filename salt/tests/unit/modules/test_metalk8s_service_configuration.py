@@ -6,7 +6,7 @@ from parameterized import param, parameterized
 from salt.exceptions import CommandExecutionError
 import yaml
 
-import metalk8s_service_configuration
+from _modules import metalk8s_service_configuration
 
 from tests.unit import mixins
 
