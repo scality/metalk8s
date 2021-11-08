@@ -1,0 +1,109 @@
+wait_minions:
+  # 1. Success: nominal
+  - result: >-
+      All minions matching "*" responded and finished startup state: my-minion
+
+  # 2. Success: nominal multiple minions
+  - ping_ret:
+      minion-1: True
+      minion-2: True
+    is_running_ret:
+      minion-1: []
+      minion-2: []
+    result: >-
+      All minions matching "*" responded and finished startup state: minion-1, minion-2
+
+  # 3. Success: multiple retries for ping
+  - ping_ret:
+      - False
+      - False
+      - True
+    result: >-
+      All minions matching "*" responded and finished startup state: my-minion
+
+  # 4. Success: multiple retries for is_running
+  - is_running_ret:
+      - &running_state
+        - fun: state.sls
+          pid: 123
+          jid: 20211108155442158347
+          tgt: "salt-call"
+      - *running_state
+      - []
+    result: >-
+      All minions matching "*" responded and finished startup state: my-minion
+
+  # 5. Success: multiple retries for both
+  - ping_ret:
+      - False
+      - False
+      - True
+    is_running_ret:
+      - *running_state
+      - *running_state
+      - []
+    result: >-
+      All minions matching "*" responded and finished startup state: my-minion
+
+  # 6. Success: retries on a specific minion
+  - ping_ret:
+      - minion-1: True
+        minion-2: False
+      - minion-1: False
+        minion-2: True
+      - minion-1: False
+        minion-2: False
+      - minion-1: True
+        minion-2: True
+    is_running_ret:
+      - minion-1: []
+        minion-2: *running_state
+      - minion-1: *running_state
+        minion-2: []
+      - minion-1: *running_state
+        minion-2: *running_state
+      - minion-1: []
+        minion-2: []
+    result: >-
+      All minions matching "*" responded and finished startup state: minion-1, minion-2
+
+  # 7. Failure: exception when pinging
+  - ping_ret: null
+    raises: True
+    result: >-
+      Minion failed to respond after 10 retries: *
+
+  # 8. Failure: exception when checking running state
+  - is_running_ret: null
+    raises: True
+    result: >-
+      An ErrOr Occurred
+
+  # 9. Failure: minion does not answer to ping
+  - ping_ret: False
+    raises: True
+    result: >-
+      Minion failed to respond after 10 retries: my-minion
+
+  # 10. Failure: minion always have a running state
+  - is_running_ret:
+      my-minion: *running_state
+    raises: True
+    result: >-
+      Minion still have running state after 10 retries: my-minion
+
+  # 11. Failure: A minion does not answer to ping
+  - ping_ret:
+      minion-1: True
+      minion-2: False
+    raises: True
+    result: >-
+      Minions failed to respond after 10 retries: minion-2
+
+  # 12. Failure: A minion always have a running state
+  - is_running_ret:
+      minion-1: []
+      minion-2: *running_state
+    raises: True
+    result: >-
+      Minions still have running state after 10 retries: minion-2
