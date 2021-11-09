@@ -433,7 +433,7 @@ def main():
 
     def fixup(doc, patches):
         def _doc_matches(doc, conditions):
-            return all(
+            return doc and all(
                 [
                     doc.get("metadata", {}).get("name") == conditions["name"],
                     doc.get("metadata", {}).get("namespace") == conditions["namespace"],
@@ -445,7 +445,7 @@ def main():
             kind = doc.get("kind")
             if drop_prometheus_rules and kind == "PrometheusRule":
                 doc = remove_prometheus_rules(doc, drop_prometheus_rules)
-            if (
+            elif (
                 kind == "ConfigMap"
                 and doc.get("metadata", {}).get("labels", {}).get("grafana_dashboard")
                 == "1"
