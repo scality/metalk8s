@@ -136,9 +136,9 @@ def upgrade(dest_version, saltenv, raises=True):
         )
 
     # Check that all nodes are in a supported upgrade path
-    # We only support upgrade from one minor version
+    # We only support upgrade from one major version
     dest = dest_version.split(".")
-    min_version = f"{dest[0]}.{int(dest[1]) - 1}.0"
+    min_version = f"{int(dest[0]) - 1}.0.0"
 
     for node_name, node_info in metalk8s_pillar["nodes"].items():
         if (
@@ -146,7 +146,7 @@ def upgrade(dest_version, saltenv, raises=True):
             == 1
         ):
             errors.append(
-                "Unable to upgrade from more than 1 minor version, Node "
+                "Unable to upgrade from more than 1 major version, Node "
                 f"{node_name} is in {node_info['version']} and you try to upgrade "
                 f"to {dest_version}"
             )
@@ -186,9 +186,9 @@ def downgrade(dest_version, saltenv, raises=True, bypass_disable=False):
     )
 
     # Check that all nodes are in a supported downgrade path
-    # We only support downgrade from one minor version
+    # We only support downgrade from one major version
     dest = dest_version.split(".")
-    max_version = f"{dest[0]}.{int(dest[1]) + 2}.0"
+    max_version = f"{int(dest[0]) + 2}.0.0"
 
     newest_node_version = None
 
@@ -207,20 +207,20 @@ def downgrade(dest_version, saltenv, raises=True, bypass_disable=False):
             != 1
         ):
             errors.append(
-                "Unable to downgrade from more than 1 minor version, Node "
+                "Unable to downgrade from more than 1 major version, Node "
                 f"{node_name} is in {node_info['version']} and you try to downgrade "
                 f"to {dest_version}"
             )
 
-    # Check that downgrade minor version is supported
+    # Check that downgrade major version is supported
     if not bypass_disable and not metalk8s_pillar["downgrade"]["enabled"]:
-        dest_minor_version = f"{dest[0]}.{dest[1]}"
-        newest_node_minor_version = newest_node_version.rsplit(".", 1)[0]
-        if dest_minor_version != newest_node_minor_version:
+        dest_major_version = dest[0]
+        newest_node_major_version = newest_node_version.rsplit(".")[0]
+        if dest_major_version != newest_node_major_version:
             errors.append(
-                f"Downgrade is not supported from {newest_node_minor_version} "
-                f"to {dest_minor_version} (see "
-                f"https://github.com/scality/metalk8s/releases/tag/{newest_node_minor_version}.0"
+                f"Downgrade is not supported from {newest_node_major_version} "
+                f"to {dest_major_version} (see "
+                f"https://github.com/scality/metalk8s/releases/tag/{newest_node_major_version}.0.0"
                 " for details)"
             )
 
