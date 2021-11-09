@@ -1,4 +1,6 @@
 # CHANGELOG
+## Release 123.0.0 (in development)
+
 ## Release 2.11.0 (in development)
 ### Additions
 
