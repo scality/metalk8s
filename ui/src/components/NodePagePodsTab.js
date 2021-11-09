@@ -52,7 +52,7 @@ const Body = styled.tbody`
   /* To display scroll bar on the table */
   display: block;
   /* 100vh - navbar - tabs button height - tabs content padding - table header */
-  height: calc(100vh - 178px);
+  height: calc(100vh - 12.71rem);
   overflow: auto;
   overflow-y: auto;
 `;

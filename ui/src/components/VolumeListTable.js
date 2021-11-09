@@ -93,7 +93,7 @@ const VolumeListContainer = styled.div`
 const Body = styled.div`
   display: block;
   // 100vh - 48px(Navbar) - 77px(Table Search) - 32px(Table Header) - 15px(Margin bottom)
-  height: calc(100vh - 172px);
+  height: calc(100vh - 12rem);
 `;
 
 const CreateVolumeButton = styled(Button)`

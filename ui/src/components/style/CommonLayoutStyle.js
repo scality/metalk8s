@@ -21,6 +21,7 @@ export const LeftSideInstanceList = styled.div`
   width: 49%;
   margin-bottom: 20px;
   min-width: 450px;
+  background-color: ${(props) => props.theme.backgroundLevel2};
 `;
 
 export const RightSidePanel = styled.div`
