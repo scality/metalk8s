@@ -7,7 +7,7 @@ metalk8s:
     # (e.g. downgrade of etcd), prior to downgrading the cluster.
     # The downgrade can still be forced setting
     # `metalk8s.downgrade.bypass_disable` to `True` in the pillar.
-    enabled: false
+    enabled: true
 
 kubernetes:
   cluster: kubernetes

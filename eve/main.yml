@@ -945,9 +945,7 @@ stages:
           name: Trigger upgrade and downgrade test stages simultaneously
           stage_names:
             - single-node-upgrade-centos
-            # NOTE: Deactivate minor downgrade on this branch
-            # See: https://github.com/scality/metalk8s/issues/1750
-            #- single-node-downgrade-centos
+            - single-node-downgrade-centos
           waitForFinish: true
 
   create-upload-testrail-objects:
@@ -1942,9 +1940,7 @@ stages:
           stage_names:
             - snapshot-single-node-upgrades
             - snapshot-multi-node-upgrades
-            # NOTE: Deactivate minor downgrade on this branch
-            # See: https://github.com/scality/metalk8s/issues/1750
-            #- single-node-downgrade-promoted-centos
+            - single-node-downgrade-promoted-centos
 
   snapshot-single-node-upgrades:
     # NOTE: This stage just set `environment_type` property to
