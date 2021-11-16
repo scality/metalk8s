@@ -1890,21 +1890,21 @@ stages:
               minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
               patch=$(echo "%(prop:product_version)s" | cut -d'.' -f3) &&
               echo "$major.$minor.$(( patch>0 ? patch-1 : 0 ))"
-      - SetPropertyFromCommand:
-          name: Set the patch version flag
-          property: patch_present
+      - SetPropertyFromCommand: &prop_promoted_version_available
+          name: Set the property checking that promoted version is available
+          property: promoted_present
           env:
             PRODUCT_VERSION: "%(prop:product_version)s"
-            PRODUCT_VERSION_PREV_patch: "%(prop:product_promoted_version)s"
+            PRODUCT_VERSION_PREV: "%(prop:product_promoted_version)s"
           command: |-
-              if [ "$PRODUCT_VERSION" != "$PRODUCT_VERSION_PREV_patch" ]; then
+              if [ -n "$PRODUCT_VERSION_PREV" ] && [ "$PRODUCT_VERSION" != "$PRODUCT_VERSION_PREV" ]; then
                 echo "true"
               else
                 echo "false"
               fi
-      - TriggerStages:
-          name: Trigger upgrade stages with patch Artifact ISO
-          doStepIf: "%(prop:patch_present)s"
+      - TriggerStages: &trigger_promoted_upgrade_downgrade_stages
+          name: Trigger upgrade/downgrade stages with promoted Artifact ISO
+          doStepIf: "%(prop:promoted_present)s"
           stage_names:
             - snapshot-single-node-upgrades
             - snapshot-multi-node-upgrades
@@ -1925,25 +1925,32 @@ stages:
           command: >
               major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
               minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
-              git tag --sort=taggerdate --list "$major.$(( $minor-1 )).*" | tail -1
+              git tag --sort=taggerdate --list "$major.$(( $minor-1 )).*" | grep -v '\-' | tail -1
+      - SetPropertyFromCommand: *prop_promoted_version_available
+      - TriggerStages: *trigger_promoted_upgrade_downgrade_stages
+
+  lifecycle-major-version:
+    worker:
+      type: local
+    steps:
+      - SetProperty:
+          name: Set promoted version type to major
+          property: promoted_version_type
+          value: major
+      - Git: *git_pull
       - SetPropertyFromCommand:
-          name: Set the minor version flag
-          property: minor_present
-          env:
-            PRODUCT_VERSION_PREV_patch: "%(prop:product_promoted_version)s"
+          name: Set previous major version to upgrade from and downgrade to
+          property: product_promoted_version
           command: |-
-              if [ -z "$PRODUCT_VERSION_PREV_patch" ]; then
-                echo "false"
+              major=$(echo "%(prop:product_version)s" | cut -d'.' -f1)
+              if [ "$major" = "123" ]; then
+                prev_version="2.11"
               else
-                echo "true"
+                prev_version="$(( major-1 ))"
               fi
-      - TriggerStages:
-          name: Trigger upgrade stages with minor Artifact ISO
-          doStepIf: "%(prop:minor_present)s"
-          stage_names:
-            - snapshot-single-node-upgrades
-            - snapshot-multi-node-upgrades
-            - single-node-downgrade-promoted-centos
+              git tag --sort=taggerdate --list "$prev_version.*" | grep -v '\-' | tail -1
+      - SetPropertyFromCommand: *prop_promoted_version_available
+      - TriggerStages: *trigger_promoted_upgrade_downgrade_stages
 
   snapshot-single-node-upgrades:
     # NOTE: This stage just set `environment_type` property to
