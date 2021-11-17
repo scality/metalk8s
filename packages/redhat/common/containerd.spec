@@ -45,7 +45,10 @@ Source3:        60-containerd.conf
 # Carve out code requiring github.com/Microsoft/hcsshim
 Patch0:         0001-Revert-commit-for-Windows-metrics.patch
 
-BuildRequires:  golang >= 1.10
+# NOTE: We do not require golang as currently build does not work
+# with golang >= 1.16, and we will not be able to easily install
+# golang **package** prior to 1.16
+# BuildRequires:  golang >= 1.10
 %if 0%{?el7}
 BuildRequires:  btrfs-progs-devel
 BuildRequires:  go-md2man
