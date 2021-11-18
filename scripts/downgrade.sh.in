@@ -116,6 +116,8 @@ launch_downgrade () {
     "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_all \
         extmod_whitelist="{'runners': []}" \
         saltenv="metalk8s-$DESTINATION_VERSION"
+    "${SALT_MASTER_CALL[@]}" salt-run saltutil.sync_runners \
+        saltenv="$SALTENV"
 
     "${SALT_MASTER_CALL[@]}" salt-run metalk8s_saltutil.sync_auth \
         saltenv="metalk8s-$DESTINATION_VERSION"
