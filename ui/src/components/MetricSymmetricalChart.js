@@ -109,7 +109,9 @@ const MetricSymmetricalChart = ({
     metricBelowAvgQuery.isLoading;
 
   useEffect(() => {
-    if (
+    if (!planeInterface) {
+      setSeries([]);
+    } else if (
       !isMetricsDataLoading &&
       !showAvg &&
       //solve the graph doesn't get updated
