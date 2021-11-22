@@ -135,4 +135,18 @@ def then_check_pod_status(request, host, k8s_client, label, expected_status):
     _check_pods_status(k8s_client, expected_status, ssh_config, label=label)
 
 
+@then(parsers.parse("each pods with label '{selector}' are on a different node"))
+def then_check_pod_different_node(ssh_config, host, k8s_client, selector):
+    pods = kube_utils.get_pods(k8s_client, ssh_config, selector)
+    assert pods
+
+    nodes = set()
+
+    for pod in pods:
+        assert (
+            pod.spec.nodeName not in nodes
+        ), f"Node '{pod.spec.nodeName}' has several Pod with label '{selector}'"
+        nodes.add(pod.spec.nodeName)
+
+
 # }}}

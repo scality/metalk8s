@@ -181,6 +181,67 @@ metalk8s:
                 config_digest: abcdefgh12345
                 metalk8s_version: "2.7.1"
 
+    coredns:
+      deployed.sls:
+        _cases:
+          "Simple hostname soft anti-affinity (default)": {}
+          "Multiple soft anti-affinity":
+            pillar_overrides:
+              kubernetes:
+                coreDNS:
+                  podAntiAffinity:
+                    soft:
+                      - topologyKey: kubernetes.io/hostname
+                      - topologyKey: kubernetes.io/zone
+                        weight: 10
+          "Hard anti-affinity on hostname":
+            pillar_overrides:
+              kubernetes:
+                coreDNS:
+                  podAntiAffinity:
+                    hard:
+                      - topologyKey: kubernetes.io/hostname
+          "Multiple hard anti-affinity":
+            pillar_overrides:
+              kubernetes:
+                coreDNS:
+                  podAntiAffinity:
+                    hard:
+                      - topologyKey: kubernetes.io/hostname
+                      - topologyKey: kubernetes.io/zone
+          "Multiple hard and soft anti-affinity":
+            pillar_overrides:
+              kubernetes:
+                coreDNS:
+                  podAntiAffinity:
+                    soft:
+                      - topologyKey: kubernetes.io/hostname
+                      - topologyKey: kubernetes.io/zone
+                        weight: 10
+                    hard:
+                      - topologyKey: kubernetes.io/hostname
+                      - topologyKey: kubernetes.io/zone
+
+      files:
+        coredns-deployment.yaml.j2:
+          _cases:
+            "From metalk8s.kubernetes.coredns.deployed":
+              extra_context:
+                replicas: 2
+                label_selector:
+                  k8s-app: kube-dns
+                affinity:
+                  podAntiAffinity:
+                    preferredDuringSchedulingIgnoredDuringExecution:
+                      - weight: 1
+                        podAffinityTerm:
+                          labelSelector:
+                            matchLabels:
+                              k8s-app: kube-dns
+                          namespaces:
+                            - kube-system
+                          topologyKey: kubernetes.io/hostname
+
     etcd:
       files:
         manifest.yaml.j2:

@@ -346,6 +346,7 @@ models:
       env: &_env_bootstrap_config_ssh
         DEBUG: "%(prop:metalk8s_debug:-false)s"
         ARCHIVE: metalk8s.iso
+        COREDNS_ANTI_AFFINITY: "{}"
       command: |
         ssh -F ssh_config bootstrap "
         sudo bash << EOF
@@ -367,6 +368,9 @@ models:
         archives:
           - \"\$(readlink -f \"${ARCHIVE}\")\"
         debug: ${DEBUG}
+        kubernetes:
+          coreDNS:
+            podAntiAffinity: ${COREDNS_ANTI_AFFINITY}
         END
         EOF"
       haltOnFailure: true
@@ -2361,6 +2365,8 @@ stages:
           env:
             <<: *_env_bootstrap_config_ssh
             ARCHIVE: /archives/metalk8s.iso
+            COREDNS_ANTI_AFFINITY: >-
+              {"hard": [{"topologyKey": "kubernetes.io/hostname"}]}
       - ShellCommand:
           <<: *copy_iso_bootstrap_ssh
           env:
