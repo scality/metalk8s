@@ -33,6 +33,14 @@ def test_prometheus_rules_customization(host):
     pass
 
 
+@scenario(
+    "../features/service_configuration.feature",
+    "Dex pods spreading",
+)
+def test_dex_spread(host):
+    pass
+
+
 # }}}
 # Given {{{
 
@@ -65,6 +73,8 @@ def csc(host, ssh_config, version, k8s_client, name, namespace):
 
 @when(parsers.parse("we update the CSC '{path}' to '{value}'"))
 def update_csc(csc, path, value):
+    value = yaml.safe_load(value)
+
     csc_content = csc.get()
     utils.set_dict_element(csc_content, path, value)
     csc.update(csc_content, apply_config=False)

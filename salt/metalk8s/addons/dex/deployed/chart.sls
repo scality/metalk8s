@@ -124,6 +124,10 @@ spec:
     matchLabels:
       app.kubernetes.io/instance: dex
       app.kubernetes.io/name: dex
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
   template:
     metadata:
       annotations:
@@ -133,6 +137,9 @@ spec:
         app.kubernetes.io/instance: dex
         app.kubernetes.io/name: dex
     spec:
+      affinity: {% endraw -%}{{ salt.metalk8s_service_configuration.get_pod_affinity(
+        dex.spec.deployment.affinity, {"app.kubernetes.io/instance": "dex", "app.kubernetes.io/name":
+        "dex"}, "metalk8s-auth") }}{%- raw %}
       containers:
       - args:
         - dex
