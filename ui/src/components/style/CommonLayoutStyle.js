@@ -177,6 +177,8 @@ export const OverviewInformationSpan = styled.div`
 export const OverviewInformationValue = styled.span`
   color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
+  word-wrap: break-word;
+  max-width: 20rem;
 `;
 
 export const OverviewClickableInformationValue = styled.span`
@@ -201,6 +203,6 @@ export const ActiveAlertTitle = styled.div`
 export const ActiveAlertWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 0 ${padding.larger} 0 ${padding.base};
+  padding: 0 ${padding.base} 0 0;
   width: 200px;
 `;
