@@ -2491,7 +2491,12 @@ stages:
       - ShellCommand: *check_ssh_config_bootstrap
       - ShellCommand: *copy_bastion_priv_key_to_bootstrap
       - ShellCommand: *set_bootstrap_minion_id_ssh
-      - ShellCommand: *bootstrap_config_ssh
+      - ShellCommand:
+          <<: *bootstrap_config_ssh
+          env:
+            <<: *_env_bootstrap_config_ssh
+            COREDNS_ANTI_AFFINITY: >-
+              {"hard": [{"topologyKey": "kubernetes.io/hostname"}]}
       - ShellCommand: *copy_iso_bootstrap_ssh
       - ShellCommand: *create_mountpoint_ssh
       - ShellCommand: *mount_iso_ssh
