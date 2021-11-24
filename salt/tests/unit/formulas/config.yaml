@@ -189,38 +189,42 @@ metalk8s:
             pillar_overrides:
               kubernetes:
                 coreDNS:
-                  podAntiAffinity:
-                    soft:
-                      - topologyKey: kubernetes.io/hostname
-                      - topologyKey: kubernetes.io/zone
-                        weight: 10
+                  affinity:
+                    podAntiAffinity:
+                      soft:
+                        - topologyKey: kubernetes.io/hostname
+                        - topologyKey: kubernetes.io/zone
+                          weight: 10
           "Hard anti-affinity on hostname":
             pillar_overrides:
               kubernetes:
                 coreDNS:
-                  podAntiAffinity:
-                    hard:
-                      - topologyKey: kubernetes.io/hostname
+                  affinity:
+                    podAntiAffinity:
+                      hard:
+                        - topologyKey: kubernetes.io/hostname
           "Multiple hard anti-affinity":
             pillar_overrides:
               kubernetes:
                 coreDNS:
-                  podAntiAffinity:
-                    hard:
-                      - topologyKey: kubernetes.io/hostname
-                      - topologyKey: kubernetes.io/zone
+                  affinity:
+                    podAntiAffinity:
+                      hard:
+                        - topologyKey: kubernetes.io/hostname
+                        - topologyKey: kubernetes.io/zone
           "Multiple hard and soft anti-affinity":
             pillar_overrides:
               kubernetes:
                 coreDNS:
-                  podAntiAffinity:
-                    soft:
-                      - topologyKey: kubernetes.io/hostname
-                      - topologyKey: kubernetes.io/zone
-                        weight: 10
-                    hard:
-                      - topologyKey: kubernetes.io/hostname
-                      - topologyKey: kubernetes.io/zone
+                  affinity:
+                    podAntiAffinity:
+                      soft:
+                        - topologyKey: kubernetes.io/hostname
+                        - topologyKey: kubernetes.io/zone
+                          weight: 10
+                      hard:
+                        - topologyKey: kubernetes.io/hostname
+                        - topologyKey: kubernetes.io/zone
 
       files:
         coredns-deployment.yaml.j2:
