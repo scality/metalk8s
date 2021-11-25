@@ -112,6 +112,7 @@
     "fs-extra": "^10.0.0",
     "handlebars": "^4.7.7",
     "handlebars-loader": "^1.7.1",
+    "har-validator": "^5.1.5",
     "html-loader": "^2.1.2",
     "html-webpack-plugin": "^5.3.1",
     "identity-obj-proxy": "^3.0.0",
