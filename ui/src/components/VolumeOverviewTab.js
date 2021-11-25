@@ -129,7 +129,6 @@ const VolumeDetailCard = (props) => {
   const {
     name,
     nodeName,
-    storage,
     status,
     storageClassName,
     creationTimestamp,
@@ -241,7 +240,7 @@ const VolumeDetailCard = (props) => {
               {intl.formatMessage({ id: 'size' })}
             </InformationLabel>
             <InformationValue data-cy="volume_size_value">
-              {formatSizeForDisplay(storage)}
+              {storageCapacity || intl.formatMessage({id: 'unknown'})}
             </InformationValue>
           </InformationSpan>
           <InformationSpan>
