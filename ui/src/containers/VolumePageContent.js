@@ -155,10 +155,6 @@ const VolumePageContent = (props) => {
                   <VolumeOverviewTab
                     name={currentVolumeName}
                     nodeName={volume?.spec?.nodeName}
-                    storage={
-                      pV?.spec?.capacity?.storage ??
-                      intl.formatMessage({ id: 'unknown' })
-                    }
                     status={
                       volumeStatus ?? intl.formatMessage({ id: 'unknown' })
                     }
