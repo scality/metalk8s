@@ -28,6 +28,7 @@ RPM_PACKAGES=(
     xorg-x11-server-Xvfb
 )
 NODE_PACKAGES=(
+    har-validator@5.1.5
     cypress@5.6.0
     cypress-cucumber-preprocessor@4.0.0
     cypress-wait-until@1.7.1
