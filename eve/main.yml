@@ -1228,7 +1228,7 @@ stages:
             for pkg in $PKGS; do
               npm install --no-save --no-package-lock $pkg@$(node -p \
                 -e "require('./package-lock.json').dependencies['$pkg'].version" \
-              )
+              ) || exit 1
             done
           haltOnFailure: true
       - ShellCommand:
