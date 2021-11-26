@@ -43,6 +43,13 @@ def test_change_cp_ingress_mode(host, teardown):
     pass
 
 
+@scenario(
+    "../features/ingress.feature", "Control Plane Ingress Controller pods spreading"
+)
+def test_cp_ingress_controller_pod_spreading(host):
+    pass
+
+
 @pytest.fixture(scope="function")
 def context():
     return {}

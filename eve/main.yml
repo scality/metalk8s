@@ -347,6 +347,7 @@ models:
         DEBUG: "%(prop:metalk8s_debug:-false)s"
         ARCHIVE: metalk8s.iso
         COREDNS_AFFINITY: "{}"
+        CP_INGRESS_AFFINITY: "{}"
       command: |
         ssh -F ssh_config bootstrap "
         sudo bash << EOF
@@ -360,6 +361,8 @@ models:
             metalLB:
               enabled: true
             ingress:
+              controller:
+                affinity: ${CP_INGRESS_AFFINITY}
               ip: 192.168.1.254
           workloadPlane:
             cidr: 192.168.2.0/24
@@ -2359,8 +2362,9 @@ stages:
           env:
             <<: *_env_bootstrap_config_ssh
             ARCHIVE: /archives/metalk8s.iso
-            COREDNS_AFFINITY: >-
+            COREDNS_AFFINITY: &hard_hostname_podantiaffinity >-
               {"podAntiAffinity": {"hard": [{"topologyKey": "kubernetes.io/hostname"}]}}
+            CP_INGRESS_AFFINITY: *hard_hostname_podantiaffinity
       - ShellCommand:
           <<: *copy_iso_bootstrap_ssh
           env:
@@ -2495,8 +2499,8 @@ stages:
           <<: *bootstrap_config_ssh
           env:
             <<: *_env_bootstrap_config_ssh
-            COREDNS_AFFINITY: >-
-              {"podAntiAffinity": {"hard": [{"topologyKey": "kubernetes.io/hostname"}]}}
+            COREDNS_AFFINITY: *hard_hostname_podantiaffinity
+            CP_INGRESS_AFFINITY: *hard_hostname_podantiaffinity
       - ShellCommand: *copy_iso_bootstrap_ssh
       - ShellCommand: *create_mountpoint_ssh
       - ShellCommand: *mount_iso_ssh

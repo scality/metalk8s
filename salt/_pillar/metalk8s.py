@@ -107,6 +107,15 @@ def _load_networks(config_data):
                 "https://github.com/scality/metalk8s/issues/3502"
             )
 
+        # Control Plane Ingress affinity default to soft podAntiAffinity on hostname
+        # NOTE: This affinity is only use when MetalLB is enabled, as if MetalLB is disabled
+        # Control Plane Ingress is deployed as DaemonSet
+        networks_data["controlPlane"].setdefault("ingress", {}).setdefault(
+            "controller", {}
+        ).setdefault("affinity", {}).setdefault("podAntiAffinity", {}).setdefault(
+            "soft", [{"topologyKey": "kubernetes.io/hostname"}]
+        )
+
     if errors:
         return __utils__["pillar_utils.errors_to_dict"](errors)
 

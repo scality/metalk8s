@@ -49,6 +49,12 @@ Configuration
           cidr: <CIDR-notation>
           ingress:
             ip: <IP-for-ingress>
+            controller:
+              affinity:
+                podAntiAffinity:
+                  hard: []
+                  soft:
+                    - topologyKey: kubernetes.io/hostname
           metalLB:
             enabled: <boolean>
         workloadPlane:
@@ -100,6 +106,18 @@ notation for it's various subfields.
       Ingress IP is the control plane IP of the Bootstrap node (which means
       that if you lose the Bootstrap node, you no longer have access to any
       control plane component).
+
+      If you want to override the default ``controlPlane`` ``ingress``
+      controller podAntiAffinity, by default MetalK8s use soft podAntiAffinity
+      on hostname so that if it's possible those controllers pods will be
+      spread on different ``master`` nodes.
+
+      .. note::
+
+        Affinity for control plane ingress controller will be
+        ignored if ``MetalLB`` is disabled, as this control plane
+        ingress controller will be deployed as a DaemonSet, which means that
+        a pod will run on every ``master`` nodes by default.
 
       This ``ip`` for ``ingress`` can be managed by MetalK8s directly if
       it's possible in your environment, to do so we use

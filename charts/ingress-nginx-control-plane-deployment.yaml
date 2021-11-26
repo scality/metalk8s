@@ -22,6 +22,13 @@ controller:
 
   updateStrategy:
     type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+
+  affinity: '__var_quoted__(salt.metalk8s_service_configuration.get_pod_affinity(
+    pillar.networks.control_plane.ingress.controller.affinity,
+    {"app.kubernetes.io/component": "controller", "app.kubernetes.io/instance": "ingress-nginx-control-plane", "app.kubernetes.io/name": "ingress-nginx"},
+    "metalk8s-ingress"))'
 
   tolerations:
     - key: "node-role.kubernetes.io/bootstrap"

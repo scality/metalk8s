@@ -381,6 +381,8 @@ spec:
       app.kubernetes.io/instance: ingress-nginx-control-plane
       app.kubernetes.io/name: ingress-nginx
   strategy:
+    rollingUpdate:
+      maxUnavailable: 1
     type: RollingUpdate
   template:
     metadata:
@@ -389,6 +391,10 @@ spec:
         app.kubernetes.io/instance: ingress-nginx-control-plane
         app.kubernetes.io/name: ingress-nginx
     spec:
+      affinity: {% endraw -%}{{ salt.metalk8s_service_configuration.get_pod_affinity(
+        pillar.networks.control_plane.ingress.controller.affinity, {"app.kubernetes.io/component":
+        "controller", "app.kubernetes.io/instance": "ingress-nginx-control-plane",
+        "app.kubernetes.io/name": "ingress-nginx"}, "metalk8s-ingress") }}{%- raw %}
       containers:
       - args:
         - /nginx-ingress-controller
