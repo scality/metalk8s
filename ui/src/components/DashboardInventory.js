@@ -2,9 +2,10 @@
 
 import React from 'react';
 import { useQuery } from 'react-query';
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import Card from '@scality/core-ui/dist/components/card/Card.component';
 import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
+import { StatusWrapper, Icon } from '@scality/core-ui';
 import {
   spacing,
   fontSize,
@@ -42,30 +43,23 @@ const CardsWrapper = styled.div`
 
 const InventoryIcon = styled.i`
   font-size: ${fontSize.larger};
-  margin-right: ${spacing.sp4};
-  ${(props) => {
-    switch (props.status) {
-      case STATUS_WARNING:
-        return css`
-          color: ${props.theme.statusWarning};
-        `;
-      case STATUS_CRITICAL:
-        return css`
-          color: ${props.theme.statusCritical};
-        `;
-
-      default:
-        return css`
-          color: ${props.theme.statusHealthy};
-        `;
-    }
-  }}
 `;
 
 const InventoryValue = styled.span`
   font-size: ${fontSize.larger};
   font-weight: ${fontWeight.bold};
 `;
+
+const getStatusColor = (status) => {
+  switch (status) {
+    case STATUS_WARNING:
+      return "statusWarning";
+    case STATUS_CRITICAL:
+      return "statusCritical";
+    default:
+      return "statusHealthy";
+  }
+}
 
 const DashboardInventory = () => {
   const intl = useIntl();
@@ -110,11 +104,15 @@ const DashboardInventory = () => {
             </Card.Header>
             <Card.BodyContainer>
               <Card.Body>
-                <InventoryIcon
-                  className="fas fa-server"
-                  status={nodesStatus}
-                  aria-label={nodesStatus}
-                />
+                <InventoryIcon>
+                  <StatusWrapper status={nodesStatus}>
+                    <Icon
+                      name={"Node-backend"}
+                      color={getStatusColor(nodesStatus)}
+                      ariaLabel={nodesStatus}
+                    />
+                  </StatusWrapper>
+                </InventoryIcon>
                 <InventoryValue aria-label={`${nodesCount} nodes`}>
                   {nodesCount}
                 </InventoryValue>
@@ -139,11 +137,15 @@ const DashboardInventory = () => {
             </Card.Header>
             <Card.BodyContainer>
               <Card.Body>
-                <InventoryIcon
-                  className="fas fa-hdd"
-                  status={volumesStatus}
-                  aria-label={volumesStatus}
-                />
+                <InventoryIcon>
+                  <StatusWrapper status={volumesStatus}>
+                    <Icon
+                      name={"Volume-backend"}
+                      color={getStatusColor(volumesStatus)}
+                      ariaLabel={volumesStatus}
+                    />
+                  </StatusWrapper>
+                </InventoryIcon>
                 <InventoryValue aria-label={`${volumesCount} volumes`}>
                   {volumesCount}
                 </InventoryValue>
