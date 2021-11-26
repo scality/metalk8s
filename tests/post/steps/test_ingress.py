@@ -39,7 +39,7 @@ def test_change_cp_ingress_ip(host, teardown):
 
 
 @scenario("../features/ingress.feature", "Enable MetalLB")
-def test_change_cp_ingress_vip(host, teardown):
+def test_change_cp_ingress_mode(host, teardown):
     pass
 
 
