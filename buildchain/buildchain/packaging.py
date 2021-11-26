@@ -355,7 +355,7 @@ def _rpm_package_containerd(releasever: str) -> targets.RPMPackage:
             Path("0001-Revert-commit-for-Windows-metrics.patch"),
             Path("containerd.service"),
             Path("containerd.toml"),
-            Path("containerd-{}.tar.gz".format(versions.CONTAINERD_VERSION)),
+            Path("v{}.tar.gz".format(versions.CONTAINERD_VERSION)),
         ]
         + extra_sources,
     )
