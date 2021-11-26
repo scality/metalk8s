@@ -10,7 +10,7 @@ Version:        1.4.8
 ExclusiveArch: %{?go_arches:%{go_arches}}%{!?go_arches:%{ix86} x86_64 %{arm} aarch64 ppc64le s390x %{mips}}
 %global debug_package %{nil}
 %global gourl https://%{goipath}
-%global gosource %{gourl}/archive/v%{version}/%{name}-%{version}.tar.gz
+%global gosource %{gourl}/archive/refs/tags/v%{version}.tar.gz
 %define gobuildroot %{expand:
 GO_BUILD_PATH=$PWD/_build
 install -m 0755 -vd $(dirname $GO_BUILD_PATH/src/%{goipath})
