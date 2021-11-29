@@ -9,6 +9,7 @@ import {
   SmallerText,
 } from '@scality/core-ui/dist/components/text/Text.component';
 import TooltipComponent from '@scality/core-ui/dist/components/tooltip/Tooltip.component';
+import { StatusWrapper } from '@scality/core-ui';
 import {
   highestAlertToStatus,
   useAlertLibrary,
@@ -57,6 +58,10 @@ const HealthBarContainer = styled.div`
   margin: 0 auto;
 `;
 
+const PlatformStatusIcon = styled.div`
+  font-size: 2rem;
+`;
+
 const DashboardGlobalHealth = () => {
   const intl = useIntl();
   const theme = useTheme();
@@ -76,10 +81,14 @@ const DashboardGlobalHealth = () => {
     <GlobalHealthContainer>
       <div className="datacenter">
         <SpacedBox ml={12} mr={12}>
-          <StatusIcon
-            status={platformStatus}
-            className="fa fa-warehouse fa-2x"
-          ></StatusIcon>
+          <PlatformStatusIcon>
+            <StatusWrapper status={platformStatus}>
+              <StatusIcon
+                status={platformStatus}
+                className="fa fa-warehouse"
+              />
+            </StatusWrapper>
+          </PlatformStatusIcon>
         </SpacedBox>
 
         <LargerText>{intl.formatMessage({ id: 'platform' })}</LargerText>

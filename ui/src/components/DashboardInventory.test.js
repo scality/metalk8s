@@ -9,6 +9,11 @@ import {
   getNodesCountQuery,
   getVolumesCountQuery,
 } from '../services/platformlibrary/k8s.js';
+import {
+  STATUS_WARNING,
+  STATUS_CRITICAL,
+  STATUS_HEALTH,
+} from '../constants.js';
 
 const alertsCritical = [
   {
@@ -83,7 +88,8 @@ describe('the dashboard inventory panel', () => {
     await waitForLoadingToFinish();
 
     // Verify
-    expect(screen.getAllByLabelText('critical').length).toEqual(2);
+    expect(screen.getAllByLabelText(`Node-backend ${STATUS_CRITICAL}`).length).toEqual(1);
+    expect(screen.getAllByLabelText(`Volume-backend ${STATUS_CRITICAL}`).length).toEqual(1);
   });
 
   test('displays properly the status WARNING for nodes and volumes', async () => {
@@ -97,7 +103,8 @@ describe('the dashboard inventory panel', () => {
     await waitForLoadingToFinish();
 
     // Verify
-    expect(screen.getAllByLabelText('warning').length).toEqual(2);
+    expect(screen.getAllByLabelText(`Node-backend ${STATUS_WARNING}`).length).toEqual(1);
+    expect(screen.getAllByLabelText(`Volume-backend ${STATUS_WARNING}`).length).toEqual(1);
   });
 
   test('displays properly the status HEALTHY for nodes and volumes', async () => {
@@ -111,7 +118,8 @@ describe('the dashboard inventory panel', () => {
     await waitForLoadingToFinish();
 
     // Verify
-    expect(screen.getAllByLabelText('healthy').length).toEqual(2);
+    expect(screen.getAllByLabelText(`Node-backend ${STATUS_HEALTH}`).length).toEqual(1);
+    expect(screen.getAllByLabelText(`Volume-backend ${STATUS_HEALTH}`).length).toEqual(1);
   });
 
   test('displays the loader if the query does not return a result', async () => {
