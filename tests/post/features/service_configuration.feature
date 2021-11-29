@@ -29,3 +29,13 @@ Feature: Cluster and Services Configurations
         When we update the CSC 'spec.rules.node_exporter.node_filesystem_space_filling_up.warning.hours' to '48'
         And we apply the 'metalk8s.addons.prometheus-operator.deployed' state
         Then we have an alert rule 'NodeFilesystemSpaceFillingUp' in group 'node-exporter' with severity 'warning' and 'annotations.summary' equal to 'Filesystem is predicted to run out of space within the next 48 hours.'
+
+    Scenario: Dex pods spreading
+        Given the Kubernetes API is available
+        And we are on a multi node cluster
+        And we have a 'metalk8s-dex-config' CSC in namespace 'metalk8s-auth'
+        When we update the CSC 'spec.deployment.affinity' to '{"podAntiAffinity": {"hard": [{"topologyKey": "kubernetes.io/hostname"}]}}'
+        And we apply the 'metalk8s.addons.dex.deployed' state
+        And we wait for the rollout of 'deploy/dex' in namespace 'metalk8s-auth' to complete
+        Then pods with label 'app.kubernetes.io/name=dex' are 'Ready'
+        And each pods with label 'app.kubernetes.io/name=dex' are on a different node

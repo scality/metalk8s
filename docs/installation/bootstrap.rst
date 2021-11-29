@@ -72,10 +72,11 @@ Configuration
             <feature_gate_name>: True
         coreDNS:
           replicas: 2
-          podAntiAffinity:
-            hard: []
-            soft:
-              - topologyKey: kubernetes.io/hostname
+          affinity:
+            podAntiAffinity:
+              hard: []
+              soft:
+                - topologyKey: kubernetes.io/hostname
 
 The ``networks`` field specifies a range of IP addresses written in CIDR
 notation for it's various subfields.
@@ -184,9 +185,10 @@ defaults kubernetes configuration.
 
       kubernetes:
         coreDNS:
-          podAntiAffinity:
-            hard:
-              - topologyKey: kubernetes.io/hostname
+          affinity:
+            podAntiAffinity:
+              hard:
+                - topologyKey: kubernetes.io/hostname
 
 .. _Feature Gates: https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/
 

@@ -20,6 +20,14 @@ spec:
   # Deployment configuration
   deployment:
     replicas: 2
+    affinity:
+      podAntiAffinity:
+        soft:
+          - topologyKey: kubernetes.io/hostname
+        #   - topologyKey: my.second.important/topologyKey
+        #     weight: 42
+        # hard:
+        #   - topologyKey: kubernetes.io/hostname
 
   # Dex server configuration
   config:

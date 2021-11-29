@@ -95,3 +95,66 @@ def get_service_conf(
     )
 
     return merged_config
+
+
+def get_pod_affinity(affinities, label_selector, namespaces):
+    """Convert human readable affinity to real Kubernetes affinity
+
+    NOTE: This function only handle podAntiAffinity for the moment
+
+    Input look like
+    ```yaml
+    podAntiAffinity:
+        hard:
+            - topologyKey: kubernetes.io/hostname
+        soft:
+            - topologyKey: my.topology.key/important
+              weight: 100
+            - topologyKey: my.topology.key/a.bit.less.important
+    ```
+
+    Args:
+        value (dict): Simple dict affinity
+        label_selector (dict): Dict for label selector to match Pods for this affinity
+        namespaces (list): List of namespaces where those Pods sits
+
+    Returns:
+        A dict that can be used as `affinity` in a Kubernetes object
+    """
+    if not isinstance(namespaces, list):
+        namespaces = [namespaces]
+
+    result = {}
+    res_pod_anti_affinity = {}
+
+    pod_anti_affinity = (affinities or {}).get("podAntiAffinity") or {}
+
+    for soft_affinity in pod_anti_affinity.get("soft") or []:
+        res_pod_anti_affinity.setdefault(
+            "preferredDuringSchedulingIgnoredDuringExecution", []
+        ).append(
+            {
+                "weight": soft_affinity.get("weight", 1),
+                "podAffinityTerm": {
+                    "labelSelector": {"matchLabels": label_selector},
+                    "namespaces": namespaces,
+                    "topologyKey": soft_affinity["topologyKey"],
+                },
+            }
+        )
+
+    for hard_affinity in pod_anti_affinity.get("hard") or []:
+        res_pod_anti_affinity.setdefault(
+            "requiredDuringSchedulingIgnoredDuringExecution", []
+        ).append(
+            {
+                "labelSelector": {"matchLabels": label_selector},
+                "namespaces": namespaces,
+                "topologyKey": hard_affinity["topologyKey"],
+            }
+        )
+
+    if res_pod_anti_affinity:
+        result["podAntiAffinity"] = res_pod_anti_affinity
+
+    return result

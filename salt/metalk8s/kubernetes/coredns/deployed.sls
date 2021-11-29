@@ -8,41 +8,17 @@
 {%- set replicas = pillar_coredns.get("replicas") or 2 %}
 {%- set label_selector = {"k8s-app": "kube-dns"} %}
 
-{%- set pillar_affinities = pillar_coredns.get("podAntiAffinity", {}) %}
+{%- set pillar_affinities = pillar_coredns.get("affinity", {}) %}
 {#- NOTE: The default podAntiAffinity is a soft anti-affinity on hostname #}
-{%- set soft_affinities = pillar_affinities.get("soft") or [{"topologyKey": "kubernetes.io/hostname"}] %}
-{%- set hard_affinities = pillar_affinities.get("hard") or [] %}
+{%- do pillar_affinities.setdefault("podAntiAffinity", {}).setdefault(
+    "soft", [{"topologyKey": "kubernetes.io/hostname"}]
+) %}
 
-{%- set affinity = {
-  "podAntiAffinity": {}
-} %}
-
-{%- for soft_affinity in soft_affinities %}
-  {%- do affinity["podAntiAffinity"].setdefault(
-    "preferredDuringSchedulingIgnoredDuringExecution", []
-  ).append({
-    "weight": soft_affinity.get("weight", 1),
-    "podAffinityTerm": {
-      "labelSelector": {
-        "matchLabels": label_selector
-      },
-      "namespaces": ["kube-system"],
-      "topologyKey": soft_affinity["topologyKey"]
-    }
-  }) %}
-{%- endfor %}
-{%- for hard_affinity in hard_affinities %}
-  {%- do affinity["podAntiAffinity"].setdefault(
-    "requiredDuringSchedulingIgnoredDuringExecution", []
-  ).append({
-    "labelSelector": {
-      "matchLabels": label_selector
-    },
-    "namespaces": ["kube-system"],
-    "topologyKey": hard_affinity["topologyKey"]
-  }) %}
-{%- endfor %}
-
+{%- set affinity = salt.metalk8s_service_configuration.get_pod_affinity(
+    pillar_affinities,
+    label_selector,
+    "kube-system"
+) %}
 
 Create coredns ConfigMap:
   metalk8s_kubernetes.object_present:

@@ -12,6 +12,11 @@
   hostname, so that if it's possible each `CoreDNS` pods will sit on different infra node
   (PR[#3579](https://github.com/scality/metalk8s/pull/3579))
 
+- Allow to manage soft and hard `podAntiAffinity` for `Dex` from Cluster
+  and Services Configurations, with a default soft anti-affinity on hostname,
+  so that if it's possible each `Dex` pods will sit on a different infra node
+  (PR[#3614](https://github.com/scality/metalk8s/pull/3614))
+
 ### Removals
 
 - Removed the PDF support for documentation, replaced it with the HTML output
