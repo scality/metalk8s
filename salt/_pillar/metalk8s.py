@@ -173,6 +173,19 @@ def _load_iso_path(config_data):
     return res
 
 
+def _load_kubernetes(config_data):
+    """Load Kubernetes information from BootstrapConfiguration"""
+    kubernetes_data = config_data.get("kubernetes", {})
+
+    # CoreDNS affinity default to soft podAntiAffinity on hostname
+    kubernetes_data.setdefault("coreDNS", {}).setdefault("affinity", {}).setdefault(
+        "podAntiAffinity", {}
+    ).setdefault("soft", [{"topologyKey": "kubernetes.io/hostname"}])
+    kubernetes_data["coreDNS"].setdefault("replicas", 2)
+
+    return kubernetes_data
+
+
 def ext_pillar(minion_id, pillar, bootstrap_config):  # pylint: disable=unused-argument
     config = _load_config(bootstrap_config)
     if config.get("_errors"):
@@ -197,7 +210,7 @@ def ext_pillar(minion_id, pillar, bootstrap_config):  # pylint: disable=unused-a
             "networks": _load_networks(config),
             "metalk8s": metal_data,
             "proxies": config.get("proxies", {}),
-            "kubernetes": config.get("kubernetes", {}),
+            "kubernetes": _load_kubernetes(config),
         }
 
         if not isinstance(metal_data["archives"], list):
