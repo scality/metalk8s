@@ -6,10 +6,37 @@ import {
   useNodeAddressesSelector,
   useSingleChartSerie,
 } from '../hooks';
-import { getNodesMemoryQuery } from '../services/platformlibrary/metrics';
+import {
+  getNodesMemoryAboveBelowThresholdQuery,
+  getNodesMemoryQuantileQuery,
+  getNodesMemoryQuery,
+} from '../services/platformlibrary/metrics';
 import { getMultiResourceSeriesForChart } from '../services/graphUtils';
+import NonSymmetricalQuantileChart from './NonSymmetricalQuantileChart';
 
-const DashboardChartMemory = () => {
+const DashboardChartMemory = ({
+  isShowQuantileChart,
+}: {
+  isShowQuantileChart: boolean,
+}) => {
+  return (
+    <GraphWrapper>
+      {isShowQuantileChart ? (
+        <NonSymmetricalQuantileChart
+          getQuantileQuery={getNodesMemoryQuantileQuery}
+          getQuantileHoverQuery={getNodesMemoryAboveBelowThresholdQuery}
+          title={'Memory'}
+          yAxisType={'percentage'}
+          isLegendHided={true}
+        />
+      ) : (
+        <DashboardChartMemoryWithoutQuantiles />
+      )}
+    </GraphWrapper>
+  );
+};
+
+const DashboardChartMemoryWithoutQuantiles = () => {
   const nodeAddresses = useNodeAddressesSelector(useNodes());
   const { isLoading, series, startingTimeStamp } = useSingleChartSerie({
     getQuery: (timeSpanProps) => getNodesMemoryQuery(timeSpanProps),
@@ -26,17 +53,15 @@ const DashboardChartMemory = () => {
     ),
   });
   return (
-    <GraphWrapper>
-      <LineTemporalChart
-        series={series}
-        height={80}
-        title="Memory"
-        startingTimeStamp={startingTimeStamp}
-        yAxisType={'percentage'}
-        isLegendHided={true}
-        isLoading={isLoading}
-      />
-    </GraphWrapper>
+    <LineTemporalChart
+      series={series}
+      height={80}
+      title="Memory"
+      startingTimeStamp={startingTimeStamp}
+      yAxisType={'percentage'}
+      isLegendHided={true}
+      isLoading={isLoading}
+    />
   );
 };
 

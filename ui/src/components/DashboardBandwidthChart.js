@@ -15,11 +15,16 @@ import {
   useSymetricalChartSeries,
 } from '../hooks';
 import {
+  getNodesPlanesBandwidthInAboveBelowThresholdQuery,
+  getNodesPlanesBandwidthInQuantileQuery,
   getNodesPlanesBandwidthInQuery,
+  getNodesPlanesBandwidthOutAboveBelowThresholdQuery,
+  getNodesPlanesBandwidthOutQuantileQuery,
   getNodesPlanesBandwidthOutQuery,
 } from '../services/platformlibrary/metrics';
+import SymmetricalQuantileChart from './SymmetricalQuantileChart';
 
-const DashboardBandwidthChart = ({
+const DashboardBandwidthChartWithoutQuantile = ({
   title,
   plane,
 }: {
@@ -42,20 +47,22 @@ const DashboardBandwidthChart = ({
   }
 
   const { isLoading, series, startingTimeStamp } = useSymetricalChartSeries({
-    getQueryAbove: (timeSpanProps) =>
+    getAboveQueries: (timeSpanProps) => [
       getNodesPlanesBandwidthInQuery(timeSpanProps, devices),
-    getQueryBelow: (timeSpanProps) =>
+    ],
+    getBelowQueries: (timeSpanProps) => [
       getNodesPlanesBandwidthOutQuery(timeSpanProps, devices),
+    ],
     transformPrometheusDataToSeries: useCallback(
       (prometheusResultAbove, prometheusResultBelow) => {
-        if (!prometheusResultAbove || !prometheusResultBelow) {
+        if (!prometheusResultAbove[0] || !prometheusResultBelow[0]) {
           return [];
         }
         return getMultipleSymmetricalSeries(
-          prometheusResultAbove,
-          prometheusResultBelow,
-          'write',
-          'read',
+          prometheusResultAbove[0],
+          prometheusResultBelow[0],
+          'in',
+          'out',
           nodeAddresses,
           nodesPlaneInterface,
         );
@@ -64,19 +71,51 @@ const DashboardBandwidthChart = ({
     ),
   });
   return (
+    <LineTemporalChart
+      series={series}
+      height={150}
+      title={title}
+      startingTimeStamp={startingTimeStamp}
+      yAxisType={'symmetrical'}
+      yAxisTitle={'in(+) / out(-)'}
+      isLegendHided={false}
+      isLoading={isLoading}
+      unitRange={UNIT_RANGE_BS}
+    />
+  );
+};
+
+const DashboardBandwidthChart = ({
+  title,
+  plane,
+  isShowQuantileChart,
+}: {
+  title: string,
+  plane: 'controlPlane' | 'workloadPlane',
+  isShowQuantileChart: boolean,
+}) => {
+  return (
     <GraphWrapper>
-      <LineTemporalChart
-        series={series}
-        height={150}
-        title={title}
-        startingTimeStamp={startingTimeStamp}
-        yAxisType={'symmetrical'}
-        yAxisTitle={'in(+) / out(-)'}
-        isLegendHided={false}
-        isLoading={isLoading}
-        unitRange={UNIT_RANGE_BS}
-      />
+      {isShowQuantileChart ? (
+        <SymmetricalQuantileChart
+          getAboveQuantileQuery={getNodesPlanesBandwidthInQuantileQuery}
+          getBelowQuantileQuery={getNodesPlanesBandwidthOutQuantileQuery}
+          getAboveQuantileHoverQuery={
+            getNodesPlanesBandwidthInAboveBelowThresholdQuery
+          }
+          getBelowQuantileHoverQuery={
+            getNodesPlanesBandwidthOutAboveBelowThresholdQuery
+          }
+          metricPrefixAbove={'in'}
+          metricPrefixBelow={'out'}
+          title={title}
+          yAxisTitle={'in(+) / out(-)'}
+        />
+      ) : (
+        <DashboardBandwidthChartWithoutQuantile title={title} plane={plane} />
+      )}
     </GraphWrapper>
   );
 };
+
 export default DashboardBandwidthChart;

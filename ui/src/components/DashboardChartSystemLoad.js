@@ -7,10 +7,37 @@ import {
   useSingleChartSerie,
 } from '../hooks';
 import type { DashboardChartProps } from '../containers/DashboardPage';
-import { getNodesSystemLoadQuery } from '../services/platformlibrary/metrics';
+import {
+  getNodesSystemLoadAboveBelowThresholdQuery,
+  getNodesSystemLoadQuantileQuery,
+  getNodesSystemLoadQuery,
+} from '../services/platformlibrary/metrics';
 import { getMultiResourceSeriesForChart } from '../services/graphUtils';
+import NonSymmetricalQuantileChart from './NonSymmetricalQuantileChart';
 
-const DashboardChartSystemLoad = (props: DashboardChartProps) => {
+const DashboardChartSystemLoad = ({
+  isShowQuantileChart,
+}: {
+  isShowQuantileChart: boolean,
+}) => {
+  return (
+    <GraphWrapper>
+      {isShowQuantileChart ? (
+        <NonSymmetricalQuantileChart
+          getQuantileQuery={getNodesSystemLoadQuantileQuery}
+          getQuantileHoverQuery={getNodesSystemLoadAboveBelowThresholdQuery}
+          title={'System Load'}
+        />
+      ) : (
+        <DashboardChartSystemLoadWithoutQuantiles />
+      )}
+    </GraphWrapper>
+  );
+};
+
+const DashboardChartSystemLoadWithoutQuantiles = (
+  props: DashboardChartProps,
+) => {
   const nodeAddresses = useNodeAddressesSelector(useNodes());
   const { isLoading, series, startingTimeStamp } = useSingleChartSerie({
     getQuery: (timeSpanProps) => getNodesSystemLoadQuery(timeSpanProps),
@@ -22,16 +49,14 @@ const DashboardChartSystemLoad = (props: DashboardChartProps) => {
     ),
   });
   return (
-    <GraphWrapper>
-      <LineTemporalChart
-        series={series}
-        height={80}
-        title="System Load"
-        startingTimeStamp={startingTimeStamp}
-        isLegendHided={true}
-        isLoading={isLoading}
-      />
-    </GraphWrapper>
+    <LineTemporalChart
+      series={series}
+      height={80}
+      title="System Load"
+      startingTimeStamp={startingTimeStamp}
+      isLegendHided={true}
+      isLoading={isLoading}
+    />
   );
 };
 
