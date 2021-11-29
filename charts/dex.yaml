@@ -14,6 +14,19 @@ tolerations:
 
 replicaCount: '__var__(dex.spec.deployment.replicas)'
 
+strategy:
+  rollingUpdate:
+    maxUnavailable: 1
+  type: RollingUpdate
+
+
+# NOTE: We use `__var_quoted__` as `affinity` is rendered as YAML
+# so result will be quoted
+affinity: '__var_quoted__(salt.metalk8s_service_configuration.get_pod_affinity(
+  dex.spec.deployment.affinity,
+  {"app.kubernetes.io/instance": "dex", "app.kubernetes.io/name": "dex"},
+  "metalk8s-auth"))'
+
 # grpc support
 grpc:
   enabled: false

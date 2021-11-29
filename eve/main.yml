@@ -346,7 +346,7 @@ models:
       env: &_env_bootstrap_config_ssh
         DEBUG: "%(prop:metalk8s_debug:-false)s"
         ARCHIVE: metalk8s.iso
-        COREDNS_ANTI_AFFINITY: "{}"
+        COREDNS_AFFINITY: "{}"
       command: |
         ssh -F ssh_config bootstrap "
         sudo bash << EOF
@@ -370,7 +370,7 @@ models:
         debug: ${DEBUG}
         kubernetes:
           coreDNS:
-            podAntiAffinity: ${COREDNS_ANTI_AFFINITY}
+            affinity: ${COREDNS_AFFINITY}
         END
         EOF"
       haltOnFailure: true
@@ -2365,8 +2365,8 @@ stages:
           env:
             <<: *_env_bootstrap_config_ssh
             ARCHIVE: /archives/metalk8s.iso
-            COREDNS_ANTI_AFFINITY: >-
-              {"hard": [{"topologyKey": "kubernetes.io/hostname"}]}
+            COREDNS_AFFINITY: >-
+              {"podAntiAffinity": {"hard": [{"topologyKey": "kubernetes.io/hostname"}]}}
       - ShellCommand:
           <<: *copy_iso_bootstrap_ssh
           env:
@@ -2497,7 +2497,12 @@ stages:
       - ShellCommand: *check_ssh_config_bootstrap
       - ShellCommand: *copy_bastion_priv_key_to_bootstrap
       - ShellCommand: *set_bootstrap_minion_id_ssh
-      - ShellCommand: *bootstrap_config_ssh
+      - ShellCommand:
+          <<: *bootstrap_config_ssh
+          env:
+            <<: *_env_bootstrap_config_ssh
+            COREDNS_AFFINITY: >-
+              {"podAntiAffinity": {"hard": [{"topologyKey": "kubernetes.io/hostname"}]}}
       - ShellCommand: *copy_iso_bootstrap_ssh
       - ShellCommand: *create_mountpoint_ssh
       - ShellCommand: *mount_iso_ssh

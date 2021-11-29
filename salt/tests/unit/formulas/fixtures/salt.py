@@ -9,6 +9,8 @@ import string
 from typing import Any, Callable, Dict, List, Optional, Type
 from unittest.mock import MagicMock
 
+from _modules import metalk8s_service_configuration  # type: ignore
+
 import jinja2
 import pytest
 import salt.utils.data  # type: ignore
@@ -447,6 +449,10 @@ register_basic("metalk8s_network.get_mtu_from_ip")(MagicMock(return_value=1500))
 # Used in most metalk8s.addons.<addon>.deployed.chart, to inject overrides.
 register_basic("metalk8s_service_configuration.get_service_conf")(
     lambda _namespace, _name, defaults: defaults
+)
+# NOTE: This is a static function that does not rely on any salt stuff
+register_basic("metalk8s_service_configuration.get_pod_affinity")(
+    metalk8s_service_configuration.get_pod_affinity
 )
 
 # Used in metalk8s.salt.master.installed to mount Solution ISOs in the salt-master Pod.

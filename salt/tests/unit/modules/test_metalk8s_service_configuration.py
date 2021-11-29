@@ -8,7 +8,7 @@ import yaml
 
 from _modules import metalk8s_service_configuration
 
-from tests.unit import mixins
+from tests.unit import mixins, utils
 
 
 YAML_TESTS_FILE = os.path.join(
@@ -90,3 +90,16 @@ class Metalk8sServiceConfigurationTestCase(TestCase, mixins.LoaderModuleMockMixi
                     result,
                 )
                 get_configmap_mock.assert_called_once()
+
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["get_pod_affinity"])
+    def test_get_pod_affinity(self, result, **kwargs):
+        """
+        Tests the return of `get_pod_affinity` function
+        """
+        if not kwargs.get("label_selector"):
+            kwargs["label_selector"] = {"app": "my-app"}
+        if not kwargs.get("namespaces"):
+            kwargs["namespaces"] = ["my-namespace"]
+        self.assertEqual(
+            metalk8s_service_configuration.get_pod_affinity(**kwargs), result
+        )
