@@ -58,9 +58,10 @@ export function getAlerts() {
   }
 }
 
-export function queryPrometheus(query: string): function {
+export function queryPrometheus(query: string, timestamp?: string): function {
   if (prometheusApiClient) {
-    return prometheusApiClient.get('/api/v1/query?query=' + query);
+    const timeQuery = timestamp ? `&time=${encodeURIComponent(timestamp)}` : '';
+    return prometheusApiClient.get('/api/v1/query?query=' + query + timeQuery);
   }
 }
 

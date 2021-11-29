@@ -5,7 +5,7 @@ import {
 } from '../../constants';
 import { queryPromtheusMetrics } from '../prometheus/fetchMetrics';
 import type { NodesState } from '../../ducks/app/nodes';
-import { queryPrometheusRange } from '../prometheus/api';
+import { queryPrometheus, queryPrometheusRange } from '../prometheus/api';
 import { addMissingDataPoint } from '@scality/core-ui/dist/components/linetemporalchart/ChartUtil';
 import { getNaNSegments, getSegments } from '../utils';
 import { getFormattedLokiAlert } from '../loki/api';
@@ -82,6 +82,61 @@ export const getNodesCPUUsageQuery = (timespanProps: TimeSpanProps) => {
   };
 };
 
+export const getNodesCPUUsageQuantileQuery = (
+  timespanProps: TimeSpanProps,
+  quantile: number,
+) => {
+  const { startingTimeISO, currentTimeISO, frequency } = timespanProps;
+  const cpuNodesUsagePrometheusQuery = `quantile(${quantile}, 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100))`;
+  return {
+    queryKey: ['NodesCpuUsageQuantile', startingTimeISO, quantile],
+    queryFn: () => {
+      return queryPromtheusMetrics(
+        frequency,
+        startingTimeISO,
+        currentTimeISO,
+        cpuNodesUsagePrometheusQuery,
+      );
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  };
+};
+
+export const getNodesCPUUsageAboveBelowThresholdQuery = (
+  timestamp?: string,
+  threshold?: number,
+  operator: '>' | '<',
+) => {
+  const cpuNodesUsagePrometheusQuery = `100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) ${operator}= ${threshold}`;
+  return {
+    queryKey: [
+      'NodesCpuUsageAboveBelowThreshold',
+      timestamp,
+      threshold,
+      operator,
+    ],
+    queryFn: () => {
+      const promPromise = queryPrometheus(
+        cpuNodesUsagePrometheusQuery,
+        timestamp,
+      );
+      if (promPromise) {
+        return promPromise.then((resolve) => {
+          if (resolve.error) {
+            throw resolve.error;
+          }
+          return resolve;
+        });
+      }
+      return Promise.reject();
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    enabled: !!(timestamp && threshold !== undefined),
+  };
+};
+
 export const getCPUUsageAvgQuery = (
   timespanProps: TimeSpanProps,
   showAvg: boolean,
@@ -130,7 +185,7 @@ export const getSystemLoadQuery = (
 
 export const getNodesSystemLoadQuery = (timespanProps: TimeSpanProps) => {
   const { startingTimeISO, currentTimeISO, frequency } = timespanProps;
-  const systemLoadPrometheusQuery = `(avg(node_load1) by (instance) / ignoring(container,endpoint,job,namespace,pod,service) count(node_cpu_seconds_total{mode="idle"}) without(cpu,mode)) * 100`;
+  const systemLoadPrometheusQuery = `(avg(node_load1) by (instance) / ignoring(container,endpoint,job,namespace,pod,service,prometheus) count(node_cpu_seconds_total{mode="idle"}) without(cpu,mode)) * 100`;
 
   return {
     queryKey: ['SystemLoad', startingTimeISO],
@@ -144,6 +199,62 @@ export const getNodesSystemLoadQuery = (timespanProps: TimeSpanProps) => {
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+  };
+};
+
+export const getNodesSystemLoadQuantileQuery = (
+  timespanProps: TimeSpanProps,
+  quantile: number,
+) => {
+  const { startingTimeISO, currentTimeISO, frequency } = timespanProps;
+  const systemLoadQuantilePromQL = `quantile(${quantile}, (avg(node_load1) by (instance) / ignoring(container,endpoint,job,namespace,pod,service,prometheus) count(node_cpu_seconds_total{mode="idle"}) without(cpu,mode))) * 100`;
+
+  return {
+    queryKey: ['SystemLoadQuantile', startingTimeISO, quantile],
+    queryFn: () => {
+      return queryPromtheusMetrics(
+        frequency,
+        startingTimeISO,
+        currentTimeISO,
+        systemLoadQuantilePromQL,
+      );
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  };
+};
+
+export const getNodesSystemLoadAboveBelowThresholdQuery = (
+  timestamp?: string,
+  threshold?: number,
+  operator: '>' | '<',
+) => {
+  const nodesSystemLoadAboveBelowPromQL = `(avg(node_load1) by (instance) / ignoring(container,endpoint,job,namespace,pod,service,prometheus) count(node_cpu_seconds_total{mode="idle"}) without(cpu,mode)) * 100 ${operator}= ${threshold}`;
+  return {
+    queryKey: [
+      'NodesSystemLoadAboveBelowThreshold',
+      timestamp,
+      threshold,
+      operator,
+    ],
+    queryFn: () => {
+      const promPromise = queryPrometheus(
+        nodesSystemLoadAboveBelowPromQL,
+        timestamp,
+      );
+      if (promPromise) {
+        return promPromise.then((resolve) => {
+          if (resolve.error) {
+            throw resolve.error;
+          }
+          return resolve;
+        });
+      }
+      return Promise.reject();
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    enabled: !!(timestamp && threshold !== undefined),
   };
 };
 
@@ -207,6 +318,62 @@ export const getNodesMemoryQuery = (timespanProps: TimeSpanProps) => {
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+  };
+};
+
+export const getNodesMemoryQuantileQuery = (
+  timespanProps: TimeSpanProps,
+  quantile: number,
+) => {
+  const { startingTimeISO, currentTimeISO, frequency } = timespanProps;
+  const nodesMemoryQuantilePromQL = `quantile(${quantile}, sum(100 - ((node_memory_MemAvailable_bytes * 100) / node_memory_MemTotal_bytes)) by(instance))`;
+
+  return {
+    queryKey: ['NodesMemoryQuantile', startingTimeISO, quantile],
+    queryFn: () => {
+      return queryPromtheusMetrics(
+        frequency,
+        startingTimeISO,
+        currentTimeISO,
+        nodesMemoryQuantilePromQL,
+      );
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  };
+};
+
+export const getNodesMemoryAboveBelowThresholdQuery = (
+  timestamp?: string,
+  threshold?: number,
+  operator: '>' | '<',
+) => {
+  const nodesMemoryAboveBelowPromQL = `sum(100 - ((node_memory_MemAvailable_bytes * 100) / node_memory_MemTotal_bytes)) by(instance) ${operator}= ${threshold}`;
+  return {
+    queryKey: [
+      'NodesMemoryAboveBelowThreshold',
+      timestamp,
+      threshold,
+      operator,
+    ],
+    queryFn: () => {
+      const promPromise = queryPrometheus(
+        nodesMemoryAboveBelowPromQL,
+        timestamp,
+      );
+      if (promPromise) {
+        return promPromise.then((resolve) => {
+          if (resolve.error) {
+            throw resolve.error;
+          }
+          return resolve;
+        });
+      }
+      return Promise.reject();
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    enabled: !!(timestamp && threshold !== undefined),
   };
 };
 
@@ -544,6 +711,120 @@ export const getNodesPlanesBandwidthOutQuery = (
   };
 };
 
+export const getNodesPlanesBandwidthInQuantileQuery = (
+  timespanProps,
+  quantile: number,
+  devices: string[],
+) => {
+  const nodesPlanesBandwidthInQuery = `quantile(${quantile}, avg(irate(node_network_receive_bytes_total{device=~"${devices.join(
+    '|',
+  )}"}[5m])) by (instance,device))`;
+
+  return {
+    ...getPrometheusQuery(
+      ['NodesPlanesBandwidthIn', ...devices, quantile],
+      nodesPlanesBandwidthInQuery,
+      timespanProps,
+    ),
+    enabled: !!devices?.length,
+  };
+};
+
+export const getNodesPlanesBandwidthOutQuantileQuery = (
+  timespanProps,
+  quantile: number,
+  devices: string[],
+) => {
+  const nodePlanesBandwidthOutQuery = `quantile(${quantile}, avg(irate(node_network_transmit_bytes_total{device=~"${devices.join(
+    '|',
+  )}"}[5m])) by (instance,device))`;
+
+  return {
+    ...getPrometheusQuery(
+      ['NodesPlanesBandwidthOut', ...devices, quantile],
+      nodePlanesBandwidthOutQuery,
+      timespanProps,
+    ),
+    enabled: !!devices?.length,
+  };
+};
+
+export const getNodesPlanesBandwidthInAboveBelowThresholdQuery = (
+  timestamp?: string,
+  threshold?: number,
+  operator: '>' | '<',
+  devices: string[],
+) => {
+  const cpuNodesUsagePrometheusQuery = `avg(irate(node_network_receive_bytes_total{device=~"${devices.join(
+    '|',
+  )}"}[5m])) by (instance,device) ${operator}= ${threshold}`;
+  return {
+    queryKey: [
+      'NodesPlanesBandwidthInAboveBelowThreshold',
+      timestamp,
+      threshold,
+      operator,
+      ...devices,
+    ],
+    queryFn: () => {
+      const promPromise = queryPrometheus(
+        cpuNodesUsagePrometheusQuery,
+        timestamp,
+      );
+      if (promPromise) {
+        return promPromise.then((resolve) => {
+          if (resolve.error) {
+            throw resolve.error;
+          }
+          return resolve;
+        });
+      }
+      return Promise.reject();
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    enabled: !!(timestamp && threshold !== undefined && devices?.length),
+  };
+};
+
+export const getNodesPlanesBandwidthOutAboveBelowThresholdQuery = (
+  timestamp?: string,
+  threshold?: number,
+  operator: '>' | '<',
+  devices: string[],
+) => {
+  const cpuNodesUsagePrometheusQuery = `avg(irate(node_network_transmit_bytes_total{device=~"${devices.join(
+    '|',
+  )}"}[5m])) by (instance,device) ${operator}= ${threshold}`;
+  return {
+    queryKey: [
+      'NodesPlanesBandwidthOutAboveBelowThreshold',
+      timestamp,
+      threshold,
+      operator,
+      ...devices,
+    ],
+    queryFn: () => {
+      const promPromise = queryPrometheus(
+        cpuNodesUsagePrometheusQuery,
+        timestamp,
+      );
+      if (promPromise) {
+        return promPromise.then((resolve) => {
+          if (resolve.error) {
+            throw resolve.error;
+          }
+          return resolve;
+        });
+      }
+      return Promise.reject();
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    enabled: !!(timestamp && threshold !== undefined && devices?.length),
+  };
+};
+
 export const getIOPSWriteQuery = (
   instanceIP: string,
   timespanProps: TimeSpanProps,
@@ -711,6 +992,98 @@ export const getNodesThroughputWriteQuery = (
     nodesThroughputWriteQuery,
     timespanProps,
   );
+};
+
+export const getNodesThroughputWriteQuantileQuery = (
+  timespanProps: TimeSpanProps,
+  quantile: number,
+): typeof useQuery => {
+  const nodesThroughputWritePromQL = `quantile(${quantile},sum(sum(irate(node_disk_written_bytes_total[1m])) by (instance, device))by(instance))`;
+  return getPrometheusQuery(
+    ['NodesThroughputWriteQuantile', quantile],
+    nodesThroughputWritePromQL,
+    timespanProps,
+  );
+};
+
+export const getNodesThroughputReadQuantileQuery = (
+  timespanProps: TimeSpanProps,
+  quantile: number,
+): typeof useQuery => {
+  const nodesThroughputReadPromQL = `quantile(${quantile},sum(sum(irate(node_disk_read_bytes_total[1m])) by (instance, device))by(instance))`;
+  return getPrometheusQuery(
+    ['NodesThroughputReadQueryQuantile', quantile],
+    nodesThroughputReadPromQL,
+    timespanProps,
+  );
+};
+
+export const getNodesThroughputWriteAboveBelowThresholdQuery = (
+  timestamp?: string,
+  threshold?: number,
+  operator: '>' | '<',
+) => {
+  const nodesThroughputWriteAboveBelowPromQL = `sum(sum(irate(node_disk_written_bytes_total[1m])) by (instance, device))by(instance) ${operator}= ${threshold}`;
+  return {
+    queryKey: [
+      'NodesThroughputWriteAboveBelowThreshold',
+      timestamp,
+      threshold,
+      operator,
+    ],
+    queryFn: () => {
+      const promPromise = queryPrometheus(
+        nodesThroughputWriteAboveBelowPromQL,
+        timestamp,
+      );
+      if (promPromise) {
+        return promPromise.then((resolve) => {
+          if (resolve.error) {
+            throw resolve.error;
+          }
+          return resolve;
+        });
+      }
+      return Promise.reject();
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    enabled: !!(timestamp && threshold !== undefined),
+  };
+};
+
+export const getNodesThroughputReadAboveBelowThresholdQuery = (
+  timestamp?: string,
+  threshold?: number,
+  operator: '>' | '<',
+) => {
+  const nodesThroughputReadAboveBelowPromQL = `sum(sum(irate(node_disk_read_bytes_total[1m])) by (instance, device))by(instance) ${operator}= ${threshold}`;
+  return {
+    queryKey: [
+      'NodesThroughputReadBelowThreshold',
+      timestamp,
+      threshold,
+      operator,
+    ],
+    queryFn: () => {
+      const promPromise = queryPrometheus(
+        nodesThroughputReadAboveBelowPromQL,
+        timestamp,
+      );
+      if (promPromise) {
+        return promPromise.then((resolve) => {
+          if (resolve.error) {
+            throw resolve.error;
+          }
+          return resolve;
+        });
+      }
+      return Promise.reject();
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    enabled: !!(timestamp && threshold !== undefined),
+  };
 };
 
 export const getVolumeIOPSReadQuery = (
@@ -896,64 +1269,76 @@ function convertSegmentToAlert(segment) {
 
 // Call Prometheus endpoint to get the segments {description: string, startsAt: string, endsAt: string, severity: string}
 // for Cluster alert which will be used by Global Health Component
-export const getClusterAlertSegmentQuery = (duration: number): typeof useQuery => {
+export const getClusterAlertSegmentQuery = (
+  duration: number,
+): typeof useQuery => {
   // We add watchdog alert to identify unavailble segments
   const query = `sum by(alertname) (ALERTS{alertname=~'ClusterAtRisk|ClusterDegraded|Watchdog', alertstate='firing'})`;
   // set the frequency to 60s only for global health component to get the precise segments
   const frequency = 60;
 
-  const clusterAlertNumberPromise = ({startingTimeISO, currentTimeISO, frequency}: TimeSpanProps) => queryPrometheusRange(
+  const clusterAlertNumberPromise = ({
     startingTimeISO,
     currentTimeISO,
     frequency,
-    encodeURIComponent(query),
-  )?.then((resolve) => {
-    if (resolve.error) {
-      throw resolve.error;
-    }
-    const clusterAtRiskResult = resolve.data.result.find(
-      (result) => result.metric.alertname === 'ClusterAtRisk',
-    );
-    const clusterDegradedResult = resolve.data.result.find(
-      (result) => result.metric.alertname === 'ClusterDegraded',
-    );
-    const watchdogResult = resolve.data.result.find(
-      (result) => result.metric.alertname === 'Watchdog',
-    );
-    const pointsAtRisk = addMissingDataPoint(
-      clusterAtRiskResult.values,
-      Date.parse(startingTimeISO) / 1000,
-      Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
+  }: TimeSpanProps) =>
+    queryPrometheusRange(
+      startingTimeISO,
+      currentTimeISO,
       frequency,
-    );
-    const pointsDegraded = addMissingDataPoint(
-      clusterDegradedResult.values,
-      Date.parse(startingTimeISO) / 1000,
-      Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
-      frequency,
-    );
-    const pointsWatchdog = addMissingDataPoint(
-      watchdogResult.values,
-      Date.parse(startingTimeISO) / 1000,
-      Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
-      frequency,
-    );
+      encodeURIComponent(query),
+    )?.then((resolve) => {
+      if (resolve.error) {
+        throw resolve.error;
+      }
+      const clusterAtRiskResult = resolve.data.result.find(
+        (result) => result.metric.alertname === 'ClusterAtRisk',
+      ) || { values: [] };
+      const clusterDegradedResult = resolve.data.result.find(
+        (result) => result.metric.alertname === 'ClusterDegraded',
+      ) || { values: [] };
+      const watchdogResult = resolve.data.result.find(
+        (result) => result.metric.alertname === 'Watchdog',
+      );
+      const pointsAtRisk = addMissingDataPoint(
+        clusterAtRiskResult.values,
+        Date.parse(startingTimeISO) / 1000,
+        Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
+        frequency,
+      );
+      const pointsDegraded = addMissingDataPoint(
+        clusterDegradedResult.values,
+        Date.parse(startingTimeISO) / 1000,
+        Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
+        frequency,
+      );
+      const pointsWatchdog = addMissingDataPoint(
+        watchdogResult.values,
+        Date.parse(startingTimeISO) / 1000,
+        Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
+        frequency,
+      );
 
-    return getSegments({ pointsDegraded, pointsAtRisk, pointsWatchdog }).map(
-      convertSegmentToAlert,
-    );
-  });
+      return getSegments({ pointsDegraded, pointsAtRisk, pointsWatchdog }).map(
+        convertSegmentToAlert,
+      );
+    });
 
   return {
-    queryKey: ['clusterAlertsNumber'],
+    queryKey: ['clusterAlertsNumber', duration],
     queryFn: () => {
-      
       const now = new Date().getTime();
       const endTime = now - (now % (frequency * 1000)); //round minute of current time to make sure we have the same points in the result
-      const startingTimeISO = new Date((endTime / 1000 - duration) * 1000).toISOString()
-      const currentTimeISO = new Date(endTime).toISOString()
-  
-      return clusterAlertNumberPromise({startingTimeISO, currentTimeISO, frequency});
+      const startingTimeISO = new Date(
+        (endTime / 1000 - duration) * 1000,
+      ).toISOString();
+      const currentTimeISO = new Date(endTime).toISOString();
+
+      return clusterAlertNumberPromise({
+        startingTimeISO,
+        currentTimeISO,
+        frequency,
+      });
     },
     refetchInterval: frequency * 1000,
     refetchOnMount: false,
