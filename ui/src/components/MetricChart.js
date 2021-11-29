@@ -5,7 +5,7 @@ import {
   useMetricsTimeSpan,
 } from '@scality/core-ui/dist/next';
 import { useStartingTimeStamp } from '../containers/StartTimeProvider';
-import { getSingleResourceSerie } from '../services/graphUtils';
+import { convertPrometheusResultToSerieWithAverage } from '../services/graphUtils';
 import { HEIGHT_DEFAULT_CHART } from '../constants';
 
 const MetricChart = ({
@@ -64,7 +64,12 @@ const MetricChart = ({
     if (!isMetricDataLoading && !showAvg && metricQuery.data) {
       // single node metrics
       chartStartTimeRef.current = startTimeRef.current;
-      setSeries(getSingleResourceSerie(metricQuery.data, nodeIPAddress.name));
+      setSeries(
+        convertPrometheusResultToSerieWithAverage(
+          metricQuery.data,
+          nodeIPAddress.name,
+        ),
+      );
     } else if (
       !isMetricAvgDataLoading &&
       !isMetricDataLoading &&
@@ -75,7 +80,7 @@ const MetricChart = ({
       // show cluster average
       chartStartTimeRef.current = startTimeRef.current;
       setSeries(
-        getSingleResourceSerie(
+        convertPrometheusResultToSerieWithAverage(
           metricQuery.data,
           nodeIPAddress.name,
           metricAvgQuery.data,

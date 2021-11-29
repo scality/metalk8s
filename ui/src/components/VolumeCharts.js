@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { LineTemporalChart } from '@scality/core-ui/dist/next';
 import {
   getSeriesForSymmetricalChart,
-  getSingleResourceSerie,
+  convertPrometheusResultToSerieWithAverage,
 } from '../services/graphUtils';
 import {
   getVolumeIOPSReadQuery,
@@ -30,15 +30,17 @@ export const VolumeThroughputChart = ({
   volumeName: string,
 }) => {
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
-    getQueryAbove: (timeSpanProps: TimeSpanProps) =>
+    getAboveQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeThroughputWriteQuery(instanceIp, deviceName, timeSpanProps),
-    getQueryBelow: (timeSpanProps: TimeSpanProps) =>
+    ],
+    getBelowQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeThroughputReadQuery(instanceIp, deviceName, timeSpanProps),
+    ],
     transformPrometheusDataToSeries: useCallback(
       (prometheusResultAbove, prometheusResultBelow) =>
         getSeriesForSymmetricalChart(
-          prometheusResultAbove,
-          prometheusResultBelow,
+          prometheusResultAbove[0],
+          prometheusResultBelow[0],
           volumeName,
           'write',
           'read',
@@ -72,15 +74,17 @@ export const VolumeLatencyChart = ({
   volumeName: string,
 }) => {
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
-    getQueryAbove: (timeSpanProps: TimeSpanProps) =>
+    getAboveQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeLatencyWriteQuery(instanceIp, deviceName, timeSpanProps),
-    getQueryBelow: (timeSpanProps: TimeSpanProps) =>
+    ],
+    getBelowQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeLatencyReadQuery(instanceIp, deviceName, timeSpanProps),
+    ],
     transformPrometheusDataToSeries: useCallback(
       (prometheusResultAbove, prometheusResultBelow) =>
         getSeriesForSymmetricalChart(
-          prometheusResultAbove,
-          prometheusResultBelow,
+          prometheusResultAbove[0],
+          prometheusResultBelow[0],
           volumeName,
           'write',
           'read',
@@ -119,15 +123,17 @@ export const VolumeIOPSChart = ({
   volumeName: string,
 }) => {
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
-    getQueryAbove: (timeSpanProps: TimeSpanProps) =>
+    getAboveQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeIOPSWriteQuery(instanceIp, deviceName, timeSpanProps),
-    getQueryBelow: (timeSpanProps: TimeSpanProps) =>
+    ],
+    getBelowQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeIOPSReadQuery(instanceIp, deviceName, timeSpanProps),
+    ],
     transformPrometheusDataToSeries: useCallback(
       (prometheusResultAbove, prometheusResultBelow) =>
         getSeriesForSymmetricalChart(
-          prometheusResultAbove,
-          prometheusResultBelow,
+          prometheusResultAbove[0],
+          prometheusResultBelow[0],
           volumeName,
           'write',
           'read',
@@ -164,7 +170,7 @@ export const VolumeUsageChart = ({
       getVolumeUsageQuery(pvcName, namespace, timeSpanProps),
     transformPrometheusDataToSeries: useCallback(
       (prometheusResult) =>
-        getSingleResourceSerie(prometheusResult, volumeName),
+        convertPrometheusResultToSerieWithAverage(prometheusResult, volumeName),
       [volumeName],
     ),
   });
