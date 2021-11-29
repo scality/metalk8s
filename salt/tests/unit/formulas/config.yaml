@@ -147,6 +147,7 @@ metalk8s:
                   control_plane:
                     ingress:
                       controller:
+                        replicas: 2
                         affinity:
                           podAntiAffinity:
                             soft:

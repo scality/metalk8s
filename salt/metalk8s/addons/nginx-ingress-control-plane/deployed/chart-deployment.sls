@@ -6,28 +6,6 @@
 
 {% raw %}
 
-apiVersion: policy/v1beta1
-kind: PodDisruptionBudget
-metadata:
-  labels:
-    app.kubernetes.io/component: controller
-    app.kubernetes.io/instance: ingress-nginx-control-plane
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.0.0
-    helm.sh/chart: ingress-nginx-4.0.1
-    heritage: metalk8s
-  name: ingress-nginx-control-plane-controller
-  namespace: metalk8s-ingress
-spec:
-  minAvailable: 0
-  selector:
-    matchLabels:
-      app.kubernetes.io/component: controller
-      app.kubernetes.io/instance: ingress-nginx-control-plane
-      app.kubernetes.io/name: ingress-nginx
----
 apiVersion: v1
 automountServiceAccountToken: true
 kind: ServiceAccount
@@ -373,7 +351,7 @@ metadata:
   namespace: metalk8s-ingress
 spec:
   minReadySeconds: 0
-  replicas: 2
+  replicas: {% endraw -%}{{ pillar.networks.control_plane.ingress.controller.replicas }}{%- raw %}
   revisionHistoryLimit: 10
   selector:
     matchLabels:

@@ -115,6 +115,7 @@ def _load_networks(config_data):
         ).setdefault("affinity", {}).setdefault("podAntiAffinity", {}).setdefault(
             "soft", [{"topologyKey": "kubernetes.io/hostname"}]
         )
+        networks_data["controlPlane"]["ingress"]["controller"].setdefault("replicas", 2)
 
     if errors:
         return __utils__["pillar_utils.errors_to_dict"](errors)

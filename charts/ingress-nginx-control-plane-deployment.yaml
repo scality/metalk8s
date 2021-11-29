@@ -16,7 +16,7 @@ controller:
 
   kind: Deployment
 
-  replicaCount: 2
+  replicaCount: '__var__(pillar.networks.control_plane.ingress.controller.replicas)'
 
   minAvailable: 0
 

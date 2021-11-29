@@ -50,6 +50,7 @@ Configuration
           ingress:
             ip: <IP-for-ingress>
             controller:
+              replicas: 2
               affinity:
                 podAntiAffinity:
                   hard: []
@@ -108,14 +109,15 @@ notation for it's various subfields.
       control plane component).
 
       If you want to override the default ``controlPlane`` ``ingress``
-      controller podAntiAffinity, by default MetalK8s use soft podAntiAffinity
-      on hostname so that if it's possible those controllers pods will be
-      spread on different ``master`` nodes.
+      controller podAntiAffinity or number of replicas, by default MetalK8s
+      deploy 2 replicas and use soft podAntiAffinity on hostname so that if
+      it's possible those controllers pods will be spread on different
+      ``master`` nodes.
 
       .. note::
 
-        Affinity for control plane ingress controller will be
-        ignored if ``MetalLB`` is disabled, as this control plane
+        Affinity and number of replicas for control plane ingress controller
+        will be ignored if ``MetalLB`` is disabled, as this control plane
         ingress controller will be deployed as a DaemonSet, which means that
         a pod will run on every ``master`` nodes by default.
 
