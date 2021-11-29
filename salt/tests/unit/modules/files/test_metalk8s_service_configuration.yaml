@@ -150,3 +150,90 @@ get_service_config:
           kind: my_addon_kind
     result: "Expected value my_kind for key kind, got my_addon_kind"
     raises: True
+
+get_pod_affinity:
+  # Success: Nominal no affinity
+  - affinities: {}
+    result: {}
+  - affinities: null
+    result: {}
+  - affinities:
+      podAntiAffinity: {}
+    result: {}
+  - affinities:
+      podAntiAffinity: null
+    result: {}
+  - affinities:
+      podAntiAffinity:
+        hard: null
+        soft: null
+    result: {}
+  - affinities:
+      podAntiAffinity:
+        hard: []
+        soft: []
+    result: {}
+  - affinities:
+      podAntiAffinity:
+        hard: null
+    result: {}
+
+  # Success: Nominal simple soft pod anti affinity on hostname
+  - &nominal_soft_anti_affinity
+    affinities:
+      podAntiAffinity:
+        soft:
+          - topologyKey: kubernetes.io/hostname
+    result:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - &hostname_soft_affinity
+            weight: 1
+            podAffinityTerm: &default_pod_affinity_term
+              labelSelector:
+                matchLabels:
+                  app: my-app
+              namespaces:
+                - my-namespace
+              topologyKey: kubernetes.io/hostname
+
+  # Success: nominal, namespace as string
+  - <<: *nominal_soft_anti_affinity
+    namespaces: "my-namespace"
+
+  # Success: Hard pod anti affinity on hostname
+  - affinities:
+      podAntiAffinity:
+        hard:
+          - topologyKey: kubernetes.io/hostname
+    result:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - *default_pod_affinity_term
+
+  # Success: Soft and Hard pod anti affinities
+  - affinities:
+      podAntiAffinity:
+        soft:
+          - topologyKey: "my-first-soft-key"
+          - topologyKey: "my-second-soft-key"
+            weight: 42
+        hard:
+          - topologyKey: "my-first-hard-key"
+          - topologyKey: "my-second-hard-key"
+    result:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              <<: *default_pod_affinity_term
+              topologyKey: "my-first-soft-key"
+          - weight: 42
+            podAffinityTerm:
+              <<: *default_pod_affinity_term
+              topologyKey: "my-second-soft-key"
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - <<: *default_pod_affinity_term
+            topologyKey: "my-first-hard-key"
+          - <<: *default_pod_affinity_term
+            topologyKey: "my-second-hard-key"

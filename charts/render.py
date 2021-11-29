@@ -158,6 +158,13 @@ def replace_magic_strings(rendered_yaml):
         rendered_yaml,
     )
 
+    # Handle __var_quoted__
+    result = re.sub(
+        r"'__var_quoted__\((?P<varname>[^']*)\)'",
+        r"{% endraw -%}{{ \g<varname> }}{%- raw %}",
+        result,
+    )
+
     # Handle __var_tojson__
     result = re.sub(
         r"__var_tojson__\((?P<varname>[\w\-_]+(?:\.[\w\-_()|]+)*)\)",
