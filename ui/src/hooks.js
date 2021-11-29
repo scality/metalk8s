@@ -1,8 +1,8 @@
 //@flow
-import React, { type Node, useRef } from 'react';
+import React, { type Node, useRef, useCallback } from 'react';
 import { useEffect, useState, createContext } from 'react';
 import { useSelector } from 'react-redux';
-import { useQuery } from 'react-query';
+import { useQueries, useQuery } from 'react-query';
 
 import type { RootState } from './ducks/reducer';
 import { coreV1 } from './services/k8s/api';
@@ -22,7 +22,8 @@ import type { PrometheusQueryResult } from './services/prometheus/api';
 import type { TimeSpanProps } from './services/platformlibrary/metrics';
 import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import { type Serie } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
-import type { UseQueryResult } from 'react-query';
+import type { UseQueryResult, UseQueryOptions } from 'react-query';
+import { getNodesInterfacesString } from './services/graphUtils';
 /**
  * It brings automatic strong typing to native useSelector by anotating state with RootState.
  * It should be used instead of useSelector to benefit from RootState typing
@@ -161,16 +162,13 @@ export const useSingleChartSerie = ({
   };
 };
 
-export const useSymetricalChartSeries = ({
-  getQueryAbove,
-  getQueryBelow,
+export const useChartSeries = ({
+  getQueries,
   transformPrometheusDataToSeries, //It should be memoised using useCallback
 }: {
-  getQueryAbove: (timeSpanProps: TimeSpanProps) => UseQueryResult,
-  getQueryBelow: (timeSpanProps: TimeSpanProps) => UseQueryResult,
+  getQueries: (timeSpanProps: TimeSpanProps) => UseQueryOptions[],
   transformPrometheusDataToSeries: (
-    prometheusResultAbove: PrometheusQueryResult,
-    prometheusResultBelow: PrometheusQueryResult,
+    prometheusResults: PrometheusQueryResult[],
   ) => Serie[],
 }) => {
   const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
@@ -182,41 +180,148 @@ export const useSymetricalChartSeries = ({
 
   startTimeRef.current = startingTimeISO;
 
-  const aboveQuery = useQuery(
-    getQueryAbove({
+  const queries = useQueries(
+    getQueries({
       startingTimeISO,
       currentTimeISO,
       frequency,
     }),
   );
 
-  const belowQuery = useQuery(
-    getQueryBelow({
-      startingTimeISO,
-      currentTimeISO,
-      frequency,
-    }),
-  );
-
-  const isLoading = aboveQuery.isLoading || belowQuery.isLoading;
+  const isLoading = queries.find((query) => query.isLoading);
+  const queriesData = queries.map((query) => query.data);
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && !queries.find((query) => !query.data)) {
+      chartStartTimeRef.current = startTimeRef.current;
+      setSeries(transformPrometheusDataToSeries(queriesData));
+    }
+  }, [isLoading, transformPrometheusDataToSeries, JSON.stringify(queriesData)]);
+
+  return {
+    series: series,
+    startingTimeStamp: Date.parse(chartStartTimeRef.current) / 1000,
+    isLoading,
+  };
+};
+
+export const useSymetricalChartSeries = ({
+  getAboveQueries,
+  getBelowQueries,
+  transformPrometheusDataToSeries, //It should be memoised using useCallback
+}: {
+  getAboveQueries: (timeSpanProps: TimeSpanProps) => UseQueryResult[],
+  getBelowQueries: (timeSpanProps: TimeSpanProps) => UseQueryResult[],
+  transformPrometheusDataToSeries: (
+    prometheusResultAbove: PrometheusQueryResult[],
+    prometheusResultBelow: PrometheusQueryResult[],
+  ) => Serie[],
+}) => {
+  const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
+  const { frequency } = useMetricsTimeSpan();
+
+  const startTimeRef = useRef(startingTimeISO);
+  const chartStartTimeRef = useRef(startingTimeISO);
+  const [series, setSeries] = useState([]);
+
+  startTimeRef.current = startingTimeISO;
+
+  const aboveQueries = useQueries(
+    getAboveQueries({
+      startingTimeISO,
+      currentTimeISO,
+      frequency,
+    }),
+  );
+
+  const belowQueries = useQueries(
+    getBelowQueries({
+      startingTimeISO,
+      currentTimeISO,
+      frequency,
+    }),
+  );
+  const isLoading =
+    aboveQueries.find((query) => query.isLoading) ||
+    belowQueries.find((query) => query.isLoading);
+  const queriesAboveData = aboveQueries.map((query) => query.data);
+
+  const queriesBelowData = belowQueries.map((query) => query.data);
+  useEffect(() => {
+    if (
+      !isLoading &&
+      !queriesAboveData.find((data) => !data) &&
+      !queriesBelowData.find((data) => !data)
+    ) {
       chartStartTimeRef.current = startTimeRef.current;
       setSeries(
-        transformPrometheusDataToSeries(aboveQuery.data, belowQuery.data),
+        transformPrometheusDataToSeries(queriesAboveData, queriesBelowData),
       );
     }
   }, [
     isLoading,
     transformPrometheusDataToSeries,
-    JSON.stringify(aboveQuery.data),
-    JSON.stringify(belowQuery.data),
+    JSON.stringify(queriesAboveData),
+    JSON.stringify(queriesBelowData),
   ]);
 
   return {
     series: series || [],
     startingTimeStamp: Date.parse(chartStartTimeRef.current) / 1000,
     isLoading,
+  };
+};
+
+export const useQuantileOnHover = ({
+  getQuantileHoverQuery,
+  metricPrefix,
+}: {
+  getQuantileHoverQuery: (
+    timestamp?: string, // to be check the type
+    threshold?: number,
+    operator: '>' | '<',
+    devices?: string,
+  ) => UseQueryOptions,
+  metricPrefix?: string,
+}) => {
+  const [hoverTimestamp, setHoverTimestamp] = useState<number>(0);
+  const [threshold90, setThreshold90] = useState();
+  const [threshold5, setThreshold5] = useState();
+  const [valueBase, setValueBase] = useState(1);
+  const nodeIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
+  const devices = getNodesInterfacesString(nodeIPsInfo);
+
+  const quantile90Result = useQuery(
+    getQuantileHoverQuery(hoverTimestamp / 1000, threshold90, '>', devices),
+  );
+  const quantile5Result = useQuery(
+    getQuantileHoverQuery(hoverTimestamp / 1000, threshold5, '<', devices),
+  );
+
+  const onHover = useCallback(
+    (datum) => {
+      if (!hoverTimestamp || datum.timestamp !== hoverTimestamp) {
+        setHoverTimestamp(datum.timestamp);
+        setThreshold90(
+          metricPrefix
+            ? Math.abs(datum.originalData[`Q90-${metricPrefix}`])
+            : Math.abs(datum.originalData['Q90']),
+        );
+        setThreshold5(
+          metricPrefix
+            ? Math.abs(datum.originalData[`Q5-${metricPrefix}`])
+            : Math.abs(datum.originalData['Q5']),
+        );
+        setValueBase(datum.metadata.valueBase);
+      }
+    },
+    [hoverTimestamp, metricPrefix],
+  );
+
+  return {
+    quantile90Result,
+    quantile5Result,
+    valueBase,
+    onHover,
   };
 };
