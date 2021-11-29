@@ -3,7 +3,7 @@ const { version } = require('./package.json');
 const { DefinePlugin } = require('webpack');
 const common = require('./webpack.common');
 
-const controlPlaneIP = '{{IP}}';
+const controlPlaneIP = '10.200.7.201';
 const controlPlaneBaseUrl = `https://${controlPlaneIP}:8443`;
 
 module.exports = (env) => ({
@@ -36,6 +36,11 @@ module.exports = (env) => ({
         context: ['/api', '/grafana', '/docs', '/oidc'],
         target: controlPlaneBaseUrl,
         secure: false,
+      },
+      {
+        context: ['/artesca'],
+        target: 'http://localhost:8383',
+        pathRewrite: { '^/artesca': '' },
       },
     ],
   },

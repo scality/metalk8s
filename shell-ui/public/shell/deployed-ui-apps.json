@@ -1,9 +1,16 @@
 [
-    {
-        "kind": "metalk8s-ui",
-        "name": "metalk8s.eu-west-1",
-        "version": "local-dev",
-        "url": "http://localhost:3000",
-        "appHistoryBasePath": ""
-    }
+  {
+    "kind": "artesca-base-ui",
+    "name": "artesca-base.eu-west-1",
+    "version": "local-dev",
+    "url": "http://localhost:8084/artesca",
+    "appHistoryBasePath": ""
+  },
+  {
+    "kind": "metalk8s-ui",
+    "name": "metalk8s.eu-west-1",
+    "version": "local-dev",
+    "url": "http://localhost:3000",
+    "appHistoryBasePath": "/platform"
+  }
 ]

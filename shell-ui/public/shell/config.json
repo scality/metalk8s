@@ -2,6 +2,10 @@
   "navbar": {
     "main": [
       {
+        "kind": "artesca-base-ui",
+        "view": "overview"
+      },
+      {
         "kind": "metalk8s-ui",
         "view": "platform"
       },
