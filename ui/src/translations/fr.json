@@ -178,5 +178,10 @@
   "view_details": "Voir détails",
   "start": "Début",
   "no_data_available_for_metrics": "Aucune donnée disponible pour afficher les Métriques",
-  "global_health_explanation": "L'indicateur de santé generale frounit une information sur le status de votre Platform pour une periode donnée.\nLe statut des Volumes et des Noeuds, celui du Reseau et des Services sont supervisés.\nUn cercle de couleur verte signifie que la Platform est en bonne santé.\nUn cercle de couleur orange signifie que la Platform est degradé mais pas en danger.\nUn cercle de couleur verte signifie que la Platform est degradée et en danger.\nSurvolez les sgements du graphique pour plus de details."
+  "global_health_explanation": "L'indicateur de santé generale frounit une information sur le status de votre Platform pour une periode donnée.\nLe statut des Volumes et des Noeuds, celui du Reseau et des Services sont supervisés.\nUn cercle de couleur verte signifie que la Platform est en bonne santé.\nUn cercle de couleur orange signifie que la Platform est degradé mais pas en danger.\nUn cercle de couleur verte signifie que la Platform est degradée et en danger.\nSurvolez les sgements du graphique pour plus de details.",
+  "dashboard_cpu_quantile_explanation_line1": "Affichage des statistiques sur l'utilisation du processeur de votre cluster pour les grands clusters.",
+  "dashboard_cpu_quantile_explanation_line2": "Q90 est le quantile 90, ce qui signifie que 90 % de vos nœuds utilisent moins de CPU que ce seuil.",
+  "dashboard_cpu_quantile_explanation_line3": "Q5 est le quantile 5, ce qui signifie que 5 % de vos nœuds utilisent moins de CPU que ce seuil.",
+  "dashboard_cpu_quantile_explanation_line4": "Si ces indicateurs divergent de la médiane, cela signifie que la charge CPU de votre cluster n'est pas correctement équilibrée.",
+  "dashboard_cpu_quantile_explanation_line5": "Le survol du graphique affiche les nœuds qui sont respectivement au-dessus et en dessous des seuils Q90 et Q5."
 }
