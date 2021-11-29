@@ -314,7 +314,7 @@ export const getControlPlaneBandWidthAvgInQuery = (
   }
 
   const nodeCPBandwithInAvgPrometheusQuery = encodeURIComponent(
-    `${nodesCPBandwidthInPrometheusQuery.join('+')} / ${
+    `(${nodesCPBandwidthInPrometheusQuery.join('+')}) / ${
       nodesCPBandwidthInPrometheusQuery.length
     }`,
   );
@@ -356,7 +356,7 @@ export const getControlPlaneBandWidthAvgOutQuery = (
   }
 
   const nodeCPBandwithAvgOutPrometheusQuery = encodeURIComponent(
-    `${nodesCPBandwidthOutPrometheusQuery.join('+')} / ${
+    `(${nodesCPBandwidthOutPrometheusQuery.join('+')}) / ${
       nodesCPBandwidthOutPrometheusQuery.length
     }`,
   );
@@ -443,7 +443,7 @@ export const getWorkloadPlaneBandWidthAvgInQuery = (
   }
 
   const nodeWPBandwithInAvgPrometheusQuery = encodeURIComponent(
-    `${nodesWPBandwidthInPrometheusQuery.join('+')} / ${
+    `(${nodesWPBandwidthInPrometheusQuery.join('+')}) / ${
       nodesWPBandwidthInPrometheusQuery.length
     }`,
   );
@@ -485,7 +485,7 @@ export const getWorkloadPlaneBandWidthAvgOutQuery = (
   }
 
   const nodeWPBandwithAvgOutPrometheusQuery = encodeURIComponent(
-    `${nodesWPBandwidthOutPrometheusQuery.join('+')} / ${
+    `(${nodesWPBandwidthOutPrometheusQuery.join('+')}) / ${
       nodesWPBandwidthOutPrometheusQuery.length
     }`,
   );
