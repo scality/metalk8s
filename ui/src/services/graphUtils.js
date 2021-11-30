@@ -131,34 +131,50 @@ export const getMultipleSymmetricalSeries = (
   nodesPlaneInterface?: { [nodeName: string]: { interface: string } },
 ): Serie[] => {
   // TODO: Throw the error if we got error status from Promethues API, and handle the error at React-query level
-  return nodes.flatMap((node) => {
-    const filterLabels = {
-      instance: `${node.internalIP}:${PORT_NODE_EXPORTER}`,
-    };
-    if (nodesPlaneInterface) {
-      filterLabels.device = nodesPlaneInterface?.[node.name]?.interface;
-    }
-    const aboveData = fiterMetricValues(resultAbove, filterLabels);
-    const belowData = fiterMetricValues(resultBelow, filterLabels);
+  return nodes
+    .flatMap((node) => {
+      const filterLabels = {
+        instance: `${node.internalIP}:${PORT_NODE_EXPORTER}`,
+      };
+      if (nodesPlaneInterface) {
+        filterLabels.device = nodesPlaneInterface?.[node.name]?.interface;
+      }
+      const aboveData = fiterMetricValues(resultAbove, filterLabels);
+      const belowData = fiterMetricValues(resultBelow, filterLabels);
 
-    return [
-      {
-        ...convertMatrixResultToSerie(aboveData, node.name),
-        metricPrefix: metricPrefixAbove,
-        getTooltipLabel: (metricPrefix: string, resource: string) => {
-          return `${resource}-${metricPrefix}`;
+      return [
+        {
+          ...convertMatrixResultToSerie(aboveData, node.name),
+          metricPrefix: metricPrefixAbove,
+          getTooltipLabel: (metricPrefix: string, resource: string) => {
+            return `${resource}-${metricPrefix}`;
+          },
         },
-      },
-      {
-        ...convertMatrixResultToSerie(belowData, node.name),
-        metricPrefix: metricPrefixBelow,
-        getTooltipLabel: (metricPrefix: string, resource: string) => {
-          return `${resource}-${metricPrefix}`;
+        {
+          ...convertMatrixResultToSerie(belowData, node.name),
+          metricPrefix: metricPrefixBelow,
+          getTooltipLabel: (metricPrefix: string, resource: string) => {
+            return `${resource}-${metricPrefix}`;
+          },
+          getLegendLabel: null, //disable legend to avoid duplicated entries
         },
-        getLegendLabel: null, //disable legend to avoid duplicated entries
-      },
-    ];
-  });
+      ];
+    })
+    .sort((serieA, serieB) => {
+      if (
+        serieA.metricPrefix === metricPrefixAbove &&
+        serieB.metricPrefix === metricPrefixBelow
+      ) {
+        return -1;
+      }
+      if (
+        serieA.metricPrefix === metricPrefixBelow &&
+        serieB.metricPrefix === metricPrefixAbove
+      ) {
+        return 1;
+      }
+      return 0;
+    });
 };
 
 const convertMatrixResultToSerie = (
