@@ -183,6 +183,10 @@ def _load_kubernetes(config_data):
     ).setdefault("soft", [{"topologyKey": "kubernetes.io/hostname"}])
     kubernetes_data["coreDNS"].setdefault("replicas", 2)
 
+    kubernetes_data.setdefault("controllerManager", {}).setdefault(
+        "config", {}
+    ).setdefault("terminatedPodGCThreshold", 500)
+
     return kubernetes_data
 
 

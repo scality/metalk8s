@@ -23,6 +23,11 @@
   so that if it's possible each `Dex` pods will sit on a different infra node
   (PR[#3614](https://github.com/scality/metalk8s/pull/3614))
 
+- Allow to manage the number of terminated pods that can exist, before the
+  terminated pod garbage collector starts deleting them, from the
+  Bootstrap configuration. It defaults to `500`
+  (PR[#3621](https://github.com/scality/metalk8s/pull/3621))
+
 ### Removals
 
 - Removed the PDF support for documentation, replaced it with the HTML output

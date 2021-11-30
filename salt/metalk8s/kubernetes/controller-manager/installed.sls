@@ -44,6 +44,7 @@ Create kube-controller-manager Pod manifest:
           - --allocate-node-cidrs=true
           - --cluster-cidr={{ networks.pod }}
           - --node-cidr-mask-size=24
+          - --terminated-pod-gc-threshold={{ pillar.kubernetes.controllerManager.config.terminatedPodGCThreshold }}
           - --v={{ 2 if metalk8s.debug else 0 }}
         requested_cpu: 200m
         ports:

@@ -77,6 +77,9 @@ Configuration
         apiServer:
           featureGates:
             <feature_gate_name>: True
+        controllerManager:
+          config:
+            terminatedPodGCThreshold: 500
         coreDNS:
           replicas: 2
           affinity:
@@ -209,6 +212,11 @@ defaults kubernetes configuration.
             podAntiAffinity:
               hard:
                 - topologyKey: kubernetes.io/hostname
+
+  From ``controllerManager`` section you can override the number of terminated
+  pods that can exist before the terminated pod garbage collector starts
+  deleting them. If it's set to 0, the terminated pod garbage collector is
+  disabled (default to ``500``)
 
 .. _Feature Gates: https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/
 

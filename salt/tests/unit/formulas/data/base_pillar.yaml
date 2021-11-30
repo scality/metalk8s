@@ -175,6 +175,9 @@ certificates:
       workload-plane-ingress:
         watched: true
 kubernetes:
+  controllerManager:
+    config:
+      terminatedPodGCThreshold: 500
   coreDNS:
     replicas: 2
     affinity:
