@@ -358,7 +358,7 @@ export const renderQuantileData = (
   };
 
   return `${
-    isIdle || isLoading
+    isLoading
       ? `<tr style="color: ${theme.textSecondary}"><td></td><td colspan='2' style="padding-left: 1rem;">Loading...</td></tr>`
       : ''
   }

@@ -107,6 +107,7 @@ export const getNodesCPUUsageAboveBelowThresholdQuery = (
   timestamp?: string,
   threshold?: number,
   operator: '>' | '<',
+  isOnHoverFetchingNeeded: boolean,
 ) => {
   const cpuNodesUsagePrometheusQuery = `100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) ${operator}= ${threshold}`;
   return {
@@ -133,7 +134,11 @@ export const getNodesCPUUsageAboveBelowThresholdQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    enabled: !!(timestamp && threshold !== undefined),
+    enabled: !!(
+      timestamp &&
+      threshold !== undefined &&
+      isOnHoverFetchingNeeded
+    ),
   };
 };
 
@@ -228,6 +233,7 @@ export const getNodesSystemLoadAboveBelowThresholdQuery = (
   timestamp?: string,
   threshold?: number,
   operator: '>' | '<',
+  isOnHoverFetchingNeeded: boolean,
 ) => {
   const nodesSystemLoadAboveBelowPromQL = `(avg(node_load1) by (instance) / ignoring(container,endpoint,job,namespace,pod,service,prometheus) count(node_cpu_seconds_total{mode="idle"}) without(cpu,mode)) * 100 ${operator}= ${threshold}`;
   return {
@@ -254,7 +260,11 @@ export const getNodesSystemLoadAboveBelowThresholdQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    enabled: !!(timestamp && threshold !== undefined),
+    enabled: !!(
+      timestamp &&
+      threshold !== undefined &&
+      isOnHoverFetchingNeeded
+    ),
   };
 };
 
@@ -753,6 +763,7 @@ export const getNodesPlanesBandwidthInAboveBelowThresholdQuery = (
   timestamp?: string,
   threshold?: number,
   operator: '>' | '<',
+  isOnHoverFetchingNeeded: boolean,
   devices: string[],
 ) => {
   const cpuNodesUsagePrometheusQuery = `avg(irate(node_network_receive_bytes_total{device=~"${devices.join(
@@ -783,7 +794,12 @@ export const getNodesPlanesBandwidthInAboveBelowThresholdQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    enabled: !!(timestamp && threshold !== undefined && devices?.length),
+    enabled: !!(
+      timestamp &&
+      threshold !== undefined &&
+      devices?.length &&
+      isOnHoverFetchingNeeded
+    ),
   };
 };
 
@@ -791,6 +807,7 @@ export const getNodesPlanesBandwidthOutAboveBelowThresholdQuery = (
   timestamp?: string,
   threshold?: number,
   operator: '>' | '<',
+  isOnHoverFetchingNeeded: boolean,
   devices: string[],
 ) => {
   const cpuNodesUsagePrometheusQuery = `avg(irate(node_network_transmit_bytes_total{device=~"${devices.join(
@@ -821,7 +838,12 @@ export const getNodesPlanesBandwidthOutAboveBelowThresholdQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    enabled: !!(timestamp && threshold !== undefined && devices?.length),
+    enabled: !!(
+      timestamp &&
+      threshold !== undefined &&
+      devices?.length &&
+      isOnHoverFetchingNeeded
+    ),
   };
 };
 
@@ -1022,6 +1044,7 @@ export const getNodesThroughputWriteAboveBelowThresholdQuery = (
   timestamp?: string,
   threshold?: number,
   operator: '>' | '<',
+  isOnHoverFetchingNeeded: boolean,
 ) => {
   const nodesThroughputWriteAboveBelowPromQL = `sum(sum(irate(node_disk_written_bytes_total[1m])) by (instance, device))by(instance) ${operator}= ${threshold}`;
   return {
@@ -1048,7 +1071,11 @@ export const getNodesThroughputWriteAboveBelowThresholdQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    enabled: !!(timestamp && threshold !== undefined),
+    enabled: !!(
+      timestamp &&
+      threshold !== undefined &&
+      isOnHoverFetchingNeeded
+    ),
   };
 };
 
@@ -1056,6 +1083,7 @@ export const getNodesThroughputReadAboveBelowThresholdQuery = (
   timestamp?: string,
   threshold?: number,
   operator: '>' | '<',
+  isOnHoverFetchingNeeded: boolean,
 ) => {
   const nodesThroughputReadAboveBelowPromQL = `sum(sum(irate(node_disk_read_bytes_total[1m])) by (instance, device))by(instance) ${operator}= ${threshold}`;
   return {
@@ -1082,7 +1110,11 @@ export const getNodesThroughputReadAboveBelowThresholdQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    enabled: !!(timestamp && threshold !== undefined),
+    enabled: !!(
+      timestamp &&
+      threshold !== undefined &&
+      isOnHoverFetchingNeeded
+    ),
   };
 };
 

@@ -280,6 +280,7 @@ export const useQuantileOnHover = ({
     timestamp?: string, // to be check the type
     threshold?: number,
     operator: '>' | '<',
+    isOnHoverFetchingRequired: boolean,
     devices?: string,
   ) => UseQueryOptions,
   metricPrefix?: string,
@@ -287,17 +288,32 @@ export const useQuantileOnHover = ({
   const [hoverTimestamp, setHoverTimestamp] = useState<number>(0);
   const [threshold90, setThreshold90] = useState();
   const [threshold5, setThreshold5] = useState();
+  const [median, setMedian] = useState();
   const [valueBase, setValueBase] = useState(1);
   const nodeIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
   const devices = getNodesInterfacesString(nodeIPsInfo);
+  // If the median value is the same as Q90 and Q5, then onHover fetching is not needed.
+  const isOnHoverFetchingNeeded =
+    median !== threshold90 && median !== threshold5;
 
   const quantile90Result = useQuery(
-    getQuantileHoverQuery(hoverTimestamp / 1000, threshold90, '>', devices),
+    getQuantileHoverQuery(
+      hoverTimestamp / 1000,
+      threshold90,
+      '>',
+      isOnHoverFetchingNeeded,
+      devices,
+    ),
   );
   const quantile5Result = useQuery(
-    getQuantileHoverQuery(hoverTimestamp / 1000, threshold5, '<', devices),
+    getQuantileHoverQuery(
+      hoverTimestamp / 1000,
+      threshold5,
+      '<',
+      isOnHoverFetchingNeeded,
+      devices,
+    ),
   );
-
   const onHover = useCallback(
     (datum) => {
       if (!hoverTimestamp || datum.timestamp !== hoverTimestamp) {
@@ -311,6 +327,11 @@ export const useQuantileOnHover = ({
           metricPrefix
             ? Math.abs(datum.originalData[`Q5-${metricPrefix}`])
             : Math.abs(datum.originalData['Q5']),
+        );
+        setMedian(
+          metricPrefix
+            ? Math.abs(datum.originalData[`Median-${metricPrefix}`])
+            : Math.abs(datum.originalData['Median']),
         );
         setValueBase(datum.metadata.valueBase);
       }
