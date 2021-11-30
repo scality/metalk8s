@@ -149,15 +149,16 @@ run_quiet() {
 
     echo -n "> ${name}..."
     local start
-    start=$(date +%s)
+    start=$(date +%s%N | cut -c-11)
     set +e
     "$@" > >(tee -ia "${LOGFILE}" > "${TMPFILES}/out") 2>&1
     local RC=$?
     set -e
     local end
-    end=$(date +%s)
+    end=$(date +%s%N | cut -c-11)
 
-    local duration=$(( end - start ))
+    local duration
+    duration=$(printf "%.1f" "$(( end - start  ))e-1")
 
     if [ $RC -eq 0 ]; then
         echo " done [${duration}s]"
