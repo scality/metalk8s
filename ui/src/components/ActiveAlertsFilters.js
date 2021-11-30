@@ -49,7 +49,7 @@ const ActiveAlertsFilter = (props) => {
     },
   ];
 
-  return <Healthselector items={items} data-cy="alert_filter" />;
+  return <Healthselector items={items} isOkHidden data-cy="alert_filter"  />;
 };
 
 export default ActiveAlertsFilter;
