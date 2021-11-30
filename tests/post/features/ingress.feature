@@ -50,3 +50,11 @@ Feature: Ingress
         And we wait for the rollout of 'deploy/dex' in namespace 'metalk8s-auth' to complete
         Then the control plane ingress IP is equal to '{new_cp_ingress_vip}'
         And we are able to login to Dex as 'admin@metalk8s.invalid' using password 'password'
+
+    Scenario: Control Plane Ingress Controller pods spreading
+        Given the Kubernetes API is available
+        And we are on a multi node cluster
+        # Control Plane Ingress Controller is a deployment only when MetalLB is enabled
+        And MetalLB is already enabled
+        Then pods with label 'app.kubernetes.io/component=controller,app.kubernetes.io/instance=ingress-nginx-control-plane,app.kubernetes.io/name=ingress-nginx' are 'Ready'
+        And each pods with label 'app.kubernetes.io/component=controller,app.kubernetes.io/instance=ingress-nginx-control-plane,app.kubernetes.io/name=ingress-nginx' are on a different node

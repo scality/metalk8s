@@ -39,7 +39,14 @@ def test_change_cp_ingress_ip(host, teardown):
 
 
 @scenario("../features/ingress.feature", "Enable MetalLB")
-def test_change_cp_ingress_vip(host, teardown):
+def test_change_cp_ingress_mode(host, teardown):
+    pass
+
+
+@scenario(
+    "../features/ingress.feature", "Control Plane Ingress Controller pods spreading"
+)
+def test_cp_ingress_controller_pod_spreading(host):
     pass
 
 

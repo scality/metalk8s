@@ -3,19 +3,11 @@
 
 {%- set cluster_dns_ip = salt.metalk8s_network.get_cluster_dns_ip() %}
 
-{%- set pillar_coredns = pillar.kubernetes.get("coreDNS", {}) %}
-
-{%- set replicas = pillar_coredns.get("replicas") or 2 %}
+{%- set replicas = pillar.kubernetes.coreDNS.replicas %}
 {%- set label_selector = {"k8s-app": "kube-dns"} %}
 
-{%- set pillar_affinities = pillar_coredns.get("affinity", {}) %}
-{#- NOTE: The default podAntiAffinity is a soft anti-affinity on hostname #}
-{%- do pillar_affinities.setdefault("podAntiAffinity", {}).setdefault(
-    "soft", [{"topologyKey": "kubernetes.io/hostname"}]
-) %}
-
 {%- set affinity = salt.metalk8s_service_configuration.get_pod_affinity(
-    pillar_affinities,
+    pillar.kubernetes.coreDNS.affinity,
     label_selector,
     "kube-system"
 ) %}

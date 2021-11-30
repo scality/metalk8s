@@ -174,4 +174,10 @@ certificates:
         watched: true
       workload-plane-ingress:
         watched: true
-kubernetes: {}
+kubernetes:
+  coreDNS:
+    replicas: 2
+    affinity:
+      podAntiAffinity:
+        soft:
+          - topologyKey: kubernetes.io/hostname

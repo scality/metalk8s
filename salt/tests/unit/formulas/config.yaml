@@ -137,6 +137,21 @@ metalk8s:
                           active: true
                           mountpoint: /srv/scality/example-solution-1.0.0
 
+    nginx-ingress-control-plane:
+      deployed:
+        chart-deployment.sls:
+          _cases:
+            "Nominal (with soft antiAffinity in pillar)":
+              pillar_overrides:
+                networks:
+                  control_plane:
+                    ingress:
+                      controller:
+                        replicas: 2
+                        affinity:
+                          podAntiAffinity:
+                            soft:
+                              - topologyKey: kubernetes.io/hostname
 
   backup:
     deployed:
