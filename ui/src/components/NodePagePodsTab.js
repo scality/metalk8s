@@ -4,7 +4,7 @@ import { useTable } from 'react-table';
 import styled from 'styled-components';
 import { Tooltip } from '@scality/core-ui';
 
-import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
+import { fontSize, padding, spacing } from '@scality/core-ui/dist/style/theme';
 import { NodeTab } from './style/CommonLayoutStyle';
 import { TooltipContent } from './TableRow';
 
@@ -160,7 +160,7 @@ const NodePagePodsTab = (props) => {
       {
         Header: 'Status',
         accessor: 'status',
-        cellStyle: { width: '100px' },
+        cellStyle: { width: '7.143rem' },
         Cell: (cellProps) => {
           const { status, numContainer, numContainerRunning } = cellProps.value;
           return status === STATUS_RUNNING ? (
@@ -179,7 +179,7 @@ const NodePagePodsTab = (props) => {
       {
         Header: 'Age',
         accessor: 'age',
-        cellStyle: { width: '60px' },
+        cellStyle: { width: '4.286rem' },
       },
       {
         Header: 'Namespace',
@@ -188,7 +188,7 @@ const NodePagePodsTab = (props) => {
       {
         Header: 'Logs',
         accessor: 'log',
-        cellStyle: { textAlign: 'center', width: '40px' },
+        cellStyle: { textAlign: 'center', width: spacing.sp40 },
         Cell: ({ value }) => {
           return (
             <Tooltip

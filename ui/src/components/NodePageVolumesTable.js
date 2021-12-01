@@ -332,7 +332,8 @@ const VolumeListTable = (props) => {
         accessor: 'health',
         cellStyle: {
           textAlign: 'center',
-          flexBasis: '105px',
+          width: '5rem',
+          paddingRight: '0.714rem',
         },
         Cell: (cellProps) => {
           return (
@@ -347,7 +348,7 @@ const VolumeListTable = (props) => {
         cellStyle: {
           textAlign: 'left',
           flex: 1,
-          minWidth: '95px',
+          minWidth: '6.429rem',
           color: theme.selectedActive,
         },
         Cell: ({ value, row }) => {
@@ -372,7 +373,7 @@ const VolumeListTable = (props) => {
         accessor: 'usage',
         cellStyle: {
           textAlign: 'center',
-          width: '120px',
+          width: '8.571rem',
         },
         Cell: ({ value }) => {
           return (
@@ -391,8 +392,8 @@ const VolumeListTable = (props) => {
         accessor: 'storageCapacity',
         cellStyle: {
           textAlign: 'right',
-          width: '65px',
-          paddingRight: '5px',
+          width: '6rem',
+          paddingRight: '0.357rem',
         },
         sortType: 'size',
         Cell: ({ value }) => formatSizeForDisplay(value),
@@ -402,7 +403,7 @@ const VolumeListTable = (props) => {
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
-          width: '65px',
+          width: '6rem',
         },
         Cell: (cellProps) => {
           const volume = volumeListData?.find(
@@ -463,8 +464,8 @@ const VolumeListTable = (props) => {
         accessor: 'latency',
         cellStyle: {
           textAlign: 'right',
-          width: '75px',
-          paddingRight: '6px',
+          width: '5.357rem',
+          paddingRight: '1rem',
         },
         Cell: (cellProps) => {
           return cellProps.value !== undefined ? cellProps.value + ' µs' : null;
