@@ -66,10 +66,10 @@ const DashboardChartThroughputWithoutQuantile = () => {
       getNodesThroughputReadQuery(timeSpanProps),
     ],
     transformPrometheusDataToSeries: useCallback(
-      (prometheusResultAbove, prometheusResultBelow) => {
+      ([prometheusResultAbove], [prometheusResultBelow]) => {
         return getMultipleSymmetricalSeries(
-          prometheusResultAbove[0],
-          prometheusResultBelow[0],
+          prometheusResultAbove,
+          prometheusResultBelow,
           'write',
           'read',
           nodeAddresses,

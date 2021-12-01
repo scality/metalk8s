@@ -53,13 +53,13 @@ const DashboardBandwidthChartWithoutQuantile = ({
       getNodesPlanesBandwidthOutQuery(timeSpanProps, devices),
     ],
     transformPrometheusDataToSeries: useCallback(
-      (prometheusResultAbove, prometheusResultBelow) => {
-        if (!prometheusResultAbove[0] || !prometheusResultBelow[0]) {
+      ([prometheusResultAbove], [prometheusResultBelow]) => {
+        if (!prometheusResultAbove || !prometheusResultBelow) {
           return [];
         }
         return getMultipleSymmetricalSeries(
-          prometheusResultAbove[0],
-          prometheusResultBelow[0],
+          prometheusResultAbove,
+          prometheusResultBelow,
           'in',
           'out',
           nodeAddresses,
