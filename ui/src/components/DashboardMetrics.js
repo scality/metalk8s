@@ -5,7 +5,7 @@ import { Button } from '@scality/core-ui/dist/next';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { useIntl } from 'react-intl';
 
-import { GRAFANA_DASHBOARDS, NODES_LIMIT_QUANTILE } from '../constants';
+import { GRAFANA_DASHBOARDS } from '../constants';
 import {
   GraphWrapper as GraphWrapperCommon,
   PageSubtitle,
@@ -15,7 +15,7 @@ import DashboardChartCpuUsage from './DashboardChartCpuUsage';
 import DashboardChartThroughput from './DashboardChartThroughput';
 import DashboardChartSystemLoad from './DashboardChartSystemLoad';
 import DashboardChartMemory from './DashboardChartMemory';
-import { useNodes, useTypedSelector } from '../hooks';
+import { useTypedSelector } from '../hooks';
 import { DashboardScrollableArea } from '../containers/DashboardPage';
 
 const MetricsContainer = styled.div`
@@ -51,12 +51,8 @@ const PanelActions = styled.div`
 
 const DashboardMetrics = () => {
   const intl = useIntl();
-  const nodes = useNodes();
   // App config, used to generated Advanced metrics button link
-  const { url_grafana, flags } = useTypedSelector((state) => state.config.api);
-  const isShowQuantileChart =
-    (flags && flags.includes('force_quantile_chart')) ||
-    nodes?.length > NODES_LIMIT_QUANTILE;
+  const { url_grafana } = useTypedSelector((state) => state.config.api);
 
   return (
     <MetricsContainer id="dashboard-metrics-container">
@@ -79,10 +75,10 @@ const DashboardMetrics = () => {
       </PanelActions>
       <DashboardScrollableArea>
         <GraphsWrapper>
-          <DashboardChartCpuUsage isShowQuantileChart={isShowQuantileChart} />
-          <DashboardChartMemory isShowQuantileChart={isShowQuantileChart} />
-          <DashboardChartSystemLoad isShowQuantileChart={isShowQuantileChart} />
-          <DashboardChartThroughput isShowQuantileChart={isShowQuantileChart} />
+          <DashboardChartCpuUsage />
+          <DashboardChartMemory />
+          <DashboardChartSystemLoad />
+          <DashboardChartThroughput />
         </GraphsWrapper>
       </DashboardScrollableArea>
     </MetricsContainer>

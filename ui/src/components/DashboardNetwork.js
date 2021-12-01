@@ -6,8 +6,6 @@ import { PageSubtitle } from '../components/style/CommonLayoutStyle';
 import DashboardPlaneHealth from './DashboardPlaneHealth';
 import DashboardBandwidthChart from './DashboardBandwidthChart';
 import { DashboardScrollableArea } from '../containers/DashboardPage';
-import { useNodes, useTypedSelector } from '../hooks';
-import { NODES_LIMIT_QUANTILE } from '../constants';
 
 export const NetworkContainer = styled.div`
   padding: ${spacing.sp2} ${spacing.sp4};
@@ -31,11 +29,7 @@ const ChartContainer = styled.div`
 
 const DashboardNetwork = () => {
   const intl = useIntl();
-  const nodes = useNodes();
-  const { flags } = useTypedSelector((state) => state.config.api);
-  const isShowQuantileChart =
-    (flags && flags.includes('force_quantile_chart')) ||
-    nodes?.length > NODES_LIMIT_QUANTILE;
+
   return (
     <NetworkContainer>
       <PanelActions>
@@ -49,14 +43,12 @@ const DashboardNetwork = () => {
           <DashboardBandwidthChart
             title="ControlPlane Bandwidth"
             plane="controlPlane"
-            isShowQuantileChart={isShowQuantileChart}
           ></DashboardBandwidthChart>
         </ChartContainer>
         <ChartContainer>
           <DashboardBandwidthChart
             title="WorkloadPlane Bandwidth"
             plane="workloadPlane"
-            isShowQuantileChart={isShowQuantileChart}
           ></DashboardBandwidthChart>
         </ChartContainer>
       </DashboardScrollableArea>

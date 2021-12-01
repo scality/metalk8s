@@ -12,6 +12,7 @@ import { fetchNodesAction } from '../ducks/app/nodes';
 import {
   useNodeAddressesSelector,
   useNodes,
+  useShowQuantileChart,
   useSymetricalChartSeries,
 } from '../hooks';
 import {
@@ -99,17 +100,15 @@ const DashboardBandwidthChartWithoutQuantile = ({
 const DashboardBandwidthChart = ({
   title,
   plane,
-  isShowQuantileChart,
 }: {
   title: string,
   plane: 'controlPlane' | 'workloadPlane',
-  isShowQuantileChart: boolean,
 }) => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(fetchNodesAction());
   }, [dispatch]);
-
+  const { isShowQuantileChart } = useShowQuantileChart();
   return (
     <GraphWrapper>
       {isShowQuantileChart ? (

@@ -5,6 +5,7 @@ import {
   useNodes,
   useNodeAddressesSelector,
   useSingleChartSerie,
+  useShowQuantileChart,
 } from '../hooks';
 import {
   getNodesMemoryOutpassingThresholdQuery,
@@ -14,11 +15,8 @@ import {
 import { getMultiResourceSeriesForChart } from '../services/graphUtils';
 import NonSymmetricalQuantileChart from './NonSymmetricalQuantileChart';
 
-const DashboardChartMemory = ({
-  isShowQuantileChart,
-}: {
-  isShowQuantileChart: boolean,
-}) => {
+const DashboardChartMemory = () => {
+  const { isShowQuantileChart } = useShowQuantileChart();
   return (
     <GraphWrapper>
       {isShowQuantileChart ? (

@@ -1,4 +1,6 @@
 import React, { useCallback } from 'react';
+import { useTheme } from 'styled-components';
+import { defaultRenderTooltipSerie } from '@scality/core-ui/dist/components/linetemporalchart/tooltip';
 import { LineTemporalChart } from '@scality/core-ui/dist/next';
 import {
   UNIT_RANGE_BS,
@@ -8,6 +10,7 @@ import { GraphWrapper } from './DashboardMetrics';
 import {
   useNodeAddressesSelector,
   useNodes,
+  useShowQuantileChart,
   useSymetricalChartSeries,
 } from '../hooks';
 import {
@@ -20,14 +23,9 @@ import {
 } from '../services/platformlibrary/metrics';
 import { getMultipleSymmetricalSeries } from '../services/graphUtils';
 import SymmetricalQuantileChart from './SymmetricalQuantileChart';
-import { useTheme } from 'styled-components';
-import { defaultRenderTooltipSerie } from '@scality/core-ui/dist/components/linetemporalchart/tooltip';
 
-const DashboardChartThroughput = ({
-  isShowQuantileChart,
-}: {
-  isShowQuantileChart: boolean,
-}) => {
+const DashboardChartThroughput = () => {
+  const { isShowQuantileChart } = useShowQuantileChart();
   return (
     <GraphWrapper>
       {isShowQuantileChart ? (

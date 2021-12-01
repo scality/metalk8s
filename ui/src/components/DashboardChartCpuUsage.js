@@ -6,6 +6,7 @@ import { getMultiResourceSeriesForChart } from '../services/graphUtils';
 import {
   useNodeAddressesSelector,
   useNodes,
+  useShowQuantileChart,
   useSingleChartSerie,
 } from '../hooks';
 import {
@@ -15,12 +16,9 @@ import {
 } from '../services/platformlibrary/metrics';
 import NonSymmetricalQuantileChart from './NonSymmetricalQuantileChart';
 
-const DashboardChartCpuUsage = ({
-  isShowQuantileChart,
-}: {
-  isShowQuantileChart: boolean,
-}) => {
+const DashboardChartCpuUsage = () => {
   const intl = useIntl();
+  const { isShowQuantileChart } = useShowQuantileChart();
 
   return (
     <GraphWrapper>

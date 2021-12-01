@@ -11,6 +11,7 @@ import {
   SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
   VOLUME_CONDITION_LINK,
   STATUS_NONE,
+  NODES_LIMIT_QUANTILE,
 } from './constants';
 import { compareHealth } from './services/utils';
 import type { V1NodeList } from '@kubernetes/client-node';
@@ -344,5 +345,16 @@ export const useQuantileOnHover = ({
     quantile5Result,
     valueBase,
     onHover,
+  };
+};
+
+export const useShowQuantileChart = (): { isShowQuantileChart: boolean } => {
+  const nodes = useNodes();
+  const { flags } = useTypedSelector((state) => state.config.api);
+
+  return {
+    isShowQuantileChart:
+      (flags && flags.includes('force_quantile_chart')) ||
+      nodes?.length > NODES_LIMIT_QUANTILE,
   };
 };

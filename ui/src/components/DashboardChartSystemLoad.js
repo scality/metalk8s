@@ -4,6 +4,7 @@ import { GraphWrapper } from './DashboardMetrics';
 import {
   useNodeAddressesSelector,
   useNodes,
+  useShowQuantileChart,
   useSingleChartSerie,
 } from '../hooks';
 import type { DashboardChartProps } from '../containers/DashboardPage';
@@ -15,11 +16,8 @@ import {
 import { getMultiResourceSeriesForChart } from '../services/graphUtils';
 import NonSymmetricalQuantileChart from './NonSymmetricalQuantileChart';
 
-const DashboardChartSystemLoad = ({
-  isShowQuantileChart,
-}: {
-  isShowQuantileChart: boolean,
-}) => {
+const DashboardChartSystemLoad = () => {
+  const { isShowQuantileChart } = useShowQuantileChart();
   return (
     <GraphWrapper>
       {isShowQuantileChart ? (
