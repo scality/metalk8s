@@ -1,4 +1,5 @@
 {%- from "metalk8s/map.jinja" import repo with context %}
+{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 {%- set repositories_name = 'repositories' %}
 {%- set repositories_version = '1.0.0' %}
@@ -6,7 +7,6 @@
 {%- set archives = salt.metalk8s.get_archives() %}
 {%- set solutions = pillar.metalk8s.get('solutions', {}).get('available', {}) %}
 
-{%- set docker_repository = 'docker.io/library' %}
 {%- set image_name = 'nginx' %}
 
 {%- set image_version = repo.images.get(image_name, {}).get('version') %}
@@ -14,7 +14,7 @@
   {{ raise('Missing version information for "nginx"') }}
 {%- endif %}
 
-{%- set image_fullname = docker_repository ~ '/' ~ image_name ~ ':' ~ image_version %}
+{%- set image_fullname = build_image_name(image_name) %}
 
 include:
   - .configured
