@@ -392,6 +392,6 @@ export const renderQuantileData = (
               )}</td></tr>`,
           )
           .join('')
-      : ''
+      : 'Sorry, failed to load data due to error occurs.'
   }`;
 };
