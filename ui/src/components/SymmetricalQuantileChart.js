@@ -26,7 +26,7 @@ const SymmetricalQuantileChart = ({
   metricPrefixBelow,
   title,
   yAxisTitle,
-  isLegendHided,
+  isLegendHidden,
 }: {
   getAboveQuantileQuery: UseQueryOptions,
   getBelowQuantileQuery: UseQueryOptions,
@@ -36,7 +36,7 @@ const SymmetricalQuantileChart = ({
   metricPrefixBelow: string,
   title: string,
   yAxisTitle: string,
-  isLegendHided?: Boolean,
+  isLegendHidden?: Boolean,
 }) => {
   const theme = useTheme();
   const nodeAddresses = useNodeAddressesSelector(useNodes());
@@ -163,7 +163,7 @@ const SymmetricalQuantileChart = ({
         [onHoverIn, onHoverOut],
       )}
       yAxisTitle={yAxisTitle}
-      isLegendHided={isLegendHided}
+      isLegendHidden={isLegendHidden}
       unitRange={UNIT_RANGE_BS}
       renderTooltipSerie={useCallback(
         (serie) => {

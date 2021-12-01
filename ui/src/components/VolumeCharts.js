@@ -59,7 +59,7 @@ export const VolumeThroughputChart = ({
       yAxisTitle={YAXIS_TITLE_READ_WRITE}
       unitRange={UNIT_RANGE_BS}
       isLoading={isLoading}
-      isLegendHided={false}
+      isLegendHidden={false}
     />
   );
 };
@@ -108,7 +108,7 @@ export const VolumeLatencyChart = ({
         { threshold: 60 * 1000 * 1000, label: 'm' },
       ]}
       isLoading={isLoading}
-      isLegendHided={false}
+      isLegendHidden={false}
     />
   );
 };
@@ -151,7 +151,7 @@ export const VolumeIOPSChart = ({
       yAxisType={'symmetrical'}
       yAxisTitle={YAXIS_TITLE_READ_WRITE}
       isLoading={isLoading}
-      isLegendHided={false}
+      isLegendHidden={false}
     />
   );
 };
@@ -183,7 +183,7 @@ export const VolumeUsageChart = ({
       startingTimeStamp={startingTimeStamp}
       yAxisType={'percentage'}
       isLoading={isLoading}
-      isLegendHided={false}
+      isLegendHidden={false}
     />
   );
 };

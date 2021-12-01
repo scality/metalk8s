@@ -28,7 +28,7 @@ const DashboardChartCpuUsage = () => {
           getQuantileHoverQuery={getNodesCPUUsageOutpassingThresholdQuery}
           title={'CPU Usage'}
           yAxisType={'percentage'}
-          isLegendHided={true}
+          isLegendHidden={true}
           helpText={
             <span style={{ textAlign: 'left', display: 'block' }}>
               {intl.formatMessage({
@@ -84,7 +84,7 @@ const DashboardChartCpuUsageWithoutQuantils = () => {
       title="CPU Usage"
       startingTimeStamp={startingTimeStamp}
       yAxisType={'percentage'}
-      isLegendHided={true}
+      isLegendHidden={true}
       isLoading={isLoading}
     />
   );

@@ -85,7 +85,7 @@ const DashboardChartThroughputWithoutQuantile = () => {
       yAxisType={'symmetrical'}
       unitRange={UNIT_RANGE_BS}
       startingTimeStamp={startingTimeStamp}
-      isLegendHided={false}
+      isLegendHidden={false}
       yAxisTitle={YAXIS_TITLE_READ_WRITE}
       isLoading={isLoading}
       renderTooltipSerie={useCallback(

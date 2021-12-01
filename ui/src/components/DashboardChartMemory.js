@@ -25,7 +25,7 @@ const DashboardChartMemory = () => {
           getQuantileHoverQuery={getNodesMemoryOutpassingThresholdQuery}
           title={'Memory'}
           yAxisType={'percentage'}
-          isLegendHided={true}
+          isLegendHidden={true}
         />
       ) : (
         <DashboardChartMemoryWithoutQuantiles />
@@ -57,7 +57,7 @@ const DashboardChartMemoryWithoutQuantiles = () => {
       title="Memory"
       startingTimeStamp={startingTimeStamp}
       yAxisType={'percentage'}
-      isLegendHided={true}
+      isLegendHidden={true}
       isLoading={isLoading}
     />
   );

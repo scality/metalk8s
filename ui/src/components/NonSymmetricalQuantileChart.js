@@ -19,14 +19,14 @@ const NonSymmetricalQuantileChart = ({
   getQuantileHoverQuery,
   title,
   yAxisType,
-  isLegendHided,
+  isLegendHidden,
   helpText,
 }: {
   getQuantileQuery: UseQueryOptions,
   getQuantileHoverQuery: UseQueryOptions,
   title: string,
   yAxisType: string,
-  isLegendHided: boolean,
+  isLegendHidden: boolean,
 }) => {
   const theme = useTheme();
   const nodeAddresses = useNodeAddressesSelector(useNodes());
@@ -50,9 +50,9 @@ const NonSymmetricalQuantileChart = ({
     ],
     transformPrometheusDataToSeries: useCallback(
       ([
-        prometheusResultQuantile5,
-        prometheusResultMedian,
         prometheusResultQuantile90,
+        prometheusResultMedian,
+        prometheusResultQuantile5,
       ]) => {
         return [
           convertPrometheusResultToSerie(prometheusResultQuantile90, 'Q90'),
@@ -89,7 +89,7 @@ const NonSymmetricalQuantileChart = ({
       helpText={helpText}
       startingTimeStamp={startingTimeStampQuantile}
       yAxisType={yAxisType}
-      isLegendHided={isLegendHided}
+      isLegendHidden={isLegendHidden}
       isLoading={isLoadingQuantile}
       onHover={onHover}
       renderTooltipSerie={useCallback(
@@ -99,7 +99,9 @@ const NonSymmetricalQuantileChart = ({
               renderTooltipSerie(serie) +
               `<tr style="color: ${
                 theme.textSecondary
-              }"><td></td><td colspan="2" style="padding-left: 1rem;">Nodes above Q90</td></tr>
+              }"><td></td><td colspan="2" style="padding-left: 1rem;">Nodes above ${
+                serie.key
+              }</td></tr>
                 ${renderQuantileData(
                   isIdleQuantile90,
                   isLoadingQuantile90,
@@ -119,7 +121,9 @@ const NonSymmetricalQuantileChart = ({
               renderTooltipSerie(serie) +
               `<tr style="color: ${
                 theme.textSecondary
-              }"><td></td><td colspan="2" style="padding-left: 1rem;">Nodes below Q5</td></tr>
+              }"><td></td><td colspan="2" style="padding-left: 1rem;">Nodes below ${
+                serie.key
+              }</td></tr>
                 ${renderQuantileData(
                   isIdleQuantile5,
                   isLoadingQuantile5,

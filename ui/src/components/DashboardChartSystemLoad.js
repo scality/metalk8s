@@ -52,7 +52,7 @@ const DashboardChartSystemLoadWithoutQuantiles = (
       height={80}
       title="System Load"
       startingTimeStamp={startingTimeStamp}
-      isLegendHided={true}
+      isLegendHidden={true}
       isLoading={isLoading}
     />
   );
