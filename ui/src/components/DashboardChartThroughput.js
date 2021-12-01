@@ -11,10 +11,10 @@ import {
   useSymetricalChartSeries,
 } from '../hooks';
 import {
-  getNodesThroughputReadAboveBelowThresholdQuery,
+  getNodesThroughputOutpassingThresholdQuery,
   getNodesThroughputReadQuantileQuery,
   getNodesThroughputReadQuery,
-  getNodesThroughputWriteAboveBelowThresholdQuery,
+  getNodesThroughputWriteOutpassingThresholdQuery,
   getNodesThroughputWriteQuantileQuery,
   getNodesThroughputWriteQuery,
 } from '../services/platformlibrary/metrics';
@@ -35,10 +35,10 @@ const DashboardChartThroughput = ({
           getAboveQuantileQuery={getNodesThroughputWriteQuantileQuery}
           getBelowQuantileQuery={getNodesThroughputReadQuantileQuery}
           getAboveQuantileHoverQuery={
-            getNodesThroughputWriteAboveBelowThresholdQuery
+            getNodesThroughputWriteOutpassingThresholdQuery
           }
           getBelowQuantileHoverQuery={
-            getNodesThroughputReadAboveBelowThresholdQuery
+            getNodesThroughputOutpassingThresholdQuery
           }
           metricPrefixAbove={'write'}
           metricPrefixBelow={'read'}

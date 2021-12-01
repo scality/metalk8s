@@ -15,10 +15,10 @@ import {
   useSymetricalChartSeries,
 } from '../hooks';
 import {
-  getNodesPlanesBandwidthInAboveBelowThresholdQuery,
+  getNodesPlanesBandwidthInOutpassingThresholdQuery,
   getNodesPlanesBandwidthInQuantileQuery,
   getNodesPlanesBandwidthInQuery,
-  getNodesPlanesBandwidthOutAboveBelowThresholdQuery,
+  getNodesPlanesBandwidthOutOutpassingThresholdQuery,
   getNodesPlanesBandwidthOutQuantileQuery,
   getNodesPlanesBandwidthOutQuery,
 } from '../services/platformlibrary/metrics';
@@ -117,10 +117,10 @@ const DashboardBandwidthChart = ({
           getAboveQuantileQuery={getNodesPlanesBandwidthInQuantileQuery}
           getBelowQuantileQuery={getNodesPlanesBandwidthOutQuantileQuery}
           getAboveQuantileHoverQuery={
-            getNodesPlanesBandwidthInAboveBelowThresholdQuery
+            getNodesPlanesBandwidthInOutpassingThresholdQuery
           }
           getBelowQuantileHoverQuery={
-            getNodesPlanesBandwidthOutAboveBelowThresholdQuery
+            getNodesPlanesBandwidthOutOutpassingThresholdQuery
           }
           metricPrefixAbove={'in'}
           metricPrefixBelow={'out'}

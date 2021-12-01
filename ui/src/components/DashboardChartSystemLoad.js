@@ -8,7 +8,7 @@ import {
 } from '../hooks';
 import type { DashboardChartProps } from '../containers/DashboardPage';
 import {
-  getNodesSystemLoadAboveBelowThresholdQuery,
+  getNodesSystemLoadOutpassingThresholdQuery,
   getNodesSystemLoadQuantileQuery,
   getNodesSystemLoadQuery,
 } from '../services/platformlibrary/metrics';
@@ -25,7 +25,7 @@ const DashboardChartSystemLoad = ({
       {isShowQuantileChart ? (
         <NonSymmetricalQuantileChart
           getQuantileQuery={getNodesSystemLoadQuantileQuery}
-          getQuantileHoverQuery={getNodesSystemLoadAboveBelowThresholdQuery}
+          getQuantileHoverQuery={getNodesSystemLoadOutpassingThresholdQuery}
           title={'System Load'}
         />
       ) : (

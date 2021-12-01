@@ -7,7 +7,7 @@ import {
   useSingleChartSerie,
 } from '../hooks';
 import {
-  getNodesMemoryAboveBelowThresholdQuery,
+  getNodesMemoryOutpassingThresholdQuery,
   getNodesMemoryQuantileQuery,
   getNodesMemoryQuery,
 } from '../services/platformlibrary/metrics';
@@ -24,7 +24,7 @@ const DashboardChartMemory = ({
       {isShowQuantileChart ? (
         <NonSymmetricalQuantileChart
           getQuantileQuery={getNodesMemoryQuantileQuery}
-          getQuantileHoverQuery={getNodesMemoryAboveBelowThresholdQuery}
+          getQuantileHoverQuery={getNodesMemoryOutpassingThresholdQuery}
           title={'Memory'}
           yAxisType={'percentage'}
           isLegendHided={true}

@@ -9,7 +9,7 @@ import {
   useSingleChartSerie,
 } from '../hooks';
 import {
-  getNodesCPUUsageAboveBelowThresholdQuery,
+  getNodesCPUUsageOutpassingThresholdQuery,
   getNodesCPUUsageQuantileQuery,
   getNodesCPUUsageQuery,
 } from '../services/platformlibrary/metrics';
@@ -27,7 +27,7 @@ const DashboardChartCpuUsage = ({
       {isShowQuantileChart ? (
         <NonSymmetricalQuantileChart
           getQuantileQuery={getNodesCPUUsageQuantileQuery}
-          getQuantileHoverQuery={getNodesCPUUsageAboveBelowThresholdQuery}
+          getQuantileHoverQuery={getNodesCPUUsageOutpassingThresholdQuery}
           title={'CPU Usage'}
           yAxisType={'percentage'}
           isLegendHided={true}
