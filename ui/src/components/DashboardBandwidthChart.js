@@ -23,6 +23,8 @@ import {
   getNodesPlanesBandwidthOutQuery,
 } from '../services/platformlibrary/metrics';
 import SymmetricalQuantileChart from './SymmetricalQuantileChart';
+import { defaultRenderTooltipSerie } from '@scality/core-ui/dist/components/linetemporalchart/tooltip';
+import { useTheme } from 'styled-components';
 
 const DashboardBandwidthChartWithoutQuantile = ({
   title,
@@ -31,16 +33,18 @@ const DashboardBandwidthChartWithoutQuantile = ({
   title: string,
   plane: 'controlPlane' | 'workloadPlane',
 }) => {
-  const nodeAddresses = useNodeAddressesSelector(useNodes());
+  const theme = useTheme();
+  const nodes = useNodes();
+  const nodeAddresses = useNodeAddressesSelector(nodes);
   const nodeIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
   const devices = getNodesInterfacesString(nodeIPsInfo);
-
   const nodesPlaneInterface = {};
   for (const [key, value] of Object.entries(nodeIPsInfo)) {
     nodesPlaneInterface[key] =
       plane === 'controlPlane' ? value.controlPlane : value.workloadPlane;
   }
-
+  // will be used to draw the line speration lines
+  const lastNodeName = nodes?.slice(-1)[0]?.metadata?.name;
   const { isLoading, series, startingTimeStamp } = useSymetricalChartSeries({
     getAboveQueries: (timeSpanProps) => [
       getNodesPlanesBandwidthInQuery(timeSpanProps, devices),
@@ -76,6 +80,18 @@ const DashboardBandwidthChartWithoutQuantile = ({
       isLegendHided={false}
       isLoading={isLoading}
       unitRange={UNIT_RANGE_BS}
+      renderTooltipSerie={useCallback(
+        (serie) => {
+          if (serie.key === `${lastNodeName}-in`) {
+            // add a seperation line between in and out
+            return `${defaultRenderTooltipSerie(serie)}</table>
+            <hr style="border-color: ${theme.border};"/><table>`;
+          } else {
+            return defaultRenderTooltipSerie(serie);
+          }
+        },
+        [lastNodeName, theme],
+      )}
     />
   );
 };

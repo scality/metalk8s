@@ -20,6 +20,8 @@ import {
 } from '../services/platformlibrary/metrics';
 import { getMultipleSymmetricalSeries } from '../services/graphUtils';
 import SymmetricalQuantileChart from './SymmetricalQuantileChart';
+import { useTheme } from 'styled-components';
+import { defaultRenderTooltipSerie } from '@scality/core-ui/dist/components/linetemporalchart/tooltip';
 
 const DashboardChartThroughput = ({
   isShowQuantileChart,
@@ -51,7 +53,11 @@ const DashboardChartThroughput = ({
 };
 
 const DashboardChartThroughputWithoutQuantile = () => {
-  const nodeAddresses = useNodeAddressesSelector(useNodes());
+  const theme = useTheme();
+  const nodes = useNodes();
+  const nodeAddresses = useNodeAddressesSelector(nodes);
+  const lastNodeName = nodes?.slice(-1)[0]?.metadata?.name;
+
   const { isLoading, series, startingTimeStamp } = useSymetricalChartSeries({
     getAboveQueries: (timeSpanProps) => [
       getNodesThroughputWriteQuery(timeSpanProps),
@@ -84,6 +90,17 @@ const DashboardChartThroughputWithoutQuantile = () => {
       isLegendHided={false}
       yAxisTitle={YAXIS_TITLE_READ_WRITE}
       isLoading={isLoading}
+      renderTooltipSerie={useCallback(
+        (serie) => {
+          if (serie.key === `${lastNodeName}-write`) {
+            return `${defaultRenderTooltipSerie(serie)}</table>
+            <hr style="border-color: ${theme.border};"/><table>`;
+          } else {
+            return defaultRenderTooltipSerie(serie);
+          }
+        },
+        [lastNodeName, theme],
+      )}
     />
   );
 };

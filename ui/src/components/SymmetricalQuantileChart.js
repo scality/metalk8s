@@ -166,7 +166,7 @@ const SymmetricalQuantileChart = ({
       isLegendHided={isLegendHided}
       unitRange={UNIT_RANGE_BS}
       renderTooltipSerie={useCallback(
-        (serie, tooltipData) => {
+        (serie) => {
           if (serie.key === `Q90-${metricPrefixAbove}`) {
             return renderTooltip(
               serie,
@@ -178,14 +178,17 @@ const SymmetricalQuantileChart = ({
             );
           }
           if (serie.key === `Q5-${metricPrefixAbove}`) {
-            return renderTooltip(
+            // add a seperation line between metricAbove and metricBelow
+            return `${renderTooltip(
               serie,
               isIdleQuantile5,
               isLoadingQuantile5,
               isSuccessQuantile5,
               quantile5Data,
               'above',
-            );
+            )}</table>
+            <hr style="border-color: ${theme.border};"/><table>
+            `;
           }
           if (serie.key === `Q90-${metricPrefixBelow}`) {
             return renderTooltip(
