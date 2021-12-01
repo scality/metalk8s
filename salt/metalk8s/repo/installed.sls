@@ -11,7 +11,7 @@
 
 {%- set image_version = repo.images.get(image_name, {}).get('version') %}
 {%- if not image_version %}
-  {{ raise('Missing version information for "nginx"') }}
+  {{ raise('Missing version information for "' ~ image_name ~ '"') }}
 {%- endif %}
 
 {%- set image_fullname = build_image_name(image_name) %}
@@ -19,6 +19,15 @@
 include:
   - .configured
   - metalk8s.container-engine.running
+
+# We really need to inject those images only for the first registry as for others nodes
+# those images are available from remote MetalK8s registry
+Inject pause image:
+  containerd.image_managed:
+    - name: {{ build_image_name("pause") }}
+    - archive_path: {{ archives[saltenv].path }}/images/pause-{{ repo.images.pause.version }}.tar
+    - require:
+      - sls: metalk8s.container-engine.running
 
 Inject nginx image:
   containerd.image_managed:

@@ -4,6 +4,7 @@
 {%- from "metalk8s/map.jinja" import repo with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
 {%- from "metalk8s/map.jinja" import proxies with context %}
+{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 {%- set registry_eps = [] %}
 {%- set pillar_endpoints = metalk8s.endpoints.repositories %}
@@ -106,6 +107,9 @@ Configure registry IP in containerd conf:
     - makedirs: true
     - contents: |
         version = 2
+
+        [plugins."io.containerd.grpc.v1.cri"]
+        sandbox_image = "{{ build_image_name("pause") }}"
 
         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ repo.registry_endpoint }}"]
         endpoint = [{{ registry_eps | join(",") }}]

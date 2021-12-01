@@ -195,6 +195,7 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "kube-proxy",
         "kube-scheduler",
         "nginx-ingress-defaultbackend-amd64",
+        "pause",
     ],
     constants.GRAFANA_REPOSITORY: [
         "grafana",
@@ -235,7 +236,7 @@ REMOTE_NAMES: Dict[str, str] = {
 }
 
 SAVE_AS: Dict[str, List[targets.ImageSaveFormat]] = {
-    "pause": [targets.SaveAsTar()],
+    "pause": [targets.SaveAsTar(), targets.SaveAsLayers()],
     "nginx": [targets.SaveAsTar(), targets.SaveAsLayers()],
 }
 
