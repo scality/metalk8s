@@ -31,11 +31,6 @@ const DashboardBandwidthChartWithoutQuantile = ({
   title: string,
   plane: 'controlPlane' | 'workloadPlane',
 }) => {
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(fetchNodesAction());
-  }, [dispatch]);
-
   const nodeAddresses = useNodeAddressesSelector(useNodes());
   const nodeIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
   const devices = getNodesInterfacesString(nodeIPsInfo);
@@ -94,6 +89,11 @@ const DashboardBandwidthChart = ({
   plane: 'controlPlane' | 'workloadPlane',
   isShowQuantileChart: boolean,
 }) => {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(fetchNodesAction());
+  }, [dispatch]);
+
   return (
     <GraphWrapper>
       {isShowQuantileChart ? (

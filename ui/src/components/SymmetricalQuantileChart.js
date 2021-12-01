@@ -123,6 +123,30 @@ const SymmetricalQuantileChart = ({
     metricPrefix: metricPrefixBelow,
   });
 
+  const renderTooltip = useCallback(
+    (serie, isIdle, isLoading, isSuccess, data, aboveOrBelow) => {
+      return (
+        renderTooltipSerie(serie) +
+        `<tr style="color: ${
+          theme.textSecondary
+        }"><td></td><td colspan="2" style="padding-left: 1rem;">Nodes ${aboveOrBelow} ${
+          serie.key
+        }</td></tr>
+  ${renderQuantileData(
+    isIdle,
+    isLoading,
+    isSuccess,
+    data,
+    nodeMapPerIp,
+    theme,
+    valueBase,
+    serie.unitLabel,
+  )}`
+      );
+    },
+    [nodeMapPerIp, theme, valueBase],
+  );
+
   return (
     <LineTemporalChart
       series={seriesQuantile}
@@ -144,90 +168,44 @@ const SymmetricalQuantileChart = ({
       renderTooltipSerie={useCallback(
         (serie, tooltipData) => {
           if (serie.key === `Q90-${metricPrefixAbove}`) {
-            return (
-              renderTooltipSerie(serie) +
-              `<tr style="color: ${
-                theme.textSecondary
-              }"><td></td><td colspan="2" style="padding-left: 1rem;">Nodes above ${
-                serie.key
-              }</td></tr>
-              ${renderQuantileData(
-                isIdleQuantile90In,
-                isLoadingQuantile90In,
-                isSuccessQuantile90In,
-                quantile90InData,
-                nodeMapPerIp,
-                theme,
-                valueBase,
-                serie.unitLabel,
-              )}`
+            return renderTooltip(
+              serie,
+              isIdleQuantile90In,
+              isLoadingQuantile90In,
+              isSuccessQuantile90In,
+              quantile90InData,
+              'above',
             );
           }
-
           if (serie.key === `Q5-${metricPrefixAbove}`) {
-            return (
-              renderTooltipSerie(serie) +
-              `<tr style="color: ${theme.textSecondary}">
-                <td></td>
-                <td colspan="2" style="padding-left: 1rem;">Nodes below ${
-                  serie.key
-                }</td>
-              </tr>
-              ${renderQuantileData(
-                isIdleQuantile5,
-                isLoadingQuantile5,
-                isSuccessQuantile5,
-                quantile5Data,
-                nodeMapPerIp,
-                theme,
-                valueBase,
-                serie.unitLabel,
-              )} 
-              </table>
-              <hr style="border-color: ${theme.border};"/><table>`
+            return renderTooltip(
+              serie,
+              isIdleQuantile5,
+              isLoadingQuantile5,
+              isSuccessQuantile5,
+              quantile5Data,
+              'above',
             );
           }
-
           if (serie.key === `Q90-${metricPrefixBelow}`) {
-            return (
-              renderTooltipSerie(serie) +
-              `<tr style="color: ${
-                theme.textSecondary
-              }"><td></td><td colspan="2" style="padding-left: 1rem;">Nodes above ${
-                serie.key
-              }</td></tr>
-              ${renderQuantileData(
-                isIdleQuantile90Out,
-                isLoadingQuantile90Out,
-                isSuccessQuantile90Out,
-                quantile90OutData,
-                nodeMapPerIp,
-                theme,
-                valueBase,
-                serie.unitLabel,
-              )}`
+            return renderTooltip(
+              serie,
+              isIdleQuantile90Out,
+              isLoadingQuantile90Out,
+              isSuccessQuantile90Out,
+              quantile90OutData,
+              'below',
             );
           }
 
           if (serie.key === `Q5-${metricPrefixBelow}`) {
-            return (
-              renderTooltipSerie(serie) +
-              `<tr style="color: ${theme.textSecondary}">
-                <td></td>
-                <td colspan="2" style="padding-left: 1rem;">Nodes below ${
-                  serie.key
-                }</td>
-              </tr>
-              ${renderQuantileData(
-                isIdleQuantile5Out,
-                isLoadingQuantile5Out,
-                isSuccessQuantile5Out,
-                quantile5OutData,
-                nodeMapPerIp,
-                theme,
-                valueBase,
-                serie.unitLabel,
-              )}`
+            return renderTooltip(
+              serie,
+              isIdleQuantile5Out,
+              isLoadingQuantile5Out,
+              isSuccessQuantile5Out,
+              quantile5OutData,
+              'below',
             );
           }
           return renderTooltipSerie(serie);
