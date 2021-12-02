@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { padding, fontWeight } from '@scality/core-ui/dist/style/theme';
+import { padding, fontWeight, fontSize, spacing } from '@scality/core-ui/dist/style/theme';
 
 export const PageContainer = styled.div`
   display: flex;
@@ -77,7 +77,7 @@ export const NodeTab = styled.div`
 `;
 
 export const SortCaretWrapper = styled.span`
-  padding-left: 1px;
+  padding-left: ${spacing.sp4};
   position: absolute;
 `;
 
@@ -158,4 +158,51 @@ export const PageSubtitle = styled.h3`
   margin: ${padding.small} 0;
   display: flex;
   align-items: center;
+`;
+
+export const OverviewInformationLabel = styled.span`
+  display: inline-block;
+  min-width: 10.714rem;
+  font-weight: ${fontWeight.bold};
+  font-size: ${fontSize.base};
+  color: ${(props) => props.theme.textSecondary};
+`;
+
+export const OverviewInformationSpan = styled.div`
+  padding-bottom: ${padding.large};
+  padding-left: ${padding.large};
+  display: flex;
+`;
+
+export const OverviewInformationValue = styled.span`
+  color: ${(props) => props.theme.textPrimary};
+  font-size: ${fontSize.base};
+  word-wrap: break-word;
+  max-width: 20rem;
+`;
+
+export const OverviewClickableInformationValue = styled.span`
+  color: ${(props) => props.theme.selectedActive};
+  font-size: ${fontSize.base};
+  font-weight: ${fontWeight.semibold};
+  cursor: pointer;
+`;
+
+export const OverviewResourceName = styled.span`
+  font-size: ${fontSize.larger};
+  padding-left: ${padding.smaller};
+`;
+
+export const ActiveAlertTitle = styled.div`
+  color: ${(props) => props.theme.textPrimary};
+  font-size: ${fontSize.base};
+  font-weight: ${fontWeight.bold};
+  padding: 0 0 ${padding.base} 0;
+`;
+
+export const ActiveAlertWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 0 ${padding.base} 0 0;
+  width: 200px;
 `;

@@ -22,7 +22,16 @@ import {
 import { Modal, ProgressBar, Loader } from '@scality/core-ui';
 import { Button } from '@scality/core-ui/dist/next';
 import { useIntl } from 'react-intl';
-import { VolumeTab } from './style/CommonLayoutStyle';
+import {
+  VolumeTab,
+  OverviewInformationLabel,
+  OverviewInformationSpan,
+  OverviewInformationValue,
+  OverviewClickableInformationValue,
+  OverviewResourceName,
+  ActiveAlertTitle,
+  ActiveAlertWrapper,
+} from './style/CommonLayoutStyle';
 import { formatSizeForDisplay } from '../services/utils';
 
 const VolumeDetailCardContainer = styled.div`
@@ -36,37 +45,6 @@ const VolumeTitleSection = styled.div`
   padding: ${padding.large} ${padding.base} ${padding.larger} ${padding.large};
   display: flex;
   justify-content: space-between;
-`;
-
-const VolumeName = styled.span`
-  font-size: ${fontSize.larger};
-  padding-left: ${padding.smaller};
-`;
-
-const InformationSpan = styled.div`
-  padding-bottom: ${padding.large};
-  padding-left: ${padding.large};
-  display: flex;
-`;
-
-const InformationLabel = styled.span`
-  display: inline-block;
-  min-width: 150px;
-  font-weight: ${fontWeight.bold};
-  font-size: ${fontSize.base};
-  color: ${(props) => props.theme.textSecondary};
-`;
-
-const InformationValue = styled.span`
-  color: ${(props) => props.theme.textPrimary};
-  font-size: ${fontSize.base};
-`;
-
-const ClickableInformationValue = styled.span`
-  color: ${(props) => props.theme.selectedActive};
-  font-size: ${fontSize.base};
-  font-weight: ${fontWeight.semibold};
-  cursor: pointer;
 `;
 
 const VolumeGraph = styled.div`
@@ -117,12 +95,6 @@ const LabelName = styled.span`
 const LabelValue = styled.span`
   font-size: ${fontSize.small};
   color: ${(props) => props.theme.textPrimary};
-`;
-
-const AlertsCounterContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 200px;
 `;
 
 const VolumeDetailCard = (props) => {
@@ -211,7 +183,7 @@ const VolumeDetailCard = (props) => {
       <VolumeTitleSection data-cy="volume_detail_card_name">
         <div>
           <CircleStatus className="fas fa-circle" status={health} />
-          <VolumeName>{name}</VolumeName>
+          <OverviewResourceName>{name}</OverviewResourceName>
         </div>
         <Button
           variant="danger"
@@ -227,42 +199,42 @@ const VolumeDetailCard = (props) => {
       </VolumeTitleSection>
       <VolumeDetailCardContainer>
         <div>
-          <InformationSpan>
-            <InformationLabel>
+          <OverviewInformationSpan>
+            <OverviewInformationLabel>
               {intl.formatMessage({ id: 'node' })}
-            </InformationLabel>
-            <ClickableInformationValue onClick={onClickNodeName}>
+            </OverviewInformationLabel>
+            <OverviewClickableInformationValue onClick={onClickNodeName}>
               {nodeName}
-            </ClickableInformationValue>
-          </InformationSpan>
-          <InformationSpan>
-            <InformationLabel>
+            </OverviewClickableInformationValue>
+          </OverviewInformationSpan>
+          <OverviewInformationSpan>
+            <OverviewInformationLabel>
               {intl.formatMessage({ id: 'size' })}
-            </InformationLabel>
-            <InformationValue data-cy="volume_size_value">
+            </OverviewInformationLabel>
+            <OverviewInformationValue data-cy="volume_size_value">
               {storageCapacity || intl.formatMessage({id: 'unknown'})}
-            </InformationValue>
-          </InformationSpan>
-          <InformationSpan>
-            <InformationLabel>
+            </OverviewInformationValue>
+          </OverviewInformationSpan>
+          <OverviewInformationSpan>
+            <OverviewInformationLabel>
               {intl.formatMessage({ id: 'status' })}
-            </InformationLabel>
-            <InformationValue data-cy="volume_status_value">
+            </OverviewInformationLabel>
+            <OverviewInformationValue data-cy="volume_status_value">
               {status}
-            </InformationValue>
-          </InformationSpan>
-          <InformationSpan>
-            <InformationLabel>
+            </OverviewInformationValue>
+          </OverviewInformationSpan>
+          <OverviewInformationSpan>
+            <OverviewInformationLabel>
               {intl.formatMessage({ id: 'storageClass' })}
-            </InformationLabel>
-            <InformationValue>{storageClassName}</InformationValue>
-          </InformationSpan>
-          <InformationSpan>
-            <InformationLabel>
+            </OverviewInformationLabel>
+            <OverviewInformationValue>{storageClassName}</OverviewInformationValue>
+          </OverviewInformationSpan>
+          <OverviewInformationSpan>
+            <OverviewInformationLabel>
               {intl.formatMessage({ id: 'creationTime' })}
-            </InformationLabel>
+            </OverviewInformationLabel>
             {creationTimestamp ? (
-              <InformationValue>
+              <OverviewInformationValue>
                 <FormattedDate
                   value={creationTimestamp}
                   year="numeric"
@@ -275,49 +247,49 @@ const VolumeDetailCard = (props) => {
                   second="2-digit"
                   value={creationTimestamp}
                 />
-              </InformationValue>
+              </OverviewInformationValue>
             ) : (
               ''
             )}
-          </InformationSpan>
-          <InformationSpan>
-            <InformationLabel>
+          </OverviewInformationSpan>
+          <OverviewInformationSpan>
+            <OverviewInformationLabel>
               {intl.formatMessage({ id: 'volume_type' })}
-            </InformationLabel>
-            <InformationValue>{volumeType}</InformationValue>
-          </InformationSpan>
-          <InformationSpan>
-            <InformationLabel>
+            </OverviewInformationLabel>
+            <OverviewInformationValue>{volumeType}</OverviewInformationValue>
+          </OverviewInformationSpan>
+          <OverviewInformationSpan>
+            <OverviewInformationLabel>
               {intl.formatMessage({ id: 'used_by' })}
-            </InformationLabel>
-            <InformationValue>{usedPodName}</InformationValue>
-          </InformationSpan>
-          <InformationSpan>
+            </OverviewInformationLabel>
+            <OverviewInformationValue>{usedPodName}</OverviewInformationValue>
+          </OverviewInformationSpan>
+          <OverviewInformationSpan>
             {volumeType !== LVM_LOGICAL_VOLUME ? (
               <>
-                <InformationLabel data-cy="backend_disk_label">
+                <OverviewInformationLabel data-cy="backend_disk_label">
                   {intl.formatMessage({ id: 'backend_disk' })}
-                </InformationLabel>
-                <InformationValue data-cy="backend_disk_value">
+                </OverviewInformationLabel>
+                <OverviewInformationValue data-cy="backend_disk_value">
                   {devicePath}
-                </InformationValue>
+                </OverviewInformationValue>
               </>
             ) : (
               <>
-                <InformationLabel data-cy="vg_name_label">
+                <OverviewInformationLabel data-cy="vg_name_label">
                   VG Name
-                </InformationLabel>
-                <InformationValue data-cy="vg_name_value">
+                </OverviewInformationLabel>
+                <OverviewInformationValue data-cy="vg_name_value">
                   {vgName}
-                </InformationValue>
+                </OverviewInformationValue>
               </>
             )}
-          </InformationSpan>
-          <InformationSpan>
-            <InformationLabel>
+          </OverviewInformationSpan>
+          <OverviewInformationSpan>
+            <OverviewInformationLabel>
               {intl.formatMessage({ id: 'labels' })}
-            </InformationLabel>
-            <InformationValue>
+            </OverviewInformationLabel>
+            <OverviewInformationValue>
               {labels?.map((label) => {
                 return (
                   <div key={label.name}>
@@ -330,16 +302,16 @@ const VolumeDetailCard = (props) => {
                   </div>
                 );
               })}
-            </InformationValue>
-          </InformationSpan>
+            </OverviewInformationValue>
+          </OverviewInformationSpan>
         </div>
 
         <VolumeGraph>
           {alertlist && (
-            <AlertsCounterContainer>
-              <VolumeSectionTitle>
+            <ActiveAlertWrapper>
+              <ActiveAlertTitle>
                 {intl.formatMessage({ id: 'active_alerts' })}
-              </VolumeSectionTitle>
+              </ActiveAlertTitle>
               <ActiveAlertsCounter
                 criticalCounter={
                   alertlist?.filter(
@@ -352,7 +324,7 @@ const VolumeDetailCard = (props) => {
                   ).length
                 }
               />
-            </AlertsCounterContainer>
+            </ActiveAlertWrapper>
           )}
           {condition === VOLUME_CONDITION_LINK && (
             <VolumeUsage>

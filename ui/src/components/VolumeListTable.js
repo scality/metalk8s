@@ -369,7 +369,8 @@ const VolumeListTable = (props) => {
         accessor: 'health',
         cellStyle: {
           textAlign: 'center',
-          width: '75px',
+          width: '4.286rem',
+          paddingRight: '1rem',
         },
         Cell: (cellProps) => {
           return (
@@ -384,7 +385,7 @@ const VolumeListTable = (props) => {
         cellStyle: {
           textAlign: 'left',
           flex: 1,
-          minWidth: '95px',
+          minWidth: '4rem',
         },
       },
       {
@@ -392,7 +393,8 @@ const VolumeListTable = (props) => {
         accessor: 'usage',
         cellStyle: {
           textAlign: 'center',
-          width: isNodeColumn ? '70px' : '150px',
+          width: isNodeColumn ? '5rem' : '10.714rem',
+          paddingRight: '0.714rem',
         },
         Cell: ({ value }) => {
           return (
@@ -411,8 +413,8 @@ const VolumeListTable = (props) => {
         accessor: 'storageCapacity',
         cellStyle: {
           textAlign: 'right',
-          width: isNodeColumn ? '70px' : '110px',
-          paddingRight: '5px',
+          width: isNodeColumn ? '5.714rem' : '7.857rem',
+          paddingRight: '1rem',
         },
         sortType: 'size',
         Cell: ({ value }) => formatSizeForDisplay(value),
@@ -422,7 +424,8 @@ const VolumeListTable = (props) => {
         accessor: 'status',
         cellStyle: {
           textAlign: 'center',
-          width: isNodeColumn ? '60px' : '120px',
+          width: isNodeColumn ? '3.929rem' : '7.857rem',
+          paddingRight: '0.714rem',
         },
         Cell: (cellProps) => {
           const volume = volumeListData?.find(
@@ -483,8 +486,8 @@ const VolumeListTable = (props) => {
         accessor: 'latency',
         cellStyle: {
           textAlign: 'right',
-          width: isNodeColumn ? '70px' : '110px',
-          paddingRight: '6px',
+          width: isNodeColumn ? '4.643rem' : '7.857rem',
+          paddingRight: '1rem',
         },
         Cell: (cellProps) => {
           return cellProps.value !== undefined ? cellProps.value + ' µs' : null;
@@ -499,8 +502,8 @@ const VolumeListTable = (props) => {
     cellStyle: {
       textAlign: 'left',
       flex: 1,
-      paddingLeft: '12px',
-      minWidth: '50px',
+      paddingLeft: '0.857rem',
+      minWidth: '3.214rem',
     },
   };
   if (isNodeColumn) {

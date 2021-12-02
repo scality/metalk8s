@@ -17,6 +17,7 @@ import { EmptyTable } from '@scality/core-ui';
 import { Button } from '@scality/core-ui/dist/next';
 import { useIntl } from 'react-intl';
 import { compareHealth, useTableSortURLSync } from '../services/utils';
+import { SortCaretWrapper } from './style/CommonLayoutStyle';
 import {
   API_STATUS_READY,
   API_STATUS_NOT_READY,
@@ -148,11 +149,6 @@ const StatusText = styled.div`
   color: ${(props) => {
     return props.textColor;
   }};
-`;
-
-export const SortCaretWrapper = styled.span`
-  padding-left: ${padding.smaller};
-  position: absolute;
 `;
 
 export const SortIncentive = styled.span`
@@ -421,7 +417,7 @@ const NodeListTable = (props) => {
       {
         Header: 'Health',
         accessor: 'health',
-        cellStyle: { textAlign: 'center', width: '70px' },
+        cellStyle: { textAlign: 'center', width: '5rem' },
         Cell: (cellProps) => {
           const { health } = cellProps.value;
           return <CircleStatus status={health} />;
