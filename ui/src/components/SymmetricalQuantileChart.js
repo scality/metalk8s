@@ -15,6 +15,7 @@ import {
   getQuantileSymmetricalSeries,
   renderQuantileData,
   renderTooltipSerie,
+  renderOutpassingThresholdTitle,
 } from '../services/graphUtils';
 
 const SymmetricalQuantileChart = ({
@@ -90,15 +91,18 @@ const SymmetricalQuantileChart = ({
       isIdle: isIdleQuantile5,
       isLoading: isLoadingQuantile5,
       isSuccess: isSuccessQuantile5,
+      isError: isErrorQuantile5,
       data: quantile5Data,
     },
     quantile90Result: {
       isIdle: isIdleQuantile90In,
       isLoading: isLoadingQuantile90In,
       isSuccess: isSuccessQuantile90In,
+      isError: isErrorQuantile90In,
       data: quantile90InData,
     },
     valueBase,
+    isOnHoverFetchingNeeded,
     onHover: onHoverIn,
   } = useQuantileOnHover({
     getQuantileHoverQuery: getAboveQuantileHoverQuery,
@@ -109,42 +113,67 @@ const SymmetricalQuantileChart = ({
       isIdle: isIdleQuantile5Out,
       isLoading: isLoadingQuantile5Out,
       isSuccess: isSuccessQuantile5Out,
+      isError: isErrorQuantile5Out,
       data: quantile5OutData,
     },
     quantile90Result: {
       isIdle: isIdleQuantile90Out,
       isLoading: isLoadingQuantile90Out,
       isSuccess: isSuccessQuantile90Out,
+      isError: isErrorQuantile90Out,
       data: quantile90OutData,
     },
     onHover: onHoverOut,
+    isOnHoverFetchingNeeded: isOnHoverFetchingNeededOut,
   } = useQuantileOnHover({
     getQuantileHoverQuery: getBelowQuantileHoverQuery,
     metricPrefix: metricPrefixBelow,
   });
 
   const renderTooltip = useCallback(
-    (serie, isIdle, isLoading, isSuccess, data, aboveOrBelow) => {
+    (
+      serie,
+      isIdle,
+      isLoading,
+      isSuccess,
+      isError,
+      data,
+      aboveOrBelow,
+      isBelow,
+    ) => {
+      const isOutpassingDataDisplayed =
+        (!isBelow && isOnHoverFetchingNeeded) ||
+        (isBelow && isOnHoverFetchingNeededOut);
+
       return (
         renderTooltipSerie(serie) +
-        `<tr style="color: ${
-          theme.textSecondary
-        }"><td></td><td colspan="2" style="padding-left: 1rem;">Nodes ${aboveOrBelow} ${
-          serie.key
-        }</td></tr>
-  ${renderQuantileData(
-    isIdle,
-    isLoading,
-    isSuccess,
-    data,
-    nodeMapPerIp,
-    theme,
-    valueBase,
-    serie.unitLabel,
-  )}`
+        renderOutpassingThresholdTitle(
+          `Nodes ${aboveOrBelow} ${serie.key}`,
+          isOutpassingDataDisplayed,
+          theme,
+        ) +
+        (isOutpassingDataDisplayed
+          ? `${renderQuantileData(
+              isIdle,
+              isLoading,
+              isSuccess,
+              isError,
+              data,
+              nodeMapPerIp,
+              theme,
+              valueBase,
+              serie.unitLabel,
+            )}`
+          : ``)
       );
     },
-    [nodeMapPerIp, theme, valueBase],
+    [
+      nodeMapPerIp,
+      theme,
+      valueBase,
+      isOnHoverFetchingNeeded,
+      isOnHoverFetchingNeededOut,
+    ],
   );
 
   return (
@@ -173,8 +202,10 @@ const SymmetricalQuantileChart = ({
               isIdleQuantile90In,
               isLoadingQuantile90In,
               isSuccessQuantile90In,
+              isErrorQuantile90In,
               quantile90InData,
               'above',
+              false,
             );
           }
           if (serie.key === `Q5-${metricPrefixAbove}`) {
@@ -184,8 +215,10 @@ const SymmetricalQuantileChart = ({
               isIdleQuantile5,
               isLoadingQuantile5,
               isSuccessQuantile5,
+              isErrorQuantile5,
               quantile5Data,
-              'above',
+              'below',
+              false,
             )}</table>
             <hr style="border-color: ${theme.border};"/><table>
             `;
@@ -196,8 +229,10 @@ const SymmetricalQuantileChart = ({
               isIdleQuantile90Out,
               isLoadingQuantile90Out,
               isSuccessQuantile90Out,
+              isErrorQuantile90Out,
               quantile90OutData,
-              'below',
+              'above',
+              true,
             );
           }
 
@@ -207,8 +242,10 @@ const SymmetricalQuantileChart = ({
               isIdleQuantile5Out,
               isLoadingQuantile5Out,
               isSuccessQuantile5Out,
+              isErrorQuantile5Out,
               quantile5OutData,
               'below',
+              true,
             );
           }
           return renderTooltipSerie(serie);

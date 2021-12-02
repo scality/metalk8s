@@ -359,6 +359,7 @@ export const renderQuantileData = (
   isIdle,
   isLoading,
   isSuccess,
+  isError,
   data,
   nodeMapPerIp,
   theme,
@@ -392,6 +393,19 @@ export const renderQuantileData = (
               )}</td></tr>`,
           )
           .join('')
-      : 'Sorry, failed to load data due to error occurs.'
-  }`;
+      : ''
+  }
+  ${isError ? 'Sorry, failed to load data due to an error occured' : ''}
+  `;
+};
+
+export const renderOutpassingThresholdTitle = (
+  title,
+  isOutpassingDataDisplayed,
+  theme,
+) => {
+  // Hide the Outpassing threshold node list when isOnHoverFetchingNeeded is false
+  return isOutpassingDataDisplayed
+    ? `<tr style="color: ${theme.textSecondary}"><td></td><td colspan="2" style="padding-left: 1rem;">${title}</td></tr>`
+    : ``;
 };

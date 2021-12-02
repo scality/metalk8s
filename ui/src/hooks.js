@@ -344,6 +344,7 @@ export const useQuantileOnHover = ({
     quantile90Result,
     quantile5Result,
     valueBase,
+    isOnHoverFetchingNeeded,
     onHover,
   };
 };

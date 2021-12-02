@@ -10,6 +10,7 @@ import {
 } from '../hooks';
 import {
   convertPrometheusResultToSerie,
+  renderOutpassingThresholdTitle,
   renderQuantileData,
   renderTooltipSerie,
 } from '../services/graphUtils';
@@ -70,14 +71,17 @@ const NonSymmetricalQuantileChart = ({
       isIdle: isIdleQuantile5,
       isLoading: isLoadingQuantile5,
       isSuccess: isSuccessQuantile5,
+      isError: isErrorQuanile5,
       data: quantile5Data,
     },
     quantile90Result: {
       isIdle: isIdleQuantile90,
       isLoading: isLoadingQuantile90,
       isSuccess: isSuccessQuantile90,
+      isError: isErrorQuanile90,
       data: quantile90Data,
     },
+    isOnHoverFetchingNeeded,
   } = useQuantileOnHover({
     getQuantileHoverQuery,
   });
@@ -97,44 +101,50 @@ const NonSymmetricalQuantileChart = ({
           if (serie.key === 'Q90') {
             return (
               renderTooltipSerie(serie) +
-              `<tr style="color: ${
-                theme.textSecondary
-              }"><td></td><td colspan="2" style="padding-left: 1rem;">Nodes above ${
-                serie.key
-              }</td></tr>
-                ${renderQuantileData(
-                  isIdleQuantile90,
-                  isLoadingQuantile90,
-                  isSuccessQuantile90,
-                  quantile90Data,
-                  nodeMapPerIp,
-                  theme,
-                  1,
-                  serie.unitLabel,
-                )}
-                `
+              renderOutpassingThresholdTitle(
+                `Nodes above ${serie.key}`,
+                isOnHoverFetchingNeeded,
+                theme,
+              ) +
+              (isOnHoverFetchingNeeded
+                ? `${renderQuantileData(
+                    isIdleQuantile90,
+                    isLoadingQuantile90,
+                    isSuccessQuantile90,
+                    isErrorQuanile90,
+                    quantile90Data,
+                    nodeMapPerIp,
+                    theme,
+                    1,
+                    serie.unitLabel,
+                  )}
+              `
+                : '')
             );
           }
 
           if (serie.key === 'Q5') {
             return (
               renderTooltipSerie(serie) +
-              `<tr style="color: ${
-                theme.textSecondary
-              }"><td></td><td colspan="2" style="padding-left: 1rem;">Nodes below ${
-                serie.key
-              }</td></tr>
-                ${renderQuantileData(
-                  isIdleQuantile5,
-                  isLoadingQuantile5,
-                  isSuccessQuantile5,
-                  quantile5Data,
-                  nodeMapPerIp,
-                  theme,
-                  1,
-                  serie.unitLabel,
-                )}
+              renderOutpassingThresholdTitle(
+                `Nodes below ${serie.key}`,
+                isOnHoverFetchingNeeded,
+                theme,
+              ) +
+              (isOnHoverFetchingNeeded
+                ? `${renderQuantileData(
+                    isIdleQuantile5,
+                    isLoadingQuantile5,
+                    isSuccessQuantile5,
+                    isErrorQuanile5,
+                    quantile5Data,
+                    nodeMapPerIp,
+                    theme,
+                    1,
+                    serie.unitLabel,
+                  )}
                 `
+                : '')
             );
           }
           return renderTooltipSerie(serie);
@@ -143,12 +153,15 @@ const NonSymmetricalQuantileChart = ({
           isIdleQuantile90,
           isLoadingQuantile90,
           isSuccessQuantile90,
+          isErrorQuanile90,
           isIdleQuantile5,
           isLoadingQuantile5,
           isSuccessQuantile5,
+          isErrorQuanile5,
           JSON.stringify(quantile5Data?.data),
           JSON.stringify(quantile90Data?.data),
           JSON.stringify(nodeMapPerIp),
+          isOnHoverFetchingNeeded,
         ],
       )}
     />
