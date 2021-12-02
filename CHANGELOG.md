@@ -71,6 +71,13 @@
   highly-available when we have multiple Prometheus instances
   (PR[#3573](https://github.com/scality/metalk8s/pull/3573))
 
+## Bug fixes
+
+- [#3601](https://github.com/scality/metalk8s/issues/3601) - Marks
+  the `pause` image used by `containerd` as `pod infra container image`
+  so that kubelet does not remove it
+  (PR[#3624](https://github.com/scality/metalk8s/pull/3624))
+
 ## Release 2.10.6 (in development)
 ## Enhancements
 

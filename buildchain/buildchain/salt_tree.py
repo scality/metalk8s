@@ -16,15 +16,13 @@ Overview:
 └──────────┘ ╲───>│  copy files     │
                   └─────────────────┘
 
-                   ┌─────────────────┐
-              ╱───>│render templates │
-             ╱     └─────────────────┘
-┌──────────┐╱      ┌─────────────────┐
-│  deploy  │──────>│  copy files     │
-│  salt/*  │╲      └─────────────────┘
-└──────────┘ ╲     ┌─────────────────┐
-              ╲───>│pull pause.tar   │
-                   └─────────────────┘
+                  ┌─────────────────┐
+             ╱───>│render templates │
+┌──────────┐╱     └─────────────────┘
+│  deploy  │
+│  salt/*  │╲     ┌─────────────────┐
+└──────────┘ ╲───>│  copy files     │
+                  └─────────────────┘
 """
 
 
@@ -467,7 +465,6 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/backup/deployed/secret-tls.sls"),
     Path("salt/metalk8s/backup/deployed/service.sls"),
     Path("salt/metalk8s/beacon/certificates.sls"),
-    Path("salt/metalk8s/container-engine/containerd/configured.sls"),
     Path("salt/metalk8s/container-engine/containerd/files/50-metalk8s.conf.j2"),
     Path("salt/metalk8s/container-engine/containerd/init.sls"),
     Path("salt/metalk8s/container-engine/containerd/installed.sls"),
@@ -709,17 +706,6 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/_utils/metalk8s_utils.py"),
     Path("salt/_utils/pillar_utils.py"),
     Path("salt/_utils/volume_utils.py"),
-    # This image is defined here and not in the `image` module since it is
-    # saved into the `salt/` tree.
-    targets.RemoteImage(
-        name="pause",
-        version=versions.CONTAINER_IMAGES_MAP["pause"].version,
-        digest=versions.CONTAINER_IMAGES_MAP["pause"].digest,
-        repository=constants.GOOGLE_REPOSITORY,
-        save_as=[targets.SaveAsTar()],
-        destination=constants.ISO_ROOT
-        / "salt/metalk8s/container-engine/containerd/files",
-    ),
     CommonStaticContainerRegistry(
         destination=Path(
             constants.ISO_ROOT,

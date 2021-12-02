@@ -1,5 +1,6 @@
 {%- from "metalk8s/map.jinja" import kubelet with context %}
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
+{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 
 {%- set cluster_dns_ip = salt.metalk8s_network.get_cluster_dns_ip() %}
 
@@ -25,6 +26,7 @@ Create kubelet service environment file:
           node-ip: {{ grains['metalk8s']['control_plane_ip'] }}
           hostname-override: {{ grains['id'] }}
           cgroup-driver: systemd
+          pod-infra-container-image: {{ build_image_name("pause") }}
           v: {{ 2 if metalk8s.debug else 0 }}
     - require:
       - metalk8s_package_manager: Install kubelet
