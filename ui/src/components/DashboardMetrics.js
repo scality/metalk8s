@@ -4,13 +4,11 @@ import styled from 'styled-components';
 import { Button } from '@scality/core-ui/dist/next';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { useIntl } from 'react-intl';
-
 import { GRAFANA_DASHBOARDS } from '../constants';
 import {
-  GraphWrapper as GraphWrapperCommon,
   PageSubtitle,
+  GraphsWrapper,
 } from '../components/style/CommonLayoutStyle';
-
 import DashboardChartCpuUsage from './DashboardChartCpuUsage';
 import DashboardChartThroughput from './DashboardChartThroughput';
 import DashboardChartSystemLoad from './DashboardChartSystemLoad';
@@ -24,22 +22,6 @@ const MetricsContainer = styled.div`
   flex-direction: column;
   flex-grow: 1;
   max-height: 100%;
-`;
-
-export const GraphWrapper = styled(GraphWrapperCommon)`
-  position: relative;
-  padding: 2px 0px;
-
-  .sc-loader {
-    background: none;
-  }
-`;
-
-const GraphsWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  flex-grow: 1;
 `;
 
 const PanelActions = styled.div`

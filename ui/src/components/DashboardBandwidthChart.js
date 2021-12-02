@@ -3,7 +3,6 @@ import React, { useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { LineTemporalChart } from '@scality/core-ui/dist/next';
 import { UNIT_RANGE_BS } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
-import { GraphWrapper } from './DashboardMetrics';
 import {
   getMultipleSymmetricalSeries,
   getNodesInterfacesString,
@@ -110,7 +109,7 @@ const DashboardBandwidthChart = ({
   }, [dispatch]);
   const { isShowQuantileChart } = useShowQuantileChart();
   return (
-    <GraphWrapper>
+    <>
       {isShowQuantileChart ? (
         <SymmetricalQuantileChart
           getAboveQuantileQuery={getNodesPlanesBandwidthInQuantileQuery}
@@ -129,7 +128,7 @@ const DashboardBandwidthChart = ({
       ) : (
         <DashboardBandwidthChartWithoutQuantile title={title} plane={plane} />
       )}
-    </GraphWrapper>
+    </>
   );
 };
 

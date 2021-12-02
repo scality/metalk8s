@@ -116,16 +116,6 @@ export const MetricsActionContainer = styled.div`
   }
 `;
 
-export const GraphsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: ${padding.small};
-  overflow: auto;
-  .sc-vegachart svg {
-    background-color: inherit !important;
-  }
-`;
-
 export const RowGraphContainer = styled.div`
   display: flex;
   flex-direction: row;
@@ -145,6 +135,13 @@ export const GraphTitle = styled.div`
 
 export const GraphWrapper = styled.div`
   max-width: 94%;
+`;
+
+export const GraphsWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  flex-grow: 1;
 `;
 
 export const TitlePage = styled.div`

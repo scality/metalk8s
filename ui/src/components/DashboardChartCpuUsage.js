@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react';
 import { useIntl } from 'react-intl';
 import { LineTemporalChart } from '@scality/core-ui/dist/next';
-import { GraphWrapper } from './DashboardMetrics';
 import { getMultiResourceSeriesForChart } from '../services/graphUtils';
 import {
   useNodeAddressesSelector,
@@ -21,7 +20,7 @@ const DashboardChartCpuUsage = () => {
   const { isShowQuantileChart } = useShowQuantileChart();
 
   return (
-    <GraphWrapper>
+    <>
       {isShowQuantileChart ? (
         <NonSymmetricalQuantileChart
           getQuantileQuery={getNodesCPUUsageQuantileQuery}
@@ -60,7 +59,7 @@ const DashboardChartCpuUsage = () => {
       ) : (
         <DashboardChartCpuUsageWithoutQuantils />
       )}
-    </GraphWrapper>
+    </>
   );
 };
 

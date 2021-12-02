@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react';
 import { LineTemporalChart } from '@scality/core-ui/dist/next';
-import { GraphWrapper } from './DashboardMetrics';
 import {
   useNodes,
   useNodeAddressesSelector,
@@ -18,7 +17,7 @@ import NonSymmetricalQuantileChart from './NonSymmetricalQuantileChart';
 const DashboardChartMemory = () => {
   const { isShowQuantileChart } = useShowQuantileChart();
   return (
-    <GraphWrapper>
+    <>
       {isShowQuantileChart ? (
         <NonSymmetricalQuantileChart
           getQuantileQuery={getNodesMemoryQuantileQuery}
@@ -30,7 +29,7 @@ const DashboardChartMemory = () => {
       ) : (
         <DashboardChartMemoryWithoutQuantiles />
       )}
-    </GraphWrapper>
+    </>
   );
 };
 

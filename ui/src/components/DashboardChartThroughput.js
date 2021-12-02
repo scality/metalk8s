@@ -6,7 +6,6 @@ import {
   UNIT_RANGE_BS,
   YAXIS_TITLE_READ_WRITE,
 } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
-import { GraphWrapper } from './DashboardMetrics';
 import {
   useNodeAddressesSelector,
   useNodes,
@@ -27,7 +26,7 @@ import SymmetricalQuantileChart from './SymmetricalQuantileChart';
 const DashboardChartThroughput = () => {
   const { isShowQuantileChart } = useShowQuantileChart();
   return (
-    <GraphWrapper>
+    <>
       {isShowQuantileChart ? (
         <SymmetricalQuantileChart
           getAboveQuantileQuery={getNodesThroughputWriteQuantileQuery}
@@ -46,7 +45,7 @@ const DashboardChartThroughput = () => {
       ) : (
         <DashboardChartThroughputWithoutQuantile />
       )}
-    </GraphWrapper>
+    </>
   );
 };
 
