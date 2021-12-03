@@ -10,9 +10,9 @@ import {
   setCurrentVolumeObjectAction,
   setPersistentVolumesAction,
 } from './volumes';
+import { REFRESH_TIMEOUT } from '../../constants';
 
-const TenSecondsInMs = 10000;
-const fiveSecondsInMs = 5000;
+const FIVE_SECOND_IN_MS = 5000;
 
 export function useRefreshVolume() {
   const dispatch = useDispatch();
@@ -21,8 +21,8 @@ export function useRefreshVolume() {
     Metalk8sVolumesApi.getMetalk8sV1alpha1VolumeList,
     {
       select: (data) => data.body?.items,
-      staleTime: fiveSecondsInMs,
-      refetchInterval: TenSecondsInMs,
+      staleTime: FIVE_SECOND_IN_MS,
+      refetchInterval: REFRESH_TIMEOUT,
     },
   );
 
@@ -79,8 +79,8 @@ export function useGetPersistentVolumes() {
           };
         });
       },
-      staleTime: fiveSecondsInMs,
-      refetchInterval: TenSecondsInMs,
+      staleTime: FIVE_SECOND_IN_MS,
+      refetchInterval: REFRESH_TIMEOUT,
     },
   );
 
