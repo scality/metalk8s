@@ -14,10 +14,7 @@ import {
 } from '../ducks/app/volumes.hooks';
 import { useFetchCurrentVolumeStats } from '../ducks/app/monitoring.hooks';
 import { fetchPersistentVolumeClaimAction } from '../ducks/app/volumes';
-import {
-  fetchVolumeStatsAction,
-  fetchCurrentVolumeStatsAction,
-} from '../ducks/app/monitoring';
+import { fetchVolumeStatsAction } from '../ducks/app/monitoring';
 import { PageContainer } from '../components/style/CommonLayoutStyle';
 import { useTypedSelector, useVolumesWithAlerts } from '../hooks';
 
@@ -41,7 +38,6 @@ const VolumePage = (props) => {
     dispatch(fetchPodsAction());
     dispatch(fetchNodesAction());
     dispatch(fetchVolumeStatsAction());
-    dispatch(fetchCurrentVolumeStatsAction());
     dispatch(fetchPersistentVolumeClaimAction());
   }, [dispatch]);
 
