@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 import { useRouteMatch } from 'react-router';
 import { useDispatch } from 'react-redux';
+
 import VolumeContent from './VolumePageContent';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
 import { makeGetNodeFromUrl, useRefreshEffect } from '../services/utils';
 import { fetchNodesAction } from '../ducks/app/nodes';
+import { useRefreshVolume } from '../ducks/app/volumes.hooks';
 import {
-  refreshVolumesAction,
-  stopRefreshVolumesAction,
   refreshPersistentVolumesAction,
   stopRefreshPersistentVolumesAction,
   fetchPersistentVolumeClaimAction,
@@ -37,7 +37,7 @@ const VolumePage = (props) => {
   }, [dispatch, currentVolumeName]);
 
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
-  useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
+
   useRefreshEffect(
     refreshPersistentVolumesAction,
     stopRefreshPersistentVolumesAction,
@@ -46,6 +46,8 @@ const VolumePage = (props) => {
     refreshCurrentVolumeStatsAction,
     stopRefreshCurrentVolumeStatsAction,
   );
+
+  useRefreshVolume();
 
   useEffect(() => {
     dispatch(fetchPodsAction());
@@ -61,10 +63,10 @@ const VolumePage = (props) => {
   const nodes = useTypedSelector((state) => state.app.nodes.list);
   const volumes = useTypedSelector((state) => state.app.volumes.list);
   const volumesLoading = useTypedSelector(
-    (state) => state.app.volumes.isLoading
+    (state) => state.app.volumes.isLoading,
   );
   const currentVolumeObject = useTypedSelector(
-    (state) => state.app.volumes.currentVolumeObject
+    (state) => state.app.volumes.currentVolumeObject,
   );
 
   const pVList = useTypedSelector((state) => state.app.volumes.pVList);
@@ -76,7 +78,7 @@ const VolumePage = (props) => {
   const pVCList = useTypedSelector((state) => state?.app?.volumes?.pVCList);
 
   const volumeStats = useTypedSelector(
-    (state) => state.app.monitoring.volumeStats.metrics
+    (state) => state.app.monitoring.volumeStats.metrics,
   );
   // get all the volumes maybe filter by node
   const volumeListData = useVolumesWithAlerts();
