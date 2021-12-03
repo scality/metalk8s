@@ -12,12 +12,11 @@ import {
   useFetchCurrentVolumeObject,
   useGetPersistentVolumes,
 } from '../ducks/app/volumes.hooks';
+import { useFetchCurrentVolumeStats } from '../ducks/app/monitoring.hooks';
 import { fetchPersistentVolumeClaimAction } from '../ducks/app/volumes';
 import {
   fetchVolumeStatsAction,
   fetchCurrentVolumeStatsAction,
-  refreshCurrentVolumeStatsAction,
-  stopRefreshCurrentVolumeStatsAction,
 } from '../ducks/app/monitoring';
 import { PageContainer } from '../components/style/CommonLayoutStyle';
 import { useTypedSelector, useVolumesWithAlerts } from '../hooks';
@@ -35,11 +34,7 @@ const VolumePage = (props) => {
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
   useGetPersistentVolumes();
-  useRefreshEffect(
-    refreshCurrentVolumeStatsAction,
-    stopRefreshCurrentVolumeStatsAction,
-  );
-
+  useFetchCurrentVolumeStats();
   useRefreshVolume();
 
   useEffect(() => {
