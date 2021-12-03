@@ -10,12 +10,9 @@ import { fetchNodesAction } from '../ducks/app/nodes';
 import {
   useRefreshVolume,
   useFetchCurrentVolumeObject,
+  useGetPersistentVolumes,
 } from '../ducks/app/volumes.hooks';
-import {
-  refreshPersistentVolumesAction,
-  stopRefreshPersistentVolumesAction,
-  fetchPersistentVolumeClaimAction,
-} from '../ducks/app/volumes';
+import { fetchPersistentVolumeClaimAction } from '../ducks/app/volumes';
 import {
   fetchVolumeStatsAction,
   fetchCurrentVolumeStatsAction,
@@ -37,10 +34,7 @@ const VolumePage = (props) => {
 
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
-  useRefreshEffect(
-    refreshPersistentVolumesAction,
-    stopRefreshPersistentVolumesAction,
-  );
+  useGetPersistentVolumes();
   useRefreshEffect(
     refreshCurrentVolumeStatsAction,
     stopRefreshCurrentVolumeStatsAction,

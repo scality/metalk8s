@@ -3,7 +3,13 @@ import { useQuery } from 'react-query';
 import { useDispatch } from 'react-redux';
 
 import * as Metalk8sVolumesApi from '../../services/k8s/Metalk8sVolumeClient.generated';
-import { setVolumesAction, setCurrentVolumeObjectAction } from './volumes';
+import * as VolumesApi from '../../services/k8s/volumes';
+import { allSizeUnitsToBytes, bytesToSize } from '../../services/utils';
+import {
+  setVolumesAction,
+  setCurrentVolumeObjectAction,
+  setPersistentVolumesAction,
+} from './volumes';
 
 const TenSecondsInMs = 10000;
 const fiveSecondsInMs = 5000;
@@ -46,6 +52,43 @@ export function useFetchCurrentVolumeObject(volumeName: string) {
   useEffect(() => {
     if (data) {
       dispatch(setCurrentVolumeObjectAction(data ? { data } : null));
+    }
+  }, [data, dispatch]);
+
+  return result;
+}
+
+export function useGetPersistentVolumes() {
+  const dispatch = useDispatch();
+
+  const result = useQuery(
+    ['persistentVolumes'],
+    VolumesApi.getPersistentVolumes,
+    {
+      select: (data) => {
+        return data.body?.items?.map((item) => {
+          return {
+            ...item,
+            spec: {
+              capacity: {
+                storage: bytesToSize(
+                  allSizeUnitsToBytes(item.spec.capacity.storage),
+                ),
+              },
+            },
+          };
+        });
+      },
+      staleTime: fiveSecondsInMs,
+      refetchInterval: TenSecondsInMs,
+    },
+  );
+
+  const { data } = result;
+
+  useEffect(() => {
+    if (data) {
+      dispatch(setPersistentVolumesAction(data ?? []));
     }
   }, [data, dispatch]);
 
