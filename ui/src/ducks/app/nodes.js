@@ -46,7 +46,7 @@ const READ_NODE = 'READ_NODE';
 const UPDATE_NODE_OBJECT = 'UPDATE_NODE_OBJECT';
 
 // Todo: We need to handle the refresh
-const FETCH_NODES_IPS_INTERFACES = 'FETCH_NODES_IPS_INTERFACES';
+export const FETCH_NODES_IPS_INTERFACES = 'FETCH_NODES_IPS_INTERFACES';
 const UPDATE_NODES_IPS_INTERFACES = 'UPDATE_NODES_IPS_INTERFACES';
 
 export const ROLE_MASTER = 'node-role.kubernetes.io/master';
@@ -318,9 +318,9 @@ export function* fetchNodes() {
           }
 
           // the Roles of the Node should be the ones that are stored in the labels `node-role.kubernetes.io/<role-name>`
-          const nodeRolesLabels = Object.keys(
-            node.metadata.labels,
-          ).filter((label) => label.startsWith(ROLE_PREFIX));
+          const nodeRolesLabels = Object.keys(node.metadata.labels).filter(
+            (label) => label.startsWith(ROLE_PREFIX),
+          );
 
           const nodeRoles = nodeRolesLabels?.map((nRL) => nRL.split('/')[1]);
 
@@ -487,6 +487,7 @@ export function* refreshNodes() {
   );
 
   const result = yield call(fetchNodes);
+
   if (!result.error) {
     yield delay(REFRESH_TIMEOUT);
     const isRefreshing = yield select(nodesRefreshingSelector);

@@ -4,8 +4,7 @@ import { useDispatch } from 'react-redux';
 
 import VolumeContent from './VolumePageContent';
 import { fetchPodsAction } from '../ducks/app/pods';
-import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
-import { makeGetNodeFromUrl, useRefreshEffect } from '../services/utils';
+import { makeGetNodeFromUrl } from '../services/utils';
 import { fetchNodesAction } from '../ducks/app/nodes';
 import {
   useRefreshVolume,
@@ -16,6 +15,7 @@ import { useFetchCurrentVolumeStats } from '../ducks/app/monitoring.hooks';
 import { fetchPersistentVolumeClaimAction } from '../ducks/app/volumes';
 import { fetchVolumeStatsAction } from '../ducks/app/monitoring';
 import { PageContainer } from '../components/style/CommonLayoutStyle';
+import { useRefreshNodes } from '../ducks/app/nodes.hook';
 import { useTypedSelector, useVolumesWithAlerts } from '../hooks';
 
 // <VolumePage> component fetchs all the data used by volume page from redux store.
@@ -28,7 +28,7 @@ const VolumePage = (props) => {
 
   useFetchCurrentVolumeObject(currentVolumeName);
 
-  useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
+  useRefreshNodes();
 
   useGetPersistentVolumes();
   useFetchCurrentVolumeStats();
