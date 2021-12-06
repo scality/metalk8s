@@ -27,9 +27,7 @@ const VolumePage = (props) => {
   const currentVolumeName = match.params.name;
 
   useFetchCurrentVolumeObject(currentVolumeName);
-
   useRefreshNodes();
-
   useGetPersistentVolumes();
   useFetchCurrentVolumeStats();
   useRefreshVolume();
