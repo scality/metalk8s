@@ -1,5 +1,10 @@
 import styled from 'styled-components';
-import { padding, fontWeight, fontSize, spacing } from '@scality/core-ui/dist/style/theme';
+import {
+  padding,
+  fontWeight,
+  fontSize,
+  spacing,
+} from '@scality/core-ui/dist/style/theme';
 
 export const PageContainer = styled.div`
   display: flex;
@@ -142,6 +147,10 @@ export const GraphsWrapper = styled.div`
   flex-direction: column;
   justify-content: space-around;
   flex-grow: 1;
+  // make sure the charts resize when the width of parent has changed.
+  .vega-embed > svg {
+    width: 100%;
+  }
 `;
 
 export const TitlePage = styled.div`

@@ -45,9 +45,9 @@ const NonSymmetricalQuantileChart = ({
     startingTimeStamp: startingTimeStampQuantile,
   } = useChartSeries({
     getQueries: (timeSpanProps) => [
-      getQuantileQuery(timeSpanProps, 0.05),
-      getQuantileQuery(timeSpanProps, 0.5),
       getQuantileQuery(timeSpanProps, 0.9),
+      getQuantileQuery(timeSpanProps, 0.5),
+      getQuantileQuery(timeSpanProps, 0.05),
     ],
     transformPrometheusDataToSeries: useCallback(
       ([
