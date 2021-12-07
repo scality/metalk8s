@@ -41,6 +41,7 @@ export function getPersistentVolumeQueryOption() {
         return {
           ...item,
           spec: {
+            ...item.spec,
             capacity: {
               storage: bytesToSize(
                 allSizeUnitsToBytes(item.spec.capacity.storage),
