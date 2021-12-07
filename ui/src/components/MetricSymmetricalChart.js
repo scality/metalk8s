@@ -24,6 +24,7 @@ const MetricSymmetricalChart = ({
   metricPrefixBelow,
   unitRange,
   planeInterface,
+  isPlaneInterfaceRequired,
 }: {
   title: string,
   yAxisTitle: string,
@@ -39,6 +40,7 @@ const MetricSymmetricalChart = ({
   metricPrefixBelow: string,
   unitRange?: { threshold: number, label: string }[],
   planeInterface?: string,
+  isPlaneInterfaceRequired?: boolean,
 }) => {
   const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
   const { frequency } = useMetricsTimeSpan();
@@ -109,7 +111,7 @@ const MetricSymmetricalChart = ({
     metricBelowAvgQuery.isLoading;
 
   useEffect(() => {
-    if (!planeInterface) {
+    if (isPlaneInterfaceRequired && !planeInterface) {
       setSeries([]);
     } else if (
       !isMetricsDataLoading &&
