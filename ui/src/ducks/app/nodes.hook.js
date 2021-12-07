@@ -3,6 +3,7 @@ import { useQuery } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
 
 import * as CoreApi from '../../services/k8s/core';
+import { nodeKey } from '../../services/k8s/core.key';
 import {
   API_STATUS_READY,
   API_STATUS_NOT_READY,
@@ -19,14 +20,10 @@ import {
 
 const FIVE_SECOND_IN_MS = 5000;
 
-export function useRefreshNodes() {
-  const dispatch = useDispatch();
-  const allJobs = useSelector(allJobsSelector);
-  const deployingNodes = allJobs
-    .filter((job) => job.type === 'deploy-node' && !job.completed)
-    .map((job) => job.node);
-
-  const result = useQuery(['nodes'], CoreApi.getNodes, {
+export function getAllNodesQueryOption(deployingNodes) {
+  return {
+    queryKey: nodeKey.all,
+    queryFn: CoreApi.getNodes,
     select: (data) => {
       return data?.body?.items?.map((node) => {
         const statusType =
@@ -74,6 +71,18 @@ export function useRefreshNodes() {
       });
     },
     staleTime: FIVE_SECOND_IN_MS,
+  };
+}
+
+export function useRefreshNodes() {
+  const dispatch = useDispatch();
+  const allJobs = useSelector(allJobsSelector);
+  const deployingNodes = allJobs
+    .filter((job) => job.type === 'deploy-node' && !job.completed)
+    .map((job) => job.node);
+
+  const result = useQuery({
+    ...getAllNodesQueryOption(deployingNodes),
     refetchInterval: REFRESH_TIMEOUT,
   });
 
