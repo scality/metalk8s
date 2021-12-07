@@ -18,6 +18,7 @@ import {
   renderOutpassingThresholdTitle,
   renderTooltipSeperationLine,
 } from '../services/graphUtils';
+import { useIntl } from 'react-intl';
 
 const SymmetricalQuantileChart = ({
   getAboveQuantileQuery,
@@ -41,6 +42,7 @@ const SymmetricalQuantileChart = ({
   isLegendHidden?: Boolean,
 }) => {
   const theme = useTheme();
+  const intl = useIntl();
   const nodeAddresses = useNodeAddressesSelector(useNodes());
   const nodeIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
   const devices = getNodesInterfacesString(nodeIPsInfo);
@@ -164,6 +166,7 @@ const SymmetricalQuantileChart = ({
               theme,
               valueBase,
               serie.unitLabel,
+              intl,
             )}`
           : ``)
       );

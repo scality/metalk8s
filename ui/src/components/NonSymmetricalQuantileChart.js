@@ -14,6 +14,7 @@ import {
   renderQuantileData,
   renderTooltipSerie,
 } from '../services/graphUtils';
+import { useIntl } from 'react-intl';
 
 const NonSymmetricalQuantileChart = ({
   getQuantileQuery,
@@ -30,6 +31,7 @@ const NonSymmetricalQuantileChart = ({
   isLegendHidden: boolean,
 }) => {
   const theme = useTheme();
+  const intl = useIntl();
   const nodeAddresses = useNodeAddressesSelector(useNodes());
   const nodeMapPerIp = nodeAddresses.reduce(
     (agg, current) => ({
@@ -142,6 +144,7 @@ const NonSymmetricalQuantileChart = ({
                     theme,
                     1,
                     serie.unitLabel,
+                    intl,
                   )}
                 `
                 : '')

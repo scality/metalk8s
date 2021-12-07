@@ -365,6 +365,7 @@ export const renderQuantileData = (
   theme,
   valueBase,
   unitLabel,
+  intl,
 ) => {
   const hoverQuantileValue = (data) => {
     return unitLabel
@@ -395,7 +396,7 @@ export const renderQuantileData = (
           .join('')
       : ''
   }
-  ${isError ? 'Sorry, failed to load data due to an error occured' : ''}
+  ${isError ? intl.formatMessage('error_occur_outpassing_threshold') : ''}
   `;
 };
 

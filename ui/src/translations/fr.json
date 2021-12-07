@@ -183,5 +183,6 @@
   "dashboard_cpu_quantile_explanation_line2": "Q90 est le quantile 90, ce qui signifie que 90 % de vos nœuds utilisent moins de CPU que ce seuil.",
   "dashboard_cpu_quantile_explanation_line3": "Q5 est le quantile 5, ce qui signifie que 5 % de vos nœuds utilisent moins de CPU que ce seuil.",
   "dashboard_cpu_quantile_explanation_line4": "Si ces indicateurs divergent de la médiane, cela signifie que la charge CPU de votre cluster n'est pas correctement équilibrée.",
-  "dashboard_cpu_quantile_explanation_line5": "Le survol du graphique affiche les nœuds qui sont respectivement au-dessus et en dessous des seuils Q90 et Q5."
+  "dashboard_cpu_quantile_explanation_line5": "Le survol du graphique affiche les nœuds qui sont respectivement au-dessus et en dessous des seuils Q90 et Q5.",
+  "error_occur_outpassing_threshold": "Désolé une erreur nous empêche de retrouver les noeuds dépassant ce seuil."
 }
