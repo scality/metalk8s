@@ -183,20 +183,6 @@ it('returns the series for multi resources symmetrical chart', () => {
     },
     {
       data: [
-        [1620727967, '15'],
-        [1620731567, '16'],
-        [1620735167, '17'],
-        [1620738767, '18'],
-        [1620742367, '19'],
-      ],
-      resource: 'node1',
-      isLineDashed: false,
-      metricPrefix: 'read',
-      getLegendLabel: null,
-      getTooltipLabel: expect.anything(),
-    },
-    {
-      data: [
         [1620727967, '20'],
         [1620731567, '21'],
         [1620735167, '22'],
@@ -207,6 +193,20 @@ it('returns the series for multi resources symmetrical chart', () => {
       isLineDashed: false,
       metricPrefix: 'write',
       getLegendLabel: expect.anything(),
+      getTooltipLabel: expect.anything(),
+    },
+    {
+      data: [
+        [1620727967, '15'],
+        [1620731567, '16'],
+        [1620735167, '17'],
+        [1620738767, '18'],
+        [1620742367, '19'],
+      ],
+      resource: 'node1',
+      isLineDashed: false,
+      metricPrefix: 'read',
+      getLegendLabel: null,
       getTooltipLabel: expect.anything(),
     },
     {
