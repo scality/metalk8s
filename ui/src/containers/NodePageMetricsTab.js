@@ -219,6 +219,7 @@ const NodePageMetricsTab = ({
                 getMetricBelowAvgQuery={getIOPSReadAvgQuery}
                 metricPrefixAbove={'write'}
                 metricPrefixBelow={'read'}
+                isPlaneInterfaceRequired={false}
               ></MetricSymmetricalChart>
             </GraphWrapper>
             <GraphWrapper className="cpbandwidth">
@@ -238,6 +239,7 @@ const NodePageMetricsTab = ({
                 metricPrefixBelow={'out'}
                 planeInterface={controlPlaneInterface}
                 unitRange={UNIT_RANGE_BS}
+                isPlaneInterfaceRequired={true}
               ></MetricSymmetricalChart>
             </GraphWrapper>
             <GraphWrapper className="wpbandwidth">
@@ -257,6 +259,7 @@ const NodePageMetricsTab = ({
                 metricPrefixBelow={'out'}
                 planeInterface={workloadPlaneInterface}
                 unitRange={UNIT_RANGE_BS}
+                isPlaneInterfaceRequired={true}
               ></MetricSymmetricalChart>
             </GraphWrapper>
           </GraphGrid>
