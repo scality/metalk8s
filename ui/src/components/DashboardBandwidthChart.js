@@ -6,6 +6,7 @@ import { UNIT_RANGE_BS } from '@scality/core-ui/dist/components/linetemporalchar
 import {
   getMultipleSymmetricalSeries,
   getNodesInterfacesString,
+  renderTooltipSeperationLine,
 } from '../services/graphUtils';
 import { fetchNodesAction } from '../ducks/app/nodes';
 import {
@@ -83,9 +84,9 @@ const DashboardBandwidthChartWithoutQuantile = ({
       renderTooltipSerie={useCallback(
         (serie) => {
           if (serie.key === `${lastNodeName}-in`) {
-            // add a seperation line between in and out
-            return `${defaultRenderTooltipSerie(serie)}</table>
-            <hr style="border-color: ${theme.border};"/><table>`;
+            return `${defaultRenderTooltipSerie(
+              serie,
+            )}${renderTooltipSeperationLine(theme.border)}`;
           } else {
             return defaultRenderTooltipSerie(serie);
           }

@@ -409,3 +409,7 @@ export const renderOutpassingThresholdTitle = (
     ? `<tr style="color: ${theme.textSecondary}"><td></td><td colspan="2" style="padding-left: 1rem;">${title}</td></tr>`
     : ``;
 };
+
+export const renderTooltipSeperationLine = (seperationLineColor) => {
+  return `</table><hr style="border-color: ${seperationLineColor};"/><table>`;
+};

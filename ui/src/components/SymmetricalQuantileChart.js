@@ -16,6 +16,7 @@ import {
   renderQuantileData,
   renderTooltipSerie,
   renderOutpassingThresholdTitle,
+  renderTooltipSeperationLine,
 } from '../services/graphUtils';
 
 const SymmetricalQuantileChart = ({
@@ -209,7 +210,6 @@ const SymmetricalQuantileChart = ({
             );
           }
           if (serie.key === `Q5-${metricPrefixAbove}`) {
-            // add a seperation line between metricAbove and metricBelow
             return `${renderTooltip(
               serie,
               isIdleQuantile5,
@@ -219,8 +219,7 @@ const SymmetricalQuantileChart = ({
               quantile5Data,
               'below',
               false,
-            )}</table>
-            <hr style="border-color: ${theme.border};"/><table>
+            )}${renderTooltipSeperationLine(theme.border)}
             `;
           }
           if (serie.key === `Q90-${metricPrefixBelow}`) {
