@@ -394,7 +394,7 @@ check_solution_version_exists() {
         "sys.exit(0 if available else 1);"
     )
 
-    python -c "${python_script[*]}" "$version" "$solution_data"
+    "$PYTHON" -c "${python_script[*]}" "$version" "$solution_data"
 }
 
 check_solution_exists() {
