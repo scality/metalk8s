@@ -19,7 +19,9 @@ describe('Node list', () => {
     cy.visit('/nodes');
     cy.stubHistory();
 
-    cy.get('[data-cy="node_table_name_cell"]').contains('master-0').click();
+    cy.get('[data-cy="node_table_name_cell"]')
+      .contains('master-0')
+      .click({ waitForAnimations: false });
     cy.get('@historyPush').should('be.calledWithExactly', {
       pathname: '/nodes/master-0/overview',
       search: '',
@@ -30,7 +32,9 @@ describe('Node list', () => {
     cy.visit('/nodes/master-0/metrics?from=now-7d');
     cy.stubHistory();
 
-    cy.get('[data-cy="node_table_name_cell"]').contains('master-1').click();
+    cy.get('[data-cy="node_table_name_cell"]')
+      .contains('master-1')
+      .click({ waitForAnimations: false });
     cy.get('@historyPush').should('be.calledOnce').and('be.calledWithExactly', {
       pathname: '/nodes/master-1/metrics',
       search: 'from=now-7d',
@@ -50,7 +54,7 @@ describe('Node list', () => {
     cy.stubHistory();
 
     cy.get('[data-cy="node_list_search"]').type('hello');
-    cy.get('@historyPush').and('be.calledWithExactly', '?search=hello');
+    cy.get('@historyReplace').and('be.calledWithExactly', '?search=hello');
   });
 
   it(`keeps warning severity for the alert while searching the node`, () => {
@@ -58,7 +62,7 @@ describe('Node list', () => {
     cy.stubHistory();
 
     cy.get('[data-cy="node_list_search"]').type('hello');
-    cy.get('@historyPush').should(
+    cy.get('@historyReplace').should(
       'be.calledWithExactly',
       '?severity=warning&search=hello',
     );
