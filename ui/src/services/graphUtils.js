@@ -4,6 +4,15 @@ import type {
 } from './prometheus/api';
 import { lineColor1, PORT_NODE_EXPORTER } from '../constants';
 import { type Serie } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
+import {
+  spacing,
+  lineColor3,
+  lineColor4,
+  lineColor5,
+  lineColor6,
+  lineColor7,
+  lineColor8,
+} from '@scality/core-ui/dist/style/theme';
 
 export const getMultiResourceSeriesForChart = (
   results: PrometheusQueryResult,
@@ -25,7 +34,7 @@ export const fiterMetricValues = (
   labels: { instance: string, device?: string },
 ): RangeMatrixResult => {
   if (Object.prototype.hasOwnProperty.call(labels, 'device')) {
-    return prometheusResult.data.result.find(
+    return prometheusResult.data?.result.find(
       (item) =>
         item.metric.instance === labels.instance &&
         item.metric.device === labels.device,
@@ -34,6 +43,83 @@ export const fiterMetricValues = (
   return prometheusResult.data.result.find(
     (item) => item.metric.instance === labels.instance,
   );
+};
+
+// to retrieve Q90, median and Q5 for symmetrical chart
+export const getQuantileSymmetricalSeries = (
+  resultAbove: PrometheusQueryResult[],
+  resultBelow: PrometheusQueryResult[],
+  metricPrefixAbove: string,
+  metricPrefixBelow: string,
+): Series[] => {
+  return [
+    {
+      ...convertPrometheusResultToSerie(resultAbove[2], 'Q90'),
+      metricPrefix: metricPrefixAbove,
+      getLegendLabel: (metricPrefix: string, resource) => {
+        return `${resource}-${metricPrefix}`;
+      },
+      getTooltipLabel: (metricPrefix: string, resource: string) => {
+        return `${resource}-${metricPrefix}`;
+      },
+      color: lineColor3,
+    },
+    {
+      ...convertPrometheusResultToSerie(resultAbove[1], 'Median'),
+      metricPrefix: metricPrefixAbove,
+      getLegendLabel: (metricPrefix: string, resource) => {
+        return `${resource}-${metricPrefix}`;
+      },
+      getTooltipLabel: (metricPrefix: string, resource: string) => {
+        return `${resource}-${metricPrefix}`;
+      },
+      color: lineColor5,
+    },
+    {
+      ...convertPrometheusResultToSerie(resultAbove[0], 'Q5'),
+      metricPrefix: metricPrefixAbove,
+      getLegendLabel: (metricPrefix: string, resource) => {
+        return `${resource}-${metricPrefix}`;
+      },
+      getTooltipLabel: (metricPrefix: string, resource: string) => {
+        return `${resource}-${metricPrefix}`;
+      },
+      color: lineColor4,
+    },
+    {
+      ...convertPrometheusResultToSerie(resultBelow[0], 'Q5'),
+      getLegendLabel: (metricPrefix: string, resource) => {
+        return `${resource}-${metricPrefix}`;
+      },
+      metricPrefix: metricPrefixBelow,
+      getTooltipLabel: (metricPrefix: string, resource: string) => {
+        return `${resource}-${metricPrefix}`;
+      },
+      color: lineColor6,
+    },
+    {
+      ...convertPrometheusResultToSerie(resultBelow[1], 'Median'),
+      getLegendLabel: (metricPrefix: string, resource) => {
+        return `${resource}-${metricPrefix}`;
+      },
+      metricPrefix: metricPrefixBelow,
+      getTooltipLabel: (metricPrefix: string, resource: string) => {
+        return `${resource}-${metricPrefix}`;
+      },
+      color: lineColor8,
+    },
+    {
+      ...convertPrometheusResultToSerie(resultBelow[2], 'Q90'),
+      getLegendLabel: (metricPrefix: string, resource) => {
+        return `${resource}-${metricPrefix}`;
+      },
+      metricPrefix: metricPrefixBelow,
+      getTooltipLabel: (metricPrefix: string, resource: string) => {
+        return `${resource}-${metricPrefix}`;
+      },
+      color: lineColor7,
+    },
+  ];
 };
 
 export const getMultipleSymmetricalSeries = (
@@ -45,34 +131,50 @@ export const getMultipleSymmetricalSeries = (
   nodesPlaneInterface?: { [nodeName: string]: { interface: string } },
 ): Serie[] => {
   // TODO: Throw the error if we got error status from Promethues API, and handle the error at React-query level
-  return nodes.flatMap((node) => {
-    const filterLabels = {
-      instance: `${node.internalIP}:${PORT_NODE_EXPORTER}`,
-    };
-    if (nodesPlaneInterface) {
-      filterLabels.device = nodesPlaneInterface?.[node.name]?.interface;
-    }
-    const aboveData = fiterMetricValues(resultAbove, filterLabels);
-    const belowData = fiterMetricValues(resultBelow, filterLabels);
+  return nodes
+    .flatMap((node) => {
+      const filterLabels = {
+        instance: `${node.internalIP}:${PORT_NODE_EXPORTER}`,
+      };
+      if (nodesPlaneInterface) {
+        filterLabels.device = nodesPlaneInterface?.[node.name]?.interface;
+      }
+      const aboveData = fiterMetricValues(resultAbove, filterLabels);
+      const belowData = fiterMetricValues(resultBelow, filterLabels);
 
-    return [
-      {
-        ...convertMatrixResultToSerie(aboveData, node.name),
-        metricPrefix: metricPrefixAbove,
-        getTooltipLabel: (metricPrefix: string, resource: string) => {
-          return `${resource}-${metricPrefix}`;
+      return [
+        {
+          ...convertMatrixResultToSerie(aboveData, node.name),
+          metricPrefix: metricPrefixAbove,
+          getTooltipLabel: (metricPrefix: string, resource: string) => {
+            return `${resource}-${metricPrefix}`;
+          },
         },
-      },
-      {
-        ...convertMatrixResultToSerie(belowData, node.name),
-        metricPrefix: metricPrefixBelow,
-        getTooltipLabel: (metricPrefix: string, resource: string) => {
-          return `${resource}-${metricPrefix}`;
+        {
+          ...convertMatrixResultToSerie(belowData, node.name),
+          metricPrefix: metricPrefixBelow,
+          getTooltipLabel: (metricPrefix: string, resource: string) => {
+            return `${resource}-${metricPrefix}`;
+          },
+          getLegendLabel: null, //disable legend to avoid duplicated entries
         },
-        getLegendLabel: null, //disable legend to avoid duplicated entries
-      },
-    ];
-  });
+      ];
+    })
+    .sort((serieA, serieB) => {
+      if (
+        serieA.metricPrefix === metricPrefixAbove &&
+        serieB.metricPrefix === metricPrefixBelow
+      ) {
+        return -1;
+      }
+      if (
+        serieA.metricPrefix === metricPrefixBelow &&
+        serieB.metricPrefix === metricPrefixAbove
+      ) {
+        return 1;
+      }
+      return 0;
+    });
 };
 
 const convertMatrixResultToSerie = (
@@ -93,29 +195,40 @@ const convertMatrixResultToSerie = (
   };
 };
 
-export const getSingleResourceSerie = (
+// return a single serie
+export const convertPrometheusResultToSerie = (
   result: PrometheusQueryResult,
-  resource: string,
-  resultAvg?: PrometheusQueryResult,
-): Serie[] => {
-  const series = [];
-
+  serieName: string,
+): Serie => {
   if (result && result.status === 'success') {
     const matrixResult: RangeMatrixResult = result?.data?.result[0];
 
-    const singleSerie = {
-      ...convertMatrixResultToSerie(matrixResult, resource),
-      color: resultAvg ? lineColor1 : undefined, // when we display the average, average serie color should match with the metric color
-    };
-    series.push(singleSerie);
+    return convertMatrixResultToSerie(matrixResult, serieName);
   }
+  return convertMatrixResultToSerie(
+    { result: [], resultType: 'Matrix' },
+    serieName,
+  );
+};
 
-  if (resultAvg && resultAvg.status === 'success') {
-    const avgMatrixResult = resultAvg?.data?.result[0];
+// used only by the node metrics chart
+export const convertPrometheusResultToSerieWithAverage = (
+  result: PrometheusQueryResult,
+  serieName: string,
+  resultAvg?: PrometheusQueryResult,
+): Serie[] => {
+  const series = [
+    {
+      ...convertPrometheusResultToSerie(result, serieName),
+      color: resultAvg ? lineColor1 : undefined, // when we display the average, average serie color should match with the metric color
+    },
+  ];
 
+  if (resultAvg) {
     series.push({
-      ...convertMatrixResultToSerie(avgMatrixResult, 'Cluster Avg.'),
+      ...convertPrometheusResultToSerie(resultAvg, 'Cluster Avg.'),
       color: lineColor1,
+      isLineDashed: true,
     });
   }
   return series;
@@ -204,4 +317,100 @@ export const getNodesInterfacesString = (nodeIPsInfo): [] => {
   ]);
   const uniqueInterfaces = [...new Set(interfaces)];
   return uniqueInterfaces;
+};
+
+export function renderTooltipSerie({
+  color,
+  isLineDashed,
+  name,
+  value,
+  key,
+}: {
+  color?: string,
+  isLineDashed?: boolean,
+  name: string,
+  value: string,
+  key: string,
+}) {
+  return `<tr>
+    <td class="color" style="width: 1rem;">
+    ${
+      color !== undefined
+        ? `<span style='background: ${
+            isLineDashed
+              ? `repeating-linear-gradient(to right,${color} 0,${color} ${spacing.sp1},transparent ${spacing.sp1},transparent ${spacing.sp2})`
+              : color
+          };width: ${spacing.sp8};height:${
+            spacing.sp2
+          };display: inline-block;vertical-align: middle;'></span>`
+        : ''
+    }
+    </td>
+    <td style="text-align: left;">
+        ${name}
+    </td>
+    <td class="value" style="text-align: right;min-width: 5rem;display: table-cell;">
+      ${value}
+    </td>
+  </tr>`;
+}
+
+export const renderQuantileData = (
+  isIdle,
+  isLoading,
+  isSuccess,
+  isError,
+  data,
+  nodeMapPerIp,
+  theme,
+  valueBase,
+  unitLabel,
+  intl,
+) => {
+  const hoverQuantileValue = (data) => {
+    return unitLabel
+      ? `${parseFloat(data.value[1] / (valueBase || 1)).toFixed(
+          2,
+        )} ${unitLabel}`
+      : `${parseFloat(data.value[1] / (valueBase || 1)).toFixed(2)}`;
+  };
+
+  return `${
+    isLoading || isIdle
+      ? `<tr style="color: ${theme.textSecondary}"><td></td><td colspan='2' style="padding-left: 1rem;">Loading...</td></tr>`
+      : ''
+  }
+  ${
+    isSuccess
+      ? data?.data?.result
+          ?.map(
+            (data) =>
+              `<tr style="color: ${
+                theme.textSecondary
+              }"><td></td><td style="padding-left: 1rem;padding-right: 0.5rem;">${
+                nodeMapPerIp[data.metric.instance]
+              }</td><td class="value" style="text-align: right;display: table-cell;">${hoverQuantileValue(
+                data,
+              )}</td></tr>`,
+          )
+          .join('')
+      : ''
+  }
+  ${isError ? intl.formatMessage('error_occur_outpassing_threshold') : ''}
+  `;
+};
+
+export const renderOutpassingThresholdTitle = (
+  title,
+  isOutpassingDataDisplayed,
+  theme,
+) => {
+  // Hide the Outpassing threshold node list when isOnHoverFetchingNeeded is false
+  return isOutpassingDataDisplayed
+    ? `<tr style="color: ${theme.textSecondary}"><td></td><td colspan="2" style="padding-left: 1rem;">${title}</td></tr>`
+    : ``;
+};
+
+export const renderTooltipSeperationLine = (seperationLineColor) => {
+  return `</table><hr style="border-color: ${seperationLineColor};"/><table>`;
 };
