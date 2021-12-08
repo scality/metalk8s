@@ -5,6 +5,7 @@
   "url_grafana": "/grafana",
   "url_doc": "/docs",
   "url_alertmanager": "/api/alertmanager",
+  "url_loki": "/api/loki",
   "flags": [],
   "url_navbar": "/shell/solution-ui-navbar.1.0.0.js",
   "url_alerts": "/shell/alerts.1.0.0.js",

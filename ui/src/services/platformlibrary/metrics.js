@@ -5,7 +5,7 @@ import {
 } from '../../constants';
 import { queryPromtheusMetrics } from '../prometheus/fetchMetrics';
 import type { NodesState } from '../../ducks/app/nodes';
-import { queryPrometheusRange } from '../prometheus/api';
+import { queryPrometheus, queryPrometheusRange } from '../prometheus/api';
 import { addMissingDataPoint } from '@scality/core-ui/dist/components/linetemporalchart/ChartUtil';
 import { getNaNSegments, getSegments } from '../utils';
 import { getFormattedLokiAlert } from '../loki/api';
@@ -17,7 +17,7 @@ export type TimeSpanProps = {
   frequency: number,
 };
 
-const getPrometheusQuery = (
+const _getPromRangeMatrixQuery = (
   queryKey: string[],
   prometheusQuery: string,
   { startingTimeISO, currentTimeISO, frequency }: TimeSpanProps,
@@ -32,6 +32,30 @@ const getPrometheusQuery = (
         currentTimeISO,
         encodeURIComponent(prometheusQuery),
       );
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  };
+};
+
+const _getInstantValueQuery = (
+  queryKey: string[],
+  prometheusQuery: string,
+  timestamp: string,
+): typeof useQuery => {
+  return {
+    queryKey,
+    queryFn: () => {
+      const promPromise = queryPrometheus(prometheusQuery, timestamp);
+      if (promPromise) {
+        return promPromise.then((resolve) => {
+          if (resolve.error) {
+            throw resolve.error;
+          }
+          return resolve;
+        });
+      }
+      return Promise.reject();
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
@@ -79,6 +103,41 @@ export const getNodesCPUUsageQuery = (timespanProps: TimeSpanProps) => {
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+  };
+};
+
+export const getNodesCPUUsageQuantileQuery = (
+  timespanProps: TimeSpanProps,
+  quantile: number,
+) => {
+  const cpuNodesUsagePromQL = `quantile(${quantile}, 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100))`;
+
+  return _getPromRangeMatrixQuery(
+    ['NodesCpuUsageQuantile', quantile],
+    cpuNodesUsagePromQL,
+    timespanProps,
+  );
+};
+
+export const getNodesCPUUsageOutpassingThresholdQuery = (
+  timestamp?: string,
+  threshold?: number,
+  operator: '>' | '<',
+  isOnHoverFetchingNeeded: boolean,
+) => {
+  const cpuNodesUsageOutpassingThresholdQuery = `100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) ${operator}= ${threshold}`;
+
+  return {
+    ..._getInstantValueQuery(
+      ['NodesCpuUsageAboveBelowThreshold', timestamp, threshold, operator],
+      cpuNodesUsageOutpassingThresholdQuery,
+      timestamp,
+    ),
+    enabled: !!(
+      timestamp &&
+      threshold !== undefined &&
+      isOnHoverFetchingNeeded
+    ),
   };
 };
 
@@ -130,7 +189,7 @@ export const getSystemLoadQuery = (
 
 export const getNodesSystemLoadQuery = (timespanProps: TimeSpanProps) => {
   const { startingTimeISO, currentTimeISO, frequency } = timespanProps;
-  const systemLoadPrometheusQuery = `(avg(node_load1) by (instance) / ignoring(container,endpoint,job,namespace,pod,service) count(node_cpu_seconds_total{mode="idle"}) without(cpu,mode)) * 100`;
+  const systemLoadPrometheusQuery = `(avg(node_load1) by (instance) / ignoring(container,endpoint,job,namespace,pod,service,prometheus) count(node_cpu_seconds_total{mode="idle"}) without(cpu,mode)) * 100`;
 
   return {
     queryKey: ['SystemLoad', startingTimeISO],
@@ -144,6 +203,41 @@ export const getNodesSystemLoadQuery = (timespanProps: TimeSpanProps) => {
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+  };
+};
+
+export const getNodesSystemLoadQuantileQuery = (
+  timespanProps: TimeSpanProps,
+  quantile: number,
+) => {
+  const systemLoadQuantilePromQL = `quantile(${quantile}, (avg(node_load1) by (instance) / ignoring(container,endpoint,job,namespace,pod,service,prometheus) count(node_cpu_seconds_total{mode="idle"}) without(cpu,mode))) * 100`;
+
+  return _getPromRangeMatrixQuery(
+    ['SystemLoadQuantile', quantile],
+    systemLoadQuantilePromQL,
+    timespanProps,
+  );
+};
+
+export const getNodesSystemLoadOutpassingThresholdQuery = (
+  timestamp?: string,
+  threshold?: number,
+  operator: '>' | '<',
+  isOnHoverFetchingNeeded: boolean,
+) => {
+  const nodesSystemLoadOutpassingThresholdPromQL = `(avg(node_load1) by (instance) / ignoring(container,endpoint,job,namespace,pod,service,prometheus) count(node_cpu_seconds_total{mode="idle"}) without(cpu,mode)) * 100 ${operator}= ${threshold}`;
+
+  return {
+    ..._getInstantValueQuery(
+      ['NodesSystemLoadAboveBelowThreshold', timestamp, threshold, operator],
+      nodesSystemLoadOutpassingThresholdPromQL,
+      timestamp,
+    ),
+    enabled: !!(
+      timestamp &&
+      threshold !== undefined &&
+      isOnHoverFetchingNeeded
+    ),
   };
 };
 
@@ -207,6 +301,41 @@ export const getNodesMemoryQuery = (timespanProps: TimeSpanProps) => {
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+  };
+};
+
+export const getNodesMemoryQuantileQuery = (
+  timespanProps: TimeSpanProps,
+  quantile: number,
+) => {
+  const nodesMemoryQuantilePromQL = `quantile(${quantile}, sum(100 - ((node_memory_MemAvailable_bytes * 100) / node_memory_MemTotal_bytes)) by(instance))`;
+
+  return _getPromRangeMatrixQuery(
+    ['NodesMemoryQuantile', quantile],
+    nodesMemoryQuantilePromQL,
+    timespanProps,
+  );
+};
+
+export const getNodesMemoryOutpassingThresholdQuery = (
+  timestamp?: string,
+  threshold?: number,
+  operator: '>' | '<',
+  isOnHoverFetchingNeeded: boolean,
+) => {
+  const nodesMemoryOutpassingThresholdPromQL = `sum(100 - ((node_memory_MemAvailable_bytes * 100) / node_memory_MemTotal_bytes)) by(instance) ${operator}= ${threshold}`;
+
+  return {
+    ..._getInstantValueQuery(
+      ['NodesMemoryOutpassingThreshold', timestamp, threshold, operator],
+      nodesMemoryOutpassingThresholdPromQL,
+      timestamp,
+    ),
+    enabled: !!(
+      timestamp &&
+      threshold !== undefined &&
+      isOnHoverFetchingNeeded
+    ),
   };
 };
 
@@ -517,7 +646,7 @@ export const getNodesPlanesBandwidthInQuery = (
   )}"}[5m])) by (instance,device)`;
 
   return {
-    ...getPrometheusQuery(
+    ..._getPromRangeMatrixQuery(
       ['NodesPlanesBandwidthIn', ...devices],
       nodesPlanesBandwidthInQuery,
       timespanProps,
@@ -535,12 +664,100 @@ export const getNodesPlanesBandwidthOutQuery = (
   )}"}[5m])) by (instance,device)`;
 
   return {
-    ...getPrometheusQuery(
+    ..._getPromRangeMatrixQuery(
       ['NodesPlanesBandwidthOut', ...devices],
       nodePlanesBandwidthOutQuery,
       timespanProps,
     ),
     enabled: !!devices?.length,
+  };
+};
+
+export const getNodesPlanesBandwidthInQuantileQuery = (
+  timespanProps,
+  quantile: number,
+  devices: string[],
+) => {
+  const nodesPlanesBandwidthInQuery = `quantile(${quantile}, avg(irate(node_network_receive_bytes_total{device=~"${devices.join(
+    '|',
+  )}"}[5m])) by (instance,device))`;
+
+  return {
+    ..._getPromRangeMatrixQuery(
+      ['NodesPlanesBandwidthIn', ...devices, quantile],
+      nodesPlanesBandwidthInQuery,
+      timespanProps,
+    ),
+    enabled: !!devices?.length,
+  };
+};
+
+export const getNodesPlanesBandwidthOutQuantileQuery = (
+  timespanProps,
+  quantile: number,
+  devices: string[],
+) => {
+  const nodePlanesBandwidthOutQuery = `quantile(${quantile}, avg(irate(node_network_transmit_bytes_total{device=~"${devices.join(
+    '|',
+  )}"}[5m])) by (instance,device))`;
+
+  return {
+    ..._getPromRangeMatrixQuery(
+      ['NodesPlanesBandwidthOut', ...devices, quantile],
+      nodePlanesBandwidthOutQuery,
+      timespanProps,
+    ),
+    enabled: !!devices?.length,
+  };
+};
+
+export const getNodesPlanesBandwidthInOutpassingThresholdQuery = (
+  timestamp?: string,
+  threshold?: number,
+  operator: '>' | '<',
+  isOnHoverFetchingNeeded: boolean,
+  devices: string[],
+) => {
+  const nodesBandwidthInOutpassingThresholdPromQL = `avg(irate(node_network_receive_bytes_total{device=~"${devices.join(
+    '|',
+  )}"}[5m])) by (instance,device) ${operator}= ${threshold}`;
+
+  return {
+    ..._getInstantValueQuery(
+      ['NodesBandwidthInOutpassingThreshold', timestamp, threshold, operator],
+      nodesBandwidthInOutpassingThresholdPromQL,
+      timestamp,
+    ),
+    enabled: !!(
+      timestamp &&
+      threshold !== undefined &&
+      isOnHoverFetchingNeeded
+    ),
+  };
+};
+
+export const getNodesPlanesBandwidthOutOutpassingThresholdQuery = (
+  timestamp?: string,
+  threshold?: number,
+  operator: '>' | '<',
+  isOnHoverFetchingNeeded: boolean,
+  devices: string[],
+) => {
+  const nodesBandwidthOutOutpassingThresholdPromQL = `avg(irate(node_network_transmit_bytes_total{device=~"${devices.join(
+    '|',
+  )}"}[5m])) by (instance,device) ${operator}= ${threshold}`;
+
+  return {
+    ..._getInstantValueQuery(
+      ['NodesBandwidthOutOutpassingThreshold', timestamp, threshold, operator],
+      nodesBandwidthOutOutpassingThresholdPromQL,
+      timestamp,
+    ),
+    enabled: !!(
+      timestamp &&
+      threshold !== undefined &&
+      isOnHoverFetchingNeeded
+    ),
   };
 };
 
@@ -643,7 +860,7 @@ export const getVolumeUsageQuery = (
 ): typeof useQuery => {
   const prometheusFilters = `{namespace="${namespace}",persistentvolumeclaim="${pvcName}"}`;
   const volumeUsageQuery = `kubelet_volume_stats_used_bytes${prometheusFilters} / kubelet_volume_stats_capacity_bytes${prometheusFilters} * 100`;
-  return getPrometheusQuery(
+  return _getPromRangeMatrixQuery(
     ['volumeUsage', pvcName, namespace],
     volumeUsageQuery,
     timespanProps,
@@ -667,7 +884,7 @@ export const getVolumeThroughputReadQuery = (
     deviceName,
   );
   const volumeThroughputReadQuery = `sum(irate(node_disk_read_bytes_total${prometheusFilters}[1m]))`;
-  return getPrometheusQuery(
+  return _getPromRangeMatrixQuery(
     ['volumeThroughputRead', instanceIp, deviceName],
     volumeThroughputReadQuery,
     timespanProps,
@@ -684,7 +901,7 @@ export const getVolumeThroughputWriteQuery = (
     deviceName,
   );
   const volumeThroughputWriteQuery = `sum(irate(node_disk_written_bytes_total${prometheusFilters}[1m]))`;
-  return getPrometheusQuery(
+  return _getPromRangeMatrixQuery(
     ['volumeThroughputWrite', instanceIp, deviceName],
     volumeThroughputWriteQuery,
     timespanProps,
@@ -695,7 +912,7 @@ export const getNodesThroughputReadQuery = (
   timespanProps: TimeSpanProps,
 ): typeof useQuery => {
   const nodesThroughputReadQuery = `sum(sum(irate(node_disk_read_bytes_total[1m])) by (instance, device))by(instance)`;
-  return getPrometheusQuery(
+  return _getPromRangeMatrixQuery(
     ['NodesThroughputReadQuery'],
     nodesThroughputReadQuery,
     timespanProps,
@@ -706,11 +923,79 @@ export const getNodesThroughputWriteQuery = (
   timespanProps: TimeSpanProps,
 ): typeof useQuery => {
   const nodesThroughputWriteQuery = `sum(sum(irate(node_disk_written_bytes_total[1m])) by (instance, device))by(instance)`;
-  return getPrometheusQuery(
+  return _getPromRangeMatrixQuery(
     ['NodesThroughputWriteQuery'],
     nodesThroughputWriteQuery,
     timespanProps,
   );
+};
+
+export const getNodesThroughputWriteQuantileQuery = (
+  timespanProps: TimeSpanProps,
+  quantile: number,
+): typeof useQuery => {
+  const nodesThroughputWritePromQL = `quantile(${quantile},sum(sum(irate(node_disk_written_bytes_total[1m])) by (instance, device))by(instance))`;
+  return _getPromRangeMatrixQuery(
+    ['NodesThroughputWriteQuantile', quantile],
+    nodesThroughputWritePromQL,
+    timespanProps,
+  );
+};
+
+export const getNodesThroughputReadQuantileQuery = (
+  timespanProps: TimeSpanProps,
+  quantile: number,
+): typeof useQuery => {
+  const nodesThroughputReadPromQL = `quantile(${quantile},sum(sum(irate(node_disk_read_bytes_total[1m])) by (instance, device))by(instance))`;
+  return _getPromRangeMatrixQuery(
+    ['NodesThroughputReadQueryQuantile', quantile],
+    nodesThroughputReadPromQL,
+    timespanProps,
+  );
+};
+
+export const getNodesThroughputWriteOutpassingThresholdQuery = (
+  timestamp?: string,
+  threshold?: number,
+  operator: '>' | '<',
+  isOnHoverFetchingNeeded: boolean,
+) => {
+  const nodesThroughputWriteAboveBelowPromQL = `sum(sum(irate(node_disk_written_bytes_total[1m])) by (instance, device))by(instance) ${operator}= ${threshold}`;
+
+  return {
+    ..._getInstantValueQuery(
+      ['NodesThroughputWriteAboveBelow', timestamp, threshold, operator],
+      nodesThroughputWriteAboveBelowPromQL,
+      timestamp,
+    ),
+    enabled: !!(
+      timestamp &&
+      threshold !== undefined &&
+      isOnHoverFetchingNeeded
+    ),
+  };
+};
+
+export const getNodesThroughputOutpassingThresholdQuery = (
+  timestamp?: string,
+  threshold?: number,
+  operator: '>' | '<',
+  isOnHoverFetchingNeeded: boolean,
+) => {
+  const nodesThroughputReadAboveBelowPromQL = `sum(sum(irate(node_disk_read_bytes_total[1m])) by (instance, device))by(instance) ${operator}= ${threshold}`;
+
+  return {
+    ..._getInstantValueQuery(
+      ['NodesThroughputReadAboveBelow', timestamp, threshold, operator],
+      nodesThroughputReadAboveBelowPromQL,
+      timestamp,
+    ),
+    enabled: !!(
+      timestamp &&
+      threshold !== undefined &&
+      isOnHoverFetchingNeeded
+    ),
+  };
 };
 
 export const getVolumeIOPSReadQuery = (
@@ -723,7 +1008,7 @@ export const getVolumeIOPSReadQuery = (
     deviceName,
   );
   const volumeIOPSReadQuery = `sum(irate(node_disk_reads_completed_total${prometheusFilters}[5m]))`;
-  return getPrometheusQuery(
+  return _getPromRangeMatrixQuery(
     ['volumeIOPSRead', instanceIp, deviceName],
     volumeIOPSReadQuery,
     timespanProps,
@@ -740,7 +1025,7 @@ export const getVolumeIOPSWriteQuery = (
     deviceName,
   );
   const volumeIOPSWriteQuery = `sum(irate(node_disk_writes_completed_total${prometheusFilters}[5m]))`;
-  return getPrometheusQuery(
+  return _getPromRangeMatrixQuery(
     ['volumeIOPSWrite', instanceIp, deviceName],
     volumeIOPSWriteQuery,
     timespanProps,
@@ -760,7 +1045,7 @@ export const getVolumeLatencyWriteQuery = (
       irate(node_disk_write_time_seconds_total${prometheusFilters}[5m]) /
       (irate(node_disk_writes_completed_total${prometheusFilters}[5m]) > 0) or
       irate(node_disk_write_time_seconds_total${prometheusFilters}[5m]) > bool 0) * 1000000`;
-  return getPrometheusQuery(
+  return _getPromRangeMatrixQuery(
     ['volumeLatencyWrite', instanceIp, deviceName],
     volumeLatencyWriteQuery,
     timespanProps,
@@ -780,7 +1065,7 @@ export const getVolumeLatencyReadQuery = (
     irate(node_disk_read_time_seconds_total${prometheusFilters}[5m]) /
     (irate(node_disk_reads_completed_total${prometheusFilters}[5m]) > 0) or
     irate(node_disk_read_time_seconds_total${prometheusFilters}[5m]) > bool 0) * 1000000`;
-  return getPrometheusQuery(
+  return _getPromRangeMatrixQuery(
     ['volumeLatencyRead', instanceIp, deviceName],
     volumeLatencyReadQuery,
     timespanProps,
@@ -896,64 +1181,76 @@ function convertSegmentToAlert(segment) {
 
 // Call Prometheus endpoint to get the segments {description: string, startsAt: string, endsAt: string, severity: string}
 // for Cluster alert which will be used by Global Health Component
-export const getClusterAlertSegmentQuery = (duration: number): typeof useQuery => {
+export const getClusterAlertSegmentQuery = (
+  duration: number,
+): typeof useQuery => {
   // We add watchdog alert to identify unavailble segments
   const query = `sum by(alertname) (ALERTS{alertname=~'ClusterAtRisk|ClusterDegraded|Watchdog', alertstate='firing'})`;
   // set the frequency to 60s only for global health component to get the precise segments
   const frequency = 60;
 
-  const clusterAlertNumberPromise = ({startingTimeISO, currentTimeISO, frequency}: TimeSpanProps) => queryPrometheusRange(
+  const clusterAlertNumberPromise = ({
     startingTimeISO,
     currentTimeISO,
     frequency,
-    encodeURIComponent(query),
-  )?.then((resolve) => {
-    if (resolve.error) {
-      throw resolve.error;
-    }
-    const clusterAtRiskResult = resolve.data.result.find(
-      (result) => result.metric.alertname === 'ClusterAtRisk',
-    );
-    const clusterDegradedResult = resolve.data.result.find(
-      (result) => result.metric.alertname === 'ClusterDegraded',
-    );
-    const watchdogResult = resolve.data.result.find(
-      (result) => result.metric.alertname === 'Watchdog',
-    );
-    const pointsAtRisk = addMissingDataPoint(
-      clusterAtRiskResult.values,
-      Date.parse(startingTimeISO) / 1000,
-      Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
+  }: TimeSpanProps) =>
+    queryPrometheusRange(
+      startingTimeISO,
+      currentTimeISO,
       frequency,
-    );
-    const pointsDegraded = addMissingDataPoint(
-      clusterDegradedResult.values,
-      Date.parse(startingTimeISO) / 1000,
-      Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
-      frequency,
-    );
-    const pointsWatchdog = addMissingDataPoint(
-      watchdogResult.values,
-      Date.parse(startingTimeISO) / 1000,
-      Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
-      frequency,
-    );
+      encodeURIComponent(query),
+    )?.then((resolve) => {
+      if (resolve.error) {
+        throw resolve.error;
+      }
+      const clusterAtRiskResult = resolve.data.result.find(
+        (result) => result.metric.alertname === 'ClusterAtRisk',
+      ) || { values: [] };
+      const clusterDegradedResult = resolve.data.result.find(
+        (result) => result.metric.alertname === 'ClusterDegraded',
+      ) || { values: [] };
+      const watchdogResult = resolve.data.result.find(
+        (result) => result.metric.alertname === 'Watchdog',
+      );
+      const pointsAtRisk = addMissingDataPoint(
+        clusterAtRiskResult.values,
+        Date.parse(startingTimeISO) / 1000,
+        Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
+        frequency,
+      );
+      const pointsDegraded = addMissingDataPoint(
+        clusterDegradedResult.values,
+        Date.parse(startingTimeISO) / 1000,
+        Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
+        frequency,
+      );
+      const pointsWatchdog = addMissingDataPoint(
+        watchdogResult.values,
+        Date.parse(startingTimeISO) / 1000,
+        Date.parse(currentTimeISO) / 1000 - Date.parse(startingTimeISO) / 1000,
+        frequency,
+      );
 
-    return getSegments({ pointsDegraded, pointsAtRisk, pointsWatchdog }).map(
-      convertSegmentToAlert,
-    );
-  });
+      return getSegments({ pointsDegraded, pointsAtRisk, pointsWatchdog }).map(
+        convertSegmentToAlert,
+      );
+    });
 
   return {
-    queryKey: ['clusterAlertsNumber'],
+    queryKey: ['clusterAlertsNumber', duration],
     queryFn: () => {
-      
       const now = new Date().getTime();
       const endTime = now - (now % (frequency * 1000)); //round minute of current time to make sure we have the same points in the result
-      const startingTimeISO = new Date((endTime / 1000 - duration) * 1000).toISOString()
-      const currentTimeISO = new Date(endTime).toISOString()
-  
-      return clusterAlertNumberPromise({startingTimeISO, currentTimeISO, frequency});
+      const startingTimeISO = new Date(
+        (endTime / 1000 - duration) * 1000,
+      ).toISOString();
+      const currentTimeISO = new Date(endTime).toISOString();
+
+      return clusterAlertNumberPromise({
+        startingTimeISO,
+        currentTimeISO,
+        frequency,
+      });
     },
     refetchInterval: frequency * 1000,
     refetchOnMount: false,
