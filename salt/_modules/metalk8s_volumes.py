@@ -213,6 +213,25 @@ class Volume:
 
     def device_info(self):
         """Return size and path of the underlying block device"""
+        if not os.path.exists(self.persistent_path) and self.is_prepared:
+            if __salt__["file.is_blkdev"](self.path):
+                filter = self.path
+            else:
+                # It's not a blkdev so We consider it's a sparse loop and since
+                # we do not have any easy way to get the device name of a specific sparse
+                # loop device trigger it on every loop device
+                filter = "--sysname-match='loop*'"
+            # Trigger udev refresh
+            _run_cmd(
+                f"udevadm trigger --action=change --type=devices --subsystem-match=block {filter}"
+            )
+            _run_cmd(
+                f"udevadm settle --timeout=360 --exit-if-exists={self.persistent_path}"
+            )
+        if not os.path.exists(self.persistent_path):
+            raise CommandExecutionError(
+                f"Error '{self.get('metadata.name')}' volume path '{self.persistent_path}' does not exists"
+            )
         size = __salt__["disk.dump"](self.persistent_path)["getsize64"]
         return {"size": size, "path": self.persistent_path}
 
