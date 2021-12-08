@@ -1,6 +1,12 @@
 # CHANGELOG
 ## Release 123.0.0 (in development)
 
+### Enhancements
+
+- Bump Kubernetes version to
+  [1.23.0](https://github.com/kubernetes/kubernetes/releases/tag/v1.23.0)
+  (PR[#3634](https://github.com/scality/metalk8s/pull/3634))
+
 ## Release 2.11.0 (in development)
 ### Additions
 
