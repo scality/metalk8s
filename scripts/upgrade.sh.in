@@ -5,6 +5,7 @@ set -o pipefail
 
 VERBOSE=${VERBOSE:-0}
 LOGFILE=/var/log/metalk8s/upgrade.log
+DRAIN_TIMEOUT=${DRAIN_TIMEOUT:-0}
 DRY_RUN=0
 DESTINATION_VERSION=${DESTINATION_VERSION:-@@VERSION}
 # SALTENV must be equal to script version and DESTINATION_VERSION
@@ -17,6 +18,7 @@ BASE_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
 _usage() {
     echo "upgrade.sh [options]"
     echo "Options:"
+    echo "-D/--drain-timeout:              Change the node drain timeout (in seconds)"
     echo "-l/--log-file <logfile_path>:    Path to log file"
     echo "-v/--verbose:                    Run in verbose mode"
     echo "-d/--dry-run:                    Run actions in dry run mode"
@@ -25,6 +27,10 @@ _usage() {
 
 while (( "$#" )); do
   case "$1" in
+    -D|--drain-timeout)
+      DRAIN_TIMEOUT="$2"
+      shift 2
+      ;;
     -d|--dry-run)
       DRY_RUN=1
       shift
@@ -163,7 +169,8 @@ upgrade_local_engines () {
 upgrade_nodes () {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
-        metalk8s.orchestrate.upgrade saltenv="$SALTENV"
+        metalk8s.orchestrate.upgrade saltenv="$SALTENV" \
+        pillar="{'orchestrate': {'drain_timeout': $DRAIN_TIMEOUT}}"
 }
 
 precheck_upgrade() {

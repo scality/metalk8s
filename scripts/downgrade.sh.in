@@ -6,6 +6,7 @@ set -o pipefail
 FORCE=''
 VERBOSE=${VERBOSE:-0}
 LOGFILE=/var/log/metalk8s/downgrade.log
+DRAIN_TIMEOUT=${DRAIN_TIMEOUT:-0}
 DRY_RUN=0
 SALTENV=${SALTENV:-}
 DESTINATION_VERSION=""
@@ -21,6 +22,7 @@ _usage() {
     echo "   <destination-version>:        Destination version to downgrade to"
     echo "-f/--force                       Force downgrade when downgrade path"
     echo "                                 is not supported"
+    echo "-D/--drain-timeout:              Change the node drain timeout (in seconds)"
     echo "-l/--log-file <logfile_path>:    Path to log file"
     echo "-v/--verbose:                    Run in verbose mode"
     echo "-d/--dry-run:                    Run actions in dry run mode"
@@ -29,6 +31,10 @@ _usage() {
 
 while (( "$#" )); do
   case "$1" in
+    -D|--drain-timeout)
+      DRAIN_TIMEOUT="$2"
+      shift 2
+      ;;
     -d|--dry-run)
       DRY_RUN=1
       shift
@@ -124,7 +130,7 @@ launch_downgrade () {
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
         metalk8s.orchestrate.downgrade \
         saltenv="$SALTENV" \
-        ${FORCE:+pillar="{'metalk8s': {'downgrade': {'enabled': true}}}"}
+        pillar="{'orchestrate': {'drain_timeout': $DRAIN_TIMEOUT}${FORCE:+", 'metalk8s': {'downgrade': {'enabled': true}}"}}"
 }
 
 downgrade_bootstrap () {

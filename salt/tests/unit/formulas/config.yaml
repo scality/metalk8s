@@ -324,6 +324,12 @@ metalk8s:
                 orchestrate:
                   node_name: master-1
                   skip_draining: true
+            "Change drain timeout":
+              pillar_overrides:
+                <<: *pillar_orch_target_master_node
+                orchestrate:
+                  node_name: master-1
+                  drain_timeout: 60
             "Skip etcd role":
               pillar_overrides:
                 <<: *pillar_orch_target_master_node

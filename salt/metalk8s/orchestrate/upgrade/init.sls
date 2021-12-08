@@ -87,6 +87,7 @@ Deploy node {{ node }}:
     - pillar:
         orchestrate:
           node_name: {{ node }}
+          drain_timeout: {{ salt.pillar.get("orchestrate:drain_timeout", default=0) }}
           {%- if pillar.metalk8s.nodes|length == 1 %}
           {#- Do not drain if we are in single node cluster #}
           skip_draining: True
