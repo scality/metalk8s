@@ -166,7 +166,8 @@ class Drain(object):
         self._force = force
         self._grace_period = grace_period
         self._ignore_daemonset = ignore_daemonset
-        self._timeout = timeout or (2 ** 64 - 1)
+        # Default timeout is 3600 seconds
+        self._timeout = timeout or 3600
         self._delete_local_data = delete_local_data
         self._best_effort = best_effort
         self._kwargs = kwargs

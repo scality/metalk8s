@@ -6,7 +6,7 @@
   (PR[#3607](https://github.com/scality/metalk8s/pull/3607))
 
 - Add ability to change the drain timeout from the upgrade and
-  downgrade scripts
+  downgrade scripts and default to 3600 seconds
   (PR[#3633](https://github.com/scality/metalk8s/pull/3633))
 
 ## Bug fixes
