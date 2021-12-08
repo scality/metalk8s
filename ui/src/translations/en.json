@@ -178,5 +178,11 @@
   "view_details": "View details",
   "start": "Start",
   "no_data_available_for_metrics": "No data available for displaying the Metrics",
-  "global_health_explanation": "The Global Health is the overall status of your Platform over a specific period.\nThe statuses of the Volumes and Nodes, the Network and the Services are monitored.\n(circle with StatusHealthy) OK, the Platform is healthy.\n(circle with StatusWarning) Warning, the Platform is degraded but not at risk.\n(circle with StatusCritical) Critical status, the Platform is degraded and at risk.\nHover or click on an alert segment on the Global Health bar for more details."
+  "global_health_explanation": "The Global Health is the overall status of your Platform over a specific period.\nThe statuses of the Volumes and Nodes, the Network and the Services are monitored.\n(circle with StatusHealthy) OK, the Platform is healthy.\n(circle with StatusWarning) Warning, the Platform is degraded but not at risk.\n(circle with StatusCritical) Critical status, the Platform is degraded and at risk.\nHover or click on an alert segment on the Global Health bar for more details.",
+  "dashboard_cpu_quantile_explanation_line1": "Displaying statistics about your cluster CPU usage for large clusters.",
+  "dashboard_cpu_quantile_explanation_line2": "Q90 is the quantile 90, meaning that 90% of your nodes are using less CPU than this threshold.",
+  "dashboard_cpu_quantile_explanation_line3": "Q5 is the quantile 5, meaning that 5% of your nodes are using less CPU than this threshold.",
+  "dashboard_cpu_quantile_explanation_line4": "If those indicators diverge than the median it means that your cluster CPU load is not correctly equilibrated.",
+  "dashboard_cpu_quantile_explanation_line5": "Hovering the chart would display the nodes that are respectively above and below the Q90 and the Q5 thresholds.",
+  "error_occur_outpassing_threshold": "Sorry an error occurred and we failed to retrieve the nodes outpassing this threshold."
 }

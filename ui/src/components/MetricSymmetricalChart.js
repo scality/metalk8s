@@ -175,7 +175,7 @@ const MetricSymmetricalChart = ({
       yAxisType={'symmetrical'}
       yAxisTitle={yAxisTitle}
       isLoading={showAvg ? isMetricsAvgDataLoading : isMetricsDataLoading}
-      isLegendHided={false}
+      isLegendHidden={false}
       unitRange={unitRange}
     />
   );

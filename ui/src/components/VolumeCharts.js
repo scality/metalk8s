@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { LineTemporalChart } from '@scality/core-ui/dist/next';
 import {
   getSeriesForSymmetricalChart,
-  getSingleResourceSerie,
+  convertPrometheusResultToSerieWithAverage,
 } from '../services/graphUtils';
 import {
   getVolumeIOPSReadQuery,
@@ -30,12 +30,14 @@ export const VolumeThroughputChart = ({
   volumeName: string,
 }) => {
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
-    getQueryAbove: (timeSpanProps: TimeSpanProps) =>
+    getAboveQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeThroughputWriteQuery(instanceIp, deviceName, timeSpanProps),
-    getQueryBelow: (timeSpanProps: TimeSpanProps) =>
+    ],
+    getBelowQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeThroughputReadQuery(instanceIp, deviceName, timeSpanProps),
+    ],
     transformPrometheusDataToSeries: useCallback(
-      (prometheusResultAbove, prometheusResultBelow) =>
+      ([prometheusResultAbove], [prometheusResultBelow]) =>
         getSeriesForSymmetricalChart(
           prometheusResultAbove,
           prometheusResultBelow,
@@ -57,7 +59,7 @@ export const VolumeThroughputChart = ({
       yAxisTitle={YAXIS_TITLE_READ_WRITE}
       unitRange={UNIT_RANGE_BS}
       isLoading={isLoading}
-      isLegendHided={false}
+      isLegendHidden={false}
     />
   );
 };
@@ -72,12 +74,14 @@ export const VolumeLatencyChart = ({
   volumeName: string,
 }) => {
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
-    getQueryAbove: (timeSpanProps: TimeSpanProps) =>
+    getAboveQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeLatencyWriteQuery(instanceIp, deviceName, timeSpanProps),
-    getQueryBelow: (timeSpanProps: TimeSpanProps) =>
+    ],
+    getBelowQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeLatencyReadQuery(instanceIp, deviceName, timeSpanProps),
+    ],
     transformPrometheusDataToSeries: useCallback(
-      (prometheusResultAbove, prometheusResultBelow) =>
+      ([prometheusResultAbove], [prometheusResultBelow]) =>
         getSeriesForSymmetricalChart(
           prometheusResultAbove,
           prometheusResultBelow,
@@ -104,7 +108,7 @@ export const VolumeLatencyChart = ({
         { threshold: 60 * 1000 * 1000, label: 'm' },
       ]}
       isLoading={isLoading}
-      isLegendHided={false}
+      isLegendHidden={false}
     />
   );
 };
@@ -119,12 +123,14 @@ export const VolumeIOPSChart = ({
   volumeName: string,
 }) => {
   const { series, startingTimeStamp, isLoading } = useSymetricalChartSeries({
-    getQueryAbove: (timeSpanProps: TimeSpanProps) =>
+    getAboveQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeIOPSWriteQuery(instanceIp, deviceName, timeSpanProps),
-    getQueryBelow: (timeSpanProps: TimeSpanProps) =>
+    ],
+    getBelowQueries: (timeSpanProps: TimeSpanProps) => [
       getVolumeIOPSReadQuery(instanceIp, deviceName, timeSpanProps),
+    ],
     transformPrometheusDataToSeries: useCallback(
-      (prometheusResultAbove, prometheusResultBelow) =>
+      ([prometheusResultAbove], [prometheusResultBelow]) =>
         getSeriesForSymmetricalChart(
           prometheusResultAbove,
           prometheusResultBelow,
@@ -145,7 +151,7 @@ export const VolumeIOPSChart = ({
       yAxisType={'symmetrical'}
       yAxisTitle={YAXIS_TITLE_READ_WRITE}
       isLoading={isLoading}
-      isLegendHided={false}
+      isLegendHidden={false}
     />
   );
 };
@@ -164,7 +170,7 @@ export const VolumeUsageChart = ({
       getVolumeUsageQuery(pvcName, namespace, timeSpanProps),
     transformPrometheusDataToSeries: useCallback(
       (prometheusResult) =>
-        getSingleResourceSerie(prometheusResult, volumeName),
+        convertPrometheusResultToSerieWithAverage(prometheusResult, volumeName),
       [volumeName],
     ),
   });
@@ -177,7 +183,7 @@ export const VolumeUsageChart = ({
       startingTimeStamp={startingTimeStamp}
       yAxisType={'percentage'}
       isLoading={isLoading}
-      isLegendHided={false}
+      isLegendHidden={false}
     />
   );
 };

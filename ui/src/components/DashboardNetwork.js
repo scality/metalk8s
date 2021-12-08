@@ -2,7 +2,10 @@ import React from 'react';
 import styled from 'styled-components';
 import { useIntl } from 'react-intl';
 import { spacing } from '@scality/core-ui/dist/style/theme';
-import { PageSubtitle } from '../components/style/CommonLayoutStyle';
+import {
+  PageSubtitle,
+  GraphsWrapper,
+} from '../components/style/CommonLayoutStyle';
 import DashboardPlaneHealth from './DashboardPlaneHealth';
 import DashboardBandwidthChart from './DashboardBandwidthChart';
 import { DashboardScrollableArea } from '../containers/DashboardPage';
@@ -22,11 +25,6 @@ export const PanelActions = styled.div`
   justify-content: space-between;
 `;
 
-const ChartContainer = styled.div`
-  flex-grow: 1;
-  width: 100%;
-`;
-
 const DashboardNetwork = () => {
   const intl = useIntl();
 
@@ -35,20 +33,18 @@ const DashboardNetwork = () => {
       <PanelActions>
         <PageSubtitle>{intl.formatMessage({ id: 'network' })}</PageSubtitle>
       </PanelActions>
-      <DashboardScrollableArea style={{display: 'flex', flexDirection: 'column', flexGrow: '1'}}>
+      <DashboardScrollableArea>
         <DashboardPlaneHealth />
-        <ChartContainer>
+        <GraphsWrapper style={{ paddingTop: `${spacing.sp16}` }}>
           <DashboardBandwidthChart
             title="ControlPlane Bandwidth"
             plane="controlPlane"
           ></DashboardBandwidthChart>
-        </ChartContainer>
-        <ChartContainer>
           <DashboardBandwidthChart
             title="WorkloadPlane Bandwidth"
             plane="workloadPlane"
           ></DashboardBandwidthChart>
-        </ChartContainer>
+        </GraphsWrapper>
       </DashboardScrollableArea>
     </NetworkContainer>
   );

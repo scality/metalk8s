@@ -1,16 +1,40 @@
 import React, { useCallback } from 'react';
 import { LineTemporalChart } from '@scality/core-ui/dist/next';
-import { GraphWrapper } from './DashboardMetrics';
 import {
   useNodeAddressesSelector,
   useNodes,
+  useShowQuantileChart,
   useSingleChartSerie,
 } from '../hooks';
 import type { DashboardChartProps } from '../containers/DashboardPage';
-import { getNodesSystemLoadQuery } from '../services/platformlibrary/metrics';
+import {
+  getNodesSystemLoadOutpassingThresholdQuery,
+  getNodesSystemLoadQuantileQuery,
+  getNodesSystemLoadQuery,
+} from '../services/platformlibrary/metrics';
 import { getMultiResourceSeriesForChart } from '../services/graphUtils';
+import NonSymmetricalQuantileChart from './NonSymmetricalQuantileChart';
 
-const DashboardChartSystemLoad = (props: DashboardChartProps) => {
+const DashboardChartSystemLoad = () => {
+  const { isShowQuantileChart } = useShowQuantileChart();
+  return (
+    <>
+      {isShowQuantileChart ? (
+        <NonSymmetricalQuantileChart
+          getQuantileQuery={getNodesSystemLoadQuantileQuery}
+          getQuantileHoverQuery={getNodesSystemLoadOutpassingThresholdQuery}
+          title={'System Load'}
+        />
+      ) : (
+        <DashboardChartSystemLoadWithoutQuantiles />
+      )}
+    </>
+  );
+};
+
+const DashboardChartSystemLoadWithoutQuantiles = (
+  props: DashboardChartProps,
+) => {
   const nodeAddresses = useNodeAddressesSelector(useNodes());
   const { isLoading, series, startingTimeStamp } = useSingleChartSerie({
     getQuery: (timeSpanProps) => getNodesSystemLoadQuery(timeSpanProps),
@@ -22,16 +46,14 @@ const DashboardChartSystemLoad = (props: DashboardChartProps) => {
     ),
   });
   return (
-    <GraphWrapper>
-      <LineTemporalChart
-        series={series}
-        height={80}
-        title="System Load"
-        startingTimeStamp={startingTimeStamp}
-        isLegendHided={true}
-        isLoading={isLoading}
-      />
-    </GraphWrapper>
+    <LineTemporalChart
+      series={series}
+      height={80}
+      title="System Load"
+      startingTimeStamp={startingTimeStamp}
+      isLegendHidden={true}
+      isLoading={isLoading}
+    />
   );
 };
 

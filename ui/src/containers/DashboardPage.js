@@ -19,7 +19,7 @@ const DashboardGrid = styled.div`
     'inventory  network network metrics metrics' auto
     / 1fr 1fr 1fr 1fr 1fr;
 
-  height: calc(100vh - 48px - 8px);
+  height: calc(100vh - 3.357rem - 8px);
   margin: 0 8px 0 8px;
 
   > div {

@@ -1,5 +1,10 @@
 import styled from 'styled-components';
-import { padding, fontWeight, fontSize, spacing } from '@scality/core-ui/dist/style/theme';
+import {
+  padding,
+  fontWeight,
+  fontSize,
+  spacing,
+} from '@scality/core-ui/dist/style/theme';
 
 export const PageContainer = styled.div`
   display: flex;
@@ -116,16 +121,6 @@ export const MetricsActionContainer = styled.div`
   }
 `;
 
-export const GraphsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: ${padding.small};
-  overflow: auto;
-  .sc-vegachart svg {
-    background-color: inherit !important;
-  }
-`;
-
 export const RowGraphContainer = styled.div`
   display: flex;
   flex-direction: row;
@@ -145,6 +140,17 @@ export const GraphTitle = styled.div`
 
 export const GraphWrapper = styled.div`
   max-width: 94%;
+`;
+
+export const GraphsWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  flex-grow: 1;
+  // make sure the charts resize when the width of parent has changed.
+  .vega-embed > svg {
+    width: 100%;
+  }
 `;
 
 export const TitlePage = styled.div`

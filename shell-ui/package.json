@@ -47,7 +47,7 @@
     "webpack-dev-server": "^3.11.2"
   },
   "dependencies": {
-    "@scality/core-ui": "github:scality/core-ui.git#v0.22.6",
+    "@scality/core-ui": "github:scality/core-ui.git#v0.24.2",
     "@scality/module-federation": "github:scality/module-federation.git#1.0.0",
     "oidc-client": "^1.11.3",
     "oidc-react": "^1.1.5",

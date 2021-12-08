@@ -106,11 +106,13 @@ export const lineColor4 = '#DC90F1';
 
 // Grafana dashboard UIDs (for stable links)
 export const GRAFANA_DASHBOARDS = {
-  logs: "a7e130cb82be229d6f3edbfd0a438001",
-  nodes: "node-exporter-full",
-  volumes: "919b92a8e8041bd567af9edab12c840c",
+  logs: 'a7e130cb82be229d6f3edbfd0a438001',
+  nodes: 'node-exporter-full',
+  volumes: '919b92a8e8041bd567af9edab12c840c',
 };
 
 // Height of the charts
 export const HEIGHT_DEFAULT_CHART = 120;
 export const HEIGHT_SYMMETRICAL_CHART = 160;
+
+export const NODES_LIMIT_QUANTILE = 8;
