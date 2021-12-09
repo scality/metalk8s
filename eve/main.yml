@@ -18,7 +18,7 @@ models:
       name: Git pull terraform snapshot
       command: >
         git clone --depth 1 "git@github.com:scality/terraform-snapshot.git"
-        --branch "0.3.0"
+        --branch "0.3.2"
       haltOnFailure: true
   - ShellCommand: &git_pull_ssh
       name: Git pull on bastion
