@@ -35,7 +35,6 @@ Create kube-controller-manager Pod manifest:
           - --controllers=*,bootstrapsigner,tokencleaner
           - --kubeconfig=/etc/kubernetes/controller-manager.conf
           - --leader-elect=true
-          - --port=0
           - --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt
           - --root-ca-file=/etc/kubernetes/pki/ca.crt
           - --service-account-private-key-file=/etc/kubernetes/pki/sa.key
