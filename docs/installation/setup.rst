@@ -85,11 +85,16 @@ CentOS:
     - extras
     - updates
 
-RHEL:
+RHEL 7:
 
     - rhel-7-server-rpms
     - rhel-7-server-extras-rpms
     - rhel-7-server-optional-rpms
+
+RHEL 8:
+
+    - rhel-8-for-x86_64-baseos-rpms
+    - rhel-8-for-x86_64-appstream-rpms
 
     .. note::
 
