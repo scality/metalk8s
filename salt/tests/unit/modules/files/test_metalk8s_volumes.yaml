@@ -959,67 +959,189 @@ clean_up:
 device_info:
   ## SPARSE volume
   # sparse volume info
-  - name: my-sparse-volume
+  - &device_info_sparse
+    name: my-sparse-volume
+    is_blkdev: False
     pillar_volumes: *volumes_details
     result:
       size: 4242
       path: /dev/disk/by-uuid/f1d78810-3787-4ca4-b712-50a269e42560
 
+  # sparse volume device does not exists (udevadm trigger does solve it)
+  - <<: *device_info_sparse
+    exists_values:
+      - False
+      - True
+    check_udevadm: True
+
+  # sparse volume device does not exists (udevadm trigger does NOT solve it)
+  - <<: *device_info_sparse
+    exists_values: False
+    check_udevadm: True
+    raises: True
+    result: Error 'my-sparse-volume' volume path '/dev/disk/by-uuid/f1d78810-3787-4ca4-b712-50a269e42560' does not exists
+
   ## SPARSE block volume
   # sparse volume info
-  - name: my-sparse-block-volume
+  - &device_info_sparse_block
+    name: my-sparse-block-volume
+    is_blkdev: False
     pillar_volumes: *volumes_details
     result:
       size: 4242
       path: /dev/disk/by-partuuid/8474cda7-0dbe-40fc-9842-3cb0404a725a
 
+  # sparse volume device does not exists (udevadm trigger does solve it)
+  - <<: *device_info_sparse_block
+    exists_values:
+      - False
+      - True
+    check_udevadm: True
+
+  # sparse volume device does not exists (udevadm trigger does NOT solve it)
+  - <<: *device_info_sparse_block
+    exists_values: False
+    check_udevadm: True
+    raises: True
+    result: Error 'my-sparse-block-volume' volume path '/dev/disk/by-partuuid/8474cda7-0dbe-40fc-9842-3cb0404a725a' does not exists
+
   ## RAW BLOCK DEVICE volume
   # raw block device info
-  - name: my-raw-block-device-volume
+  - &device_info_raw_block
+    name: my-raw-block-device-volume
     pillar_volumes: *volumes_details
     result:
       size: 4242
       path: /dev/disk/by-uuid/9474cda7-0dbe-40fc-9842-3cb0404a725a
 
+  # raw block device does not exists (udevadm trigger does solve it)
+  - <<: *device_info_raw_block
+    exists_values:
+      - False
+      - True
+    check_udevadm: True
+
+  # raw block device does not exists (udevadm trigger does NOT solve it)
+  - <<: *device_info_raw_block
+    exists_values: False
+    check_udevadm: True
+    raises: True
+    result: Error 'my-raw-block-device-volume' volume path '/dev/disk/by-uuid/9474cda7-0dbe-40fc-9842-3cb0404a725a' does not exists
+
   ## RAW BLOCK DEVICE block disk volume
   # raw block device info
-  - name: my-raw-block-device-block-disk-volume
+  - &device_info_raw_block_disk_block
+    name: my-raw-block-device-block-disk-volume
     pillar_volumes: *volumes_details
     result:
       size: 4242
       path: /dev/disk/by-partuuid/9474cda7-0dbe-40fc-9842-3cb0404a725a
 
+  # raw block device does not exists (udevadm trigger does solve it)
+  - <<: *device_info_raw_block_disk_block
+    exists_values:
+      - False
+      - True
+    check_udevadm: True
+
+  # raw block device does not exists (udevadm trigger does NOT solve it)
+  - <<: *device_info_raw_block_disk_block
+    exists_values: False
+    check_udevadm: True
+    raises: True
+    result: Error 'my-raw-block-device-block-disk-volume' volume path '/dev/disk/by-partuuid/9474cda7-0dbe-40fc-9842-3cb0404a725a' does not exists
+
   ## RAW BLOCK DEVICE block partition volume
   # raw block device info
-  - name: my-raw-block-device-block-partition-volume
+  - &device_info_raw_block_part_block
+    name: my-raw-block-device-block-partition-volume
     pillar_volumes: *volumes_details
     result:
       size: 4242
       path: /dev/disk/by-partuuid/9574cda7-0dbe-40fc-9842-3cb0404a725a
 
+  # raw block device does not exists (udevadm trigger does solve it)
+  - <<: *device_info_raw_block_part_block
+    exists_values:
+      - False
+      - True
+    check_udevadm: True
+
+  # raw block device does not exists (udevadm trigger does NOT solve it)
+  - <<: *device_info_raw_block_part_block
+    exists_values: False
+    check_udevadm: True
+    raises: True
+    result: Error 'my-raw-block-device-block-partition-volume' volume path '/dev/disk/by-partuuid/9574cda7-0dbe-40fc-9842-3cb0404a725a' does not exists
+
   ## RAW BLOCK DEVICE block lvm volume
   # raw block device info
-  - name: my-raw-block-device-block-lvm-volume
+  - &device_info_raw_block_lvm_block
+    name: my-raw-block-device-block-lvm-volume
     pillar_volumes: *volumes_details
     result:
       size: 4242
       path: /dev/dm-1
 
+  # raw block device does not exists (udevadm trigger does solve it)
+  - <<: *device_info_raw_block_lvm_block
+    exists_values:
+      - False
+      - True
+    check_udevadm: True
+
+  # raw block device does not exists (udevadm trigger does NOT solve it)
+  - <<: *device_info_raw_block_lvm_block
+    exists_values: False
+    check_udevadm: True
+    raises: True
+    result: Error 'my-raw-block-device-block-lvm-volume' volume path '/dev/dm-1' does not exists
+
   ## LVM LogicalVolume volume
   # LVM LogicalVolume info
-  - name: my-lvm-lv-volume
+  - &device_info_lvm_lv
+    name: my-lvm-lv-volume
     pillar_volumes: *volumes_details
     result:
       size: 4242
       path: /dev/disk/by-uuid/6474cda7-0dbe-40fc-9842-3cb0404a725a
 
+  # LVM LV device does not exists (udevadm trigger does solve it)
+  - <<: *device_info_lvm_lv
+    exists_values:
+      - False
+      - True
+    check_udevadm: True
+
+  # LVM LV device does not exists (udevadm trigger does NOT solve it)
+  - <<: *device_info_lvm_lv
+    exists_values: False
+    check_udevadm: True
+    raises: True
+    result: Error 'my-lvm-lv-volume' volume path '/dev/disk/by-uuid/6474cda7-0dbe-40fc-9842-3cb0404a725a' does not exists
+
   ## LVM LogicalVolume block volume
   # LVM LogicalVolume block info
-  - name: my-lvm-lv-block-volume
+  - &device_info_lvm_lv_block
+    name: my-lvm-lv-block-volume
     pillar_volumes: *volumes_details
     result:
       size: 4242
       path: /dev/dm-2
+
+  # LVM LV device does not exists (udevadm trigger does solve it)
+  - <<: *device_info_lvm_lv_block
+    exists_values:
+      - False
+      - True
+    check_udevadm: True
+
+  # LVM LV device does not exists (udevadm trigger does NOT solve it)
+  - <<: *device_info_lvm_lv_block
+    exists_values: False
+    check_udevadm: True
+    raises: True
+    result: Error 'my-lvm-lv-block-volume' volume path '/dev/dm-2' does not exists
 
   ## Invalid volumes
   # specified volume is not in the pillar
