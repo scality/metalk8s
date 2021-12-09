@@ -132,6 +132,9 @@ Drain the node:
     - ignore_daemonset: True
     - delete_local_data: True
     - force: True
+    {%- if pillar.orchestrate.get("drain_timeout") %}
+    - timeout: {{ pillar.orchestrate.drain_timeout }}
+    {%- endif %}
     - require:
       - metalk8s_cordon: Cordon the node
     - require_in:
