@@ -320,12 +320,12 @@ def mine_get(
 
 
 @register("pillar.get")
-def pillar_get(salt_mock: SaltMock, key: str) -> Any:
+def pillar_get(salt_mock: SaltMock, key: str, default: Optional[Any] = None) -> Any:
     """Retrieve a value from the mocked pillar."""
     res = salt_mock._pillar.copy()
     for part in key.split(":"):
         res = res.get(part, {})
-    return res
+    return res or default
 
 
 @register("saltutil.runner")
