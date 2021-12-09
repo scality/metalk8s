@@ -5,6 +5,12 @@
 - Bump Kubernetes version to 1.21.7
   (PR[#3607](https://github.com/scality/metalk8s/pull/3607))
 
+## Bug fixes
+
+- [#3341](https://github.com/scality/metalk8s/issues/3341) - Try to refresh
+  udev database automatically if a Volume persistent path does not exist
+  (PR[#3630](https://github.com/scality/metalk8s/pull/3630))
+
 ## Release 2.10.5
 ## Enhancements
 

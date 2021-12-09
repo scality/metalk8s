@@ -295,7 +295,16 @@ class Metalk8sVolumesTestCase(TestCase, mixins.LoaderModuleMockMixin):
             self.assertEqual(result, expected)
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["device_info"])
-    def test_device_info(self, name, result, raises=False, pillar_volumes=None):
+    def test_device_info(
+        self,
+        name,
+        result,
+        raises=False,
+        is_blkdev=True,
+        exists_values=True,
+        check_udevadm=False,
+        pillar_volumes=None,
+    ):
         """
         Tests the return of `device_info` function
         """
@@ -304,18 +313,35 @@ class Metalk8sVolumesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         if pillar_volumes:
             pillar_dict["metalk8s"]["volumes"] = pillar_volumes
 
+        cmd_mock = MagicMock(return_value=utils.cmd_output(stdout="OK"))
+
         salt_dict = {
             "saltutil.refresh_pillar": MagicMock(),
             "disk.dump": MagicMock(return_value={"getsize64": 4242}),
+            "file.is_blkdev": MagicMock(return_value=is_blkdev),
+            "cmd.run_all": cmd_mock,
         }
 
         # Glob is used only for lvm, let simulate that we have 2 lvm volume
         glob_mock = MagicMock(return_value=["/dev/dm-1", "/dev/dm-2"])
+        exists_mock = MagicMock()
+        if isinstance(exists_values, list):
+            exists_mock.side_effect = exists_values
+        else:
+            exists_mock.return_value = exists_values
 
         with patch.dict(metalk8s_volumes.__pillar__, pillar_dict), patch.dict(
             metalk8s_volumes.__salt__, salt_dict
         ), patch("metalk8s_volumes.device_name", device_name_mock), patch(
             "glob.glob", glob_mock
+        ), patch(
+            "os.path.exists", exists_mock
+        ), patch.object(
+            metalk8s_volumes.Volume, "is_prepared", True
+        ), patch.object(
+            metalk8s_volumes.SparseLoopDeviceBlock, "is_prepared", True
+        ), patch.object(
+            metalk8s_volumes.RawBlockDeviceBlock, "is_prepared", True
         ):
             if raises:
                 self.assertRaisesRegex(
@@ -323,6 +349,12 @@ class Metalk8sVolumesTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 )
             else:
                 self.assertEqual(result, metalk8s_volumes.device_info(name))
+            if check_udevadm:
+                self.assertEqual(cmd_mock.call_count, 2)
+                self.assertRegex(cmd_mock.call_args_list[0][0][0], "udevadm trigger.*")
+                self.assertRegex(cmd_mock.call_args_list[1][0][0], "udevadm settle.*")
+            else:
+                cmd_mock.assert_not_called()
 
 
 class RawBlockDeviceBlockTestCase(TestCase):
