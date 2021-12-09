@@ -101,6 +101,10 @@
 - Bump Kubernetes version to 1.21.7
   (PR[#3607](https://github.com/scality/metalk8s/pull/3607))
 
+- Add ability to change the drain timeout from the upgrade and
+  downgrade scripts and default to 3600 seconds
+  (PR[#3633](https://github.com/scality/metalk8s/pull/3633))
+
 ## Bug fixes
 
 - [#3341](https://github.com/scality/metalk8s/issues/3341) - Try to refresh
