@@ -16,7 +16,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.1
+    controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
   name: alertmanagerconfigs.monitoring.coreos.com
   namespace: metalk8s-monitoring
@@ -210,7 +210,8 @@ spec:
                             description: Whether or not to notify about resolved alerts.
                             type: boolean
                           smarthost:
-                            description: The SMTP host through which emails are sent.
+                            description: The SMTP host and port through which emails
+                              are sent. E.g. example.com:25
                             type: string
                           text:
                             description: The text body of the email notification.
@@ -403,8 +404,42 @@ spec:
                           httpConfig:
                             description: HTTP client configuration.
                             properties:
+                              authorization:
+                                description: Authorization header configuration for
+                                  the client. This is mutually exclusive with BasicAuth
+                                  and is only available starting from Alertmanager
+                                  v0.22+.
+                                properties:
+                                  credentials:
+                                    description: The secret's key that contains the
+                                      credentials of the request
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  type:
+                                    description: Set the authentication type. Defaults
+                                      to Bearer, Basic will cause an error
+                                    type: string
+                                type: object
                               basicAuth:
-                                description: BasicAuth for the client.
+                                description: BasicAuth for the client. This is mutually
+                                  exclusive with Authorization. If both are defined,
+                                  BasicAuth takes precedence.
                                 properties:
                                   password:
                                     description: The secret in the service monitor
@@ -695,8 +730,42 @@ spec:
                           httpConfig:
                             description: HTTP client configuration.
                             properties:
+                              authorization:
+                                description: Authorization header configuration for
+                                  the client. This is mutually exclusive with BasicAuth
+                                  and is only available starting from Alertmanager
+                                  v0.22+.
+                                properties:
+                                  credentials:
+                                    description: The secret's key that contains the
+                                      credentials of the request
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  type:
+                                    description: Set the authentication type. Defaults
+                                      to Bearer, Basic will cause an error
+                                    type: string
+                                type: object
                               basicAuth:
-                                description: BasicAuth for the client.
+                                description: BasicAuth for the client. This is mutually
+                                  exclusive with Authorization. If both are defined,
+                                  BasicAuth takes precedence.
                                 properties:
                                   password:
                                     description: The secret in the service monitor
@@ -971,8 +1040,42 @@ spec:
                           httpConfig:
                             description: HTTP client configuration.
                             properties:
+                              authorization:
+                                description: Authorization header configuration for
+                                  the client. This is mutually exclusive with BasicAuth
+                                  and is only available starting from Alertmanager
+                                  v0.22+.
+                                properties:
+                                  credentials:
+                                    description: The secret's key that contains the
+                                      credentials of the request
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  type:
+                                    description: Set the authentication type. Defaults
+                                      to Bearer, Basic will cause an error
+                                    type: string
+                                type: object
                               basicAuth:
-                                description: BasicAuth for the client.
+                                description: BasicAuth for the client. This is mutually
+                                  exclusive with Authorization. If both are defined,
+                                  BasicAuth takes precedence.
                                 properties:
                                   password:
                                     description: The secret in the service monitor
@@ -1362,8 +1465,42 @@ spec:
                           httpConfig:
                             description: HTTP client configuration.
                             properties:
+                              authorization:
+                                description: Authorization header configuration for
+                                  the client. This is mutually exclusive with BasicAuth
+                                  and is only available starting from Alertmanager
+                                  v0.22+.
+                                properties:
+                                  credentials:
+                                    description: The secret's key that contains the
+                                      credentials of the request
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  type:
+                                    description: Set the authentication type. Defaults
+                                      to Bearer, Basic will cause an error
+                                    type: string
+                                type: object
                               basicAuth:
-                                description: BasicAuth for the client.
+                                description: BasicAuth for the client. This is mutually
+                                  exclusive with Authorization. If both are defined,
+                                  BasicAuth takes precedence.
                                 properties:
                                   password:
                                     description: The secret in the service monitor
@@ -1647,8 +1784,42 @@ spec:
                           httpConfig:
                             description: The HTTP client's configuration.
                             properties:
+                              authorization:
+                                description: Authorization header configuration for
+                                  the client. This is mutually exclusive with BasicAuth
+                                  and is only available starting from Alertmanager
+                                  v0.22+.
+                                properties:
+                                  credentials:
+                                    description: The secret's key that contains the
+                                      credentials of the request
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  type:
+                                    description: Set the authentication type. Defaults
+                                      to Bearer, Basic will cause an error
+                                    type: string
+                                type: object
                               basicAuth:
-                                description: BasicAuth for the client.
+                                description: BasicAuth for the client. This is mutually
+                                  exclusive with Authorization. If both are defined,
+                                  BasicAuth takes precedence.
                                 properties:
                                   password:
                                     description: The secret in the service monitor
@@ -1876,8 +2047,42 @@ spec:
                           httpConfig:
                             description: HTTP client configuration.
                             properties:
+                              authorization:
+                                description: Authorization header configuration for
+                                  the client. This is mutually exclusive with BasicAuth
+                                  and is only available starting from Alertmanager
+                                  v0.22+.
+                                properties:
+                                  credentials:
+                                    description: The secret's key that contains the
+                                      credentials of the request
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  type:
+                                    description: Set the authentication type. Defaults
+                                      to Bearer, Basic will cause an error
+                                    type: string
+                                type: object
                               basicAuth:
-                                description: BasicAuth for the client.
+                                description: BasicAuth for the client. This is mutually
+                                  exclusive with Authorization. If both are defined,
+                                  BasicAuth takes precedence.
                                 properties:
                                   password:
                                     description: The secret in the service monitor
@@ -2155,8 +2360,42 @@ spec:
                           httpConfig:
                             description: HTTP client configuration.
                             properties:
+                              authorization:
+                                description: Authorization header configuration for
+                                  the client. This is mutually exclusive with BasicAuth
+                                  and is only available starting from Alertmanager
+                                  v0.22+.
+                                properties:
+                                  credentials:
+                                    description: The secret's key that contains the
+                                      credentials of the request
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  type:
+                                    description: Set the authentication type. Defaults
+                                      to Bearer, Basic will cause an error
+                                    type: string
+                                type: object
                               basicAuth:
-                                description: BasicAuth for the client.
+                                description: BasicAuth for the client. This is mutually
+                                  exclusive with Authorization. If both are defined,
+                                  BasicAuth takes precedence.
                                 properties:
                                   password:
                                     description: The secret in the service monitor
@@ -2456,7 +2695,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.1
+    controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
   name: alertmanagers.monitoring.coreos.com
   namespace: metalk8s-monitoring
@@ -2792,10 +3031,71 @@ spec:
                                         The requirements are ANDed.
                                       type: object
                                   type: object
+                                namespaceSelector:
+                                  description: A label query over the set of namespaces
+                                    that the term applies to. The term is applied
+                                    to the union of the namespaces selected by this
+                                    field and the ones listed in the namespaces field.
+                                    null selector and null or empty namespaces list
+                                    means "this pod's namespace". An empty selector
+                                    ({}) matches all namespaces. This field is beta-level
+                                    and is only honored when PodAffinityNamespaceSelector
+                                    feature is enabled.
+                                  properties:
+                                    matchExpressions:
+                                      description: matchExpressions is a list of label
+                                        selector requirements. The requirements are
+                                        ANDed.
+                                      items:
+                                        description: A label selector requirement
+                                          is a selector that contains values, a key,
+                                          and an operator that relates the key and
+                                          values.
+                                        properties:
+                                          key:
+                                            description: key is the label key that
+                                              the selector applies to.
+                                            type: string
+                                          operator:
+                                            description: operator represents a key's
+                                              relationship to a set of values. Valid
+                                              operators are In, NotIn, Exists and
+                                              DoesNotExist.
+                                            type: string
+                                          values:
+                                            description: values is an array of string
+                                              values. If the operator is In or NotIn,
+                                              the values array must be non-empty.
+                                              If the operator is Exists or DoesNotExist,
+                                              the values array must be empty. This
+                                              array is replaced during a strategic
+                                              merge patch.
+                                            items:
+                                              type: string
+                                            type: array
+                                        required:
+                                        - key
+                                        - operator
+                                        type: object
+                                      type: array
+                                    matchLabels:
+                                      additionalProperties:
+                                        type: string
+                                      description: matchLabels is a map of {key,value}
+                                        pairs. A single {key,value} in the matchLabels
+                                        map is equivalent to an element of matchExpressions,
+                                        whose key field is "key", the operator is
+                                        "In", and the values array contains only "value".
+                                        The requirements are ANDed.
+                                      type: object
+                                  type: object
                                 namespaces:
-                                  description: namespaces specifies which namespaces
-                                    the labelSelector applies to (matches against);
-                                    null or empty list means "this pod's namespace"
+                                  description: namespaces specifies a static list
+                                    of namespace names that the term applies to. The
+                                    term is applied to the union of the namespaces
+                                    listed in this field and the ones selected by
+                                    namespaceSelector. null or empty namespaces list
+                                    and null namespaceSelector means "this pod's namespace"
                                   items:
                                     type: string
                                   type: array
@@ -2887,10 +3187,66 @@ spec:
                                     requirements are ANDed.
                                   type: object
                               type: object
+                            namespaceSelector:
+                              description: A label query over the set of namespaces
+                                that the term applies to. The term is applied to the
+                                union of the namespaces selected by this field and
+                                the ones listed in the namespaces field. null selector
+                                and null or empty namespaces list means "this pod's
+                                namespace". An empty selector ({}) matches all namespaces.
+                                This field is beta-level and is only honored when
+                                PodAffinityNamespaceSelector feature is enabled.
+                              properties:
+                                matchExpressions:
+                                  description: matchExpressions is a list of label
+                                    selector requirements. The requirements are ANDed.
+                                  items:
+                                    description: A label selector requirement is a
+                                      selector that contains values, a key, and an
+                                      operator that relates the key and values.
+                                    properties:
+                                      key:
+                                        description: key is the label key that the
+                                          selector applies to.
+                                        type: string
+                                      operator:
+                                        description: operator represents a key's relationship
+                                          to a set of values. Valid operators are
+                                          In, NotIn, Exists and DoesNotExist.
+                                        type: string
+                                      values:
+                                        description: values is an array of string
+                                          values. If the operator is In or NotIn,
+                                          the values array must be non-empty. If the
+                                          operator is Exists or DoesNotExist, the
+                                          values array must be empty. This array is
+                                          replaced during a strategic merge patch.
+                                        items:
+                                          type: string
+                                        type: array
+                                    required:
+                                    - key
+                                    - operator
+                                    type: object
+                                  type: array
+                                matchLabels:
+                                  additionalProperties:
+                                    type: string
+                                  description: matchLabels is a map of {key,value}
+                                    pairs. A single {key,value} in the matchLabels
+                                    map is equivalent to an element of matchExpressions,
+                                    whose key field is "key", the operator is "In",
+                                    and the values array contains only "value". The
+                                    requirements are ANDed.
+                                  type: object
+                              type: object
                             namespaces:
-                              description: namespaces specifies which namespaces the
-                                labelSelector applies to (matches against); null or
-                                empty list means "this pod's namespace"
+                              description: namespaces specifies a static list of namespace
+                                names that the term applies to. The term is applied
+                                to the union of the namespaces listed in this field
+                                and the ones selected by namespaceSelector. null or
+                                empty namespaces list and null namespaceSelector means
+                                "this pod's namespace"
                               items:
                                 type: string
                               type: array
@@ -2984,10 +3340,71 @@ spec:
                                         The requirements are ANDed.
                                       type: object
                                   type: object
+                                namespaceSelector:
+                                  description: A label query over the set of namespaces
+                                    that the term applies to. The term is applied
+                                    to the union of the namespaces selected by this
+                                    field and the ones listed in the namespaces field.
+                                    null selector and null or empty namespaces list
+                                    means "this pod's namespace". An empty selector
+                                    ({}) matches all namespaces. This field is beta-level
+                                    and is only honored when PodAffinityNamespaceSelector
+                                    feature is enabled.
+                                  properties:
+                                    matchExpressions:
+                                      description: matchExpressions is a list of label
+                                        selector requirements. The requirements are
+                                        ANDed.
+                                      items:
+                                        description: A label selector requirement
+                                          is a selector that contains values, a key,
+                                          and an operator that relates the key and
+                                          values.
+                                        properties:
+                                          key:
+                                            description: key is the label key that
+                                              the selector applies to.
+                                            type: string
+                                          operator:
+                                            description: operator represents a key's
+                                              relationship to a set of values. Valid
+                                              operators are In, NotIn, Exists and
+                                              DoesNotExist.
+                                            type: string
+                                          values:
+                                            description: values is an array of string
+                                              values. If the operator is In or NotIn,
+                                              the values array must be non-empty.
+                                              If the operator is Exists or DoesNotExist,
+                                              the values array must be empty. This
+                                              array is replaced during a strategic
+                                              merge patch.
+                                            items:
+                                              type: string
+                                            type: array
+                                        required:
+                                        - key
+                                        - operator
+                                        type: object
+                                      type: array
+                                    matchLabels:
+                                      additionalProperties:
+                                        type: string
+                                      description: matchLabels is a map of {key,value}
+                                        pairs. A single {key,value} in the matchLabels
+                                        map is equivalent to an element of matchExpressions,
+                                        whose key field is "key", the operator is
+                                        "In", and the values array contains only "value".
+                                        The requirements are ANDed.
+                                      type: object
+                                  type: object
                                 namespaces:
-                                  description: namespaces specifies which namespaces
-                                    the labelSelector applies to (matches against);
-                                    null or empty list means "this pod's namespace"
+                                  description: namespaces specifies a static list
+                                    of namespace names that the term applies to. The
+                                    term is applied to the union of the namespaces
+                                    listed in this field and the ones selected by
+                                    namespaceSelector. null or empty namespaces list
+                                    and null namespaceSelector means "this pod's namespace"
                                   items:
                                     type: string
                                   type: array
@@ -3079,10 +3496,66 @@ spec:
                                     requirements are ANDed.
                                   type: object
                               type: object
+                            namespaceSelector:
+                              description: A label query over the set of namespaces
+                                that the term applies to. The term is applied to the
+                                union of the namespaces selected by this field and
+                                the ones listed in the namespaces field. null selector
+                                and null or empty namespaces list means "this pod's
+                                namespace". An empty selector ({}) matches all namespaces.
+                                This field is beta-level and is only honored when
+                                PodAffinityNamespaceSelector feature is enabled.
+                              properties:
+                                matchExpressions:
+                                  description: matchExpressions is a list of label
+                                    selector requirements. The requirements are ANDed.
+                                  items:
+                                    description: A label selector requirement is a
+                                      selector that contains values, a key, and an
+                                      operator that relates the key and values.
+                                    properties:
+                                      key:
+                                        description: key is the label key that the
+                                          selector applies to.
+                                        type: string
+                                      operator:
+                                        description: operator represents a key's relationship
+                                          to a set of values. Valid operators are
+                                          In, NotIn, Exists and DoesNotExist.
+                                        type: string
+                                      values:
+                                        description: values is an array of string
+                                          values. If the operator is In or NotIn,
+                                          the values array must be non-empty. If the
+                                          operator is Exists or DoesNotExist, the
+                                          values array must be empty. This array is
+                                          replaced during a strategic merge patch.
+                                        items:
+                                          type: string
+                                        type: array
+                                    required:
+                                    - key
+                                    - operator
+                                    type: object
+                                  type: array
+                                matchLabels:
+                                  additionalProperties:
+                                    type: string
+                                  description: matchLabels is a map of {key,value}
+                                    pairs. A single {key,value} in the matchLabels
+                                    map is equivalent to an element of matchExpressions,
+                                    whose key field is "key", the operator is "In",
+                                    and the values array contains only "value". The
+                                    requirements are ANDed.
+                                  type: object
+                              type: object
                             namespaces:
-                              description: namespaces specifies which namespaces the
-                                labelSelector applies to (matches against); null or
-                                empty list means "this pod's namespace"
+                              description: namespaces specifies a static list of namespace
+                                names that the term applies to. The term is applied
+                                to the union of the namespaces listed in this field
+                                and the ones selected by namespaceSelector. null or
+                                empty namespaces list and null namespaceSelector means
+                                "this pod's namespace"
                               items:
                                 type: string
                               type: array
@@ -3240,10 +3713,11 @@ spec:
                         CMD is used if this is not provided. Variable references $(VAR_NAME)
                         are expanded using the container''s environment. If a variable
                         cannot be resolved, the reference in the input string will
-                        be unchanged. The $(VAR_NAME) syntax can be escaped with a
-                        double $$, ie: $$(VAR_NAME). Escaped references will never
-                        be expanded, regardless of whether the variable exists or
-                        not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
+                        be unchanged. Double $$ are reduced to a single $, which allows
+                        for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will
+                        produce the string literal "$(VAR_NAME)". Escaped references
+                        will never be expanded, regardless of whether the variable
+                        exists or not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
                       items:
                         type: string
                       type: array
@@ -3252,10 +3726,12 @@ spec:
                         The docker image''s ENTRYPOINT is used if this is not provided.
                         Variable references $(VAR_NAME) are expanded using the container''s
                         environment. If a variable cannot be resolved, the reference
-                        in the input string will be unchanged. The $(VAR_NAME) syntax
-                        can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
-                        references will never be expanded, regardless of whether the
-                        variable exists or not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
+                        in the input string will be unchanged. Double $$ are reduced
+                        to a single $, which allows for escaping the $(VAR_NAME) syntax:
+                        i.e. "$$(VAR_NAME)" will produce the string literal "$(VAR_NAME)".
+                        Escaped references will never be expanded, regardless of whether
+                        the variable exists or not. Cannot be updated. More info:
+                        https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
                       items:
                         type: string
                       type: array
@@ -3272,13 +3748,15 @@ spec:
                             type: string
                           value:
                             description: 'Variable references $(VAR_NAME) are expanded
-                              using the previous defined environment variables in
+                              using the previously defined environment variables in
                               the container and any service environment variables.
                               If a variable cannot be resolved, the reference in the
-                              input string will be unchanged. The $(VAR_NAME) syntax
-                              can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
-                              references will never be expanded, regardless of whether
-                              the variable exists or not. Defaults to "".'
+                              input string will be unchanged. Double $$ are reduced
+                              to a single $, which allows for escaping the $(VAR_NAME)
+                              syntax: i.e. "$$(VAR_NAME)" will produce the string
+                              literal "$(VAR_NAME)". Escaped references will never
+                              be expanded, regardless of whether the variable exists
+                              or not. Defaults to "".'
                             type: string
                           valueFrom:
                             description: Source for the environment variable's value.
@@ -3305,9 +3783,10 @@ spec:
                                 type: object
                               fieldRef:
                                 description: 'Selects a field of the pod: supports
-                                  metadata.name, metadata.namespace, metadata.labels,
-                                  metadata.annotations, spec.nodeName, spec.serviceAccountName,
-                                  status.hostIP, status.podIP, status.podIPs.'
+                                  metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`,
+                                  `metadata.annotations[''<KEY>'']`, spec.nodeName,
+                                  spec.serviceAccountName, status.hostIP, status.podIP,
+                                  status.podIPs.'
                                 properties:
                                   apiVersion:
                                     description: Version of the schema the FieldPath
@@ -3727,6 +4206,23 @@ spec:
                           required:
                           - port
                           type: object
+                        terminationGracePeriodSeconds:
+                          description: Optional duration in seconds the pod needs
+                            to terminate gracefully upon probe failure. The grace
+                            period is the duration in seconds after the processes
+                            running in the pod are sent a termination signal and the
+                            time when the processes are forcibly halted with a kill
+                            signal. Set this value longer than the expected cleanup
+                            time for your process. If this value is nil, the pod's
+                            terminationGracePeriodSeconds will be used. Otherwise,
+                            this value overrides the value provided by the pod spec.
+                            Value must be non-negative integer. The value zero indicates
+                            stop immediately via the kill signal (no opportunity to
+                            shut down). This is a beta field and requires enabling
+                            ProbeTerminationGracePeriod feature gate. Minimum value
+                            is 1. spec.terminationGracePeriodSeconds is used if unset.
+                          format: int64
+                          type: integer
                         timeoutSeconds:
                           description: 'Number of seconds after which the probe times
                             out. Defaults to 1 second. Minimum value is 1. More info:
@@ -3895,6 +4391,23 @@ spec:
                           required:
                           - port
                           type: object
+                        terminationGracePeriodSeconds:
+                          description: Optional duration in seconds the pod needs
+                            to terminate gracefully upon probe failure. The grace
+                            period is the duration in seconds after the processes
+                            running in the pod are sent a termination signal and the
+                            time when the processes are forcibly halted with a kill
+                            signal. Set this value longer than the expected cleanup
+                            time for your process. If this value is nil, the pod's
+                            terminationGracePeriodSeconds will be used. Otherwise,
+                            this value overrides the value provided by the pod spec.
+                            Value must be non-negative integer. The value zero indicates
+                            stop immediately via the kill signal (no opportunity to
+                            shut down). This is a beta field and requires enabling
+                            ProbeTerminationGracePeriod feature gate. Minimum value
+                            is 1. spec.terminationGracePeriodSeconds is used if unset.
+                          format: int64
+                          type: integer
                         timeoutSeconds:
                           description: 'Number of seconds after which the probe times
                             out. Defaults to 1 second. Minimum value is 1. More info:
@@ -3904,7 +4417,7 @@ spec:
                       type: object
                     resources:
                       description: 'Compute Resources required by this container.
-                        Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                       properties:
                         limits:
                           additionalProperties:
@@ -3914,7 +4427,7 @@ spec:
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                             x-kubernetes-int-or-string: true
                           description: 'Limits describes the maximum amount of compute
-                            resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                           type: object
                         requests:
                           additionalProperties:
@@ -3927,13 +4440,14 @@ spec:
                             resources required. If Requests is omitted for a container,
                             it defaults to Limits if that is explicitly specified,
                             otherwise to an implementation-defined value. More info:
-                            https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                           type: object
                       type: object
                     securityContext:
-                      description: 'Security options the pod should run with. More
-                        info: https://kubernetes.io/docs/concepts/policy/security-context/
-                        More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/'
+                      description: 'SecurityContext defines the security options the
+                        container should be run with. If set, the fields of SecurityContext
+                        override the equivalent fields of PodSecurityContext. More
+                        info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/'
                       properties:
                         allowPrivilegeEscalation:
                           description: 'AllowPrivilegeEscalation controls whether
@@ -4030,6 +4544,30 @@ spec:
                                 to the container.
                               type: string
                           type: object
+                        seccompProfile:
+                          description: The seccomp options to use by this container.
+                            If seccomp options are provided at both the pod & container
+                            level, the container options override the pod options.
+                          properties:
+                            localhostProfile:
+                              description: localhostProfile indicates a profile defined
+                                in a file on the node should be used. The profile
+                                must be preconfigured on the node to work. Must be
+                                a descending path, relative to the kubelet's configured
+                                seccomp profile location. Must only be set if type
+                                is "Localhost".
+                              type: string
+                            type:
+                              description: "type indicates which kind of seccomp profile\
+                                \ will be applied. Valid options are: \n Localhost\
+                                \ - a profile defined in a file on the node should\
+                                \ be used. RuntimeDefault - the container runtime\
+                                \ default profile should be used. Unconfined - no\
+                                \ profile should be applied."
+                              type: string
+                          required:
+                          - type
+                          type: object
                         windowsOptions:
                           description: The Windows specific settings applied to all
                             containers. If unspecified, the options from the PodSecurityContext
@@ -4046,6 +4584,19 @@ spec:
                               description: GMSACredentialSpecName is the name of the
                                 GMSA credential spec to use.
                               type: string
+                            hostProcess:
+                              description: HostProcess determines if a container should
+                                be run as a 'Host Process' container. This field is
+                                alpha-level and will only be honored by components
+                                that enable the WindowsHostProcessContainers feature
+                                flag. Setting this field without the feature flag
+                                will result in errors when validating the Pod. All
+                                of a Pod's containers must have the same effective
+                                HostProcess value (it is not allowed to have a mix
+                                of HostProcess containers and non-HostProcess containers).  In
+                                addition, if HostProcess is true then HostNetwork
+                                must also be set to true.
+                              type: boolean
                             runAsUserName:
                               description: The UserName in Windows to run the entrypoint
                                 of the container process. Defaults to the user specified
@@ -4064,8 +4615,7 @@ spec:
                         can be used to provide different probe parameters at the beginning
                         of a Pod''s lifecycle, when it might take a long time to load
                         data or warm a cache, than during steady-state operation.
-                        This cannot be updated. This is a beta feature enabled by
-                        the StartupProbe feature flag. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
+                        This cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
                           description: One and only one of the following should be
@@ -4172,6 +4722,23 @@ spec:
                           required:
                           - port
                           type: object
+                        terminationGracePeriodSeconds:
+                          description: Optional duration in seconds the pod needs
+                            to terminate gracefully upon probe failure. The grace
+                            period is the duration in seconds after the processes
+                            running in the pod are sent a termination signal and the
+                            time when the processes are forcibly halted with a kill
+                            signal. Set this value longer than the expected cleanup
+                            time for your process. If this value is nil, the pod's
+                            terminationGracePeriodSeconds will be used. Otherwise,
+                            this value overrides the value provided by the pod spec.
+                            Value must be non-negative integer. The value zero indicates
+                            stop immediately via the kill signal (no opportunity to
+                            shut down). This is a beta field and requires enabling
+                            ProbeTerminationGracePeriod feature gate. Minimum value
+                            is 1. spec.terminationGracePeriodSeconds is used if unset.
+                          format: int64
+                          type: integer
                         timeoutSeconds:
                           description: 'Number of seconds after which the probe times
                             out. Defaults to 1 second. Minimum value is 1. More info:
@@ -4340,10 +4907,11 @@ spec:
                         CMD is used if this is not provided. Variable references $(VAR_NAME)
                         are expanded using the container''s environment. If a variable
                         cannot be resolved, the reference in the input string will
-                        be unchanged. The $(VAR_NAME) syntax can be escaped with a
-                        double $$, ie: $$(VAR_NAME). Escaped references will never
-                        be expanded, regardless of whether the variable exists or
-                        not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
+                        be unchanged. Double $$ are reduced to a single $, which allows
+                        for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will
+                        produce the string literal "$(VAR_NAME)". Escaped references
+                        will never be expanded, regardless of whether the variable
+                        exists or not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
                       items:
                         type: string
                       type: array
@@ -4352,10 +4920,12 @@ spec:
                         The docker image''s ENTRYPOINT is used if this is not provided.
                         Variable references $(VAR_NAME) are expanded using the container''s
                         environment. If a variable cannot be resolved, the reference
-                        in the input string will be unchanged. The $(VAR_NAME) syntax
-                        can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
-                        references will never be expanded, regardless of whether the
-                        variable exists or not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
+                        in the input string will be unchanged. Double $$ are reduced
+                        to a single $, which allows for escaping the $(VAR_NAME) syntax:
+                        i.e. "$$(VAR_NAME)" will produce the string literal "$(VAR_NAME)".
+                        Escaped references will never be expanded, regardless of whether
+                        the variable exists or not. Cannot be updated. More info:
+                        https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
                       items:
                         type: string
                       type: array
@@ -4372,13 +4942,15 @@ spec:
                             type: string
                           value:
                             description: 'Variable references $(VAR_NAME) are expanded
-                              using the previous defined environment variables in
+                              using the previously defined environment variables in
                               the container and any service environment variables.
                               If a variable cannot be resolved, the reference in the
-                              input string will be unchanged. The $(VAR_NAME) syntax
-                              can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
-                              references will never be expanded, regardless of whether
-                              the variable exists or not. Defaults to "".'
+                              input string will be unchanged. Double $$ are reduced
+                              to a single $, which allows for escaping the $(VAR_NAME)
+                              syntax: i.e. "$$(VAR_NAME)" will produce the string
+                              literal "$(VAR_NAME)". Escaped references will never
+                              be expanded, regardless of whether the variable exists
+                              or not. Defaults to "".'
                             type: string
                           valueFrom:
                             description: Source for the environment variable's value.
@@ -4405,9 +4977,10 @@ spec:
                                 type: object
                               fieldRef:
                                 description: 'Selects a field of the pod: supports
-                                  metadata.name, metadata.namespace, metadata.labels,
-                                  metadata.annotations, spec.nodeName, spec.serviceAccountName,
-                                  status.hostIP, status.podIP, status.podIPs.'
+                                  metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`,
+                                  `metadata.annotations[''<KEY>'']`, spec.nodeName,
+                                  spec.serviceAccountName, status.hostIP, status.podIP,
+                                  status.podIPs.'
                                 properties:
                                   apiVersion:
                                     description: Version of the schema the FieldPath
@@ -4827,6 +5400,23 @@ spec:
                           required:
                           - port
                           type: object
+                        terminationGracePeriodSeconds:
+                          description: Optional duration in seconds the pod needs
+                            to terminate gracefully upon probe failure. The grace
+                            period is the duration in seconds after the processes
+                            running in the pod are sent a termination signal and the
+                            time when the processes are forcibly halted with a kill
+                            signal. Set this value longer than the expected cleanup
+                            time for your process. If this value is nil, the pod's
+                            terminationGracePeriodSeconds will be used. Otherwise,
+                            this value overrides the value provided by the pod spec.
+                            Value must be non-negative integer. The value zero indicates
+                            stop immediately via the kill signal (no opportunity to
+                            shut down). This is a beta field and requires enabling
+                            ProbeTerminationGracePeriod feature gate. Minimum value
+                            is 1. spec.terminationGracePeriodSeconds is used if unset.
+                          format: int64
+                          type: integer
                         timeoutSeconds:
                           description: 'Number of seconds after which the probe times
                             out. Defaults to 1 second. Minimum value is 1. More info:
@@ -4995,6 +5585,23 @@ spec:
                           required:
                           - port
                           type: object
+                        terminationGracePeriodSeconds:
+                          description: Optional duration in seconds the pod needs
+                            to terminate gracefully upon probe failure. The grace
+                            period is the duration in seconds after the processes
+                            running in the pod are sent a termination signal and the
+                            time when the processes are forcibly halted with a kill
+                            signal. Set this value longer than the expected cleanup
+                            time for your process. If this value is nil, the pod's
+                            terminationGracePeriodSeconds will be used. Otherwise,
+                            this value overrides the value provided by the pod spec.
+                            Value must be non-negative integer. The value zero indicates
+                            stop immediately via the kill signal (no opportunity to
+                            shut down). This is a beta field and requires enabling
+                            ProbeTerminationGracePeriod feature gate. Minimum value
+                            is 1. spec.terminationGracePeriodSeconds is used if unset.
+                          format: int64
+                          type: integer
                         timeoutSeconds:
                           description: 'Number of seconds after which the probe times
                             out. Defaults to 1 second. Minimum value is 1. More info:
@@ -5004,7 +5611,7 @@ spec:
                       type: object
                     resources:
                       description: 'Compute Resources required by this container.
-                        Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                       properties:
                         limits:
                           additionalProperties:
@@ -5014,7 +5621,7 @@ spec:
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                             x-kubernetes-int-or-string: true
                           description: 'Limits describes the maximum amount of compute
-                            resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                           type: object
                         requests:
                           additionalProperties:
@@ -5027,13 +5634,14 @@ spec:
                             resources required. If Requests is omitted for a container,
                             it defaults to Limits if that is explicitly specified,
                             otherwise to an implementation-defined value. More info:
-                            https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                           type: object
                       type: object
                     securityContext:
-                      description: 'Security options the pod should run with. More
-                        info: https://kubernetes.io/docs/concepts/policy/security-context/
-                        More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/'
+                      description: 'SecurityContext defines the security options the
+                        container should be run with. If set, the fields of SecurityContext
+                        override the equivalent fields of PodSecurityContext. More
+                        info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/'
                       properties:
                         allowPrivilegeEscalation:
                           description: 'AllowPrivilegeEscalation controls whether
@@ -5130,6 +5738,30 @@ spec:
                                 to the container.
                               type: string
                           type: object
+                        seccompProfile:
+                          description: The seccomp options to use by this container.
+                            If seccomp options are provided at both the pod & container
+                            level, the container options override the pod options.
+                          properties:
+                            localhostProfile:
+                              description: localhostProfile indicates a profile defined
+                                in a file on the node should be used. The profile
+                                must be preconfigured on the node to work. Must be
+                                a descending path, relative to the kubelet's configured
+                                seccomp profile location. Must only be set if type
+                                is "Localhost".
+                              type: string
+                            type:
+                              description: "type indicates which kind of seccomp profile\
+                                \ will be applied. Valid options are: \n Localhost\
+                                \ - a profile defined in a file on the node should\
+                                \ be used. RuntimeDefault - the container runtime\
+                                \ default profile should be used. Unconfined - no\
+                                \ profile should be applied."
+                              type: string
+                          required:
+                          - type
+                          type: object
                         windowsOptions:
                           description: The Windows specific settings applied to all
                             containers. If unspecified, the options from the PodSecurityContext
@@ -5146,6 +5778,19 @@ spec:
                               description: GMSACredentialSpecName is the name of the
                                 GMSA credential spec to use.
                               type: string
+                            hostProcess:
+                              description: HostProcess determines if a container should
+                                be run as a 'Host Process' container. This field is
+                                alpha-level and will only be honored by components
+                                that enable the WindowsHostProcessContainers feature
+                                flag. Setting this field without the feature flag
+                                will result in errors when validating the Pod. All
+                                of a Pod's containers must have the same effective
+                                HostProcess value (it is not allowed to have a mix
+                                of HostProcess containers and non-HostProcess containers).  In
+                                addition, if HostProcess is true then HostNetwork
+                                must also be set to true.
+                              type: boolean
                             runAsUserName:
                               description: The UserName in Windows to run the entrypoint
                                 of the container process. Defaults to the user specified
@@ -5164,8 +5809,7 @@ spec:
                         can be used to provide different probe parameters at the beginning
                         of a Pod''s lifecycle, when it might take a long time to load
                         data or warm a cache, than during steady-state operation.
-                        This cannot be updated. This is a beta feature enabled by
-                        the StartupProbe feature flag. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
+                        This cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
                           description: One and only one of the following should be
@@ -5272,6 +5916,23 @@ spec:
                           required:
                           - port
                           type: object
+                        terminationGracePeriodSeconds:
+                          description: Optional duration in seconds the pod needs
+                            to terminate gracefully upon probe failure. The grace
+                            period is the duration in seconds after the processes
+                            running in the pod are sent a termination signal and the
+                            time when the processes are forcibly halted with a kill
+                            signal. Set this value longer than the expected cleanup
+                            time for your process. If this value is nil, the pod's
+                            terminationGracePeriodSeconds will be used. Otherwise,
+                            this value overrides the value provided by the pod spec.
+                            Value must be non-negative integer. The value zero indicates
+                            stop immediately via the kill signal (no opportunity to
+                            shut down). This is a beta field and requires enabling
+                            ProbeTerminationGracePeriod feature gate. Minimum value
+                            is 1. spec.terminationGracePeriodSeconds is used if unset.
+                          format: int64
+                          type: integer
                         timeoutSeconds:
                           description: 'Number of seconds after which the probe times
                             out. Defaults to 1 second. Minimum value is 1. More info:
@@ -5401,6 +6062,14 @@ spec:
               logLevel:
                 description: Log level for Alertmanager to be configured with.
                 type: string
+              minReadySeconds:
+                description: Minimum number of seconds for which a newly created pod
+                  should be ready without any of its container crashing for it to
+                  be considered available. Defaults to 0 (pod will be considered available
+                  as soon as it is ready) This is an alpha field and requires enabling
+                  StatefulSetMinReadySeconds feature gate.
+                format: int32
+                type: integer
               nodeSelector:
                 additionalProperties:
                   type: string
@@ -5462,7 +6131,7 @@ spec:
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
                     description: 'Limits describes the maximum amount of compute resources
-                      allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                      allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
                   requests:
                     additionalProperties:
@@ -5474,7 +6143,7 @@ spec:
                     description: 'Requests describes the minimum amount of compute
                       resources required. If Requests is omitted for a container,
                       it defaults to Limits if that is explicitly specified, otherwise
-                      to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                      to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
                 type: object
               retention:
@@ -5518,7 +6187,7 @@ spec:
                       support fsGroup based ownership(and permissions). It will have
                       no effect on ephemeral volume types such as: secret, configmaps
                       and emptydir. Valid values are "OnRootMismatch" and "Always".
-                      If not specified defaults to "Always".'
+                      If not specified, "Always" is used.'
                     type: string
                   runAsGroup:
                     description: The GID to run the entrypoint of the container process.
@@ -5568,6 +6237,27 @@ spec:
                           the container.
                         type: string
                     type: object
+                  seccompProfile:
+                    description: The seccomp options to use by the containers in this
+                      pod.
+                    properties:
+                      localhostProfile:
+                        description: localhostProfile indicates a profile defined
+                          in a file on the node should be used. The profile must be
+                          preconfigured on the node to work. Must be a descending
+                          path, relative to the kubelet's configured seccomp profile
+                          location. Must only be set if type is "Localhost".
+                        type: string
+                      type:
+                        description: "type indicates which kind of seccomp profile\
+                          \ will be applied. Valid options are: \n Localhost - a profile\
+                          \ defined in a file on the node should be used. RuntimeDefault\
+                          \ - the container runtime default profile should be used.\
+                          \ Unconfined - no profile should be applied."
+                        type: string
+                    required:
+                    - type
+                    type: object
                   supplementalGroups:
                     description: A list of groups applied to the first process run
                       in each container, in addition to the container's primary GID.  If
@@ -5610,6 +6300,17 @@ spec:
                         description: GMSACredentialSpecName is the name of the GMSA
                           credential spec to use.
                         type: string
+                      hostProcess:
+                        description: HostProcess determines if a container should
+                          be run as a 'Host Process' container. This field is alpha-level
+                          and will only be honored by components that enable the WindowsHostProcessContainers
+                          feature flag. Setting this field without the feature flag
+                          will result in errors when validating the Pod. All of a
+                          Pod's containers must have the same effective HostProcess
+                          value (it is not allowed to have a mix of HostProcess containers
+                          and non-HostProcess containers).  In addition, if HostProcess
+                          is true then HostNetwork must also be set to true.
+                        type: boolean
                       runAsUserName:
                         description: The UserName in Windows to run the entrypoint
                           of the container process. Defaults to the user specified
@@ -5663,6 +6364,218 @@ spec:
                           More info: http://kubernetes.io/docs/user-guide/volumes#emptydir'
                         pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                         x-kubernetes-int-or-string: true
+                    type: object
+                  ephemeral:
+                    description: 'EphemeralVolumeSource to be used by the Prometheus
+                      StatefulSets. This is a beta field in k8s 1.21, for lower versions,
+                      starting with k8s 1.19, it requires enabling the GenericEphemeralVolume
+                      feature gate. More info: https://kubernetes.io/docs/concepts/storage/ephemeral-volumes/#generic-ephemeral-volumes'
+                    properties:
+                      volumeClaimTemplate:
+                        description: "Will be used to create a stand-alone PVC to\
+                          \ provision the volume. The pod in which this EphemeralVolumeSource\
+                          \ is embedded will be the owner of the PVC, i.e. the PVC\
+                          \ will be deleted together with the pod.  The name of the\
+                          \ PVC will be `<pod name>-<volume name>` where `<volume\
+                          \ name>` is the name from the `PodSpec.Volumes` array entry.\
+                          \ Pod validation will reject the pod if the concatenated\
+                          \ name is not valid for a PVC (for example, too long). \n\
+                          \ An existing PVC with that name that is not owned by the\
+                          \ pod will *not* be used for the pod to avoid using an unrelated\
+                          \ volume by mistake. Starting the pod is then blocked until\
+                          \ the unrelated PVC is removed. If such a pre-created PVC\
+                          \ is meant to be used by the pod, the PVC has to updated\
+                          \ with an owner reference to the pod once the pod exists.\
+                          \ Normally this should not be necessary, but it may be useful\
+                          \ when manually reconstructing a broken cluster. \n This\
+                          \ field is read-only and no changes will be made by Kubernetes\
+                          \ to the PVC after it has been created. \n Required, must\
+                          \ not be nil."
+                        properties:
+                          metadata:
+                            description: May contain labels and annotations that will
+                              be copied into the PVC when creating it. No other fields
+                              are allowed and will be rejected during validation.
+                            type: object
+                          spec:
+                            description: The specification for the PersistentVolumeClaim.
+                              The entire content is copied unchanged into the PVC
+                              that gets created from this template. The same fields
+                              as in a PersistentVolumeClaim are also valid here.
+                            properties:
+                              accessModes:
+                                description: 'AccessModes contains the desired access
+                                  modes the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#access-modes-1'
+                                items:
+                                  type: string
+                                type: array
+                              dataSource:
+                                description: 'This field can be used to specify either:
+                                  * An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot)
+                                  * An existing PVC (PersistentVolumeClaim) If the
+                                  provisioner or an external controller can support
+                                  the specified data source, it will create a new
+                                  volume based on the contents of the specified data
+                                  source. If the AnyVolumeDataSource feature gate
+                                  is enabled, this field will always have the same
+                                  contents as the DataSourceRef field.'
+                                properties:
+                                  apiGroup:
+                                    description: APIGroup is the group for the resource
+                                      being referenced. If APIGroup is not specified,
+                                      the specified Kind must be in the core API group.
+                                      For any other third-party types, APIGroup is
+                                      required.
+                                    type: string
+                                  kind:
+                                    description: Kind is the type of resource being
+                                      referenced
+                                    type: string
+                                  name:
+                                    description: Name is the name of resource being
+                                      referenced
+                                    type: string
+                                required:
+                                - kind
+                                - name
+                                type: object
+                              dataSourceRef:
+                                description: 'Specifies the object from which to populate
+                                  the volume with data, if a non-empty volume is desired.
+                                  This may be any local object from a non-empty API
+                                  group (non core object) or a PersistentVolumeClaim
+                                  object. When this field is specified, volume binding
+                                  will only succeed if the type of the specified object
+                                  matches some installed volume populator or dynamic
+                                  provisioner. This field will replace the functionality
+                                  of the DataSource field and as such if both fields
+                                  are non-empty, they must have the same value. For
+                                  backwards compatibility, both fields (DataSource
+                                  and DataSourceRef) will be set to the same value
+                                  automatically if one of them is empty and the other
+                                  is non-empty. There are two important differences
+                                  between DataSource and DataSourceRef: * While DataSource
+                                  only allows two specific types of objects, DataSourceRef   allows
+                                  any non-core object, as well as PersistentVolumeClaim
+                                  objects. * While DataSource ignores disallowed values
+                                  (dropping them), DataSourceRef   preserves all values,
+                                  and generates an error if a disallowed value is   specified.
+                                  (Alpha) Using this field requires the AnyVolumeDataSource
+                                  feature gate to be enabled.'
+                                properties:
+                                  apiGroup:
+                                    description: APIGroup is the group for the resource
+                                      being referenced. If APIGroup is not specified,
+                                      the specified Kind must be in the core API group.
+                                      For any other third-party types, APIGroup is
+                                      required.
+                                    type: string
+                                  kind:
+                                    description: Kind is the type of resource being
+                                      referenced
+                                    type: string
+                                  name:
+                                    description: Name is the name of resource being
+                                      referenced
+                                    type: string
+                                required:
+                                - kind
+                                - name
+                                type: object
+                              resources:
+                                description: 'Resources represents the minimum resources
+                                  the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
+                                properties:
+                                  limits:
+                                    additionalProperties:
+                                      anyOf:
+                                      - type: integer
+                                      - type: string
+                                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                      x-kubernetes-int-or-string: true
+                                    description: 'Limits describes the maximum amount
+                                      of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                                    type: object
+                                  requests:
+                                    additionalProperties:
+                                      anyOf:
+                                      - type: integer
+                                      - type: string
+                                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                      x-kubernetes-int-or-string: true
+                                    description: 'Requests describes the minimum amount
+                                      of compute resources required. If Requests is
+                                      omitted for a container, it defaults to Limits
+                                      if that is explicitly specified, otherwise to
+                                      an implementation-defined value. More info:
+                                      https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                                    type: object
+                                type: object
+                              selector:
+                                description: A label query over volumes to consider
+                                  for binding.
+                                properties:
+                                  matchExpressions:
+                                    description: matchExpressions is a list of label
+                                      selector requirements. The requirements are
+                                      ANDed.
+                                    items:
+                                      description: A label selector requirement is
+                                        a selector that contains values, a key, and
+                                        an operator that relates the key and values.
+                                      properties:
+                                        key:
+                                          description: key is the label key that the
+                                            selector applies to.
+                                          type: string
+                                        operator:
+                                          description: operator represents a key's
+                                            relationship to a set of values. Valid
+                                            operators are In, NotIn, Exists and DoesNotExist.
+                                          type: string
+                                        values:
+                                          description: values is an array of string
+                                            values. If the operator is In or NotIn,
+                                            the values array must be non-empty. If
+                                            the operator is Exists or DoesNotExist,
+                                            the values array must be empty. This array
+                                            is replaced during a strategic merge patch.
+                                          items:
+                                            type: string
+                                          type: array
+                                      required:
+                                      - key
+                                      - operator
+                                      type: object
+                                    type: array
+                                  matchLabels:
+                                    additionalProperties:
+                                      type: string
+                                    description: matchLabels is a map of {key,value}
+                                      pairs. A single {key,value} in the matchLabels
+                                      map is equivalent to an element of matchExpressions,
+                                      whose key field is "key", the operator is "In",
+                                      and the values array contains only "value".
+                                      The requirements are ANDed.
+                                    type: object
+                                type: object
+                              storageClassName:
+                                description: 'Name of the StorageClass required by
+                                  the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                                type: string
+                              volumeMode:
+                                description: volumeMode defines what type of volume
+                                  is required by the claim. Value of Filesystem is
+                                  implied when not included in claim spec.
+                                type: string
+                              volumeName:
+                                description: VolumeName is the binding reference to
+                                  the PersistentVolume backing this claim.
+                                type: string
+                            type: object
+                        required:
+                        - spec
+                        type: object
                     type: object
                   volumeClaimTemplate:
                     description: A PVC spec to be used by the Prometheus StatefulSets.
@@ -5721,20 +6634,52 @@ spec:
                             type: array
                           dataSource:
                             description: 'This field can be used to specify either:
-                              * An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot
-                              - Beta) * An existing PVC (PersistentVolumeClaim) *
-                              An existing custom resource/object that implements data
-                              population (Alpha) In order to use VolumeSnapshot object
-                              types, the appropriate feature gate must be enabled
-                              (VolumeSnapshotDataSource or AnyVolumeDataSource) If
-                              the provisioner or an external controller can support
-                              the specified data source, it will create a new volume
-                              based on the contents of the specified data source.
-                              If the specified data source is not supported, the volume
-                              will not be created and the failure will be reported
-                              as an event. In the future, we plan to support more
-                              data source types and the behavior of the provisioner
-                              may change.'
+                              * An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot)
+                              * An existing PVC (PersistentVolumeClaim) If the provisioner
+                              or an external controller can support the specified
+                              data source, it will create a new volume based on the
+                              contents of the specified data source. If the AnyVolumeDataSource
+                              feature gate is enabled, this field will always have
+                              the same contents as the DataSourceRef field.'
+                            properties:
+                              apiGroup:
+                                description: APIGroup is the group for the resource
+                                  being referenced. If APIGroup is not specified,
+                                  the specified Kind must be in the core API group.
+                                  For any other third-party types, APIGroup is required.
+                                type: string
+                              kind:
+                                description: Kind is the type of resource being referenced
+                                type: string
+                              name:
+                                description: Name is the name of resource being referenced
+                                type: string
+                            required:
+                            - kind
+                            - name
+                            type: object
+                          dataSourceRef:
+                            description: 'Specifies the object from which to populate
+                              the volume with data, if a non-empty volume is desired.
+                              This may be any local object from a non-empty API group
+                              (non core object) or a PersistentVolumeClaim object.
+                              When this field is specified, volume binding will only
+                              succeed if the type of the specified object matches
+                              some installed volume populator or dynamic provisioner.
+                              This field will replace the functionality of the DataSource
+                              field and as such if both fields are non-empty, they
+                              must have the same value. For backwards compatibility,
+                              both fields (DataSource and DataSourceRef) will be set
+                              to the same value automatically if one of them is empty
+                              and the other is non-empty. There are two important
+                              differences between DataSource and DataSourceRef: *
+                              While DataSource only allows two specific types of objects,
+                              DataSourceRef   allows any non-core object, as well
+                              as PersistentVolumeClaim objects. * While DataSource
+                              ignores disallowed values (dropping them), DataSourceRef   preserves
+                              all values, and generates an error if a disallowed value
+                              is   specified. (Alpha) Using this field requires the
+                              AnyVolumeDataSource feature gate to be enabled.'
                             properties:
                               apiGroup:
                                 description: APIGroup is the group for the resource
@@ -5764,7 +6709,7 @@ spec:
                                   pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                   x-kubernetes-int-or-string: true
                                 description: 'Limits describes the maximum amount
-                                  of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                  of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                               requests:
                                 additionalProperties:
@@ -5777,7 +6722,7 @@ spec:
                                   of compute resources required. If Requests is omitted
                                   for a container, it defaults to Limits if that is
                                   explicitly specified, otherwise to an implementation-defined
-                                  value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                  value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                             type: object
                           selector:
@@ -6005,16 +6950,19 @@ spec:
                       type: object
                     maxSkew:
                       description: 'MaxSkew describes the degree to which pods may
-                        be unevenly distributed. It''s the maximum permitted difference
-                        between the number of matching pods in any two topology domains
-                        of a given topology type. For example, in a 3-zone cluster,
-                        MaxSkew is set to 1, and pods with the same labelSelector
-                        spread as 1/1/0: | zone1 | zone2 | zone3 | |   P   |   P   |       |
-                        - if MaxSkew is 1, incoming pod can only be scheduled to zone3
-                        to become 1/1/1; scheduling it onto zone1(zone2) would make
-                        the ActualSkew(2-0) on zone1(zone2) violate MaxSkew(1). -
-                        if MaxSkew is 2, incoming pod can be scheduled onto any zone.
-                        It''s a required field. Default value is 1 and 0 is not allowed.'
+                        be unevenly distributed. When `whenUnsatisfiable=DoNotSchedule`,
+                        it is the maximum permitted difference between the number
+                        of matching pods in the target topology and the global minimum.
+                        For example, in a 3-zone cluster, MaxSkew is set to 1, and
+                        pods with the same labelSelector spread as 1/1/0: | zone1
+                        | zone2 | zone3 | |   P   |   P   |       | - if MaxSkew is
+                        1, incoming pod can only be scheduled to zone3 to become 1/1/1;
+                        scheduling it onto zone1(zone2) would make the ActualSkew(2-0)
+                        on zone1(zone2) violate MaxSkew(1). - if MaxSkew is 2, incoming
+                        pod can be scheduled onto any zone. When `whenUnsatisfiable=ScheduleAnyway`,
+                        it is used to give higher precedence to topologies that satisfy
+                        it. It''s a required field. Default value is 1 and 0 is not
+                        allowed.'
                       format: int32
                       type: integer
                     topologyKey:
@@ -6027,17 +6975,20 @@ spec:
                     whenUnsatisfiable:
                       description: 'WhenUnsatisfiable indicates how to deal with a
                         pod if it doesn''t satisfy the spread constraint. - DoNotSchedule
-                        (default) tells the scheduler not to schedule it - ScheduleAnyway
-                        tells the scheduler to still schedule it It''s considered
-                        as "Unsatisfiable" if and only if placing incoming pod on
-                        any topology violates "MaxSkew". For example, in a 3-zone
-                        cluster, MaxSkew is set to 1, and pods with the same labelSelector
-                        spread as 3/1/1: | zone1 | zone2 | zone3 | | P P P |   P   |   P   |
-                        If WhenUnsatisfiable is set to DoNotSchedule, incoming pod
-                        can only be scheduled to zone2(zone3) to become 3/2/1(3/1/2)
-                        as ActualSkew(2-1) on zone2(zone3) satisfies MaxSkew(1). In
-                        other words, the cluster can still be imbalanced, but scheduler
-                        won''t make it *more* imbalanced. It''s a required field.'
+                        (default) tells the scheduler not to schedule it. - ScheduleAnyway
+                        tells the scheduler to schedule the pod in any location,   but
+                        giving higher precedence to topologies that would help reduce
+                        the   skew. A constraint is considered "Unsatisfiable" for
+                        an incoming pod if and only if every possible node assigment
+                        for that pod would violate "MaxSkew" on some topology. For
+                        example, in a 3-zone cluster, MaxSkew is set to 1, and pods
+                        with the same labelSelector spread as 3/1/1: | zone1 | zone2
+                        | zone3 | | P P P |   P   |   P   | If WhenUnsatisfiable is
+                        set to DoNotSchedule, incoming pod can only be scheduled to
+                        zone2(zone3) to become 3/2/1(3/1/2) as ActualSkew(2-1) on
+                        zone2(zone3) satisfies MaxSkew(1). In other words, the cluster
+                        can still be imbalanced, but scheduler won''t make it *more*
+                        imbalanced. It''s a required field.'
                       type: string
                   required:
                   - maxSkew
@@ -6259,12 +7210,15 @@ spec:
                         this volume
                       properties:
                         defaultMode:
-                          description: 'Optional: mode bits to use on created files
-                            by default. Must be a value between 0 and 0777. Defaults
-                            to 0644. Directories within the path are not affected
-                            by this setting. This might be in conflict with other
-                            options that affect the file mode, like fsGroup, and the
-                            result can be other mode bits set.'
+                          description: 'Optional: mode bits used to set permissions
+                            on created files by default. Must be an octal value between
+                            0000 and 0777 or a decimal value between 0 and 511. YAML
+                            accepts both octal and decimal values, JSON requires decimal
+                            values for mode bits. Defaults to 0644. Directories within
+                            the path are not affected by this setting. This might
+                            be in conflict with other options that affect the file
+                            mode, like fsGroup, and the result can be other mode bits
+                            set.'
                           format: int32
                           type: integer
                         items:
@@ -6284,8 +7238,11 @@ spec:
                                 description: The key to project.
                                 type: string
                               mode:
-                                description: 'Optional: mode bits to use on this file,
-                                  must be a value between 0 and 0777. If not specified,
+                                description: 'Optional: mode bits used to set permissions
+                                  on this file. Must be an octal value between 0000
+                                  and 0777 or a decimal value between 0 and 511. YAML
+                                  accepts both octal and decimal values, JSON requires
+                                  decimal values for mode bits. If not specified,
                                   the volume defaultMode will be used. This might
                                   be in conflict with other options that affect the
                                   file mode, like fsGroup, and the result can be other
@@ -6313,8 +7270,9 @@ spec:
                           type: boolean
                       type: object
                     csi:
-                      description: CSI (Container Storage Interface) represents storage
-                        that is handled by an external CSI driver (Alpha feature).
+                      description: CSI (Container Storage Interface) represents ephemeral
+                        storage that is handled by certain external CSI drivers (Beta
+                        feature).
                       properties:
                         driver:
                           description: Driver is the name of the CSI driver that handles
@@ -6361,11 +7319,15 @@ spec:
                       properties:
                         defaultMode:
                           description: 'Optional: mode bits to use on created files
-                            by default. Must be a value between 0 and 0777. Defaults
-                            to 0644. Directories within the path are not affected
-                            by this setting. This might be in conflict with other
-                            options that affect the file mode, like fsGroup, and the
-                            result can be other mode bits set.'
+                            by default. Must be a Optional: mode bits used to set
+                            permissions on created files by default. Must be an octal
+                            value between 0000 and 0777 or a decimal value between
+                            0 and 511. YAML accepts both octal and decimal values,
+                            JSON requires decimal values for mode bits. Defaults to
+                            0644. Directories within the path are not affected by
+                            this setting. This might be in conflict with other options
+                            that affect the file mode, like fsGroup, and the result
+                            can be other mode bits set.'
                           format: int32
                           type: integer
                         items:
@@ -6391,8 +7353,11 @@ spec:
                                 - fieldPath
                                 type: object
                               mode:
-                                description: 'Optional: mode bits to use on this file,
-                                  must be a value between 0 and 0777. If not specified,
+                                description: 'Optional: mode bits used to set permissions
+                                  on this file, must be an octal value between 0000
+                                  and 0777 or a decimal value between 0 and 511. YAML
+                                  accepts both octal and decimal values, JSON requires
+                                  decimal values for mode bits. If not specified,
                                   the volume defaultMode will be used. This might
                                   be in conflict with other options that affect the
                                   file mode, like fsGroup, and the result can be other
@@ -6458,6 +7423,239 @@ spec:
                             is undefined. More info: http://kubernetes.io/docs/user-guide/volumes#emptydir'
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
+                      type: object
+                    ephemeral:
+                      description: "Ephemeral represents a volume that is handled\
+                        \ by a cluster storage driver. The volume's lifecycle is tied\
+                        \ to the pod that defines it - it will be created before the\
+                        \ pod starts, and deleted when the pod is removed. \n Use\
+                        \ this if: a) the volume is only needed while the pod runs,\
+                        \ b) features of normal volumes like restoring from snapshot\
+                        \ or capacity    tracking are needed, c) the storage driver\
+                        \ is specified through a storage class, and d) the storage\
+                        \ driver supports dynamic volume provisioning through    a\
+                        \ PersistentVolumeClaim (see EphemeralVolumeSource for more\
+                        \    information on the connection between this volume type\
+                        \    and PersistentVolumeClaim). \n Use PersistentVolumeClaim\
+                        \ or one of the vendor-specific APIs for volumes that persist\
+                        \ for longer than the lifecycle of an individual pod. \n Use\
+                        \ CSI for light-weight local ephemeral volumes if the CSI\
+                        \ driver is meant to be used that way - see the documentation\
+                        \ of the driver for more information. \n A pod can use both\
+                        \ types of ephemeral volumes and persistent volumes at the\
+                        \ same time. \n This is a beta feature and only available\
+                        \ when the GenericEphemeralVolume feature gate is enabled."
+                      properties:
+                        volumeClaimTemplate:
+                          description: "Will be used to create a stand-alone PVC to\
+                            \ provision the volume. The pod in which this EphemeralVolumeSource\
+                            \ is embedded will be the owner of the PVC, i.e. the PVC\
+                            \ will be deleted together with the pod.  The name of\
+                            \ the PVC will be `<pod name>-<volume name>` where `<volume\
+                            \ name>` is the name from the `PodSpec.Volumes` array\
+                            \ entry. Pod validation will reject the pod if the concatenated\
+                            \ name is not valid for a PVC (for example, too long).\
+                            \ \n An existing PVC with that name that is not owned\
+                            \ by the pod will *not* be used for the pod to avoid using\
+                            \ an unrelated volume by mistake. Starting the pod is\
+                            \ then blocked until the unrelated PVC is removed. If\
+                            \ such a pre-created PVC is meant to be used by the pod,\
+                            \ the PVC has to updated with an owner reference to the\
+                            \ pod once the pod exists. Normally this should not be\
+                            \ necessary, but it may be useful when manually reconstructing\
+                            \ a broken cluster. \n This field is read-only and no\
+                            \ changes will be made by Kubernetes to the PVC after\
+                            \ it has been created. \n Required, must not be nil."
+                          properties:
+                            metadata:
+                              description: May contain labels and annotations that
+                                will be copied into the PVC when creating it. No other
+                                fields are allowed and will be rejected during validation.
+                              type: object
+                            spec:
+                              description: The specification for the PersistentVolumeClaim.
+                                The entire content is copied unchanged into the PVC
+                                that gets created from this template. The same fields
+                                as in a PersistentVolumeClaim are also valid here.
+                              properties:
+                                accessModes:
+                                  description: 'AccessModes contains the desired access
+                                    modes the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#access-modes-1'
+                                  items:
+                                    type: string
+                                  type: array
+                                dataSource:
+                                  description: 'This field can be used to specify
+                                    either: * An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot)
+                                    * An existing PVC (PersistentVolumeClaim) If the
+                                    provisioner or an external controller can support
+                                    the specified data source, it will create a new
+                                    volume based on the contents of the specified
+                                    data source. If the AnyVolumeDataSource feature
+                                    gate is enabled, this field will always have the
+                                    same contents as the DataSourceRef field.'
+                                  properties:
+                                    apiGroup:
+                                      description: APIGroup is the group for the resource
+                                        being referenced. If APIGroup is not specified,
+                                        the specified Kind must be in the core API
+                                        group. For any other third-party types, APIGroup
+                                        is required.
+                                      type: string
+                                    kind:
+                                      description: Kind is the type of resource being
+                                        referenced
+                                      type: string
+                                    name:
+                                      description: Name is the name of resource being
+                                        referenced
+                                      type: string
+                                  required:
+                                  - kind
+                                  - name
+                                  type: object
+                                dataSourceRef:
+                                  description: 'Specifies the object from which to
+                                    populate the volume with data, if a non-empty
+                                    volume is desired. This may be any local object
+                                    from a non-empty API group (non core object) or
+                                    a PersistentVolumeClaim object. When this field
+                                    is specified, volume binding will only succeed
+                                    if the type of the specified object matches some
+                                    installed volume populator or dynamic provisioner.
+                                    This field will replace the functionality of the
+                                    DataSource field and as such if both fields are
+                                    non-empty, they must have the same value. For
+                                    backwards compatibility, both fields (DataSource
+                                    and DataSourceRef) will be set to the same value
+                                    automatically if one of them is empty and the
+                                    other is non-empty. There are two important differences
+                                    between DataSource and DataSourceRef: * While
+                                    DataSource only allows two specific types of objects,
+                                    DataSourceRef   allows any non-core object, as
+                                    well as PersistentVolumeClaim objects. * While
+                                    DataSource ignores disallowed values (dropping
+                                    them), DataSourceRef   preserves all values, and
+                                    generates an error if a disallowed value is   specified.
+                                    (Alpha) Using this field requires the AnyVolumeDataSource
+                                    feature gate to be enabled.'
+                                  properties:
+                                    apiGroup:
+                                      description: APIGroup is the group for the resource
+                                        being referenced. If APIGroup is not specified,
+                                        the specified Kind must be in the core API
+                                        group. For any other third-party types, APIGroup
+                                        is required.
+                                      type: string
+                                    kind:
+                                      description: Kind is the type of resource being
+                                        referenced
+                                      type: string
+                                    name:
+                                      description: Name is the name of resource being
+                                        referenced
+                                      type: string
+                                  required:
+                                  - kind
+                                  - name
+                                  type: object
+                                resources:
+                                  description: 'Resources represents the minimum resources
+                                    the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
+                                  properties:
+                                    limits:
+                                      additionalProperties:
+                                        anyOf:
+                                        - type: integer
+                                        - type: string
+                                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                        x-kubernetes-int-or-string: true
+                                      description: 'Limits describes the maximum amount
+                                        of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                                      type: object
+                                    requests:
+                                      additionalProperties:
+                                        anyOf:
+                                        - type: integer
+                                        - type: string
+                                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                        x-kubernetes-int-or-string: true
+                                      description: 'Requests describes the minimum
+                                        amount of compute resources required. If Requests
+                                        is omitted for a container, it defaults to
+                                        Limits if that is explicitly specified, otherwise
+                                        to an implementation-defined value. More info:
+                                        https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                                      type: object
+                                  type: object
+                                selector:
+                                  description: A label query over volumes to consider
+                                    for binding.
+                                  properties:
+                                    matchExpressions:
+                                      description: matchExpressions is a list of label
+                                        selector requirements. The requirements are
+                                        ANDed.
+                                      items:
+                                        description: A label selector requirement
+                                          is a selector that contains values, a key,
+                                          and an operator that relates the key and
+                                          values.
+                                        properties:
+                                          key:
+                                            description: key is the label key that
+                                              the selector applies to.
+                                            type: string
+                                          operator:
+                                            description: operator represents a key's
+                                              relationship to a set of values. Valid
+                                              operators are In, NotIn, Exists and
+                                              DoesNotExist.
+                                            type: string
+                                          values:
+                                            description: values is an array of string
+                                              values. If the operator is In or NotIn,
+                                              the values array must be non-empty.
+                                              If the operator is Exists or DoesNotExist,
+                                              the values array must be empty. This
+                                              array is replaced during a strategic
+                                              merge patch.
+                                            items:
+                                              type: string
+                                            type: array
+                                        required:
+                                        - key
+                                        - operator
+                                        type: object
+                                      type: array
+                                    matchLabels:
+                                      additionalProperties:
+                                        type: string
+                                      description: matchLabels is a map of {key,value}
+                                        pairs. A single {key,value} in the matchLabels
+                                        map is equivalent to an element of matchExpressions,
+                                        whose key field is "key", the operator is
+                                        "In", and the values array contains only "value".
+                                        The requirements are ANDed.
+                                      type: object
+                                  type: object
+                                storageClassName:
+                                  description: 'Name of the StorageClass required
+                                    by the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                                  type: string
+                                volumeMode:
+                                  description: volumeMode defines what type of volume
+                                    is required by the claim. Value of Filesystem
+                                    is implied when not included in claim spec.
+                                  type: string
+                                volumeName:
+                                  description: VolumeName is the binding reference
+                                    to the PersistentVolume backing this claim.
+                                  type: string
+                              type: object
+                          required:
+                          - spec
+                          type: object
                       type: object
                     fc:
                       description: FC represents a Fibre Channel resource that is
@@ -6793,12 +7991,14 @@ spec:
                         and downward API
                       properties:
                         defaultMode:
-                          description: Mode bits to use on created files by default.
-                            Must be a value between 0 and 0777. Directories within
-                            the path are not affected by this setting. This might
-                            be in conflict with other options that affect the file
-                            mode, like fsGroup, and the result can be other mode bits
-                            set.
+                          description: Mode bits used to set permissions on created
+                            files by default. Must be an octal value between 0000
+                            and 0777 or a decimal value between 0 and 511. YAML accepts
+                            both octal and decimal values, JSON requires decimal values
+                            for mode bits. Directories within the path are not affected
+                            by this setting. This might be in conflict with other
+                            options that affect the file mode, like fsGroup, and the
+                            result can be other mode bits set.
                           format: int32
                           type: integer
                         sources:
@@ -6831,13 +8031,17 @@ spec:
                                           description: The key to project.
                                           type: string
                                         mode:
-                                          description: 'Optional: mode bits to use
-                                            on this file, must be a value between
-                                            0 and 0777. If not specified, the volume
-                                            defaultMode will be used. This might be
-                                            in conflict with other options that affect
-                                            the file mode, like fsGroup, and the result
-                                            can be other mode bits set.'
+                                          description: 'Optional: mode bits used to
+                                            set permissions on this file. Must be
+                                            an octal value between 0000 and 0777 or
+                                            a decimal value between 0 and 511. YAML
+                                            accepts both octal and decimal values,
+                                            JSON requires decimal values for mode
+                                            bits. If not specified, the volume defaultMode
+                                            will be used. This might be in conflict
+                                            with other options that affect the file
+                                            mode, like fsGroup, and the result can
+                                            be other mode bits set.'
                                           format: int32
                                           type: integer
                                         path:
@@ -6892,13 +8096,17 @@ spec:
                                           - fieldPath
                                           type: object
                                         mode:
-                                          description: 'Optional: mode bits to use
-                                            on this file, must be a value between
-                                            0 and 0777. If not specified, the volume
-                                            defaultMode will be used. This might be
-                                            in conflict with other options that affect
-                                            the file mode, like fsGroup, and the result
-                                            can be other mode bits set.'
+                                          description: 'Optional: mode bits used to
+                                            set permissions on this file, must be
+                                            an octal value between 0000 and 0777 or
+                                            a decimal value between 0 and 511. YAML
+                                            accepts both octal and decimal values,
+                                            JSON requires decimal values for mode
+                                            bits. If not specified, the volume defaultMode
+                                            will be used. This might be in conflict
+                                            with other options that affect the file
+                                            mode, like fsGroup, and the result can
+                                            be other mode bits set.'
                                           format: int32
                                           type: integer
                                         path:
@@ -6964,13 +8172,17 @@ spec:
                                           description: The key to project.
                                           type: string
                                         mode:
-                                          description: 'Optional: mode bits to use
-                                            on this file, must be a value between
-                                            0 and 0777. If not specified, the volume
-                                            defaultMode will be used. This might be
-                                            in conflict with other options that affect
-                                            the file mode, like fsGroup, and the result
-                                            can be other mode bits set.'
+                                          description: 'Optional: mode bits used to
+                                            set permissions on this file. Must be
+                                            an octal value between 0000 and 0777 or
+                                            a decimal value between 0 and 511. YAML
+                                            accepts both octal and decimal values,
+                                            JSON requires decimal values for mode
+                                            bits. If not specified, the volume defaultMode
+                                            will be used. This might be in conflict
+                                            with other options that affect the file
+                                            mode, like fsGroup, and the result can
+                                            be other mode bits set.'
                                           format: int32
                                           type: integer
                                         path:
@@ -7029,8 +8241,6 @@ spec:
                                 type: object
                             type: object
                           type: array
-                      required:
-                      - sources
                       type: object
                     quobyte:
                       description: Quobyte represents a Quobyte mount on the host
@@ -7181,12 +8391,15 @@ spec:
                         this volume. More info: https://kubernetes.io/docs/concepts/storage/volumes#secret'
                       properties:
                         defaultMode:
-                          description: 'Optional: mode bits to use on created files
-                            by default. Must be a value between 0 and 0777. Defaults
-                            to 0644. Directories within the path are not affected
-                            by this setting. This might be in conflict with other
-                            options that affect the file mode, like fsGroup, and the
-                            result can be other mode bits set.'
+                          description: 'Optional: mode bits used to set permissions
+                            on created files by default. Must be an octal value between
+                            0000 and 0777 or a decimal value between 0 and 511. YAML
+                            accepts both octal and decimal values, JSON requires decimal
+                            values for mode bits. Defaults to 0644. Directories within
+                            the path are not affected by this setting. This might
+                            be in conflict with other options that affect the file
+                            mode, like fsGroup, and the result can be other mode bits
+                            set.'
                           format: int32
                           type: integer
                         items:
@@ -7206,8 +8419,11 @@ spec:
                                 description: The key to project.
                                 type: string
                               mode:
-                                description: 'Optional: mode bits to use on this file,
-                                  must be a value between 0 and 0777. If not specified,
+                                description: 'Optional: mode bits used to set permissions
+                                  on this file. Must be an octal value between 0000
+                                  and 0777 or a decimal value between 0 and 511. YAML
+                                  accepts both octal and decimal values, JSON requires
+                                  decimal values for mode bits. If not specified,
                                   the volume defaultMode will be used. This might
                                   be in conflict with other options that affect the
                                   file mode, like fsGroup, and the result can be other
@@ -7354,7 +8570,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.1
+    controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
   name: podmonitors.monitoring.coreos.com
   namespace: metalk8s-monitoring
@@ -7393,6 +8609,23 @@ spec:
               jobLabel:
                 description: The label to use to retrieve the job name from.
                 type: string
+              labelLimit:
+                description: Per-scrape limit on number of labels that will be accepted
+                  for a sample. Only valid in Prometheus versions 2.27.0 and newer.
+                format: int64
+                type: integer
+              labelNameLengthLimit:
+                description: Per-scrape limit on length of labels name that will be
+                  accepted for a sample. Only valid in Prometheus versions 2.27.0
+                  and newer.
+                format: int64
+                type: integer
+              labelValueLengthLimit:
+                description: Per-scrape limit on length of labels value that will
+                  be accepted for a sample. Only valid in Prometheus versions 2.27.0
+                  and newer.
+                format: int64
+                type: integer
               namespaceSelector:
                 description: Selector to select which namespaces the Endpoints objects
                   are discovered from.
@@ -7413,6 +8646,33 @@ spec:
                   description: PodMetricsEndpoint defines a scrapeable endpoint of
                     a Kubernetes Pod serving Prometheus metrics.
                   properties:
+                    authorization:
+                      description: Authorization section for this endpoint
+                      properties:
+                        credentials:
+                          description: The secret's key that contains the credentials
+                            of the request
+                          properties:
+                            key:
+                              description: The key of the secret to select from.  Must
+                                be a valid secret key.
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                TODO: Add other useful fields. apiVersion, kind, uid?'
+                              type: string
+                            optional:
+                              description: Specify whether the Secret or its key must
+                                be defined
+                              type: boolean
+                          required:
+                          - key
+                          type: object
+                        type:
+                          description: Set the authentication type. Defaults to Bearer,
+                            Basic will cause an error
+                          type: string
+                      type: object
                     basicAuth:
                       description: 'BasicAuth allow an endpoint to authenticate over
                         basic authentication. More info: https://prometheus.io/docs/operating/configuration/#endpoint'
@@ -7533,6 +8793,90 @@ spec:
                             type: string
                         type: object
                       type: array
+                    oauth2:
+                      description: OAuth2 for the URL. Only valid in Prometheus versions
+                        2.27.0 and newer.
+                      properties:
+                        clientId:
+                          description: The secret or configmap containing the OAuth2
+                            client id
+                          properties:
+                            configMap:
+                              description: ConfigMap containing data to use for the
+                                targets.
+                              properties:
+                                key:
+                                  description: The key to select.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the ConfigMap or its
+                                    key must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                            secret:
+                              description: Secret containing data to use for the targets.
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must
+                                    be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key
+                                    must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                          type: object
+                        clientSecret:
+                          description: The secret containing the OAuth2 client secret
+                          properties:
+                            key:
+                              description: The key of the secret to select from.  Must
+                                be a valid secret key.
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                TODO: Add other useful fields. apiVersion, kind, uid?'
+                              type: string
+                            optional:
+                              description: Specify whether the Secret or its key must
+                                be defined
+                              type: boolean
+                          required:
+                          - key
+                          type: object
+                        endpointParams:
+                          additionalProperties:
+                            type: string
+                          description: Parameters to append to the token URL
+                          type: object
+                        scopes:
+                          description: OAuth2 scopes used for the token request
+                          items:
+                            type: string
+                          type: array
+                        tokenUrl:
+                          description: The URL to fetch the token from
+                          minLength: 1
+                          type: string
+                      required:
+                      - clientId
+                      - clientSecret
+                      - tokenUrl
+                      type: object
                     params:
                       additionalProperties:
                         items:
@@ -7808,7 +9152,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.1
+    controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
   name: probes.monitoring.coreos.com
   namespace: metalk8s-monitoring
@@ -7844,6 +9188,33 @@ spec:
             description: Specification of desired Ingress selection for target discovery
               by Prometheus.
             properties:
+              authorization:
+                description: Authorization section for this endpoint
+                properties:
+                  credentials:
+                    description: The secret's key that contains the credentials of
+                      the request
+                    properties:
+                      key:
+                        description: The key of the secret to select from.  Must be
+                          a valid secret key.
+                        type: string
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                      optional:
+                        description: Specify whether the Secret or its key must be
+                          defined
+                        type: boolean
+                    required:
+                    - key
+                    type: object
+                  type:
+                    description: Set the authentication type. Defaults to Bearer,
+                      Basic will cause an error
+                    type: string
+                type: object
               basicAuth:
                 description: 'BasicAuth allow an endpoint to authenticate over basic
                   authentication. More info: https://prometheus.io/docs/operating/configuration/#endpoint'
@@ -7913,11 +9284,153 @@ spec:
               jobName:
                 description: The job name assigned to scraped metrics by default.
                 type: string
+              labelLimit:
+                description: Per-scrape limit on number of labels that will be accepted
+                  for a sample. Only valid in Prometheus versions 2.27.0 and newer.
+                format: int64
+                type: integer
+              labelNameLengthLimit:
+                description: Per-scrape limit on length of labels name that will be
+                  accepted for a sample. Only valid in Prometheus versions 2.27.0
+                  and newer.
+                format: int64
+                type: integer
+              labelValueLengthLimit:
+                description: Per-scrape limit on length of labels value that will
+                  be accepted for a sample. Only valid in Prometheus versions 2.27.0
+                  and newer.
+                format: int64
+                type: integer
+              metricRelabelings:
+                description: MetricRelabelConfigs to apply to samples before ingestion.
+                items:
+                  description: 'RelabelConfig allows dynamic rewriting of the label
+                    set, being applied to samples before ingestion. It defines `<metric_relabel_configs>`-section
+                    of Prometheus configuration. More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs'
+                  properties:
+                    action:
+                      description: Action to perform based on regex matching. Default
+                        is 'replace'
+                      type: string
+                    modulus:
+                      description: Modulus to take of the hash of the source label
+                        values.
+                      format: int64
+                      type: integer
+                    regex:
+                      description: Regular expression against which the extracted
+                        value is matched. Default is '(.*)'
+                      type: string
+                    replacement:
+                      description: Replacement value against which a regex replace
+                        is performed if the regular expression matches. Regex capture
+                        groups are available. Default is '$1'
+                      type: string
+                    separator:
+                      description: Separator placed between concatenated source label
+                        values. default is ';'.
+                      type: string
+                    sourceLabels:
+                      description: The source labels select values from existing labels.
+                        Their content is concatenated using the configured separator
+                        and matched against the configured regular expression for
+                        the replace, keep, and drop actions.
+                      items:
+                        type: string
+                      type: array
+                    targetLabel:
+                      description: Label to which the resulting value is written in
+                        a replace action. It is mandatory for replace actions. Regex
+                        capture groups are available.
+                      type: string
+                  type: object
+                type: array
               module:
                 description: 'The module to use for probing specifying how to probe
                   the target. Example module configuring in the blackbox exporter:
                   https://github.com/prometheus/blackbox_exporter/blob/master/example.yml'
                 type: string
+              oauth2:
+                description: OAuth2 for the URL. Only valid in Prometheus versions
+                  2.27.0 and newer.
+                properties:
+                  clientId:
+                    description: The secret or configmap containing the OAuth2 client
+                      id
+                    properties:
+                      configMap:
+                        description: ConfigMap containing data to use for the targets.
+                        properties:
+                          key:
+                            description: The key to select.
+                            type: string
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            type: string
+                          optional:
+                            description: Specify whether the ConfigMap or its key
+                              must be defined
+                            type: boolean
+                        required:
+                        - key
+                        type: object
+                      secret:
+                        description: Secret containing data to use for the targets.
+                        properties:
+                          key:
+                            description: The key of the secret to select from.  Must
+                              be a valid secret key.
+                            type: string
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            type: string
+                          optional:
+                            description: Specify whether the Secret or its key must
+                              be defined
+                            type: boolean
+                        required:
+                        - key
+                        type: object
+                    type: object
+                  clientSecret:
+                    description: The secret containing the OAuth2 client secret
+                    properties:
+                      key:
+                        description: The key of the secret to select from.  Must be
+                          a valid secret key.
+                        type: string
+                      name:
+                        description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                          TODO: Add other useful fields. apiVersion, kind, uid?'
+                        type: string
+                      optional:
+                        description: Specify whether the Secret or its key must be
+                          defined
+                        type: boolean
+                    required:
+                    - key
+                    type: object
+                  endpointParams:
+                    additionalProperties:
+                      type: string
+                    description: Parameters to append to the token URL
+                    type: object
+                  scopes:
+                    description: OAuth2 scopes used for the token request
+                    items:
+                      type: string
+                    type: array
+                  tokenUrl:
+                    description: The URL to fetch the token from
+                    minLength: 1
+                    type: string
+                required:
+                - clientId
+                - clientSecret
+                - tokenUrl
+                type: object
               prober:
                 description: Specification for the prober to use for probing targets.
                   The prober.URL parameter is required. Targets cannot be probed if
@@ -7925,6 +9438,9 @@ spec:
                 properties:
                   path:
                     description: Path to collect metrics from. Defaults to `/probe`.
+                    type: string
+                  proxyUrl:
+                    description: Optional ProxyURL.
                     type: string
                   scheme:
                     description: HTTP scheme to use for scraping. Defaults to `http`.
@@ -7935,9 +9451,19 @@ spec:
                 required:
                 - url
                 type: object
+              sampleLimit:
+                description: SampleLimit defines per-scrape limit on number of scraped
+                  samples that will be accepted.
+                format: int64
+                type: integer
               scrapeTimeout:
                 description: Timeout for scraping metrics from the Prometheus exporter.
                 type: string
+              targetLimit:
+                description: TargetLimit defines a limit on the number of scraped
+                  targets that will be accepted.
+                format: int64
+                type: integer
               targets:
                 description: Targets defines a set of static and/or dynamically discovered
                   targets to be probed using the prober.
@@ -8238,7 +9764,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.1
+    controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
   name: prometheuses.monitoring.coreos.com
   namespace: metalk8s-monitoring
@@ -8649,10 +10175,71 @@ spec:
                                         The requirements are ANDed.
                                       type: object
                                   type: object
+                                namespaceSelector:
+                                  description: A label query over the set of namespaces
+                                    that the term applies to. The term is applied
+                                    to the union of the namespaces selected by this
+                                    field and the ones listed in the namespaces field.
+                                    null selector and null or empty namespaces list
+                                    means "this pod's namespace". An empty selector
+                                    ({}) matches all namespaces. This field is beta-level
+                                    and is only honored when PodAffinityNamespaceSelector
+                                    feature is enabled.
+                                  properties:
+                                    matchExpressions:
+                                      description: matchExpressions is a list of label
+                                        selector requirements. The requirements are
+                                        ANDed.
+                                      items:
+                                        description: A label selector requirement
+                                          is a selector that contains values, a key,
+                                          and an operator that relates the key and
+                                          values.
+                                        properties:
+                                          key:
+                                            description: key is the label key that
+                                              the selector applies to.
+                                            type: string
+                                          operator:
+                                            description: operator represents a key's
+                                              relationship to a set of values. Valid
+                                              operators are In, NotIn, Exists and
+                                              DoesNotExist.
+                                            type: string
+                                          values:
+                                            description: values is an array of string
+                                              values. If the operator is In or NotIn,
+                                              the values array must be non-empty.
+                                              If the operator is Exists or DoesNotExist,
+                                              the values array must be empty. This
+                                              array is replaced during a strategic
+                                              merge patch.
+                                            items:
+                                              type: string
+                                            type: array
+                                        required:
+                                        - key
+                                        - operator
+                                        type: object
+                                      type: array
+                                    matchLabels:
+                                      additionalProperties:
+                                        type: string
+                                      description: matchLabels is a map of {key,value}
+                                        pairs. A single {key,value} in the matchLabels
+                                        map is equivalent to an element of matchExpressions,
+                                        whose key field is "key", the operator is
+                                        "In", and the values array contains only "value".
+                                        The requirements are ANDed.
+                                      type: object
+                                  type: object
                                 namespaces:
-                                  description: namespaces specifies which namespaces
-                                    the labelSelector applies to (matches against);
-                                    null or empty list means "this pod's namespace"
+                                  description: namespaces specifies a static list
+                                    of namespace names that the term applies to. The
+                                    term is applied to the union of the namespaces
+                                    listed in this field and the ones selected by
+                                    namespaceSelector. null or empty namespaces list
+                                    and null namespaceSelector means "this pod's namespace"
                                   items:
                                     type: string
                                   type: array
@@ -8744,10 +10331,66 @@ spec:
                                     requirements are ANDed.
                                   type: object
                               type: object
+                            namespaceSelector:
+                              description: A label query over the set of namespaces
+                                that the term applies to. The term is applied to the
+                                union of the namespaces selected by this field and
+                                the ones listed in the namespaces field. null selector
+                                and null or empty namespaces list means "this pod's
+                                namespace". An empty selector ({}) matches all namespaces.
+                                This field is beta-level and is only honored when
+                                PodAffinityNamespaceSelector feature is enabled.
+                              properties:
+                                matchExpressions:
+                                  description: matchExpressions is a list of label
+                                    selector requirements. The requirements are ANDed.
+                                  items:
+                                    description: A label selector requirement is a
+                                      selector that contains values, a key, and an
+                                      operator that relates the key and values.
+                                    properties:
+                                      key:
+                                        description: key is the label key that the
+                                          selector applies to.
+                                        type: string
+                                      operator:
+                                        description: operator represents a key's relationship
+                                          to a set of values. Valid operators are
+                                          In, NotIn, Exists and DoesNotExist.
+                                        type: string
+                                      values:
+                                        description: values is an array of string
+                                          values. If the operator is In or NotIn,
+                                          the values array must be non-empty. If the
+                                          operator is Exists or DoesNotExist, the
+                                          values array must be empty. This array is
+                                          replaced during a strategic merge patch.
+                                        items:
+                                          type: string
+                                        type: array
+                                    required:
+                                    - key
+                                    - operator
+                                    type: object
+                                  type: array
+                                matchLabels:
+                                  additionalProperties:
+                                    type: string
+                                  description: matchLabels is a map of {key,value}
+                                    pairs. A single {key,value} in the matchLabels
+                                    map is equivalent to an element of matchExpressions,
+                                    whose key field is "key", the operator is "In",
+                                    and the values array contains only "value". The
+                                    requirements are ANDed.
+                                  type: object
+                              type: object
                             namespaces:
-                              description: namespaces specifies which namespaces the
-                                labelSelector applies to (matches against); null or
-                                empty list means "this pod's namespace"
+                              description: namespaces specifies a static list of namespace
+                                names that the term applies to. The term is applied
+                                to the union of the namespaces listed in this field
+                                and the ones selected by namespaceSelector. null or
+                                empty namespaces list and null namespaceSelector means
+                                "this pod's namespace"
                               items:
                                 type: string
                               type: array
@@ -8841,10 +10484,71 @@ spec:
                                         The requirements are ANDed.
                                       type: object
                                   type: object
+                                namespaceSelector:
+                                  description: A label query over the set of namespaces
+                                    that the term applies to. The term is applied
+                                    to the union of the namespaces selected by this
+                                    field and the ones listed in the namespaces field.
+                                    null selector and null or empty namespaces list
+                                    means "this pod's namespace". An empty selector
+                                    ({}) matches all namespaces. This field is beta-level
+                                    and is only honored when PodAffinityNamespaceSelector
+                                    feature is enabled.
+                                  properties:
+                                    matchExpressions:
+                                      description: matchExpressions is a list of label
+                                        selector requirements. The requirements are
+                                        ANDed.
+                                      items:
+                                        description: A label selector requirement
+                                          is a selector that contains values, a key,
+                                          and an operator that relates the key and
+                                          values.
+                                        properties:
+                                          key:
+                                            description: key is the label key that
+                                              the selector applies to.
+                                            type: string
+                                          operator:
+                                            description: operator represents a key's
+                                              relationship to a set of values. Valid
+                                              operators are In, NotIn, Exists and
+                                              DoesNotExist.
+                                            type: string
+                                          values:
+                                            description: values is an array of string
+                                              values. If the operator is In or NotIn,
+                                              the values array must be non-empty.
+                                              If the operator is Exists or DoesNotExist,
+                                              the values array must be empty. This
+                                              array is replaced during a strategic
+                                              merge patch.
+                                            items:
+                                              type: string
+                                            type: array
+                                        required:
+                                        - key
+                                        - operator
+                                        type: object
+                                      type: array
+                                    matchLabels:
+                                      additionalProperties:
+                                        type: string
+                                      description: matchLabels is a map of {key,value}
+                                        pairs. A single {key,value} in the matchLabels
+                                        map is equivalent to an element of matchExpressions,
+                                        whose key field is "key", the operator is
+                                        "In", and the values array contains only "value".
+                                        The requirements are ANDed.
+                                      type: object
+                                  type: object
                                 namespaces:
-                                  description: namespaces specifies which namespaces
-                                    the labelSelector applies to (matches against);
-                                    null or empty list means "this pod's namespace"
+                                  description: namespaces specifies a static list
+                                    of namespace names that the term applies to. The
+                                    term is applied to the union of the namespaces
+                                    listed in this field and the ones selected by
+                                    namespaceSelector. null or empty namespaces list
+                                    and null namespaceSelector means "this pod's namespace"
                                   items:
                                     type: string
                                   type: array
@@ -8936,10 +10640,66 @@ spec:
                                     requirements are ANDed.
                                   type: object
                               type: object
+                            namespaceSelector:
+                              description: A label query over the set of namespaces
+                                that the term applies to. The term is applied to the
+                                union of the namespaces selected by this field and
+                                the ones listed in the namespaces field. null selector
+                                and null or empty namespaces list means "this pod's
+                                namespace". An empty selector ({}) matches all namespaces.
+                                This field is beta-level and is only honored when
+                                PodAffinityNamespaceSelector feature is enabled.
+                              properties:
+                                matchExpressions:
+                                  description: matchExpressions is a list of label
+                                    selector requirements. The requirements are ANDed.
+                                  items:
+                                    description: A label selector requirement is a
+                                      selector that contains values, a key, and an
+                                      operator that relates the key and values.
+                                    properties:
+                                      key:
+                                        description: key is the label key that the
+                                          selector applies to.
+                                        type: string
+                                      operator:
+                                        description: operator represents a key's relationship
+                                          to a set of values. Valid operators are
+                                          In, NotIn, Exists and DoesNotExist.
+                                        type: string
+                                      values:
+                                        description: values is an array of string
+                                          values. If the operator is In or NotIn,
+                                          the values array must be non-empty. If the
+                                          operator is Exists or DoesNotExist, the
+                                          values array must be empty. This array is
+                                          replaced during a strategic merge patch.
+                                        items:
+                                          type: string
+                                        type: array
+                                    required:
+                                    - key
+                                    - operator
+                                    type: object
+                                  type: array
+                                matchLabels:
+                                  additionalProperties:
+                                    type: string
+                                  description: matchLabels is a map of {key,value}
+                                    pairs. A single {key,value} in the matchLabels
+                                    map is equivalent to an element of matchExpressions,
+                                    whose key field is "key", the operator is "In",
+                                    and the values array contains only "value". The
+                                    requirements are ANDed.
+                                  type: object
+                              type: object
                             namespaces:
-                              description: namespaces specifies which namespaces the
-                                labelSelector applies to (matches against); null or
-                                empty list means "this pod's namespace"
+                              description: namespaces specifies a static list of namespace
+                                names that the term applies to. The term is applied
+                                to the union of the namespaces listed in this field
+                                and the ones selected by namespaceSelector. null or
+                                empty namespaces list and null namespaceSelector means
+                                "this pod's namespace"
                               items:
                                 type: string
                               type: array
@@ -8973,6 +10733,35 @@ spec:
                           description: Version of the Alertmanager API that Prometheus
                             uses to send alerts. It can be "v1" or "v2".
                           type: string
+                        authorization:
+                          description: Authorization section for this alertmanager
+                            endpoint
+                          properties:
+                            credentials:
+                              description: The secret's key that contains the credentials
+                                of the request
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must
+                                    be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key
+                                    must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                            type:
+                              description: Set the authentication type. Defaults to
+                                Bearer, Basic will cause an error
+                              type: string
+                          type: object
                         bearerTokenFile:
                           description: BearerTokenFile to read from filesystem to
                             use when authenticating to Alertmanager.
@@ -9154,6 +10943,37 @@ spec:
                   inside of the cluster and will discover API servers automatically
                   and use the pod's CA certificate and bearer token file at /var/run/secrets/kubernetes.io/serviceaccount/.
                 properties:
+                  authorization:
+                    description: Authorization section for accessing apiserver
+                    properties:
+                      credentials:
+                        description: The secret's key that contains the credentials
+                          of the request
+                        properties:
+                          key:
+                            description: The key of the secret to select from.  Must
+                              be a valid secret key.
+                            type: string
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            type: string
+                          optional:
+                            description: Specify whether the Secret or its key must
+                              be defined
+                            type: boolean
+                        required:
+                        - key
+                        type: object
+                      credentialsFile:
+                        description: File to read a secret from, mutually exclusive
+                          with Credentials (from SafeAuthorization)
+                        type: string
+                      type:
+                        description: Set the authentication type. Defaults to Bearer,
+                          Basic will cause an error
+                        type: string
+                    type: object
                   basicAuth:
                     description: BasicAuth allow an endpoint to authenticate over
                       basic authentication
@@ -9376,10 +11196,11 @@ spec:
                         CMD is used if this is not provided. Variable references $(VAR_NAME)
                         are expanded using the container''s environment. If a variable
                         cannot be resolved, the reference in the input string will
-                        be unchanged. The $(VAR_NAME) syntax can be escaped with a
-                        double $$, ie: $$(VAR_NAME). Escaped references will never
-                        be expanded, regardless of whether the variable exists or
-                        not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
+                        be unchanged. Double $$ are reduced to a single $, which allows
+                        for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will
+                        produce the string literal "$(VAR_NAME)". Escaped references
+                        will never be expanded, regardless of whether the variable
+                        exists or not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
                       items:
                         type: string
                       type: array
@@ -9388,10 +11209,12 @@ spec:
                         The docker image''s ENTRYPOINT is used if this is not provided.
                         Variable references $(VAR_NAME) are expanded using the container''s
                         environment. If a variable cannot be resolved, the reference
-                        in the input string will be unchanged. The $(VAR_NAME) syntax
-                        can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
-                        references will never be expanded, regardless of whether the
-                        variable exists or not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
+                        in the input string will be unchanged. Double $$ are reduced
+                        to a single $, which allows for escaping the $(VAR_NAME) syntax:
+                        i.e. "$$(VAR_NAME)" will produce the string literal "$(VAR_NAME)".
+                        Escaped references will never be expanded, regardless of whether
+                        the variable exists or not. Cannot be updated. More info:
+                        https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
                       items:
                         type: string
                       type: array
@@ -9408,13 +11231,15 @@ spec:
                             type: string
                           value:
                             description: 'Variable references $(VAR_NAME) are expanded
-                              using the previous defined environment variables in
+                              using the previously defined environment variables in
                               the container and any service environment variables.
                               If a variable cannot be resolved, the reference in the
-                              input string will be unchanged. The $(VAR_NAME) syntax
-                              can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
-                              references will never be expanded, regardless of whether
-                              the variable exists or not. Defaults to "".'
+                              input string will be unchanged. Double $$ are reduced
+                              to a single $, which allows for escaping the $(VAR_NAME)
+                              syntax: i.e. "$$(VAR_NAME)" will produce the string
+                              literal "$(VAR_NAME)". Escaped references will never
+                              be expanded, regardless of whether the variable exists
+                              or not. Defaults to "".'
                             type: string
                           valueFrom:
                             description: Source for the environment variable's value.
@@ -9441,9 +11266,10 @@ spec:
                                 type: object
                               fieldRef:
                                 description: 'Selects a field of the pod: supports
-                                  metadata.name, metadata.namespace, metadata.labels,
-                                  metadata.annotations, spec.nodeName, spec.serviceAccountName,
-                                  status.hostIP, status.podIP, status.podIPs.'
+                                  metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`,
+                                  `metadata.annotations[''<KEY>'']`, spec.nodeName,
+                                  spec.serviceAccountName, status.hostIP, status.podIP,
+                                  status.podIPs.'
                                 properties:
                                   apiVersion:
                                     description: Version of the schema the FieldPath
@@ -9863,6 +11689,23 @@ spec:
                           required:
                           - port
                           type: object
+                        terminationGracePeriodSeconds:
+                          description: Optional duration in seconds the pod needs
+                            to terminate gracefully upon probe failure. The grace
+                            period is the duration in seconds after the processes
+                            running in the pod are sent a termination signal and the
+                            time when the processes are forcibly halted with a kill
+                            signal. Set this value longer than the expected cleanup
+                            time for your process. If this value is nil, the pod's
+                            terminationGracePeriodSeconds will be used. Otherwise,
+                            this value overrides the value provided by the pod spec.
+                            Value must be non-negative integer. The value zero indicates
+                            stop immediately via the kill signal (no opportunity to
+                            shut down). This is a beta field and requires enabling
+                            ProbeTerminationGracePeriod feature gate. Minimum value
+                            is 1. spec.terminationGracePeriodSeconds is used if unset.
+                          format: int64
+                          type: integer
                         timeoutSeconds:
                           description: 'Number of seconds after which the probe times
                             out. Defaults to 1 second. Minimum value is 1. More info:
@@ -10031,6 +11874,23 @@ spec:
                           required:
                           - port
                           type: object
+                        terminationGracePeriodSeconds:
+                          description: Optional duration in seconds the pod needs
+                            to terminate gracefully upon probe failure. The grace
+                            period is the duration in seconds after the processes
+                            running in the pod are sent a termination signal and the
+                            time when the processes are forcibly halted with a kill
+                            signal. Set this value longer than the expected cleanup
+                            time for your process. If this value is nil, the pod's
+                            terminationGracePeriodSeconds will be used. Otherwise,
+                            this value overrides the value provided by the pod spec.
+                            Value must be non-negative integer. The value zero indicates
+                            stop immediately via the kill signal (no opportunity to
+                            shut down). This is a beta field and requires enabling
+                            ProbeTerminationGracePeriod feature gate. Minimum value
+                            is 1. spec.terminationGracePeriodSeconds is used if unset.
+                          format: int64
+                          type: integer
                         timeoutSeconds:
                           description: 'Number of seconds after which the probe times
                             out. Defaults to 1 second. Minimum value is 1. More info:
@@ -10040,7 +11900,7 @@ spec:
                       type: object
                     resources:
                       description: 'Compute Resources required by this container.
-                        Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                       properties:
                         limits:
                           additionalProperties:
@@ -10050,7 +11910,7 @@ spec:
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                             x-kubernetes-int-or-string: true
                           description: 'Limits describes the maximum amount of compute
-                            resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                           type: object
                         requests:
                           additionalProperties:
@@ -10063,13 +11923,14 @@ spec:
                             resources required. If Requests is omitted for a container,
                             it defaults to Limits if that is explicitly specified,
                             otherwise to an implementation-defined value. More info:
-                            https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                           type: object
                       type: object
                     securityContext:
-                      description: 'Security options the pod should run with. More
-                        info: https://kubernetes.io/docs/concepts/policy/security-context/
-                        More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/'
+                      description: 'SecurityContext defines the security options the
+                        container should be run with. If set, the fields of SecurityContext
+                        override the equivalent fields of PodSecurityContext. More
+                        info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/'
                       properties:
                         allowPrivilegeEscalation:
                           description: 'AllowPrivilegeEscalation controls whether
@@ -10166,6 +12027,30 @@ spec:
                                 to the container.
                               type: string
                           type: object
+                        seccompProfile:
+                          description: The seccomp options to use by this container.
+                            If seccomp options are provided at both the pod & container
+                            level, the container options override the pod options.
+                          properties:
+                            localhostProfile:
+                              description: localhostProfile indicates a profile defined
+                                in a file on the node should be used. The profile
+                                must be preconfigured on the node to work. Must be
+                                a descending path, relative to the kubelet's configured
+                                seccomp profile location. Must only be set if type
+                                is "Localhost".
+                              type: string
+                            type:
+                              description: "type indicates which kind of seccomp profile\
+                                \ will be applied. Valid options are: \n Localhost\
+                                \ - a profile defined in a file on the node should\
+                                \ be used. RuntimeDefault - the container runtime\
+                                \ default profile should be used. Unconfined - no\
+                                \ profile should be applied."
+                              type: string
+                          required:
+                          - type
+                          type: object
                         windowsOptions:
                           description: The Windows specific settings applied to all
                             containers. If unspecified, the options from the PodSecurityContext
@@ -10182,6 +12067,19 @@ spec:
                               description: GMSACredentialSpecName is the name of the
                                 GMSA credential spec to use.
                               type: string
+                            hostProcess:
+                              description: HostProcess determines if a container should
+                                be run as a 'Host Process' container. This field is
+                                alpha-level and will only be honored by components
+                                that enable the WindowsHostProcessContainers feature
+                                flag. Setting this field without the feature flag
+                                will result in errors when validating the Pod. All
+                                of a Pod's containers must have the same effective
+                                HostProcess value (it is not allowed to have a mix
+                                of HostProcess containers and non-HostProcess containers).  In
+                                addition, if HostProcess is true then HostNetwork
+                                must also be set to true.
+                              type: boolean
                             runAsUserName:
                               description: The UserName in Windows to run the entrypoint
                                 of the container process. Defaults to the user specified
@@ -10200,8 +12098,7 @@ spec:
                         can be used to provide different probe parameters at the beginning
                         of a Pod''s lifecycle, when it might take a long time to load
                         data or warm a cache, than during steady-state operation.
-                        This cannot be updated. This is a beta feature enabled by
-                        the StartupProbe feature flag. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
+                        This cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
                           description: One and only one of the following should be
@@ -10308,6 +12205,23 @@ spec:
                           required:
                           - port
                           type: object
+                        terminationGracePeriodSeconds:
+                          description: Optional duration in seconds the pod needs
+                            to terminate gracefully upon probe failure. The grace
+                            period is the duration in seconds after the processes
+                            running in the pod are sent a termination signal and the
+                            time when the processes are forcibly halted with a kill
+                            signal. Set this value longer than the expected cleanup
+                            time for your process. If this value is nil, the pod's
+                            terminationGracePeriodSeconds will be used. Otherwise,
+                            this value overrides the value provided by the pod spec.
+                            Value must be non-negative integer. The value zero indicates
+                            stop immediately via the kill signal (no opportunity to
+                            shut down). This is a beta field and requires enabling
+                            ProbeTerminationGracePeriod feature gate. Minimum value
+                            is 1. spec.terminationGracePeriodSeconds is used if unset.
+                          format: int64
+                          type: integer
                         timeoutSeconds:
                           description: 'Number of seconds after which the probe times
                             out. Defaults to 1 second. Minimum value is 1. More info:
@@ -10447,10 +12361,45 @@ spec:
                 items:
                   type: string
                 type: array
+              enforcedBodySizeLimit:
+                description: 'EnforcedBodySizeLimit defines the maximum size of uncompressed
+                  response body that will be accepted by Prometheus. Targets responding
+                  with a body larger than this many bytes will cause the scrape to
+                  fail. Example: 100MB. If defined, the limit will apply to all service/pod
+                  monitors and probes. This is an experimental feature, this behaviour
+                  could change or be removed in the future. Only valid in Prometheus
+                  versions 2.28.0 and newer.'
+                type: string
+              enforcedLabelLimit:
+                description: Per-scrape limit on number of labels that will be accepted
+                  for a sample. If more than this number of labels are present post
+                  metric-relabeling, the entire scrape will be treated as failed.
+                  0 means no limit. Only valid in Prometheus versions 2.27.0 and newer.
+                format: int64
+                type: integer
+              enforcedLabelNameLengthLimit:
+                description: Per-scrape limit on length of labels name that will be
+                  accepted for a sample. If a label name is longer than this number
+                  post metric-relabeling, the entire scrape will be treated as failed.
+                  0 means no limit. Only valid in Prometheus versions 2.27.0 and newer.
+                format: int64
+                type: integer
+              enforcedLabelValueLengthLimit:
+                description: Per-scrape limit on length of labels value that will
+                  be accepted for a sample. If a label value is longer than this number
+                  post metric-relabeling, the entire scrape will be treated as failed.
+                  0 means no limit. Only valid in Prometheus versions 2.27.0 and newer.
+                format: int64
+                type: integer
               enforcedNamespaceLabel:
-                description: EnforcedNamespaceLabel enforces adding a namespace label
-                  of origin for each alert and metric that is user created. The label
-                  value will always be the namespace of the object that is being created.
+                description: "EnforcedNamespaceLabel If set, a label will be added\
+                  \ to \n 1. all user-metrics (created by `ServiceMonitor`, `PodMonitor`\
+                  \ and `ProbeConfig` object) and 2. in all `PrometheusRule` objects\
+                  \ (except the ones excluded in `prometheusRulesExcludedFromEnforce`)\
+                  \ to    * alerting & recording rules and    * the metrics used in\
+                  \ their expressions (`expr`). \n Label name is this field's value.\
+                  \ Label value is the namespace of the created object (mentioned\
+                  \ above)."
                 type: string
               enforcedSampleLimit:
                 description: EnforcedSampleLimit defines global limit on number of
@@ -10463,15 +12412,17 @@ spec:
                 type: integer
               enforcedTargetLimit:
                 description: EnforcedTargetLimit defines a global limit on the number
-                  of scraped targets. This overrides any TargetLimit set per ServiceMonitor
-                  or/and PodMonitor. It is meant to be used by admins to enforce the
-                  TargetLimit to keep overall number of targets under the desired
-                  limit. Note that if TargetLimit is higher that value will be taken
-                  instead.
+                  of scraped targets.  This overrides any TargetLimit set per ServiceMonitor
+                  or/and PodMonitor.  It is meant to be used by admins to enforce
+                  the TargetLimit to keep the overall number of targets under the
+                  desired limit. Note that if TargetLimit is lower, that value will
+                  be taken instead, except if either value is zero, in which case
+                  the non-zero value will be used.  If both values are zero, no limit
+                  is enforced.
                 format: int64
                 type: integer
               evaluationInterval:
-                description: Interval between consecutive evaluations.
+                description: 'Interval between consecutive evaluations. Default: `1m`'
                 type: string
               externalLabels:
                 additionalProperties:
@@ -10516,10 +12467,12 @@ spec:
                   into the Prometheus configuration from external sources. Any errors
                   during the execution of an initContainer will lead to a restart
                   of the Pod. More info: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
-                  Using initContainers for any use case other then secret fetching
-                  is entirely outside the scope of what the maintainers will support
-                  and by doing so, you accept that this behaviour may break at any
-                  time without notice.'
+                  InitContainers described here modify an operator generated init
+                  containers if they share the same name and modifications are done
+                  via a strategic merge patch. The current init container name is:
+                  `init-config-reloader`. Overriding init containers is entirely outside
+                  the scope of what the maintainers will support and by doing so,
+                  you accept that this behaviour may break at any time without notice.'
                 items:
                   description: A single application container that you want to run
                     within a pod.
@@ -10529,10 +12482,11 @@ spec:
                         CMD is used if this is not provided. Variable references $(VAR_NAME)
                         are expanded using the container''s environment. If a variable
                         cannot be resolved, the reference in the input string will
-                        be unchanged. The $(VAR_NAME) syntax can be escaped with a
-                        double $$, ie: $$(VAR_NAME). Escaped references will never
-                        be expanded, regardless of whether the variable exists or
-                        not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
+                        be unchanged. Double $$ are reduced to a single $, which allows
+                        for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will
+                        produce the string literal "$(VAR_NAME)". Escaped references
+                        will never be expanded, regardless of whether the variable
+                        exists or not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
                       items:
                         type: string
                       type: array
@@ -10541,10 +12495,12 @@ spec:
                         The docker image''s ENTRYPOINT is used if this is not provided.
                         Variable references $(VAR_NAME) are expanded using the container''s
                         environment. If a variable cannot be resolved, the reference
-                        in the input string will be unchanged. The $(VAR_NAME) syntax
-                        can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
-                        references will never be expanded, regardless of whether the
-                        variable exists or not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
+                        in the input string will be unchanged. Double $$ are reduced
+                        to a single $, which allows for escaping the $(VAR_NAME) syntax:
+                        i.e. "$$(VAR_NAME)" will produce the string literal "$(VAR_NAME)".
+                        Escaped references will never be expanded, regardless of whether
+                        the variable exists or not. Cannot be updated. More info:
+                        https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
                       items:
                         type: string
                       type: array
@@ -10561,13 +12517,15 @@ spec:
                             type: string
                           value:
                             description: 'Variable references $(VAR_NAME) are expanded
-                              using the previous defined environment variables in
+                              using the previously defined environment variables in
                               the container and any service environment variables.
                               If a variable cannot be resolved, the reference in the
-                              input string will be unchanged. The $(VAR_NAME) syntax
-                              can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
-                              references will never be expanded, regardless of whether
-                              the variable exists or not. Defaults to "".'
+                              input string will be unchanged. Double $$ are reduced
+                              to a single $, which allows for escaping the $(VAR_NAME)
+                              syntax: i.e. "$$(VAR_NAME)" will produce the string
+                              literal "$(VAR_NAME)". Escaped references will never
+                              be expanded, regardless of whether the variable exists
+                              or not. Defaults to "".'
                             type: string
                           valueFrom:
                             description: Source for the environment variable's value.
@@ -10594,9 +12552,10 @@ spec:
                                 type: object
                               fieldRef:
                                 description: 'Selects a field of the pod: supports
-                                  metadata.name, metadata.namespace, metadata.labels,
-                                  metadata.annotations, spec.nodeName, spec.serviceAccountName,
-                                  status.hostIP, status.podIP, status.podIPs.'
+                                  metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`,
+                                  `metadata.annotations[''<KEY>'']`, spec.nodeName,
+                                  spec.serviceAccountName, status.hostIP, status.podIP,
+                                  status.podIPs.'
                                 properties:
                                   apiVersion:
                                     description: Version of the schema the FieldPath
@@ -11016,6 +12975,23 @@ spec:
                           required:
                           - port
                           type: object
+                        terminationGracePeriodSeconds:
+                          description: Optional duration in seconds the pod needs
+                            to terminate gracefully upon probe failure. The grace
+                            period is the duration in seconds after the processes
+                            running in the pod are sent a termination signal and the
+                            time when the processes are forcibly halted with a kill
+                            signal. Set this value longer than the expected cleanup
+                            time for your process. If this value is nil, the pod's
+                            terminationGracePeriodSeconds will be used. Otherwise,
+                            this value overrides the value provided by the pod spec.
+                            Value must be non-negative integer. The value zero indicates
+                            stop immediately via the kill signal (no opportunity to
+                            shut down). This is a beta field and requires enabling
+                            ProbeTerminationGracePeriod feature gate. Minimum value
+                            is 1. spec.terminationGracePeriodSeconds is used if unset.
+                          format: int64
+                          type: integer
                         timeoutSeconds:
                           description: 'Number of seconds after which the probe times
                             out. Defaults to 1 second. Minimum value is 1. More info:
@@ -11184,6 +13160,23 @@ spec:
                           required:
                           - port
                           type: object
+                        terminationGracePeriodSeconds:
+                          description: Optional duration in seconds the pod needs
+                            to terminate gracefully upon probe failure. The grace
+                            period is the duration in seconds after the processes
+                            running in the pod are sent a termination signal and the
+                            time when the processes are forcibly halted with a kill
+                            signal. Set this value longer than the expected cleanup
+                            time for your process. If this value is nil, the pod's
+                            terminationGracePeriodSeconds will be used. Otherwise,
+                            this value overrides the value provided by the pod spec.
+                            Value must be non-negative integer. The value zero indicates
+                            stop immediately via the kill signal (no opportunity to
+                            shut down). This is a beta field and requires enabling
+                            ProbeTerminationGracePeriod feature gate. Minimum value
+                            is 1. spec.terminationGracePeriodSeconds is used if unset.
+                          format: int64
+                          type: integer
                         timeoutSeconds:
                           description: 'Number of seconds after which the probe times
                             out. Defaults to 1 second. Minimum value is 1. More info:
@@ -11193,7 +13186,7 @@ spec:
                       type: object
                     resources:
                       description: 'Compute Resources required by this container.
-                        Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                       properties:
                         limits:
                           additionalProperties:
@@ -11203,7 +13196,7 @@ spec:
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                             x-kubernetes-int-or-string: true
                           description: 'Limits describes the maximum amount of compute
-                            resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                           type: object
                         requests:
                           additionalProperties:
@@ -11216,13 +13209,14 @@ spec:
                             resources required. If Requests is omitted for a container,
                             it defaults to Limits if that is explicitly specified,
                             otherwise to an implementation-defined value. More info:
-                            https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                           type: object
                       type: object
                     securityContext:
-                      description: 'Security options the pod should run with. More
-                        info: https://kubernetes.io/docs/concepts/policy/security-context/
-                        More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/'
+                      description: 'SecurityContext defines the security options the
+                        container should be run with. If set, the fields of SecurityContext
+                        override the equivalent fields of PodSecurityContext. More
+                        info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/'
                       properties:
                         allowPrivilegeEscalation:
                           description: 'AllowPrivilegeEscalation controls whether
@@ -11319,6 +13313,30 @@ spec:
                                 to the container.
                               type: string
                           type: object
+                        seccompProfile:
+                          description: The seccomp options to use by this container.
+                            If seccomp options are provided at both the pod & container
+                            level, the container options override the pod options.
+                          properties:
+                            localhostProfile:
+                              description: localhostProfile indicates a profile defined
+                                in a file on the node should be used. The profile
+                                must be preconfigured on the node to work. Must be
+                                a descending path, relative to the kubelet's configured
+                                seccomp profile location. Must only be set if type
+                                is "Localhost".
+                              type: string
+                            type:
+                              description: "type indicates which kind of seccomp profile\
+                                \ will be applied. Valid options are: \n Localhost\
+                                \ - a profile defined in a file on the node should\
+                                \ be used. RuntimeDefault - the container runtime\
+                                \ default profile should be used. Unconfined - no\
+                                \ profile should be applied."
+                              type: string
+                          required:
+                          - type
+                          type: object
                         windowsOptions:
                           description: The Windows specific settings applied to all
                             containers. If unspecified, the options from the PodSecurityContext
@@ -11335,6 +13353,19 @@ spec:
                               description: GMSACredentialSpecName is the name of the
                                 GMSA credential spec to use.
                               type: string
+                            hostProcess:
+                              description: HostProcess determines if a container should
+                                be run as a 'Host Process' container. This field is
+                                alpha-level and will only be honored by components
+                                that enable the WindowsHostProcessContainers feature
+                                flag. Setting this field without the feature flag
+                                will result in errors when validating the Pod. All
+                                of a Pod's containers must have the same effective
+                                HostProcess value (it is not allowed to have a mix
+                                of HostProcess containers and non-HostProcess containers).  In
+                                addition, if HostProcess is true then HostNetwork
+                                must also be set to true.
+                              type: boolean
                             runAsUserName:
                               description: The UserName in Windows to run the entrypoint
                                 of the container process. Defaults to the user specified
@@ -11353,8 +13384,7 @@ spec:
                         can be used to provide different probe parameters at the beginning
                         of a Pod''s lifecycle, when it might take a long time to load
                         data or warm a cache, than during steady-state operation.
-                        This cannot be updated. This is a beta feature enabled by
-                        the StartupProbe feature flag. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
+                        This cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
                           description: One and only one of the following should be
@@ -11461,6 +13491,23 @@ spec:
                           required:
                           - port
                           type: object
+                        terminationGracePeriodSeconds:
+                          description: Optional duration in seconds the pod needs
+                            to terminate gracefully upon probe failure. The grace
+                            period is the duration in seconds after the processes
+                            running in the pod are sent a termination signal and the
+                            time when the processes are forcibly halted with a kill
+                            signal. Set this value longer than the expected cleanup
+                            time for your process. If this value is nil, the pod's
+                            terminationGracePeriodSeconds will be used. Otherwise,
+                            this value overrides the value provided by the pod spec.
+                            Value must be non-negative integer. The value zero indicates
+                            stop immediately via the kill signal (no opportunity to
+                            shut down). This is a beta field and requires enabling
+                            ProbeTerminationGracePeriod feature gate. Minimum value
+                            is 1. spec.terminationGracePeriodSeconds is used if unset.
+                          format: int64
+                          type: integer
                         timeoutSeconds:
                           description: 'Number of seconds after which the probe times
                             out. Defaults to 1 second. Minimum value is 1. More info:
@@ -11589,6 +13636,14 @@ spec:
               logLevel:
                 description: Log level for Prometheus to be configured with.
                 type: string
+              minReadySeconds:
+                description: Minimum number of seconds for which a newly created pod
+                  should be ready without any of its container crashing for it to
+                  be considered available. Defaults to 0 (pod will be considered available
+                  as soon as it is ready) This is an alpha field and requires enabling
+                  StatefulSetMinReadySeconds feature gate.
+                format: int32
+                type: integer
               nodeSelector:
                 additionalProperties:
                   type: string
@@ -11887,6 +13942,37 @@ spec:
                   description: RemoteReadSpec defines the remote_read configuration
                     for prometheus.
                   properties:
+                    authorization:
+                      description: Authorization section for remote read
+                      properties:
+                        credentials:
+                          description: The secret's key that contains the credentials
+                            of the request
+                          properties:
+                            key:
+                              description: The key of the secret to select from.  Must
+                                be a valid secret key.
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                TODO: Add other useful fields. apiVersion, kind, uid?'
+                              type: string
+                            optional:
+                              description: Specify whether the Secret or its key must
+                                be defined
+                              type: boolean
+                          required:
+                          - key
+                          type: object
+                        credentialsFile:
+                          description: File to read a secret from, mutually exclusive
+                            with Credentials (from SafeAuthorization)
+                          type: string
+                        type:
+                          description: Set the authentication type. Defaults to Bearer,
+                            Basic will cause an error
+                          type: string
+                      type: object
                     basicAuth:
                       description: BasicAuth for the URL.
                       properties:
@@ -11941,6 +14027,90 @@ spec:
                         to differentiate read configurations.  Only valid in Prometheus
                         versions 2.15.0 and newer.
                       type: string
+                    oauth2:
+                      description: OAuth2 for the URL. Only valid in Prometheus versions
+                        2.27.0 and newer.
+                      properties:
+                        clientId:
+                          description: The secret or configmap containing the OAuth2
+                            client id
+                          properties:
+                            configMap:
+                              description: ConfigMap containing data to use for the
+                                targets.
+                              properties:
+                                key:
+                                  description: The key to select.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the ConfigMap or its
+                                    key must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                            secret:
+                              description: Secret containing data to use for the targets.
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must
+                                    be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key
+                                    must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                          type: object
+                        clientSecret:
+                          description: The secret containing the OAuth2 client secret
+                          properties:
+                            key:
+                              description: The key of the secret to select from.  Must
+                                be a valid secret key.
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                TODO: Add other useful fields. apiVersion, kind, uid?'
+                              type: string
+                            optional:
+                              description: Specify whether the Secret or its key must
+                                be defined
+                              type: boolean
+                          required:
+                          - key
+                          type: object
+                        endpointParams:
+                          additionalProperties:
+                            type: string
+                          description: Parameters to append to the token URL
+                          type: object
+                        scopes:
+                          description: OAuth2 scopes used for the token request
+                          items:
+                            type: string
+                          type: array
+                        tokenUrl:
+                          description: The URL to fetch the token from
+                          minLength: 1
+                          type: string
+                      required:
+                      - clientId
+                      - clientSecret
+                      - tokenUrl
+                      type: object
                     proxyUrl:
                       description: Optional ProxyURL
                       type: string
@@ -12098,6 +14268,37 @@ spec:
                   description: RemoteWriteSpec defines the remote_write configuration
                     for prometheus.
                   properties:
+                    authorization:
+                      description: Authorization section for remote write
+                      properties:
+                        credentials:
+                          description: The secret's key that contains the credentials
+                            of the request
+                          properties:
+                            key:
+                              description: The key of the secret to select from.  Must
+                                be a valid secret key.
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                TODO: Add other useful fields. apiVersion, kind, uid?'
+                              type: string
+                            optional:
+                              description: Specify whether the Secret or its key must
+                                be defined
+                              type: boolean
+                          required:
+                          - key
+                          type: object
+                        credentialsFile:
+                          description: File to read a secret from, mutually exclusive
+                            with Credentials (from SafeAuthorization)
+                          type: string
+                        type:
+                          description: Set the authentication type. Defaults to Bearer,
+                            Basic will cause an error
+                          type: string
+                      type: object
                     basicAuth:
                       description: BasicAuth for the URL.
                       properties:
@@ -12173,6 +14374,90 @@ spec:
                         to differentiate queues. Only valid in Prometheus versions
                         2.15.0 and newer.
                       type: string
+                    oauth2:
+                      description: OAuth2 for the URL. Only valid in Prometheus versions
+                        2.27.0 and newer.
+                      properties:
+                        clientId:
+                          description: The secret or configmap containing the OAuth2
+                            client id
+                          properties:
+                            configMap:
+                              description: ConfigMap containing data to use for the
+                                targets.
+                              properties:
+                                key:
+                                  description: The key to select.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the ConfigMap or its
+                                    key must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                            secret:
+                              description: Secret containing data to use for the targets.
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must
+                                    be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key
+                                    must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                          type: object
+                        clientSecret:
+                          description: The secret containing the OAuth2 client secret
+                          properties:
+                            key:
+                              description: The key of the secret to select from.  Must
+                                be a valid secret key.
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                TODO: Add other useful fields. apiVersion, kind, uid?'
+                              type: string
+                            optional:
+                              description: Specify whether the Secret or its key must
+                                be defined
+                              type: boolean
+                          required:
+                          - key
+                          type: object
+                        endpointParams:
+                          additionalProperties:
+                            type: string
+                          description: Parameters to append to the token URL
+                          type: object
+                        scopes:
+                          description: OAuth2 scopes used for the token request
+                          items:
+                            type: string
+                          type: array
+                        tokenUrl:
+                          description: The URL to fetch the token from
+                          minLength: 1
+                          type: string
+                      required:
+                      - clientId
+                      - clientSecret
+                      - tokenUrl
+                      type: object
                     proxyUrl:
                       description: Optional ProxyURL
                       type: string
@@ -12215,6 +14500,65 @@ spec:
                     remoteTimeout:
                       description: Timeout for requests to the remote write endpoint.
                       type: string
+                    sendExemplars:
+                      description: Enables sending of exemplars over remote write.
+                        Note that exemplar-storage itself must be enabled using the
+                        enableFeature option for exemplars to be scraped in the first
+                        place.  Only valid in Prometheus versions 2.27.0 and newer.
+                      type: boolean
+                    sigv4:
+                      description: Sigv4 allows to configures AWS's Signature Verification
+                        4
+                      properties:
+                        accessKey:
+                          description: AccessKey is the AWS API key. If blank, the
+                            environment variable `AWS_ACCESS_KEY_ID` is used.
+                          properties:
+                            key:
+                              description: The key of the secret to select from.  Must
+                                be a valid secret key.
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                TODO: Add other useful fields. apiVersion, kind, uid?'
+                              type: string
+                            optional:
+                              description: Specify whether the Secret or its key must
+                                be defined
+                              type: boolean
+                          required:
+                          - key
+                          type: object
+                        profile:
+                          description: Profile is the named AWS profile used to authenticate.
+                          type: string
+                        region:
+                          description: Region is the AWS region. If blank, the region
+                            from the default credentials chain used.
+                          type: string
+                        roleArn:
+                          description: RoleArn is the named AWS profile used to authenticate.
+                          type: string
+                        secretKey:
+                          description: SecretKey is the AWS API secret. If blank,
+                            the environment variable `AWS_SECRET_ACCESS_KEY` is used.
+                          properties:
+                            key:
+                              description: The key of the secret to select from.  Must
+                                be a valid secret key.
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                TODO: Add other useful fields. apiVersion, kind, uid?'
+                              type: string
+                            optional:
+                              description: Specify whether the Secret or its key must
+                                be defined
+                              type: boolean
+                          required:
+                          - key
+                          type: object
+                      type: object
                     tlsConfig:
                       description: TLS Config to use for remote write.
                       properties:
@@ -12416,7 +14760,7 @@ spec:
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
                     description: 'Limits describes the maximum amount of compute resources
-                      allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                      allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
                   requests:
                     additionalProperties:
@@ -12428,7 +14772,7 @@ spec:
                     description: 'Requests describes the minimum amount of compute
                       resources required. If Requests is omitted for a container,
                       it defaults to Limits if that is explicitly specified, otherwise
-                      to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                      to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
                 type: object
               retention:
@@ -12564,7 +14908,7 @@ spec:
                     type: object
                 type: object
               scrapeInterval:
-                description: Interval between consecutive scrapes.
+                description: 'Interval between consecutive scrapes. Default: `1m`'
                 type: string
               scrapeTimeout:
                 description: Number of seconds to wait for target to respond before
@@ -12599,7 +14943,7 @@ spec:
                       support fsGroup based ownership(and permissions). It will have
                       no effect on ephemeral volume types such as: secret, configmaps
                       and emptydir. Valid values are "OnRootMismatch" and "Always".
-                      If not specified defaults to "Always".'
+                      If not specified, "Always" is used.'
                     type: string
                   runAsGroup:
                     description: The GID to run the entrypoint of the container process.
@@ -12649,6 +14993,27 @@ spec:
                           the container.
                         type: string
                     type: object
+                  seccompProfile:
+                    description: The seccomp options to use by the containers in this
+                      pod.
+                    properties:
+                      localhostProfile:
+                        description: localhostProfile indicates a profile defined
+                          in a file on the node should be used. The profile must be
+                          preconfigured on the node to work. Must be a descending
+                          path, relative to the kubelet's configured seccomp profile
+                          location. Must only be set if type is "Localhost".
+                        type: string
+                      type:
+                        description: "type indicates which kind of seccomp profile\
+                          \ will be applied. Valid options are: \n Localhost - a profile\
+                          \ defined in a file on the node should be used. RuntimeDefault\
+                          \ - the container runtime default profile should be used.\
+                          \ Unconfined - no profile should be applied."
+                        type: string
+                    required:
+                    - type
+                    type: object
                   supplementalGroups:
                     description: A list of groups applied to the first process run
                       in each container, in addition to the container's primary GID.  If
@@ -12691,6 +15056,17 @@ spec:
                         description: GMSACredentialSpecName is the name of the GMSA
                           credential spec to use.
                         type: string
+                      hostProcess:
+                        description: HostProcess determines if a container should
+                          be run as a 'Host Process' container. This field is alpha-level
+                          and will only be honored by components that enable the WindowsHostProcessContainers
+                          feature flag. Setting this field without the feature flag
+                          will result in errors when validating the Pod. All of a
+                          Pod's containers must have the same effective HostProcess
+                          value (it is not allowed to have a mix of HostProcess containers
+                          and non-HostProcess containers).  In addition, if HostProcess
+                          is true then HostNetwork must also be set to true.
+                        type: boolean
                       runAsUserName:
                         description: The UserName in Windows to run the entrypoint
                           of the container process. Defaults to the user specified
@@ -12846,6 +15222,218 @@ spec:
                         pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                         x-kubernetes-int-or-string: true
                     type: object
+                  ephemeral:
+                    description: 'EphemeralVolumeSource to be used by the Prometheus
+                      StatefulSets. This is a beta field in k8s 1.21, for lower versions,
+                      starting with k8s 1.19, it requires enabling the GenericEphemeralVolume
+                      feature gate. More info: https://kubernetes.io/docs/concepts/storage/ephemeral-volumes/#generic-ephemeral-volumes'
+                    properties:
+                      volumeClaimTemplate:
+                        description: "Will be used to create a stand-alone PVC to\
+                          \ provision the volume. The pod in which this EphemeralVolumeSource\
+                          \ is embedded will be the owner of the PVC, i.e. the PVC\
+                          \ will be deleted together with the pod.  The name of the\
+                          \ PVC will be `<pod name>-<volume name>` where `<volume\
+                          \ name>` is the name from the `PodSpec.Volumes` array entry.\
+                          \ Pod validation will reject the pod if the concatenated\
+                          \ name is not valid for a PVC (for example, too long). \n\
+                          \ An existing PVC with that name that is not owned by the\
+                          \ pod will *not* be used for the pod to avoid using an unrelated\
+                          \ volume by mistake. Starting the pod is then blocked until\
+                          \ the unrelated PVC is removed. If such a pre-created PVC\
+                          \ is meant to be used by the pod, the PVC has to updated\
+                          \ with an owner reference to the pod once the pod exists.\
+                          \ Normally this should not be necessary, but it may be useful\
+                          \ when manually reconstructing a broken cluster. \n This\
+                          \ field is read-only and no changes will be made by Kubernetes\
+                          \ to the PVC after it has been created. \n Required, must\
+                          \ not be nil."
+                        properties:
+                          metadata:
+                            description: May contain labels and annotations that will
+                              be copied into the PVC when creating it. No other fields
+                              are allowed and will be rejected during validation.
+                            type: object
+                          spec:
+                            description: The specification for the PersistentVolumeClaim.
+                              The entire content is copied unchanged into the PVC
+                              that gets created from this template. The same fields
+                              as in a PersistentVolumeClaim are also valid here.
+                            properties:
+                              accessModes:
+                                description: 'AccessModes contains the desired access
+                                  modes the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#access-modes-1'
+                                items:
+                                  type: string
+                                type: array
+                              dataSource:
+                                description: 'This field can be used to specify either:
+                                  * An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot)
+                                  * An existing PVC (PersistentVolumeClaim) If the
+                                  provisioner or an external controller can support
+                                  the specified data source, it will create a new
+                                  volume based on the contents of the specified data
+                                  source. If the AnyVolumeDataSource feature gate
+                                  is enabled, this field will always have the same
+                                  contents as the DataSourceRef field.'
+                                properties:
+                                  apiGroup:
+                                    description: APIGroup is the group for the resource
+                                      being referenced. If APIGroup is not specified,
+                                      the specified Kind must be in the core API group.
+                                      For any other third-party types, APIGroup is
+                                      required.
+                                    type: string
+                                  kind:
+                                    description: Kind is the type of resource being
+                                      referenced
+                                    type: string
+                                  name:
+                                    description: Name is the name of resource being
+                                      referenced
+                                    type: string
+                                required:
+                                - kind
+                                - name
+                                type: object
+                              dataSourceRef:
+                                description: 'Specifies the object from which to populate
+                                  the volume with data, if a non-empty volume is desired.
+                                  This may be any local object from a non-empty API
+                                  group (non core object) or a PersistentVolumeClaim
+                                  object. When this field is specified, volume binding
+                                  will only succeed if the type of the specified object
+                                  matches some installed volume populator or dynamic
+                                  provisioner. This field will replace the functionality
+                                  of the DataSource field and as such if both fields
+                                  are non-empty, they must have the same value. For
+                                  backwards compatibility, both fields (DataSource
+                                  and DataSourceRef) will be set to the same value
+                                  automatically if one of them is empty and the other
+                                  is non-empty. There are two important differences
+                                  between DataSource and DataSourceRef: * While DataSource
+                                  only allows two specific types of objects, DataSourceRef   allows
+                                  any non-core object, as well as PersistentVolumeClaim
+                                  objects. * While DataSource ignores disallowed values
+                                  (dropping them), DataSourceRef   preserves all values,
+                                  and generates an error if a disallowed value is   specified.
+                                  (Alpha) Using this field requires the AnyVolumeDataSource
+                                  feature gate to be enabled.'
+                                properties:
+                                  apiGroup:
+                                    description: APIGroup is the group for the resource
+                                      being referenced. If APIGroup is not specified,
+                                      the specified Kind must be in the core API group.
+                                      For any other third-party types, APIGroup is
+                                      required.
+                                    type: string
+                                  kind:
+                                    description: Kind is the type of resource being
+                                      referenced
+                                    type: string
+                                  name:
+                                    description: Name is the name of resource being
+                                      referenced
+                                    type: string
+                                required:
+                                - kind
+                                - name
+                                type: object
+                              resources:
+                                description: 'Resources represents the minimum resources
+                                  the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
+                                properties:
+                                  limits:
+                                    additionalProperties:
+                                      anyOf:
+                                      - type: integer
+                                      - type: string
+                                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                      x-kubernetes-int-or-string: true
+                                    description: 'Limits describes the maximum amount
+                                      of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                                    type: object
+                                  requests:
+                                    additionalProperties:
+                                      anyOf:
+                                      - type: integer
+                                      - type: string
+                                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                      x-kubernetes-int-or-string: true
+                                    description: 'Requests describes the minimum amount
+                                      of compute resources required. If Requests is
+                                      omitted for a container, it defaults to Limits
+                                      if that is explicitly specified, otherwise to
+                                      an implementation-defined value. More info:
+                                      https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                                    type: object
+                                type: object
+                              selector:
+                                description: A label query over volumes to consider
+                                  for binding.
+                                properties:
+                                  matchExpressions:
+                                    description: matchExpressions is a list of label
+                                      selector requirements. The requirements are
+                                      ANDed.
+                                    items:
+                                      description: A label selector requirement is
+                                        a selector that contains values, a key, and
+                                        an operator that relates the key and values.
+                                      properties:
+                                        key:
+                                          description: key is the label key that the
+                                            selector applies to.
+                                          type: string
+                                        operator:
+                                          description: operator represents a key's
+                                            relationship to a set of values. Valid
+                                            operators are In, NotIn, Exists and DoesNotExist.
+                                          type: string
+                                        values:
+                                          description: values is an array of string
+                                            values. If the operator is In or NotIn,
+                                            the values array must be non-empty. If
+                                            the operator is Exists or DoesNotExist,
+                                            the values array must be empty. This array
+                                            is replaced during a strategic merge patch.
+                                          items:
+                                            type: string
+                                          type: array
+                                      required:
+                                      - key
+                                      - operator
+                                      type: object
+                                    type: array
+                                  matchLabels:
+                                    additionalProperties:
+                                      type: string
+                                    description: matchLabels is a map of {key,value}
+                                      pairs. A single {key,value} in the matchLabels
+                                      map is equivalent to an element of matchExpressions,
+                                      whose key field is "key", the operator is "In",
+                                      and the values array contains only "value".
+                                      The requirements are ANDed.
+                                    type: object
+                                type: object
+                              storageClassName:
+                                description: 'Name of the StorageClass required by
+                                  the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                                type: string
+                              volumeMode:
+                                description: volumeMode defines what type of volume
+                                  is required by the claim. Value of Filesystem is
+                                  implied when not included in claim spec.
+                                type: string
+                              volumeName:
+                                description: VolumeName is the binding reference to
+                                  the PersistentVolume backing this claim.
+                                type: string
+                            type: object
+                        required:
+                        - spec
+                        type: object
+                    type: object
                   volumeClaimTemplate:
                     description: A PVC spec to be used by the Prometheus StatefulSets.
                     properties:
@@ -12903,20 +15491,52 @@ spec:
                             type: array
                           dataSource:
                             description: 'This field can be used to specify either:
-                              * An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot
-                              - Beta) * An existing PVC (PersistentVolumeClaim) *
-                              An existing custom resource/object that implements data
-                              population (Alpha) In order to use VolumeSnapshot object
-                              types, the appropriate feature gate must be enabled
-                              (VolumeSnapshotDataSource or AnyVolumeDataSource) If
-                              the provisioner or an external controller can support
-                              the specified data source, it will create a new volume
-                              based on the contents of the specified data source.
-                              If the specified data source is not supported, the volume
-                              will not be created and the failure will be reported
-                              as an event. In the future, we plan to support more
-                              data source types and the behavior of the provisioner
-                              may change.'
+                              * An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot)
+                              * An existing PVC (PersistentVolumeClaim) If the provisioner
+                              or an external controller can support the specified
+                              data source, it will create a new volume based on the
+                              contents of the specified data source. If the AnyVolumeDataSource
+                              feature gate is enabled, this field will always have
+                              the same contents as the DataSourceRef field.'
+                            properties:
+                              apiGroup:
+                                description: APIGroup is the group for the resource
+                                  being referenced. If APIGroup is not specified,
+                                  the specified Kind must be in the core API group.
+                                  For any other third-party types, APIGroup is required.
+                                type: string
+                              kind:
+                                description: Kind is the type of resource being referenced
+                                type: string
+                              name:
+                                description: Name is the name of resource being referenced
+                                type: string
+                            required:
+                            - kind
+                            - name
+                            type: object
+                          dataSourceRef:
+                            description: 'Specifies the object from which to populate
+                              the volume with data, if a non-empty volume is desired.
+                              This may be any local object from a non-empty API group
+                              (non core object) or a PersistentVolumeClaim object.
+                              When this field is specified, volume binding will only
+                              succeed if the type of the specified object matches
+                              some installed volume populator or dynamic provisioner.
+                              This field will replace the functionality of the DataSource
+                              field and as such if both fields are non-empty, they
+                              must have the same value. For backwards compatibility,
+                              both fields (DataSource and DataSourceRef) will be set
+                              to the same value automatically if one of them is empty
+                              and the other is non-empty. There are two important
+                              differences between DataSource and DataSourceRef: *
+                              While DataSource only allows two specific types of objects,
+                              DataSourceRef   allows any non-core object, as well
+                              as PersistentVolumeClaim objects. * While DataSource
+                              ignores disallowed values (dropping them), DataSourceRef   preserves
+                              all values, and generates an error if a disallowed value
+                              is   specified. (Alpha) Using this field requires the
+                              AnyVolumeDataSource feature gate to be enabled.'
                             properties:
                               apiGroup:
                                 description: APIGroup is the group for the resource
@@ -12946,7 +15566,7 @@ spec:
                                   pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                   x-kubernetes-int-or-string: true
                                 description: 'Limits describes the maximum amount
-                                  of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                  of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                               requests:
                                 additionalProperties:
@@ -12959,7 +15579,7 @@ spec:
                                   of compute resources required. If Requests is omitted
                                   for a container, it defaults to Limits if that is
                                   explicitly specified, otherwise to an implementation-defined
-                                  value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                  value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                             type: object
                           selector:
@@ -13281,6 +15901,10 @@ spec:
                       object storage configuration file. When used alongside with
                       ObjectStorageConfig, ObjectStorageConfigFile takes precedence.
                     type: string
+                  readyTimeout:
+                    description: ReadyTimeout is the maximum time Thanos sidecar will
+                      wait for Prometheus to start. Eg 10m
+                    type: string
                   resources:
                     description: Resources defines the resource requirements for the
                       Thanos sidecar. If not provided, no requests/limits will be
@@ -13294,7 +15918,7 @@ spec:
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
                         description: 'Limits describes the maximum amount of compute
-                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                          resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                         type: object
                       requests:
                         additionalProperties:
@@ -13306,7 +15930,7 @@ spec:
                         description: 'Requests describes the minimum amount of compute
                           resources required. If Requests is omitted for a container,
                           it defaults to Limits if that is explicitly specified, otherwise
-                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                          to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                         type: object
                     type: object
                   sha:
@@ -13350,6 +15974,49 @@ spec:
                   version:
                     description: Version describes the version of Thanos to use.
                     type: string
+                  volumeMounts:
+                    description: VolumeMounts allows configuration of additional VolumeMounts
+                      on the output StatefulSet definition. VolumeMounts specified
+                      will be appended to other VolumeMounts in the thanos-sidecar
+                      container.
+                    items:
+                      description: VolumeMount describes a mounting of a Volume within
+                        a container.
+                      properties:
+                        mountPath:
+                          description: Path within the container at which the volume
+                            should be mounted.  Must not contain ':'.
+                          type: string
+                        mountPropagation:
+                          description: mountPropagation determines how mounts are
+                            propagated from the host to container and the other way
+                            around. When not set, MountPropagationNone is used. This
+                            field is beta in 1.10.
+                          type: string
+                        name:
+                          description: This must match the Name of a Volume.
+                          type: string
+                        readOnly:
+                          description: Mounted read-only if true, read-write otherwise
+                            (false or unspecified). Defaults to false.
+                          type: boolean
+                        subPath:
+                          description: Path within the volume from which the container's
+                            volume should be mounted. Defaults to "" (volume's root).
+                          type: string
+                        subPathExpr:
+                          description: Expanded path within the volume from which
+                            the container's volume should be mounted. Behaves similarly
+                            to SubPath but environment variable references $(VAR_NAME)
+                            are expanded using the container's environment. Defaults
+                            to "" (volume's root). SubPathExpr and SubPath are mutually
+                            exclusive.
+                          type: string
+                      required:
+                      - mountPath
+                      - name
+                      type: object
+                    type: array
                 type: object
               tolerations:
                 description: If specified, the pod's tolerations.
@@ -13445,16 +16112,19 @@ spec:
                       type: object
                     maxSkew:
                       description: 'MaxSkew describes the degree to which pods may
-                        be unevenly distributed. It''s the maximum permitted difference
-                        between the number of matching pods in any two topology domains
-                        of a given topology type. For example, in a 3-zone cluster,
-                        MaxSkew is set to 1, and pods with the same labelSelector
-                        spread as 1/1/0: | zone1 | zone2 | zone3 | |   P   |   P   |       |
-                        - if MaxSkew is 1, incoming pod can only be scheduled to zone3
-                        to become 1/1/1; scheduling it onto zone1(zone2) would make
-                        the ActualSkew(2-0) on zone1(zone2) violate MaxSkew(1). -
-                        if MaxSkew is 2, incoming pod can be scheduled onto any zone.
-                        It''s a required field. Default value is 1 and 0 is not allowed.'
+                        be unevenly distributed. When `whenUnsatisfiable=DoNotSchedule`,
+                        it is the maximum permitted difference between the number
+                        of matching pods in the target topology and the global minimum.
+                        For example, in a 3-zone cluster, MaxSkew is set to 1, and
+                        pods with the same labelSelector spread as 1/1/0: | zone1
+                        | zone2 | zone3 | |   P   |   P   |       | - if MaxSkew is
+                        1, incoming pod can only be scheduled to zone3 to become 1/1/1;
+                        scheduling it onto zone1(zone2) would make the ActualSkew(2-0)
+                        on zone1(zone2) violate MaxSkew(1). - if MaxSkew is 2, incoming
+                        pod can be scheduled onto any zone. When `whenUnsatisfiable=ScheduleAnyway`,
+                        it is used to give higher precedence to topologies that satisfy
+                        it. It''s a required field. Default value is 1 and 0 is not
+                        allowed.'
                       format: int32
                       type: integer
                     topologyKey:
@@ -13467,17 +16137,20 @@ spec:
                     whenUnsatisfiable:
                       description: 'WhenUnsatisfiable indicates how to deal with a
                         pod if it doesn''t satisfy the spread constraint. - DoNotSchedule
-                        (default) tells the scheduler not to schedule it - ScheduleAnyway
-                        tells the scheduler to still schedule it It''s considered
-                        as "Unsatisfiable" if and only if placing incoming pod on
-                        any topology violates "MaxSkew". For example, in a 3-zone
-                        cluster, MaxSkew is set to 1, and pods with the same labelSelector
-                        spread as 3/1/1: | zone1 | zone2 | zone3 | | P P P |   P   |   P   |
-                        If WhenUnsatisfiable is set to DoNotSchedule, incoming pod
-                        can only be scheduled to zone2(zone3) to become 3/2/1(3/1/2)
-                        as ActualSkew(2-1) on zone2(zone3) satisfies MaxSkew(1). In
-                        other words, the cluster can still be imbalanced, but scheduler
-                        won''t make it *more* imbalanced. It''s a required field.'
+                        (default) tells the scheduler not to schedule it. - ScheduleAnyway
+                        tells the scheduler to schedule the pod in any location,   but
+                        giving higher precedence to topologies that would help reduce
+                        the   skew. A constraint is considered "Unsatisfiable" for
+                        an incoming pod if and only if every possible node assigment
+                        for that pod would violate "MaxSkew" on some topology. For
+                        example, in a 3-zone cluster, MaxSkew is set to 1, and pods
+                        with the same labelSelector spread as 3/1/1: | zone1 | zone2
+                        | zone3 | | P P P |   P   |   P   | If WhenUnsatisfiable is
+                        set to DoNotSchedule, incoming pod can only be scheduled to
+                        zone2(zone3) to become 3/2/1(3/1/2) as ActualSkew(2-1) on
+                        zone2(zone3) satisfies MaxSkew(1). In other words, the cluster
+                        can still be imbalanced, but scheduler won''t make it *more*
+                        imbalanced. It''s a required field.'
                       type: string
                   required:
                   - maxSkew
@@ -13699,12 +16372,15 @@ spec:
                         this volume
                       properties:
                         defaultMode:
-                          description: 'Optional: mode bits to use on created files
-                            by default. Must be a value between 0 and 0777. Defaults
-                            to 0644. Directories within the path are not affected
-                            by this setting. This might be in conflict with other
-                            options that affect the file mode, like fsGroup, and the
-                            result can be other mode bits set.'
+                          description: 'Optional: mode bits used to set permissions
+                            on created files by default. Must be an octal value between
+                            0000 and 0777 or a decimal value between 0 and 511. YAML
+                            accepts both octal and decimal values, JSON requires decimal
+                            values for mode bits. Defaults to 0644. Directories within
+                            the path are not affected by this setting. This might
+                            be in conflict with other options that affect the file
+                            mode, like fsGroup, and the result can be other mode bits
+                            set.'
                           format: int32
                           type: integer
                         items:
@@ -13724,8 +16400,11 @@ spec:
                                 description: The key to project.
                                 type: string
                               mode:
-                                description: 'Optional: mode bits to use on this file,
-                                  must be a value between 0 and 0777. If not specified,
+                                description: 'Optional: mode bits used to set permissions
+                                  on this file. Must be an octal value between 0000
+                                  and 0777 or a decimal value between 0 and 511. YAML
+                                  accepts both octal and decimal values, JSON requires
+                                  decimal values for mode bits. If not specified,
                                   the volume defaultMode will be used. This might
                                   be in conflict with other options that affect the
                                   file mode, like fsGroup, and the result can be other
@@ -13753,8 +16432,9 @@ spec:
                           type: boolean
                       type: object
                     csi:
-                      description: CSI (Container Storage Interface) represents storage
-                        that is handled by an external CSI driver (Alpha feature).
+                      description: CSI (Container Storage Interface) represents ephemeral
+                        storage that is handled by certain external CSI drivers (Beta
+                        feature).
                       properties:
                         driver:
                           description: Driver is the name of the CSI driver that handles
@@ -13801,11 +16481,15 @@ spec:
                       properties:
                         defaultMode:
                           description: 'Optional: mode bits to use on created files
-                            by default. Must be a value between 0 and 0777. Defaults
-                            to 0644. Directories within the path are not affected
-                            by this setting. This might be in conflict with other
-                            options that affect the file mode, like fsGroup, and the
-                            result can be other mode bits set.'
+                            by default. Must be a Optional: mode bits used to set
+                            permissions on created files by default. Must be an octal
+                            value between 0000 and 0777 or a decimal value between
+                            0 and 511. YAML accepts both octal and decimal values,
+                            JSON requires decimal values for mode bits. Defaults to
+                            0644. Directories within the path are not affected by
+                            this setting. This might be in conflict with other options
+                            that affect the file mode, like fsGroup, and the result
+                            can be other mode bits set.'
                           format: int32
                           type: integer
                         items:
@@ -13831,8 +16515,11 @@ spec:
                                 - fieldPath
                                 type: object
                               mode:
-                                description: 'Optional: mode bits to use on this file,
-                                  must be a value between 0 and 0777. If not specified,
+                                description: 'Optional: mode bits used to set permissions
+                                  on this file, must be an octal value between 0000
+                                  and 0777 or a decimal value between 0 and 511. YAML
+                                  accepts both octal and decimal values, JSON requires
+                                  decimal values for mode bits. If not specified,
                                   the volume defaultMode will be used. This might
                                   be in conflict with other options that affect the
                                   file mode, like fsGroup, and the result can be other
@@ -13898,6 +16585,239 @@ spec:
                             is undefined. More info: http://kubernetes.io/docs/user-guide/volumes#emptydir'
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
+                      type: object
+                    ephemeral:
+                      description: "Ephemeral represents a volume that is handled\
+                        \ by a cluster storage driver. The volume's lifecycle is tied\
+                        \ to the pod that defines it - it will be created before the\
+                        \ pod starts, and deleted when the pod is removed. \n Use\
+                        \ this if: a) the volume is only needed while the pod runs,\
+                        \ b) features of normal volumes like restoring from snapshot\
+                        \ or capacity    tracking are needed, c) the storage driver\
+                        \ is specified through a storage class, and d) the storage\
+                        \ driver supports dynamic volume provisioning through    a\
+                        \ PersistentVolumeClaim (see EphemeralVolumeSource for more\
+                        \    information on the connection between this volume type\
+                        \    and PersistentVolumeClaim). \n Use PersistentVolumeClaim\
+                        \ or one of the vendor-specific APIs for volumes that persist\
+                        \ for longer than the lifecycle of an individual pod. \n Use\
+                        \ CSI for light-weight local ephemeral volumes if the CSI\
+                        \ driver is meant to be used that way - see the documentation\
+                        \ of the driver for more information. \n A pod can use both\
+                        \ types of ephemeral volumes and persistent volumes at the\
+                        \ same time. \n This is a beta feature and only available\
+                        \ when the GenericEphemeralVolume feature gate is enabled."
+                      properties:
+                        volumeClaimTemplate:
+                          description: "Will be used to create a stand-alone PVC to\
+                            \ provision the volume. The pod in which this EphemeralVolumeSource\
+                            \ is embedded will be the owner of the PVC, i.e. the PVC\
+                            \ will be deleted together with the pod.  The name of\
+                            \ the PVC will be `<pod name>-<volume name>` where `<volume\
+                            \ name>` is the name from the `PodSpec.Volumes` array\
+                            \ entry. Pod validation will reject the pod if the concatenated\
+                            \ name is not valid for a PVC (for example, too long).\
+                            \ \n An existing PVC with that name that is not owned\
+                            \ by the pod will *not* be used for the pod to avoid using\
+                            \ an unrelated volume by mistake. Starting the pod is\
+                            \ then blocked until the unrelated PVC is removed. If\
+                            \ such a pre-created PVC is meant to be used by the pod,\
+                            \ the PVC has to updated with an owner reference to the\
+                            \ pod once the pod exists. Normally this should not be\
+                            \ necessary, but it may be useful when manually reconstructing\
+                            \ a broken cluster. \n This field is read-only and no\
+                            \ changes will be made by Kubernetes to the PVC after\
+                            \ it has been created. \n Required, must not be nil."
+                          properties:
+                            metadata:
+                              description: May contain labels and annotations that
+                                will be copied into the PVC when creating it. No other
+                                fields are allowed and will be rejected during validation.
+                              type: object
+                            spec:
+                              description: The specification for the PersistentVolumeClaim.
+                                The entire content is copied unchanged into the PVC
+                                that gets created from this template. The same fields
+                                as in a PersistentVolumeClaim are also valid here.
+                              properties:
+                                accessModes:
+                                  description: 'AccessModes contains the desired access
+                                    modes the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#access-modes-1'
+                                  items:
+                                    type: string
+                                  type: array
+                                dataSource:
+                                  description: 'This field can be used to specify
+                                    either: * An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot)
+                                    * An existing PVC (PersistentVolumeClaim) If the
+                                    provisioner or an external controller can support
+                                    the specified data source, it will create a new
+                                    volume based on the contents of the specified
+                                    data source. If the AnyVolumeDataSource feature
+                                    gate is enabled, this field will always have the
+                                    same contents as the DataSourceRef field.'
+                                  properties:
+                                    apiGroup:
+                                      description: APIGroup is the group for the resource
+                                        being referenced. If APIGroup is not specified,
+                                        the specified Kind must be in the core API
+                                        group. For any other third-party types, APIGroup
+                                        is required.
+                                      type: string
+                                    kind:
+                                      description: Kind is the type of resource being
+                                        referenced
+                                      type: string
+                                    name:
+                                      description: Name is the name of resource being
+                                        referenced
+                                      type: string
+                                  required:
+                                  - kind
+                                  - name
+                                  type: object
+                                dataSourceRef:
+                                  description: 'Specifies the object from which to
+                                    populate the volume with data, if a non-empty
+                                    volume is desired. This may be any local object
+                                    from a non-empty API group (non core object) or
+                                    a PersistentVolumeClaim object. When this field
+                                    is specified, volume binding will only succeed
+                                    if the type of the specified object matches some
+                                    installed volume populator or dynamic provisioner.
+                                    This field will replace the functionality of the
+                                    DataSource field and as such if both fields are
+                                    non-empty, they must have the same value. For
+                                    backwards compatibility, both fields (DataSource
+                                    and DataSourceRef) will be set to the same value
+                                    automatically if one of them is empty and the
+                                    other is non-empty. There are two important differences
+                                    between DataSource and DataSourceRef: * While
+                                    DataSource only allows two specific types of objects,
+                                    DataSourceRef   allows any non-core object, as
+                                    well as PersistentVolumeClaim objects. * While
+                                    DataSource ignores disallowed values (dropping
+                                    them), DataSourceRef   preserves all values, and
+                                    generates an error if a disallowed value is   specified.
+                                    (Alpha) Using this field requires the AnyVolumeDataSource
+                                    feature gate to be enabled.'
+                                  properties:
+                                    apiGroup:
+                                      description: APIGroup is the group for the resource
+                                        being referenced. If APIGroup is not specified,
+                                        the specified Kind must be in the core API
+                                        group. For any other third-party types, APIGroup
+                                        is required.
+                                      type: string
+                                    kind:
+                                      description: Kind is the type of resource being
+                                        referenced
+                                      type: string
+                                    name:
+                                      description: Name is the name of resource being
+                                        referenced
+                                      type: string
+                                  required:
+                                  - kind
+                                  - name
+                                  type: object
+                                resources:
+                                  description: 'Resources represents the minimum resources
+                                    the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
+                                  properties:
+                                    limits:
+                                      additionalProperties:
+                                        anyOf:
+                                        - type: integer
+                                        - type: string
+                                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                        x-kubernetes-int-or-string: true
+                                      description: 'Limits describes the maximum amount
+                                        of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                                      type: object
+                                    requests:
+                                      additionalProperties:
+                                        anyOf:
+                                        - type: integer
+                                        - type: string
+                                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                        x-kubernetes-int-or-string: true
+                                      description: 'Requests describes the minimum
+                                        amount of compute resources required. If Requests
+                                        is omitted for a container, it defaults to
+                                        Limits if that is explicitly specified, otherwise
+                                        to an implementation-defined value. More info:
+                                        https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                                      type: object
+                                  type: object
+                                selector:
+                                  description: A label query over volumes to consider
+                                    for binding.
+                                  properties:
+                                    matchExpressions:
+                                      description: matchExpressions is a list of label
+                                        selector requirements. The requirements are
+                                        ANDed.
+                                      items:
+                                        description: A label selector requirement
+                                          is a selector that contains values, a key,
+                                          and an operator that relates the key and
+                                          values.
+                                        properties:
+                                          key:
+                                            description: key is the label key that
+                                              the selector applies to.
+                                            type: string
+                                          operator:
+                                            description: operator represents a key's
+                                              relationship to a set of values. Valid
+                                              operators are In, NotIn, Exists and
+                                              DoesNotExist.
+                                            type: string
+                                          values:
+                                            description: values is an array of string
+                                              values. If the operator is In or NotIn,
+                                              the values array must be non-empty.
+                                              If the operator is Exists or DoesNotExist,
+                                              the values array must be empty. This
+                                              array is replaced during a strategic
+                                              merge patch.
+                                            items:
+                                              type: string
+                                            type: array
+                                        required:
+                                        - key
+                                        - operator
+                                        type: object
+                                      type: array
+                                    matchLabels:
+                                      additionalProperties:
+                                        type: string
+                                      description: matchLabels is a map of {key,value}
+                                        pairs. A single {key,value} in the matchLabels
+                                        map is equivalent to an element of matchExpressions,
+                                        whose key field is "key", the operator is
+                                        "In", and the values array contains only "value".
+                                        The requirements are ANDed.
+                                      type: object
+                                  type: object
+                                storageClassName:
+                                  description: 'Name of the StorageClass required
+                                    by the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                                  type: string
+                                volumeMode:
+                                  description: volumeMode defines what type of volume
+                                    is required by the claim. Value of Filesystem
+                                    is implied when not included in claim spec.
+                                  type: string
+                                volumeName:
+                                  description: VolumeName is the binding reference
+                                    to the PersistentVolume backing this claim.
+                                  type: string
+                              type: object
+                          required:
+                          - spec
+                          type: object
                       type: object
                     fc:
                       description: FC represents a Fibre Channel resource that is
@@ -14233,12 +17153,14 @@ spec:
                         and downward API
                       properties:
                         defaultMode:
-                          description: Mode bits to use on created files by default.
-                            Must be a value between 0 and 0777. Directories within
-                            the path are not affected by this setting. This might
-                            be in conflict with other options that affect the file
-                            mode, like fsGroup, and the result can be other mode bits
-                            set.
+                          description: Mode bits used to set permissions on created
+                            files by default. Must be an octal value between 0000
+                            and 0777 or a decimal value between 0 and 511. YAML accepts
+                            both octal and decimal values, JSON requires decimal values
+                            for mode bits. Directories within the path are not affected
+                            by this setting. This might be in conflict with other
+                            options that affect the file mode, like fsGroup, and the
+                            result can be other mode bits set.
                           format: int32
                           type: integer
                         sources:
@@ -14271,13 +17193,17 @@ spec:
                                           description: The key to project.
                                           type: string
                                         mode:
-                                          description: 'Optional: mode bits to use
-                                            on this file, must be a value between
-                                            0 and 0777. If not specified, the volume
-                                            defaultMode will be used. This might be
-                                            in conflict with other options that affect
-                                            the file mode, like fsGroup, and the result
-                                            can be other mode bits set.'
+                                          description: 'Optional: mode bits used to
+                                            set permissions on this file. Must be
+                                            an octal value between 0000 and 0777 or
+                                            a decimal value between 0 and 511. YAML
+                                            accepts both octal and decimal values,
+                                            JSON requires decimal values for mode
+                                            bits. If not specified, the volume defaultMode
+                                            will be used. This might be in conflict
+                                            with other options that affect the file
+                                            mode, like fsGroup, and the result can
+                                            be other mode bits set.'
                                           format: int32
                                           type: integer
                                         path:
@@ -14332,13 +17258,17 @@ spec:
                                           - fieldPath
                                           type: object
                                         mode:
-                                          description: 'Optional: mode bits to use
-                                            on this file, must be a value between
-                                            0 and 0777. If not specified, the volume
-                                            defaultMode will be used. This might be
-                                            in conflict with other options that affect
-                                            the file mode, like fsGroup, and the result
-                                            can be other mode bits set.'
+                                          description: 'Optional: mode bits used to
+                                            set permissions on this file, must be
+                                            an octal value between 0000 and 0777 or
+                                            a decimal value between 0 and 511. YAML
+                                            accepts both octal and decimal values,
+                                            JSON requires decimal values for mode
+                                            bits. If not specified, the volume defaultMode
+                                            will be used. This might be in conflict
+                                            with other options that affect the file
+                                            mode, like fsGroup, and the result can
+                                            be other mode bits set.'
                                           format: int32
                                           type: integer
                                         path:
@@ -14404,13 +17334,17 @@ spec:
                                           description: The key to project.
                                           type: string
                                         mode:
-                                          description: 'Optional: mode bits to use
-                                            on this file, must be a value between
-                                            0 and 0777. If not specified, the volume
-                                            defaultMode will be used. This might be
-                                            in conflict with other options that affect
-                                            the file mode, like fsGroup, and the result
-                                            can be other mode bits set.'
+                                          description: 'Optional: mode bits used to
+                                            set permissions on this file. Must be
+                                            an octal value between 0000 and 0777 or
+                                            a decimal value between 0 and 511. YAML
+                                            accepts both octal and decimal values,
+                                            JSON requires decimal values for mode
+                                            bits. If not specified, the volume defaultMode
+                                            will be used. This might be in conflict
+                                            with other options that affect the file
+                                            mode, like fsGroup, and the result can
+                                            be other mode bits set.'
                                           format: int32
                                           type: integer
                                         path:
@@ -14469,8 +17403,6 @@ spec:
                                 type: object
                             type: object
                           type: array
-                      required:
-                      - sources
                       type: object
                     quobyte:
                       description: Quobyte represents a Quobyte mount on the host
@@ -14621,12 +17553,15 @@ spec:
                         this volume. More info: https://kubernetes.io/docs/concepts/storage/volumes#secret'
                       properties:
                         defaultMode:
-                          description: 'Optional: mode bits to use on created files
-                            by default. Must be a value between 0 and 0777. Defaults
-                            to 0644. Directories within the path are not affected
-                            by this setting. This might be in conflict with other
-                            options that affect the file mode, like fsGroup, and the
-                            result can be other mode bits set.'
+                          description: 'Optional: mode bits used to set permissions
+                            on created files by default. Must be an octal value between
+                            0000 and 0777 or a decimal value between 0 and 511. YAML
+                            accepts both octal and decimal values, JSON requires decimal
+                            values for mode bits. Defaults to 0644. Directories within
+                            the path are not affected by this setting. This might
+                            be in conflict with other options that affect the file
+                            mode, like fsGroup, and the result can be other mode bits
+                            set.'
                           format: int32
                           type: integer
                         items:
@@ -14646,8 +17581,11 @@ spec:
                                 description: The key to project.
                                 type: string
                               mode:
-                                description: 'Optional: mode bits to use on this file,
-                                  must be a value between 0 and 0777. If not specified,
+                                description: 'Optional: mode bits used to set permissions
+                                  on this file. Must be an octal value between 0000
+                                  and 0777 or a decimal value between 0 and 511. YAML
+                                  accepts both octal and decimal values, JSON requires
+                                  decimal values for mode bits. If not specified,
                                   the volume defaultMode will be used. This might
                                   be in conflict with other options that affect the
                                   file mode, like fsGroup, and the result can be other
@@ -14751,6 +17689,150 @@ spec:
                   pageTitle:
                     description: The prometheus web page title
                     type: string
+                  tlsConfig:
+                    description: WebTLSConfig defines the TLS parameters for HTTPS.
+                    properties:
+                      cert:
+                        description: Contains the TLS certificate for the server.
+                        properties:
+                          configMap:
+                            description: ConfigMap containing data to use for the
+                              targets.
+                            properties:
+                              key:
+                                description: The key to select.
+                                type: string
+                              name:
+                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                  TODO: Add other useful fields. apiVersion, kind,
+                                  uid?'
+                                type: string
+                              optional:
+                                description: Specify whether the ConfigMap or its
+                                  key must be defined
+                                type: boolean
+                            required:
+                            - key
+                            type: object
+                          secret:
+                            description: Secret containing data to use for the targets.
+                            properties:
+                              key:
+                                description: The key of the secret to select from.  Must
+                                  be a valid secret key.
+                                type: string
+                              name:
+                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                  TODO: Add other useful fields. apiVersion, kind,
+                                  uid?'
+                                type: string
+                              optional:
+                                description: Specify whether the Secret or its key
+                                  must be defined
+                                type: boolean
+                            required:
+                            - key
+                            type: object
+                        type: object
+                      cipherSuites:
+                        description: 'List of supported cipher suites for TLS versions
+                          up to TLS 1.2. If empty, Go default cipher suites are used.
+                          Available cipher suites are documented in the go documentation:
+                          https://golang.org/pkg/crypto/tls/#pkg-constants'
+                        items:
+                          type: string
+                        type: array
+                      clientAuthType:
+                        description: 'Server policy for client authentication. Maps
+                          to ClientAuth Policies. For more detail on clientAuth options:
+                          https://golang.org/pkg/crypto/tls/#ClientAuthType'
+                        type: string
+                      client_ca:
+                        description: Contains the CA certificate for client certificate
+                          authentication to the server.
+                        properties:
+                          configMap:
+                            description: ConfigMap containing data to use for the
+                              targets.
+                            properties:
+                              key:
+                                description: The key to select.
+                                type: string
+                              name:
+                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                  TODO: Add other useful fields. apiVersion, kind,
+                                  uid?'
+                                type: string
+                              optional:
+                                description: Specify whether the ConfigMap or its
+                                  key must be defined
+                                type: boolean
+                            required:
+                            - key
+                            type: object
+                          secret:
+                            description: Secret containing data to use for the targets.
+                            properties:
+                              key:
+                                description: The key of the secret to select from.  Must
+                                  be a valid secret key.
+                                type: string
+                              name:
+                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                  TODO: Add other useful fields. apiVersion, kind,
+                                  uid?'
+                                type: string
+                              optional:
+                                description: Specify whether the Secret or its key
+                                  must be defined
+                                type: boolean
+                            required:
+                            - key
+                            type: object
+                        type: object
+                      curvePreferences:
+                        description: 'Elliptic curves that will be used in an ECDHE
+                          handshake, in preference order. Available curves are documented
+                          in the go documentation: https://golang.org/pkg/crypto/tls/#CurveID'
+                        items:
+                          type: string
+                        type: array
+                      keySecret:
+                        description: Secret containing the TLS key for the server.
+                        properties:
+                          key:
+                            description: The key of the secret to select from.  Must
+                              be a valid secret key.
+                            type: string
+                          name:
+                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            type: string
+                          optional:
+                            description: Specify whether the Secret or its key must
+                              be defined
+                            type: boolean
+                        required:
+                        - key
+                        type: object
+                      maxVersion:
+                        description: Maximum TLS version that is acceptable. Defaults
+                          to TLS13.
+                        type: string
+                      minVersion:
+                        description: Minimum TLS version that is acceptable. Defaults
+                          to TLS12.
+                        type: string
+                      preferServerCipherSuites:
+                        description: Controls whether the server selects the client's
+                          most preferred cipher suite, or the server's most preferred
+                          cipher suite. If true then the server's preference, as expressed
+                          in the order of elements in cipherSuites, is used.
+                        type: boolean
+                    required:
+                    - cert
+                    - keySecret
+                    type: object
                 type: object
             type: object
           status:
@@ -14806,13 +17888,15 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.1
+    controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
   name: prometheusrules.monitoring.coreos.com
   namespace: metalk8s-monitoring
 spec:
   group: monitoring.coreos.com
   names:
+    categories:
+    - prometheus-operator
     kind: PrometheusRule
     listKind: PrometheusRuleList
     plural: prometheusrules
@@ -14856,7 +17940,10 @@ spec:
                       type: string
                     rules:
                       items:
-                        description: Rule describes an alerting or recording rule.
+                        description: 'Rule describes an alerting or recording rule
+                          See Prometheus documentation: [alerting](https://www.prometheus.io/docs/prometheus/latest/configuration/alerting_rules/)
+                          or [recording](https://www.prometheus.io/docs/prometheus/latest/configuration/recording_rules/#recording-rules)
+                          rule'
                         properties:
                           alert:
                             type: string
@@ -14903,7 +17990,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.1
+    controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
   name: servicemonitors.monitoring.coreos.com
   namespace: metalk8s-monitoring
@@ -14945,6 +18032,33 @@ spec:
                   description: Endpoint defines a scrapeable endpoint serving Prometheus
                     metrics.
                   properties:
+                    authorization:
+                      description: Authorization section for this endpoint
+                      properties:
+                        credentials:
+                          description: The secret's key that contains the credentials
+                            of the request
+                          properties:
+                            key:
+                              description: The key of the secret to select from.  Must
+                                be a valid secret key.
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                TODO: Add other useful fields. apiVersion, kind, uid?'
+                              type: string
+                            optional:
+                              description: Specify whether the Secret or its key must
+                                be defined
+                              type: boolean
+                          required:
+                          - key
+                          type: object
+                        type:
+                          description: Set the authentication type. Defaults to Bearer,
+                            Basic will cause an error
+                          type: string
+                      type: object
                     basicAuth:
                       description: 'BasicAuth allow an endpoint to authenticate over
                         basic authentication More info: https://prometheus.io/docs/operating/configuration/#endpoints'
@@ -15068,6 +18182,90 @@ spec:
                             type: string
                         type: object
                       type: array
+                    oauth2:
+                      description: OAuth2 for the URL. Only valid in Prometheus versions
+                        2.27.0 and newer.
+                      properties:
+                        clientId:
+                          description: The secret or configmap containing the OAuth2
+                            client id
+                          properties:
+                            configMap:
+                              description: ConfigMap containing data to use for the
+                                targets.
+                              properties:
+                                key:
+                                  description: The key to select.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the ConfigMap or its
+                                    key must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                            secret:
+                              description: Secret containing data to use for the targets.
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must
+                                    be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key
+                                    must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                          type: object
+                        clientSecret:
+                          description: The secret containing the OAuth2 client secret
+                          properties:
+                            key:
+                              description: The key of the secret to select from.  Must
+                                be a valid secret key.
+                              type: string
+                            name:
+                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                TODO: Add other useful fields. apiVersion, kind, uid?'
+                              type: string
+                            optional:
+                              description: Specify whether the Secret or its key must
+                                be defined
+                              type: boolean
+                          required:
+                          - key
+                          type: object
+                        endpointParams:
+                          additionalProperties:
+                            type: string
+                          description: Parameters to append to the token URL
+                          type: object
+                        scopes:
+                          description: OAuth2 scopes used for the token request
+                          items:
+                            type: string
+                          type: array
+                        tokenUrl:
+                          description: The URL to fetch the token from
+                          minLength: 1
+                          type: string
+                      required:
+                      - clientId
+                      - clientSecret
+                      - tokenUrl
+                      type: object
                     params:
                       additionalProperties:
                         items:
@@ -15278,11 +18476,31 @@ spec:
                   type: object
                 type: array
               jobLabel:
-                description: The label to use to retrieve the job name from.
+                description: "Chooses the label of the Kubernetes `Endpoints`. Its\
+                  \ value will be used for the `job`-label's value of the created\
+                  \ metrics. \n Default & fallback value: the name of the respective\
+                  \ Kubernetes `Endpoint`."
                 type: string
+              labelLimit:
+                description: Per-scrape limit on number of labels that will be accepted
+                  for a sample. Only valid in Prometheus versions 2.27.0 and newer.
+                format: int64
+                type: integer
+              labelNameLengthLimit:
+                description: Per-scrape limit on length of labels name that will be
+                  accepted for a sample. Only valid in Prometheus versions 2.27.0
+                  and newer.
+                format: int64
+                type: integer
+              labelValueLengthLimit:
+                description: Per-scrape limit on length of labels value that will
+                  be accepted for a sample. Only valid in Prometheus versions 2.27.0
+                  and newer.
+                format: int64
+                type: integer
               namespaceSelector:
-                description: Selector to select which namespaces the Endpoints objects
-                  are discovered from.
+                description: Selector to select which namespaces the Kubernetes Endpoints
+                  objects are discovered from.
                 properties:
                   any:
                     description: Boolean describing whether all namespaces are selected
@@ -15295,8 +18513,8 @@ spec:
                     type: array
                 type: object
               podTargetLabels:
-                description: PodTargetLabels transfers labels on the Kubernetes Pod
-                  onto the target.
+                description: PodTargetLabels transfers labels on the Kubernetes `Pod`
+                  onto the created metrics.
                 items:
                   type: string
                 type: array
@@ -15350,8 +18568,9 @@ spec:
                     type: object
                 type: object
               targetLabels:
-                description: TargetLabels transfers labels on the Kubernetes Service
-                  onto the target.
+                description: TargetLabels transfers labels from the Kubernetes `Service`
+                  onto the created metrics. All labels set in `selector.matchLabels`
+                  are automatically transferred.
                 items:
                   type: string
                 type: array
@@ -15380,7 +18599,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.4.1
+    controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
   name: thanosrulers.monitoring.coreos.com
   namespace: metalk8s-monitoring
@@ -15698,10 +18917,71 @@ spec:
                                         The requirements are ANDed.
                                       type: object
                                   type: object
+                                namespaceSelector:
+                                  description: A label query over the set of namespaces
+                                    that the term applies to. The term is applied
+                                    to the union of the namespaces selected by this
+                                    field and the ones listed in the namespaces field.
+                                    null selector and null or empty namespaces list
+                                    means "this pod's namespace". An empty selector
+                                    ({}) matches all namespaces. This field is beta-level
+                                    and is only honored when PodAffinityNamespaceSelector
+                                    feature is enabled.
+                                  properties:
+                                    matchExpressions:
+                                      description: matchExpressions is a list of label
+                                        selector requirements. The requirements are
+                                        ANDed.
+                                      items:
+                                        description: A label selector requirement
+                                          is a selector that contains values, a key,
+                                          and an operator that relates the key and
+                                          values.
+                                        properties:
+                                          key:
+                                            description: key is the label key that
+                                              the selector applies to.
+                                            type: string
+                                          operator:
+                                            description: operator represents a key's
+                                              relationship to a set of values. Valid
+                                              operators are In, NotIn, Exists and
+                                              DoesNotExist.
+                                            type: string
+                                          values:
+                                            description: values is an array of string
+                                              values. If the operator is In or NotIn,
+                                              the values array must be non-empty.
+                                              If the operator is Exists or DoesNotExist,
+                                              the values array must be empty. This
+                                              array is replaced during a strategic
+                                              merge patch.
+                                            items:
+                                              type: string
+                                            type: array
+                                        required:
+                                        - key
+                                        - operator
+                                        type: object
+                                      type: array
+                                    matchLabels:
+                                      additionalProperties:
+                                        type: string
+                                      description: matchLabels is a map of {key,value}
+                                        pairs. A single {key,value} in the matchLabels
+                                        map is equivalent to an element of matchExpressions,
+                                        whose key field is "key", the operator is
+                                        "In", and the values array contains only "value".
+                                        The requirements are ANDed.
+                                      type: object
+                                  type: object
                                 namespaces:
-                                  description: namespaces specifies which namespaces
-                                    the labelSelector applies to (matches against);
-                                    null or empty list means "this pod's namespace"
+                                  description: namespaces specifies a static list
+                                    of namespace names that the term applies to. The
+                                    term is applied to the union of the namespaces
+                                    listed in this field and the ones selected by
+                                    namespaceSelector. null or empty namespaces list
+                                    and null namespaceSelector means "this pod's namespace"
                                   items:
                                     type: string
                                   type: array
@@ -15793,10 +19073,66 @@ spec:
                                     requirements are ANDed.
                                   type: object
                               type: object
+                            namespaceSelector:
+                              description: A label query over the set of namespaces
+                                that the term applies to. The term is applied to the
+                                union of the namespaces selected by this field and
+                                the ones listed in the namespaces field. null selector
+                                and null or empty namespaces list means "this pod's
+                                namespace". An empty selector ({}) matches all namespaces.
+                                This field is beta-level and is only honored when
+                                PodAffinityNamespaceSelector feature is enabled.
+                              properties:
+                                matchExpressions:
+                                  description: matchExpressions is a list of label
+                                    selector requirements. The requirements are ANDed.
+                                  items:
+                                    description: A label selector requirement is a
+                                      selector that contains values, a key, and an
+                                      operator that relates the key and values.
+                                    properties:
+                                      key:
+                                        description: key is the label key that the
+                                          selector applies to.
+                                        type: string
+                                      operator:
+                                        description: operator represents a key's relationship
+                                          to a set of values. Valid operators are
+                                          In, NotIn, Exists and DoesNotExist.
+                                        type: string
+                                      values:
+                                        description: values is an array of string
+                                          values. If the operator is In or NotIn,
+                                          the values array must be non-empty. If the
+                                          operator is Exists or DoesNotExist, the
+                                          values array must be empty. This array is
+                                          replaced during a strategic merge patch.
+                                        items:
+                                          type: string
+                                        type: array
+                                    required:
+                                    - key
+                                    - operator
+                                    type: object
+                                  type: array
+                                matchLabels:
+                                  additionalProperties:
+                                    type: string
+                                  description: matchLabels is a map of {key,value}
+                                    pairs. A single {key,value} in the matchLabels
+                                    map is equivalent to an element of matchExpressions,
+                                    whose key field is "key", the operator is "In",
+                                    and the values array contains only "value". The
+                                    requirements are ANDed.
+                                  type: object
+                              type: object
                             namespaces:
-                              description: namespaces specifies which namespaces the
-                                labelSelector applies to (matches against); null or
-                                empty list means "this pod's namespace"
+                              description: namespaces specifies a static list of namespace
+                                names that the term applies to. The term is applied
+                                to the union of the namespaces listed in this field
+                                and the ones selected by namespaceSelector. null or
+                                empty namespaces list and null namespaceSelector means
+                                "this pod's namespace"
                               items:
                                 type: string
                               type: array
@@ -15890,10 +19226,71 @@ spec:
                                         The requirements are ANDed.
                                       type: object
                                   type: object
+                                namespaceSelector:
+                                  description: A label query over the set of namespaces
+                                    that the term applies to. The term is applied
+                                    to the union of the namespaces selected by this
+                                    field and the ones listed in the namespaces field.
+                                    null selector and null or empty namespaces list
+                                    means "this pod's namespace". An empty selector
+                                    ({}) matches all namespaces. This field is beta-level
+                                    and is only honored when PodAffinityNamespaceSelector
+                                    feature is enabled.
+                                  properties:
+                                    matchExpressions:
+                                      description: matchExpressions is a list of label
+                                        selector requirements. The requirements are
+                                        ANDed.
+                                      items:
+                                        description: A label selector requirement
+                                          is a selector that contains values, a key,
+                                          and an operator that relates the key and
+                                          values.
+                                        properties:
+                                          key:
+                                            description: key is the label key that
+                                              the selector applies to.
+                                            type: string
+                                          operator:
+                                            description: operator represents a key's
+                                              relationship to a set of values. Valid
+                                              operators are In, NotIn, Exists and
+                                              DoesNotExist.
+                                            type: string
+                                          values:
+                                            description: values is an array of string
+                                              values. If the operator is In or NotIn,
+                                              the values array must be non-empty.
+                                              If the operator is Exists or DoesNotExist,
+                                              the values array must be empty. This
+                                              array is replaced during a strategic
+                                              merge patch.
+                                            items:
+                                              type: string
+                                            type: array
+                                        required:
+                                        - key
+                                        - operator
+                                        type: object
+                                      type: array
+                                    matchLabels:
+                                      additionalProperties:
+                                        type: string
+                                      description: matchLabels is a map of {key,value}
+                                        pairs. A single {key,value} in the matchLabels
+                                        map is equivalent to an element of matchExpressions,
+                                        whose key field is "key", the operator is
+                                        "In", and the values array contains only "value".
+                                        The requirements are ANDed.
+                                      type: object
+                                  type: object
                                 namespaces:
-                                  description: namespaces specifies which namespaces
-                                    the labelSelector applies to (matches against);
-                                    null or empty list means "this pod's namespace"
+                                  description: namespaces specifies a static list
+                                    of namespace names that the term applies to. The
+                                    term is applied to the union of the namespaces
+                                    listed in this field and the ones selected by
+                                    namespaceSelector. null or empty namespaces list
+                                    and null namespaceSelector means "this pod's namespace"
                                   items:
                                     type: string
                                   type: array
@@ -15985,10 +19382,66 @@ spec:
                                     requirements are ANDed.
                                   type: object
                               type: object
+                            namespaceSelector:
+                              description: A label query over the set of namespaces
+                                that the term applies to. The term is applied to the
+                                union of the namespaces selected by this field and
+                                the ones listed in the namespaces field. null selector
+                                and null or empty namespaces list means "this pod's
+                                namespace". An empty selector ({}) matches all namespaces.
+                                This field is beta-level and is only honored when
+                                PodAffinityNamespaceSelector feature is enabled.
+                              properties:
+                                matchExpressions:
+                                  description: matchExpressions is a list of label
+                                    selector requirements. The requirements are ANDed.
+                                  items:
+                                    description: A label selector requirement is a
+                                      selector that contains values, a key, and an
+                                      operator that relates the key and values.
+                                    properties:
+                                      key:
+                                        description: key is the label key that the
+                                          selector applies to.
+                                        type: string
+                                      operator:
+                                        description: operator represents a key's relationship
+                                          to a set of values. Valid operators are
+                                          In, NotIn, Exists and DoesNotExist.
+                                        type: string
+                                      values:
+                                        description: values is an array of string
+                                          values. If the operator is In or NotIn,
+                                          the values array must be non-empty. If the
+                                          operator is Exists or DoesNotExist, the
+                                          values array must be empty. This array is
+                                          replaced during a strategic merge patch.
+                                        items:
+                                          type: string
+                                        type: array
+                                    required:
+                                    - key
+                                    - operator
+                                    type: object
+                                  type: array
+                                matchLabels:
+                                  additionalProperties:
+                                    type: string
+                                  description: matchLabels is a map of {key,value}
+                                    pairs. A single {key,value} in the matchLabels
+                                    map is equivalent to an element of matchExpressions,
+                                    whose key field is "key", the operator is "In",
+                                    and the values array contains only "value". The
+                                    requirements are ANDed.
+                                  type: object
+                              type: object
                             namespaces:
-                              description: namespaces specifies which namespaces the
-                                labelSelector applies to (matches against); null or
-                                empty list means "this pod's namespace"
+                              description: namespaces specifies a static list of namespace
+                                names that the term applies to. The term is applied
+                                to the union of the namespaces listed in this field
+                                and the ones selected by namespaceSelector. null or
+                                empty namespaces list and null namespaceSelector means
+                                "this pod's namespace"
                               items:
                                 type: string
                               type: array
@@ -16009,8 +19462,8 @@ spec:
                 type: object
               alertDropLabels:
                 description: AlertDropLabels configure the label names which should
-                  be dropped in ThanosRuler alerts. If `labels` field is not provided,
-                  `thanos_ruler_replica` will be dropped in alerts by default.
+                  be dropped in ThanosRuler alerts. The replica label `thanos_ruler_replica`
+                  will always be dropped in alerts.
                 items:
                   type: string
                 type: array
@@ -16019,6 +19472,31 @@ spec:
                   'Source' field of all alerts. Maps to the '--alert.query-url' CLI
                   arg.
                 type: string
+              alertRelabelConfigFile:
+                description: AlertRelabelConfigFile specifies the path of the alert
+                  relabeling configuration file. When used alongside with AlertRelabelConfigs,
+                  alertRelabelConfigFile takes precedence.
+                type: string
+              alertRelabelConfigs:
+                description: 'AlertRelabelConfigs configures alert relabeling in ThanosRuler.
+                  Alert relabel configurations must have the form as specified in
+                  the official Prometheus documentation: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#alert_relabel_configs
+                  Alternative to AlertRelabelConfigFile, and lower order priority.'
+                properties:
+                  key:
+                    description: The key of the secret to select from.  Must be a
+                      valid secret key.
+                    type: string
+                  name:
+                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                      TODO: Add other useful fields. apiVersion, kind, uid?'
+                    type: string
+                  optional:
+                    description: Specify whether the Secret or its key must be defined
+                    type: boolean
+                required:
+                - key
+                type: object
               alertmanagersConfig:
                 description: Define configuration for connecting to alertmanager.  Only
                   available with thanos v0.10.0 and higher.  Maps to the `alertmanagers.config`
@@ -16066,10 +19544,11 @@ spec:
                         CMD is used if this is not provided. Variable references $(VAR_NAME)
                         are expanded using the container''s environment. If a variable
                         cannot be resolved, the reference in the input string will
-                        be unchanged. The $(VAR_NAME) syntax can be escaped with a
-                        double $$, ie: $$(VAR_NAME). Escaped references will never
-                        be expanded, regardless of whether the variable exists or
-                        not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
+                        be unchanged. Double $$ are reduced to a single $, which allows
+                        for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will
+                        produce the string literal "$(VAR_NAME)". Escaped references
+                        will never be expanded, regardless of whether the variable
+                        exists or not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
                       items:
                         type: string
                       type: array
@@ -16078,10 +19557,12 @@ spec:
                         The docker image''s ENTRYPOINT is used if this is not provided.
                         Variable references $(VAR_NAME) are expanded using the container''s
                         environment. If a variable cannot be resolved, the reference
-                        in the input string will be unchanged. The $(VAR_NAME) syntax
-                        can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
-                        references will never be expanded, regardless of whether the
-                        variable exists or not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
+                        in the input string will be unchanged. Double $$ are reduced
+                        to a single $, which allows for escaping the $(VAR_NAME) syntax:
+                        i.e. "$$(VAR_NAME)" will produce the string literal "$(VAR_NAME)".
+                        Escaped references will never be expanded, regardless of whether
+                        the variable exists or not. Cannot be updated. More info:
+                        https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
                       items:
                         type: string
                       type: array
@@ -16098,13 +19579,15 @@ spec:
                             type: string
                           value:
                             description: 'Variable references $(VAR_NAME) are expanded
-                              using the previous defined environment variables in
+                              using the previously defined environment variables in
                               the container and any service environment variables.
                               If a variable cannot be resolved, the reference in the
-                              input string will be unchanged. The $(VAR_NAME) syntax
-                              can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
-                              references will never be expanded, regardless of whether
-                              the variable exists or not. Defaults to "".'
+                              input string will be unchanged. Double $$ are reduced
+                              to a single $, which allows for escaping the $(VAR_NAME)
+                              syntax: i.e. "$$(VAR_NAME)" will produce the string
+                              literal "$(VAR_NAME)". Escaped references will never
+                              be expanded, regardless of whether the variable exists
+                              or not. Defaults to "".'
                             type: string
                           valueFrom:
                             description: Source for the environment variable's value.
@@ -16131,9 +19614,10 @@ spec:
                                 type: object
                               fieldRef:
                                 description: 'Selects a field of the pod: supports
-                                  metadata.name, metadata.namespace, metadata.labels,
-                                  metadata.annotations, spec.nodeName, spec.serviceAccountName,
-                                  status.hostIP, status.podIP, status.podIPs.'
+                                  metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`,
+                                  `metadata.annotations[''<KEY>'']`, spec.nodeName,
+                                  spec.serviceAccountName, status.hostIP, status.podIP,
+                                  status.podIPs.'
                                 properties:
                                   apiVersion:
                                     description: Version of the schema the FieldPath
@@ -16553,6 +20037,23 @@ spec:
                           required:
                           - port
                           type: object
+                        terminationGracePeriodSeconds:
+                          description: Optional duration in seconds the pod needs
+                            to terminate gracefully upon probe failure. The grace
+                            period is the duration in seconds after the processes
+                            running in the pod are sent a termination signal and the
+                            time when the processes are forcibly halted with a kill
+                            signal. Set this value longer than the expected cleanup
+                            time for your process. If this value is nil, the pod's
+                            terminationGracePeriodSeconds will be used. Otherwise,
+                            this value overrides the value provided by the pod spec.
+                            Value must be non-negative integer. The value zero indicates
+                            stop immediately via the kill signal (no opportunity to
+                            shut down). This is a beta field and requires enabling
+                            ProbeTerminationGracePeriod feature gate. Minimum value
+                            is 1. spec.terminationGracePeriodSeconds is used if unset.
+                          format: int64
+                          type: integer
                         timeoutSeconds:
                           description: 'Number of seconds after which the probe times
                             out. Defaults to 1 second. Minimum value is 1. More info:
@@ -16721,6 +20222,23 @@ spec:
                           required:
                           - port
                           type: object
+                        terminationGracePeriodSeconds:
+                          description: Optional duration in seconds the pod needs
+                            to terminate gracefully upon probe failure. The grace
+                            period is the duration in seconds after the processes
+                            running in the pod are sent a termination signal and the
+                            time when the processes are forcibly halted with a kill
+                            signal. Set this value longer than the expected cleanup
+                            time for your process. If this value is nil, the pod's
+                            terminationGracePeriodSeconds will be used. Otherwise,
+                            this value overrides the value provided by the pod spec.
+                            Value must be non-negative integer. The value zero indicates
+                            stop immediately via the kill signal (no opportunity to
+                            shut down). This is a beta field and requires enabling
+                            ProbeTerminationGracePeriod feature gate. Minimum value
+                            is 1. spec.terminationGracePeriodSeconds is used if unset.
+                          format: int64
+                          type: integer
                         timeoutSeconds:
                           description: 'Number of seconds after which the probe times
                             out. Defaults to 1 second. Minimum value is 1. More info:
@@ -16730,7 +20248,7 @@ spec:
                       type: object
                     resources:
                       description: 'Compute Resources required by this container.
-                        Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                       properties:
                         limits:
                           additionalProperties:
@@ -16740,7 +20258,7 @@ spec:
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                             x-kubernetes-int-or-string: true
                           description: 'Limits describes the maximum amount of compute
-                            resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                           type: object
                         requests:
                           additionalProperties:
@@ -16753,13 +20271,14 @@ spec:
                             resources required. If Requests is omitted for a container,
                             it defaults to Limits if that is explicitly specified,
                             otherwise to an implementation-defined value. More info:
-                            https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                           type: object
                       type: object
                     securityContext:
-                      description: 'Security options the pod should run with. More
-                        info: https://kubernetes.io/docs/concepts/policy/security-context/
-                        More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/'
+                      description: 'SecurityContext defines the security options the
+                        container should be run with. If set, the fields of SecurityContext
+                        override the equivalent fields of PodSecurityContext. More
+                        info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/'
                       properties:
                         allowPrivilegeEscalation:
                           description: 'AllowPrivilegeEscalation controls whether
@@ -16856,6 +20375,30 @@ spec:
                                 to the container.
                               type: string
                           type: object
+                        seccompProfile:
+                          description: The seccomp options to use by this container.
+                            If seccomp options are provided at both the pod & container
+                            level, the container options override the pod options.
+                          properties:
+                            localhostProfile:
+                              description: localhostProfile indicates a profile defined
+                                in a file on the node should be used. The profile
+                                must be preconfigured on the node to work. Must be
+                                a descending path, relative to the kubelet's configured
+                                seccomp profile location. Must only be set if type
+                                is "Localhost".
+                              type: string
+                            type:
+                              description: "type indicates which kind of seccomp profile\
+                                \ will be applied. Valid options are: \n Localhost\
+                                \ - a profile defined in a file on the node should\
+                                \ be used. RuntimeDefault - the container runtime\
+                                \ default profile should be used. Unconfined - no\
+                                \ profile should be applied."
+                              type: string
+                          required:
+                          - type
+                          type: object
                         windowsOptions:
                           description: The Windows specific settings applied to all
                             containers. If unspecified, the options from the PodSecurityContext
@@ -16872,6 +20415,19 @@ spec:
                               description: GMSACredentialSpecName is the name of the
                                 GMSA credential spec to use.
                               type: string
+                            hostProcess:
+                              description: HostProcess determines if a container should
+                                be run as a 'Host Process' container. This field is
+                                alpha-level and will only be honored by components
+                                that enable the WindowsHostProcessContainers feature
+                                flag. Setting this field without the feature flag
+                                will result in errors when validating the Pod. All
+                                of a Pod's containers must have the same effective
+                                HostProcess value (it is not allowed to have a mix
+                                of HostProcess containers and non-HostProcess containers).  In
+                                addition, if HostProcess is true then HostNetwork
+                                must also be set to true.
+                              type: boolean
                             runAsUserName:
                               description: The UserName in Windows to run the entrypoint
                                 of the container process. Defaults to the user specified
@@ -16890,8 +20446,7 @@ spec:
                         can be used to provide different probe parameters at the beginning
                         of a Pod''s lifecycle, when it might take a long time to load
                         data or warm a cache, than during steady-state operation.
-                        This cannot be updated. This is a beta feature enabled by
-                        the StartupProbe feature flag. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
+                        This cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
                           description: One and only one of the following should be
@@ -16998,6 +20553,23 @@ spec:
                           required:
                           - port
                           type: object
+                        terminationGracePeriodSeconds:
+                          description: Optional duration in seconds the pod needs
+                            to terminate gracefully upon probe failure. The grace
+                            period is the duration in seconds after the processes
+                            running in the pod are sent a termination signal and the
+                            time when the processes are forcibly halted with a kill
+                            signal. Set this value longer than the expected cleanup
+                            time for your process. If this value is nil, the pod's
+                            terminationGracePeriodSeconds will be used. Otherwise,
+                            this value overrides the value provided by the pod spec.
+                            Value must be non-negative integer. The value zero indicates
+                            stop immediately via the kill signal (no opportunity to
+                            shut down). This is a beta field and requires enabling
+                            ProbeTerminationGracePeriod feature gate. Minimum value
+                            is 1. spec.terminationGracePeriodSeconds is used if unset.
+                          format: int64
+                          type: integer
                         timeoutSeconds:
                           description: 'Number of seconds after which the probe times
                             out. Defaults to 1 second. Minimum value is 1. More info:
@@ -17285,10 +20857,11 @@ spec:
                         CMD is used if this is not provided. Variable references $(VAR_NAME)
                         are expanded using the container''s environment. If a variable
                         cannot be resolved, the reference in the input string will
-                        be unchanged. The $(VAR_NAME) syntax can be escaped with a
-                        double $$, ie: $$(VAR_NAME). Escaped references will never
-                        be expanded, regardless of whether the variable exists or
-                        not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
+                        be unchanged. Double $$ are reduced to a single $, which allows
+                        for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will
+                        produce the string literal "$(VAR_NAME)". Escaped references
+                        will never be expanded, regardless of whether the variable
+                        exists or not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
                       items:
                         type: string
                       type: array
@@ -17297,10 +20870,12 @@ spec:
                         The docker image''s ENTRYPOINT is used if this is not provided.
                         Variable references $(VAR_NAME) are expanded using the container''s
                         environment. If a variable cannot be resolved, the reference
-                        in the input string will be unchanged. The $(VAR_NAME) syntax
-                        can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
-                        references will never be expanded, regardless of whether the
-                        variable exists or not. Cannot be updated. More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
+                        in the input string will be unchanged. Double $$ are reduced
+                        to a single $, which allows for escaping the $(VAR_NAME) syntax:
+                        i.e. "$$(VAR_NAME)" will produce the string literal "$(VAR_NAME)".
+                        Escaped references will never be expanded, regardless of whether
+                        the variable exists or not. Cannot be updated. More info:
+                        https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell'
                       items:
                         type: string
                       type: array
@@ -17317,13 +20892,15 @@ spec:
                             type: string
                           value:
                             description: 'Variable references $(VAR_NAME) are expanded
-                              using the previous defined environment variables in
+                              using the previously defined environment variables in
                               the container and any service environment variables.
                               If a variable cannot be resolved, the reference in the
-                              input string will be unchanged. The $(VAR_NAME) syntax
-                              can be escaped with a double $$, ie: $$(VAR_NAME). Escaped
-                              references will never be expanded, regardless of whether
-                              the variable exists or not. Defaults to "".'
+                              input string will be unchanged. Double $$ are reduced
+                              to a single $, which allows for escaping the $(VAR_NAME)
+                              syntax: i.e. "$$(VAR_NAME)" will produce the string
+                              literal "$(VAR_NAME)". Escaped references will never
+                              be expanded, regardless of whether the variable exists
+                              or not. Defaults to "".'
                             type: string
                           valueFrom:
                             description: Source for the environment variable's value.
@@ -17350,9 +20927,10 @@ spec:
                                 type: object
                               fieldRef:
                                 description: 'Selects a field of the pod: supports
-                                  metadata.name, metadata.namespace, metadata.labels,
-                                  metadata.annotations, spec.nodeName, spec.serviceAccountName,
-                                  status.hostIP, status.podIP, status.podIPs.'
+                                  metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`,
+                                  `metadata.annotations[''<KEY>'']`, spec.nodeName,
+                                  spec.serviceAccountName, status.hostIP, status.podIP,
+                                  status.podIPs.'
                                 properties:
                                   apiVersion:
                                     description: Version of the schema the FieldPath
@@ -17772,6 +21350,23 @@ spec:
                           required:
                           - port
                           type: object
+                        terminationGracePeriodSeconds:
+                          description: Optional duration in seconds the pod needs
+                            to terminate gracefully upon probe failure. The grace
+                            period is the duration in seconds after the processes
+                            running in the pod are sent a termination signal and the
+                            time when the processes are forcibly halted with a kill
+                            signal. Set this value longer than the expected cleanup
+                            time for your process. If this value is nil, the pod's
+                            terminationGracePeriodSeconds will be used. Otherwise,
+                            this value overrides the value provided by the pod spec.
+                            Value must be non-negative integer. The value zero indicates
+                            stop immediately via the kill signal (no opportunity to
+                            shut down). This is a beta field and requires enabling
+                            ProbeTerminationGracePeriod feature gate. Minimum value
+                            is 1. spec.terminationGracePeriodSeconds is used if unset.
+                          format: int64
+                          type: integer
                         timeoutSeconds:
                           description: 'Number of seconds after which the probe times
                             out. Defaults to 1 second. Minimum value is 1. More info:
@@ -17940,6 +21535,23 @@ spec:
                           required:
                           - port
                           type: object
+                        terminationGracePeriodSeconds:
+                          description: Optional duration in seconds the pod needs
+                            to terminate gracefully upon probe failure. The grace
+                            period is the duration in seconds after the processes
+                            running in the pod are sent a termination signal and the
+                            time when the processes are forcibly halted with a kill
+                            signal. Set this value longer than the expected cleanup
+                            time for your process. If this value is nil, the pod's
+                            terminationGracePeriodSeconds will be used. Otherwise,
+                            this value overrides the value provided by the pod spec.
+                            Value must be non-negative integer. The value zero indicates
+                            stop immediately via the kill signal (no opportunity to
+                            shut down). This is a beta field and requires enabling
+                            ProbeTerminationGracePeriod feature gate. Minimum value
+                            is 1. spec.terminationGracePeriodSeconds is used if unset.
+                          format: int64
+                          type: integer
                         timeoutSeconds:
                           description: 'Number of seconds after which the probe times
                             out. Defaults to 1 second. Minimum value is 1. More info:
@@ -17949,7 +21561,7 @@ spec:
                       type: object
                     resources:
                       description: 'Compute Resources required by this container.
-                        Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                        Cannot be updated. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                       properties:
                         limits:
                           additionalProperties:
@@ -17959,7 +21571,7 @@ spec:
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                             x-kubernetes-int-or-string: true
                           description: 'Limits describes the maximum amount of compute
-                            resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                           type: object
                         requests:
                           additionalProperties:
@@ -17972,13 +21584,14 @@ spec:
                             resources required. If Requests is omitted for a container,
                             it defaults to Limits if that is explicitly specified,
                             otherwise to an implementation-defined value. More info:
-                            https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                            https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                           type: object
                       type: object
                     securityContext:
-                      description: 'Security options the pod should run with. More
-                        info: https://kubernetes.io/docs/concepts/policy/security-context/
-                        More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/'
+                      description: 'SecurityContext defines the security options the
+                        container should be run with. If set, the fields of SecurityContext
+                        override the equivalent fields of PodSecurityContext. More
+                        info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/'
                       properties:
                         allowPrivilegeEscalation:
                           description: 'AllowPrivilegeEscalation controls whether
@@ -18075,6 +21688,30 @@ spec:
                                 to the container.
                               type: string
                           type: object
+                        seccompProfile:
+                          description: The seccomp options to use by this container.
+                            If seccomp options are provided at both the pod & container
+                            level, the container options override the pod options.
+                          properties:
+                            localhostProfile:
+                              description: localhostProfile indicates a profile defined
+                                in a file on the node should be used. The profile
+                                must be preconfigured on the node to work. Must be
+                                a descending path, relative to the kubelet's configured
+                                seccomp profile location. Must only be set if type
+                                is "Localhost".
+                              type: string
+                            type:
+                              description: "type indicates which kind of seccomp profile\
+                                \ will be applied. Valid options are: \n Localhost\
+                                \ - a profile defined in a file on the node should\
+                                \ be used. RuntimeDefault - the container runtime\
+                                \ default profile should be used. Unconfined - no\
+                                \ profile should be applied."
+                              type: string
+                          required:
+                          - type
+                          type: object
                         windowsOptions:
                           description: The Windows specific settings applied to all
                             containers. If unspecified, the options from the PodSecurityContext
@@ -18091,6 +21728,19 @@ spec:
                               description: GMSACredentialSpecName is the name of the
                                 GMSA credential spec to use.
                               type: string
+                            hostProcess:
+                              description: HostProcess determines if a container should
+                                be run as a 'Host Process' container. This field is
+                                alpha-level and will only be honored by components
+                                that enable the WindowsHostProcessContainers feature
+                                flag. Setting this field without the feature flag
+                                will result in errors when validating the Pod. All
+                                of a Pod's containers must have the same effective
+                                HostProcess value (it is not allowed to have a mix
+                                of HostProcess containers and non-HostProcess containers).  In
+                                addition, if HostProcess is true then HostNetwork
+                                must also be set to true.
+                              type: boolean
                             runAsUserName:
                               description: The UserName in Windows to run the entrypoint
                                 of the container process. Defaults to the user specified
@@ -18109,8 +21759,7 @@ spec:
                         can be used to provide different probe parameters at the beginning
                         of a Pod''s lifecycle, when it might take a long time to load
                         data or warm a cache, than during steady-state operation.
-                        This cannot be updated. This is a beta feature enabled by
-                        the StartupProbe feature flag. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
+                        This cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
                           description: One and only one of the following should be
@@ -18217,6 +21866,23 @@ spec:
                           required:
                           - port
                           type: object
+                        terminationGracePeriodSeconds:
+                          description: Optional duration in seconds the pod needs
+                            to terminate gracefully upon probe failure. The grace
+                            period is the duration in seconds after the processes
+                            running in the pod are sent a termination signal and the
+                            time when the processes are forcibly halted with a kill
+                            signal. Set this value longer than the expected cleanup
+                            time for your process. If this value is nil, the pod's
+                            terminationGracePeriodSeconds will be used. Otherwise,
+                            this value overrides the value provided by the pod spec.
+                            Value must be non-negative integer. The value zero indicates
+                            stop immediately via the kill signal (no opportunity to
+                            shut down). This is a beta field and requires enabling
+                            ProbeTerminationGracePeriod feature gate. Minimum value
+                            is 1. spec.terminationGracePeriodSeconds is used if unset.
+                          format: int64
+                          type: integer
                         timeoutSeconds:
                           description: 'Number of seconds after which the probe times
                             out. Defaults to 1 second. Minimum value is 1. More info:
@@ -18339,8 +22005,9 @@ spec:
                 additionalProperties:
                   type: string
                 description: Labels configure the external label pairs to ThanosRuler.
-                  If not provided, default replica label `thanos_ruler_replica` will
-                  be added as a label and be dropped in alerts.
+                  A default replica label `thanos_ruler_replica` will be always added  as
+                  a label with the value of the pod's name and it will be dropped
+                  in the alerts.
                 type: object
               listenLocal:
                 description: ListenLocal makes the Thanos ruler listen on loopback,
@@ -18352,6 +22019,14 @@ spec:
               logLevel:
                 description: Log level for ThanosRuler to be configured with.
                 type: string
+              minReadySeconds:
+                description: Minimum number of seconds for which a newly created pod
+                  should be ready without any of its container crashing for it to
+                  be considered available. Defaults to 0 (pod will be considered available
+                  as soon as it is ready) This is an alpha field and requires enabling
+                  StatefulSetMinReadySeconds feature gate.
+                format: int32
+                type: integer
               nodeSelector:
                 additionalProperties:
                   type: string
@@ -18482,7 +22157,7 @@ spec:
                       pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                       x-kubernetes-int-or-string: true
                     description: 'Limits describes the maximum amount of compute resources
-                      allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                      allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
                   requests:
                     additionalProperties:
@@ -18494,7 +22169,7 @@ spec:
                     description: 'Requests describes the minimum amount of compute
                       resources required. If Requests is omitted for a container,
                       it defaults to Limits if that is explicitly specified, otherwise
-                      to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                      to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                     type: object
                 type: object
               retention:
@@ -18618,7 +22293,7 @@ spec:
                       support fsGroup based ownership(and permissions). It will have
                       no effect on ephemeral volume types such as: secret, configmaps
                       and emptydir. Valid values are "OnRootMismatch" and "Always".
-                      If not specified defaults to "Always".'
+                      If not specified, "Always" is used.'
                     type: string
                   runAsGroup:
                     description: The GID to run the entrypoint of the container process.
@@ -18668,6 +22343,27 @@ spec:
                           the container.
                         type: string
                     type: object
+                  seccompProfile:
+                    description: The seccomp options to use by the containers in this
+                      pod.
+                    properties:
+                      localhostProfile:
+                        description: localhostProfile indicates a profile defined
+                          in a file on the node should be used. The profile must be
+                          preconfigured on the node to work. Must be a descending
+                          path, relative to the kubelet's configured seccomp profile
+                          location. Must only be set if type is "Localhost".
+                        type: string
+                      type:
+                        description: "type indicates which kind of seccomp profile\
+                          \ will be applied. Valid options are: \n Localhost - a profile\
+                          \ defined in a file on the node should be used. RuntimeDefault\
+                          \ - the container runtime default profile should be used.\
+                          \ Unconfined - no profile should be applied."
+                        type: string
+                    required:
+                    - type
+                    type: object
                   supplementalGroups:
                     description: A list of groups applied to the first process run
                       in each container, in addition to the container's primary GID.  If
@@ -18710,6 +22406,17 @@ spec:
                         description: GMSACredentialSpecName is the name of the GMSA
                           credential spec to use.
                         type: string
+                      hostProcess:
+                        description: HostProcess determines if a container should
+                          be run as a 'Host Process' container. This field is alpha-level
+                          and will only be honored by components that enable the WindowsHostProcessContainers
+                          feature flag. Setting this field without the feature flag
+                          will result in errors when validating the Pod. All of a
+                          Pod's containers must have the same effective HostProcess
+                          value (it is not allowed to have a mix of HostProcess containers
+                          and non-HostProcess containers).  In addition, if HostProcess
+                          is true then HostNetwork must also be set to true.
+                        type: boolean
                       runAsUserName:
                         description: The UserName in Windows to run the entrypoint
                           of the container process. Defaults to the user specified
@@ -18755,6 +22462,218 @@ spec:
                           More info: http://kubernetes.io/docs/user-guide/volumes#emptydir'
                         pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                         x-kubernetes-int-or-string: true
+                    type: object
+                  ephemeral:
+                    description: 'EphemeralVolumeSource to be used by the Prometheus
+                      StatefulSets. This is a beta field in k8s 1.21, for lower versions,
+                      starting with k8s 1.19, it requires enabling the GenericEphemeralVolume
+                      feature gate. More info: https://kubernetes.io/docs/concepts/storage/ephemeral-volumes/#generic-ephemeral-volumes'
+                    properties:
+                      volumeClaimTemplate:
+                        description: "Will be used to create a stand-alone PVC to\
+                          \ provision the volume. The pod in which this EphemeralVolumeSource\
+                          \ is embedded will be the owner of the PVC, i.e. the PVC\
+                          \ will be deleted together with the pod.  The name of the\
+                          \ PVC will be `<pod name>-<volume name>` where `<volume\
+                          \ name>` is the name from the `PodSpec.Volumes` array entry.\
+                          \ Pod validation will reject the pod if the concatenated\
+                          \ name is not valid for a PVC (for example, too long). \n\
+                          \ An existing PVC with that name that is not owned by the\
+                          \ pod will *not* be used for the pod to avoid using an unrelated\
+                          \ volume by mistake. Starting the pod is then blocked until\
+                          \ the unrelated PVC is removed. If such a pre-created PVC\
+                          \ is meant to be used by the pod, the PVC has to updated\
+                          \ with an owner reference to the pod once the pod exists.\
+                          \ Normally this should not be necessary, but it may be useful\
+                          \ when manually reconstructing a broken cluster. \n This\
+                          \ field is read-only and no changes will be made by Kubernetes\
+                          \ to the PVC after it has been created. \n Required, must\
+                          \ not be nil."
+                        properties:
+                          metadata:
+                            description: May contain labels and annotations that will
+                              be copied into the PVC when creating it. No other fields
+                              are allowed and will be rejected during validation.
+                            type: object
+                          spec:
+                            description: The specification for the PersistentVolumeClaim.
+                              The entire content is copied unchanged into the PVC
+                              that gets created from this template. The same fields
+                              as in a PersistentVolumeClaim are also valid here.
+                            properties:
+                              accessModes:
+                                description: 'AccessModes contains the desired access
+                                  modes the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#access-modes-1'
+                                items:
+                                  type: string
+                                type: array
+                              dataSource:
+                                description: 'This field can be used to specify either:
+                                  * An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot)
+                                  * An existing PVC (PersistentVolumeClaim) If the
+                                  provisioner or an external controller can support
+                                  the specified data source, it will create a new
+                                  volume based on the contents of the specified data
+                                  source. If the AnyVolumeDataSource feature gate
+                                  is enabled, this field will always have the same
+                                  contents as the DataSourceRef field.'
+                                properties:
+                                  apiGroup:
+                                    description: APIGroup is the group for the resource
+                                      being referenced. If APIGroup is not specified,
+                                      the specified Kind must be in the core API group.
+                                      For any other third-party types, APIGroup is
+                                      required.
+                                    type: string
+                                  kind:
+                                    description: Kind is the type of resource being
+                                      referenced
+                                    type: string
+                                  name:
+                                    description: Name is the name of resource being
+                                      referenced
+                                    type: string
+                                required:
+                                - kind
+                                - name
+                                type: object
+                              dataSourceRef:
+                                description: 'Specifies the object from which to populate
+                                  the volume with data, if a non-empty volume is desired.
+                                  This may be any local object from a non-empty API
+                                  group (non core object) or a PersistentVolumeClaim
+                                  object. When this field is specified, volume binding
+                                  will only succeed if the type of the specified object
+                                  matches some installed volume populator or dynamic
+                                  provisioner. This field will replace the functionality
+                                  of the DataSource field and as such if both fields
+                                  are non-empty, they must have the same value. For
+                                  backwards compatibility, both fields (DataSource
+                                  and DataSourceRef) will be set to the same value
+                                  automatically if one of them is empty and the other
+                                  is non-empty. There are two important differences
+                                  between DataSource and DataSourceRef: * While DataSource
+                                  only allows two specific types of objects, DataSourceRef   allows
+                                  any non-core object, as well as PersistentVolumeClaim
+                                  objects. * While DataSource ignores disallowed values
+                                  (dropping them), DataSourceRef   preserves all values,
+                                  and generates an error if a disallowed value is   specified.
+                                  (Alpha) Using this field requires the AnyVolumeDataSource
+                                  feature gate to be enabled.'
+                                properties:
+                                  apiGroup:
+                                    description: APIGroup is the group for the resource
+                                      being referenced. If APIGroup is not specified,
+                                      the specified Kind must be in the core API group.
+                                      For any other third-party types, APIGroup is
+                                      required.
+                                    type: string
+                                  kind:
+                                    description: Kind is the type of resource being
+                                      referenced
+                                    type: string
+                                  name:
+                                    description: Name is the name of resource being
+                                      referenced
+                                    type: string
+                                required:
+                                - kind
+                                - name
+                                type: object
+                              resources:
+                                description: 'Resources represents the minimum resources
+                                  the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
+                                properties:
+                                  limits:
+                                    additionalProperties:
+                                      anyOf:
+                                      - type: integer
+                                      - type: string
+                                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                      x-kubernetes-int-or-string: true
+                                    description: 'Limits describes the maximum amount
+                                      of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                                    type: object
+                                  requests:
+                                    additionalProperties:
+                                      anyOf:
+                                      - type: integer
+                                      - type: string
+                                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                      x-kubernetes-int-or-string: true
+                                    description: 'Requests describes the minimum amount
+                                      of compute resources required. If Requests is
+                                      omitted for a container, it defaults to Limits
+                                      if that is explicitly specified, otherwise to
+                                      an implementation-defined value. More info:
+                                      https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                                    type: object
+                                type: object
+                              selector:
+                                description: A label query over volumes to consider
+                                  for binding.
+                                properties:
+                                  matchExpressions:
+                                    description: matchExpressions is a list of label
+                                      selector requirements. The requirements are
+                                      ANDed.
+                                    items:
+                                      description: A label selector requirement is
+                                        a selector that contains values, a key, and
+                                        an operator that relates the key and values.
+                                      properties:
+                                        key:
+                                          description: key is the label key that the
+                                            selector applies to.
+                                          type: string
+                                        operator:
+                                          description: operator represents a key's
+                                            relationship to a set of values. Valid
+                                            operators are In, NotIn, Exists and DoesNotExist.
+                                          type: string
+                                        values:
+                                          description: values is an array of string
+                                            values. If the operator is In or NotIn,
+                                            the values array must be non-empty. If
+                                            the operator is Exists or DoesNotExist,
+                                            the values array must be empty. This array
+                                            is replaced during a strategic merge patch.
+                                          items:
+                                            type: string
+                                          type: array
+                                      required:
+                                      - key
+                                      - operator
+                                      type: object
+                                    type: array
+                                  matchLabels:
+                                    additionalProperties:
+                                      type: string
+                                    description: matchLabels is a map of {key,value}
+                                      pairs. A single {key,value} in the matchLabels
+                                      map is equivalent to an element of matchExpressions,
+                                      whose key field is "key", the operator is "In",
+                                      and the values array contains only "value".
+                                      The requirements are ANDed.
+                                    type: object
+                                type: object
+                              storageClassName:
+                                description: 'Name of the StorageClass required by
+                                  the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                                type: string
+                              volumeMode:
+                                description: volumeMode defines what type of volume
+                                  is required by the claim. Value of Filesystem is
+                                  implied when not included in claim spec.
+                                type: string
+                              volumeName:
+                                description: VolumeName is the binding reference to
+                                  the PersistentVolume backing this claim.
+                                type: string
+                            type: object
+                        required:
+                        - spec
+                        type: object
                     type: object
                   volumeClaimTemplate:
                     description: A PVC spec to be used by the Prometheus StatefulSets.
@@ -18813,20 +22732,52 @@ spec:
                             type: array
                           dataSource:
                             description: 'This field can be used to specify either:
-                              * An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot
-                              - Beta) * An existing PVC (PersistentVolumeClaim) *
-                              An existing custom resource/object that implements data
-                              population (Alpha) In order to use VolumeSnapshot object
-                              types, the appropriate feature gate must be enabled
-                              (VolumeSnapshotDataSource or AnyVolumeDataSource) If
-                              the provisioner or an external controller can support
-                              the specified data source, it will create a new volume
-                              based on the contents of the specified data source.
-                              If the specified data source is not supported, the volume
-                              will not be created and the failure will be reported
-                              as an event. In the future, we plan to support more
-                              data source types and the behavior of the provisioner
-                              may change.'
+                              * An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot)
+                              * An existing PVC (PersistentVolumeClaim) If the provisioner
+                              or an external controller can support the specified
+                              data source, it will create a new volume based on the
+                              contents of the specified data source. If the AnyVolumeDataSource
+                              feature gate is enabled, this field will always have
+                              the same contents as the DataSourceRef field.'
+                            properties:
+                              apiGroup:
+                                description: APIGroup is the group for the resource
+                                  being referenced. If APIGroup is not specified,
+                                  the specified Kind must be in the core API group.
+                                  For any other third-party types, APIGroup is required.
+                                type: string
+                              kind:
+                                description: Kind is the type of resource being referenced
+                                type: string
+                              name:
+                                description: Name is the name of resource being referenced
+                                type: string
+                            required:
+                            - kind
+                            - name
+                            type: object
+                          dataSourceRef:
+                            description: 'Specifies the object from which to populate
+                              the volume with data, if a non-empty volume is desired.
+                              This may be any local object from a non-empty API group
+                              (non core object) or a PersistentVolumeClaim object.
+                              When this field is specified, volume binding will only
+                              succeed if the type of the specified object matches
+                              some installed volume populator or dynamic provisioner.
+                              This field will replace the functionality of the DataSource
+                              field and as such if both fields are non-empty, they
+                              must have the same value. For backwards compatibility,
+                              both fields (DataSource and DataSourceRef) will be set
+                              to the same value automatically if one of them is empty
+                              and the other is non-empty. There are two important
+                              differences between DataSource and DataSourceRef: *
+                              While DataSource only allows two specific types of objects,
+                              DataSourceRef   allows any non-core object, as well
+                              as PersistentVolumeClaim objects. * While DataSource
+                              ignores disallowed values (dropping them), DataSourceRef   preserves
+                              all values, and generates an error if a disallowed value
+                              is   specified. (Alpha) Using this field requires the
+                              AnyVolumeDataSource feature gate to be enabled.'
                             properties:
                               apiGroup:
                                 description: APIGroup is the group for the resource
@@ -18856,7 +22807,7 @@ spec:
                                   pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                                   x-kubernetes-int-or-string: true
                                 description: 'Limits describes the maximum amount
-                                  of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                  of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                               requests:
                                 additionalProperties:
@@ -18869,7 +22820,7 @@ spec:
                                   of compute resources required. If Requests is omitted
                                   for a container, it defaults to Limits if that is
                                   explicitly specified, otherwise to an implementation-defined
-                                  value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                                  value. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
                                 type: object
                             type: object
                           selector:
@@ -19091,16 +23042,19 @@ spec:
                       type: object
                     maxSkew:
                       description: 'MaxSkew describes the degree to which pods may
-                        be unevenly distributed. It''s the maximum permitted difference
-                        between the number of matching pods in any two topology domains
-                        of a given topology type. For example, in a 3-zone cluster,
-                        MaxSkew is set to 1, and pods with the same labelSelector
-                        spread as 1/1/0: | zone1 | zone2 | zone3 | |   P   |   P   |       |
-                        - if MaxSkew is 1, incoming pod can only be scheduled to zone3
-                        to become 1/1/1; scheduling it onto zone1(zone2) would make
-                        the ActualSkew(2-0) on zone1(zone2) violate MaxSkew(1). -
-                        if MaxSkew is 2, incoming pod can be scheduled onto any zone.
-                        It''s a required field. Default value is 1 and 0 is not allowed.'
+                        be unevenly distributed. When `whenUnsatisfiable=DoNotSchedule`,
+                        it is the maximum permitted difference between the number
+                        of matching pods in the target topology and the global minimum.
+                        For example, in a 3-zone cluster, MaxSkew is set to 1, and
+                        pods with the same labelSelector spread as 1/1/0: | zone1
+                        | zone2 | zone3 | |   P   |   P   |       | - if MaxSkew is
+                        1, incoming pod can only be scheduled to zone3 to become 1/1/1;
+                        scheduling it onto zone1(zone2) would make the ActualSkew(2-0)
+                        on zone1(zone2) violate MaxSkew(1). - if MaxSkew is 2, incoming
+                        pod can be scheduled onto any zone. When `whenUnsatisfiable=ScheduleAnyway`,
+                        it is used to give higher precedence to topologies that satisfy
+                        it. It''s a required field. Default value is 1 and 0 is not
+                        allowed.'
                       format: int32
                       type: integer
                     topologyKey:
@@ -19113,17 +23067,20 @@ spec:
                     whenUnsatisfiable:
                       description: 'WhenUnsatisfiable indicates how to deal with a
                         pod if it doesn''t satisfy the spread constraint. - DoNotSchedule
-                        (default) tells the scheduler not to schedule it - ScheduleAnyway
-                        tells the scheduler to still schedule it It''s considered
-                        as "Unsatisfiable" if and only if placing incoming pod on
-                        any topology violates "MaxSkew". For example, in a 3-zone
-                        cluster, MaxSkew is set to 1, and pods with the same labelSelector
-                        spread as 3/1/1: | zone1 | zone2 | zone3 | | P P P |   P   |   P   |
-                        If WhenUnsatisfiable is set to DoNotSchedule, incoming pod
-                        can only be scheduled to zone2(zone3) to become 3/2/1(3/1/2)
-                        as ActualSkew(2-1) on zone2(zone3) satisfies MaxSkew(1). In
-                        other words, the cluster can still be imbalanced, but scheduler
-                        won''t make it *more* imbalanced. It''s a required field.'
+                        (default) tells the scheduler not to schedule it. - ScheduleAnyway
+                        tells the scheduler to schedule the pod in any location,   but
+                        giving higher precedence to topologies that would help reduce
+                        the   skew. A constraint is considered "Unsatisfiable" for
+                        an incoming pod if and only if every possible node assignment
+                        for that pod would violate "MaxSkew" on some topology. For
+                        example, in a 3-zone cluster, MaxSkew is set to 1, and pods
+                        with the same labelSelector spread as 3/1/1: | zone1 | zone2
+                        | zone3 | | P P P |   P   |   P   | If WhenUnsatisfiable is
+                        set to DoNotSchedule, incoming pod can only be scheduled to
+                        zone2(zone3) to become 3/2/1(3/1/2) as ActualSkew(2-1) on
+                        zone2(zone3) satisfies MaxSkew(1). In other words, the cluster
+                        can still be imbalanced, but scheduler won''t make it *more*
+                        imbalanced. It''s a required field.'
                       type: string
                   required:
                   - maxSkew
@@ -19319,12 +23276,15 @@ spec:
                         this volume
                       properties:
                         defaultMode:
-                          description: 'Optional: mode bits to use on created files
-                            by default. Must be a value between 0 and 0777. Defaults
-                            to 0644. Directories within the path are not affected
-                            by this setting. This might be in conflict with other
-                            options that affect the file mode, like fsGroup, and the
-                            result can be other mode bits set.'
+                          description: 'Optional: mode bits used to set permissions
+                            on created files by default. Must be an octal value between
+                            0000 and 0777 or a decimal value between 0 and 511. YAML
+                            accepts both octal and decimal values, JSON requires decimal
+                            values for mode bits. Defaults to 0644. Directories within
+                            the path are not affected by this setting. This might
+                            be in conflict with other options that affect the file
+                            mode, like fsGroup, and the result can be other mode bits
+                            set.'
                           format: int32
                           type: integer
                         items:
@@ -19344,8 +23304,11 @@ spec:
                                 description: The key to project.
                                 type: string
                               mode:
-                                description: 'Optional: mode bits to use on this file,
-                                  must be a value between 0 and 0777. If not specified,
+                                description: 'Optional: mode bits used to set permissions
+                                  on this file. Must be an octal value between 0000
+                                  and 0777 or a decimal value between 0 and 511. YAML
+                                  accepts both octal and decimal values, JSON requires
+                                  decimal values for mode bits. If not specified,
                                   the volume defaultMode will be used. This might
                                   be in conflict with other options that affect the
                                   file mode, like fsGroup, and the result can be other
@@ -19373,8 +23336,9 @@ spec:
                           type: boolean
                       type: object
                     csi:
-                      description: CSI (Container Storage Interface) represents storage
-                        that is handled by an external CSI driver (Alpha feature).
+                      description: CSI (Container Storage Interface) represents ephemeral
+                        storage that is handled by certain external CSI drivers (Beta
+                        feature).
                       properties:
                         driver:
                           description: Driver is the name of the CSI driver that handles
@@ -19421,11 +23385,15 @@ spec:
                       properties:
                         defaultMode:
                           description: 'Optional: mode bits to use on created files
-                            by default. Must be a value between 0 and 0777. Defaults
-                            to 0644. Directories within the path are not affected
-                            by this setting. This might be in conflict with other
-                            options that affect the file mode, like fsGroup, and the
-                            result can be other mode bits set.'
+                            by default. Must be a Optional: mode bits used to set
+                            permissions on created files by default. Must be an octal
+                            value between 0000 and 0777 or a decimal value between
+                            0 and 511. YAML accepts both octal and decimal values,
+                            JSON requires decimal values for mode bits. Defaults to
+                            0644. Directories within the path are not affected by
+                            this setting. This might be in conflict with other options
+                            that affect the file mode, like fsGroup, and the result
+                            can be other mode bits set.'
                           format: int32
                           type: integer
                         items:
@@ -19451,8 +23419,11 @@ spec:
                                 - fieldPath
                                 type: object
                               mode:
-                                description: 'Optional: mode bits to use on this file,
-                                  must be a value between 0 and 0777. If not specified,
+                                description: 'Optional: mode bits used to set permissions
+                                  on this file, must be an octal value between 0000
+                                  and 0777 or a decimal value between 0 and 511. YAML
+                                  accepts both octal and decimal values, JSON requires
+                                  decimal values for mode bits. If not specified,
                                   the volume defaultMode will be used. This might
                                   be in conflict with other options that affect the
                                   file mode, like fsGroup, and the result can be other
@@ -19518,6 +23489,239 @@ spec:
                             is undefined. More info: http://kubernetes.io/docs/user-guide/volumes#emptydir'
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
+                      type: object
+                    ephemeral:
+                      description: "Ephemeral represents a volume that is handled\
+                        \ by a cluster storage driver. The volume's lifecycle is tied\
+                        \ to the pod that defines it - it will be created before the\
+                        \ pod starts, and deleted when the pod is removed. \n Use\
+                        \ this if: a) the volume is only needed while the pod runs,\
+                        \ b) features of normal volumes like restoring from snapshot\
+                        \ or capacity    tracking are needed, c) the storage driver\
+                        \ is specified through a storage class, and d) the storage\
+                        \ driver supports dynamic volume provisioning through    a\
+                        \ PersistentVolumeClaim (see EphemeralVolumeSource for more\
+                        \    information on the connection between this volume type\
+                        \    and PersistentVolumeClaim). \n Use PersistentVolumeClaim\
+                        \ or one of the vendor-specific APIs for volumes that persist\
+                        \ for longer than the lifecycle of an individual pod. \n Use\
+                        \ CSI for light-weight local ephemeral volumes if the CSI\
+                        \ driver is meant to be used that way - see the documentation\
+                        \ of the driver for more information. \n A pod can use both\
+                        \ types of ephemeral volumes and persistent volumes at the\
+                        \ same time. \n This is a beta feature and only available\
+                        \ when the GenericEphemeralVolume feature gate is enabled."
+                      properties:
+                        volumeClaimTemplate:
+                          description: "Will be used to create a stand-alone PVC to\
+                            \ provision the volume. The pod in which this EphemeralVolumeSource\
+                            \ is embedded will be the owner of the PVC, i.e. the PVC\
+                            \ will be deleted together with the pod.  The name of\
+                            \ the PVC will be `<pod name>-<volume name>` where `<volume\
+                            \ name>` is the name from the `PodSpec.Volumes` array\
+                            \ entry. Pod validation will reject the pod if the concatenated\
+                            \ name is not valid for a PVC (for example, too long).\
+                            \ \n An existing PVC with that name that is not owned\
+                            \ by the pod will *not* be used for the pod to avoid using\
+                            \ an unrelated volume by mistake. Starting the pod is\
+                            \ then blocked until the unrelated PVC is removed. If\
+                            \ such a pre-created PVC is meant to be used by the pod,\
+                            \ the PVC has to updated with an owner reference to the\
+                            \ pod once the pod exists. Normally this should not be\
+                            \ necessary, but it may be useful when manually reconstructing\
+                            \ a broken cluster. \n This field is read-only and no\
+                            \ changes will be made by Kubernetes to the PVC after\
+                            \ it has been created. \n Required, must not be nil."
+                          properties:
+                            metadata:
+                              description: May contain labels and annotations that
+                                will be copied into the PVC when creating it. No other
+                                fields are allowed and will be rejected during validation.
+                              type: object
+                            spec:
+                              description: The specification for the PersistentVolumeClaim.
+                                The entire content is copied unchanged into the PVC
+                                that gets created from this template. The same fields
+                                as in a PersistentVolumeClaim are also valid here.
+                              properties:
+                                accessModes:
+                                  description: 'AccessModes contains the desired access
+                                    modes the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#access-modes-1'
+                                  items:
+                                    type: string
+                                  type: array
+                                dataSource:
+                                  description: 'This field can be used to specify
+                                    either: * An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot)
+                                    * An existing PVC (PersistentVolumeClaim) If the
+                                    provisioner or an external controller can support
+                                    the specified data source, it will create a new
+                                    volume based on the contents of the specified
+                                    data source. If the AnyVolumeDataSource feature
+                                    gate is enabled, this field will always have the
+                                    same contents as the DataSourceRef field.'
+                                  properties:
+                                    apiGroup:
+                                      description: APIGroup is the group for the resource
+                                        being referenced. If APIGroup is not specified,
+                                        the specified Kind must be in the core API
+                                        group. For any other third-party types, APIGroup
+                                        is required.
+                                      type: string
+                                    kind:
+                                      description: Kind is the type of resource being
+                                        referenced
+                                      type: string
+                                    name:
+                                      description: Name is the name of resource being
+                                        referenced
+                                      type: string
+                                  required:
+                                  - kind
+                                  - name
+                                  type: object
+                                dataSourceRef:
+                                  description: 'Specifies the object from which to
+                                    populate the volume with data, if a non-empty
+                                    volume is desired. This may be any local object
+                                    from a non-empty API group (non core object) or
+                                    a PersistentVolumeClaim object. When this field
+                                    is specified, volume binding will only succeed
+                                    if the type of the specified object matches some
+                                    installed volume populator or dynamic provisioner.
+                                    This field will replace the functionality of the
+                                    DataSource field and as such if both fields are
+                                    non-empty, they must have the same value. For
+                                    backwards compatibility, both fields (DataSource
+                                    and DataSourceRef) will be set to the same value
+                                    automatically if one of them is empty and the
+                                    other is non-empty. There are two important differences
+                                    between DataSource and DataSourceRef: * While
+                                    DataSource only allows two specific types of objects,
+                                    DataSourceRef   allows any non-core object, as
+                                    well as PersistentVolumeClaim objects. * While
+                                    DataSource ignores disallowed values (dropping
+                                    them), DataSourceRef   preserves all values, and
+                                    generates an error if a disallowed value is   specified.
+                                    (Alpha) Using this field requires the AnyVolumeDataSource
+                                    feature gate to be enabled.'
+                                  properties:
+                                    apiGroup:
+                                      description: APIGroup is the group for the resource
+                                        being referenced. If APIGroup is not specified,
+                                        the specified Kind must be in the core API
+                                        group. For any other third-party types, APIGroup
+                                        is required.
+                                      type: string
+                                    kind:
+                                      description: Kind is the type of resource being
+                                        referenced
+                                      type: string
+                                    name:
+                                      description: Name is the name of resource being
+                                        referenced
+                                      type: string
+                                  required:
+                                  - kind
+                                  - name
+                                  type: object
+                                resources:
+                                  description: 'Resources represents the minimum resources
+                                    the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
+                                  properties:
+                                    limits:
+                                      additionalProperties:
+                                        anyOf:
+                                        - type: integer
+                                        - type: string
+                                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                        x-kubernetes-int-or-string: true
+                                      description: 'Limits describes the maximum amount
+                                        of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                                      type: object
+                                    requests:
+                                      additionalProperties:
+                                        anyOf:
+                                        - type: integer
+                                        - type: string
+                                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                        x-kubernetes-int-or-string: true
+                                      description: 'Requests describes the minimum
+                                        amount of compute resources required. If Requests
+                                        is omitted for a container, it defaults to
+                                        Limits if that is explicitly specified, otherwise
+                                        to an implementation-defined value. More info:
+                                        https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                                      type: object
+                                  type: object
+                                selector:
+                                  description: A label query over volumes to consider
+                                    for binding.
+                                  properties:
+                                    matchExpressions:
+                                      description: matchExpressions is a list of label
+                                        selector requirements. The requirements are
+                                        ANDed.
+                                      items:
+                                        description: A label selector requirement
+                                          is a selector that contains values, a key,
+                                          and an operator that relates the key and
+                                          values.
+                                        properties:
+                                          key:
+                                            description: key is the label key that
+                                              the selector applies to.
+                                            type: string
+                                          operator:
+                                            description: operator represents a key's
+                                              relationship to a set of values. Valid
+                                              operators are In, NotIn, Exists and
+                                              DoesNotExist.
+                                            type: string
+                                          values:
+                                            description: values is an array of string
+                                              values. If the operator is In or NotIn,
+                                              the values array must be non-empty.
+                                              If the operator is Exists or DoesNotExist,
+                                              the values array must be empty. This
+                                              array is replaced during a strategic
+                                              merge patch.
+                                            items:
+                                              type: string
+                                            type: array
+                                        required:
+                                        - key
+                                        - operator
+                                        type: object
+                                      type: array
+                                    matchLabels:
+                                      additionalProperties:
+                                        type: string
+                                      description: matchLabels is a map of {key,value}
+                                        pairs. A single {key,value} in the matchLabels
+                                        map is equivalent to an element of matchExpressions,
+                                        whose key field is "key", the operator is
+                                        "In", and the values array contains only "value".
+                                        The requirements are ANDed.
+                                      type: object
+                                  type: object
+                                storageClassName:
+                                  description: 'Name of the StorageClass required
+                                    by the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1'
+                                  type: string
+                                volumeMode:
+                                  description: volumeMode defines what type of volume
+                                    is required by the claim. Value of Filesystem
+                                    is implied when not included in claim spec.
+                                  type: string
+                                volumeName:
+                                  description: VolumeName is the binding reference
+                                    to the PersistentVolume backing this claim.
+                                  type: string
+                              type: object
+                          required:
+                          - spec
+                          type: object
                       type: object
                     fc:
                       description: FC represents a Fibre Channel resource that is
@@ -19853,12 +24057,14 @@ spec:
                         and downward API
                       properties:
                         defaultMode:
-                          description: Mode bits to use on created files by default.
-                            Must be a value between 0 and 0777. Directories within
-                            the path are not affected by this setting. This might
-                            be in conflict with other options that affect the file
-                            mode, like fsGroup, and the result can be other mode bits
-                            set.
+                          description: Mode bits used to set permissions on created
+                            files by default. Must be an octal value between 0000
+                            and 0777 or a decimal value between 0 and 511. YAML accepts
+                            both octal and decimal values, JSON requires decimal values
+                            for mode bits. Directories within the path are not affected
+                            by this setting. This might be in conflict with other
+                            options that affect the file mode, like fsGroup, and the
+                            result can be other mode bits set.
                           format: int32
                           type: integer
                         sources:
@@ -19891,13 +24097,17 @@ spec:
                                           description: The key to project.
                                           type: string
                                         mode:
-                                          description: 'Optional: mode bits to use
-                                            on this file, must be a value between
-                                            0 and 0777. If not specified, the volume
-                                            defaultMode will be used. This might be
-                                            in conflict with other options that affect
-                                            the file mode, like fsGroup, and the result
-                                            can be other mode bits set.'
+                                          description: 'Optional: mode bits used to
+                                            set permissions on this file. Must be
+                                            an octal value between 0000 and 0777 or
+                                            a decimal value between 0 and 511. YAML
+                                            accepts both octal and decimal values,
+                                            JSON requires decimal values for mode
+                                            bits. If not specified, the volume defaultMode
+                                            will be used. This might be in conflict
+                                            with other options that affect the file
+                                            mode, like fsGroup, and the result can
+                                            be other mode bits set.'
                                           format: int32
                                           type: integer
                                         path:
@@ -19952,13 +24162,17 @@ spec:
                                           - fieldPath
                                           type: object
                                         mode:
-                                          description: 'Optional: mode bits to use
-                                            on this file, must be a value between
-                                            0 and 0777. If not specified, the volume
-                                            defaultMode will be used. This might be
-                                            in conflict with other options that affect
-                                            the file mode, like fsGroup, and the result
-                                            can be other mode bits set.'
+                                          description: 'Optional: mode bits used to
+                                            set permissions on this file, must be
+                                            an octal value between 0000 and 0777 or
+                                            a decimal value between 0 and 511. YAML
+                                            accepts both octal and decimal values,
+                                            JSON requires decimal values for mode
+                                            bits. If not specified, the volume defaultMode
+                                            will be used. This might be in conflict
+                                            with other options that affect the file
+                                            mode, like fsGroup, and the result can
+                                            be other mode bits set.'
                                           format: int32
                                           type: integer
                                         path:
@@ -20024,13 +24238,17 @@ spec:
                                           description: The key to project.
                                           type: string
                                         mode:
-                                          description: 'Optional: mode bits to use
-                                            on this file, must be a value between
-                                            0 and 0777. If not specified, the volume
-                                            defaultMode will be used. This might be
-                                            in conflict with other options that affect
-                                            the file mode, like fsGroup, and the result
-                                            can be other mode bits set.'
+                                          description: 'Optional: mode bits used to
+                                            set permissions on this file. Must be
+                                            an octal value between 0000 and 0777 or
+                                            a decimal value between 0 and 511. YAML
+                                            accepts both octal and decimal values,
+                                            JSON requires decimal values for mode
+                                            bits. If not specified, the volume defaultMode
+                                            will be used. This might be in conflict
+                                            with other options that affect the file
+                                            mode, like fsGroup, and the result can
+                                            be other mode bits set.'
                                           format: int32
                                           type: integer
                                         path:
@@ -20089,8 +24307,6 @@ spec:
                                 type: object
                             type: object
                           type: array
-                      required:
-                      - sources
                       type: object
                     quobyte:
                       description: Quobyte represents a Quobyte mount on the host
@@ -20241,12 +24457,15 @@ spec:
                         this volume. More info: https://kubernetes.io/docs/concepts/storage/volumes#secret'
                       properties:
                         defaultMode:
-                          description: 'Optional: mode bits to use on created files
-                            by default. Must be a value between 0 and 0777. Defaults
-                            to 0644. Directories within the path are not affected
-                            by this setting. This might be in conflict with other
-                            options that affect the file mode, like fsGroup, and the
-                            result can be other mode bits set.'
+                          description: 'Optional: mode bits used to set permissions
+                            on created files by default. Must be an octal value between
+                            0000 and 0777 or a decimal value between 0 and 511. YAML
+                            accepts both octal and decimal values, JSON requires decimal
+                            values for mode bits. Defaults to 0644. Directories within
+                            the path are not affected by this setting. This might
+                            be in conflict with other options that affect the file
+                            mode, like fsGroup, and the result can be other mode bits
+                            set.'
                           format: int32
                           type: integer
                         items:
@@ -20266,8 +24485,11 @@ spec:
                                 description: The key to project.
                                 type: string
                               mode:
-                                description: 'Optional: mode bits to use on this file,
-                                  must be a value between 0 and 0777. If not specified,
+                                description: 'Optional: mode bits used to set permissions
+                                  on this file. Must be an octal value between 0000
+                                  and 0777 or a decimal value between 0 and 511. YAML
+                                  accepts both octal and decimal values, JSON requires
+                                  decimal values for mode bits. If not specified,
                                   the volume defaultMode will be used. This might
                                   be in conflict with other options that affect the
                                   file mode, like fsGroup, and the result can be other
@@ -20422,8 +24644,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.0.6-ubuntu
-    helm.sh/chart: grafana-6.13.0
+    app.kubernetes.io/version: 8.3.1
+    helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -20442,7 +24664,7 @@ spec:
   requiredDropCapabilities:
   - ALL
   runAsUser:
-    rule: MustRunAsNonRoot
+    rule: RunAsAny
   seLinux:
     rule: RunAsAny
   supplementalGroups:
@@ -20463,11 +24685,13 @@ apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   labels:
+    app.kubernetes.io/component: metrics
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-3.1.1
+    app.kubernetes.io/version: 2.2.4
+    helm.sh/chart: kube-state-metrics-4.1.1
     heritage: metalk8s
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -20502,7 +24726,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-1.18.1
+    chart: prometheus-node-exporter-2.2.2
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -20549,8 +24773,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -20593,8 +24817,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -20637,8 +24861,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -20680,8 +24904,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.0.6-ubuntu
-    helm.sh/chart: grafana-6.13.0
+    app.kubernetes.io/version: 8.3.1
+    helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -20691,11 +24915,13 @@ imagePullSecrets: []
 kind: ServiceAccount
 metadata:
   labels:
+    app.kubernetes.io/component: metrics
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-3.1.1
+    app.kubernetes.io/version: 2.2.4
+    helm.sh/chart: kube-state-metrics-4.1.1
     heritage: metalk8s
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -20710,7 +24936,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-1.18.1
+    chart: prometheus-node-exporter-2.2.2
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus-node-exporter
@@ -20726,8 +24952,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -20744,8 +24970,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -20762,8 +24988,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -20782,8 +25008,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.0.6-ubuntu
-    helm.sh/chart: grafana-6.13.0
+    app.kubernetes.io/version: 8.3.1
+    helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -20811,8 +25037,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.0.6-ubuntu
-    helm.sh/chart: grafana-6.13.0
+    app.kubernetes.io/version: 8.3.1
+    helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana-config-dashboards
   namespace: metalk8s-monitoring
@@ -20853,8 +25079,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.0.6-ubuntu
-    helm.sh/chart: grafana-6.13.0
+    app.kubernetes.io/version: 8.3.1
+    helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -20879,8 +25105,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_datasource: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -21452,8 +25678,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -23090,7 +27316,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "Kubernetes / API server",
         "uid": "09ec8aa1e996d6ffcd6817bbaff4db1b",
         "version": 0
@@ -23104,8 +27330,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -24841,7 +29067,7 @@ data:
                     "name": "cluster",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info, cluster)",
+                    "query": "label_values(up{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\"}, cluster)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 0,
@@ -24883,7 +29109,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "Kubernetes / Networking / Cluster",
         "uid": "ff635a025bcfea7bc3dd4f508990a3e9",
         "version": 0
@@ -24897,8 +29123,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -25926,7 +30152,7 @@ data:
                     "name": "cluster",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info, cluster)",
+                    "query": "label_values(up{job=\"kube-controller-manager\"}, cluster)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -25949,7 +30175,7 @@ data:
                     "name": "instance",
                     "options": [
                     ],
-                    "query": "label_values(process_cpu_seconds_total{cluster=\"$cluster\", job=\"kube-controller-manager\"}, instance)",
+                    "query": "label_values(up{cluster=\"$cluster\", job=\"kube-controller-manager\"}, instance)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -25991,7 +30217,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "Kubernetes / Controller Manager",
         "uid": "72e0e05bef5099e5f049b05fdc429ed4",
         "version": 0
@@ -26005,8 +30231,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -27108,7 +31334,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "browser",
+        "timezone": "utc",
         "title": "etcd",
         "uid": "c2f4e12cdf69feb95caa41a5a1b423d9",
         "version": 215
@@ -27122,8 +31348,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -28655,8 +32881,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -28881,7 +33107,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(kube_pod_container_resource_limits{cluster=\"$cluster\", resource=\"cpu\"}) / sum(kube_node_status_allocatable{resource=\"cpu\",cluster=\"$cluster\"})",
+                                "expr": "sum(namespace_cpu:kube_pod_container_resource_limits:sum{cluster=\"$cluster\"}) / sum(kube_node_status_allocatable{resource=\"cpu\",cluster=\"$cluster\"})",
                                 "format": "time_series",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -29121,7 +33347,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(kube_pod_container_resource_limits{cluster=\"$cluster\", resource=\"memory\"}) / sum(kube_node_status_allocatable{resource=\"memory\",cluster=\"$cluster\"})",
+                                "expr": "sum(namespace_memory:kube_pod_container_resource_limits:sum{cluster=\"$cluster\"}) / sum(kube_node_status_allocatable{resource=\"memory\",cluster=\"$cluster\"})",
                                 "format": "time_series",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -29320,7 +33546,7 @@ data:
                                 "link": true,
                                 "linkTargetBlank": false,
                                 "linkTooltip": "Drill down to pods",
-                                "linkUrl": "./d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1",
+                                "linkUrl": "/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1",
                                 "pattern": "Value #A",
                                 "thresholds": [
                                 ],
@@ -29337,7 +33563,7 @@ data:
                                 "link": true,
                                 "linkTargetBlank": false,
                                 "linkTooltip": "Drill down to workloads",
-                                "linkUrl": "./d/a87fb0d919ec0ea5f6543124e16c42a5/k8s-resources-workloads-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1",
+                                "linkUrl": "/d/a87fb0d919ec0ea5f6543124e16c42a5/k8s-resources-workloads-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1",
                                 "pattern": "Value #B",
                                 "thresholds": [
                                 ],
@@ -29439,7 +33665,7 @@ data:
                                 "link": true,
                                 "linkTargetBlank": false,
                                 "linkTooltip": "Drill down to pods",
-                                "linkUrl": "./d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell",
+                                "linkUrl": "/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell",
                                 "pattern": "namespace",
                                 "thresholds": [
                                 ],
@@ -29498,7 +33724,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\"}) by (namespace) / sum(kube_pod_container_resource_requests{cluster=\"$cluster\", resource=\"cpu\"}) by (namespace)",
+                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\"}) by (namespace) / sum(namespace_cpu:kube_pod_container_resource_requests:sum{cluster=\"$cluster\"}) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -29507,7 +33733,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(kube_pod_container_resource_limits{cluster=\"$cluster\", resource=\"cpu\"}) by (namespace)",
+                                "expr": "sum(namespace_cpu:kube_pod_container_resource_limits:sum{cluster=\"$cluster\"}) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -29516,7 +33742,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\"}) by (namespace) / sum(kube_pod_container_resource_limits{cluster=\"$cluster\", resource=\"cpu\"}) by (namespace)",
+                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\"}) by (namespace) / sum(namespace_cpu:kube_pod_container_resource_limits:sum{cluster=\"$cluster\"}) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -29719,7 +33945,7 @@ data:
                                 "link": true,
                                 "linkTargetBlank": false,
                                 "linkTooltip": "Drill down to pods",
-                                "linkUrl": "./d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1",
+                                "linkUrl": "/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1",
                                 "pattern": "Value #A",
                                 "thresholds": [
                                 ],
@@ -29736,7 +33962,7 @@ data:
                                 "link": true,
                                 "linkTargetBlank": false,
                                 "linkTooltip": "Drill down to workloads",
-                                "linkUrl": "./d/a87fb0d919ec0ea5f6543124e16c42a5/k8s-resources-workloads-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1",
+                                "linkUrl": "/d/a87fb0d919ec0ea5f6543124e16c42a5/k8s-resources-workloads-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell_1",
                                 "pattern": "Value #B",
                                 "thresholds": [
                                 ],
@@ -29838,7 +34064,7 @@ data:
                                 "link": true,
                                 "linkTargetBlank": false,
                                 "linkTooltip": "Drill down to pods",
-                                "linkUrl": "./d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell",
+                                "linkUrl": "/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell",
                                 "pattern": "namespace",
                                 "thresholds": [
                                 ],
@@ -29888,7 +34114,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(kube_pod_container_resource_requests{cluster=\"$cluster\", resource=\"memory\"}) by (namespace)",
+                                "expr": "sum(namespace_memory:kube_pod_container_resource_requests:sum{cluster=\"$cluster\"}) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -29897,7 +34123,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_rss{cluster=\"$cluster\", container!=\"\"}) by (namespace) / sum(kube_pod_container_resource_requests{cluster=\"$cluster\", resource=\"memory\"}) by (namespace)",
+                                "expr": "sum(container_memory_rss{cluster=\"$cluster\", container!=\"\"}) by (namespace) / sum(namespace_memory:kube_pod_container_resource_requests:sum{cluster=\"$cluster\"}) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -29906,7 +34132,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(kube_pod_container_resource_limits{cluster=\"$cluster\", resource=\"memory\"}) by (namespace)",
+                                "expr": "sum(namespace_memory:kube_pod_container_resource_limits:sum{cluster=\"$cluster\"}) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -29915,7 +34141,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_rss{cluster=\"$cluster\", container!=\"\"}) by (namespace) / sum(kube_pod_container_resource_limits{cluster=\"$cluster\", resource=\"memory\"}) by (namespace)",
+                                "expr": "sum(container_memory_rss{cluster=\"$cluster\", container!=\"\"}) by (namespace) / sum(namespace_memory:kube_pod_container_resource_limits:sum{cluster=\"$cluster\"}) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -30128,7 +34354,7 @@ data:
                                 "link": true,
                                 "linkTargetBlank": false,
                                 "linkTooltip": "Drill down to pods",
-                                "linkUrl": "./d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell",
+                                "linkUrl": "/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell",
                                 "pattern": "namespace",
                                 "thresholds": [
                                 ],
@@ -30668,7 +34894,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -30749,7 +34975,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -30842,7 +35068,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -30923,7 +35149,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -31283,7 +35509,7 @@ data:
                                 "link": true,
                                 "linkTargetBlank": false,
                                 "linkTooltip": "Drill down to pods",
-                                "linkUrl": "./d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell",
+                                "linkUrl": "/d/85a562078cdf77779eaa1add43ccec1e/k8s-resources-namespace?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$__cell",
                                 "pattern": "namespace",
                                 "thresholds": [
                                 ],
@@ -31444,7 +35670,7 @@ data:
                     "name": "cluster",
                     "options": [
                     ],
-                    "query": "label_values(node_cpu_seconds_total, cluster)",
+                    "query": "label_values(up{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\"}, cluster)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -31486,7 +35712,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "Kubernetes / Compute Resources / Cluster",
         "uid": "efa86fd1d0c121a26444b636a3f509a8",
         "version": 0
@@ -31500,8 +35726,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -32127,7 +36353,7 @@ data:
                                 "link": true,
                                 "linkTargetBlank": false,
                                 "linkTooltip": "Drill down",
-                                "linkUrl": "./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell",
+                                "linkUrl": "/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell",
                                 "pattern": "pod",
                                 "thresholds": [
                                 ],
@@ -32159,7 +36385,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}) by (pod)",
+                                "expr": "sum(cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -32168,7 +36394,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\"}) by (pod) / sum(kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}) by (pod)",
+                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\"}) by (pod) / sum(cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -32177,7 +36403,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}) by (pod)",
+                                "expr": "sum(cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -32186,7 +36412,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\"}) by (pod) / sum(kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}) by (pod)",
+                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\"}) by (pod) / sum(cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -32563,7 +36789,7 @@ data:
                                 "link": true,
                                 "linkTargetBlank": false,
                                 "linkTooltip": "Drill down",
-                                "linkUrl": "./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell",
+                                "linkUrl": "/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell",
                                 "pattern": "pod",
                                 "thresholds": [
                                 ],
@@ -32595,7 +36821,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}) by (pod)",
+                                "expr": "sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -32604,7 +36830,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\", image!=\"\"}) by (pod) / sum(kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}) by (pod)",
+                                "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\", image!=\"\"}) by (pod) / sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -32613,7 +36839,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}) by (pod)",
+                                "expr": "sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -32622,7 +36848,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\", image!=\"\"}) by (pod) / sum(kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}) by (pod)",
+                                "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\", image!=\"\"}) by (pod) / sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -32862,7 +37088,7 @@ data:
                                 "link": true,
                                 "linkTargetBlank": false,
                                 "linkTooltip": "Drill down to pods",
-                                "linkUrl": "./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell",
+                                "linkUrl": "/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell",
                                 "pattern": "pod",
                                 "thresholds": [
                                 ],
@@ -33228,7 +37454,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -33309,7 +37535,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -33402,7 +37628,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -33483,7 +37709,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -33843,7 +38069,7 @@ data:
                                 "link": true,
                                 "linkTargetBlank": false,
                                 "linkTooltip": "Drill down to pods",
-                                "linkUrl": "./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell",
+                                "linkUrl": "/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell",
                                 "pattern": "pod",
                                 "thresholds": [
                                 ],
@@ -34071,7 +38297,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "Kubernetes / Compute Resources / Namespace (Pods)",
         "uid": "85a562078cdf77779eaa1add43ccec1e",
         "version": 0
@@ -34085,8 +38311,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -34374,7 +38600,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(kube_pod_container_resource_requests{cluster=\"$cluster\", node=~\"$node\", resource=\"cpu\"}) by (pod)",
+                                "expr": "sum(cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=\"$cluster\", node=~\"$node\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34383,7 +38609,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", node=~\"$node\"}) by (pod) / sum(kube_pod_container_resource_requests{cluster=\"$cluster\", node=~\"$node\", resource=\"cpu\"}) by (pod)",
+                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", node=~\"$node\"}) by (pod) / sum(cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=\"$cluster\", node=~\"$node\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34392,7 +38618,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(kube_pod_container_resource_limits{cluster=\"$cluster\", node=~\"$node\", resource=\"cpu\"}) by (pod)",
+                                "expr": "sum(cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{cluster=\"$cluster\", node=~\"$node\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34401,7 +38627,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", node=~\"$node\"}) by (pod) / sum(kube_pod_container_resource_limits{cluster=\"$cluster\", node=~\"$node\", resource=\"cpu\"}) by (pod)",
+                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", node=~\"$node\"}) by (pod) / sum(cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{cluster=\"$cluster\", node=~\"$node\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34772,7 +38998,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(kube_pod_container_resource_requests{cluster=\"$cluster\", node=~\"$node\", resource=\"memory\"}) by (pod)",
+                                "expr": "sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=\"$cluster\", node=~\"$node\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34781,7 +39007,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(node_namespace_pod_container:container_memory_working_set_bytes{cluster=\"$cluster\", node=~\"$node\",container!=\"\"}) by (pod) / sum(kube_pod_container_resource_requests{cluster=\"$cluster\", node=~\"$node\", resource=\"memory\"}) by (pod)",
+                                "expr": "sum(node_namespace_pod_container:container_memory_working_set_bytes{cluster=\"$cluster\", node=~\"$node\",container!=\"\"}) by (pod) / sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=\"$cluster\", node=~\"$node\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34790,7 +39016,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(kube_pod_container_resource_limits{cluster=\"$cluster\", node=~\"$node\", resource=\"memory\"}) by (pod)",
+                                "expr": "sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=\"$cluster\", node=~\"$node\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34799,7 +39025,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(node_namespace_pod_container:container_memory_working_set_bytes{cluster=\"$cluster\", node=~\"$node\",container!=\"\"}) by (pod) / sum(kube_pod_container_resource_limits{cluster=\"$cluster\", node=~\"$node\", resource=\"memory\"}) by (pod)",
+                                "expr": "sum(node_namespace_pod_container:container_memory_working_set_bytes{cluster=\"$cluster\", node=~\"$node\",container!=\"\"}) by (pod) / sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=\"$cluster\", node=~\"$node\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34986,7 +39212,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "Kubernetes / Compute Resources / Node (Pods)",
         "uid": "200ac8fdbfbb74b39aff88118e4d1c2c",
         "version": 0
@@ -35000,8 +39226,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -35424,7 +39650,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"cpu\"}) by (container)",
+                                "expr": "sum(cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}) by (container)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -35433,7 +39659,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}) by (container) / sum(kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"cpu\"}) by (container)",
+                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}) by (container) / sum(cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}) by (container)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -35442,7 +39668,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"cpu\"}) by (container)",
+                                "expr": "sum(cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}) by (container)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -35451,7 +39677,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}) by (container) / sum(kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"cpu\"}) by (container)",
+                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}) by (container) / sum(cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}) by (container)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -35858,7 +40084,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"memory\"}) by (container)",
+                                "expr": "sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}) by (container)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -35867,7 +40093,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", image!=\"\"}) by (container) / sum(kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"memory\"}) by (container)",
+                                "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", image!=\"\"}) by (container) / sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}) by (container)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -35876,7 +40102,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"memory\"}) by (container)",
+                                "expr": "sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}) by (container)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -35885,7 +40111,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", container!=\"\", image!=\"\"}) by (container) / sum(kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"memory\"}) by (container)",
+                                "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", container!=\"\", image!=\"\"}) by (container) / sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}) by (container)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -36213,7 +40439,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -36295,7 +40521,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -36389,7 +40615,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -36471,7 +40697,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -37275,7 +41501,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "Kubernetes / Compute Resources / Pod",
         "uid": "6581e46e4e5c7ba40a07646395ef7b23",
         "version": 0
@@ -37289,8 +41515,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -37546,7 +41772,7 @@ data:
                                 "link": true,
                                 "linkTargetBlank": false,
                                 "linkTooltip": "Drill down",
-                                "linkUrl": "./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell",
+                                "linkUrl": "/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell",
                                 "pattern": "pod",
                                 "thresholds": [
                                 ],
@@ -37893,7 +42119,7 @@ data:
                                 "link": true,
                                 "linkTargetBlank": false,
                                 "linkTooltip": "Drill down",
-                                "linkUrl": "./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell",
+                                "linkUrl": "/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell",
                                 "pattern": "pod",
                                 "thresholds": [
                                 ],
@@ -38165,7 +42391,7 @@ data:
                                 "link": true,
                                 "linkTargetBlank": false,
                                 "linkTooltip": "Drill down",
-                                "linkUrl": "./d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell",
+                                "linkUrl": "/d/6581e46e4e5c7ba40a07646395ef7b23/k8s-resources-pod?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-pod=$__cell",
                                 "pattern": "pod",
                                 "thresholds": [
                                 ],
@@ -38705,7 +42931,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -38786,7 +43012,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -38879,7 +43105,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -38960,7 +43186,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -39139,7 +43365,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "Kubernetes / Compute Resources / Workload",
         "uid": "a164a7f0339f99e89cea5cb47e9be617",
         "version": 0
@@ -39153,8 +43379,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -39465,7 +43691,7 @@ data:
                                 "link": true,
                                 "linkTargetBlank": false,
                                 "linkTooltip": "Drill down",
-                                "linkUrl": "./d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-workload=$__cell&var-type=$__cell_2",
+                                "linkUrl": "/d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-workload=$__cell&var-type=$__cell_2",
                                 "pattern": "workload",
                                 "thresholds": [
                                 ],
@@ -39893,7 +44119,7 @@ data:
                                 "link": true,
                                 "linkTargetBlank": false,
                                 "linkTooltip": "Drill down",
-                                "linkUrl": "./d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-workload=$__cell&var-type=$__cell_2",
+                                "linkUrl": "/d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-workload=$__cell&var-type=$__cell_2",
                                 "pattern": "workload",
                                 "thresholds": [
                                 ],
@@ -40191,7 +44417,7 @@ data:
                                 "link": true,
                                 "linkTargetBlank": false,
                                 "linkTooltip": "Drill down to pods",
-                                "linkUrl": "./d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-workload=$__cell&var-type=$type",
+                                "linkUrl": "/d/a164a7f0339f99e89cea5cb47e9be617/k8s-resources-workload?var-datasource=$datasource&var-cluster=$cluster&var-namespace=$namespace&var-workload=$__cell&var-type=$type",
                                 "pattern": "workload",
                                 "thresholds": [
                                 ],
@@ -40748,7 +44974,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -40829,7 +45055,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -40922,7 +45148,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -41003,7 +45229,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "Bps",
+                                "format": "pps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -41162,7 +45388,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "Kubernetes / Compute Resources / Namespace (Workloads)",
         "uid": "a87fb0d919ec0ea5f6543124e16c42a5",
         "version": 0
@@ -41176,8 +45402,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -41241,7 +45467,8 @@ data:
                         ],
                         "fields": "",
                         "values": false
-                    }
+                    },
+                    "textMode": "auto"
                 },
                 "pluginVersion": "7",
                 "targets": [
@@ -41293,7 +45520,8 @@ data:
                         ],
                         "fields": "",
                         "values": false
-                    }
+                    },
+                    "textMode": "auto"
                 },
                 "pluginVersion": "7",
                 "targets": [
@@ -41345,7 +45573,8 @@ data:
                         ],
                         "fields": "",
                         "values": false
-                    }
+                    },
+                    "textMode": "auto"
                 },
                 "pluginVersion": "7",
                 "targets": [
@@ -41397,7 +45626,8 @@ data:
                         ],
                         "fields": "",
                         "values": false
-                    }
+                    },
+                    "textMode": "auto"
                 },
                 "pluginVersion": "7",
                 "targets": [
@@ -41449,7 +45679,8 @@ data:
                         ],
                         "fields": "",
                         "values": false
-                    }
+                    },
+                    "textMode": "auto"
                 },
                 "pluginVersion": "7",
                 "targets": [
@@ -41501,7 +45732,8 @@ data:
                         ],
                         "fields": "",
                         "values": false
-                    }
+                    },
+                    "textMode": "auto"
                 },
                 "pluginVersion": "7",
                 "targets": [
@@ -43217,7 +47449,7 @@ data:
                     "name": "cluster",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info, cluster)",
+                    "query": "label_values(up{job=\"kubelet\", metrics_path=\"/metrics\"}, cluster)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -43282,7 +47514,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "Kubernetes / Kubelet",
         "uid": "3138fa155d5915769fbded898ac09fd9",
         "version": 0
@@ -43296,8 +47528,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44527,7 +48759,7 @@ data:
                     "name": "cluster",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info, cluster)",
+                    "query": "label_values(up{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\"}, cluster)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 0,
@@ -44677,7 +48909,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "Kubernetes / Networking / Namespace (Pods)",
         "uid": "8b7a8b326d7a6f1f04244066368c67af",
         "version": 0
@@ -44691,8 +48923,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -46148,7 +50380,7 @@ data:
                     "name": "cluster",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info, cluster)",
+                    "query": "label_values(up{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\"}, cluster)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 0,
@@ -46328,7 +50560,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "Kubernetes / Networking / Namespace (Workload)",
         "uid": "bbb2a765a623ae38130206c7d94a160f",
         "version": 0
@@ -46342,8 +50574,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -46355,19 +50587,22 @@ apiVersion: v1
 data:
   node-cluster-rsrc-use.json: |-
     {
+        "__inputs": [],
+        "__requires": [],
         "annotations": {
             "list": []
         },
-        "editable": true,
+        "editable": false,
         "gnetId": null,
-        "graphTooltip": 0,
+        "graphTooltip": 1,
         "hideControls": false,
+        "id": null,
         "links": [],
-        "refresh": "10s",
+        "refresh": "30s",
         "rows": [
             {
                 "collapse": false,
-                "height": "250px",
+                "collapsed": false,
                 "panels": [
                     {
                         "aliasColors": {},
@@ -46376,24 +50611,30 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 10,
-                        "id": 1,
+                        "fillGradient": 0,
+                        "gridPos": {},
+                        "id": 2,
                         "legend": {
+                            "alignAsTable": false,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "show": true,
+                            "rightSide": false,
+                            "show": false,
+                            "sideWidth": null,
                             "total": false,
                             "values": false
                         },
                         "lines": true,
-                        "linewidth": 0,
+                        "linewidth": 1,
                         "links": [],
-                        "nullPointMode": "null as zero",
+                        "nullPointMode": "null",
                         "percentage": false,
                         "pointradius": 5,
                         "points": false,
                         "renderer": "flot",
+                        "repeat": null,
                         "seriesOverrides": [],
                         "spaceLength": 10,
                         "span": 6,
@@ -46401,12 +50642,11 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(\n  instance:node_cpu_utilisation:rate5m{job=\"node-exporter\"}\n*\n  instance:node_num_cpu:sum{job=\"node-exporter\"}\n)\n/ scalar(sum(instance:node_num_cpu:sum{job=\"node-exporter\"}))\n",
+                                "expr": "((\n  instance:node_cpu_utilisation:rate5m{job=\"node-exporter\", cluster=\"$cluster\"}\n  *\n  instance:node_num_cpu:sum{job=\"node-exporter\", cluster=\"$cluster\"}\n) != 0 )\n/ scalar(sum(instance:node_num_cpu:sum{job=\"node-exporter\", cluster=\"$cluster\"}))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
-                                "legendFormat": "{{instance}}",
-                                "legendLink": "/dashboard/file/node-rsrc-use.json",
-                                "step": 10
+                                "legendFormat": "{{ instance }}",
+                                "refId": "A"
                             }
                         ],
                         "thresholds": [],
@@ -46414,8 +50654,8 @@ data:
                         "timeShift": null,
                         "title": "CPU Utilisation",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -46431,17 +50671,17 @@ data:
                                 "format": "percentunit",
                                 "label": null,
                                 "logBase": 1,
-                                "max": 1,
-                                "min": 0,
+                                "max": null,
+                                "min": null,
                                 "show": true
                             },
                             {
-                                "format": "short",
+                                "format": "percentunit",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
                                 "min": null,
-                                "show": false
+                                "show": true
                             }
                         ]
                     },
@@ -46452,24 +50692,30 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 10,
-                        "id": 2,
+                        "fillGradient": 0,
+                        "gridPos": {},
+                        "id": 3,
                         "legend": {
+                            "alignAsTable": false,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "show": true,
+                            "rightSide": false,
+                            "show": false,
+                            "sideWidth": null,
                             "total": false,
                             "values": false
                         },
                         "lines": true,
-                        "linewidth": 0,
+                        "linewidth": 1,
                         "links": [],
-                        "nullPointMode": "null as zero",
+                        "nullPointMode": "null",
                         "percentage": false,
                         "pointradius": 5,
                         "points": false,
                         "renderer": "flot",
+                        "repeat": null,
                         "seriesOverrides": [],
                         "spaceLength": 10,
                         "span": 6,
@@ -46477,21 +50723,20 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "instance:node_load1_per_cpu:ratio{job=\"node-exporter\"}\n/ scalar(count(instance:node_load1_per_cpu:ratio{job=\"node-exporter\"}))\n",
+                                "expr": "(\n  instance:node_load1_per_cpu:ratio{job=\"node-exporter\", cluster=\"$cluster\"}\n  / scalar(count(instance:node_load1_per_cpu:ratio{job=\"node-exporter\", cluster=\"$cluster\"}))\n)  != 0\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}}",
-                                "legendLink": "/dashboard/file/node-rsrc-use.json",
-                                "step": 10
+                                "refId": "A"
                             }
                         ],
                         "thresholds": [],
                         "timeFrom": null,
                         "timeShift": null,
-                        "title": "CPU Saturation (load1 per CPU)",
+                        "title": "CPU Saturation (Load1 per CPU)",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -46507,17 +50752,17 @@ data:
                                 "format": "percentunit",
                                 "label": null,
                                 "logBase": 1,
-                                "max": 1,
-                                "min": 0,
+                                "max": null,
+                                "min": null,
                                 "show": true
                             },
                             {
-                                "format": "short",
+                                "format": "percentunit",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
                                 "min": null,
-                                "show": false
+                                "show": true
                             }
                         ]
                     }
@@ -46527,11 +50772,12 @@ data:
                 "repeatRowId": null,
                 "showTitle": true,
                 "title": "CPU",
-                "titleSize": "h6"
+                "titleSize": "h6",
+                "type": "row"
             },
             {
                 "collapse": false,
-                "height": "250px",
+                "collapsed": false,
                 "panels": [
                     {
                         "aliasColors": {},
@@ -46540,24 +50786,30 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 10,
-                        "id": 3,
+                        "fillGradient": 0,
+                        "gridPos": {},
+                        "id": 4,
                         "legend": {
+                            "alignAsTable": false,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "show": true,
+                            "rightSide": false,
+                            "show": false,
+                            "sideWidth": null,
                             "total": false,
                             "values": false
                         },
                         "lines": true,
-                        "linewidth": 0,
+                        "linewidth": 1,
                         "links": [],
-                        "nullPointMode": "null as zero",
+                        "nullPointMode": "null",
                         "percentage": false,
                         "pointradius": 5,
                         "points": false,
                         "renderer": "flot",
+                        "repeat": null,
                         "seriesOverrides": [],
                         "spaceLength": 10,
                         "span": 6,
@@ -46565,12 +50817,11 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "instance:node_memory_utilisation:ratio{job=\"node-exporter\"}\n/ scalar(count(instance:node_memory_utilisation:ratio{job=\"node-exporter\"}))\n",
+                                "expr": "(\n  instance:node_memory_utilisation:ratio{job=\"node-exporter\", cluster=\"$cluster\"}\n  / scalar(count(instance:node_memory_utilisation:ratio{job=\"node-exporter\", cluster=\"$cluster\"}))\n) != 0\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}}",
-                                "legendLink": "/dashboard/file/node-rsrc-use.json",
-                                "step": 10
+                                "refId": "A"
                             }
                         ],
                         "thresholds": [],
@@ -46578,8 +50829,8 @@ data:
                         "timeShift": null,
                         "title": "Memory Utilisation",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -46595,17 +50846,17 @@ data:
                                 "format": "percentunit",
                                 "label": null,
                                 "logBase": 1,
-                                "max": 1,
-                                "min": 0,
+                                "max": null,
+                                "min": null,
                                 "show": true
                             },
                             {
-                                "format": "short",
+                                "format": "percentunit",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
                                 "min": null,
-                                "show": false
+                                "show": true
                             }
                         ]
                     },
@@ -46616,24 +50867,30 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 10,
-                        "id": 4,
+                        "fillGradient": 0,
+                        "gridPos": {},
+                        "id": 5,
                         "legend": {
+                            "alignAsTable": false,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "show": true,
+                            "rightSide": false,
+                            "show": false,
+                            "sideWidth": null,
                             "total": false,
                             "values": false
                         },
                         "lines": true,
-                        "linewidth": 0,
+                        "linewidth": 1,
                         "links": [],
-                        "nullPointMode": "null as zero",
+                        "nullPointMode": "null",
                         "percentage": false,
                         "pointradius": 5,
                         "points": false,
                         "renderer": "flot",
+                        "repeat": null,
                         "seriesOverrides": [],
                         "spaceLength": 10,
                         "span": 6,
@@ -46641,12 +50898,11 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "instance:node_vmstat_pgmajfault:rate5m{job=\"node-exporter\"}",
+                                "expr": "instance:node_vmstat_pgmajfault:rate5m{job=\"node-exporter\", cluster=\"$cluster\"}",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}}",
-                                "legendLink": "/dashboard/file/node-rsrc-use.json",
-                                "step": 10
+                                "refId": "A"
                             }
                         ],
                         "thresholds": [],
@@ -46654,8 +50910,8 @@ data:
                         "timeShift": null,
                         "title": "Memory Saturation (Major Page Faults)",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -46668,20 +50924,20 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "rps",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": 0,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
+                                "format": "rds",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
                                 "min": null,
-                                "show": false
+                                "show": true
+                            },
+                            {
+                                "format": "rds",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
                             }
                         ]
                     }
@@ -46691,11 +50947,12 @@ data:
                 "repeatRowId": null,
                 "showTitle": true,
                 "title": "Memory",
-                "titleSize": "h6"
+                "titleSize": "h6",
+                "type": "row"
             },
             {
                 "collapse": false,
-                "height": "250px",
+                "collapsed": false,
                 "panels": [
                     {
                         "aliasColors": {},
@@ -46704,31 +50961,37 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 10,
-                        "id": 5,
+                        "fillGradient": 0,
+                        "gridPos": {},
+                        "id": 6,
                         "legend": {
+                            "alignAsTable": false,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "show": true,
+                            "rightSide": false,
+                            "show": false,
+                            "sideWidth": null,
                             "total": false,
                             "values": false
                         },
                         "lines": true,
-                        "linewidth": 0,
+                        "linewidth": 1,
                         "links": [],
-                        "nullPointMode": "null as zero",
+                        "nullPointMode": "null",
                         "percentage": false,
                         "pointradius": 5,
                         "points": false,
                         "renderer": "flot",
+                        "repeat": null,
                         "seriesOverrides": [
                             {
-                                "alias": "/ Receive/",
+                                "alias": "/Receive/",
                                 "stack": "A"
                             },
                             {
-                                "alias": "/ Transmit/",
+                                "alias": "/Transmit/",
                                 "stack": "B",
                                 "transform": "negative-Y"
                             }
@@ -46739,29 +51002,27 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "instance:node_network_receive_bytes_excluding_lo:rate5m{job=\"node-exporter\"}",
+                                "expr": "instance:node_network_receive_bytes_excluding_lo:rate5m{job=\"node-exporter\", cluster=\"$cluster\"} != 0",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}} Receive",
-                                "legendLink": "/dashboard/file/node-rsrc-use.json",
-                                "step": 10
+                                "refId": "A"
                             },
                             {
-                                "expr": "instance:node_network_transmit_bytes_excluding_lo:rate5m{job=\"node-exporter\"}",
+                                "expr": "instance:node_network_transmit_bytes_excluding_lo:rate5m{job=\"node-exporter\", cluster=\"$cluster\"} != 0",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}} Transmit",
-                                "legendLink": "/dashboard/file/node-rsrc-use.json",
-                                "step": 10
+                                "refId": "B"
                             }
                         ],
                         "thresholds": [],
                         "timeFrom": null,
                         "timeShift": null,
-                        "title": "Net Utilisation (Bytes Receive/Transmit)",
+                        "title": "Network Utilisation (Bytes Receive/Transmit)",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -46782,12 +51043,12 @@ data:
                                 "show": true
                             },
                             {
-                                "format": "short",
+                                "format": "Bps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
                                 "min": null,
-                                "show": false
+                                "show": true
                             }
                         ]
                     },
@@ -46798,24 +51059,30 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 10,
-                        "id": 6,
+                        "fillGradient": 0,
+                        "gridPos": {},
+                        "id": 7,
                         "legend": {
+                            "alignAsTable": false,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "show": true,
+                            "rightSide": false,
+                            "show": false,
+                            "sideWidth": null,
                             "total": false,
                             "values": false
                         },
                         "lines": true,
-                        "linewidth": 0,
+                        "linewidth": 1,
                         "links": [],
-                        "nullPointMode": "null as zero",
+                        "nullPointMode": "null",
                         "percentage": false,
                         "pointradius": 5,
                         "points": false,
                         "renderer": "flot",
+                        "repeat": null,
                         "seriesOverrides": [
                             {
                                 "alias": "/ Receive/",
@@ -46833,29 +51100,27 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "instance:node_network_receive_drop_excluding_lo:rate5m{job=\"node-exporter\"}",
+                                "expr": "instance:node_network_receive_drop_excluding_lo:rate5m{job=\"node-exporter\", cluster=\"$cluster\"} != 0",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}} Receive",
-                                "legendLink": "/dashboard/file/node-rsrc-use.json",
-                                "step": 10
+                                "refId": "A"
                             },
                             {
-                                "expr": "instance:node_network_transmit_drop_excluding_lo:rate5m{job=\"node-exporter\"}",
+                                "expr": "instance:node_network_transmit_drop_excluding_lo:rate5m{job=\"node-exporter\", cluster=\"$cluster\"} != 0",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}} Transmit",
-                                "legendLink": "/dashboard/file/node-rsrc-use.json",
-                                "step": 10
+                                "refId": "B"
                             }
                         ],
                         "thresholds": [],
                         "timeFrom": null,
                         "timeShift": null,
-                        "title": "Net Saturation (Drops Receive/Transmit)",
+                        "title": "Network Saturation (Drops Receive/Transmit)",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -46868,7 +51133,7 @@ data:
                         },
                         "yaxes": [
                             {
-                                "format": "rps",
+                                "format": "Bps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
@@ -46876,12 +51141,12 @@ data:
                                 "show": true
                             },
                             {
-                                "format": "short",
+                                "format": "Bps",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
                                 "min": null,
-                                "show": false
+                                "show": true
                             }
                         ]
                     }
@@ -46891,11 +51156,12 @@ data:
                 "repeatRowId": null,
                 "showTitle": true,
                 "title": "Network",
-                "titleSize": "h6"
+                "titleSize": "h6",
+                "type": "row"
             },
             {
                 "collapse": false,
-                "height": "250px",
+                "collapsed": false,
                 "panels": [
                     {
                         "aliasColors": {},
@@ -46904,24 +51170,30 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 10,
-                        "id": 7,
+                        "fillGradient": 0,
+                        "gridPos": {},
+                        "id": 8,
                         "legend": {
+                            "alignAsTable": false,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "show": true,
+                            "rightSide": false,
+                            "show": false,
+                            "sideWidth": null,
                             "total": false,
                             "values": false
                         },
                         "lines": true,
-                        "linewidth": 0,
+                        "linewidth": 1,
                         "links": [],
-                        "nullPointMode": "null as zero",
+                        "nullPointMode": "null",
                         "percentage": false,
                         "pointradius": 5,
                         "points": false,
                         "renderer": "flot",
+                        "repeat": null,
                         "seriesOverrides": [],
                         "spaceLength": 10,
                         "span": 6,
@@ -46929,12 +51201,11 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "instance_device:node_disk_io_time_seconds:rate5m{job=\"node-exporter\"}\n/ scalar(count(instance_device:node_disk_io_time_seconds:rate5m{job=\"node-exporter\"}))\n",
+                                "expr": "(\n  instance_device:node_disk_io_time_seconds:rate5m{job=\"node-exporter\", cluster=\"$cluster\"}\n  / scalar(count(instance_device:node_disk_io_time_seconds:rate5m{job=\"node-exporter\", cluster=\"$cluster\"}))\n) != 0\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}} {{device}}",
-                                "legendLink": "/dashboard/file/node-rsrc-use.json",
-                                "step": 10
+                                "refId": "A"
                             }
                         ],
                         "thresholds": [],
@@ -46942,8 +51213,8 @@ data:
                         "timeShift": null,
                         "title": "Disk IO Utilisation",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -46959,17 +51230,17 @@ data:
                                 "format": "percentunit",
                                 "label": null,
                                 "logBase": 1,
-                                "max": 1,
-                                "min": 0,
+                                "max": null,
+                                "min": null,
                                 "show": true
                             },
                             {
-                                "format": "short",
+                                "format": "percentunit",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
                                 "min": null,
-                                "show": false
+                                "show": true
                             }
                         ]
                     },
@@ -46980,24 +51251,30 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 10,
-                        "id": 8,
+                        "fillGradient": 0,
+                        "gridPos": {},
+                        "id": 9,
                         "legend": {
+                            "alignAsTable": false,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "show": true,
+                            "rightSide": false,
+                            "show": false,
+                            "sideWidth": null,
                             "total": false,
                             "values": false
                         },
                         "lines": true,
-                        "linewidth": 0,
+                        "linewidth": 1,
                         "links": [],
-                        "nullPointMode": "null as zero",
+                        "nullPointMode": "null",
                         "percentage": false,
                         "pointradius": 5,
                         "points": false,
                         "renderer": "flot",
+                        "repeat": null,
                         "seriesOverrides": [],
                         "spaceLength": 10,
                         "span": 6,
@@ -47005,12 +51282,11 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "instance_device:node_disk_io_time_weighted_seconds:rate5m{job=\"node-exporter\"}\n/ scalar(count(instance_device:node_disk_io_time_weighted_seconds:rate5m{job=\"node-exporter\"}))\n",
+                                "expr": "(\n  instance_device:node_disk_io_time_weighted_seconds:rate5m{job=\"node-exporter\", cluster=\"$cluster\"}\n  / scalar(count(instance_device:node_disk_io_time_weighted_seconds:rate5m{job=\"node-exporter\", cluster=\"$cluster\"}))\n) != 0\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}} {{device}}",
-                                "legendLink": "/dashboard/file/node-rsrc-use.json",
-                                "step": 10
+                                "refId": "A"
                             }
                         ],
                         "thresholds": [],
@@ -47018,8 +51294,8 @@ data:
                         "timeShift": null,
                         "title": "Disk IO Saturation",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -47035,17 +51311,17 @@ data:
                                 "format": "percentunit",
                                 "label": null,
                                 "logBase": 1,
-                                "max": 1,
-                                "min": 0,
+                                "max": null,
+                                "min": null,
                                 "show": true
                             },
                             {
-                                "format": "short",
+                                "format": "percentunit",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
                                 "min": null,
-                                "show": false
+                                "show": true
                             }
                         ]
                     }
@@ -47055,11 +51331,12 @@ data:
                 "repeatRowId": null,
                 "showTitle": true,
                 "title": "Disk IO",
-                "titleSize": "h6"
+                "titleSize": "h6",
+                "type": "row"
             },
             {
                 "collapse": false,
-                "height": "250px",
+                "collapsed": false,
                 "panels": [
                     {
                         "aliasColors": {},
@@ -47068,24 +51345,30 @@ data:
                         "dashes": false,
                         "datasource": "$datasource",
                         "fill": 10,
-                        "id": 9,
+                        "fillGradient": 0,
+                        "gridPos": {},
+                        "id": 10,
                         "legend": {
+                            "alignAsTable": false,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "show": true,
+                            "rightSide": false,
+                            "show": false,
+                            "sideWidth": null,
                             "total": false,
                             "values": false
                         },
                         "lines": true,
-                        "linewidth": 0,
+                        "linewidth": 1,
                         "links": [],
-                        "nullPointMode": "null as zero",
+                        "nullPointMode": "null",
                         "percentage": false,
                         "pointradius": 5,
                         "points": false,
                         "renderer": "flot",
+                        "repeat": null,
                         "seriesOverrides": [],
                         "spaceLength": 10,
                         "span": 12,
@@ -47093,12 +51376,11 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum without (device) (\n  max without (fstype, mountpoint) (\n    node_filesystem_size_bytes{job=\"node-exporter\", fstype!=\"\"} - node_filesystem_avail_bytes{job=\"node-exporter\", fstype!=\"\"}\n  )\n) \n/ scalar(sum(max without (fstype, mountpoint) (node_filesystem_size_bytes{job=\"node-exporter\", fstype!=\"\"})))\n",
+                                "expr": "sum without (device) (\n  max without (fstype, mountpoint) ((\n    node_filesystem_size_bytes{job=\"node-exporter\", fstype!=\"\", cluster=\"$cluster\"}\n    -\n    node_filesystem_avail_bytes{job=\"node-exporter\", fstype!=\"\", cluster=\"$cluster\"}\n  ) != 0)\n)\n/ scalar(sum(max without (fstype, mountpoint) (node_filesystem_size_bytes{job=\"node-exporter\", fstype!=\"\", cluster=\"$cluster\"})))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}}",
-                                "legendLink": "/dashboard/file/node-rsrc-use.json",
-                                "step": 10
+                                "refId": "A"
                             }
                         ],
                         "thresholds": [],
@@ -47106,8 +51388,8 @@ data:
                         "timeShift": null,
                         "title": "Disk Space Utilisation",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -47123,17 +51405,17 @@ data:
                                 "format": "percentunit",
                                 "label": null,
                                 "logBase": 1,
-                                "max": 1,
-                                "min": 0,
+                                "max": null,
+                                "min": null,
                                 "show": true
                             },
                             {
-                                "format": "short",
+                                "format": "percentunit",
                                 "label": null,
                                 "logBase": 1,
                                 "max": null,
                                 "min": null,
-                                "show": false
+                                "show": true
                             }
                         ]
                     }
@@ -47143,886 +51425,21 @@ data:
                 "repeatRowId": null,
                 "showTitle": true,
                 "title": "Disk Space",
-                "titleSize": "h6"
+                "titleSize": "h6",
+                "type": "row"
             }
         ],
         "schemaVersion": 14,
         "style": "dark",
-        "tags": [],
-        "templating": {
-            "list": [
-                {
-                    "current": {
-                        "text": "default",
-                        "value": "default"
-                    },
-                    "hide": 0,
-                    "label": null,
-                    "name": "datasource",
-                    "options": [],
-                    "query": "prometheus",
-                    "refresh": 1,
-                    "regex": "",
-                    "type": "datasource"
-                }
-            ]
-        },
-        "time": {
-            "from": "now-1h",
-            "to": "now"
-        },
-        "timepicker": {
-            "refresh_intervals": [
-                "5s",
-                "10s",
-                "30s",
-                "1m",
-                "5m",
-                "15m",
-                "30m",
-                "1h",
-                "2h",
-                "1d"
-            ],
-            "time_options": [
-                "5m",
-                "15m",
-                "1h",
-                "6h",
-                "12h",
-                "24h",
-                "2d",
-                "7d",
-                "30d"
-            ]
-        },
-        "timezone": "utc",
-        "title": "USE Method / Cluster",
-        "uid": "3e97d1d02672cdd0861f4c97c64f89b2",
-        "version": 0
-    }
-kind: ConfigMap
-metadata:
-  annotations: {}
-  labels:
-    app: prometheus-operator-grafana
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-operator-grafana
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
-    grafana_dashboard: '1'
-    heritage: metalk8s
-    metalk8s.scality.com/monitor: ''
-    release: prometheus-operator
-  name: prometheus-operator-node-cluster-rsrc-use
-  namespace: metalk8s-monitoring
----
-apiVersion: v1
-data:
-  node-rsrc-use.json: |-
-    {
-        "annotations": {
-            "list": []
-        },
-        "editable": true,
-        "gnetId": null,
-        "graphTooltip": 0,
-        "hideControls": false,
-        "links": [],
-        "refresh": "10s",
-        "rows": [
-            {
-                "collapse": false,
-                "height": "250px",
-                "panels": [
-                    {
-                        "aliasColors": {},
-                        "bars": false,
-                        "dashLength": 10,
-                        "dashes": false,
-                        "datasource": "$datasource",
-                        "fill": 1,
-                        "id": 1,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": false,
-                            "total": false,
-                            "values": false
-                        },
-                        "lines": true,
-                        "linewidth": 1,
-                        "links": [],
-                        "nullPointMode": "null as zero",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "spaceLength": 10,
-                        "span": 6,
-                        "stack": false,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "instance:node_cpu_utilisation:rate5m{job=\"node-exporter\", instance=\"$instance\"}",
-                                "format": "time_series",
-                                "intervalFactor": 2,
-                                "legendFormat": "Utilisation",
-                                "legendLink": null,
-                                "step": 10
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "CPU Utilisation",
-                        "tooltip": {
-                            "shared": false,
-                            "sort": 0,
-                            "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "buckets": null,
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "percentunit",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": 0,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": false
-                            }
-                        ]
-                    },
-                    {
-                        "aliasColors": {},
-                        "bars": false,
-                        "dashLength": 10,
-                        "dashes": false,
-                        "datasource": "$datasource",
-                        "fill": 1,
-                        "id": 2,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": false,
-                            "total": false,
-                            "values": false
-                        },
-                        "lines": true,
-                        "linewidth": 1,
-                        "links": [],
-                        "nullPointMode": "null as zero",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "spaceLength": 10,
-                        "span": 6,
-                        "stack": false,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "instance:node_load1_per_cpu:ratio{job=\"node-exporter\", instance=\"$instance\"}",
-                                "format": "time_series",
-                                "intervalFactor": 2,
-                                "legendFormat": "Saturation",
-                                "legendLink": null,
-                                "step": 10
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "CPU Saturation (Load1 per CPU)",
-                        "tooltip": {
-                            "shared": false,
-                            "sort": 0,
-                            "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "buckets": null,
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "percentunit",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": 0,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": false
-                            }
-                        ]
-                    }
-                ],
-                "repeat": null,
-                "repeatIteration": null,
-                "repeatRowId": null,
-                "showTitle": true,
-                "title": "CPU",
-                "titleSize": "h6"
-            },
-            {
-                "collapse": false,
-                "height": "250px",
-                "panels": [
-                    {
-                        "aliasColors": {},
-                        "bars": false,
-                        "dashLength": 10,
-                        "dashes": false,
-                        "datasource": "$datasource",
-                        "fill": 1,
-                        "id": 3,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": true,
-                            "total": false,
-                            "values": false
-                        },
-                        "lines": true,
-                        "linewidth": 1,
-                        "links": [],
-                        "nullPointMode": "null as zero",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "spaceLength": 10,
-                        "span": 6,
-                        "stack": false,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "instance:node_memory_utilisation:ratio{job=\"node-exporter\", job=\"node-exporter\", instance=\"$instance\"}",
-                                "format": "time_series",
-                                "intervalFactor": 2,
-                                "legendFormat": "Memory",
-                                "legendLink": null,
-                                "step": 10
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "Memory Utilisation",
-                        "tooltip": {
-                            "shared": false,
-                            "sort": 0,
-                            "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "buckets": null,
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "percentunit",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": 0,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": false
-                            }
-                        ]
-                    },
-                    {
-                        "aliasColors": {},
-                        "bars": false,
-                        "dashLength": 10,
-                        "dashes": false,
-                        "datasource": "$datasource",
-                        "fill": 1,
-                        "id": 4,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": false,
-                            "total": false,
-                            "values": false
-                        },
-                        "lines": true,
-                        "linewidth": 1,
-                        "links": [],
-                        "nullPointMode": "null as zero",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "spaceLength": 10,
-                        "span": 6,
-                        "stack": false,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "instance:node_vmstat_pgmajfault:rate5m{job=\"node-exporter\", instance=\"$instance\"}",
-                                "format": "time_series",
-                                "intervalFactor": 2,
-                                "legendFormat": "Major page faults",
-                                "legendLink": null,
-                                "step": 10
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "Memory Saturation (Major Page Faults)",
-                        "tooltip": {
-                            "shared": false,
-                            "sort": 0,
-                            "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "buckets": null,
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": 0,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": false
-                            }
-                        ]
-                    }
-                ],
-                "repeat": null,
-                "repeatIteration": null,
-                "repeatRowId": null,
-                "showTitle": true,
-                "title": "Memory",
-                "titleSize": "h6"
-            },
-            {
-                "collapse": false,
-                "height": "250px",
-                "panels": [
-                    {
-                        "aliasColors": {},
-                        "bars": false,
-                        "dashLength": 10,
-                        "dashes": false,
-                        "datasource": "$datasource",
-                        "fill": 1,
-                        "id": 5,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": true,
-                            "total": false,
-                            "values": false
-                        },
-                        "lines": true,
-                        "linewidth": 1,
-                        "links": [],
-                        "nullPointMode": "null as zero",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [
-                            {
-                                "alias": "/Receive/",
-                                "stack": "A"
-                            },
-                            {
-                                "alias": "/Transmit/",
-                                "stack": "B",
-                                "transform": "negative-Y"
-                            }
-                        ],
-                        "spaceLength": 10,
-                        "span": 6,
-                        "stack": false,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "instance:node_network_receive_bytes_excluding_lo:rate5m{job=\"node-exporter\", instance=\"$instance\"}",
-                                "format": "time_series",
-                                "intervalFactor": 2,
-                                "legendFormat": "Receive",
-                                "legendLink": null,
-                                "step": 10
-                            },
-                            {
-                                "expr": "instance:node_network_transmit_bytes_excluding_lo:rate5m{job=\"node-exporter\", instance=\"$instance\"}",
-                                "format": "time_series",
-                                "intervalFactor": 2,
-                                "legendFormat": "Transmit",
-                                "legendLink": null,
-                                "step": 10
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "Net Utilisation (Bytes Receive/Transmit)",
-                        "tooltip": {
-                            "shared": false,
-                            "sort": 0,
-                            "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "buckets": null,
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "Bps",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": false
-                            }
-                        ]
-                    },
-                    {
-                        "aliasColors": {},
-                        "bars": false,
-                        "dashLength": 10,
-                        "dashes": false,
-                        "datasource": "$datasource",
-                        "fill": 1,
-                        "id": 6,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": true,
-                            "total": false,
-                            "values": false
-                        },
-                        "lines": true,
-                        "linewidth": 1,
-                        "links": [],
-                        "nullPointMode": "null as zero",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [
-                            {
-                                "alias": "/Receive/",
-                                "stack": "A"
-                            },
-                            {
-                                "alias": "/Transmit/",
-                                "stack": "B",
-                                "transform": "negative-Y"
-                            }
-                        ],
-                        "spaceLength": 10,
-                        "span": 6,
-                        "stack": false,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "instance:node_network_receive_drop_excluding_lo:rate5m{job=\"node-exporter\", instance=\"$instance\"}",
-                                "format": "time_series",
-                                "intervalFactor": 2,
-                                "legendFormat": "Receive drops",
-                                "legendLink": null,
-                                "step": 10
-                            },
-                            {
-                                "expr": "instance:node_network_transmit_drop_excluding_lo:rate5m{job=\"node-exporter\", instance=\"$instance\"}",
-                                "format": "time_series",
-                                "intervalFactor": 2,
-                                "legendFormat": "Transmit drops",
-                                "legendLink": null,
-                                "step": 10
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "Net Saturation (Drops Receive/Transmit)",
-                        "tooltip": {
-                            "shared": false,
-                            "sort": 0,
-                            "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "buckets": null,
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "rps",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": false
-                            }
-                        ]
-                    }
-                ],
-                "repeat": null,
-                "repeatIteration": null,
-                "repeatRowId": null,
-                "showTitle": true,
-                "title": "Net",
-                "titleSize": "h6"
-            },
-            {
-                "collapse": false,
-                "height": "250px",
-                "panels": [
-                    {
-                        "aliasColors": {},
-                        "bars": false,
-                        "dashLength": 10,
-                        "dashes": false,
-                        "datasource": "$datasource",
-                        "fill": 1,
-                        "id": 7,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": true,
-                            "total": false,
-                            "values": false
-                        },
-                        "lines": true,
-                        "linewidth": 1,
-                        "links": [],
-                        "nullPointMode": "null as zero",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "spaceLength": 10,
-                        "span": 6,
-                        "stack": false,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "instance_device:node_disk_io_time_seconds:rate5m{job=\"node-exporter\", instance=\"$instance\"}",
-                                "format": "time_series",
-                                "intervalFactor": 2,
-                                "legendFormat": "{{device}}",
-                                "legendLink": null,
-                                "step": 10
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "Disk IO Utilisation",
-                        "tooltip": {
-                            "shared": false,
-                            "sort": 0,
-                            "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "buckets": null,
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "percentunit",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": 0,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": false
-                            }
-                        ]
-                    },
-                    {
-                        "aliasColors": {},
-                        "bars": false,
-                        "dashLength": 10,
-                        "dashes": false,
-                        "datasource": "$datasource",
-                        "fill": 1,
-                        "id": 8,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": true,
-                            "total": false,
-                            "values": false
-                        },
-                        "lines": true,
-                        "linewidth": 1,
-                        "links": [],
-                        "nullPointMode": "null as zero",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "spaceLength": 10,
-                        "span": 6,
-                        "stack": false,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "instance_device:node_disk_io_time_weighted_seconds:rate5m{job=\"node-exporter\", instance=\"$instance\"}",
-                                "format": "time_series",
-                                "intervalFactor": 2,
-                                "legendFormat": "{{device}}",
-                                "legendLink": null,
-                                "step": 10
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "Disk IO Saturation",
-                        "tooltip": {
-                            "shared": false,
-                            "sort": 0,
-                            "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "buckets": null,
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "percentunit",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": 0,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": false
-                            }
-                        ]
-                    }
-                ],
-                "repeat": null,
-                "repeatIteration": null,
-                "repeatRowId": null,
-                "showTitle": true,
-                "title": "Disk IO",
-                "titleSize": "h6"
-            },
-            {
-                "collapse": false,
-                "height": "250px",
-                "panels": [
-                    {
-                        "aliasColors": {},
-                        "bars": false,
-                        "dashLength": 10,
-                        "dashes": false,
-                        "datasource": "$datasource",
-                        "fill": 1,
-                        "id": 9,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": false,
-                            "total": false,
-                            "values": false
-                        },
-                        "lines": true,
-                        "linewidth": 1,
-                        "links": [],
-                        "nullPointMode": "null as zero",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "spaceLength": 10,
-                        "span": 12,
-                        "stack": false,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "1 -\n(\n  max without (mountpoint, fstype) (node_filesystem_avail_bytes{job=\"node-exporter\", fstype!=\"\", instance=\"$instance\"})\n/\n  max without (mountpoint, fstype) (node_filesystem_size_bytes{job=\"node-exporter\", fstype!=\"\", instance=\"$instance\"})\n)\n",
-                                "format": "time_series",
-                                "intervalFactor": 2,
-                                "legendFormat": "{{device}}",
-                                "legendLink": null,
-                                "step": 10
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "Disk Space Utilisation",
-                        "tooltip": {
-                            "shared": false,
-                            "sort": 0,
-                            "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "buckets": null,
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "percentunit",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": 0,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": false
-                            }
-                        ]
-                    }
-                ],
-                "repeat": null,
-                "repeatIteration": null,
-                "repeatRowId": null,
-                "showTitle": true,
-                "title": "Disk Space",
-                "titleSize": "h6"
-            }
+        "tags": [
+            "node-exporter-mixin"
         ],
-        "schemaVersion": 14,
-        "style": "dark",
-        "tags": [],
         "templating": {
             "list": [
                 {
                     "current": {
-                        "text": "default",
-                        "value": "default"
+                        "text": "Prometheus",
+                        "value": "Prometheus"
                     },
                     "hide": 0,
                     "label": null,
@@ -48036,20 +51453,20 @@ data:
                 {
                     "allValue": null,
                     "current": {
-                        "text": "prod",
-                        "value": "prod"
+                        "text": "",
+                        "value": ""
                     },
                     "datasource": "$datasource",
-                    "hide": 0,
+                    "hide": 2,
                     "includeAll": false,
-                    "label": "instance",
+                    "label": null,
                     "multi": false,
-                    "name": "instance",
+                    "name": "cluster",
                     "options": [],
-                    "query": "label_values(up{job=\"node-exporter\"}, instance)",
-                    "refresh": 1,
+                    "query": "label_values(node_time_seconds, cluster)",
+                    "refresh": 2,
                     "regex": "",
-                    "sort": 2,
+                    "sort": 1,
                     "tagValuesQuery": "",
                     "tags": [],
                     "tagsQuery": "",
@@ -48088,7 +51505,971 @@ data:
             ]
         },
         "timezone": "utc",
-        "title": "USE Method / Node",
+        "title": "Node Exporter / USE Method / Cluster",
+        "uid": "3e97d1d02672cdd0861f4c97c64f89b2",
+        "version": 0
+    }
+kind: ConfigMap
+metadata:
+  annotations: {}
+  labels:
+    app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: prometheus-operator-grafana
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
+    grafana_dashboard: '1'
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+    release: prometheus-operator
+  name: prometheus-operator-node-cluster-rsrc-use
+  namespace: metalk8s-monitoring
+---
+apiVersion: v1
+data:
+  node-rsrc-use.json: |-
+    {
+        "__inputs": [],
+        "__requires": [],
+        "annotations": {
+            "list": []
+        },
+        "editable": false,
+        "gnetId": null,
+        "graphTooltip": 1,
+        "hideControls": false,
+        "id": null,
+        "links": [],
+        "refresh": "30s",
+        "rows": [
+            {
+                "collapse": false,
+                "collapsed": false,
+                "panels": [
+                    {
+                        "aliasColors": {},
+                        "bars": false,
+                        "dashLength": 10,
+                        "dashes": false,
+                        "datasource": "$datasource",
+                        "fill": 10,
+                        "fillGradient": 0,
+                        "gridPos": {},
+                        "id": 2,
+                        "legend": {
+                            "alignAsTable": false,
+                            "avg": false,
+                            "current": false,
+                            "max": false,
+                            "min": false,
+                            "rightSide": false,
+                            "show": false,
+                            "sideWidth": null,
+                            "total": false,
+                            "values": false
+                        },
+                        "lines": true,
+                        "linewidth": 1,
+                        "links": [],
+                        "nullPointMode": "null",
+                        "percentage": false,
+                        "pointradius": 5,
+                        "points": false,
+                        "renderer": "flot",
+                        "repeat": null,
+                        "seriesOverrides": [],
+                        "spaceLength": 10,
+                        "span": 6,
+                        "stack": true,
+                        "steppedLine": false,
+                        "targets": [
+                            {
+                                "expr": "instance:node_cpu_utilisation:rate5m{job=\"node-exporter\", instance=\"$instance\", cluster=\"$cluster\"} != 0",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "legendFormat": "Utilisation",
+                                "refId": "A"
+                            }
+                        ],
+                        "thresholds": [],
+                        "timeFrom": null,
+                        "timeShift": null,
+                        "title": "CPU Utilisation",
+                        "tooltip": {
+                            "shared": true,
+                            "sort": 2,
+                            "value_type": "individual"
+                        },
+                        "type": "graph",
+                        "xaxis": {
+                            "buckets": null,
+                            "mode": "time",
+                            "name": null,
+                            "show": true,
+                            "values": []
+                        },
+                        "yaxes": [
+                            {
+                                "format": "percentunit",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            },
+                            {
+                                "format": "percentunit",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    },
+                    {
+                        "aliasColors": {},
+                        "bars": false,
+                        "dashLength": 10,
+                        "dashes": false,
+                        "datasource": "$datasource",
+                        "fill": 10,
+                        "fillGradient": 0,
+                        "gridPos": {},
+                        "id": 3,
+                        "legend": {
+                            "alignAsTable": false,
+                            "avg": false,
+                            "current": false,
+                            "max": false,
+                            "min": false,
+                            "rightSide": false,
+                            "show": false,
+                            "sideWidth": null,
+                            "total": false,
+                            "values": false
+                        },
+                        "lines": true,
+                        "linewidth": 1,
+                        "links": [],
+                        "nullPointMode": "null",
+                        "percentage": false,
+                        "pointradius": 5,
+                        "points": false,
+                        "renderer": "flot",
+                        "repeat": null,
+                        "seriesOverrides": [],
+                        "spaceLength": 10,
+                        "span": 6,
+                        "stack": true,
+                        "steppedLine": false,
+                        "targets": [
+                            {
+                                "expr": "instance:node_load1_per_cpu:ratio{job=\"node-exporter\", instance=\"$instance\", cluster=\"$cluster\"} != 0",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "legendFormat": "Saturation",
+                                "refId": "A"
+                            }
+                        ],
+                        "thresholds": [],
+                        "timeFrom": null,
+                        "timeShift": null,
+                        "title": "CPU Saturation (Load1 per CPU)",
+                        "tooltip": {
+                            "shared": true,
+                            "sort": 2,
+                            "value_type": "individual"
+                        },
+                        "type": "graph",
+                        "xaxis": {
+                            "buckets": null,
+                            "mode": "time",
+                            "name": null,
+                            "show": true,
+                            "values": []
+                        },
+                        "yaxes": [
+                            {
+                                "format": "percentunit",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            },
+                            {
+                                "format": "percentunit",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    }
+                ],
+                "repeat": null,
+                "repeatIteration": null,
+                "repeatRowId": null,
+                "showTitle": true,
+                "title": "CPU",
+                "titleSize": "h6",
+                "type": "row"
+            },
+            {
+                "collapse": false,
+                "collapsed": false,
+                "panels": [
+                    {
+                        "aliasColors": {},
+                        "bars": false,
+                        "dashLength": 10,
+                        "dashes": false,
+                        "datasource": "$datasource",
+                        "fill": 10,
+                        "fillGradient": 0,
+                        "gridPos": {},
+                        "id": 4,
+                        "legend": {
+                            "alignAsTable": false,
+                            "avg": false,
+                            "current": false,
+                            "max": false,
+                            "min": false,
+                            "rightSide": false,
+                            "show": false,
+                            "sideWidth": null,
+                            "total": false,
+                            "values": false
+                        },
+                        "lines": true,
+                        "linewidth": 1,
+                        "links": [],
+                        "nullPointMode": "null",
+                        "percentage": false,
+                        "pointradius": 5,
+                        "points": false,
+                        "renderer": "flot",
+                        "repeat": null,
+                        "seriesOverrides": [],
+                        "spaceLength": 10,
+                        "span": 6,
+                        "stack": true,
+                        "steppedLine": false,
+                        "targets": [
+                            {
+                                "expr": "instance:node_memory_utilisation:ratio{job=\"node-exporter\", instance=\"$instance\", cluster=\"$cluster\"} != 0",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "legendFormat": "Utilisation",
+                                "refId": "A"
+                            }
+                        ],
+                        "thresholds": [],
+                        "timeFrom": null,
+                        "timeShift": null,
+                        "title": "Memory Utilisation",
+                        "tooltip": {
+                            "shared": true,
+                            "sort": 2,
+                            "value_type": "individual"
+                        },
+                        "type": "graph",
+                        "xaxis": {
+                            "buckets": null,
+                            "mode": "time",
+                            "name": null,
+                            "show": true,
+                            "values": []
+                        },
+                        "yaxes": [
+                            {
+                                "format": "percentunit",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            },
+                            {
+                                "format": "percentunit",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    },
+                    {
+                        "aliasColors": {},
+                        "bars": false,
+                        "dashLength": 10,
+                        "dashes": false,
+                        "datasource": "$datasource",
+                        "fill": 10,
+                        "fillGradient": 0,
+                        "gridPos": {},
+                        "id": 5,
+                        "legend": {
+                            "alignAsTable": false,
+                            "avg": false,
+                            "current": false,
+                            "max": false,
+                            "min": false,
+                            "rightSide": false,
+                            "show": false,
+                            "sideWidth": null,
+                            "total": false,
+                            "values": false
+                        },
+                        "lines": true,
+                        "linewidth": 1,
+                        "links": [],
+                        "nullPointMode": "null",
+                        "percentage": false,
+                        "pointradius": 5,
+                        "points": false,
+                        "renderer": "flot",
+                        "repeat": null,
+                        "seriesOverrides": [],
+                        "spaceLength": 10,
+                        "span": 6,
+                        "stack": true,
+                        "steppedLine": false,
+                        "targets": [
+                            {
+                                "expr": "instance:node_vmstat_pgmajfault:rate5m{job=\"node-exporter\", instance=\"$instance\", cluster=\"$cluster\"} != 0",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "legendFormat": "Major page Faults",
+                                "refId": "A"
+                            }
+                        ],
+                        "thresholds": [],
+                        "timeFrom": null,
+                        "timeShift": null,
+                        "title": "Memory Saturation (Major Page Faults)",
+                        "tooltip": {
+                            "shared": true,
+                            "sort": 2,
+                            "value_type": "individual"
+                        },
+                        "type": "graph",
+                        "xaxis": {
+                            "buckets": null,
+                            "mode": "time",
+                            "name": null,
+                            "show": true,
+                            "values": []
+                        },
+                        "yaxes": [
+                            {
+                                "format": "rds",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            },
+                            {
+                                "format": "rds",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    }
+                ],
+                "repeat": null,
+                "repeatIteration": null,
+                "repeatRowId": null,
+                "showTitle": true,
+                "title": "Memory",
+                "titleSize": "h6",
+                "type": "row"
+            },
+            {
+                "collapse": false,
+                "collapsed": false,
+                "panels": [
+                    {
+                        "aliasColors": {},
+                        "bars": false,
+                        "dashLength": 10,
+                        "dashes": false,
+                        "datasource": "$datasource",
+                        "fill": 10,
+                        "fillGradient": 0,
+                        "gridPos": {},
+                        "id": 6,
+                        "legend": {
+                            "alignAsTable": false,
+                            "avg": false,
+                            "current": false,
+                            "max": false,
+                            "min": false,
+                            "rightSide": false,
+                            "show": false,
+                            "sideWidth": null,
+                            "total": false,
+                            "values": false
+                        },
+                        "lines": true,
+                        "linewidth": 1,
+                        "links": [],
+                        "nullPointMode": "null",
+                        "percentage": false,
+                        "pointradius": 5,
+                        "points": false,
+                        "renderer": "flot",
+                        "repeat": null,
+                        "seriesOverrides": [
+                            {
+                                "alias": "/Receive/",
+                                "stack": "A"
+                            },
+                            {
+                                "alias": "/Transmit/",
+                                "stack": "B",
+                                "transform": "negative-Y"
+                            }
+                        ],
+                        "spaceLength": 10,
+                        "span": 6,
+                        "stack": true,
+                        "steppedLine": false,
+                        "targets": [
+                            {
+                                "expr": "instance:node_network_receive_bytes_excluding_lo:rate5m{job=\"node-exporter\", instance=\"$instance\", cluster=\"$cluster\"} != 0",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "legendFormat": "Receive",
+                                "refId": "A"
+                            },
+                            {
+                                "expr": "instance:node_network_transmit_bytes_excluding_lo:rate5m{job=\"node-exporter\", instance=\"$instance\", cluster=\"$cluster\"} != 0",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "legendFormat": "Transmit",
+                                "refId": "B"
+                            }
+                        ],
+                        "thresholds": [],
+                        "timeFrom": null,
+                        "timeShift": null,
+                        "title": "Network Utilisation (Bytes Receive/Transmit)",
+                        "tooltip": {
+                            "shared": true,
+                            "sort": 2,
+                            "value_type": "individual"
+                        },
+                        "type": "graph",
+                        "xaxis": {
+                            "buckets": null,
+                            "mode": "time",
+                            "name": null,
+                            "show": true,
+                            "values": []
+                        },
+                        "yaxes": [
+                            {
+                                "format": "Bps",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            },
+                            {
+                                "format": "Bps",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    },
+                    {
+                        "aliasColors": {},
+                        "bars": false,
+                        "dashLength": 10,
+                        "dashes": false,
+                        "datasource": "$datasource",
+                        "fill": 10,
+                        "fillGradient": 0,
+                        "gridPos": {},
+                        "id": 7,
+                        "legend": {
+                            "alignAsTable": false,
+                            "avg": false,
+                            "current": false,
+                            "max": false,
+                            "min": false,
+                            "rightSide": false,
+                            "show": false,
+                            "sideWidth": null,
+                            "total": false,
+                            "values": false
+                        },
+                        "lines": true,
+                        "linewidth": 1,
+                        "links": [],
+                        "nullPointMode": "null",
+                        "percentage": false,
+                        "pointradius": 5,
+                        "points": false,
+                        "renderer": "flot",
+                        "repeat": null,
+                        "seriesOverrides": [
+                            {
+                                "alias": "/ Receive/",
+                                "stack": "A"
+                            },
+                            {
+                                "alias": "/ Transmit/",
+                                "stack": "B",
+                                "transform": "negative-Y"
+                            }
+                        ],
+                        "spaceLength": 10,
+                        "span": 6,
+                        "stack": true,
+                        "steppedLine": false,
+                        "targets": [
+                            {
+                                "expr": "instance:node_network_receive_drop_excluding_lo:rate5m{job=\"node-exporter\", instance=\"$instance\", cluster=\"$cluster\"} != 0",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "legendFormat": "Receive",
+                                "refId": "A"
+                            },
+                            {
+                                "expr": "instance:node_network_transmit_drop_excluding_lo:rate5m{job=\"node-exporter\", instance=\"$instance\", cluster=\"$cluster\"} != 0",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "legendFormat": "Transmit",
+                                "refId": "B"
+                            }
+                        ],
+                        "thresholds": [],
+                        "timeFrom": null,
+                        "timeShift": null,
+                        "title": "Network Saturation (Drops Receive/Transmit)",
+                        "tooltip": {
+                            "shared": true,
+                            "sort": 2,
+                            "value_type": "individual"
+                        },
+                        "type": "graph",
+                        "xaxis": {
+                            "buckets": null,
+                            "mode": "time",
+                            "name": null,
+                            "show": true,
+                            "values": []
+                        },
+                        "yaxes": [
+                            {
+                                "format": "Bps",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            },
+                            {
+                                "format": "Bps",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    }
+                ],
+                "repeat": null,
+                "repeatIteration": null,
+                "repeatRowId": null,
+                "showTitle": true,
+                "title": "Network",
+                "titleSize": "h6",
+                "type": "row"
+            },
+            {
+                "collapse": false,
+                "collapsed": false,
+                "panels": [
+                    {
+                        "aliasColors": {},
+                        "bars": false,
+                        "dashLength": 10,
+                        "dashes": false,
+                        "datasource": "$datasource",
+                        "fill": 10,
+                        "fillGradient": 0,
+                        "gridPos": {},
+                        "id": 8,
+                        "legend": {
+                            "alignAsTable": false,
+                            "avg": false,
+                            "current": false,
+                            "max": false,
+                            "min": false,
+                            "rightSide": false,
+                            "show": false,
+                            "sideWidth": null,
+                            "total": false,
+                            "values": false
+                        },
+                        "lines": true,
+                        "linewidth": 1,
+                        "links": [],
+                        "nullPointMode": "null",
+                        "percentage": false,
+                        "pointradius": 5,
+                        "points": false,
+                        "renderer": "flot",
+                        "repeat": null,
+                        "seriesOverrides": [],
+                        "spaceLength": 10,
+                        "span": 6,
+                        "stack": true,
+                        "steppedLine": false,
+                        "targets": [
+                            {
+                                "expr": "instance_device:node_disk_io_time_seconds:rate5m{job=\"node-exporter\", instance=\"$instance\", cluster=\"$cluster\"} != 0",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "legendFormat": "{{device}}",
+                                "refId": "A"
+                            }
+                        ],
+                        "thresholds": [],
+                        "timeFrom": null,
+                        "timeShift": null,
+                        "title": "Disk IO Utilisation",
+                        "tooltip": {
+                            "shared": true,
+                            "sort": 2,
+                            "value_type": "individual"
+                        },
+                        "type": "graph",
+                        "xaxis": {
+                            "buckets": null,
+                            "mode": "time",
+                            "name": null,
+                            "show": true,
+                            "values": []
+                        },
+                        "yaxes": [
+                            {
+                                "format": "percentunit",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            },
+                            {
+                                "format": "percentunit",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    },
+                    {
+                        "aliasColors": {},
+                        "bars": false,
+                        "dashLength": 10,
+                        "dashes": false,
+                        "datasource": "$datasource",
+                        "fill": 10,
+                        "fillGradient": 0,
+                        "gridPos": {},
+                        "id": 9,
+                        "legend": {
+                            "alignAsTable": false,
+                            "avg": false,
+                            "current": false,
+                            "max": false,
+                            "min": false,
+                            "rightSide": false,
+                            "show": false,
+                            "sideWidth": null,
+                            "total": false,
+                            "values": false
+                        },
+                        "lines": true,
+                        "linewidth": 1,
+                        "links": [],
+                        "nullPointMode": "null",
+                        "percentage": false,
+                        "pointradius": 5,
+                        "points": false,
+                        "renderer": "flot",
+                        "repeat": null,
+                        "seriesOverrides": [],
+                        "spaceLength": 10,
+                        "span": 6,
+                        "stack": true,
+                        "steppedLine": false,
+                        "targets": [
+                            {
+                                "expr": "instance_device:node_disk_io_time_weighted_seconds:rate5m{job=\"node-exporter\", instance=\"$instance\", cluster=\"$cluster\"} != 0",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "legendFormat": "{{device}}",
+                                "refId": "A"
+                            }
+                        ],
+                        "thresholds": [],
+                        "timeFrom": null,
+                        "timeShift": null,
+                        "title": "Disk IO Saturation",
+                        "tooltip": {
+                            "shared": true,
+                            "sort": 2,
+                            "value_type": "individual"
+                        },
+                        "type": "graph",
+                        "xaxis": {
+                            "buckets": null,
+                            "mode": "time",
+                            "name": null,
+                            "show": true,
+                            "values": []
+                        },
+                        "yaxes": [
+                            {
+                                "format": "percentunit",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            },
+                            {
+                                "format": "percentunit",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    }
+                ],
+                "repeat": null,
+                "repeatIteration": null,
+                "repeatRowId": null,
+                "showTitle": true,
+                "title": "Disk IO",
+                "titleSize": "h6",
+                "type": "row"
+            },
+            {
+                "collapse": false,
+                "collapsed": false,
+                "panels": [
+                    {
+                        "aliasColors": {},
+                        "bars": false,
+                        "dashLength": 10,
+                        "dashes": false,
+                        "datasource": "$datasource",
+                        "fill": 10,
+                        "fillGradient": 0,
+                        "gridPos": {},
+                        "id": 10,
+                        "legend": {
+                            "alignAsTable": false,
+                            "avg": false,
+                            "current": false,
+                            "max": false,
+                            "min": false,
+                            "rightSide": false,
+                            "show": false,
+                            "sideWidth": null,
+                            "total": false,
+                            "values": false
+                        },
+                        "lines": true,
+                        "linewidth": 1,
+                        "links": [],
+                        "nullPointMode": "null",
+                        "percentage": false,
+                        "pointradius": 5,
+                        "points": false,
+                        "renderer": "flot",
+                        "repeat": null,
+                        "seriesOverrides": [],
+                        "spaceLength": 10,
+                        "span": 12,
+                        "stack": true,
+                        "steppedLine": false,
+                        "targets": [
+                            {
+                                "expr": "sort_desc(1 -\n  (\n   max without (mountpoint, fstype) (node_filesystem_avail_bytes{job=\"node-exporter\", fstype!=\"\", instance=\"$instance\", cluster=\"$cluster\"})\n   /\n   max without (mountpoint, fstype) (node_filesystem_size_bytes{job=\"node-exporter\", fstype!=\"\", instance=\"$instance\", cluster=\"$cluster\"})\n  ) != 0\n)\n",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "legendFormat": "{{device}}",
+                                "refId": "A"
+                            }
+                        ],
+                        "thresholds": [],
+                        "timeFrom": null,
+                        "timeShift": null,
+                        "title": "Disk Space Utilisation",
+                        "tooltip": {
+                            "shared": true,
+                            "sort": 2,
+                            "value_type": "individual"
+                        },
+                        "type": "graph",
+                        "xaxis": {
+                            "buckets": null,
+                            "mode": "time",
+                            "name": null,
+                            "show": true,
+                            "values": []
+                        },
+                        "yaxes": [
+                            {
+                                "format": "percentunit",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            },
+                            {
+                                "format": "percentunit",
+                                "label": null,
+                                "logBase": 1,
+                                "max": null,
+                                "min": null,
+                                "show": true
+                            }
+                        ]
+                    }
+                ],
+                "repeat": null,
+                "repeatIteration": null,
+                "repeatRowId": null,
+                "showTitle": true,
+                "title": "Disk Space",
+                "titleSize": "h6",
+                "type": "row"
+            }
+        ],
+        "schemaVersion": 14,
+        "style": "dark",
+        "tags": [
+            "node-exporter-mixin"
+        ],
+        "templating": {
+            "list": [
+                {
+                    "current": {
+                        "text": "Prometheus",
+                        "value": "Prometheus"
+                    },
+                    "hide": 0,
+                    "label": null,
+                    "name": "datasource",
+                    "options": [],
+                    "query": "prometheus",
+                    "refresh": 1,
+                    "regex": "",
+                    "type": "datasource"
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "text": "",
+                        "value": ""
+                    },
+                    "datasource": "$datasource",
+                    "hide": 2,
+                    "includeAll": false,
+                    "label": null,
+                    "multi": false,
+                    "name": "cluster",
+                    "options": [],
+                    "query": "label_values(node_time_seconds, cluster)",
+                    "refresh": 2,
+                    "regex": "",
+                    "sort": 1,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
+                    "allValue": null,
+                    "current": {},
+                    "datasource": "$datasource",
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": null,
+                    "multi": false,
+                    "name": "instance",
+                    "options": [],
+                    "query": "label_values(node_exporter_build_info{job=\"node-exporter\", cluster=\"$cluster\"}, instance)",
+                    "refresh": 2,
+                    "regex": "",
+                    "sort": 1,
+                    "tagValuesQuery": "",
+                    "tags": [],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                }
+            ]
+        },
+        "time": {
+            "from": "now-1h",
+            "to": "now"
+        },
+        "timepicker": {
+            "refresh_intervals": [
+                "5s",
+                "10s",
+                "30s",
+                "1m",
+                "5m",
+                "15m",
+                "30m",
+                "1h",
+                "2h",
+                "1d"
+            ],
+            "time_options": [
+                "5m",
+                "15m",
+                "1h",
+                "6h",
+                "12h",
+                "24h",
+                "2d",
+                "7d",
+                "30d"
+            ]
+        },
+        "timezone": "utc",
+        "title": "Node Exporter / USE Method / Node",
         "uid": "fac67cfbe174d3ef53eb473d73d9212f",
         "version": 0
     }
@@ -48101,8 +52482,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -48121,11 +52502,11 @@ data:
         },
         "editable": false,
         "gnetId": null,
-        "graphTooltip": 0,
+        "graphTooltip": 1,
         "hideControls": false,
         "id": null,
         "links": [],
-        "refresh": "",
+        "refresh": "30s",
         "rows": [
             {
                 "collapse": false,
@@ -48907,7 +53288,9 @@ data:
         ],
         "schemaVersion": 14,
         "style": "dark",
-        "tags": [],
+        "tags": [
+            "node-exporter-mixin"
+        ],
         "templating": {
             "list": [
                 {
@@ -48975,8 +53358,8 @@ data:
                 "30d"
             ]
         },
-        "timezone": "browser",
-        "title": "Nodes",
+        "timezone": "utc",
+        "title": "Node Exporter / Nodes",
         "uid": "fa49a4706d07a042595b664c87fb33ea",
         "version": 0
     }
@@ -48989,8 +53372,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -49520,7 +53903,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "Kubernetes / Persistent Volumes",
         "uid": "919b92a8e8041bd567af9edab12c840c",
         "version": 0
@@ -49534,8 +53917,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -50514,7 +54897,7 @@ data:
                     "name": "cluster",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info, cluster)",
+                    "query": "label_values(up{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\"}, cluster)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 0,
@@ -50694,7 +55077,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "Kubernetes / Networking / Pod",
         "uid": "7a18067ce943a40ae25454675c19ff5c",
         "version": 0
@@ -50708,8 +55091,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -51199,6 +55582,14 @@ data:
                         "stack": true,
                         "steppedLine": false,
                         "targets": [
+                            {
+                                "expr": "sum by (job) (rate(prometheus_target_scrapes_exceeded_body_size_limit_total[1m]))",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "legendFormat": "exceeded body size limit: {{job}}",
+                                "legendLink": null,
+                                "step": 10
+                            },
                             {
                                 "expr": "sum by (job) (rate(prometheus_target_scrapes_exceeded_sample_limit_total[1m]))",
                                 "format": "time_series",
@@ -51716,7 +56107,7 @@ data:
                     "multi": true,
                     "name": "job",
                     "options": [],
-                    "query": "label_values(prometheus_build_info, job)",
+                    "query": "label_values(prometheus_build_info{job=\"prometheus-k8s\",namespace=\"monitoring\"}, job)",
                     "refresh": 1,
                     "regex": "",
                     "sort": 2,
@@ -51740,7 +56131,7 @@ data:
                     "multi": true,
                     "name": "instance",
                     "options": [],
-                    "query": "label_values(prometheus_build_info, instance)",
+                    "query": "label_values(prometheus_build_info{job=~\"$job\"}, instance)",
                     "refresh": 1,
                     "regex": "",
                     "sort": 2,
@@ -51795,8 +56186,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -52963,7 +57354,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "Kubernetes / Proxy",
         "uid": "632e265de029684c40b21cb76bca4f94",
         "version": 0
@@ -52977,8 +57368,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -53935,7 +58326,7 @@ data:
                     "name": "cluster",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info, cluster)",
+                    "query": "label_values(up{job=\"kube-scheduler\"}, cluster)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -54000,7 +58391,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "Kubernetes / Scheduler",
         "uid": "2e6b6a3b4bddf1427b3a55aa1311c656",
         "version": 0
@@ -54014,8 +58405,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -54797,7 +59188,7 @@ data:
                     "current": {
                     },
                     "datasource": "$datasource",
-                    "hide": 2,
+                    "hide": 0,
                     "includeAll": false,
                     "label": "cluster",
                     "multi": false,
@@ -54892,7 +59283,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "Kubernetes / StatefulSets",
         "uid": "a31c1f46e6f727cb37c0d731a7245005",
         "version": 0
@@ -54906,8 +59297,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -56264,7 +60655,7 @@ data:
                 "30d"
             ]
         },
-        "timezone": "UTC",
+        "timezone": "utc",
         "title": "Kubernetes / Networking / Workload",
         "uid": "728bf77cc1166d2f3133bf25846876cc",
         "version": 0
@@ -56278,8 +60669,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -56295,8 +60686,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.0.6-ubuntu
-    helm.sh/chart: grafana-6.13.0
+    app.kubernetes.io/version: 8.3.1
+    helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana-clusterrole
   namespace: metalk8s-monitoring
@@ -56315,11 +60706,13 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
+    app.kubernetes.io/component: metrics
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-3.1.1
+    app.kubernetes.io/version: 2.2.4
+    helm.sh/chart: kube-state-metrics-4.1.1
     heritage: metalk8s
   name: psp-prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -56337,11 +60730,13 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
+    app.kubernetes.io/component: metrics
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-3.1.1
+    app.kubernetes.io/version: 4.1.1
+    helm.sh/chart: kube-state-metrics-4.1.1
     heritage: metalk8s
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -56548,7 +60943,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-1.18.1
+    chart: prometheus-node-exporter-2.2.2
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -56573,8 +60968,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56661,8 +61056,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56687,8 +61082,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56730,8 +61125,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56755,8 +61150,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.0.6-ubuntu
-    helm.sh/chart: grafana-6.13.0
+    app.kubernetes.io/version: 8.3.1
+    helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana-clusterrolebinding
   namespace: metalk8s-monitoring
@@ -56773,11 +61168,13 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
+    app.kubernetes.io/component: metrics
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-3.1.1
+    app.kubernetes.io/version: 2.2.4
+    helm.sh/chart: kube-state-metrics-4.1.1
     heritage: metalk8s
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -56794,11 +61191,13 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
+    app.kubernetes.io/component: metrics
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-3.1.1
+    app.kubernetes.io/version: 2.2.4
+    helm.sh/chart: kube-state-metrics-4.1.1
     heritage: metalk8s
   name: psp-prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -56819,7 +61218,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-1.18.1
+    chart: prometheus-node-exporter-2.2.2
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -56843,8 +61242,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56868,8 +61267,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56893,8 +61292,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56918,8 +61317,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56942,8 +61341,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.0.6-ubuntu
-    helm.sh/chart: grafana-6.13.0
+    app.kubernetes.io/version: 8.3.1
+    helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -56966,8 +61365,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -56991,8 +61390,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.0.6-ubuntu
-    helm.sh/chart: grafana-6.13.0
+    app.kubernetes.io/version: 8.3.1
+    helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -57014,8 +61413,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -57038,14 +61437,14 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.0.6-ubuntu
-    helm.sh/chart: grafana-6.13.0
+    app.kubernetes.io/version: 8.3.1
+    helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
 spec:
   ports:
-  - name: service
+  - name: http-web
     port: 80
     protocol: TCP
     targetPort: 3000
@@ -57060,11 +61459,13 @@ metadata:
   annotations:
     prometheus.io/scrape: 'true'
   labels:
+    app.kubernetes.io/component: metrics
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: kube-state-metrics-3.1.1
+    app.kubernetes.io/version: 2.2.4
+    helm.sh/chart: kube-state-metrics-4.1.1
     heritage: metalk8s
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -57089,7 +61490,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-1.18.1
+    chart: prometheus-node-exporter-2.2.2
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -57097,7 +61498,7 @@ metadata:
   namespace: metalk8s-monitoring
 spec:
   ports:
-  - name: metrics
+  - name: http-metrics
     port: 9100
     protocol: TCP
     targetPort: 9100
@@ -57115,8 +61516,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -57125,13 +61526,13 @@ metadata:
   namespace: metalk8s-monitoring
 spec:
   ports:
-  - name: web
+  - name: http-web
     port: 9093
     protocol: TCP
     targetPort: 9093
   selector:
     alertmanager: prometheus-operator-alertmanager
-    app: alertmanager
+    app.kubernetes.io/name: alertmanager
   type: ClusterIP
 ---
 apiVersion: v1
@@ -57143,8 +61544,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     jobLabel: coredns
     metalk8s.scality.com/monitor: ''
@@ -57170,8 +61571,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     jobLabel: kube-controller-manager
     metalk8s.scality.com/monitor: ''
@@ -57198,8 +61599,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     jobLabel: kube-etcd
     metalk8s.scality.com/monitor: ''
@@ -57226,8 +61627,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     jobLabel: kube-proxy
     metalk8s.scality.com/monitor: ''
@@ -57254,8 +61655,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     jobLabel: kube-scheduler
     metalk8s.scality.com/monitor: ''
@@ -57282,8 +61683,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -57308,8 +61709,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -57318,7 +61719,7 @@ metadata:
   namespace: metalk8s-monitoring
 spec:
   ports:
-  - name: web
+  - name: http-web
     port: 9090
     targetPort: 9090
   selector:
@@ -57335,8 +61736,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-thanos-discovery
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -57348,6 +61749,9 @@ spec:
   - name: grpc
     port: 10901
     targetPort: grpc
+  - name: http
+    port: 10902
+    targetPort: http
   selector:
     app.kubernetes.io/name: prometheus
     prometheus: prometheus-operator-prometheus
@@ -57361,7 +61765,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-1.18.1
+    chart: prometheus-node-exporter-2.2.2
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -57381,11 +61785,12 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-node-exporter
         app.kubernetes.io/part-of: metalk8s
-        chart: prometheus-node-exporter-1.18.1
+        chart: prometheus-node-exporter-2.2.2
         heritage: metalk8s
         jobLabel: node-exporter
         release: prometheus-operator
     spec:
+      automountServiceAccountToken: false
       containers:
       - args:
         - --path.procfs=/host/proc
@@ -57398,7 +61803,7 @@ spec:
         env:
         - name: HOST_IP
           value: 0.0.0.0
-        image: {% endraw -%}{{ build_image_name("node-exporter", False) }}{%- raw %}:v1.1.2
+        image: {% endraw -%}{{ build_image_name("node-exporter", False) }}{%- raw %}:v1.2.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -57407,7 +61812,7 @@ spec:
         name: node-exporter
         ports:
         - containerPort: 9100
-          name: metrics
+          name: http-metrics
           protocol: TCP
         readinessProbe:
           httpGet:
@@ -57459,8 +61864,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.0.6-ubuntu
-    helm.sh/chart: grafana-6.13.0
+    app.kubernetes.io/version: 8.3.1
+    helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -57480,29 +61885,60 @@ spec:
           apiVersion="v1", namespace="metalk8s-monitoring", name="prometheus-operator-grafana",
           path="data:grafana.ini")
         checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
-        checksum/sc-dashboard-provider-config: 1fb938ae203ab04abaec138541fafa99df99f419c7c1567c8573f1cb0e9a487c
-        checksum/secret: 81a974a3dea4b80cdc27cccd08b7648f4175ec54526ce15faffd35b6535e0967
+        checksum/sc-dashboard-provider-config: 02282e5ab4c879a0ae5745d5ae0786f6943365662fdcfb582ba99cc49a26823e
+        checksum/secret: bfbb4463c3864356c67b8c5bd7be5f196222bde2f98a9afbae4a21ca8391cc5c
       labels:
         app.kubernetes.io/instance: prometheus-operator
         app.kubernetes.io/name: grafana
     spec:
+      automountServiceAccountToken: true
       containers:
       - env:
         - name: METHOD
-          value: null
+          value: WATCH
         - name: LABEL
           value: grafana_dashboard
         - name: FOLDER
           value: /tmp/dashboards
         - name: RESOURCE
           value: both
-        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.12.2
+        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.14.2
         imagePullPolicy: IfNotPresent
         name: grafana-sc-dashboard
         resources: {}
         volumeMounts:
         - mountPath: /tmp/dashboards
           name: sc-dashboard-volume
+      - env:
+        - name: METHOD
+          value: WATCH
+        - name: LABEL
+          value: grafana_datasource
+        - name: FOLDER
+          value: /etc/grafana/provisioning/datasources
+        - name: RESOURCE
+          value: both
+        - name: REQ_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: admin-user
+              name: prometheus-operator-grafana
+        - name: REQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: admin-password
+              name: prometheus-operator-grafana
+        - name: REQ_URL
+          value: http://localhost:3000/api/admin/provisioning/datasources/reload
+        - name: REQ_METHOD
+          value: POST
+        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.14.2
+        imagePullPolicy: IfNotPresent
+        name: grafana-sc-datasources
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/grafana/provisioning/datasources
+          name: sc-datasources-volume
       - env:
         - name: GF_SECURITY_ADMIN_USER
           valueFrom:
@@ -57522,7 +61958,7 @@ spec:
           value: /var/lib/grafana/plugins
         - name: GF_PATHS_PROVISIONING
           value: /etc/grafana/provisioning
-        image: {% endraw -%}{{ build_image_name("grafana", False) }}{%- raw %}:8.0.6-ubuntu
+        image: {% endraw -%}{{ build_image_name("grafana", False) }}{%- raw %}:8.3.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 10
@@ -57534,7 +61970,7 @@ spec:
         name: grafana
         ports:
         - containerPort: 80
-          name: service
+          name: http-web
           protocol: TCP
         - containerPort: 3000
           name: grafana
@@ -57557,23 +61993,7 @@ spec:
           subPath: provider.yaml
         - mountPath: /etc/grafana/provisioning/datasources
           name: sc-datasources-volume
-      initContainers:
-      - env:
-        - name: METHOD
-          value: LIST
-        - name: LABEL
-          value: grafana_datasource
-        - name: FOLDER
-          value: /etc/grafana/provisioning/datasources
-        - name: RESOURCE
-          value: both
-        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.12.2
-        imagePullPolicy: IfNotPresent
-        name: grafana-sc-datasources
-        resources: {}
-        volumeMounts:
-        - mountPath: /etc/grafana/provisioning/datasources
-          name: sc-datasources-volume
+      enableServiceLinks: true
       nodeSelector:
         node-role.kubernetes.io/infra: ''
       securityContext:
@@ -57606,12 +62026,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
+    app.kubernetes.io/component: metrics
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.0.0
-    helm.sh/chart: kube-state-metrics-3.1.1
+    app.kubernetes.io/version: 2.2.4
+    helm.sh/chart: kube-state-metrics-4.1.1
     heritage: metalk8s
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
@@ -57619,44 +62040,26 @@ spec:
   replicas: 1
   selector:
     matchLabels:
+      app.kubernetes.io/instance: prometheus-operator
       app.kubernetes.io/name: kube-state-metrics
   template:
     metadata:
       labels:
+        app.kubernetes.io/component: metrics
         app.kubernetes.io/instance: prometheus-operator
+        app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: kube-state-metrics
+        app.kubernetes.io/part-of: metalk8s
+        app.kubernetes.io/version: 2.2.4
+        helm.sh/chart: kube-state-metrics-4.1.1
+        heritage: metalk8s
     spec:
       containers:
       - args:
-        - --resources=certificatesigningrequests
-        - --resources=configmaps
-        - --resources=cronjobs
-        - --resources=daemonsets
-        - --resources=deployments
-        - --resources=endpoints
-        - --resources=horizontalpodautoscalers
-        - --resources=ingresses
-        - --resources=jobs
-        - --resources=limitranges
-        - --resources=mutatingwebhookconfigurations
-        - --resources=namespaces
-        - --resources=networkpolicies
-        - --resources=nodes
-        - --resources=persistentvolumeclaims
-        - --resources=persistentvolumes
-        - --resources=poddisruptionbudgets
-        - --resources=pods
-        - --resources=replicasets
-        - --resources=replicationcontrollers
-        - --resources=resourcequotas
-        - --resources=secrets
-        - --resources=services
-        - --resources=statefulsets
-        - --resources=storageclasses
-        - --resources=validatingwebhookconfigurations
-        - --resources=volumeattachments
+        - --port=8080
+        - --resources=certificatesigningrequests,configmaps,cronjobs,daemonsets,deployments,endpoints,horizontalpodautoscalers,ingresses,jobs,limitranges,mutatingwebhookconfigurations,namespaces,networkpolicies,nodes,persistentvolumeclaims,persistentvolumes,poddisruptionbudgets,pods,replicasets,replicationcontrollers,resourcequotas,secrets,services,statefulsets,storageclasses,validatingwebhookconfigurations,volumeattachments
         - --telemetry-port=8081
-        image: {% endraw -%}{{ build_image_name("kube-state-metrics", False) }}{%- raw %}:v2.0.0
+        image: {% endraw -%}{{ build_image_name("kube-state-metrics", False) }}{%- raw %}:v2.2.4
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -57667,6 +62070,7 @@ spec:
         name: kube-state-metrics
         ports:
         - containerPort: 8080
+          name: http
         readinessProbe:
           httpGet:
             path: /
@@ -57698,8 +62102,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -57719,8 +62123,8 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-operator-operator
         app.kubernetes.io/part-of: metalk8s
-        app.kubernetes.io/version: 16.9.1
-        chart: kube-prometheus-stack-16.9.1
+        app.kubernetes.io/version: 23.2.0
+        chart: kube-prometheus-stack-23.2.0
         heritage: metalk8s
         metalk8s.scality.com/monitor: ''
         release: prometheus-operator
@@ -57729,10 +62133,13 @@ spec:
       - args:
         - --kubelet-service=kube-system/prometheus-operator-kubelet
         - --localhost=127.0.0.1
-        - --prometheus-config-reloader={% endraw -%}{{ build_image_name("prometheus-config-reloader", False) }}{%- raw %}:v0.48.1
-        - --config-reloader-cpu=100m
-        - --config-reloader-memory=50Mi
-        image: {% endraw -%}{{ build_image_name("prometheus-operator", False) }}{%- raw %}:v0.48.1
+        - --prometheus-config-reloader={% endraw -%}{{ build_image_name("prometheus-config-reloader", False) }}{%- raw %}:v0.52.1
+        - --config-reloader-cpu-request=100m
+        - --config-reloader-cpu-limit=100m
+        - --config-reloader-memory-request=50Mi
+        - --config-reloader-memory-limit=50Mi
+        - --thanos-default-base-image={% endraw -%}{{ build_image_name("thanos", False) }}{%- raw %}:v0.23.1
+        image: {% endraw -%}{{ build_image_name("prometheus-operator", False) }}{%- raw %}:v0.52.1
         imagePullPolicy: IfNotPresent
         name: prometheus-operator
         ports:
@@ -57768,8 +62175,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.0.6-ubuntu
-    helm.sh/chart: grafana-6.13.0
+    app.kubernetes.io/version: 8.3.1
+    helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -57796,8 +62203,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -57814,7 +62221,7 @@ spec:
               operator: In
               values:
               - alertmanager
-            - key: prometheus
+            - key: alertmanager
               operator: In
               values:
               - prometheus-operator-alertmanager
@@ -57823,7 +62230,7 @@ spec:
   alertmanagerConfigNamespaceSelector: {}
   alertmanagerConfigSelector: {}
   externalUrl: http://prometheus-operator-alertmanager.metalk8s-monitoring:9093
-  image: {% endraw -%}{{ build_image_name("alertmanager", False) }}{%- raw %}:v0.22.2
+  image: {% endraw -%}{{ build_image_name("alertmanager", False) }}{%- raw %}:v0.23.0
   listenLocal: false
   logFormat: logfmt
   logLevel: info
@@ -57835,7 +62242,7 @@ spec:
       checksum/config: __slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret",
         apiVersion="v1", namespace="metalk8s-monitoring", name="alertmanager-prometheus-operator-alertmanager",
         path="data:alertmanager.yaml")
-  portName: web
+  portName: http-web
   replicas: {% endraw -%}{{ alertmanager.spec.deployment.replicas }}{%- raw %}
   retention: 120h
   routePrefix: /
@@ -57866,7 +62273,7 @@ spec:
   - effect: NoSchedule
     key: node-role.kubernetes.io/infra
     operator: Exists
-  version: v0.22.2
+  version: v0.23.0
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
@@ -57877,8 +62284,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -57907,10 +62314,10 @@ spec:
       name: prometheus-operator-alertmanager
       namespace: metalk8s-monitoring
       pathPrefix: /
-      port: web
+      port: http-web
   enableAdminAPI: {% endraw -%}{{ prometheus.spec.config.enable_admin_api }}{%- raw %}
   externalUrl: http://prometheus-operator-prometheus.metalk8s-monitoring:9090
-  image: {% endraw -%}{{ build_image_name("prometheus", False) }}{%- raw %}:v2.27.1
+  image: {% endraw -%}{{ build_image_name("prometheus", False) }}{%- raw %}:v2.31.1
   listenLocal: false
   logFormat: logfmt
   logLevel: info
@@ -57921,7 +62328,7 @@ spec:
   podMonitorSelector:
     matchLabels:
       release: prometheus-operator
-  portName: web
+  portName: http-web
   probeNamespaceSelector: {}
   probeSelector:
     matchLabels:
@@ -57966,7 +62373,7 @@ spec:
   - effect: NoSchedule
     key: node-role.kubernetes.io/infra
     operator: Exists
-  version: v2.27.1
+  version: v2.31.1
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -57977,8 +62384,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -58014,7 +62421,7 @@ spec:
           max_over_time(alertmanager_cluster_members{job="prometheus-operator-alertmanager",namespace="metalk8s-monitoring"}[5m])
         < on (namespace,service) group_left
           count by (namespace,service) (max_over_time(alertmanager_cluster_members{job="prometheus-operator-alertmanager",namespace="metalk8s-monitoring"}[5m]))
-      for: 10m
+      for: 15m
       labels:
         severity: critical
     - alert: AlertmanagerFailedToSendAlerts
@@ -58138,8 +62545,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -58286,8 +62693,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -58332,8 +62739,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -58375,6 +62782,12 @@ spec:
         )
       record: node_namespace_pod_container:container_memory_swap
     - expr: |-
+        kube_pod_container_resource_requests{resource="memory",job="kube-state-metrics"}  * on (namespace, pod, cluster)
+        group_left() max by (namespace, pod) (
+          (kube_pod_status_phase{phase=~"Pending|Running"} == 1)
+        )
+      record: cluster:namespace:pod_memory:active:kube_pod_container_resource_requests
+    - expr: |-
         sum by (namespace, cluster) (
             sum by (namespace, pod, cluster) (
                 max by (namespace, pod, container, cluster) (
@@ -58386,6 +62799,12 @@ spec:
         )
       record: namespace_memory:kube_pod_container_resource_requests:sum
     - expr: |-
+        kube_pod_container_resource_requests{resource="cpu",job="kube-state-metrics"}  * on (namespace, pod, cluster)
+        group_left() max by (namespace, pod) (
+          (kube_pod_status_phase{phase=~"Pending|Running"} == 1)
+        )
+      record: cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests
+    - expr: |-
         sum by (namespace, cluster) (
             sum by (namespace, pod, cluster) (
                 max by (namespace, pod, container, cluster) (
@@ -58396,6 +62815,40 @@ spec:
             )
         )
       record: namespace_cpu:kube_pod_container_resource_requests:sum
+    - expr: |-
+        kube_pod_container_resource_limits{resource="memory",job="kube-state-metrics"}  * on (namespace, pod, cluster)
+        group_left() max by (namespace, pod) (
+          (kube_pod_status_phase{phase=~"Pending|Running"} == 1)
+        )
+      record: cluster:namespace:pod_memory:active:kube_pod_container_resource_limits
+    - expr: |-
+        sum by (namespace, cluster) (
+            sum by (namespace, pod, cluster) (
+                max by (namespace, pod, container, cluster) (
+                  kube_pod_container_resource_limits{resource="memory",job="kube-state-metrics"}
+                ) * on(namespace, pod, cluster) group_left() max by (namespace, pod) (
+                  kube_pod_status_phase{phase=~"Pending|Running"} == 1
+                )
+            )
+        )
+      record: namespace_memory:kube_pod_container_resource_limits:sum
+    - expr: |-
+        kube_pod_container_resource_limits{resource="cpu",job="kube-state-metrics"}  * on (namespace, pod, cluster)
+        group_left() max by (namespace, pod) (
+         (kube_pod_status_phase{phase=~"Pending|Running"} == 1)
+         )
+      record: cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits
+    - expr: |-
+        sum by (namespace, cluster) (
+            sum by (namespace, pod, cluster) (
+                max by (namespace, pod, container, cluster) (
+                  kube_pod_container_resource_limits{resource="cpu",job="kube-state-metrics"}
+                ) * on(namespace, pod, cluster) group_left() max by (namespace, pod) (
+                  kube_pod_status_phase{phase=~"Pending|Running"} == 1
+                )
+            )
+        )
+      record: namespace_cpu:kube_pod_container_resource_limits:sum
     - expr: |-
         max by (cluster, namespace, workload, pod) (
           label_replace(
@@ -58443,8 +62896,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -58455,6 +62908,17 @@ spec:
   - interval: 3m
     name: kube-apiserver-availability.rules
     rules:
+    - expr: avg_over_time(code_verb:apiserver_request_total:increase1h[30d]) * 24
+        * 30
+      record: code_verb:apiserver_request_total:increase30d
+    - expr: sum by (cluster, code) (code_verb:apiserver_request_total:increase30d{verb=~"LIST|GET"})
+      labels:
+        verb: read
+      record: code:apiserver_request_total:increase30d
+    - expr: sum by (cluster, code) (code_verb:apiserver_request_total:increase30d{verb=~"POST|PUT|PATCH|DELETE"})
+      labels:
+        verb: write
+      record: code:apiserver_request_total:increase30d
     - expr: |-
         1 - (
           (
@@ -58469,14 +62933,14 @@ spec:
             -
             (
               (
-                sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{verb=~"LIST|GET",scope=~"resource|",le="0.1"}[30d]))
+                sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{verb=~"LIST|GET",scope=~"resource|",le="1"}[30d]))
                 or
                 vector(0)
               )
               +
-              sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{verb=~"LIST|GET",scope="namespace",le="0.5"}[30d]))
+              sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{verb=~"LIST|GET",scope="namespace",le="5"}[30d]))
               +
-              sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{verb=~"LIST|GET",scope="cluster",le="5"}[30d]))
+              sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{verb=~"LIST|GET",scope="cluster",le="40"}[30d]))
             )
           ) +
           # errors
@@ -58494,14 +62958,14 @@ spec:
           (
             # too slow
             (
-              sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope=~"resource|",le="0.1"}[30d]))
+              sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope=~"resource|",le="1"}[30d]))
               or
               vector(0)
             )
             +
-            sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="namespace",le="0.5"}[30d]))
+            sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="namespace",le="5"}[30d]))
             +
-            sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="5"}[30d]))
+            sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="40"}[30d]))
           )
           +
           # errors
@@ -58529,65 +62993,22 @@ spec:
       labels:
         verb: write
       record: apiserver_request:availability30d
-    - expr: avg_over_time(code_verb:apiserver_request_total:increase1h[30d]) * 24
-        * 30
-      record: code_verb:apiserver_request_total:increase30d
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="LIST",code=~"2.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="GET",code=~"2.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="POST",code=~"2.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="PUT",code=~"2.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="PATCH",code=~"2.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="DELETE",code=~"2.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="LIST",code=~"3.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="GET",code=~"3.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="POST",code=~"3.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="PUT",code=~"3.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="PATCH",code=~"3.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="DELETE",code=~"3.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="LIST",code=~"4.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="GET",code=~"4.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="POST",code=~"4.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="PUT",code=~"4.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="PATCH",code=~"4.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="DELETE",code=~"4.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="LIST",code=~"5.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="GET",code=~"5.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="POST",code=~"5.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="PUT",code=~"5.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="PATCH",code=~"5.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb="DELETE",code=~"5.."}[1h]))
-      record: code_verb:apiserver_request_total:increase1h
-    - expr: sum by (cluster, code) (code_verb:apiserver_request_total:increase30d{verb=~"LIST|GET"})
+    - expr: sum by (cluster,code,resource) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET"}[5m]))
       labels:
         verb: read
-      record: code:apiserver_request_total:increase30d
-    - expr: sum by (cluster, code) (code_verb:apiserver_request_total:increase30d{verb=~"POST|PUT|PATCH|DELETE"})
+      record: code_resource:apiserver_request_total:rate5m
+    - expr: sum by (cluster,code,resource) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[5m]))
       labels:
         verb: write
-      record: code:apiserver_request_total:increase30d
+      record: code_resource:apiserver_request_total:rate5m
+    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb=~"LIST|GET|POST|PUT|PATCH|DELETE",code=~"2.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb=~"LIST|GET|POST|PUT|PATCH|DELETE",code=~"3.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb=~"LIST|GET|POST|PUT|PATCH|DELETE",code=~"4.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
+    - expr: sum by (cluster, code, verb) (increase(apiserver_request_total{job="apiserver",verb=~"LIST|GET|POST|PUT|PATCH|DELETE",code=~"5.."}[1h]))
+      record: code_verb:apiserver_request_total:increase1h
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -58598,8 +63019,378 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+    release: prometheus-operator
+  name: prometheus-operator-kube-apiserver-burnrate.rules
+  namespace: metalk8s-monitoring
+spec:
+  groups:
+  - name: kube-apiserver-burnrate.rules
+    rules:
+    - expr: |-
+        (
+          (
+            # too slow
+            sum by (cluster) (rate(apiserver_request_duration_seconds_count{job="apiserver",verb=~"LIST|GET"}[1d]))
+            -
+            (
+              (
+                sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope=~"resource|",le="1"}[1d]))
+                or
+                vector(0)
+              )
+              +
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="namespace",le="5"}[1d]))
+              +
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="40"}[1d]))
+            )
+          )
+          +
+          # errors
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET",code=~"5.."}[1d]))
+        )
+        /
+        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET"}[1d]))
+      labels:
+        verb: read
+      record: apiserver_request:burnrate1d
+    - expr: |-
+        (
+          (
+            # too slow
+            sum by (cluster) (rate(apiserver_request_duration_seconds_count{job="apiserver",verb=~"LIST|GET"}[1h]))
+            -
+            (
+              (
+                sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope=~"resource|",le="1"}[1h]))
+                or
+                vector(0)
+              )
+              +
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="namespace",le="5"}[1h]))
+              +
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="40"}[1h]))
+            )
+          )
+          +
+          # errors
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET",code=~"5.."}[1h]))
+        )
+        /
+        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET"}[1h]))
+      labels:
+        verb: read
+      record: apiserver_request:burnrate1h
+    - expr: |-
+        (
+          (
+            # too slow
+            sum by (cluster) (rate(apiserver_request_duration_seconds_count{job="apiserver",verb=~"LIST|GET"}[2h]))
+            -
+            (
+              (
+                sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope=~"resource|",le="1"}[2h]))
+                or
+                vector(0)
+              )
+              +
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="namespace",le="5"}[2h]))
+              +
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="40"}[2h]))
+            )
+          )
+          +
+          # errors
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET",code=~"5.."}[2h]))
+        )
+        /
+        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET"}[2h]))
+      labels:
+        verb: read
+      record: apiserver_request:burnrate2h
+    - expr: |-
+        (
+          (
+            # too slow
+            sum by (cluster) (rate(apiserver_request_duration_seconds_count{job="apiserver",verb=~"LIST|GET"}[30m]))
+            -
+            (
+              (
+                sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope=~"resource|",le="1"}[30m]))
+                or
+                vector(0)
+              )
+              +
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="namespace",le="5"}[30m]))
+              +
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="40"}[30m]))
+            )
+          )
+          +
+          # errors
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET",code=~"5.."}[30m]))
+        )
+        /
+        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET"}[30m]))
+      labels:
+        verb: read
+      record: apiserver_request:burnrate30m
+    - expr: |-
+        (
+          (
+            # too slow
+            sum by (cluster) (rate(apiserver_request_duration_seconds_count{job="apiserver",verb=~"LIST|GET"}[3d]))
+            -
+            (
+              (
+                sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope=~"resource|",le="1"}[3d]))
+                or
+                vector(0)
+              )
+              +
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="namespace",le="5"}[3d]))
+              +
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="40"}[3d]))
+            )
+          )
+          +
+          # errors
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET",code=~"5.."}[3d]))
+        )
+        /
+        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET"}[3d]))
+      labels:
+        verb: read
+      record: apiserver_request:burnrate3d
+    - expr: |-
+        (
+          (
+            # too slow
+            sum by (cluster) (rate(apiserver_request_duration_seconds_count{job="apiserver",verb=~"LIST|GET"}[5m]))
+            -
+            (
+              (
+                sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope=~"resource|",le="1"}[5m]))
+                or
+                vector(0)
+              )
+              +
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="namespace",le="5"}[5m]))
+              +
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="40"}[5m]))
+            )
+          )
+          +
+          # errors
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET",code=~"5.."}[5m]))
+        )
+        /
+        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET"}[5m]))
+      labels:
+        verb: read
+      record: apiserver_request:burnrate5m
+    - expr: |-
+        (
+          (
+            # too slow
+            sum by (cluster) (rate(apiserver_request_duration_seconds_count{job="apiserver",verb=~"LIST|GET"}[6h]))
+            -
+            (
+              (
+                sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope=~"resource|",le="1"}[6h]))
+                or
+                vector(0)
+              )
+              +
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="namespace",le="5"}[6h]))
+              +
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="40"}[6h]))
+            )
+          )
+          +
+          # errors
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET",code=~"5.."}[6h]))
+        )
+        /
+        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"LIST|GET"}[6h]))
+      labels:
+        verb: read
+      record: apiserver_request:burnrate6h
+    - expr: |-
+        (
+          (
+            # too slow
+            sum by (cluster) (rate(apiserver_request_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[1d]))
+            -
+            sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",le="1"}[1d]))
+          )
+          +
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[1d]))
+        )
+        /
+        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[1d]))
+      labels:
+        verb: write
+      record: apiserver_request:burnrate1d
+    - expr: |-
+        (
+          (
+            # too slow
+            sum by (cluster) (rate(apiserver_request_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[1h]))
+            -
+            sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",le="1"}[1h]))
+          )
+          +
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[1h]))
+        )
+        /
+        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[1h]))
+      labels:
+        verb: write
+      record: apiserver_request:burnrate1h
+    - expr: |-
+        (
+          (
+            # too slow
+            sum by (cluster) (rate(apiserver_request_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[2h]))
+            -
+            sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",le="1"}[2h]))
+          )
+          +
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[2h]))
+        )
+        /
+        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[2h]))
+      labels:
+        verb: write
+      record: apiserver_request:burnrate2h
+    - expr: |-
+        (
+          (
+            # too slow
+            sum by (cluster) (rate(apiserver_request_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[30m]))
+            -
+            sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",le="1"}[30m]))
+          )
+          +
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[30m]))
+        )
+        /
+        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[30m]))
+      labels:
+        verb: write
+      record: apiserver_request:burnrate30m
+    - expr: |-
+        (
+          (
+            # too slow
+            sum by (cluster) (rate(apiserver_request_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[3d]))
+            -
+            sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",le="1"}[3d]))
+          )
+          +
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[3d]))
+        )
+        /
+        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[3d]))
+      labels:
+        verb: write
+      record: apiserver_request:burnrate3d
+    - expr: |-
+        (
+          (
+            # too slow
+            sum by (cluster) (rate(apiserver_request_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[5m]))
+            -
+            sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",le="1"}[5m]))
+          )
+          +
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[5m]))
+        )
+        /
+        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[5m]))
+      labels:
+        verb: write
+      record: apiserver_request:burnrate5m
+    - expr: |-
+        (
+          (
+            # too slow
+            sum by (cluster) (rate(apiserver_request_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[6h]))
+            -
+            sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",le="1"}[6h]))
+          )
+          +
+          sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[6h]))
+        )
+        /
+        sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[6h]))
+      labels:
+        verb: write
+      record: apiserver_request:burnrate6h
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: prometheus-operator
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+    release: prometheus-operator
+  name: prometheus-operator-kube-apiserver-histogram.rules
+  namespace: metalk8s-monitoring
+spec:
+  groups:
+  - name: kube-apiserver-histogram.rules
+    rules:
+    - expr: histogram_quantile(0.99, sum by (cluster, le, resource) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET"}[5m])))
+        > 0
+      labels:
+        quantile: '0.99'
+        verb: read
+      record: cluster_quantile:apiserver_request_duration_seconds:histogram_quantile
+    - expr: histogram_quantile(0.99, sum by (cluster, le, resource) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE"}[5m])))
+        > 0
+      labels:
+        quantile: '0.99'
+        verb: write
+      record: cluster_quantile:apiserver_request_duration_seconds:histogram_quantile
+    - expr: histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{job="apiserver",subresource!="log",verb!~"LIST|WATCH|WATCHLIST|DELETECOLLECTION|PROXY|CONNECT"}[5m]))
+        without(instance, pod))
+      labels:
+        quantile: '0.99'
+      record: cluster_quantile:apiserver_request_duration_seconds:histogram_quantile
+    - expr: histogram_quantile(0.9, sum(rate(apiserver_request_duration_seconds_bucket{job="apiserver",subresource!="log",verb!~"LIST|WATCH|WATCHLIST|DELETECOLLECTION|PROXY|CONNECT"}[5m]))
+        without(instance, pod))
+      labels:
+        quantile: '0.9'
+      record: cluster_quantile:apiserver_request_duration_seconds:histogram_quantile
+    - expr: histogram_quantile(0.5, sum(rate(apiserver_request_duration_seconds_bucket{job="apiserver",subresource!="log",verb!~"LIST|WATCH|WATCHLIST|DELETECOLLECTION|PROXY|CONNECT"}[5m]))
+        without(instance, pod))
+      labels:
+        quantile: '0.5'
+      record: cluster_quantile:apiserver_request_duration_seconds:histogram_quantile
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: prometheus-operator
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -58675,8 +63466,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -59032,8 +63823,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -59057,8 +63848,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -59094,8 +63885,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -59160,8 +63951,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -59237,8 +64028,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -59276,8 +64067,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -59293,8 +64084,10 @@ spec:
           }}) is restarting {{ printf "%.2f" $value }} times / 10 minutes.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepodcrashlooping
         summary: Pod is crash looping.
-      expr: increase(kube_pod_container_status_restarts_total{job="kube-state-metrics",
-        namespace=~".*"}[10m]) > 0
+      expr: |-
+        increase(kube_pod_container_status_restarts_total{job="kube-state-metrics", namespace=~".*"}[10m]) > 0
+        and
+        kube_pod_container_status_waiting{job="kube-state-metrics", namespace=~".*"} == 1
       for: 15m
       labels:
         severity: warning
@@ -59338,7 +64131,7 @@ spec:
       expr: |-
         (
           kube_deployment_spec_replicas{job="kube-state-metrics", namespace=~".*"}
-            !=
+            >
           kube_deployment_status_replicas_available{job="kube-state-metrics", namespace=~".*"}
         ) and (
           changes(kube_deployment_status_replicas_updated{job="kube-state-metrics", namespace=~".*"}[10m])
@@ -59499,37 +64292,37 @@ spec:
         severity: warning
     - alert: KubeHpaReplicasMismatch
       annotations:
-        description: HPA {{ $labels.namespace }}/{{ $labels.hpa }} has not matched
-          the desired number of replicas for longer than 15 minutes.
+        description: HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler  }}
+          has not matched the desired number of replicas for longer than 15 minutes.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubehpareplicasmismatch
         summary: HPA has not matched descired number of replicas.
       expr: |-
-        (kube_hpa_status_desired_replicas{job="kube-state-metrics", namespace=~".*"}
+        (kube_horizontalpodautoscaler_status_desired_replicas{job="kube-state-metrics", namespace=~".*"}
           !=
-        kube_hpa_status_current_replicas{job="kube-state-metrics", namespace=~".*"})
+        kube_horizontalpodautoscaler_status_current_replicas{job="kube-state-metrics", namespace=~".*"})
           and
-        (kube_hpa_status_current_replicas{job="kube-state-metrics", namespace=~".*"}
+        (kube_horizontalpodautoscaler_status_current_replicas{job="kube-state-metrics", namespace=~".*"}
           >
-        kube_hpa_spec_min_replicas{job="kube-state-metrics", namespace=~".*"})
+        kube_horizontalpodautoscaler_spec_min_replicas{job="kube-state-metrics", namespace=~".*"})
           and
-        (kube_hpa_status_current_replicas{job="kube-state-metrics", namespace=~".*"}
+        (kube_horizontalpodautoscaler_status_current_replicas{job="kube-state-metrics", namespace=~".*"}
           <
-        kube_hpa_spec_max_replicas{job="kube-state-metrics", namespace=~".*"})
+        kube_horizontalpodautoscaler_spec_max_replicas{job="kube-state-metrics", namespace=~".*"})
           and
-        changes(kube_hpa_status_current_replicas{job="kube-state-metrics", namespace=~".*"}[15m]) == 0
+        changes(kube_horizontalpodautoscaler_status_current_replicas{job="kube-state-metrics", namespace=~".*"}[15m]) == 0
       for: 15m
       labels:
         severity: warning
     - alert: KubeHpaMaxedOut
       annotations:
-        description: HPA {{ $labels.namespace }}/{{ $labels.hpa }} has been running
-          at max replicas for longer than 15 minutes.
+        description: HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler  }}
+          has been running at max replicas for longer than 15 minutes.
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubehpamaxedout
         summary: HPA is running at max replicas
       expr: |-
-        kube_hpa_status_current_replicas{job="kube-state-metrics", namespace=~".*"}
+        kube_horizontalpodautoscaler_status_current_replicas{job="kube-state-metrics", namespace=~".*"}
           ==
-        kube_hpa_spec_max_replicas{job="kube-state-metrics", namespace=~".*"}
+        kube_horizontalpodautoscaler_spec_max_replicas{job="kube-state-metrics", namespace=~".*"}
       for: 15m
       labels:
         severity: warning
@@ -59543,8 +64336,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -59679,8 +64472,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -59698,10 +64491,13 @@ spec:
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumefillingup
         summary: PersistentVolume is filling up.
       expr: |-
-        kubelet_volume_stats_available_bytes{job="kubelet", namespace=~".*", metrics_path="/metrics"}
-          /
-        kubelet_volume_stats_capacity_bytes{job="kubelet", namespace=~".*", metrics_path="/metrics"}
-          < 0.03
+        (
+          kubelet_volume_stats_available_bytes{job="kubelet", namespace=~".*", metrics_path="/metrics"}
+            /
+          kubelet_volume_stats_capacity_bytes{job="kubelet", namespace=~".*", metrics_path="/metrics"}
+        ) < 0.03
+        and
+        kubelet_volume_stats_used_bytes{job="kubelet", namespace=~".*", metrics_path="/metrics"} > 0
       for: 1m
       labels:
         severity: critical
@@ -59719,6 +64515,8 @@ spec:
             /
           kubelet_volume_stats_capacity_bytes{job="kubelet", namespace=~".*", metrics_path="/metrics"}
         ) < 0.15
+        and
+        kubelet_volume_stats_used_bytes{job="kubelet", namespace=~".*", metrics_path="/metrics"} > 0
         and
         predict_linear(kubelet_volume_stats_available_bytes{job="kubelet", namespace=~".*", metrics_path="/metrics"}[6h], 4 * 24 * 3600) < 0
       for: 1h
@@ -59745,8 +64543,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -59832,8 +64630,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -59863,8 +64661,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60023,8 +64821,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60053,8 +64851,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60099,8 +64897,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60172,8 +64970,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60185,9 +64983,10 @@ spec:
     rules:
     - alert: NodeNetworkInterfaceFlapping
       annotations:
-        message: Network interface "{{ $labels.device }}" changing it's up status
+        description: Network interface "{{ $labels.device }}" changing it's up status
           often on node-exporter {{ $labels.namespace }}/{{ $labels.pod }}
         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodenetworkinterfaceflapping
+        summary: Network interface is often changin it's status
       expr: changes(node_network_up{job="node-exporter",device!~"veth.+"}[2m]) > 2
       for: 2m
       labels:
@@ -60202,8 +65001,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60247,8 +65046,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60350,8 +65149,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60597,6 +65396,17 @@ spec:
       for: 15m
       labels:
         severity: warning
+    - alert: PrometheusTargetSyncFailure
+      annotations:
+        description: '{{ printf "%.0f" $value }} targets in Prometheus {{$labels.namespace}}/{{$labels.pod}}
+          have failed to sync because invalid configuration was supplied.'
+        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheustargetsyncfailure
+        summary: Prometheus has failed to sync targets.
+      expr: increase(prometheus_target_sync_failed_total{job="prometheus-operator-prometheus",namespace="metalk8s-monitoring"}[30m])
+        > 0
+      for: 5m
+      labels:
+        severity: critical
     - alert: PrometheusErrorSendingAlertsToAnyAlertmanager
       annotations:
         description: '{{ printf "%.1f" $value }}% minimum errors while sending alerts
@@ -60624,8 +65434,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60634,7 +65444,7 @@ metadata:
 spec:
   endpoints:
   - path: /metrics
-    port: web
+    port: http-web
   namespaceSelector:
     matchNames:
     - metalk8s-monitoring
@@ -60653,8 +65463,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60682,8 +65492,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-apiserver
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60716,8 +65526,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60749,8 +65559,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60778,8 +65588,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60807,8 +65617,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60840,8 +65650,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60866,8 +65676,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kubelet
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60883,6 +65693,7 @@ spec:
       - __metrics_path__
       targetLabel: metrics_path
     scheme: https
+    scrapeTimeout: {% endraw -%}{{ prometheus.spec.config.serviceMonitor.kubelet.scrapeTimeout }}{%- raw %}
     tlsConfig:
       caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
       insecureSkipVerify: true
@@ -60908,6 +65719,7 @@ spec:
       - __metrics_path__
       targetLabel: metrics_path
     scheme: https
+    scrapeTimeout: {% endraw -%}{{ prometheus.spec.config.serviceMonitor.kubelet.scrapeTimeout }}{%- raw %}
     tlsConfig:
       caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
       insecureSkipVerify: true
@@ -60929,8 +65741,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60938,7 +65750,7 @@ metadata:
   namespace: metalk8s-monitoring
 spec:
   endpoints:
-  - port: metrics
+  - port: http-metrics
   jobLabel: jobLabel
   selector:
     matchLabels:
@@ -60954,8 +65766,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -60964,10 +65776,7 @@ metadata:
 spec:
   endpoints:
   - path: /metrics
-    port: service
-  namespaceSelector:
-    matchNames:
-    - metalk8s-monitoring
+    port: http-web
   selector:
     matchLabels:
       app.kubernetes.io/instance: prometheus-operator
@@ -60982,8 +65791,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -61010,8 +65819,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 16.9.1
-    chart: kube-prometheus-stack-16.9.1
+    app.kubernetes.io/version: 23.2.0
+    chart: kube-prometheus-stack-23.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -61020,7 +65829,7 @@ metadata:
 spec:
   endpoints:
   - path: /metrics
-    port: web
+    port: http-web
   namespaceSelector:
     matchNames:
     - metalk8s-monitoring

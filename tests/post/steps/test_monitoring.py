@@ -1,4 +1,5 @@
 import json
+import operator
 import pathlib
 import random
 import string
@@ -302,8 +303,10 @@ def check_deployed_rules(host, prometheus_api):
     except json.JSONDecodeError as exc:
         pytest.fail(f"Failed to decode JSON from {ALERT_RULE_FILE}: {exc!s}")
 
-    assert (
-        default_alert_rules == deployed_alert_rules
+    assert sorted(
+        default_alert_rules, key=operator.itemgetter("name", "severity")
+    ) == sorted(
+        deployed_alert_rules, key=operator.itemgetter("name", "severity")
     ), "Expected default Prometheus rules to be equal to deployed rules."
 
 
