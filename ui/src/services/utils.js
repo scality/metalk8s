@@ -65,92 +65,6 @@ export const sortSelector = createSelector(
   (list) => list,
 );
 
-/**
- * This function will sort the `array` by capacity.
- * The capacity should follow k8s regex rules.
- * Each elements is an object that have a storageCapacity field.
- *
- * @param {array} list - The array that will be sort
- * @param {string} sortBy - The field that will be sort
- * @param {string} sortDirection - The direction of the sort.
- *
- * /!\ This function will override the following fields, please make
- * sure your object does not contain those fields :
- * `tmpInternalSize` and `tmpInternalUnitBase`
- *
- * @example
- * const capacities = [
- *  { capacity: '1Ki' },
- *  { capacity: '1Gi' },
- *  { capacity: '100Mi' },
- * ];
- *
- * const sortedCapacity = sortCapacity(capacities, 'capacity', 'DESC')
- */
-export const sortCapacity = createSelector(
-  (list = [], sortBy = 'storageCapacity', sortDirection = 'ASC') => {
-    if (
-      Array.isArray(list) &&
-      typeof sortBy === 'string' &&
-      typeof sortDirection === 'string'
-    ) {
-      const sizeRegex = /^(?<size>[1-9][0-9]*)(?<unit>[kKMGTP]i?)?/;
-      const notSortableList = list.filter(
-        (item) => !sizeRegex.test(item?.[sortBy]),
-      );
-
-      const sortedList = list
-        // Filter wrong value (ie: null or incorrect unit)
-        .filter((item) => sizeRegex.test(item?.[sortBy]))
-        .map((item) => {
-          /**
-           * This regex help us to seperate the capacity into
-           * the size and the unit
-           * @example
-           * "1Gi" => { 'groups': { size: '1', unit: 'Gi'} }
-           * "123" => { 'groups': { size: '1', unit: undefined } }
-           */
-          const { groups } = item[sortBy].match(sizeRegex);
-          const tmpInternalUnit = groups?.unit ?? '';
-          const tmpInternalSize = groups?.size;
-          const tmpInternalUnitBase =
-            sizeUnits.find((sizeUnit) => sizeUnit.value === tmpInternalUnit)
-              ?.base ?? sizeUnits[0].value;
-
-          return {
-            ...item,
-            tmpInternalSize,
-            tmpInternalUnitBase,
-          };
-        })
-        .sort((item1, item2) => {
-          const rawValue1 = item1.tmpInternalUnitBase * item1.tmpInternalSize;
-          const rawValue2 = item2.tmpInternalUnitBase * item2.tmpInternalSize;
-
-          if (sortDirection === 'ASC') {
-            return rawValue1 - rawValue2;
-          } else if (sortDirection === 'DESC') {
-            return rawValue2 - rawValue1;
-          } else {
-            return 0;
-          }
-        })
-        // Cleanup temporary fields
-        .map((item) => {
-          const cleanItem = { ...item };
-          delete cleanItem.tmpInternalSize;
-          delete cleanItem.tmpInternalUnitBase;
-          return cleanItem;
-        });
-
-      return [...sortedList, ...notSortableList];
-    } else {
-      return [];
-    }
-  },
-  (list) => list,
-);
-
 export const getNodeNameFromUrl = (state, props, name) => {
   // Exceptional: don't need to get the name from URL.
   if (name) {
@@ -215,7 +129,7 @@ export const sizeUnits = [
   { label: 'GiB', value: 'Gi', base: 2 ** 30 },
   { label: 'TiB', value: 'Ti', base: 2 ** 40 },
   { label: 'PiB', value: 'Pi', base: 2 ** 50 },
-  { label: 'k', value: 'k', base: 10 ** 3 },
+  { label: 'K', value: 'K', base: 10 ** 3 },
   { label: 'M', value: 'M', base: 10 ** 6 },
   { label: 'G', value: 'G', base: 10 ** 9 },
   { label: 'T', value: 'T', base: 10 ** 12 },
@@ -223,20 +137,29 @@ export const sizeUnits = [
 ];
 
 export function allSizeUnitsToBytes(size) {
-  if (size) {
-    const sizeRegex = /^(?<size>[1-9][0-9]*)(?<unit>[kKMGTP]i?)?/;
-    const { groups } = size?.match(sizeRegex);
+  const sizeRegex =
+    /^(?<size>[1-9]([0-9]+)?\.?([0-9]+)?)\s?(?<unit>[kKMGTPB]i?)B?$/;
+  if (size && typeof size === 'string') {
+    const match = size?.match(sizeRegex);
+    if (match) {
+      const { groups } = match;
 
-    if (groups) {
-      const tmpInternalUnit = groups?.unit ?? '';
-      const tmpInternalSize = groups?.size;
-      const tmpInternalUnitBase =
-        sizeUnits.find((sizeUnit) => sizeUnit.value === tmpInternalUnit)
-          ?.base ?? sizeUnits[0].value;
+      if (groups) {
+        const tmpInternalUnit = groups?.unit ?? '';
+        const tmpInternalSize = groups?.size;
+        if (tmpInternalUnit === 'B') {
+          return parseFloat(tmpInternalSize);
+        }
+        const tmpInternalUnitBase =
+          sizeUnits.find((sizeUnit) => sizeUnit.value === tmpInternalUnit)
+            ?.base ?? sizeUnits[0].value;
 
-      return tmpInternalUnitBase * tmpInternalSize;
+        return parseFloat(tmpInternalSize) * tmpInternalUnitBase;
+      }
     }
+    return parseFloat(size);
   }
+  return size;
 }
 
 export function bytesToSize(bytes) {
@@ -356,7 +279,7 @@ export function getSegments({ pointsAtRisk, pointsDegraded, pointsWatchdog }) {
   return pointsDegraded.reduce((agg, [timestamp, degradedValue], index) => {
     const atRiskValue = pointsAtRisk[index][1];
     const currentType =
-    pointsWatchdog[index][1] !== '1'
+      pointsWatchdog[index][1] !== '1'
         ? NAN_STRING
         : atRiskValue > 0
         ? STATUS_CRITICAL

@@ -1,10 +1,11 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { useTable } from 'react-table';
 import styled from 'styled-components';
+import isEqual from 'lodash.isequal';
 import { Tooltip } from '@scality/core-ui';
+import { Table } from '@scality/core-ui/dist/next';
 
-import { fontSize, padding, spacing } from '@scality/core-ui/dist/style/theme';
+import { padding, spacing } from '@scality/core-ui/dist/style/theme';
 import { NodeTab } from './style/CommonLayoutStyle';
 import { TooltipContent } from './TableRow';
 
@@ -20,47 +21,8 @@ import { useIntl } from 'react-intl';
 const PodTableContainer = styled.div`
   color: ${(props) => props.theme.textPrimary};
   padding: ${padding.large};
-  font-family: 'Lato';
-  font-size: ${fontSize.base};
-
-  .ReactTable .rt-thead {
-    overflow-y: auto;
-  }
-  table {
-    border-spacing: 0;
-    th {
-      font-weight: bold;
-      height: 56px;
-      text-align: left;
-    }
-  }
-`;
-
-const HeadRow = styled.tr`
-  width: 100%;
-  /* To display scroll bar on the table */
-  display: table;
-  table-layout: fixed;
-`;
-
-const TableRow = styled(HeadRow)`
-  height: 40px;
-`;
-
-// * table body
-const Body = styled.tbody`
-  /* To display scroll bar on the table */
-  display: block;
-  /* 100vh - navbar - tabs button height - tabs content padding - table header */
-  height: calc(100vh - 12.71rem);
-  overflow: auto;
-  overflow-y: auto;
-`;
-
-const Cell = styled.td`
-  overflow-wrap: break-word;
-  // seperation line color
-  border-top: 1px solid ${(props) => props.theme.backgroundLevel1};
+  height: calc(100% - ${padding.large} - ${padding.large});
+  width: calc(100% - ${padding.large} - ${padding.large});
 `;
 
 // Color specification:
@@ -87,67 +49,7 @@ const ExternalLink = styled.a`
   color: ${(props) => props.theme.textSecondary};
 `;
 
-function Table({ columns, data }) {
-  const intl = useIntl();
-  // Use the state and functions returned from useTable to build your UI
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-  } = useTable({
-    columns,
-    data,
-  });
-
-  // Render the UI for your table
-  return (
-    <table {...getTableProps()}>
-      <thead>
-        {headerGroups.map((headerGroup) => {
-          return (
-            <HeadRow {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => {
-                const headerStyleProps = column.getHeaderProps({
-                  style: column.cellStyle,
-                });
-                return <th {...headerStyleProps}>{column.render('Header')}</th>;
-              })}
-            </HeadRow>
-          );
-        })}
-      </thead>
-      <Body {...getTableBodyProps()}>
-        {rows.map((row, i) => {
-          prepareRow(row);
-          return (
-            <TableRow {...row.getRowProps()}>
-              {row.cells.map((cell) => {
-                let cellProps = cell.getCellProps({
-                  style: {
-                    ...cell.column.cellStyle,
-                  },
-                });
-                if (cell.column.Header !== 'Name' && cell.value === undefined) {
-                  return (
-                    <Cell {...cellProps}>
-                      <div>{intl.formatMessage({ id: 'unknown' })}</div>
-                    </Cell>
-                  );
-                } else {
-                  return <Cell {...cellProps}>{cell.render('Cell')}</Cell>;
-                }
-              })}
-            </TableRow>
-          );
-        })}
-      </Body>
-    </table>
-  );
-}
-
-const NodePagePodsTab = (props) => {
+const NodePagePodsTab = React.memo((props) => {
   const { pods } = props;
   const config = useSelector((state) => state.config);
   const intl = useIntl();
@@ -156,11 +58,34 @@ const NodePagePodsTab = (props) => {
       {
         Header: 'Name',
         accessor: 'name',
+        cellStyle: {
+          width: '100%',
+          maxWidth: '20rem',
+          minWidth: '5rem',
+          marginRight: spacing.sp8,
+        },
       },
       {
         Header: 'Status',
         accessor: 'status',
-        cellStyle: { width: '7.143rem' },
+        cellStyle: {
+          maxWidth: '7rem',
+          marginRight: spacing.sp8,
+        },
+        sortType: (rowa, rowb) => {
+          const {
+            values: { status: statusA },
+          } = rowa;
+          const {
+            values: { status: statusB },
+          } = rowb;
+          const valueA =
+            statusA.status + statusA.numContainer + statusA.numContainerRunning;
+          const valueB =
+            statusB.status + statusB.numContainer + statusB.numContainerRunning;
+
+          return valueA.localeCompare(valueB);
+        },
         Cell: (cellProps) => {
           const { status, numContainer, numContainerRunning } = cellProps.value;
           return status === STATUS_RUNNING ? (
@@ -179,20 +104,31 @@ const NodePagePodsTab = (props) => {
       {
         Header: 'Age',
         accessor: 'age',
-        cellStyle: { width: '4.286rem' },
+        cellStyle: {
+          maxWidth: '5rem',
+          marginRight: spacing.sp8,
+        },
       },
       {
         Header: 'Namespace',
         accessor: 'namespace',
+        cellStyle: {
+          maxWidth: '7rem',
+          minWidth: '5rem',
+          marginRight: spacing.sp8,
+        },
       },
       {
         Header: 'Logs',
         accessor: 'log',
-        cellStyle: { textAlign: 'center', width: spacing.sp40 },
+        cellStyle: {
+          minWidth: '3rem',
+          textAlign: 'center',
+          width: spacing.sp40,
+        },
         Cell: ({ value }) => {
           return (
             <Tooltip
-              placement={'left'}
               overlay={
                 <TooltipContent>
                   {intl.formatMessage({ id: 'advanced_monitoring' })}
@@ -217,10 +153,16 @@ const NodePagePodsTab = (props) => {
   return (
     <NodeTab>
       <PodTableContainer>
-        <Table columns={columns} data={pods} />
+        <Table columns={columns} data={pods} defaultSortingKey={'status'}>
+          <Table.SingleSelectableContent
+            rowHeight="h48"
+            separationLineVariant="backgroundLevel3"
+            backgroundVariant="backgroundLevel1"
+          />
+        </Table>
       </PodTableContainer>
     </NodeTab>
   );
-};
+}, isEqual);
 
 export default NodePagePodsTab;
