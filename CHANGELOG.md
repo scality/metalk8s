@@ -1,5 +1,7 @@
 # CHANGELOG
-## Release 2.10.6 (in development)
+## Release 2.10.7 (in development)
+
+## Release 2.10.6
 ## Enhancements
 
 - Bump Kubernetes version to 1.21.7
@@ -14,6 +16,11 @@
 - [#3341](https://github.com/scality/metalk8s/issues/3341) - Try to refresh
   udev database automatically if a Volume persistent path does not exist
   (PR[#3630](https://github.com/scality/metalk8s/pull/3630))
+- Fix wrong average value in Control Plane and Workload Plane Bandwidth chart
+  (PR[#3616](https://github.com/scality/metalk8s/pull/3616))
+- Fix no data displayed within the tooltip of UI chart when
+  Node name contains more than 1 dots
+  (PR[#3629](https://github.com/scality/metalk8s/pull/3629))
 
 ## Release 2.10.5
 ## Enhancements
