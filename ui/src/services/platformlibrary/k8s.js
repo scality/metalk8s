@@ -1,6 +1,17 @@
 //@flow
 import { useQuery } from 'react-query';
 import { REFRESH_METRICS_GRAPH } from '../../constants';
+import * as Metalk8sVolumesApi from '../k8s/Metalk8sVolumeClient.generated';
+import * as VolumesApi from '../k8s/volumes';
+import { allSizeUnitsToBytes, bytesToSize } from '../utils';
+
+const FIVE_SECOND_IN_MS = 5000;
+
+export const volumesKey = {
+  all: ['volumes', 'list'],
+  volumeObject: ['volumes', 'object'],
+  persitant: ['persistentVolumes'],
+};
 
 export const getNodesCountQuery = (
   k8sUrl: string,
@@ -53,3 +64,43 @@ export const getVolumesCountQuery = (
     enabled: token ? true : false,
   };
 };
+
+export function getVolumeQueryOption() {
+  return {
+    queryKey: volumesKey.all,
+    queryFn: Metalk8sVolumesApi.getMetalk8sV1alpha1VolumeList,
+    select: (data) => data.body?.items,
+    staleTime: FIVE_SECOND_IN_MS,
+  };
+}
+
+export function getCurrentVolumeObjectQueryOption(volumeName: string) {
+  return {
+    queryKey: volumesKey.volumeObject,
+    select: (data) => data.body,
+    queryFn: () => Metalk8sVolumesApi.getMetalk8sV1alpha1Volume(volumeName),
+  };
+}
+
+export function getPersistentVolumeQueryOption() {
+  return {
+    queryKey: volumesKey.persitant,
+    queryFn: VolumesApi.getPersistentVolumes,
+    select: (data) => {
+      return data.body?.items?.map((item) => {
+        return {
+          ...item,
+          spec: {
+            ...item.spec,
+            capacity: {
+              storage: bytesToSize(
+                allSizeUnitsToBytes(item.spec.capacity.storage),
+              ),
+            },
+          },
+        };
+      });
+    },
+    staleTime: FIVE_SECOND_IN_MS,
+  };
+}

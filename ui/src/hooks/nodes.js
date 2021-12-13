@@ -2,21 +2,21 @@ import { useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
 
-import * as CoreApi from '../../services/k8s/core';
-import { nodeKey } from '../../services/k8s/core.key';
+import * as CoreApi from '../services/k8s/core';
+import { nodeKey } from '../services/k8s/core.key';
 import {
   API_STATUS_READY,
   API_STATUS_NOT_READY,
   API_STATUS_UNKNOWN,
   REFRESH_TIMEOUT,
-} from '../../constants.js';
-import { allJobsSelector } from './salt';
+} from '../constants.js';
+import { allJobsSelector } from '../ducks/app/salt';
 
 import {
   ROLE_PREFIX,
   FETCH_NODES_IPS_INTERFACES,
   updateNodesAction,
-} from './nodes';
+} from '../ducks/app/nodes';
 
 const FIVE_SECOND_IN_MS = 5000;
 

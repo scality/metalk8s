@@ -10,12 +10,12 @@ import {
   useRefreshVolume,
   useFetchCurrentVolumeObject,
   useGetPersistentVolumes,
-} from '../ducks/app/volumes.hooks';
-import { useFetchCurrentVolumeStats } from '../ducks/app/monitoring.hooks';
+} from '../hooks/volumes';
+import { useFetchCurrentVolumeStats } from '../hooks/monitoring';
 import { fetchPersistentVolumeClaimAction } from '../ducks/app/volumes';
 import { fetchVolumeStatsAction } from '../ducks/app/monitoring';
 import { PageContainer } from '../components/style/CommonLayoutStyle';
-import { useRefreshNodes } from '../ducks/app/nodes.hook';
+import { useRefreshNodes } from '../hooks/nodes';
 import { useTypedSelector, useVolumesWithAlerts } from '../hooks';
 
 // <VolumePage> component fetchs all the data used by volume page from redux store.
