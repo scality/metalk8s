@@ -273,3 +273,8 @@ class GrafanaAPI(BaseAPI):
         return self.request(
             "GET", "api/search", auth=("admin", "admin"), params={"type": "dash-db"}
         )
+
+    def get_datasource(self, name):
+        return self.request(
+            "GET", f"api/datasources/name/{name}", auth=("admin", "admin")
+        )

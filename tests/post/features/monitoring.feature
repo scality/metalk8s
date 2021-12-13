@@ -56,3 +56,9 @@ Feature: Monitoring is up and running
     Scenario: Expected Grafana dashboards are available
         Given the Grafana API is available
         Then the deployed dashboards match the expected ones
+
+    Scenario: Inserting a new ConfigMap provides a new datasource
+        Given the Kubernetes API is available
+        And the Grafana API is available
+        When we put a datasource as ConfigMap named 'test-new-ds' in namespace 'metalk8s-monitoring'
+        Then we have a datasource named 'test-new-ds'
