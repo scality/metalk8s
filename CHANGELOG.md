@@ -74,6 +74,8 @@
   highly-available when we have multiple Prometheus instances
   (PR[#3573](https://github.com/scality/metalk8s/pull/3573))
 
+- Handle 401 unauthorized error in MetalK8s UI
+  (PR[#3640](https://github.com/scality/metalk8s/pull/3640))
 ## Bug fixes
 
 - [#3601](https://github.com/scality/metalk8s/issues/3601) - Marks
