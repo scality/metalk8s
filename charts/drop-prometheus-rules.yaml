@@ -13,3 +13,4 @@ node-exporter:
   - NodeRAIDDegraded
   - NodeRAIDDiskFailure
   - NodeTextFileCollectorScrapeError
+  - NodeFileDescriptorLimit

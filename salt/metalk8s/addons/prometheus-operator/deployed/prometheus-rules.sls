@@ -255,4 +255,30 @@ spec:
       expr: node_md_disks{state="failed"} >= {% endraw %}{{ rules.node_exporter.node_raid_disk_failure.warning.threshold }}{% raw %}
       labels:
         severity: warning
+    - alert: NodeFileDescriptorLimit
+      annotations:
+        description: File descriptors limit at {{ $labels.instance }} is currently
+          at {{ printf "%.2f" $value }}%.
+        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodefiledescriptorlimit
+        summary: Kernel is predicted to exhaust file descriptors limit soon.
+      expr: |-
+        (
+          node_filefd_allocated{job="node-exporter"} * 100 / node_filefd_maximum{job="node-exporter"} > 70
+        )
+      for: 15m
+      labels:
+        severity: warning
+    - alert: NodeFileDescriptorLimit
+      annotations:
+        description: File descriptors limit at {{ $labels.instance }} is currently
+          at {{ printf "%.2f" $value }}%.
+        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodefiledescriptorlimit
+        summary: Kernel is predicted to exhaust file descriptors limit soon.
+      expr: |-
+        (
+          node_filefd_allocated{job="node-exporter"} * 100 / node_filefd_maximum{job="node-exporter"} > 90
+        )
+      for: 15m
+      labels:
+        severity: critical
 {%- endraw %}

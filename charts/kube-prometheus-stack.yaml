@@ -62,6 +62,13 @@ alertmanager:
       - alertmanager-prometheus-operator-alertmanager
 
 prometheusOperator:
+  thanosImage:
+    repository: '__image__(thanos)'
+
+  prometheusConfigReloader:
+    image:
+      repository: '__image__(prometheus-config-reloader)'
+
   tls:
     enabled: false
 
@@ -81,10 +88,6 @@ prometheusOperator:
 
   image:
     repository: '__image__(prometheus-operator)'
-
-  prometheusConfigReloaderImage:
-    repository: '__image__(prometheus-config-reloader)'
-
 
 prometheus:
   thanosService:
@@ -149,7 +152,6 @@ grafana:
 
   image:
     repository: '__image__(grafana)'
-    tag: '8.0.6-ubuntu'
 
   sidecar:
     image:
