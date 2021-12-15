@@ -142,21 +142,26 @@ function InternalRouter(): Node {
       exact: view.exact,
       strict: view.strict,
       sensitive: view.sensitive,
-      component: () => (
-        <FederatedRoute
-          url={
-            app.url +
-            retrieveConfiguration({
-              configType: 'build',
-              name: app.name,
-            }).spec.remoteEntryPath
-          }
-          module={view.module}
-          scope={view.scope}
-          app={app}
-          groups={groups}
-        />
-      ),
+      component: () => {
+        const federatedAppHistory = useMemo(() => createBrowserHistory({basename: app.appHistoryBasePath }), []);
+
+        return (
+        <Router history={federatedAppHistory}>
+          <FederatedRoute
+            url={
+              app.url +
+              retrieveConfiguration({
+                configType: 'build',
+                name: app.name,
+              }).spec.remoteEntryPath
+            }
+            module={view.module}
+            scope={view.scope}
+            app={app}
+            groups={groups}
+          />
+        </Router>
+      )},
     }));
 
   return (
