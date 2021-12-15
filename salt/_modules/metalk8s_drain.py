@@ -122,6 +122,7 @@ def _message_from_pods_dict(errors_dict):
 # pod statuses
 POD_STATUS_SUCCEEDED = "Succeeded"
 POD_STATUS_FAILED = "Failed"
+POD_STATUS_PENDING = "Pending"
 
 
 class Drain(object):
@@ -136,6 +137,7 @@ class Drain(object):
     WARNING_MSG = {
         "daemonset": "Ignoring DaemonSet-managed pods",
         "localStorage": "Deleting pods with local storage",
+        "pending": "Ignoring Pending pods",
         "unmanaged": (
             "Deleting pods not managed by ReplicationController, "
             "ReplicaSet, Job, DaemonSet or StatefulSet"
@@ -157,6 +159,7 @@ class Drain(object):
         force=False,
         grace_period=1,
         ignore_daemonset=False,
+        ignore_pending=False,
         timeout=0,
         delete_local_data=False,
         best_effort=False,
@@ -166,6 +169,7 @@ class Drain(object):
         self._force = force
         self._grace_period = grace_period
         self._ignore_daemonset = ignore_daemonset
+        self._ignore_pending = ignore_pending
         # Default timeout is 3600 seconds
         self._timeout = timeout or 3600
         self._delete_local_data = delete_local_data
@@ -176,6 +180,7 @@ class Drain(object):
     force = property(operator.attrgetter("_force"))
     grace_period = property(operator.attrgetter("_grace_period"))
     ignore_daemonset = property(operator.attrgetter("_ignore_daemonset"))
+    ignore_pending = property(operator.attrgetter("_ignore_pending"))
     timeout = property(operator.attrgetter("_timeout"))
     delete_local_data = property(operator.attrgetter("_delete_local_data"))
 
@@ -269,6 +274,19 @@ class Drain(object):
             )
         return controller_ref
 
+    def status_filter(self, pod):
+        """Compute eviction status for the pod according to status.
+
+        If the Pod is pending and `ignore_pending` option was set then
+        the pod is just skipped
+
+        Returns: (is_deletable: bool, warning: str)
+        """
+        if pod["status"]["phase"] == POD_STATUS_PENDING and self.ignore_pending:
+            return False, self.WARNING_MSG["pending"]
+
+        return True, ""
+
     def daemonset_filter(self, pod):
         """Compute eviction status for the pod according to DaemonSet kind.
 
@@ -326,6 +344,7 @@ class Drain(object):
                 self.localstorage_filter,
                 self.unreplicated_filter,
                 self.daemonset_filter,
+                self.status_filter,
             ):
                 try:
                     filter_deletable, warning = pod_filter(pod)
@@ -555,6 +574,7 @@ def node_drain(
     force=False,
     grace_period=1,
     ignore_daemonset=False,
+    ignore_pending=False,
     timeout=0,
     delete_local_data=False,
     best_effort=False,
@@ -567,6 +587,7 @@ def node_drain(
       - force             : ignore unreplicated pods (i.e. StaticPod pods)
       - grace_period      : eviction grace period
       - ignore_daemonset  : ignore daemonsets in eviction process
+      - ignore_pending    : ignore pending pods
       - timeout           : drain process timeout value
       - delete_local_data : force deletion for pods with local storage
       - best_effort       : try to drain the node as much as possible but do not
@@ -584,6 +605,7 @@ def node_drain(
         force=force,
         grace_period=grace_period,
         ignore_daemonset=ignore_daemonset,
+        ignore_pending=ignore_pending,
         timeout=timeout,
         delete_local_data=delete_local_data,
         best_effort=best_effort,

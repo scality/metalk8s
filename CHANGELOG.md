@@ -96,6 +96,10 @@
   (PR[#3624](https://github.com/scality/metalk8s/pull/3624))
 
 ## Release 2.10.7 (in development)
+## Enhancements
+
+- Skip "Pending" pods when draining a node
+  (PR[#3641](https://github.com/scality/metalk8s/pull/3641))
 
 ## Release 2.10.6
 ## Enhancements

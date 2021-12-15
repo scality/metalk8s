@@ -130,6 +130,7 @@ Drain the node:
   metalk8s_drain.node_drained:
     - name: {{ node_name }}
     - ignore_daemonset: True
+    - ignore_pending: True
     - delete_local_data: True
     - force: True
     {%- if pillar.orchestrate.get("drain_timeout") %}

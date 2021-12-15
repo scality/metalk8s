@@ -154,13 +154,14 @@ drain:
       pods_to_evict:
         - my-finished-pod
 
-    # All possible pods (ReplicaSet, DaemonSet, unmanaged, with local storage)
+    # All possible pods (ReplicaSet, DaemonSet, unmanaged, Pending, with local storage)
     - node_name: my-node
       dataset: full
       # Add some args to evict the special pods
       force: true
       delete_local_data: true
       ignore_daemonset: true
+      ignore_pending: true
       # DaemonSet-managed and static pods are ignored
       pods_to_evict:
         - my-pod
@@ -182,6 +183,27 @@ drain:
           contains: >-
             Deleting pods not managed by ReplicationController, ReplicaSet,
             Job, DaemonSet or StatefulSet: my-static-pod
+
+    # Pending pods (evicted by default)
+    # FIXME: all filters are executed, and we see some incorrect warnings
+    - &evict_filter_pending_pod
+      node_name: my-node
+      dataset: single-pending-pod
+      pods_to_evict:
+        - my-pending-pod
+      log_lines:
+        - level: WARNING
+          contains: >-
+            Deleting pods not managed by ReplicationController, ReplicaSet,
+            Job, DaemonSet or StatefulSet: my-pending-pod
+
+    # Pending pods (ignored, with a warning)
+    - <<: *evict_filter_pending_pod
+      ignore_pending: true
+      pods_to_evict: []
+      log_lines:
+        - level: WARNING
+          contains: "Ignoring Pending pods: my-pending-pod"
 
     # DaemonSet-managed pods (ignored, with a warning)
     - node_name: my-node
@@ -442,6 +464,15 @@ datasets:
         <<: *base_pod_status
         phase: Succeeded
 
+    pending-pod: &pending_pod
+      <<: *base_pod
+      metadata:
+        <<: *base_pod_meta
+        name: my-pending-pod
+      status:
+        <<: *base_pod_status
+        phase: Pending
+
     replicaset-pod: &replicaset_pod
       <<: *base_pod
       metadata: &replicaset_pod_meta
@@ -516,6 +547,11 @@ datasets:
     pods:
       - *static_pod
 
+  single-pending-pod:
+    <<: *empty_dataset
+    pods:
+      - *pending_pod
+
   finished-pod: &finished_pod_dataset
     <<: *empty_dataset
     pods:
@@ -587,6 +623,7 @@ datasets:
       - *base_pod
       - *replicaset_pod
       - *static_pod
+      - *pending_pod
       - *local_storage_pod
       - *daemonset_pod
     replicasets:
