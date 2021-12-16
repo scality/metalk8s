@@ -1,5 +1,5 @@
 # CHANGELOG
-## Release 2.10.7 (in development)
+## Release 2.10.7
 ## Enhancements
 
 - Skip "Pending" pods when draining a node
