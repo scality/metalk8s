@@ -37,11 +37,7 @@ import {
   useConfigRetriever,
   useDiscoveredViews,
 } from './initFederation/ConfigurationProviders';
-import {
-  Route,
-  Switch,
-  Router,
-} from 'react-router-dom';
+import { Route, Switch, Router } from 'react-router-dom';
 import {
   ShellConfigProvider,
   useShellConfig,
@@ -203,13 +199,17 @@ function WithInitFederationProviders({ children }: { children: Node }) {
 export default function App(): Node {
   return (
     <ScrollbarWrapper>
-      <QueryClientProvider client={queryClient} contextSharing={true}>
-        <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
-          <WithInitFederationProviders>
-            <InternalApp />
-          </WithInitFederationProviders>
-        </ShellConfigProvider>
-      </QueryClientProvider>
+      <div
+        style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}
+      >
+        <QueryClientProvider client={queryClient} contextSharing={true}>
+          <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
+            <WithInitFederationProviders>
+              <InternalApp />
+            </WithInitFederationProviders>
+          </ShellConfigProvider>
+        </QueryClientProvider>
+      </div>
     </ScrollbarWrapper>
   );
 }
