@@ -16,11 +16,7 @@ import { useAlerts } from './AlertProvider';
 import StatusIcon from '../components/StatusIcon';
 import CircleStatus from '../components/CircleStatus';
 import { TextBadge } from '../components/style/CommonLayoutStyle';
-import {
-  STATUS_WARNING,
-  STATUS_CRITICAL,
-  STATUS_HEALTH,
-} from '../constants';
+import { STATUS_WARNING, STATUS_CRITICAL, STATUS_HEALTH } from '../constants';
 import {
   compareHealth,
   useURLQuery,
@@ -89,18 +85,13 @@ const AlertStatusIcon = styled.div`
   height: 3rem;
   text-align: center;
 
-  &>span {
+  & > span {
     margin: 0;
   }
 `;
 
-const getAlertStatus = (critical, warning) => (
-  critical > 0
-  ? STATUS_CRITICAL
-  : warning > 0
-  ? STATUS_WARNING
-  : STATUS_HEALTH
-);
+const getAlertStatus = (critical, warning) =>
+  critical > 0 ? STATUS_CRITICAL : warning > 0 ? STATUS_WARNING : STATUS_HEALTH;
 
 function AlertPageHeader({
   activeAlerts,
@@ -118,10 +109,7 @@ function AlertPageHeader({
       <Title>
         <AlertStatusIcon>
           <StatusWrapper status={alertStatus}>
-            <StatusIcon
-              status={alertStatus}
-              className="fa fa-bell"
-            />
+            <StatusIcon status={alertStatus} className="fa fa-bell" />
           </StatusWrapper>
         </AlertStatusIcon>
         <>{intl.formatMessage({ id: 'alerts' })}</>
@@ -332,10 +320,12 @@ function ActiveAlertTab({ columns, data }) {
   );
 
   // Synchronizes the params query with the Table sort state
-  const sorted = headerGroups[0].headers.find((item) => item.isSorted === true)
-    ?.id;
-  const desc = headerGroups[0].headers.find((item) => item.isSorted === true)
-    ?.isSortedDesc;
+  const sorted = headerGroups[0].headers.find(
+    (item) => item.isSorted === true,
+  )?.id;
+  const desc = headerGroups[0].headers.find(
+    (item) => item.isSorted === true,
+  )?.isSortedDesc;
   useTableSortURLSync(sorted, desc, data, DEFAULT_SORTING_KEY);
 
   return (
@@ -453,7 +443,11 @@ export default function AlertPage() {
       {
         Header: 'Name',
         accessor: 'labels.alertname',
-        cellStyle: { width: '300px' },
+        cellStyle: {
+          width: '300px',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        },
         sortType: 'name',
       },
       {
