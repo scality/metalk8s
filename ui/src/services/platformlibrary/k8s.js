@@ -9,7 +9,7 @@ const FIVE_SECOND_IN_MS = 5000;
 
 export const volumesKey = {
   all: ['volumes', 'list'],
-  volumeObject: ['volumes', 'object'],
+  volumeObject: (volumeName) => ['volumes', 'object', volumeName],
   persitant: ['persistentVolumes'],
 };
 
@@ -76,7 +76,7 @@ export function getVolumeQueryOption() {
 
 export function getCurrentVolumeObjectQueryOption(volumeName: string) {
   return {
-    queryKey: volumesKey.volumeObject,
+    queryKey: volumesKey.volumeObject(volumeName),
     select: (data) => data.body,
     queryFn: () => Metalk8sVolumesApi.getMetalk8sV1alpha1Volume(volumeName),
   };
