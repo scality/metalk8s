@@ -95,7 +95,9 @@
   so that kubelet does not remove it
   (PR[#3624](https://github.com/scality/metalk8s/pull/3624))
 
-## Release 2.10.7 (in development)
+## Release 2.10.8 (in development)
+
+## Release 2.10.7
 ## Enhancements
 
 - Skip "Pending" pods when draining a node
