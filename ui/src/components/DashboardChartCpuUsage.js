@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import { useIntl } from 'react-intl';
 import { LineTemporalChart } from '@scality/core-ui/dist/next';
 import { getMultiResourceSeriesForChart } from '../services/graphUtils';
 import {
@@ -16,7 +15,6 @@ import {
 import NonSymmetricalQuantileChart from './NonSymmetricalQuantileChart';
 
 const DashboardChartCpuUsage = () => {
-  const intl = useIntl();
   const { isShowQuantileChart } = useShowQuantileChart();
 
   return (
@@ -27,33 +25,6 @@ const DashboardChartCpuUsage = () => {
           getQuantileHoverQuery={getNodesCPUUsageOutpassingThresholdQuery}
           title={'CPU Usage'}
           yAxisType={'percentage'}
-          helpText={
-            <span style={{ textAlign: 'left', display: 'block' }}>
-              {intl.formatMessage({
-                id: 'dashboard_cpu_quantile_explanation_line1',
-              })}
-              <br />
-              <br />
-              {intl.formatMessage({
-                id: 'dashboard_cpu_quantile_explanation_line2',
-              })}
-              <br />
-              <br />
-              {intl.formatMessage({
-                id: 'dashboard_cpu_quantile_explanation_line3',
-              })}
-              <br />
-              <br />
-              {intl.formatMessage({
-                id: 'dashboard_cpu_quantile_explanation_line4',
-              })}
-              <br />
-              <br />
-              {intl.formatMessage({
-                id: 'dashboard_cpu_quantile_explanation_line5',
-              })}
-            </span>
-          }
         />
       ) : (
         <DashboardChartCpuUsageWithoutQuantils />
