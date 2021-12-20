@@ -1,0 +1,9 @@
+domain: metalk8s.scality.com
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: storage-operator
+repo: github.com/scality/metalk8s/storage-operator
+version: "3"
