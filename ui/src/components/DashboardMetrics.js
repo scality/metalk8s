@@ -46,12 +46,17 @@ const DashboardMetrics = () => {
       <PanelActions>
         <PageSubtitle>
           <SpacedBox mr={8}> {intl.formatMessage({ id: 'metrics' })}</SpacedBox>
-          {/* display the tooltip to explain the median and quantile chart */}
           {isShowQuantileChart && (
             <TooltipComponent
               placement="bottom"
               overlay={
-                <SmallerText style={{ minWidth: '30rem', display: 'block' }}>
+                <SmallerText
+                  style={{
+                    minWidth: '30rem',
+                    display: 'block',
+                    textAlign: 'left',
+                  }}
+                >
                   {intl
                     .formatMessage({
                       id: 'metric_quantile_explanation',
