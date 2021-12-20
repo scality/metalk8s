@@ -89,17 +89,20 @@ export function useRefreshNodes() {
   const { data, isLoading } = result;
 
   useEffect(() => {
+    let timer;
     if (data) {
       dispatch(updateNodesAction({ list: data }));
 
       // To make sure that the loader is visible for at least 1s
-      setTimeout(function () {
-        // this dispatch should be migrated to react-query
-        // however it should be done when the nodes pages is migrated
-        dispatch({ type: FETCH_NODES_IPS_INTERFACES });
-      }, 1000);
+      timer = setTimeout(
+        () => dispatch({ type: FETCH_NODES_IPS_INTERFACES }),
+        1000,
+      );
     }
     dispatch(updateNodesAction({ isLoading }));
+    if (timer) {
+      return () => clearTimeout(timer);
+    }
   }, [data, dispatch, isLoading]);
 
   return result;
