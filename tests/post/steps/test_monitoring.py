@@ -1,12 +1,14 @@
 import json
+import operator
 import pathlib
 import random
 import string
+import yaml
 
 from kubernetes.client.rest import ApiException
 
 import pytest
-from pytest_bdd import scenario, given, then, parsers
+from pytest_bdd import scenario, given, when, then, parsers
 import testinfra
 
 from tests import utils
@@ -82,6 +84,33 @@ def test_expected_grafana_dashboards(host):
     pass
 
 
+@scenario(
+    "../features/monitoring.feature",
+    "Inserting a new ConfigMap provides a new datasource",
+)
+def test_configmap_add_datasource(host, teardown):
+    pass
+
+
+# }}}
+# Fixture {{{
+
+
+@pytest.fixture(scope="function")
+def context():
+    return {}
+
+
+@pytest.fixture
+def teardown(context, k8s_client):
+    yield
+    if "config_map_to_delete" in context:
+        for cm_name, cm_namespace in context["config_map_to_delete"]:
+            k8s_client.resources.get(api_version="v1", kind="ConfigMap").delete(
+                name=cm_name, namespace=cm_namespace
+            )
+
+
 # }}}
 # Given {{{
 
@@ -117,6 +146,53 @@ def apiservice_exists(host, name, k8s_client, request):
             raise
 
     utils.retry(_check_object_exists, times=20, wait=3)
+
+
+# }}}
+# When {{{
+
+
+@when(
+    parsers.parse(
+        "we put a datasource as ConfigMap named '{name}' in namespace '{namespace}'"
+    )
+)
+def push_datasource_cm(context, k8s_client, name, namespace):
+    cm_manifest = {
+        "kind": "ConfigMap",
+        "apiVersion": "v1",
+        "metadata": {
+            "name": name,
+            "namespace": namespace,
+            "labels": {"grafana_datasource": "1"},
+        },
+        "data": {
+            f"{name}.yaml": yaml.dump(
+                {
+                    "apiVersion": 1,
+                    "datasources": [
+                        {
+                            "name": name,
+                            "type": "prometheus",
+                            "access": "proxy",
+                            "url": "http://fake.prometheus.url:123/",
+                            "version": 1,
+                        }
+                    ],
+                },
+                default_flow_style=False,
+            )
+        },
+    }
+
+    try:
+        k8s_client.resources.get(api_version="v1", kind="ConfigMap").create(
+            body=cm_manifest, namespace=namespace
+        )
+    except ApiException as err:
+        raise AssertionError(f"Unable to push Datasource ConfigMap: {err}")
+
+    context.setdefault("config_map_to_delete", []).append((name, namespace))
 
 
 # }}}
@@ -302,8 +378,10 @@ def check_deployed_rules(host, prometheus_api):
     except json.JSONDecodeError as exc:
         pytest.fail(f"Failed to decode JSON from {ALERT_RULE_FILE}: {exc!s}")
 
-    assert (
-        default_alert_rules == deployed_alert_rules
+    assert sorted(
+        default_alert_rules, key=operator.itemgetter("name", "severity")
+    ) == sorted(
+        deployed_alert_rules, key=operator.itemgetter("name", "severity")
     ), "Expected default Prometheus rules to be equal to deployed rules."
 
 
@@ -359,6 +437,17 @@ def check_grafana_dashboards(host, grafana_api):
         pytest.fail(
             "\n".join(["Deployed dashboards do not match expectations:", *errors])
         )
+
+
+@then(parsers.parse("we have a datasource named '{name}'"))
+def check_datasource_exist(grafana_api, name):
+    def _check_ds_exist():
+        try:
+            grafana_api.get_datasource(name=name)
+        except utils.GrafanaAPIError as exc:
+            raise AssertionError(f"Unable to find datasource named {name}: {exc!s}")
+
+    utils.retry(_check_ds_exist, times=24, wait=5)
 
 
 # }}}

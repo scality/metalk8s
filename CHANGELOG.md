@@ -71,6 +71,17 @@
   to v2.30.0
   (PR[#3519](https://github.com/scality/metalk8s/pull/3519))
 
+- Bump kube-prometheus-stack charts version to 23.2.0
+  The following images have also been bumped accordingly:
+   - grafana to 8.3.1
+   - k8s-sidecar to 1.14.2
+   - kube-state-metrics to v2.2.4
+   - node-exporter to v1.2.2
+   - prometheus to v2.31.1
+   - prometheus-config-reloader to v0.52.1
+   - prometheus-operator to v0.52.1
+  (PR[#3639](https://github.com/scality/metalk8s/pull/3639))
+
 - [#3487](https://github.com/scality/metalk8s/issues/3487) - Make Salt
   Kubernetes execution module more flexible relying on `DynamicClient`
   from `python-kubernetes`

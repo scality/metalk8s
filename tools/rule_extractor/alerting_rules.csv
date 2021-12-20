@@ -88,6 +88,8 @@ KubeAPIDown,critical,Target disappeared from Prometheus target discovery.
 KubeAPITerminatedRequests,warning,The apiserver has terminated {{ $value | humanizePercentage }} of its incoming requests.
 KubeClientCertificateExpiration,critical,Client certificate is about to expire.
 KubeClientCertificateExpiration,warning,Client certificate is about to expire.
+KubeClientErrors,warning,Kubernetes API server client is experiencing errors.
+KubeVersionMismatch,warning,Different semantic versions of Kubernetes components running.
 KubeControllerManagerDown,critical,Target disappeared from Prometheus target discovery.
 KubeNodeNotReady,warning,Node is not ready.
 KubeNodeReadinessFlapping,warning,Node readiness status is flapping.
@@ -103,10 +105,10 @@ KubeletServerCertificateExpiration,warning,Kubelet server certificate is about t
 KubeletServerCertificateRenewalErrors,warning,Kubelet has failed to renew its server certificate.
 KubeletTooManyPods,warning,Kubelet is running at capacity.
 KubeSchedulerDown,critical,Target disappeared from Prometheus target discovery.
-KubeClientErrors,warning,Kubernetes API server client is experiencing errors.
-KubeVersionMismatch,warning,Different semantic versions of Kubernetes components running.
 NodeClockNotSynchronising,warning,Clock on {{ $labels.instance }} is not synchronising. Ensure NTP is configured on this host.
 NodeClockSkewDetected,warning,Clock on {{ $labels.instance }} is out of sync by more than 300s. Ensure NTP is configured correctly on this host.
+NodeFileDescriptorLimit,critical,Kernel is predicted to exhaust file descriptors limit soon.
+NodeFileDescriptorLimit,warning,Kernel is predicted to exhaust file descriptors limit soon.
 NodeFilesystemAlmostOutOfFiles,critical,Filesystem has less than 8% inodes left.
 NodeFilesystemAlmostOutOfFiles,warning,Filesystem has less than 15% inodes left.
 NodeFilesystemAlmostOutOfSpace,critical,Filesystem has less than 12% space left.
@@ -121,14 +123,7 @@ NodeNetworkTransmitErrs,warning,Network interface is reporting many transmit err
 NodeRAIDDegraded,critical,RAID Array is degraded
 NodeRAIDDiskFailure,warning,Failed device in RAID array
 NodeTextFileCollectorScrapeError,warning,Node Exporter text file collector failed to scrape.
-NodeNetworkInterfaceFlapping,warning,"Network interface ""{{ $labels.device }}"" changing it's up status often on node-exporter {{ $labels.namespace }}/{{ $labels.pod }}"
-PrometheusOperatorListErrors,warning,Errors while performing list operations in controller.
-PrometheusOperatorNodeLookupErrors,warning,Errors while reconciling Prometheus.
-PrometheusOperatorNotReady,warning,Prometheus operator not ready
-PrometheusOperatorReconcileErrors,warning,Errors while reconciling controller.
-PrometheusOperatorRejectedResources,warning,Resources rejected by Prometheus operator
-PrometheusOperatorSyncFailed,warning,Last controller reconciliation failed
-PrometheusOperatorWatchErrors,warning,Errors while performing watch operations in controller.
+NodeNetworkInterfaceFlapping,warning,Network interface is often changin it's status
 PrometheusBadConfig,critical,Failed Prometheus configuration reload.
 PrometheusDuplicateTimestamps,warning,Prometheus is dropping samples with duplicate timestamps.
 PrometheusErrorSendingAlertsToAnyAlertmanager,critical,Prometheus encounters more than 3% errors sending alerts to any Alertmanager.
@@ -146,3 +141,11 @@ PrometheusRuleFailures,critical,Prometheus is failing rule evaluations.
 PrometheusTSDBCompactionsFailing,warning,Prometheus has issues compacting blocks.
 PrometheusTSDBReloadsFailing,warning,Prometheus has issues reloading blocks from disk.
 PrometheusTargetLimitHit,warning,Prometheus has dropped targets because some scrape configs have exceeded the targets limit.
+PrometheusTargetSyncFailure,critical,Prometheus has failed to sync targets.
+PrometheusOperatorListErrors,warning,Errors while performing list operations in controller.
+PrometheusOperatorNodeLookupErrors,warning,Errors while reconciling Prometheus.
+PrometheusOperatorNotReady,warning,Prometheus operator not ready
+PrometheusOperatorReconcileErrors,warning,Errors while reconciling controller.
+PrometheusOperatorRejectedResources,warning,Resources rejected by Prometheus operator
+PrometheusOperatorSyncFailed,warning,Last controller reconciliation failed
+PrometheusOperatorWatchErrors,warning,Errors while performing watch operations in controller.

@@ -6,20 +6,20 @@ annotations:
       url: https://github.com/prometheus-operator/kube-prometheus
   artifacthub.io/operator: "true"
 apiVersion: v2
-appVersion: 0.48.1
+appVersion: 0.52.1
 dependencies:
 - condition: kubeStateMetrics.enabled
   name: kube-state-metrics
   repository: https://prometheus-community.github.io/helm-charts
-  version: 3.1.*
+  version: 4.1.*
 - condition: nodeExporter.enabled
   name: prometheus-node-exporter
   repository: https://prometheus-community.github.io/helm-charts
-  version: 1.18.*
+  version: 2.2.*
 - condition: grafana.enabled
   name: grafana
   repository: https://grafana.github.io/helm-charts
-  version: 6.13.*
+  version: 6.19.*
 description: kube-prometheus-stack collects Kubernetes manifests, Grafana dashboards,
   and Prometheus rules combined with documentation and scripts to provide easy to
   operate end-to-end Kubernetes cluster monitoring with Prometheus using the Prometheus
@@ -32,7 +32,6 @@ keywords:
 - kube-prometheus
 kubeVersion: '>=1.16.0-0'
 maintainers:
-- name: vsliouniaev
 - name: bismarck
 - email: gianrubio@gmail.com
   name: gianrubio
@@ -47,4 +46,4 @@ sources:
 - https://github.com/prometheus-community/helm-charts
 - https://github.com/prometheus-operator/kube-prometheus
 type: application
-version: 16.9.1
+version: 23.2.0

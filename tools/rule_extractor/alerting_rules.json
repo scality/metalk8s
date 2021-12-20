@@ -380,19 +380,19 @@
     {
         "message": "Deployment has not matched the expected number of replicas.",
         "name": "KubeDeploymentReplicasMismatch",
-        "query": "(kube_deployment_spec_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_deployment_status_replicas_available{job=\"kube-state-metrics\",namespace=~\".*\"}) and (changes(kube_deployment_status_replicas_updated{job=\"kube-state-metrics\",namespace=~\".*\"}[10m]) == 0)",
+        "query": "(kube_deployment_spec_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} > kube_deployment_status_replicas_available{job=\"kube-state-metrics\",namespace=~\".*\"}) and (changes(kube_deployment_status_replicas_updated{job=\"kube-state-metrics\",namespace=~\".*\"}[10m]) == 0)",
         "severity": "warning"
     },
     {
         "message": "HPA is running at max replicas",
         "name": "KubeHpaMaxedOut",
-        "query": "kube_hpa_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} == kube_hpa_spec_max_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}",
+        "query": "kube_horizontalpodautoscaler_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} == kube_horizontalpodautoscaler_spec_max_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}",
         "severity": "warning"
     },
     {
         "message": "HPA has not matched descired number of replicas.",
         "name": "KubeHpaReplicasMismatch",
-        "query": "(kube_hpa_status_desired_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_hpa_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}) and (kube_hpa_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} > kube_hpa_spec_min_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}) and (kube_hpa_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} < kube_hpa_spec_max_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}) and changes(kube_hpa_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}[15m]) == 0",
+        "query": "(kube_horizontalpodautoscaler_status_desired_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_horizontalpodautoscaler_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}) and (kube_horizontalpodautoscaler_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} > kube_horizontalpodautoscaler_spec_min_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}) and (kube_horizontalpodautoscaler_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} < kube_horizontalpodautoscaler_spec_max_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}) and changes(kube_horizontalpodautoscaler_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}[15m]) == 0",
         "severity": "warning"
     },
     {
@@ -410,7 +410,7 @@
     {
         "message": "Pod is crash looping.",
         "name": "KubePodCrashLooping",
-        "query": "increase(kube_pod_container_status_restarts_total{job=\"kube-state-metrics\",namespace=~\".*\"}[10m]) > 0",
+        "query": "increase(kube_pod_container_status_restarts_total{job=\"kube-state-metrics\",namespace=~\".*\"}[10m]) > 0 and kube_pod_container_status_waiting{job=\"kube-state-metrics\",namespace=~\".*\"} == 1",
         "severity": "warning"
     },
     {
@@ -494,13 +494,13 @@
     {
         "message": "PersistentVolume is filling up.",
         "name": "KubePersistentVolumeFillingUp",
-        "query": "kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} < 0.03",
+        "query": "(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.03 and kubelet_volume_stats_used_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0",
         "severity": "critical"
     },
     {
         "message": "PersistentVolume is filling up.",
         "name": "KubePersistentVolumeFillingUp",
-        "query": "(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.15 and predict_linear(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}[6h], 4 * 24 * 3600) < 0",
+        "query": "(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.15 and kubelet_volume_stats_used_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 and predict_linear(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}[6h], 4 * 24 * 3600) < 0",
         "severity": "warning"
     },
     {
@@ -537,6 +537,18 @@
         "message": "Client certificate is about to expire.",
         "name": "KubeClientCertificateExpiration",
         "query": "apiserver_client_certificate_expiration_seconds_count{job=\"apiserver\"} > 0 and on(job) histogram_quantile(0.01, sum by(job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job=\"apiserver\"}[5m]))) < 604800",
+        "severity": "warning"
+    },
+    {
+        "message": "Kubernetes API server client is experiencing errors.",
+        "name": "KubeClientErrors",
+        "query": "(sum by(instance, job) (rate(rest_client_requests_total{code=~\"5..\"}[5m])) / sum by(instance, job) (rate(rest_client_requests_total[5m]))) > 0.01",
+        "severity": "warning"
+    },
+    {
+        "message": "Different semantic versions of Kubernetes components running.",
+        "name": "KubeVersionMismatch",
+        "query": "count(count by(git_version) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
         "severity": "warning"
     },
     {
@@ -630,18 +642,6 @@
         "severity": "critical"
     },
     {
-        "message": "Kubernetes API server client is experiencing errors.",
-        "name": "KubeClientErrors",
-        "query": "(sum by(instance, job) (rate(rest_client_requests_total{code=~\"5..\"}[5m])) / sum by(instance, job) (rate(rest_client_requests_total[5m]))) > 0.01",
-        "severity": "warning"
-    },
-    {
-        "message": "Different semantic versions of Kubernetes components running.",
-        "name": "KubeVersionMismatch",
-        "query": "count(count by(git_version) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
-        "severity": "warning"
-    },
-    {
         "message": "Clock on {{ $labels.instance }} is not synchronising. Ensure NTP is configured on this host.",
         "name": "NodeClockNotSynchronising",
         "query": "min_over_time(node_timex_sync_status[5m]) == 0 and node_timex_maxerror_seconds >= 16",
@@ -651,6 +651,18 @@
         "message": "Clock on {{ $labels.instance }} is out of sync by more than 300s. Ensure NTP is configured correctly on this host.",
         "name": "NodeClockSkewDetected",
         "query": "(node_timex_offset_seconds > 0.05 and deriv(node_timex_offset_seconds[5m]) >= 0) or (node_timex_offset_seconds < -0.05 and deriv(node_timex_offset_seconds[5m]) <= 0)",
+        "severity": "warning"
+    },
+    {
+        "message": "Kernel is predicted to exhaust file descriptors limit soon.",
+        "name": "NodeFileDescriptorLimit",
+        "query": "(node_filefd_allocated{job=\"node-exporter\"} * 100 / node_filefd_maximum{job=\"node-exporter\"} > 90)",
+        "severity": "critical"
+    },
+    {
+        "message": "Kernel is predicted to exhaust file descriptors limit soon.",
+        "name": "NodeFileDescriptorLimit",
+        "query": "(node_filefd_allocated{job=\"node-exporter\"} * 100 / node_filefd_maximum{job=\"node-exporter\"} > 70)",
         "severity": "warning"
     },
     {
@@ -738,51 +750,9 @@
         "severity": "warning"
     },
     {
-        "message": "Network interface \"{{ $labels.device }}\" changing it's up status often on node-exporter {{ $labels.namespace }}/{{ $labels.pod }}",
+        "message": "Network interface is often changin it's status",
         "name": "NodeNetworkInterfaceFlapping",
         "query": "changes(node_network_up{device!~\"veth.+\",job=\"node-exporter\"}[2m]) > 2",
-        "severity": "warning"
-    },
-    {
-        "message": "Errors while performing list operations in controller.",
-        "name": "PrometheusOperatorListErrors",
-        "query": "(sum by(controller, namespace) (rate(prometheus_operator_list_operations_failed_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[10m])) / sum by(controller, namespace) (rate(prometheus_operator_list_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[10m]))) > 0.4",
-        "severity": "warning"
-    },
-    {
-        "message": "Errors while reconciling Prometheus.",
-        "name": "PrometheusOperatorNodeLookupErrors",
-        "query": "rate(prometheus_operator_node_address_lookup_errors_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]) > 0.1",
-        "severity": "warning"
-    },
-    {
-        "message": "Prometheus operator not ready",
-        "name": "PrometheusOperatorNotReady",
-        "query": "min by(namespace, controller) (max_over_time(prometheus_operator_ready{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]) == 0)",
-        "severity": "warning"
-    },
-    {
-        "message": "Errors while reconciling controller.",
-        "name": "PrometheusOperatorReconcileErrors",
-        "query": "(sum by(controller, namespace) (rate(prometheus_operator_reconcile_errors_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) / (sum by(controller, namespace) (rate(prometheus_operator_reconcile_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) > 0.1",
-        "severity": "warning"
-    },
-    {
-        "message": "Resources rejected by Prometheus operator",
-        "name": "PrometheusOperatorRejectedResources",
-        "query": "min_over_time(prometheus_operator_managed_resources{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\",state=\"rejected\"}[5m]) > 0",
-        "severity": "warning"
-    },
-    {
-        "message": "Last controller reconciliation failed",
-        "name": "PrometheusOperatorSyncFailed",
-        "query": "min_over_time(prometheus_operator_syncs{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\",status=\"failed\"}[5m]) > 0",
-        "severity": "warning"
-    },
-    {
-        "message": "Errors while performing watch operations in controller.",
-        "name": "PrometheusOperatorWatchErrors",
-        "query": "(sum by(controller, namespace) (rate(prometheus_operator_watch_operations_failed_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[10m])) / sum by(controller, namespace) (rate(prometheus_operator_watch_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[10m]))) > 0.4",
         "severity": "warning"
     },
     {
@@ -885,6 +855,54 @@
         "message": "Prometheus has dropped targets because some scrape configs have exceeded the targets limit.",
         "name": "PrometheusTargetLimitHit",
         "query": "increase(prometheus_target_scrape_pool_exceeded_target_limit_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) > 0",
+        "severity": "warning"
+    },
+    {
+        "message": "Prometheus has failed to sync targets.",
+        "name": "PrometheusTargetSyncFailure",
+        "query": "increase(prometheus_target_sync_failed_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[30m]) > 0",
+        "severity": "critical"
+    },
+    {
+        "message": "Errors while performing list operations in controller.",
+        "name": "PrometheusOperatorListErrors",
+        "query": "(sum by(controller, namespace) (rate(prometheus_operator_list_operations_failed_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[10m])) / sum by(controller, namespace) (rate(prometheus_operator_list_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[10m]))) > 0.4",
+        "severity": "warning"
+    },
+    {
+        "message": "Errors while reconciling Prometheus.",
+        "name": "PrometheusOperatorNodeLookupErrors",
+        "query": "rate(prometheus_operator_node_address_lookup_errors_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]) > 0.1",
+        "severity": "warning"
+    },
+    {
+        "message": "Prometheus operator not ready",
+        "name": "PrometheusOperatorNotReady",
+        "query": "min by(namespace, controller) (max_over_time(prometheus_operator_ready{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]) == 0)",
+        "severity": "warning"
+    },
+    {
+        "message": "Errors while reconciling controller.",
+        "name": "PrometheusOperatorReconcileErrors",
+        "query": "(sum by(controller, namespace) (rate(prometheus_operator_reconcile_errors_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) / (sum by(controller, namespace) (rate(prometheus_operator_reconcile_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) > 0.1",
+        "severity": "warning"
+    },
+    {
+        "message": "Resources rejected by Prometheus operator",
+        "name": "PrometheusOperatorRejectedResources",
+        "query": "min_over_time(prometheus_operator_managed_resources{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\",state=\"rejected\"}[5m]) > 0",
+        "severity": "warning"
+    },
+    {
+        "message": "Last controller reconciliation failed",
+        "name": "PrometheusOperatorSyncFailed",
+        "query": "min_over_time(prometheus_operator_syncs{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\",status=\"failed\"}[5m]) > 0",
+        "severity": "warning"
+    },
+    {
+        "message": "Errors while performing watch operations in controller.",
+        "name": "PrometheusOperatorWatchErrors",
+        "query": "(sum by(controller, namespace) (rate(prometheus_operator_watch_operations_failed_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[10m])) / sum by(controller, namespace) (rate(prometheus_operator_watch_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[10m]))) > 0.4",
         "severity": "warning"
     }
 ]
