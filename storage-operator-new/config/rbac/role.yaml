@@ -1,0 +1,34 @@
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - storage.metalk8s.scality.com
+  resources:
+  - volumes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - storage.metalk8s.scality.com
+  resources:
+  - volumes/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - storage.metalk8s.scality.com
+  resources:
+  - volumes/status
+  verbs:
+  - get
+  - patch
+  - update
