@@ -18,13 +18,21 @@ import { useTypedSelector } from './hooks';
 import { setHistory as setReduxHistory } from './ducks/history';
 import { setApiConfigAction } from './ducks/config';
 import { initToggleSideBarAction } from './ducks/app/layout';
+import { authErrorAction } from './ducks/app/authError';
+import { AuthError } from './services/errorhandler';
 
 const composeEnhancers =
   typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
     ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({})
     : compose;
 
-const sagaMiddleware = createSagaMiddleware();
+const sagaMiddleware = createSagaMiddleware({
+  onError: (error) => {
+    if (error instanceof AuthError) {
+      store.dispatch(authErrorAction());
+    }
+  },
+});
 const enhancer = composeEnhancers(applyMiddleware(sagaMiddleware));
 export const store = createStore(reducer, enhancer);
 
