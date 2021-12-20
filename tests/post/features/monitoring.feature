@@ -6,13 +6,13 @@ Feature: Monitoring is up and running
 
     Scenario: Expected Pods
         Given the Kubernetes API is available
-        Then we have 1 running pod labeled 'app=prometheus-operator-operator' in namespace 'metalk8s-monitoring'
+        Then we have 1 running pod labeled 'app.kubernetes.io/name=prometheus-operator-operator' in namespace 'metalk8s-monitoring'
         And we have 1 running pod labeled 'prometheus=prometheus-operator-prometheus' in namespace 'metalk8s-monitoring'
         And we have 1 running pod labeled 'alertmanager=prometheus-operator-alertmanager' in namespace 'metalk8s-monitoring'
         And we have 1 running pod labeled 'app.kubernetes.io/name=grafana' in namespace 'metalk8s-monitoring'
         And we have 1 running pod labeled 'app.kubernetes.io/name=kube-state-metrics' in namespace 'metalk8s-monitoring'
         And we have 1 running pod labeled 'app.kubernetes.io/name=prometheus-adapter' in namespace 'metalk8s-monitoring'
-        And we have 1 running pod labeled 'app=prometheus-node-exporter' in namespace 'metalk8s-monitoring' on node 'bootstrap'
+        And we have 1 running pod labeled 'app.kubernetes.io/name=prometheus-node-exporter' in namespace 'metalk8s-monitoring' on node 'bootstrap'
 
     Scenario: Monitored components statuses
         Given the Kubernetes API is available
@@ -56,3 +56,9 @@ Feature: Monitoring is up and running
     Scenario: Expected Grafana dashboards are available
         Given the Grafana API is available
         Then the deployed dashboards match the expected ones
+
+    Scenario: Inserting a new ConfigMap provides a new datasource
+        Given the Kubernetes API is available
+        And the Grafana API is available
+        When we put a datasource as ConfigMap named 'test-new-ds' in namespace 'metalk8s-monitoring'
+        Then we have a datasource named 'test-new-ds'

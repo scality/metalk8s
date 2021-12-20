@@ -24,7 +24,7 @@ Feature: Cluster and Services Configurations
 
     Scenario: Customization of pre-defined Prometheus rules
         Given the Kubernetes API is available
-        And pods with label 'app=prometheus' are 'Ready'
+        And pods with label 'app.kubernetes.io/name=prometheus' are 'Ready'
         And we have a 'metalk8s-prometheus-config' CSC in namespace 'metalk8s-monitoring'
         When we update the CSC 'spec.rules.node_exporter.node_filesystem_space_filling_up.warning.hours' to '48'
         And we apply the 'metalk8s.addons.prometheus-operator.deployed' state
