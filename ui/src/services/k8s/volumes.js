@@ -1,4 +1,5 @@
 //@flow
+import { handleUnAuthorizedError } from '../errorhandler';
 import { coreV1, storage } from './api';
 
 export async function getPersistentVolumes() {
@@ -8,7 +9,7 @@ export async function getPersistentVolumes() {
   try {
     return await coreV1.listPersistentVolume();
   } catch (error) {
-    return { error };
+    return handleUnAuthorizedError({ error });
   }
 }
 
@@ -19,7 +20,7 @@ export async function getStorageClass() {
   try {
     return await storage.listStorageClass();
   } catch (error) {
-    return { error };
+    return handleUnAuthorizedError({ error });
   }
 }
 
@@ -30,6 +31,6 @@ export async function getPersistentVolumeClaims() {
   try {
     return await coreV1.listPersistentVolumeClaimForAllNamespaces();
   } catch (error) {
-    return { error };
+    return handleUnAuthorizedError({ error });
   }
 }

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Route } from 'react-router-dom';
-import { ErrorPage500, ErrorPageAuth } from '@scality/core-ui';
+import { useHistory } from 'react-router';
+import { ErrorPage500, ErrorPageAuth, ErrorPage401 } from '@scality/core-ui';
 import { useTypedSelector } from '../hooks';
 import { ComponentWithFederatedImports } from '@scality/module-federation';
 import { useDispatch } from 'react-redux';
@@ -13,16 +14,28 @@ const InternalPrivateRoute = ({
   ...rest
 }) => {
   const { language, api } = useTypedSelector((state) => state.config);
+  const { isAuthError } = useTypedSelector((state) => state.app.authError);
   const url_support = api?.url_support;
   const { userData } = moduleExports['./auth/AuthProvider'].useAuth();
   const dispatch = useDispatch();
+  const history = useHistory();
 
   useMemo(() => {
     dispatch(updateAPIConfigAction(userData));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [!userData]);
 
-  if (userData.token && userData.username) {
+  if (isAuthError) {
+    return (
+      <ErrorPage401
+        supportLink={url_support}
+        locale={language}
+        onReturnHomeClick={() => {
+          history.push('/');
+        }}
+      />
+    );
+  } else if (userData.token && userData.username) {
     return <Route {...rest} component={component} />;
   } else {
     return (

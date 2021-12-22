@@ -1,10 +1,11 @@
+import { handleUnAuthorizedError } from '../errorhandler';
 import { coreV1, appsV1 } from './api';
 
 export async function getNodes() {
   try {
     return await coreV1.listNode();
   } catch (error) {
-    return { error };
+    return handleUnAuthorizedError({ error });
   }
 }
 
@@ -12,7 +13,7 @@ export async function getPods() {
   try {
     return await coreV1.listPodForAllNamespaces();
   } catch (error) {
-    return { error };
+    return handleUnAuthorizedError({ error });
   }
 }
 
@@ -25,7 +26,7 @@ export async function getKubeSystemNamespace() {
       'metadata.name=kube-system',
     );
   } catch (error) {
-    return { error };
+    return handleUnAuthorizedError({ error });
   }
 }
 
@@ -33,7 +34,7 @@ export async function createNode(payload) {
   try {
     return await coreV1.createNode(payload);
   } catch (error) {
-    return { error };
+    return handleUnAuthorizedError({ error });
   }
 }
 
@@ -57,7 +58,7 @@ export async function listNamespaces({
       options,
     );
   } catch (error) {
-    return { error };
+    return handleUnAuthorizedError({ error });
   }
 }
 
@@ -72,7 +73,7 @@ export async function queryPodInNamespace(namespace, podLabel) {
       `app=${podLabel}`,
     );
   } catch (error) {
-    return { error };
+    return handleUnAuthorizedError({ error });
   }
 }
 
@@ -86,7 +87,7 @@ export async function createNamespacedConfigMap(name, namespace, restProps) {
   try {
     return await coreV1.createNamespacedConfigMap(namespace, body);
   } catch (error) {
-    return { error };
+    return handleUnAuthorizedError({ error });
   }
 }
 
@@ -115,7 +116,7 @@ export async function patchNamespacedConfigMap(
       { headers: { 'Content-Type': cTypeHeader } },
     );
   } catch (error) {
-    return { error };
+    return handleUnAuthorizedError({ error });
   }
 }
 
@@ -123,7 +124,7 @@ export async function getNamespacedDeployment(name, namespace) {
   try {
     return await appsV1.readNamespacedDeployment(name, namespace);
   } catch (error) {
-    return { error };
+    return handleUnAuthorizedError({ error });
   }
 }
 
@@ -131,7 +132,7 @@ export async function readNode(name) {
   try {
     return await coreV1.readNode(name);
   } catch (error) {
-    return { error };
+    return handleUnAuthorizedError({ error });
   }
 }
 
@@ -139,6 +140,6 @@ export async function readNamespacedConfigMap(nameConfigMap, namespace) {
   try {
     return await coreV1.readNamespacedConfigMap(nameConfigMap, namespace);
   } catch (error) {
-    return { error };
+    return handleUnAuthorizedError({ error });
   }
 }
