@@ -1,6 +1,7 @@
 //@flow
 import { User } from 'oidc-client';
 import ApiClient from '../ApiClient';
+import { handleUnAuthorizedError } from '../errorhandler';
 
 let saltApiClient = null;
 
@@ -25,7 +26,7 @@ export type SaltToken = {
   ],
 };
 
-export async function authenticate(user: User): Promise<SaltToken> {
+export async function authenticate(user: User) {
   if (!saltApiClient) {
     throw new Error('Salt api client should be defined.');
   }
@@ -34,14 +35,20 @@ export async function authenticate(user: User): Promise<SaltToken> {
     username: `oidc:${user.email}`,
     token: user.token,
   };
-  return saltApiClient.post('/login', payload);
+
+  const result = await saltApiClient.post('/login', payload);
+  if (result.error) {
+    return handleUnAuthorizedError({ error: result.error });
+  } else {
+    return result;
+  }
 }
 
 export async function deployNode(node: string, version: string) {
   if (!saltApiClient) {
     throw new Error('Salt api client should be defined.');
   }
-  return saltApiClient.post('/', {
+  const result = saltApiClient.post('/', {
     client: 'runner_async',
     fun: 'state.orchestrate',
     arg: ['metalk8s.orchestrate.deploy_node'],
@@ -50,17 +57,27 @@ export async function deployNode(node: string, version: string) {
       pillar: { orchestrate: { node_name: node } },
     },
   });
+  if (result.error) {
+    return handleUnAuthorizedError({ error: result.error });
+  } else {
+    return result;
+  }
 }
 
 export async function printJob(jid: string) {
   if (!saltApiClient) {
     throw new Error('Salt api client should be defined.');
   }
-  return saltApiClient.post('/', {
+  const result = saltApiClient.post('/', {
     client: 'runner',
     fun: 'jobs.print_job',
     arg: [jid],
   });
+  if (result.error) {
+    return handleUnAuthorizedError({ error: result.error });
+  } else {
+    return result;
+  }
 }
 
 export type IPInterfaces = {
@@ -94,15 +111,13 @@ We may get error message instead of IPInterfaces Object
 }
 */
 
-export async function getNodesIPsInterfaces(
-  nodeNames: string[],
-): Promise<{
+export async function getNodesIPsInterfaces(nodeNames: string[]): Promise<{
   return: [{ [nodeName: string]: boolean | IPInterfaces | string }],
 }> {
   if (!saltApiClient) {
     throw new Error('Salt api client should be defined.');
   }
-  return saltApiClient.post('/', {
+  const result = saltApiClient.post('/', {
     client: 'local',
     tgt: nodeNames.join(','),
     tgt_type: 'list',
@@ -113,4 +128,9 @@ export async function getNodesIPsInterfaces(
       'ip_interfaces',
     ],
   });
+  if (result.error) {
+    return handleUnAuthorizedError({ error: result.error });
+  } else {
+    return result;
+  }
 }

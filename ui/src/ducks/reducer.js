@@ -9,6 +9,8 @@ import pods from './app/pods';
 import type { PodsState } from './app/pods';
 import volumes from './app/volumes';
 import type { VolumesState } from './app/volumes';
+import authError from './app/authError';
+import type { AuthErrorState } from './app/authError';
 import login from './login';
 import type { LoginState } from './login';
 import layout from './app/layout';
@@ -31,6 +33,7 @@ const rootReducer = combineReducers({
     salt,
     monitoring,
     volumes,
+    authError,
   }),
   oidc: oidcReducer,
   history: historyReducer,
@@ -49,6 +52,7 @@ export type RootState = {
     layout: LayoutState,
     salt: SaltState,
     monitoring: MonitoringState,
+    authError: AuthErrorState,
   },
 };
 
