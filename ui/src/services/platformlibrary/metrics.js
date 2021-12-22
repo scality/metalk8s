@@ -460,7 +460,7 @@ export const getControlPlaneBandWidthAvgInQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    enabled: showAvg,
+    enabled: !!(showAvg && Object.keys(nodesIPsInfo).length),
   };
 };
 
@@ -502,7 +502,7 @@ export const getControlPlaneBandWidthAvgOutQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    enabled: showAvg,
+    enabled: !!(showAvg && Object.keys(nodesIPsInfo).length),
   };
 };
 
@@ -589,7 +589,7 @@ export const getWorkloadPlaneBandWidthAvgInQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    enabled: showAvg,
+    enabled: !!(showAvg && Object.keys(nodesIPsInfo).length),
   };
 };
 
@@ -631,7 +631,7 @@ export const getWorkloadPlaneBandWidthAvgOutQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    enabled: showAvg,
+    enabled: !!(showAvg && Object.keys(nodesIPsInfo).length),
   };
 };
 

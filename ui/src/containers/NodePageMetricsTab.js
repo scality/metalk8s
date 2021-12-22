@@ -10,6 +10,7 @@ import { useIntl } from 'react-intl';
 import { SyncedCursorCharts } from '@scality/core-ui/dist/next';
 import { UNIT_RANGE_BS } from '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
 import { updateNodeStatsFetchArgumentAction } from '../ducks/app/monitoring';
+import type { NodesState } from '../ducks/app/nodes';
 import {
   NodeTab,
   MetricsActionContainer,
@@ -104,7 +105,7 @@ const NodePageMetricsTab = ({
   instanceIP: string,
   controlPlaneInterface: string,
   workloadPlaneInterface: string,
-  nodesIPsInfo: [],
+  nodesIPsInfo: $PropertyType<NodesState, 'IPsInfo'>,
 }) => {
   const dispatch = useDispatch();
   const history = useHistory();

@@ -1,13 +1,10 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { useQuery, type UseQueryOptions } from 'react-query';
-import {
-  LineTemporalChart,
-  useMetricsTimeSpan,
-} from '@scality/core-ui/dist/next';
-import { useStartingTimeStamp } from '../containers/StartTimeProvider';
+import React, { useCallback } from 'react';
+import { type UseQueryOptions } from 'react-query';
+import { LineTemporalChart } from '@scality/core-ui/dist/next';
 import { getSeriesForSymmetricalChart } from '../services/graphUtils';
 import { HEIGHT_SYMMETRICAL_CHART } from '../constants';
 import type { NodesState } from '../ducks/app/nodes';
+import { useSymetricalChartSeries } from '../hooks';
 
 const MetricSymmetricalChart = ({
   title,
@@ -42,139 +39,87 @@ const MetricSymmetricalChart = ({
   planeInterface?: string,
   isPlaneInterfaceRequired?: boolean,
 }) => {
-  const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
-  const { frequency } = useMetricsTimeSpan();
-
-  const startTimeRef = useRef(startingTimeISO);
-  const chartStartTimeRef = useRef(startingTimeISO);
-  const [series, setSeries] = useState([]);
-
-  startTimeRef.current = startingTimeISO;
-
-  const metricAboveQuery = useQuery(
-    getMetricAboveQuery(
-      instanceIP,
-      {
-        startingTimeISO,
-        currentTimeISO,
-        frequency,
+  const { isLoading, series, startingTimeStamp } = useSymetricalChartSeries({
+    getAboveQueries: useCallback(
+      (timeSpanProps) => {
+        if (showAvg) {
+          return [
+            getMetricAboveQuery(instanceIP, timeSpanProps, planeInterface),
+            getMetricAboveAvgQuery(
+              timeSpanProps,
+              showAvg,
+              instanceIP,
+              nodesIPsInfo,
+            ),
+          ];
+        } else {
+          return [
+            getMetricAboveQuery(instanceIP, timeSpanProps, planeInterface),
+          ];
+        }
       },
-      planeInterface,
+      [instanceIP, showAvg, planeInterface, JSON.stringify(nodesIPsInfo)],
     ),
-  );
-  const metricBelowQuery = useQuery(
-    getMetricBelowQuery(
-      instanceIP,
-      {
-        startingTimeISO,
-        currentTimeISO,
-        frequency,
+    getBelowQueries: useCallback(
+      (timeSpanProps) => {
+        if (showAvg) {
+          return [
+            getMetricBelowQuery(instanceIP, timeSpanProps, planeInterface),
+            getMetricBelowAvgQuery(
+              timeSpanProps,
+              showAvg,
+              instanceIP,
+              nodesIPsInfo,
+            ),
+          ];
+        } else {
+          return [
+            getMetricBelowQuery(instanceIP, timeSpanProps, planeInterface),
+          ];
+        }
       },
-      planeInterface,
+      [instanceIP, showAvg, planeInterface, JSON.stringify(nodesIPsInfo)],
     ),
-  );
+    transformPrometheusDataToSeries: useCallback(
+      (resultsAbove, resultsBelow) => {
+        if (showAvg) {
+          const [resultAbove, resultAboveAvg] = resultsAbove;
+          const [resultBelow, resultBelowAvg] = resultsBelow;
 
-  const metricAboveAvgQuery = useQuery(
-    getMetricAboveAvgQuery(
-      {
-        startingTimeISO,
-        currentTimeISO,
-        frequency,
+          return getSeriesForSymmetricalChart(
+            resultAbove,
+            resultBelow,
+            nodeName,
+            metricPrefixAbove,
+            metricPrefixBelow,
+            resultAboveAvg,
+            resultBelowAvg,
+          );
+        } else {
+          const [resultAbove] = resultsAbove;
+          const [resultBelow] = resultsBelow;
+          return getSeriesForSymmetricalChart(
+            resultAbove,
+            resultBelow,
+            nodeName,
+            metricPrefixAbove,
+            metricPrefixBelow,
+          );
+        }
       },
-      showAvg,
-      instanceIP,
-      nodesIPsInfo,
+      [showAvg, nodeName, metricPrefixAbove, metricPrefixBelow],
     ),
-  );
-
-  const metricBelowAvgQuery = useQuery(
-    getMetricBelowAvgQuery(
-      {
-        startingTimeISO,
-        currentTimeISO,
-        frequency,
-      },
-      showAvg,
-      instanceIP,
-      nodesIPsInfo,
-    ),
-  );
-
-  const nodeIPAddress = { internalIP: instanceIP, name: nodeName };
-
-  const isMetricsDataLoading =
-    metricAboveQuery.isLoading || metricBelowQuery.isLoading;
-  const isMetricsAvgDataLoading =
-    metricAboveQuery.isLoading ||
-    metricBelowQuery.isLoading ||
-    metricAboveAvgQuery.isLoading ||
-    metricBelowAvgQuery.isLoading;
-
-  useEffect(() => {
-    if (isPlaneInterfaceRequired && !planeInterface) {
-      setSeries([]);
-    } else if (
-      !isMetricsDataLoading &&
-      !showAvg &&
-      //solve the graph doesn't get updated
-      metricAboveQuery.data &&
-      metricBelowQuery.data
-    ) {
-      // disable avg
-      chartStartTimeRef.current = startTimeRef.current;
-      setSeries(
-        getSeriesForSymmetricalChart(
-          metricAboveQuery.data,
-          metricBelowQuery.data,
-          nodeIPAddress.name,
-          metricPrefixAbove,
-          metricPrefixBelow,
-        ),
-      );
-    } else if (
-      !isMetricsAvgDataLoading &&
-      !isMetricsDataLoading &&
-      showAvg &&
-      metricAboveQuery.data &&
-      metricBelowQuery.data &&
-      metricAboveAvgQuery.data &&
-      metricBelowAvgQuery.data
-    ) {
-      // enable cluster avg
-      chartStartTimeRef.current = startTimeRef.current;
-      setSeries(
-        getSeriesForSymmetricalChart(
-          metricAboveQuery.data,
-          metricBelowQuery.data,
-          nodeIPAddress.name,
-          metricPrefixAbove,
-          metricPrefixBelow,
-          metricAboveAvgQuery.data,
-          metricBelowAvgQuery.data,
-        ),
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isMetricsDataLoading,
-    isMetricsAvgDataLoading,
-    showAvg,
-    //solve the graph doesn't get updated
-    JSON.stringify(metricAboveQuery.data),
-    JSON.stringify(metricBelowQuery.data),
-    JSON.stringify(metricAboveAvgQuery.data),
-    JSON.stringify(metricBelowAvgQuery.data),
-  ]);
+  });
 
   return (
     <LineTemporalChart
       series={series}
       height={HEIGHT_SYMMETRICAL_CHART}
       title={title}
-      startingTimeStamp={Date.parse(chartStartTimeRef.current) / 1000}
+      startingTimeStamp={startingTimeStamp}
       yAxisType={'symmetrical'}
       yAxisTitle={yAxisTitle}
-      isLoading={showAvg ? isMetricsAvgDataLoading : isMetricsDataLoading}
+      isLoading={isLoading}
       isLegendHidden={false}
       unitRange={unitRange}
     />
