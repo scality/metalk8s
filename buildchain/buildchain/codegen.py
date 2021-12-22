@@ -21,7 +21,7 @@ def task_codegen() -> Iterator[types.TaskDict]:
 
 
 def codegen_go() -> types.TaskDict:
-    """Generate Go code using operator-sdk."""
+    """Generate Go code using the Operator SDK Makefile."""
     cwd = constants.STORAGE_OPERATOR_ROOT
     actions = []
     for cmd in constants.OPERATOR_SDK_GENERATE_CMDS:
@@ -32,7 +32,7 @@ def codegen_go() -> types.TaskDict:
         "title": utils.title_with_subtask_name("CODEGEN"),
         "doc": codegen_go.__doc__,
         "actions": actions,
-        "task_dep": ["check_for:operator-sdk"],
+        "task_dep": ["check_for:make"],
         "file_dep": list(constants.STORAGE_OPERATOR_SOURCES),
     }
 

@@ -180,7 +180,7 @@ def lint_go() -> types.TaskDict:
         "title": utils.title_with_subtask_name("LINT"),
         "doc": lint_go.__doc__,
         "actions": [check_go_fmt, check_go_codegen],
-        "task_dep": ["check_for:gofmt", "check_for:operator-sdk", "check_for:git"],
+        "task_dep": ["check_for:gofmt", "check_for:make", "check_for:git"],
         "file_dep": list(constants.GO_SOURCES),
     }
 
