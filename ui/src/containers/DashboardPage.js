@@ -99,9 +99,9 @@ const DashboardPage = () => {
           <DashboardServices />
         </DashboardScrollableArea>
 
-        <DashboardScrollableArea className="network">
+        <div className="network">
           <DashboardNetwork />
-        </DashboardScrollableArea>
+        </div>
 
         <div className="metrics">
           <DashboardMetrics />
