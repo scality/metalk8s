@@ -1,5 +1,5 @@
 ## nginx configuration
-## Ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/index.md
+## Ref: https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/nginx-configuration/index.md
 ##
 
 ## Overrides for generated resource names
@@ -15,8 +15,8 @@ controller:
     # for backwards compatibility consider setting the full image url via the repository value below
     # use *either* current default registry/image or repository format or installing chart by providing the values.yaml will fail
     # repository:
-    tag: "v0.47.0"
-    digest: sha256:a1e4efc107be0bb78f32eaec37bef17d7a0c81bec8066cdf2572508d21351d0b
+    tag: "v0.49.0"
+    digest: sha256:e9707504ad0d4c119036b6d41ace4a33596139d3feb9ccb6617813ce48c3eeef
     pullPolicy: IfNotPresent
     # www-data -> uid 101
     runAsUser: 101
@@ -40,7 +40,7 @@ controller:
   ##
   configAnnotations: {}
 
-  # Will add custom headers before sending traffic to backends according to https://github.com/kubernetes/ingress-nginx/tree/master/docs/examples/customization/custom-headers
+  # Will add custom headers before sending traffic to backends according to https://github.com/kubernetes/ingress-nginx/tree/main/docs/examples/customization/custom-headers
   proxySetHeaders: {}
 
   # Will add custom headers before sending response traffic to the client according to: https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#add-headers
@@ -48,6 +48,9 @@ controller:
 
   # Optionally customize the pod dnsConfig.
   dnsConfig: {}
+
+  # Optionally customize the pod hostname.
+  hostname: {}
 
   # Optionally change this to ClusterFirstWithHostNet in case you have 'hostNetwork: true'.
   # By default, while using host network, name resolution uses the host's DNS. If you wish nginx-controller
@@ -526,6 +529,18 @@ controller:
       servicePort: 443
       type: ClusterIP
 
+    createSecretJob:
+      resources: {}
+        # limits:
+        #   cpu: 10m
+        #   memory: 20Mi
+        # requests:
+        #   cpu: 10m
+        #   memory: 20Mi
+
+    patchWebhookJob:
+      resources: {}
+
     patch:
       enabled: true
       image:
@@ -540,7 +555,8 @@ controller:
       ##
       priorityClassName: ""
       podAnnotations: {}
-      nodeSelector: {}
+      nodeSelector:
+        kubernetes.io/os: linux
       tolerations: []
       runAsUser: 2000
 
@@ -717,7 +733,8 @@ defaultBackend:
   ## Node labels for default backend pod assignment
   ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
   ##
-  nodeSelector: {}
+  nodeSelector:
+    kubernetes.io/os: linux
 
   ## Annotations to be added to default backend pods
   ##
@@ -770,7 +787,7 @@ defaultBackend:
 
   priorityClassName: ""
 
-## Enable RBAC as per https://github.com/kubernetes/ingress/tree/master/examples/rbac/nginx and https://github.com/kubernetes/ingress/issues/266
+## Enable RBAC as per https://github.com/kubernetes/ingress-nginx/blob/main/docs/deploy/rbac.md and https://github.com/kubernetes/ingress-nginx/issues/266
 rbac:
   create: true
   scope: false
@@ -791,18 +808,18 @@ imagePullSecrets: []
 # - name: secretName
 
 # TCP service key:value pairs
-# Ref: https://github.com/kubernetes/contrib/tree/master/ingress/controllers/nginx/examples/tcp
+# Ref: https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/exposing-tcp-udp-services.md
 ##
 tcp: {}
 #  8080: "default/example-tcp-svc:9000"
 
 # UDP service key:value pairs
-# Ref: https://github.com/kubernetes/contrib/tree/master/ingress/controllers/nginx/examples/udp
+# Ref: https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/exposing-tcp-udp-services.md
 ##
 udp: {}
 #  53: "kube-system/kube-dns:53"
 
 # A base64ed Diffie-Hellman parameter
 # This can be generated with: openssl dhparam 4096 2> /dev/null | base64
-# Ref: https://github.com/krmichel/ingress-nginx/blob/master/docs/examples/customization/ssl-dh-param
+# Ref: https://github.com/kubernetes/ingress-nginx/tree/main/docs/examples/customization/ssl-dh-param
 dhParam:

@@ -1,8 +1,9 @@
 annotations:
   artifacthub.io/changes: |
-    - Add namespace field in the namespace scoped resource templates
+    - Migrate the webhook-certgen program inside ingress repo.
+    - Fix forwarding of auth-response-headers to gRPC backends
 apiVersion: v2
-appVersion: 0.47.0
+appVersion: 0.49.0
 description: Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer
 home: https://github.com/kubernetes/ingress-nginx
 icon: https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Nginx_logo.svg/500px-Nginx_logo.svg.png
@@ -16,4 +17,4 @@ name: ingress-nginx
 sources:
 - https://github.com/kubernetes/ingress-nginx
 type: application
-version: 3.34.0
+version: 3.36.0
