@@ -127,10 +127,8 @@ const VolumeDetailCard = (props) => {
 
   const deleteVolume = (deleteVolumeName) =>
     dispatch(deleteVolumeAction(deleteVolumeName));
-  const [
-    isDeleteConfirmationModalOpen,
-    setisDeleteConfirmationModalOpen,
-  ] = useState(false);
+  const [isDeleteConfirmationModalOpen, setisDeleteConfirmationModalOpen] =
+    useState(false);
 
   // Confirm the deletion
   const onClickDeleteButton = (deleteVolumeName, nodeName) => {
@@ -212,7 +210,7 @@ const VolumeDetailCard = (props) => {
               {intl.formatMessage({ id: 'size' })}
             </OverviewInformationLabel>
             <OverviewInformationValue data-cy="volume_size_value">
-              {storageCapacity || intl.formatMessage({id: 'unknown'})}
+              {storageCapacity || intl.formatMessage({ id: 'unknown' })}
             </OverviewInformationValue>
           </OverviewInformationSpan>
           <OverviewInformationSpan>
@@ -227,7 +225,9 @@ const VolumeDetailCard = (props) => {
             <OverviewInformationLabel>
               {intl.formatMessage({ id: 'storageClass' })}
             </OverviewInformationLabel>
-            <OverviewInformationValue>{storageClassName}</OverviewInformationValue>
+            <OverviewInformationValue>
+              {storageClassName}
+            </OverviewInformationValue>
           </OverviewInformationSpan>
           <OverviewInformationSpan>
             <OverviewInformationLabel>
@@ -331,8 +331,9 @@ const VolumeDetailCard = (props) => {
               <VolumeSectionTitle>
                 {intl.formatMessage({ id: 'usage' })}
               </VolumeSectionTitle>
-              {volumeUsagePercentage !==
-              intl.formatMessage({ id: 'unknown' }) ? (
+              {volumeUsagePercentage &&
+              volumeUsagePercentage !==
+                intl.formatMessage({ id: 'unknown' }) ? (
                 <ProgressBarContainer>
                   <ProgressBar
                     size="large"
