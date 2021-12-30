@@ -32,7 +32,6 @@ import {
 import {
   allSizeUnitsToBytes,
   compareHealth,
-  formatSizeForDisplay,
   useTableSortURLSync,
 } from '../services/utils';
 import {
@@ -227,10 +226,12 @@ function Table({
   );
 
   // Synchronizes the params query with the Table sort state
-  const sorted = headerGroups[0].headers.find((item) => item.isSorted === true)
-    ?.id;
-  const desc = headerGroups[0].headers.find((item) => item.isSorted === true)
-    ?.isSortedDesc;
+  const sorted = headerGroups[0].headers.find(
+    (item) => item.isSorted === true,
+  )?.id;
+  const desc = headerGroups[0].headers.find(
+    (item) => item.isSorted === true,
+  )?.isSortedDesc;
   useTableSortURLSync(sorted, desc, data, DEFAULT_SORTING_KEY);
 
   const RenderRow = React.useCallback(
@@ -351,13 +352,8 @@ function Table({
 }
 
 const VolumeListTable = (props) => {
-  const {
-    nodeName,
-    volumeListData,
-    volumeName,
-    isNodeColumn,
-    isSearchBar,
-  } = props;
+  const { nodeName, volumeListData, volumeName, isNodeColumn, isSearchBar } =
+    props;
   const history = useHistory();
   const location = useLocation();
   const intl = useIntl();
@@ -416,7 +412,6 @@ const VolumeListTable = (props) => {
           paddingRight: '5px',
         },
         sortType: 'size',
-        Cell: ({ value }) => formatSizeForDisplay(value),
       },
       {
         Header: 'Status',
