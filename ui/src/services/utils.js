@@ -356,7 +356,7 @@ export function getSegments({ pointsAtRisk, pointsDegraded, pointsWatchdog }) {
   return pointsDegraded.reduce((agg, [timestamp, degradedValue], index) => {
     const atRiskValue = pointsAtRisk[index][1];
     const currentType =
-    pointsWatchdog[index][1] !== '1'
+      pointsWatchdog[index][1] !== '1'
         ? NAN_STRING
         : atRiskValue > 0
         ? STATUS_CRITICAL
@@ -491,9 +491,14 @@ export const compareHealth = (status1, status2) => {
 // Add a space between size value and its unit since the API returns this as a string
 // Add the unit B
 export const formatSizeForDisplay = (value) => {
-  if (value && value.match(/^(\d+)(\D+)$/))
-    return value.replace(/^(\d+)(\D+)$/, '$1 $2') + 'B';
-  else return value;
+  if (value && value.match(/^(\d+)(\D+)$/)) {
+    const newValue = value.replace(/^(\d+)(\D+)$/, '$1 $2');
+    if (newValue.match(/.+(B$)/i)) {
+      return newValue;
+    } else {
+      return newValue + ' B';
+    }
+  } else return value;
 };
 
 /**
