@@ -19,7 +19,7 @@ import {
   STATUS_WARNING,
   LVM_LOGICAL_VOLUME,
 } from '../constants';
-import { Modal, ProgressBar, Loader } from '@scality/core-ui';
+import { Modal, ProgressBar } from '@scality/core-ui';
 import { Button } from '@scality/core-ui/dist/next';
 import { useIntl } from 'react-intl';
 import {
@@ -83,9 +83,6 @@ const ModalBody = styled.div`
 const CancelButton = styled(Button)`
   margin-right: ${padding.small};
 `;
-const LoaderContainer = styled(Loader)`
-  padding-left: ${padding.small};
-`;
 
 const LabelName = styled.span`
   font-size: ${fontSize.small};
@@ -127,10 +124,8 @@ const VolumeDetailCard = (props) => {
 
   const deleteVolume = (deleteVolumeName) =>
     dispatch(deleteVolumeAction(deleteVolumeName));
-  const [
-    isDeleteConfirmationModalOpen,
-    setisDeleteConfirmationModalOpen,
-  ] = useState(false);
+  const [isDeleteConfirmationModalOpen, setisDeleteConfirmationModalOpen] =
+    useState(false);
 
   // Confirm the deletion
   const onClickDeleteButton = (deleteVolumeName, nodeName) => {
@@ -212,7 +207,7 @@ const VolumeDetailCard = (props) => {
               {intl.formatMessage({ id: 'size' })}
             </OverviewInformationLabel>
             <OverviewInformationValue data-cy="volume_size_value">
-              {storageCapacity || intl.formatMessage({id: 'unknown'})}
+              {storageCapacity || intl.formatMessage({ id: 'unknown' })}
             </OverviewInformationValue>
           </OverviewInformationSpan>
           <OverviewInformationSpan>
@@ -227,7 +222,9 @@ const VolumeDetailCard = (props) => {
             <OverviewInformationLabel>
               {intl.formatMessage({ id: 'storageClass' })}
             </OverviewInformationLabel>
-            <OverviewInformationValue>{storageClassName}</OverviewInformationValue>
+            <OverviewInformationValue>
+              {storageClassName}
+            </OverviewInformationValue>
           </OverviewInformationSpan>
           <OverviewInformationSpan>
             <OverviewInformationLabel>
@@ -326,13 +323,12 @@ const VolumeDetailCard = (props) => {
               />
             </ActiveAlertWrapper>
           )}
-          {condition === VOLUME_CONDITION_LINK && (
-            <VolumeUsage>
-              <VolumeSectionTitle>
-                {intl.formatMessage({ id: 'usage' })}
-              </VolumeSectionTitle>
-              {volumeUsagePercentage !==
-              intl.formatMessage({ id: 'unknown' }) ? (
+          {volumeUsagePercentage !== undefined &&
+            condition === VOLUME_CONDITION_LINK && (
+              <VolumeUsage>
+                <VolumeSectionTitle>
+                  {intl.formatMessage({ id: 'usage' })}
+                </VolumeSectionTitle>
                 <ProgressBarContainer>
                   <ProgressBar
                     size="large"
@@ -346,11 +342,8 @@ const VolumeDetailCard = (props) => {
                     backgroundColor={theme.buttonSecondary}
                   />
                 </ProgressBarContainer>
-              ) : (
-                <LoaderContainer size="small" />
-              )}
-            </VolumeUsage>
-          )}
+              </VolumeUsage>
+            )}
         </VolumeGraph>
         <Modal
           close={() => setisDeleteConfirmationModalOpen(false)}
