@@ -412,7 +412,7 @@ spec:
               fieldPath: metadata.namespace
         - name: LD_PRELOAD
           value: /usr/local/lib/libmimalloc.so
-        image: {% endraw -%}{{ build_image_name("nginx-ingress-controller", False) }}{%- raw %}:v0.49.0
+        image: {% endraw -%}{{ build_image_name("nginx-ingress-controller", False) }}{%- raw %}:v0.49.3
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
