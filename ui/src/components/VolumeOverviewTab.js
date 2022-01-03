@@ -19,7 +19,7 @@ import {
   STATUS_WARNING,
   LVM_LOGICAL_VOLUME,
 } from '../constants';
-import { Button, Modal, ProgressBar, Loader } from '@scality/core-ui';
+import { Button, Modal, ProgressBar } from '@scality/core-ui';
 import { useIntl } from 'react-intl';
 import { VolumeTab } from './style/CommonLayoutStyle';
 import { formatSizeForDisplay } from '../services/utils';
@@ -112,9 +112,6 @@ const ModalBody = styled.div`
 
 const CancelButton = styled(Button)`
   margin-right: ${padding.small};
-`;
-const LoaderContainer = styled(Loader)`
-  padding-left: ${padding.small};
 `;
 
 const LabelName = styled.span`
@@ -246,7 +243,7 @@ const VolumeDetailCard = (props) => {
               {intl.formatMessage({ id: 'size' })}
             </InformationLabel>
             <InformationValue data-cy="volume_size_value">
-              {storageCapacity || intl.formatMessage({id: 'unknown'})}
+              {storageCapacity || intl.formatMessage({ id: 'unknown' })}
             </InformationValue>
           </InformationSpan>
           <InformationSpan>
@@ -360,13 +357,12 @@ const VolumeDetailCard = (props) => {
               />
             </AlertsCounterContainer>
           )}
-          {condition === VOLUME_CONDITION_LINK && (
-            <VolumeUsage>
-              <VolumeSectionTitle>
-                {intl.formatMessage({ id: 'usage' })}
-              </VolumeSectionTitle>
-              {volumeUsagePercentage !==
-              intl.formatMessage({ id: 'unknown' }) ? (
+          {volumeUsagePercentage !== undefined &&
+            condition === VOLUME_CONDITION_LINK && (
+              <VolumeUsage>
+                <VolumeSectionTitle>
+                  {intl.formatMessage({ id: 'usage' })}
+                </VolumeSectionTitle>
                 <ProgressBarContainer>
                   <ProgressBar
                     size="large"
@@ -380,11 +376,8 @@ const VolumeDetailCard = (props) => {
                     backgroundColor={theme.buttonSecondary}
                   />
                 </ProgressBarContainer>
-              ) : (
-                <LoaderContainer size="small" />
-              )}
-            </VolumeUsage>
-          )}
+              </VolumeUsage>
+            )}
         </VolumeGraph>
         <Modal
           close={() => setisDeleteConfirmationModalOpen(false)}
