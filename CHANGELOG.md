@@ -1,5 +1,9 @@
 # CHANGELOG
 ## Release 2.10.8 (in development)
+## Enhancements
+
+- Bump Kubernetes version to 1.21.8
+  (PR[#3653](https://github.com/scality/metalk8s/pull/3653))
 
 - Bump ingress-nginx chart version to 3.36.0
   nginx-ingress-controller image has been bump accordingly to v0.49.3
