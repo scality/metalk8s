@@ -59,7 +59,7 @@
 
 - Bump kube-prometheus-stack charts version to 23.2.0
   The following images have also been bumped accordingly:
-   - grafana to 8.3.1
+   - grafana to 8.3.1-ubuntu
    - k8s-sidecar to 1.14.2
    - kube-state-metrics to v2.2.4
    - node-exporter to v1.2.2
