@@ -100,6 +100,9 @@
   nginx-ingress-controller image has been bump accordingly to v0.49.3
   (PR[#3649](https://github.com/scality/metalk8s/pull/3649))
 
+- Bump grafana image to 8.0.7-ubuntu
+  (PR[#3656](https://github.com/scality/metalk8s/pull/3656))
+
 ## Release 2.10.7
 ## Enhancements
 
