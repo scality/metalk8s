@@ -24644,7 +24644,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.3.1
+    app.kubernetes.io/version: 8.3.1-ubuntu
     helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana
@@ -24904,7 +24904,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.3.1
+    app.kubernetes.io/version: 8.3.1-ubuntu
     helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana
@@ -25008,7 +25008,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.3.1
+    app.kubernetes.io/version: 8.3.1-ubuntu
     helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana
@@ -25037,7 +25037,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.3.1
+    app.kubernetes.io/version: 8.3.1-ubuntu
     helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana-config-dashboards
@@ -25079,7 +25079,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.3.1
+    app.kubernetes.io/version: 8.3.1-ubuntu
     helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana
@@ -60686,7 +60686,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.3.1
+    app.kubernetes.io/version: 8.3.1-ubuntu
     helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana-clusterrole
@@ -61150,7 +61150,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.3.1
+    app.kubernetes.io/version: 8.3.1-ubuntu
     helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana-clusterrolebinding
@@ -61341,7 +61341,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.3.1
+    app.kubernetes.io/version: 8.3.1-ubuntu
     helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana
@@ -61390,7 +61390,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.3.1
+    app.kubernetes.io/version: 8.3.1-ubuntu
     helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana
@@ -61437,7 +61437,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.3.1
+    app.kubernetes.io/version: 8.3.1-ubuntu
     helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana
@@ -61864,7 +61864,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.3.1
+    app.kubernetes.io/version: 8.3.1-ubuntu
     helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana
@@ -61885,8 +61885,8 @@ spec:
           apiVersion="v1", namespace="metalk8s-monitoring", name="prometheus-operator-grafana",
           path="data:grafana.ini")
         checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
-        checksum/sc-dashboard-provider-config: 02282e5ab4c879a0ae5745d5ae0786f6943365662fdcfb582ba99cc49a26823e
-        checksum/secret: bfbb4463c3864356c67b8c5bd7be5f196222bde2f98a9afbae4a21ca8391cc5c
+        checksum/sc-dashboard-provider-config: 1f57959a5b236ca002fed3fe494a562bc462eb0db530ba1500664546d01cb395
+        checksum/secret: 05ea72d91e6ac99b8da34f36157887ab504aba30dde8e63b1d06b3527f889a6e
       labels:
         app.kubernetes.io/instance: prometheus-operator
         app.kubernetes.io/name: grafana
@@ -61958,7 +61958,7 @@ spec:
           value: /var/lib/grafana/plugins
         - name: GF_PATHS_PROVISIONING
           value: /etc/grafana/provisioning
-        image: {% endraw -%}{{ build_image_name("grafana", False) }}{%- raw %}:8.3.1
+        image: {% endraw -%}{{ build_image_name("grafana", False) }}{%- raw %}:8.3.1-ubuntu
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 10
@@ -62175,7 +62175,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.3.1
+    app.kubernetes.io/version: 8.3.1-ubuntu
     helm.sh/chart: grafana-6.19.0
     heritage: metalk8s
   name: prometheus-operator-grafana

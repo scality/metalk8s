@@ -73,7 +73,7 @@
 
 - Bump kube-prometheus-stack charts version to 23.2.0
   The following images have also been bumped accordingly:
-   - grafana to 8.3.1
+   - grafana to 8.3.1-ubuntu
    - k8s-sidecar to 1.14.2
    - kube-state-metrics to v2.2.4
    - node-exporter to v1.2.2
@@ -113,6 +113,9 @@
 - Bump ingress-nginx chart version to 3.36.0
   nginx-ingress-controller image has been bump accordingly to v0.49.3
   (PR[#3649](https://github.com/scality/metalk8s/pull/3649))
+
+- Bump grafana image to 8.0.7-ubuntu
+  (PR[#3656](https://github.com/scality/metalk8s/pull/3656))
 
 ## Release 2.10.7
 ## Enhancements
