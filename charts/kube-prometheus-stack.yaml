@@ -158,6 +158,12 @@ grafana:
     image:
       repository: '__image__(k8s-sidecar)'
 
+    dashboards:
+      searchNamespace: ALL
+      folderAnnotation: metalk8s.scality.com/grafana-folder-name
+      provider:
+        foldersFromFilesStructure: true
+
     datasources:
       # Service deployed by Thanos
       url: http://thanos-query-http:10902/
