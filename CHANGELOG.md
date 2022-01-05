@@ -12,6 +12,12 @@
 - Bump grafana image to 8.0.7-ubuntu
   (PR[#3656](https://github.com/scality/metalk8s/pull/3656))
 
+## Bug fixes
+
+- Fix display of volume usage on newly created volumes in
+  MetalK8s Web UI
+  (PR[#3651](https://github.com/scality/metalk8s/pull/3651))
+
 ## Release 2.10.7
 ## Enhancements
 
