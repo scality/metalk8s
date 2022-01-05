@@ -49,8 +49,8 @@
 
 ### Enhancements
 
-- Bump Kubernetes version to 1.22.4
-  (PR[#3608](https://github.com/scality/metalk8s/pull/3608))
+- Bump Kubernetes version to 1.22.5
+  (PR[#3654](https://github.com/scality/metalk8s/pull/3654))
 
 - Bump etcd version to 3.5.0-0
   (PR[#3525](https://github.com/scality/metalk8s/pull/3525))
