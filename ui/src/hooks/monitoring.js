@@ -35,7 +35,12 @@ export function useFetchCurrentVolumeStats() {
 
   useEffect(() => {
     dispatch(updateCurrentVolumeStatsAction({ metrics: metrics }));
-  }, [metrics, dispatch]);
+  }, [
+    volumeUsedCurrent,
+    volumeCapacityCurrent,
+    volumeLatencyCurrent,
+    dispatch,
+  ]);
 
   return {
     metrics,
