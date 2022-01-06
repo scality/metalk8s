@@ -704,7 +704,14 @@ An example of what we want is `Loki dashboard`_.
 
   The ``grafana_datasource: "1"`` and ``grafana_dashboard: "1"`` labels are
   what is used by the Prometheus Operator to retrieve datasource and dashboard
-  for Grafana, resources must be deployed in `metalk8s-monitoring` namespace.
+  for Grafana.
+
+  Resources may be deployed in any namespace so long as it contains the above
+  labels.
+
+  The `metalk8s.scality.com/grafana-folder-name` annotation on dashboard
+  resources provide control over the folder in which the dashboard is placed in
+  Grafana.
 
 Loki Volume Purge
 ~~~~~~~~~~~~~~~~~

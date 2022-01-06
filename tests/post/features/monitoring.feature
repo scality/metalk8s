@@ -62,3 +62,12 @@ Feature: Monitoring is up and running
         And the Grafana API is available
         When we put a datasource as ConfigMap named 'test-new-ds' in namespace 'metalk8s-monitoring'
         Then we have a datasource named 'test-new-ds'
+
+    Scenario: Inserting a new ConfigMap provides a new dashboard
+        Given the Grafana API is available
+        And the 'zenko' namespace exists
+        And we have a dashboard ready with a specific UID
+        When we put the dashboard as a ConfigMap in namespace 'zenko' with folder annotation value 'ZENKO-PLEASE'
+        Then we have the dashboard in folder 'ZENKO-PLEASE' in Grafana
+        Then on deletion of the dashboard's ConfigMap from namespace 'zenko'
+        Then the dashboard is no longer in folder 'ZENKO-PLEASE' in Grafana

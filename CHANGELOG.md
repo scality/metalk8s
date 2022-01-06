@@ -101,6 +101,12 @@
 
 - Handle 401 unauthorized error in MetalK8s UI
   (PR[#3640](https://github.com/scality/metalk8s/pull/3640))
+  
+- [#3618](https://github.com/scality/metalk8s/issues/3618) Detect Grafana
+  dashboard ConfigMaps in any namespace rather than just `metalk8s-monitoring`,
+  and enable Grafana folder generation from dashboard file structure (PR
+  [#3620](https://github.com/scality/metalk8s/pull/3620))
+
 ## Bug fixes
 
 - [#3601](https://github.com/scality/metalk8s/issues/3601) - Marks
