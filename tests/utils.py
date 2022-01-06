@@ -278,3 +278,10 @@ class GrafanaAPI(BaseAPI):
         return self.request(
             "GET", f"api/datasources/name/{name}", auth=("admin", "admin")
         )
+
+    def get_dashboard(self, uid):
+        return self.request(
+            "GET",
+            f"api/dashboards/uid/{uid}",
+            auth=("admin", "admin"),
+        )

@@ -1,15 +1,13 @@
 import json
 import operator
 import pathlib
-import random
-import string
+import uuid
 import yaml
 
 from kubernetes.client.rest import ApiException
 
 import pytest
 from pytest_bdd import scenario, given, when, then, parsers
-import testinfra
 
 from tests import utils
 from tests import kube_utils
@@ -92,8 +90,16 @@ def test_configmap_add_datasource(host, teardown):
     pass
 
 
+@scenario(
+    "../features/monitoring.feature",
+    "Inserting a new ConfigMap provides a new dashboard",
+)
+def test_configmap_add_dashboards(host):
+    pass
+
+
 # }}}
-# Fixture {{{
+# Fixtures {{{
 
 
 @pytest.fixture(scope="function")
@@ -148,6 +154,98 @@ def apiservice_exists(host, name, k8s_client, request):
     utils.retry(_check_object_exists, times=20, wait=3)
 
 
+@given(parsers.parse("the '{ns_name}' namespace exists"))
+def namespace_exists(k8s_client, ns_name):
+    client = k8s_client.resources.get(api_version="v1", kind="Namespace")
+    try:
+        client.get(name=ns_name)
+    except ApiException as exc:
+        if not exc.status == 404:
+            raise AssertionError(f"Unable to create namespace: {exc}")
+        try:
+            client.create({"metadata": {"name": ns_name}})
+        except ApiException as err:
+            raise AssertionError(f"Unable to create namespace: {err}")
+
+
+@given(parsers.parse("we have a dashboard ready with a specific UID"))
+def dashboard_ready(context):
+    cm_uid = str(uuid.uuid4())
+    context["grafana-cm-uid"] = cm_uid
+    cm_manifest = {
+        "kind": "ConfigMap",
+        "apiVersion": "v1",
+        "metadata": {
+            "name": "zk-dash",
+            "labels": {
+                "app.kubernetes.io/managed-by": "salt",
+                "app.kubernetes.io/part-of": "zenko",
+                "grafana_dashboard": "1",
+                "heritage": "salt",
+            },
+        },
+        "data": {
+            f"{cm_uid}-zk-dash.json": json.dumps(
+                {
+                    "annotations": {"list": []},
+                    "description": "MongoDB Dashboard.",
+                    "editable": True,
+                    "graphTooltip": 1,
+                    "links": [],
+                    "panels": [],
+                    "refresh": "5s",
+                    "schemaVersion": 30,
+                    "style": "dark",
+                    "tags": [],
+                    "templating": {"list": []},
+                    "timezone": "browser",
+                    "title": "Zenko Dashboard",
+                    "version": 1,
+                    "uid": cm_uid,
+                }
+            )
+        },
+    }
+    context["grafana-cm-manifest"] = cm_manifest
+
+
+# }}}
+# When {{{
+
+
+@when(
+    parsers.parse(
+        "We put the dashboard as a ConfigMap in namespace '{namespace}' with folder annotation value '{cm_folder}'"
+    )
+)
+def push_dashboard_cm(k8s_client, context, cm_folder, namespace):
+    client = kube_utils.Client(k8s_client, "ConfigMap", namespace=namespace)
+
+    cm_manifest = context["grafana-cm-manifest"]
+    cm_name = cm_manifest.get("metadata", {}).get("name")
+
+    cm_manifest["metadata"]["annotations"] = {
+        "metalk8s.scality.com/grafana-folder-name": cm_folder,
+    }
+    cm_manifest["metadata"]["namespace"] = namespace
+
+    try:
+        cm = client.get(name=cm_name)
+        if cm is not None:
+            try:
+                client.delete(name=cm_name)
+            except ApiException as err:
+                raise AssertionError(f"Unable to delete existing ConfigMap: {err}")
+    except ApiException as exc:
+        if exc.status != 404:
+            raise AssertionError(f"Unable to inspect ConfigMaps: {exc}")
+
+    try:
+        client._create(cm_manifest)
+    except ApiException as err:
+        raise AssertionError(f"Unable to push ConfigMap: {err}")
+
+
 # }}}
 # When {{{
 
@@ -197,6 +295,59 @@ def push_datasource_cm(context, k8s_client, name, namespace):
 
 # }}}
 # Then {{{
+
+
+@then(
+    parsers.parse("on deletion of the dashboard's ConfigMap from namespace '{ns_name}'")
+)
+def delete_config_map(k8s_client, context, ns_name):
+    client = kube_utils.Client(k8s_client, "ConfigMap", namespace=ns_name)
+    cm_manifest = context["grafana-cm-manifest"]
+    cm_name = cm_manifest.get("metadata", {}).get("name")
+    try:
+        client.delete(cm_name)
+    except ApiException as err:
+        raise AssertionError(f"failed to delete dashboard '{cm_name}': {err}")
+
+
+@then(
+    parsers.parse("the dashboard is no longer in folder '{gf_folder_name}' in Grafana")
+)
+def check_no_dash_in_folder(context, gf_folder_name, grafana_api):
+
+    dash_uid = context["grafana-cm-uid"]
+
+    def _get_dash():
+        try:
+            return grafana_api.get_dashboard(dash_uid)
+        except utils.GrafanaAPIError:
+            raise AssertionError(f"no dashboard with UID '{dash_uid}' in Grafana")
+
+    dashboard = utils.retry(
+        _get_dash, times=3, wait=15, name=f"check dashboard uid {dash_uid}"
+    )
+    assert (
+        dashboard.get("meta", {}).get("folderTitle") == gf_folder_name
+    ), f"dashboard not in folder '{gf_folder_name}'"
+
+
+@then(parsers.parse("we have the dashboard in folder '{gf_folder_name}' in Grafana"))
+def check_dash_and_folder(context, gf_folder_name, grafana_api):
+
+    dash_uid = context["grafana-cm-uid"]
+
+    def _get_dash():
+        try:
+            return grafana_api.get_dashboard(dash_uid)
+        except utils.GrafanaAPIError:
+            raise AssertionError(f"no dashboard with UID '{dash_uid}' in Grafana")
+
+    dashboard = utils.retry(
+        _get_dash, times=3, wait=15, name=f"check dashboard uid {dash_uid}"
+    )
+    assert (
+        dashboard.get("meta", {}).get("folderTitle") == gf_folder_name
+    ), f"dashboard not in folder '{gf_folder_name}'"
 
 
 @then(parsers.parse("job '{job}' in namespace '{namespace}' is '{health}'"))

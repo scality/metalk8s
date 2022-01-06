@@ -25022,13 +25022,12 @@ data:
     providers:
     - name: 'sidecarProvider'
       orgId: 1
-      folder: ''
       type: file
       disableDeletion: false
       allowUiUpdates: false
       updateIntervalSeconds: 30
       options:
-        foldersFromFilesStructure: false
+        foldersFromFilesStructure: true
         path: /tmp/dashboards
 kind: ConfigMap
 metadata:
@@ -61885,7 +61884,7 @@ spec:
           apiVersion="v1", namespace="metalk8s-monitoring", name="prometheus-operator-grafana",
           path="data:grafana.ini")
         checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
-        checksum/sc-dashboard-provider-config: 1f57959a5b236ca002fed3fe494a562bc462eb0db530ba1500664546d01cb395
+        checksum/sc-dashboard-provider-config: 4b86434bc5d3344f34c6418fe3e431b5dbd5ffb26f52b48a8325c63fff74a1f8
         checksum/secret: 05ea72d91e6ac99b8da34f36157887ab504aba30dde8e63b1d06b3527f889a6e
       labels:
         app.kubernetes.io/instance: prometheus-operator
@@ -61902,6 +61901,10 @@ spec:
           value: /tmp/dashboards
         - name: RESOURCE
           value: both
+        - name: NAMESPACE
+          value: ALL
+        - name: FOLDER_ANNOTATION
+          value: metalk8s.scality.com/grafana-folder-name
         image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.14.2
         imagePullPolicy: IfNotPresent
         name: grafana-sc-dashboard
