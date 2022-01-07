@@ -1,5 +1,5 @@
 # CHANGELOG
-## Release 2.11.0 (in development)
+## Release 2.11.0-alpha2
 ### Additions
 
 - Deploy a hierarchy of Prometheus alerts to provide different granularities
