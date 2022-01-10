@@ -1,5 +1,10 @@
 # CHANGELOG
 ## Release 2.10.9 (in development)
+## Bug fixes
+
+- Filter out some filesystem (NSFS, iso9660) from node exporter since
+  metrics for those filesystem does not bring any value
+  (PR[#3661](https:github.com/scality/metalk8s/pull/3661))
 
 ## Release 2.10.8
 ## Enhancements
