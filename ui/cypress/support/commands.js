@@ -59,7 +59,9 @@ Cypress.Commands.add(
       cy.route2('GET', '/shell/deployed-ui-apps.json', stubUIDiscovery);
     }
 
-    cy.route2('GET', '/.well-known/runtime-app-configuration', {fixture: 'runtime-app-configuration'});
+    cy.route2('GET', '/.well-known/runtime-app-configuration', {
+      fixture: 'runtime-app-configuration',
+    });
 
     cy.route2('GET', '/oidc/.well-known/openid-configuration', {
       fixture: 'openid-config.json',
@@ -103,6 +105,9 @@ Cypress.Commands.add(
       );
     });
 
+    cy.route2('GET', '/api/kubernetes/api/v1/pods', {
+      fixture: 'kubernetes/pods.json',
+    });
     cy.route2('GET', '/api/kubernetes/api/v1/persistentvolumes', {
       fixture: 'kubernetes/persistentvolumes.json',
     });
