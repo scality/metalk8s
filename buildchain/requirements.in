@@ -1,4 +1,4 @@
 -c platform-requirements.txt
-git+git://github.com/pydoit/doit.git@baa3713bb0f3230e1bcbfe956a1dd01fd27ebed9#egg=doit
+doit ~= 0.34.0
 docker ~= 4.1.0
 PyYAML ~= 5.3.1
