@@ -4,17 +4,17 @@
 #
 #    tox -e pip-compile
 #
-certifi==2020.12.5        # via requests
-chardet==4.0.0            # via requests
-cloudpickle==1.6.0        # via doit
+certifi==2021.10.8        # via requests
+charset-normalizer==2.0.10  # via requests
+cloudpickle==2.0.0        # via doit
 docker==4.1.0             # via -r buildchain/requirements.in
-git+git://github.com/pydoit/doit.git@baa3713bb0f3230e1bcbfe956a1dd01fd27ebed9#egg=doit  # via -r buildchain/requirements.in
-idna==2.10                # via requests
+doit==0.34.0              # via -r buildchain/requirements.in
+idna==3.3                 # via requests
 pyyaml==5.3.1             # via -r buildchain/requirements.in
-requests==2.25.1          # via docker
-six==1.15.0               # via docker, websocket-client
-urllib3==1.26.6           # via requests
-websocket-client==0.58.0  # via docker
+requests==2.27.1          # via docker
+six==1.16.0               # via docker
+urllib3==1.26.8           # via requests
+websocket-client==1.2.3   # via docker
 # Note: these come from 'buildchain/platform-requirements.txt'
 macfsevents==0.8.1; sys_platform=="darwin"  # via doit
 pyinotify==0.9.6; sys_platform=="linux"     # via doit
