@@ -93,6 +93,10 @@
   and enable Grafana folder generation from dashboard file structure (PR
   [#3620](https://github.com/scality/metalk8s/pull/3620))
 
+- [#3387](https://github.com/scality/metalk8s/issues/3387) - Make
+  metalk8s-sosreport package compatible with sos version 4.0+
+  (PR[#3664](https://github.com/scality/metalk8s/pull/3664))
+
 ## Bug fixes
 
 - [#3601](https://github.com/scality/metalk8s/issues/3601) - Marks

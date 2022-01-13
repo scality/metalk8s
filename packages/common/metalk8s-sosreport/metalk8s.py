@@ -3,7 +3,12 @@
 from os import path
 
 import requests
-from sos.plugins import Plugin, RedHatPlugin
+
+# sos plugin layout changed in sos 4.0
+try:
+    from sos.report.plugins import Plugin, RedHatPlugin
+except ImportError:
+    from sos.plugins import Plugin, RedHatPlugin
 
 
 class metalk8s(Plugin, RedHatPlugin):

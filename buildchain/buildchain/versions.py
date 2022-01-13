@@ -22,7 +22,6 @@ CALICO_VERSION: str = "3.20.0"
 K8S_VERSION: str = "1.22.5"
 SALT_VERSION: str = "3002.7"
 CONTAINERD_VERSION: str = "1.5.8"
-SOS_VERSION: str = "< 4.0"
 
 CALICO_RELEASE: str = "1"
 CONTAINERD_RELEASE: str = "1"
@@ -362,8 +361,6 @@ PACKAGES: Dict[str, Any] = {
         PackageVersion(name="runc"),
         PackageVersion(name="salt-minion", version=SALT_VERSION),
         PackageVersion(name="socat"),
-        # TODO download built package dependencies
-        PackageVersion(name="sos", version=SOS_VERSION),
         PackageVersion(name="util-linux"),
         PackageVersion(name="yum-utils"),
         PackageVersion(name="xfsprogs"),
@@ -381,6 +378,7 @@ PACKAGES: Dict[str, Any] = {
                 release="{0}.el7".format(CONTAINERD_RELEASE),
             ),
             PackageVersion(name="container-selinux"),  # TODO #1710
+            PackageVersion(name="sos", version="< 4.0"),
             PackageVersion(
                 name="metalk8s-sosreport",
                 version=SHORT_VERSION,
@@ -401,6 +399,7 @@ PACKAGES: Dict[str, Any] = {
             ),
             PackageVersion(name="container-selinux"),
             PackageVersion(name="iptables-ebtables", override="ebtables"),
+            PackageVersion(name="sos", version=">= 4.0"),
             PackageVersion(
                 name="metalk8s-sosreport",
                 version=SHORT_VERSION,
