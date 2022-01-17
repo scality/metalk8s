@@ -1,39 +1,25 @@
 //@flow
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
-import { useHistory } from 'react-router';
-import { useLocation } from 'react-router-dom';
-import {
-  useTable,
-  useSortBy,
-  useAsyncDebounce,
-  useFilters,
-  useGlobalFilter,
-} from 'react-table';
-import { EmptyTable, SearchInput, StatusWrapper } from '@scality/core-ui';
-import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
+import { StatusWrapper, ConstrainedText } from '@scality/core-ui';
+import { Table } from '@scality/core-ui/dist/next';
+import { padding, fontSize, spacing } from '@scality/core-ui/dist/style/theme';
 import { useAlerts } from './AlertProvider';
 import StatusIcon from '../components/StatusIcon';
-import CircleStatus from '../components/CircleStatus';
 import { TextBadge } from '../components/style/CommonLayoutStyle';
-import {
-  STATUS_WARNING,
-  STATUS_CRITICAL,
-  STATUS_HEALTH,
-} from '../constants';
-import {
-  compareHealth,
-  useURLQuery,
-  useTableSortURLSync,
-  formatDateToMid1,
-} from '../services/utils';
+import { STATUS_WARNING, STATUS_CRITICAL, STATUS_HEALTH } from '../constants';
+import { compareHealth, formatDateToMid1 } from '../services/utils';
+import CircleStatus from '../components/CircleStatus';
 import { useIntl } from 'react-intl';
+import isEqual from 'lodash.isequal';
 
 const AlertPageContainer = styled.div`
   display: flex;
   flex-direction: column;
   margin: ${padding.base};
   background-color: ${(props) => props.theme.backgroundLevel1};
+  height: 100%;
+  width: 100%;
 `;
 
 const AlertPageHeaderContainer = styled.div`
@@ -89,18 +75,27 @@ const AlertStatusIcon = styled.div`
   height: 3rem;
   text-align: center;
 
-  &>span {
+  & > span {
     margin: 0;
   }
 `;
 
-const getAlertStatus = (critical, warning) => (
-  critical > 0
-  ? STATUS_CRITICAL
-  : warning > 0
-  ? STATUS_WARNING
-  : STATUS_HEALTH
-);
+// only compare the id and severity since the rest of the data can change often (like updateAt, description that display time)
+// and we don't want to re-render the whole table every time
+const isEqualAlert = (a = [], b = []) => {
+  if (a.length !== b.length) {
+    return false;
+  }
+  return a.every((alertData) =>
+    b.find(
+      (alert) =>
+        alert.id === alertData.id && alert.severity === alertData.severity,
+    ),
+  );
+};
+
+const getAlertStatus = (numbersOfCritical, numbersOfWarning) =>
+numbersOfCritical > 0 ? STATUS_CRITICAL : numbersOfWarning > 0 ? STATUS_WARNING : STATUS_HEALTH;
 
 function AlertPageHeader({
   activeAlerts,
@@ -118,10 +113,7 @@ function AlertPageHeader({
       <Title>
         <AlertStatusIcon>
           <StatusWrapper status={alertStatus}>
-            <StatusIcon
-              status={alertStatus}
-              className="fa fa-bell"
-            />
+            <StatusIcon status={alertStatus} className="fa fa-bell" />
           </StatusWrapper>
         </AlertStatusIcon>
         <>{intl.formatMessage({ id: 'alerts' })}</>
@@ -148,19 +140,6 @@ function AlertPageHeader({
   );
 }
 
-const HeadRow = styled.tr`
-  width: 100%;
-  display: table;
-  table-layout: fixed;
-  border-bottom: 1px solid ${(props) => props.theme.backgroundLevel1};
-`;
-
-const Body = styled.tbody`
-  display: block;
-  height: calc(100vh - 335px);
-  overflow: auto;
-`;
-
 export const SortCaretWrapper = styled.span`
   padding-left: ${padding.smaller};
   position: absolute;
@@ -179,259 +158,80 @@ export const TableHeader = styled.th`
   }
 `;
 
-const SearchBarContainer = styled.div`
-  padding-left: ${padding.base};
-  flex: 1;
-`;
-
 const AlertContent = styled.div`
   color: ${(props) => props.theme.textPrimary};
   padding: 1rem;
   font-family: 'Lato';
   font-size: ${fontSize.base};
   background-color: ${(props) => props.theme.backgroundLevel3};
+  display: flex;
+  width: 100%;
   height: 100%;
 
-  table {
-    border-spacing: 0;
-
-    th {
-      font-weight: bold;
-      height: 56px;
-      text-align: left;
-      padding: 0.5rem;
-      // cursor should be the action cursor
-      cursor: pointer;
-    }
-
-    td {
-      height: 80px;
-      margin: 0;
-      padding: 0.5rem;
-      height: 30px;
-    }
-
-    .sc-emptytable {
-      background-color: ${(props) => props.theme.backgroundLevel3};
-      > * {
-        background-color: ${(props) => props.theme.backgroundLevel3};
-      }
-    }
-
-    .sc-searchinput {
-      width: 240px;
-    }
+  .table {
+    width: calc(100% - 2rem);
   }
 `;
+const ActiveAlertTab = React.memo(
+  ({ columns, data }) => {
+    const sortTypes = React.useMemo(() => {
+      return {
+        severity: (row1, row2) => {
+          return compareHealth(row2?.values?.severity, row1?.values?.severity);
+        },
+        name: (row1, row2) => {
+          const a = row1?.values['labels.alertname'];
+          const b = row2.values['labels.alertname'];
+          return a.toLowerCase().localeCompare(b.toLowerCase());
+        },
+        description: (row1, row2) => {
+          const a = row1?.values?.description;
+          const b = row2.values?.description;
+          return a.toLowerCase().localeCompare(b.toLowerCase());
+        },
+        startsAt: (row1, row2) => {
+          const a = row1?.values?.startsAt;
+          const b = row2.values?.startsAt;
+          return new Date(a) - new Date(b);
+        },
+      };
+    }, []);
+    const DEFAULT_SORTING_KEY = 'severity';
 
-function GlobalFilter({
-  preGlobalFilteredRows,
-  globalFilter,
-  setGlobalFilter,
-}) {
-  const [value, setValue] = React.useState(globalFilter);
-  const history = useHistory();
-  const location = useLocation();
-  const onChange = useAsyncDebounce((value) => {
-    setGlobalFilter(value || undefined);
-
-    // update the URL with the content of search
-    const searchParams = new URLSearchParams(location.search);
-    const isSearch = searchParams.has('search');
-    if (!isSearch) {
-      searchParams.append('search', value);
-    } else {
-      searchParams.set('search', value);
-    }
-    history.push(`?${searchParams.toString()}`);
-  }, 500);
-
-  return (
-    <SearchBarContainer>
-      <SearchInput
-        value={value || undefined}
-        onChange={(e) => {
-          setValue(e.target.value);
-          onChange(e.target.value);
-        }}
-        placeholder={`Search`}
-        disableToggle={true}
-      />
-    </SearchBarContainer>
-  );
-}
-
-function ActiveAlertTab({ columns, data }) {
-  const query = useURLQuery();
-  const querySearch = query.get('search');
-  const querySort = query.get('sort');
-  const queryDesc = query.get('desc');
-  const intl = useIntl();
-  // Use the state and functions returned from useTable to build your UI
-  const defaultColumn = React.useMemo(
-    () => ({
-      Filter: GlobalFilter,
-    }),
-    [],
-  );
-
-  const sortTypes = React.useMemo(() => {
-    return {
-      severity: (row1, row2) => {
-        return compareHealth(row2?.values?.severity, row1?.values?.severity);
-      },
-      name: (row1, row2) => {
-        const a = row1?.values['labels.alertname'];
-        const b = row2.values['labels.alertname'];
-        return a.toLowerCase().localeCompare(b.toLowerCase());
-      },
-      description: (row1, row2) => {
-        const a = row1?.values?.description;
-        const b = row2.values?.description;
-        return a.toLowerCase().localeCompare(b.toLowerCase());
-      },
-      startsAt: (row1, row2) => {
-        const a = row1?.values?.startsAt;
-        const b = row2.values?.startsAt;
-        return new Date(a) - new Date(b);
-      },
-    };
-  }, []);
-  const DEFAULT_SORTING_KEY = 'severity';
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-    state,
-    visibleColumns,
-    preGlobalFilteredRows,
-    setGlobalFilter,
-  } = useTable(
-    {
-      columns,
-      data,
-      defaultColumn,
-      initialState: {
-        globalFilter: querySearch || undefined,
-        sortBy: [
-          {
-            id: querySort || DEFAULT_SORTING_KEY,
-            desc: queryDesc || false,
-          },
-        ],
-      },
-      disableMultiSort: true,
-      autoResetSortBy: false,
-      sortTypes,
-    },
-    useFilters,
-    useGlobalFilter,
-    useSortBy,
-  );
-
-  // Synchronizes the params query with the Table sort state
-  const sorted = headerGroups[0].headers.find((item) => item.isSorted === true)
-    ?.id;
-  const desc = headerGroups[0].headers.find((item) => item.isSorted === true)
-    ?.isSortedDesc;
-  useTableSortURLSync(sorted, desc, data, DEFAULT_SORTING_KEY);
-
-  return (
-    <table {...getTableProps()}>
-      <thead>
-        <tr
-          colSpan={visibleColumns.length}
-          style={{
-            textAlign: 'left',
-          }}
-        >
-          <GlobalFilter
-            preGlobalFilteredRows={preGlobalFilteredRows}
-            globalFilter={state.globalFilter}
-            setGlobalFilter={setGlobalFilter}
+    return (
+      <Table
+        columns={columns}
+        data={data}
+        defaultSortingKey={DEFAULT_SORTING_KEY}
+        sortTypes={sortTypes}
+      >
+        <div style={{ margin: `${spacing.sp16} 0` }}>
+          <Table.SearchWithQueryParams
+            displayedName={{ singular: 'alert', plural: 'alerts' }}
           />
-        </tr>
-
-        {headerGroups.map((headerGroup) => {
-          return (
-            <HeadRow {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => {
-                const headerStyleProps = column.getHeaderProps(
-                  Object.assign(column.getSortByToggleProps(), {
-                    style: column.cellStyle,
-                  }),
-                );
-                return (
-                  <TableHeader {...headerStyleProps} className="th">
-                    {column.render('Header')}
-                    <SortCaretWrapper>
-                      {column.isSorted ? (
-                        column.isSortedDesc ? (
-                          <i className="fas fa-sort-down" />
-                        ) : (
-                          <i className="fas fa-sort-up" />
-                        )
-                      ) : (
-                        <SortIncentive>
-                          <i className="fas fa-sort" />
-                        </SortIncentive>
-                      )}
-                    </SortCaretWrapper>
-                  </TableHeader>
-                );
-              })}
-            </HeadRow>
-          );
-        })}
-      </thead>
-
-      <Body {...getTableBodyProps()}>
-        {!rows.length && (
-          <EmptyTable>
-            {intl.formatMessage({ id: 'no_active_alerts' })}
-          </EmptyTable>
-        )}
-        {rows.map((row, i) => {
-          prepareRow(row);
-          return (
-            <HeadRow {...row.getRowProps()}>
-              {row.cells.map((cell) => {
-                let cellProps = cell.getCellProps({
-                  style: {
-                    ...cell.column.cellStyle,
-                  },
-                });
-                if (cell.column.Header === 'Active since') {
-                  return (
-                    <td {...cellProps}>
-                      <span>{formatDateToMid1(cell.value)}</span>
-                    </td>
-                  );
-                } else if (cell.column.Header === 'Severity') {
-                  return (
-                    <td {...cellProps}>
-                      <CircleStatus status={cell.value} />
-                    </td>
-                  );
-                } else {
-                  return <td {...cellProps}>{cell.render('Cell')}</td>;
-                }
-              })}
-            </HeadRow>
-          );
-        })}
-      </Body>
-    </table>
-  );
-}
+        </div>
+        <Table.SingleSelectableContent
+          rowHeight="h48"
+          separationLineVariant="backgroundLevel1"
+          backgroundVariant="backgroundLevel2"
+          customItemKey={(index, data) => {
+            return data[index].id;
+          }}
+        />
+      </Table>
+    );
+  },
+  (a, b) => {
+    // compare the alert only on id and severity
+    return isEqual(a.columns, b.columns) && isEqualAlert(a.data, b.data);
+  },
+);
 
 export default function AlertPage() {
   const alerts = useAlerts({});
+
   const leafAlerts = useMemo(
     () => alerts?.alerts.filter((alert) => !alert.labels.children) || [],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [JSON.stringify(alerts?.alerts)],
   );
 
@@ -449,21 +249,29 @@ export default function AlertPage() {
         accessor: 'severity',
         cellStyle: { textAlign: 'center', width: '100px' },
         sortType: 'severity',
+        Cell: (cell) => <CircleStatus status={cell.value} />,
       },
       {
         Header: 'Name',
         accessor: 'labels.alertname',
-        cellStyle: { width: '300px' },
+        cellStyle: { flexGrow: '2' },
         sortType: 'name',
       },
       {
         Header: 'Description',
+        cellStyle: { flexGrow: '12', margin: `0 ${spacing.sp8}` },
         accessor: (row) => row.description || row.summary,
+        Cell: (cell) => <ConstrainedText lineClamp={2} text={cell.value} />,
       },
       {
         Header: 'Active since',
         accessor: 'startsAt',
-        cellStyle: { textAlign: 'right', width: '200px' },
+        cellStyle: {
+          flexGrow: '1',
+          textAlign: 'right',
+          marginRight: spacing.sp8,
+        },
+        Cell: (cell) => <span>{formatDateToMid1(cell.value)}</span>,
       },
     ],
     [],
