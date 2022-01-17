@@ -1,26 +1,21 @@
 import React, { useEffect } from 'react';
 import { useRouteMatch } from 'react-router';
 import { useDispatch } from 'react-redux';
+
 import VolumeContent from './VolumePageContent';
 import { fetchPodsAction } from '../ducks/app/pods';
-import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
-import { makeGetNodeFromUrl, useRefreshEffect } from '../services/utils';
+import { makeGetNodeFromUrl } from '../services/utils';
 import { fetchNodesAction } from '../ducks/app/nodes';
 import {
-  refreshVolumesAction,
-  stopRefreshVolumesAction,
-  refreshPersistentVolumesAction,
-  stopRefreshPersistentVolumesAction,
-  fetchPersistentVolumeClaimAction,
-  fetchCurrentVolumeObjectAction,
-} from '../ducks/app/volumes';
-import {
-  fetchVolumeStatsAction,
-  fetchCurrentVolumeStatsAction,
-  refreshCurrentVolumeStatsAction,
-  stopRefreshCurrentVolumeStatsAction,
-} from '../ducks/app/monitoring';
+  useRefreshVolume,
+  useFetchCurrentVolumeObject,
+  useGetPersistentVolumes,
+} from '../hooks/volumes';
+import { useFetchCurrentVolumeStats } from '../hooks/monitoring';
+import { fetchPersistentVolumeClaimAction } from '../ducks/app/volumes';
+import { fetchVolumeStatsAction } from '../ducks/app/monitoring';
 import { PageContainer } from '../components/style/CommonLayoutStyle';
+import { useRefreshNodes } from '../hooks/nodes';
 import { useTypedSelector, useVolumesWithAlerts } from '../hooks';
 
 // <VolumePage> component fetchs all the data used by volume page from redux store.
@@ -31,27 +26,16 @@ const VolumePage = (props) => {
   const match = useRouteMatch();
   const currentVolumeName = match.params.name;
 
-  useEffect(() => {
-    if (currentVolumeName)
-      dispatch(fetchCurrentVolumeObjectAction(currentVolumeName));
-  }, [dispatch, currentVolumeName]);
-
-  useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
-  useRefreshEffect(refreshVolumesAction, stopRefreshVolumesAction);
-  useRefreshEffect(
-    refreshPersistentVolumesAction,
-    stopRefreshPersistentVolumesAction,
-  );
-  useRefreshEffect(
-    refreshCurrentVolumeStatsAction,
-    stopRefreshCurrentVolumeStatsAction,
-  );
+  useFetchCurrentVolumeObject(currentVolumeName);
+  useRefreshNodes();
+  useGetPersistentVolumes();
+  useFetchCurrentVolumeStats();
+  useRefreshVolume();
 
   useEffect(() => {
     dispatch(fetchPodsAction());
     dispatch(fetchNodesAction());
     dispatch(fetchVolumeStatsAction());
-    dispatch(fetchCurrentVolumeStatsAction());
     dispatch(fetchPersistentVolumeClaimAction());
   }, [dispatch]);
 
@@ -61,10 +45,10 @@ const VolumePage = (props) => {
   const nodes = useTypedSelector((state) => state.app.nodes.list);
   const volumes = useTypedSelector((state) => state.app.volumes.list);
   const volumesLoading = useTypedSelector(
-    (state) => state.app.volumes.isLoading
+    (state) => state.app.volumes.isLoading,
   );
   const currentVolumeObject = useTypedSelector(
-    (state) => state.app.volumes.currentVolumeObject
+    (state) => state.app.volumes.currentVolumeObject,
   );
 
   const pVList = useTypedSelector((state) => state.app.volumes.pVList);
@@ -76,7 +60,7 @@ const VolumePage = (props) => {
   const pVCList = useTypedSelector((state) => state?.app?.volumes?.pVCList);
 
   const volumeStats = useTypedSelector(
-    (state) => state.app.monitoring.volumeStats.metrics
+    (state) => state.app.monitoring.volumeStats.metrics,
   );
   // get all the volumes maybe filter by node
   const volumeListData = useVolumesWithAlerts();

@@ -1257,3 +1257,35 @@ export const getClusterAlertSegmentQuery = (
     refetchOnWindowFocus: false,
   };
 };
+
+export const prometheusKey = {
+  query: (query) => ['query', query],
+  queryRange: ['queryRange'],
+};
+
+export function getVolumeLatencyCurrentQueryOption() {
+  const volumeLatencyCurrentQuery = `irate(node_disk_io_time_seconds_total[1h]) * 1000000`;
+  return {
+    queryKey: prometheusKey.query(volumeLatencyCurrentQuery),
+    queryFn: () => queryPrometheus(volumeLatencyCurrentQuery),
+    select: (data) => data?.data?.result,
+  };
+}
+
+export function getVolumeUsedQueryOption() {
+  const volumeUsedQuery = 'kubelet_volume_stats_used_bytes';
+  return {
+    queryKey: prometheusKey.query(volumeUsedQuery),
+    queryFn: () => queryPrometheus(volumeUsedQuery),
+    select: (data) => data?.data?.result,
+  };
+}
+
+export function getVolumeCapacityQuery() {
+  const volumeCapacityQuery = 'kubelet_volume_stats_capacity_bytes';
+  return {
+    queryKey: prometheusKey.query(volumeCapacityQuery),
+    queryFn: () => queryPrometheus(volumeCapacityQuery),
+    select: (data) => data?.data?.result,
+  };
+}
