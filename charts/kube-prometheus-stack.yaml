@@ -165,8 +165,20 @@ grafana:
         foldersFromFilesStructure: true
 
     datasources:
+      # NOTE: We do not deploy default datasource as we want to set UID
+      # and it's not possible using this template
+      defaultDatasourceEnabled: false
+
+  additionalDataSources:
+    - name: Prometheus
+      uid: metalk8s-prometheus
+      type: prometheus
+      access: proxy
+      isDefault: true
       # Service deployed by Thanos
       url: http://thanos-query-http:10902/
+      jsonData:
+        timeInterval: 30s
 
   nodeSelector:
     node-role.kubernetes.io/infra: ''
