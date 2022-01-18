@@ -25089,13 +25089,14 @@ data:
   datasource.yaml: |-
     apiVersion: 1
     datasources:
-    - name: Prometheus
-      type: prometheus
-      url: http://thanos-query-http:10902/
-      access: proxy
+    - access: proxy
       isDefault: true
       jsonData:
         timeInterval: 30s
+      name: Prometheus
+      type: prometheus
+      uid: metalk8s-prometheus
+      url: http://thanos-query-http:10902/
 kind: ConfigMap
 metadata:
   labels:
