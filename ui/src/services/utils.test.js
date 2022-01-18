@@ -2,116 +2,32 @@ import { NAN_STRING } from '@scality/core-ui/dist/components/constants';
 import { renderHook } from '@testing-library/react-hooks';
 import { STATUS_CRITICAL, STATUS_HEALTH, STATUS_WARNING } from '../constants';
 import {
-  sortCapacity,
   fromMilliSectoAge,
   useTableSortURLSync,
   linuxDrivesNamingIncrement,
   formatDateToMid1,
   getSegments,
   getNaNSegments,
+  allSizeUnitsToBytes,
 } from './utils';
 
-const testcases = [
-  { storageCapacity: '1Ki' },
-  { storageCapacity: '1Gi' },
-  { storageCapacity: '100Mi' },
-  { storageCapacity: '10Gi' },
-  { storageCapacity: '1Mi' },
-];
+describe('allSizeUnitsToBytes', () => {
+  it('should convert B to B', () => {
+    expect(allSizeUnitsToBytes('988 B')).toBe(988);
+    expect(allSizeUnitsToBytes('988')).toBe(988);
+  });
 
-const testcases2 = [
-  { storageCapacity: '42949670k' },
-  { storageCapacity: '100Mi' },
-  { storageCapacity: '250Gi' },
-  { storageCapacity: '1Gi' },
-  { storageCapacity: '1Mi' },
-  { storageCapacity: '11111111111' },
-  { storageCapacity: '10Gi' },
-];
+  it('should convert kiB to B', () => {
+    expect(allSizeUnitsToBytes('988.5 KiB')).toBe(988.5 * 1024);
+    expect(allSizeUnitsToBytes('988.5KiB')).toBe(988.5 * 1024);
+    expect(allSizeUnitsToBytes('988.5 KB')).toBe(988.5 * 10 ** 3);
+  });
 
-it('should sort correctly the array', () => {
-  const result = sortCapacity(testcases);
-  expect(result).toEqual([
-    { storageCapacity: '1Ki' },
-    { storageCapacity: '1Mi' },
-    { storageCapacity: '100Mi' },
-    { storageCapacity: '1Gi' },
-    { storageCapacity: '10Gi' },
-  ]);
-
-  const result2 = sortCapacity(testcases2, 'storageCapacity');
-  expect(result2).toEqual([
-    { storageCapacity: '1Mi' },
-    { storageCapacity: '100Mi' },
-    { storageCapacity: '1Gi' },
-    { storageCapacity: '10Gi' },
-    { storageCapacity: '11111111111' },
-    { storageCapacity: '42949670k' },
-    { storageCapacity: '250Gi' },
-  ]);
-});
-
-it('should return an empty array if no arguments', () => {
-  const result = sortCapacity();
-  expect(result).toEqual([]);
-});
-
-it('should not break when the user put the wrong sortBy', () => {
-  const result = sortCapacity(testcases, 'toto');
-  expect(result).toEqual([
-    { storageCapacity: '1Ki' },
-    { storageCapacity: '1Gi' },
-    { storageCapacity: '100Mi' },
-    { storageCapacity: '10Gi' },
-    { storageCapacity: '1Mi' },
-  ]);
-});
-
-it('should keep the original sequence when the user put the wrong sortDirection', () => {
-  const result = sortCapacity(testcases, 'storageCapacity', 'toto');
-  expect(result).toEqual([
-    { storageCapacity: '1Ki' },
-    { storageCapacity: '1Gi' },
-    { storageCapacity: '100Mi' },
-    { storageCapacity: '10Gi' },
-    { storageCapacity: '1Mi' },
-  ]);
-});
-
-it('should not break when a item is null', () => {
-  const testcases = [
-    { storageCapacity: '1Ki' },
-    { storageCapacity: '1Gi' },
-    { storageCapacity: '100Mi' },
-    null,
-    { storageCapacity: '1Mi' },
-  ];
-
-  const result = sortCapacity(testcases);
-  expect(result).toEqual([
-    { storageCapacity: '1Ki' },
-    { storageCapacity: '1Mi' },
-    { storageCapacity: '100Mi' },
-    { storageCapacity: '1Gi' },
-    null,
-  ]);
-});
-
-it('test the sort with a custom sortBy', () => {
-  const testcases = [
-    { yanjin: '1Ki' },
-    { yanjin: '1Gi' },
-    { yanjin: '100Mi' },
-    { yanjin: '1Mi' },
-  ];
-
-  const result = sortCapacity(testcases, 'yanjin');
-  expect(result).toEqual([
-    { yanjin: '1Ki' },
-    { yanjin: '1Mi' },
-    { yanjin: '100Mi' },
-    { yanjin: '1Gi' },
-  ]);
+  it('should convert MiB to B', () => {
+    expect(allSizeUnitsToBytes('9 MiB')).toBe(9 * 1024 ** 2);
+    expect(allSizeUnitsToBytes('98MiB')).toBe(98 * 1024 ** 2);
+    expect(allSizeUnitsToBytes('98.88 MB')).toBe(98.88 * 10 ** 6);
+  });
 });
 
 // test for fromMilliSectoAge
@@ -343,28 +259,28 @@ describe('getSegments', () => {
     {
       name: 'Danger, NaN and At risk cases overlapping',
       pointsWatchdog: [
-        [1, "1"],
-        [2, "1"],
-        [3, "1"],
-        [4, "1"],
+        [1, '1'],
+        [2, '1'],
+        [3, '1'],
+        [4, '1'],
         [5, NAN_STRING],
-        [6, "1"],
+        [6, '1'],
       ],
       pointsDegraded: [
-        [1, "1"],
-        [2, "1"],
-        [3, "1"],
-        [4, "1"],
+        [1, '1'],
+        [2, '1'],
+        [3, '1'],
+        [4, '1'],
         [5, NAN_STRING],
-        [6, "1"],
+        [6, '1'],
       ],
       pointsAtRisk: [
-        [1, "0"],
-        [2, "0"],
-        [3, "1"],
-        [4, "1"],
+        [1, '0'],
+        [2, '0'],
+        [3, '1'],
+        [4, '1'],
         [5, NAN_STRING],
-        [6, "0"],
+        [6, '0'],
       ],
       expected: [
         { startsAt: 1, endsAt: 3, type: STATUS_WARNING },
@@ -376,12 +292,12 @@ describe('getSegments', () => {
     {
       name: 'Healthy and NaN overlapping',
       pointsWatchdog: [
-        [1, "1"],
-        [2, "1"],
-        [3, "1"],
-        [4, "1"],
+        [1, '1'],
+        [2, '1'],
+        [3, '1'],
+        [4, '1'],
         [5, NAN_STRING],
-        [6, "1"],
+        [6, '1'],
       ],
       pointsDegraded: [
         [1, NAN_STRING],
@@ -408,12 +324,12 @@ describe('getSegments', () => {
     {
       name: 'Healthy',
       pointsWatchdog: [
-        [1, "1"],
-        [2, "1"],
-        [3, "1"],
-        [4, "1"],
-        [5, "1"],
-        [6, "1"],
+        [1, '1'],
+        [2, '1'],
+        [3, '1'],
+        [4, '1'],
+        [5, '1'],
+        [6, '1'],
       ],
       pointsDegraded: [
         [1, NAN_STRING],
@@ -436,68 +352,68 @@ describe('getSegments', () => {
     {
       name: 'In danger',
       pointsWatchdog: [
-        [1, "1"],
-        [2, "1"],
-        [3, "1"],
-        [4, "1"],
-        [5, "1"],
-        [6, "1"],
+        [1, '1'],
+        [2, '1'],
+        [3, '1'],
+        [4, '1'],
+        [5, '1'],
+        [6, '1'],
       ],
       pointsDegraded: [
-        [1, "1"],
-        [2, "1"],
-        [3, "1"],
-        [4, "1"],
-        [5, "1"],
-        [6, "1"],
+        [1, '1'],
+        [2, '1'],
+        [3, '1'],
+        [4, '1'],
+        [5, '1'],
+        [6, '1'],
       ],
       pointsAtRisk: [
-        [1, "0"],
-        [2, "0"],
-        [3, "0"],
-        [4, "0"],
-        [5, "0"],
-        [6, "0"],
+        [1, '0'],
+        [2, '0'],
+        [3, '0'],
+        [4, '0'],
+        [5, '0'],
+        [6, '0'],
       ],
       expected: [{ startsAt: 1, endsAt: null, type: STATUS_WARNING }],
     },
     {
       name: 'At risk',
       pointsWatchdog: [
-        [1, "1"],
-        [2, "1"],
-        [3, "1"],
-        [4, "1"],
-        [5, "1"],
-        [6, "1"],
+        [1, '1'],
+        [2, '1'],
+        [3, '1'],
+        [4, '1'],
+        [5, '1'],
+        [6, '1'],
       ],
       pointsDegraded: [
-        [1, "0"],
-        [2, "0"],
-        [3, "0"],
-        [4, "0"],
-        [5, "0"],
-        [6, "0"],
+        [1, '0'],
+        [2, '0'],
+        [3, '0'],
+        [4, '0'],
+        [5, '0'],
+        [6, '0'],
       ],
       pointsAtRisk: [
-        [1, "1"],
-        [2, "1"],
-        [3, "1"],
-        [4, "1"],
-        [5, "1"],
-        [6, "1"],
+        [1, '1'],
+        [2, '1'],
+        [3, '1'],
+        [4, '1'],
+        [5, '1'],
+        [6, '1'],
       ],
       expected: [{ startsAt: 1, endsAt: null, type: STATUS_CRITICAL }],
     },
     {
       name: 'Danger unavailable',
       pointsWatchdog: [
-        [1, "1"],
-        [2, "1"],
-        [3, "1"],
-        [4, "1"],
-        [5, "1"],
-        [6, "1"],
+        [1, '1'],
+        [2, '1'],
+        [3, '1'],
+        [4, '1'],
+        [5, '1'],
+        [6, '1'],
       ],
       pointsDegraded: [
         [1, NAN_STRING],
@@ -508,32 +424,32 @@ describe('getSegments', () => {
         [6, NAN_STRING],
       ],
       pointsAtRisk: [
-        [1, "1"],
-        [2, "1"],
-        [3, "1"],
-        [4, "1"],
-        [5, "1"],
-        [6, "1"],
+        [1, '1'],
+        [2, '1'],
+        [3, '1'],
+        [4, '1'],
+        [5, '1'],
+        [6, '1'],
       ],
       expected: [{ startsAt: 1, endsAt: null, type: STATUS_CRITICAL }],
     },
     {
       name: 'At risk unavailable',
       pointsWatchdog: [
-        [1, "1"],
-        [2, "1"],
-        [3, "1"],
-        [4, "1"],
-        [5, "1"],
-        [6, "1"],
+        [1, '1'],
+        [2, '1'],
+        [3, '1'],
+        [4, '1'],
+        [5, '1'],
+        [6, '1'],
       ],
       pointsDegraded: [
-        [1, "1"],
-        [2, "1"],
-        [3, "1"],
-        [4, "1"],
-        [5, "1"],
-        [6, "1"],
+        [1, '1'],
+        [2, '1'],
+        [3, '1'],
+        [4, '1'],
+        [5, '1'],
+        [6, '1'],
       ],
       pointsAtRisk: [
         [1, NAN_STRING],
@@ -546,10 +462,16 @@ describe('getSegments', () => {
       expected: [{ startsAt: 1, endsAt: null, type: STATUS_WARNING }],
     },
   ];
-  cases.forEach(({ name, pointsAtRisk, pointsDegraded, pointsWatchdog, expected }) => {
-    test(`Given ${name} points should be converted to the expected alert segments`, () => {
-      const result = getSegments({ pointsDegraded, pointsAtRisk, pointsWatchdog });
-      expect(result).toStrictEqual(expected);
-    });
-  });
+  cases.forEach(
+    ({ name, pointsAtRisk, pointsDegraded, pointsWatchdog, expected }) => {
+      test(`Given ${name} points should be converted to the expected alert segments`, () => {
+        const result = getSegments({
+          pointsDegraded,
+          pointsAtRisk,
+          pointsWatchdog,
+        });
+        expect(result).toStrictEqual(expected);
+      });
+    },
+  );
 });

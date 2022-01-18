@@ -1,88 +1,24 @@
 import React from 'react';
 import { useHistory } from 'react-router';
 import styled, { useTheme } from 'styled-components';
-import { useTable, useFilters, useSortBy, useBlockLayout } from 'react-table';
-import { FixedSizeList as List } from 'react-window';
-import AutoSizer from 'react-virtualized-auto-sizer';
-import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
+import { padding, spacing } from '@scality/core-ui/dist/style/theme';
+import isEqual from 'lodash.isequal';
 import CircleStatus from './CircleStatus';
-import {
-  ProgressBar,
-  Tooltip,
-  EmptyTable,
-  ConstrainedText,
-} from '@scality/core-ui';
-import { Button } from '@scality/core-ui/dist/next';
+import { ProgressBar, Tooltip, ConstrainedText } from '@scality/core-ui';
+import { Table } from '@scality/core-ui/dist/next';
 import { useIntl } from 'react-intl';
+import { formatSizeForDisplay } from '../services/utils';
+import { UnknownIcon, TooltipContent } from './TableRow';
+import { Button } from '@scality/core-ui/dist/next';
 import {
   VOLUME_CONDITION_LINK,
   VOLUME_CONDITION_UNLINK,
   VOLUME_CONDITION_EXCLAMATION,
 } from '../constants';
-import {
-  allSizeUnitsToBytes,
-  compareHealth,
-  formatSizeForDisplay,
-} from '../services/utils';
-import {
-  SortCaretWrapper,
-  SortIncentive,
-  TableHeader,
-} from './style/CommonLayoutStyle';
-import { UnknownIcon, TooltipContent } from './TableRow';
 
 const VolumeListContainer = styled.div`
   color: ${(props) => props.theme.textPrimary};
-  font-family: 'Lato';
-  font-size: ${fontSize.base};
-
-  .table {
-    display: block;
-    padding-bottom: ${padding.smaller};
-
-    .sc-select-container {
-      width: 120px;
-      height: 10px;
-    }
-
-    .thead > div[role='row'] {
-      // seperation line between header and content
-      border-bottom: 1px solid ${(props) => props.theme.backgroundLevel1};
-
-      div[role='columnheader'] {
-        color: ${(props) => props.theme.textPrimary} !important;
-        cursor: pointer;
-      }
-    }
-
-    .td {
-      margin: 0;
-      text-align: left;
-      // speration lines between rows
-      border-bottom: 1px solid ${(props) => props.theme.backgroundLevel1};
-      :last-child {
-        border-right: 0;
-      }
-    }
-
-    .sc-emptytable {
-      background-color: ${(props) => props.theme.backgroundLevel4};
-      > * {
-        background-color: ${(props) => props.theme.backgroundLevel4};
-      }
-    }
-  }
-
-  .sc-progressbarcontainer {
-    width: 100%;
-  }
-`;
-
-// * table body
-const Body = styled.div`
-  display: block;
-  // 100vh - 48px(Navbar) - 77px(Table Search) - 32px(Table Header) - 15px(Margin bottom)
-  height: calc(100vh - 14.28rem);
+  height: 100%;
 `;
 
 const CreateVolumeButton = styled(Button)`
@@ -96,231 +32,17 @@ const ActionContainer = styled.span`
   padding: ${padding.large} ${padding.base} 26px 20px;
 `;
 
-const NameLinkContaner = styled.div`
-  cursor: pointer;
-  padding-right: ${padding.small};
-`;
-
-const TableRowStyle = styled.div``;
-
-const TableRow = (props) => {
-  const { row, style, onClickRow, isSelected } = props;
-  const intl = useIntl();
-  return (
-    <TableRowStyle
-      {...row.getRowProps({
-        onClick: props.onClickRow ? () => onClickRow(row) : null,
-        // Note:
-        // We need to pass the style property to the row component.
-        // Otherwise when we scroll down, the next rows are flashing because they are re-rendered in loop.
-        style: { ...style },
-      })}
-      isSelected={isSelected}
-      row={row}
-    >
-      {row.cells.map((cell) => {
-        let cellProps = cell.getCellProps({
-          style: {
-            ...cell.column.cellStyle,
-            // Vertically center the text in cells.
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-          },
-        });
-
-        if (cell.column.Header !== 'Name' && cell.value === undefined) {
-          return (
-            <div {...cellProps} className="td">
-              <Tooltip
-                placement={cell.row.index === 0 ? 'bottom' : 'top'}
-                overlay={
-                  <TooltipContent>
-                    {intl.formatMessage({ id: 'unknown' })}
-                  </TooltipContent>
-                }
-              >
-                <UnknownIcon className="fas fa-minus"></UnknownIcon>
-              </Tooltip>
-            </div>
-          );
-        } else {
-          return (
-            <div {...cellProps} className="td">
-              {cell.render('Cell')}
-            </div>
-          );
-        }
-      })}
-    </TableRowStyle>
-  );
-};
-
-function Table({ columns, data, nodeName, volumeName, theme }) {
-  const history = useHistory();
-  const intl = useIntl();
-  const sortTypes = React.useMemo(() => {
-    return {
-      health: (row1, row2) =>
-        compareHealth(row2?.values?.health, row1?.values?.health),
-      size: (row1, row2) => {
-        const size1 = row1?.values?.storageCapacity;
-        const size2 = row2?.values?.storageCapacity;
-        if (size1 && size2) {
-          return allSizeUnitsToBytes(size1) - allSizeUnitsToBytes(size2);
-        } else return !size1 ? -1 : 1;
-      },
-      status: (row1, row2) => {
-        const weights = {};
-        weights[VOLUME_CONDITION_LINK] = 2;
-        weights[VOLUME_CONDITION_UNLINK] = 1;
-        weights[VOLUME_CONDITION_EXCLAMATION] = 0;
-        return weights[row1?.values?.status] - weights[row2?.values?.status];
-      },
-    };
-  }, []);
-
-  const DEFAULT_SORTING_KEY = 'health';
-
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-  } = useTable(
-    {
-      columns,
-      data,
-      initialState: {
-        sortBy: [
-          {
-            id: DEFAULT_SORTING_KEY,
-            desc: false,
-          },
-        ],
-      },
-      disableMultiSort: true,
-      autoResetSortBy: false,
-      sortTypes,
-    },
-    useFilters,
-    useSortBy,
-    useBlockLayout,
-  );
-
-  const RenderRow = React.useCallback(
-    ({ index, style }) => {
-      const row = rows[index];
-      prepareRow(row);
-
-      return (
-        <TableRow
-          row={row}
-          style={style}
-          isSelected={volumeName === row.values.name}
-          isNameLink={true}
-        ></TableRow>
-      );
-    },
-    [prepareRow, rows, volumeName],
-  );
-
-  return (
-    <>
-      <div {...getTableProps()} className="table">
-        <div className="thead">
-          {/* The first row should be the search bar */}
-          <div className="tr">
-            <div className="th">
-              <ActionContainer>
-                <CreateVolumeButton
-                  variant={'secondary'}
-                  label={intl.formatMessage({ id: 'create_new_volume' })}
-                  icon={<i className="fas fa-plus" />}
-                  onClick={() => {
-                    // depends on if we add node filter
-                    if (nodeName) {
-                      history.push(`/volumes/createVolume?node=${nodeName}`);
-                    } else {
-                      history.push('/volumes/createVolume');
-                    }
-                  }}
-                  data-cy="create_volume_button"
-                />
-              </ActionContainer>
-            </div>
-          </div>
-
-          {headerGroups.map((headerGroup) => {
-            return (
-              <div
-                {...headerGroup.getHeaderGroupProps()}
-                style={{
-                  display: 'flex',
-                  marginLeft: '3px',
-                }}
-              >
-                {headerGroup.headers.map((column) => {
-                  const headerStyleProps = column.getHeaderProps(
-                    Object.assign(column.getSortByToggleProps(), {
-                      style: column.cellStyle,
-                    }),
-                  );
-                  return (
-                    <TableHeader {...headerStyleProps}>
-                      {column.render('Header')}
-                      <SortCaretWrapper>
-                        {column.isSorted ? (
-                          column.isSortedDesc ? (
-                            <i className="fas fa-sort-down" />
-                          ) : (
-                            <i className="fas fa-sort-up" />
-                          )
-                        ) : (
-                          <SortIncentive>
-                            <i className="fas fa-sort" />
-                          </SortIncentive>
-                        )}
-                      </SortCaretWrapper>
-                    </TableHeader>
-                  );
-                })}
-              </div>
-            );
-          })}
-        </div>
-        <Body {...getTableBodyProps()}>
-          {data.length === 0 ? (
-            <EmptyTable useDiv={true}>
-              {intl.formatMessage({ id: 'no_volume_found' })}
-            </EmptyTable>
-          ) : null}
-          {/* <AutoSizer> is a <div/> so it breaks the table layout,
-          we need to use <div/> for all the parts of table(thead, tbody, tr, td...) and retrieve the defaullt styles by className. */}
-          <AutoSizer>
-            {({ height, width }) => (
-              <List
-                height={height}
-                itemCount={rows.length} // how many items we are going to render
-                itemSize={48} // height of each row in pixel
-                width={width}
-              >
-                {RenderRow}
-              </List>
-            )}
-          </AutoSizer>
-        </Body>
-      </div>
-    </>
-  );
-}
-
-const VolumeListTable = (props) => {
-  const { nodeName, volumeListData, volumeName } = props;
+const VolumeListTable = React.memo((props) => {
+  const { nodeName, volumeListData } = props;
   const history = useHistory();
   const theme = useTheme();
   const intl = useIntl();
+
+  const NameLinkContaner = styled.div`
+    cursor: pointer;
+    padding-right: ${padding.small};
+    color: ${theme.selectedActive};
+  `;
   const columns = React.useMemo(() => {
     const onClickCell = (name) => {
       history.push(`/volumes/${name}/overview?node=${nodeName}`);
@@ -349,7 +71,6 @@ const VolumeListTable = (props) => {
           textAlign: 'left',
           flex: 1,
           minWidth: '6.429rem',
-          color: theme.selectedActive,
         },
         Cell: ({ value, row }) => {
           return (
@@ -374,6 +95,7 @@ const VolumeListTable = (props) => {
         cellStyle: {
           textAlign: 'center',
           width: '8.571rem',
+          marginRight: spacing.sp8,
         },
         Cell: ({ value }) => {
           return (
@@ -395,7 +117,13 @@ const VolumeListTable = (props) => {
           width: '6rem',
           paddingRight: '0.357rem',
         },
-        sortType: 'size',
+        sortType: (row1, row2) => {
+          const size1 = row1?.original?.storageCapacityBytes;
+          const size2 = row2?.original?.storageCapacityBytes;
+          if (size1 && size2) {
+            return size1 - size2;
+          } else return !size1 ? -1 : 1;
+        },
         Cell: ({ value }) => formatSizeForDisplay(value),
       },
       {
@@ -457,7 +185,13 @@ const VolumeListTable = (props) => {
               );
           }
         },
-        sortType: 'status',
+        sortType: (row1, row2) => {
+          const weights = {};
+          weights[VOLUME_CONDITION_LINK] = 2;
+          weights[VOLUME_CONDITION_UNLINK] = 1;
+          weights[VOLUME_CONDITION_EXCLAMATION] = 0;
+          return weights[row1?.values?.status] - weights[row2?.values?.status];
+        },
       },
       {
         Header: 'Latency',
@@ -477,15 +211,31 @@ const VolumeListTable = (props) => {
 
   return (
     <VolumeListContainer>
-      <Table
-        columns={columns}
-        data={volumeListData}
-        nodeName={nodeName}
-        volumeName={volumeName}
-        theme={theme}
-      />
+      <ActionContainer>
+        <CreateVolumeButton
+          variant={'secondary'}
+          label={intl.formatMessage({ id: 'create_new_volume' })}
+          icon={<i className="fas fa-plus" />}
+          onClick={() => {
+            // depends on if we add node filter
+            if (nodeName) {
+              history.push(`/volumes/createVolume?node=${nodeName}`);
+            } else {
+              history.push('/volumes/createVolume');
+            }
+          }}
+          data-cy="create_volume_button"
+        />
+      </ActionContainer>
+      <Table columns={columns} data={volumeListData} defaultSortingKey="health">
+        <Table.SingleSelectableContent
+          rowHeight="h40"
+          separationLineVariant="backgroundLevel3"
+          backgroundVariant="backgroundLevel1"
+        />
+      </Table>
     </VolumeListContainer>
   );
-};
+}, isEqual);
 
 export default VolumeListTable;
