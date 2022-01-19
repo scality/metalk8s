@@ -111,6 +111,9 @@
   metalk8s-sosreport package compatible with sos version 4.0+
   (PR[#3664](https://github.com/scality/metalk8s/pull/3664))
 
+- Explicitly set the Grafana datasource UID to `metalk8s-<datasource_name>`
+  (PR[#3668](https://github.com/scality/metalk8s/pull/3668))
+
 ## Bug fixes
 
 - [#3601](https://github.com/scality/metalk8s/issues/3601) - Marks
