@@ -841,25 +841,14 @@ stages:
           # in pre-merge and post-merge
           name: Set premerge artifacts name to current artifacts_name
           property: premerge_artifacts_name
-          value: "%(prop:artifacts_name)s"
+          value: "github:scality:metalk8s:staging-2.11.0.r220118133856.344c2bc6f7.pre-merge.00039203"
       - SetProperty: *set_premerge_url
-      - TriggerStages:
-          name: Trigger build, docs, test and lint stages simultaneously
-          stage_names:
-            - build
-            - build-shell-ui
-            - docs
-            - lint
-            - unit_tests
-            - integration_tests_ui
-          haltOnFailure: true
       - SetPropertyFromCommand: *set_version_prop
       - SetPropertyFromCommand: *set_short_version_prop
       - TriggerStages:
           name: Trigger single and multiple nodes install stages with built ISO
           stage_names:
             - single-node-install-rhel
-            - multiple-nodes
       - ShellCommand: *add_final_status_artifact_success
       - Upload: *upload_final_status_artifact
 
@@ -1876,7 +1865,9 @@ stages:
       # }}}
       - ShellCommand:
           <<: *wait_debug
+          timeout: 14400
           env:
+            DURATION: "14400"
             STEP_NAME: "single-node-install-%(prop:os:-centos-7)s"
       - ShellCommand: *terraform_destroy
 
