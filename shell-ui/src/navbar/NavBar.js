@@ -93,6 +93,7 @@ const Item = ({
 const Link = ({
   children,
   to,
+  ...props
 }: {
   children: Node,
   to:
@@ -101,7 +102,8 @@ const Link = ({
 }) => {
   const { openLink } = useLinkOpener();
   return (
-    <a href={'#'} onClick={() => openLink(to)}>
+    //$FlowFixMe
+    <a href={'#'} onClick={() => openLink(to)} {...props}>
       {children}
     </a>
   );
