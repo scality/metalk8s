@@ -766,8 +766,8 @@ models:
       name: clone previous version branch
       command: >
           git clone "%(prop:repository)s"
-          --branch "development/%(prop:product_version_prev)s"
-          metalk8s-"%(prop:product_version_prev)s"
+          --branch "%(prop:prev_branch)s"
+          metalk8s-prev
       haltOnFailure: true
 
   - ShellCommand: &generate_report_over_ssh
@@ -892,6 +892,7 @@ stages:
             - lifecycle-dev-branch
             - lifecycle-patch-version
             - lifecycle-minor-version
+            - lifecycle-major-version
             - bootstrap-restore
           haltOnFailure: true
       - TriggerStages:
@@ -927,16 +928,18 @@ stages:
           haltOnFailure: true
 
   lifecycle-dev-branch:
+    # NOTE: We only consider upgrade/downgrade tests using dev branch for major versions
     worker:
       type: local
     steps:
+      - Git: *git_pull
       - SetPropertyFromCommand:
           name: Set previous version to upgrade from and downgrade to
-          property: product_version_prev
+          property: prev_branch
           command: >
               major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
-              minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
-              echo "$major.$(( $minor-1 ))"
+              git branch --remote --list --sort=creatordate --format="%%(refname:lstrip=-2)" \
+                "origin/development/$(( major>123 ? major-1 : 2 )).*" | tail -1
       - TriggerStages:
           name: Trigger build of previous version
           stage_names:
@@ -952,9 +955,7 @@ stages:
           name: Trigger upgrade and downgrade test stages simultaneously
           stage_names:
             - single-node-upgrade-centos
-            # NOTE: Deactivate minor downgrade on this branch
-            # See: https://github.com/scality/metalk8s/issues/1750
-            #- single-node-downgrade-centos
+            - single-node-downgrade-centos
           waitForFinish: true
 
   create-upload-testrail-objects:
@@ -1085,10 +1086,10 @@ stages:
       - ShellCommand: *git_pull_prev
       - ShellCommand:
           <<: *build_all
-          workdir: "build/metalk8s-%(prop:product_version_prev)s"
+          workdir: "build/metalk8s-prev"
       - ShellCommand:
           <<: *copy_artifacts
-          workdir: "build/metalk8s-%(prop:product_version_prev)s"
+          workdir: "build/metalk8s-prev"
           env:
             <<: *_env_copy_artifacts
             DEST_DIR: "../artifacts/pre"
@@ -1659,7 +1660,7 @@ stages:
           name: Run fast tests locally for previous version
           env:
             <<: *_env_fast_tests
-            BRANCH: "development/%(prop:product_version_prev)s"
+            BRANCH: "%(prop:prev_branch)s"
             ISO_MOUNTPOINT: >
               /srv/scality/metalk8s-%(prop:metalk8s_version_prev)s
       # --- Collect logs ---
@@ -1729,7 +1730,7 @@ stages:
       - ShellCommand:
           <<: *provision_prometheus_volumes
           env:
-            BRANCH: "development/%(prop:product_version_prev)s"
+            BRANCH: "%(prop:prev_branch)s"
             PRODUCT_TXT: "/srv/scality/metalk8s-%(prop:metalk8s_version_prev)s/product.txt"
             PRODUCT_MOUNT: "/srv/scality/metalk8s-%(prop:metalk8s_version_prev)s"
       - ShellCommand: *untaint_bootstrap
@@ -1896,21 +1897,21 @@ stages:
               minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
               patch=$(echo "%(prop:product_version)s" | cut -d'.' -f3) &&
               echo "$major.$minor.$(( patch>0 ? patch-1 : 0 ))"
-      - SetPropertyFromCommand:
-          name: Set the patch version flag
-          property: patch_present
+      - SetPropertyFromCommand: &prop_promoted_version_available
+          name: Set the property checking that promoted version is available
+          property: promoted_present
           env:
             PRODUCT_VERSION: "%(prop:product_version)s"
-            PRODUCT_VERSION_PREV_patch: "%(prop:product_promoted_version)s"
+            PRODUCT_VERSION_PREV: "%(prop:product_promoted_version)s"
           command: |-
-              if [ "$PRODUCT_VERSION" != "$PRODUCT_VERSION_PREV_patch" ]; then
+              if [ -n "$PRODUCT_VERSION_PREV" ] && [ "$PRODUCT_VERSION" != "$PRODUCT_VERSION_PREV" ]; then
                 echo "true"
               else
                 echo "false"
               fi
-      - TriggerStages:
-          name: Trigger upgrade stages with patch Artifact ISO
-          doStepIf: "%(prop:patch_present)s"
+      - TriggerStages: &trigger_promoted_upgrade_downgrade_stages
+          name: Trigger upgrade/downgrade stages with promoted Artifact ISO
+          doStepIf: "%(prop:promoted_present)s"
           stage_names:
             - snapshot-single-node-upgrades
             - snapshot-multi-node-upgrades
@@ -1931,27 +1932,32 @@ stages:
           command: >
               major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
               minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
-              git tag --sort=taggerdate --list "$major.$(( $minor-1 )).*" | tail -1
+              git tag --sort=taggerdate --list "$major.$(( $minor-1 )).*" | grep -v '\-' | tail -1
+      - SetPropertyFromCommand: *prop_promoted_version_available
+      - TriggerStages: *trigger_promoted_upgrade_downgrade_stages
+
+  lifecycle-major-version:
+    worker:
+      type: local
+    steps:
+      - SetProperty:
+          name: Set promoted version type to major
+          property: promoted_version_type
+          value: major
+      - Git: *git_pull
       - SetPropertyFromCommand:
-          name: Set the minor version flag
-          property: minor_present
-          env:
-            PRODUCT_VERSION_PREV_patch: "%(prop:product_promoted_version)s"
+          name: Set previous major version to upgrade from and downgrade to
+          property: product_promoted_version
           command: |-
-              if [ -z "$PRODUCT_VERSION_PREV_patch" ]; then
-                echo "false"
+              major=$(echo "%(prop:product_version)s" | cut -d'.' -f1)
+              if [ "$major" = "123" ]; then
+                prev_version="2.11"
               else
-                echo "true"
+                prev_version="$(( major-1 ))"
               fi
-      - TriggerStages:
-          name: Trigger upgrade stages with minor Artifact ISO
-          doStepIf: "%(prop:minor_present)s"
-          stage_names:
-            - snapshot-single-node-upgrades
-            - snapshot-multi-node-upgrades
-            # NOTE: Deactivate minor downgrade on this branch
-            # See: https://github.com/scality/metalk8s/issues/1750
-            #- single-node-downgrade-promoted-centos
+              git tag --sort=taggerdate --list "$prev_version.*" | grep -v '\-' | tail -1
+      - SetPropertyFromCommand: *prop_promoted_version_available
+      - TriggerStages: *trigger_promoted_upgrade_downgrade_stages
 
   snapshot-single-node-upgrades:
     # NOTE: This stage just set `environment_type` property to

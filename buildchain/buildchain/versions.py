@@ -19,7 +19,7 @@ Image = namedtuple("Image", ("name", "version", "digest"))
 # Project-wide versions {{{
 
 CALICO_VERSION: str = "3.20.0"
-K8S_VERSION: str = "1.22.5"
+K8S_VERSION: str = "1.23.1"
 SALT_VERSION: str = "3002.7"
 CONTAINERD_VERSION: str = "1.5.8"
 
@@ -106,8 +106,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="coredns",
-        version="v1.8.4",
-        digest="sha256:6e5a02c21641597998b4be7cb5eb1e7b02c0d8d23cce4dd09f4682d463798890",
+        version="v1.8.6",
+        digest="sha256:5b6ec0d6de9baaf3e92d0f66cd96a25b9edbce8716f5f15dcd1a616b3abd590e",
     ),
     Image(
         name="dex",
@@ -116,8 +116,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="etcd",
-        version="3.5.0-0",
-        digest="sha256:9ce33ba33d8e738a5b85ed50b5080ac746deceed4a7496c550927a7a19ca3b6d",
+        version="3.5.1-0",
+        digest="sha256:64b9ea357325d5db9f8a723dcf503b5a449177b17ac87d69481e126bb724c263",
     ),
     Image(
         name="grafana",
@@ -132,22 +132,22 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     Image(
         name="kube-apiserver",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:c41529f1c371ab7e471927c63cc4fa118cf1afed769e9ffd43e338e259c9e2d7",
+        digest="sha256:f54681a71cce62cbc1b13ebb3dbf1d880f849112789811f98b6aebd2caa2f255",
     ),
     Image(
         name="kube-controller-manager",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:663dceb6ca61b55a64fe716f6a67cc6bea72c29b31f0a79a5efc5d30bea07180",
+        digest="sha256:a7ed87380108a2d811f0d392a3fe87546c85bc366e0d1e024dfa74eb14468604",
     ),
     Image(
         name="kube-proxy",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:6b4e3c151599bb458f59502648b135ce6f6fda2784c77c4d127c25ed4a57d53c",
+        digest="sha256:e40f3a28721588affcf187f3f246d1e078157dabe274003eaa2957a83f7170c8",
     ),
     Image(
         name="kube-scheduler",
         version=_version_prefix(K8S_VERSION),
-        digest="sha256:96df4d3ff6be2e23395234619e306dec6879acc85748082b3780173ae8d8b5f4",
+        digest="sha256:8be4eb1593cf9ff2d91b44596633b7815a3753696031a1eb4273d1b39427fa8c",
     ),
     Image(
         name="kube-state-metrics",

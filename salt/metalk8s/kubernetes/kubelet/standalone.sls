@@ -70,7 +70,13 @@ Create kubelet config file:
         httpCheckFrequency: 0s
         imageMinimumGCAge: 0s
         kind: KubeletConfiguration
-        logging: {}
+        logging:
+          flushFrequency: 0
+          options:
+            json:
+              infoBufferSize: "0"
+          verbosity: 0
+        memorySwap: {}
         nodeStatusReportFrequency: 0s
         nodeStatusUpdateFrequency: 0s
         # Disable rotate Certificates as we manage certificate rotation ourself

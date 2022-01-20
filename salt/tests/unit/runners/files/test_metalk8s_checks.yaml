@@ -237,6 +237,18 @@ upgrade:
     saltenv: metalk8s-1.2.0
     result: True
 
+  # 1.(bis) Success: nominal (major upgrade)
+  - pillar:
+      metalk8s:
+        nodes:
+          node-1:
+            version: 1.1.0
+          node-2:
+            version: 2.1.0
+    dest_version: 2.2.1
+    saltenv: metalk8s-2.2.1
+    result: True
+
   # 2. Success: nominal (with dev)
   - pillar:
       metalk8s:
@@ -287,7 +299,7 @@ upgrade:
     result: |-
       Invalid saltenv 'metalk8s-1.1.0' consider using 'metalk8s-1.2.0'
 
-  # 6.Failure: Upgrade from more than one minor
+  # 6. Success: Upgrade from more than one minor
   - pillar:
       metalk8s:
         nodes:
@@ -299,10 +311,36 @@ upgrade:
             version: 1.1.1
     dest_version: 1.3.0
     saltenv: metalk8s-1.3.0
+    result: True
+
+  # 6.(bis) Failure: Upgrade from more than one major
+  - pillar:
+      metalk8s:
+        nodes:
+          node-1:
+            version: 1.1.0
+          node-2:
+            version: 2.2.0
+          node-3:
+            version: 1.1.1
+    dest_version: 3.1.0
+    saltenv: metalk8s-3.1.0
     expect_raise: True
     result: |-
-      Unable to upgrade from more than 1 minor version, Node node-1 is in 1.1.0 and you try to upgrade to 1.3.0
-      Unable to upgrade from more than 1 minor version, Node node-3 is in 1.1.1 and you try to upgrade to 1.3.0
+      Unable to upgrade from more than 1 major version, Node node-1 is in 1.1.0 and you try to upgrade to 3.1.0
+      Unable to upgrade from more than 1 major version, Node node-3 is in 1.1.1 and you try to upgrade to 3.1.0
+
+  # 6.(ter) Success: Special case upgrade from 2.11 to 123.x
+  - pillar:
+      metalk8s:
+        nodes:
+          node-1:
+            version: 2.11.0
+          node-2:
+            version: 2.11.2
+    dest_version: 123.1.3
+    saltenv: metalk8s-123.1.3
+    result: True
 
   # 7.Failure: One node is not ready
   - pillar:
@@ -348,7 +386,7 @@ upgrade:
           node-1:
             version: 1.1.0
           node-2:
-            version: 1.2.0
+            version: 2.1.0
     nodes_ret:
       retcode: 1
       errors:
@@ -357,12 +395,12 @@ upgrade:
       retcode: 1
       errors:
         - Minion node-1 iS nOt ReAdY
-    dest_version: 1.3.0
+    dest_version: 3.1.0
     saltenv: metalk8s-1.2.0
     expect_raise: True
     result: |-
-      Invalid saltenv 'metalk8s-1.2.0' consider using 'metalk8s-1.3.0'
-      Unable to upgrade from more than 1 minor version, Node node-1 is in 1.1.0 and you try to upgrade to 1.3.0
+      Invalid saltenv 'metalk8s-1.2.0' consider using 'metalk8s-3.1.0'
+      Unable to upgrade from more than 1 major version, Node node-1 is in 1.1.0 and you try to upgrade to 3.1.0
       Node node-1 iS nOt ReAdY
       Minion node-1 iS nOt ReAdY
 
@@ -373,8 +411,8 @@ upgrade:
     result:
       retcode: 1
       errors:
-        - Invalid saltenv 'metalk8s-1.2.0' consider using 'metalk8s-1.3.0'
-        - Unable to upgrade from more than 1 minor version, Node node-1 is in 1.1.0 and you try to upgrade to 1.3.0
+        - Invalid saltenv 'metalk8s-1.2.0' consider using 'metalk8s-3.1.0'
+        - Unable to upgrade from more than 1 major version, Node node-1 is in 1.1.0 and you try to upgrade to 3.1.0
         - Node node-1 iS nOt ReAdY
         - Minion node-1 iS nOt ReAdY
 
@@ -391,6 +429,20 @@ downgrade:
             version: 1.2.0
     dest_version: 1.1.0
     saltenv: metalk8s-1.2.0
+    result: True
+
+  # 1.(bis) Success: nominal (major downgrade)
+  - pillar:
+      metalk8s:
+        downgrade:
+          enabled: True
+        nodes:
+          node-1:
+            version: 1.1.0
+          node-2:
+            version: 2.1.0
+    dest_version: 1.1.0
+    saltenv: metalk8s-2.1.0
     result: True
 
   # 2. Success: nominal (with dev)
@@ -421,6 +473,20 @@ downgrade:
     saltenv: metalk8s-1.1.1
     result: True
 
+  # 3.(bis) Success: minor downgrade (with downgrade disabled)
+  - pillar:
+      metalk8s:
+        downgrade:
+          enabled: False
+        nodes:
+          node-1:
+            version: 1.1.1
+          node-2:
+            version: 1.2.1
+    dest_version: 1.1.0
+    saltenv: metalk8s-1.2.1
+    result: True
+
   # 4. Success: node already in good version
   - pillar:
       metalk8s:
@@ -449,7 +515,7 @@ downgrade:
     saltenv: metalk8s-1.3.0
     result: True
 
-  # 6. Failure: Minor downgrade is disabled
+  # 6. Failure: Major downgrade is disabled
   - &downgrade_disabled
     pillar:
       metalk8s:
@@ -457,16 +523,16 @@ downgrade:
           enabled: False
         nodes:
           node-1:
-            version: 1.1.0
+            version: 112.1.0
           node-2:
-            version: 1.2.0
-    dest_version: 1.1.0
-    saltenv: metalk8s-1.2.0
+            version: 111.2.0
+    dest_version: 111.1.0
+    saltenv: metalk8s-112.1.0
     expect_raise: True
     result: |-
-      Downgrade is not supported from 1.2 to 1.1 \(see https://github.com/scality/metalk8s/releases/tag/1.2.0 for details\)
+      Downgrade is not supported from 112 to 111 \(see https://github.com/scality/metalk8s/releases/tag/112.0.0 for details\)
 
-  # 7. Success: Minor downgrade is disabled (with bypass)
+  # 7. Success: Major downgrade is disabled (with bypass)
   - <<: *downgrade_disabled
     bypass_disable: True
     expect_raise: False
@@ -488,7 +554,7 @@ downgrade:
     result: |-
       Invalid saltenv 'metalk8s-1.1.0' consider using at least 'metalk8s-1.2.0'
 
-  # 6.Failure: Downgrade from more than one minor
+  # 6. Success: Downgrade from more than one minor
   - pillar:
       metalk8s:
         downgrade:
@@ -502,10 +568,40 @@ downgrade:
             version: 1.3.1
     dest_version: 1.1.0
     saltenv: metalk8s-1.3.1
+    result: True
+
+  # 6.(bis) Failure: Downgrade from more than one major
+  - pillar:
+      metalk8s:
+        downgrade:
+          enabled: True
+        nodes:
+          node-1:
+            version: 1.2.0
+          node-2:
+            version: 3.1.1
+          node-3:
+            version: 3.1.0
+    dest_version: 1.1.0
+    saltenv: metalk8s-1.3.1
     expect_raise: True
     result: |-
-      Unable to downgrade from more than 1 minor version, Node node-2 is in 1.3.0 and you try to downgrade to 1.1.0
-      Unable to downgrade from more than 1 minor version, Node node-3 is in 1.3.1 and you try to downgrade to 1.1.0
+      Unable to downgrade from more than 1 major version, Node node-2 is in 3.1.1 and you try to downgrade to 1.1.0
+      Unable to downgrade from more than 1 major version, Node node-3 is in 3.1.0 and you try to downgrade to 1.1.0
+
+  # 6.(ter) Success: Special case downgrade from 123.x to 2.11
+  - pillar:
+      metalk8s:
+        downgrade:
+          enabled: True
+        nodes:
+          node-1:
+            version: 123.0.1
+          node-2:
+            version: 123.3.4
+    dest_version: 2.11.1
+    saltenv: metalk8s-123.3.4
+    result: True
 
   # 7.Failure: One node is not ready
   - pillar:
@@ -557,7 +653,7 @@ downgrade:
           node-1:
             version: 1.1.0
           node-2:
-            version: 1.3.0
+            version: 3.1.0
     nodes_ret:
       retcode: 1
       errors:
@@ -570,8 +666,8 @@ downgrade:
     saltenv: metalk8s-1.2.0
     expect_raise: True
     result: |-
-      Unable to downgrade from more than 1 minor version, Node node-2 is in 1.3.0 and you try to downgrade to 1.1.0
-      Invalid saltenv 'metalk8s-1.2.0' consider using at least 'metalk8s-1.3.0'
+      Unable to downgrade from more than 1 major version, Node node-2 is in 3.1.0 and you try to downgrade to 1.1.0
+      Invalid saltenv 'metalk8s-1.2.0' consider using at least 'metalk8s-3.1.0'
       Node node-1 iS nOt ReAdY
       Minion node-1 iS nOt ReAdY
 
@@ -582,7 +678,7 @@ downgrade:
     result:
       retcode: 1
       errors:
-        - Unable to downgrade from more than 1 minor version, Node node-2 is in 1.3.0 and you try to downgrade to 1.1.0
-        - Invalid saltenv 'metalk8s-1.2.0' consider using at least 'metalk8s-1.3.0'
+        - Unable to downgrade from more than 1 major version, Node node-2 is in 3.1.0 and you try to downgrade to 1.1.0
+        - Invalid saltenv 'metalk8s-1.2.0' consider using at least 'metalk8s-3.1.0'
         - Node node-1 iS nOt ReAdY
         - Minion node-1 iS nOt ReAdY

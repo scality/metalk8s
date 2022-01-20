@@ -11,11 +11,11 @@ Supported Versions
 
 .. note::
 
-    MetalK8s supports upgrade of *at most* one minor version at a time.
+    MetalK8s supports upgrade of *at most* one major version at a time.
     For example:
 
-    - from 2.4.0 to 2.4.4,
-    - from 2.4.0 to 2.5.1.
+    - from 123.1.2 to 124.2.0,
+    - from 123.0.1 to 124.0.0.
 
     Refer to the
     `release notes <https://github.com/scality/metalk8s/releases>`_ for more

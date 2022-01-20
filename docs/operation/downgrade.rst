@@ -11,11 +11,11 @@ Supported Versions
 
 .. note::
 
-    MetalK8s supports downgrade of **at most** one minor version at a time.
+    MetalK8s supports downgrade of **at most** one major version at a time.
     For example:
 
-    - from 2.4.4 to 2.4.1,
-    - from 2.5.1 to 2.4.0.
+    - from 124.2.0 to 123.1.2,
+    - from 124.0.0 to 123.0.1.
 
     Refer to the
     `release notes <https://github.com/scality/metalk8s/releases>`_ for more
@@ -25,7 +25,7 @@ Supported Versions
 
    .. warning::
 
-      Version |release| only supports downgrade of patch version.
+      Version |release| only supports downgrade of minor and patch version.
 
 Prerequisites
 *************
