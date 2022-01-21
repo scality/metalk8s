@@ -11,7 +11,7 @@
     "@kubernetes/client-node": "github:scality/kubernetes-client-javascript.git#browser-0.10.2-63-g579d066",
     "@scality/core-ui": "github:scality/core-ui.git#v0.28.0",
     "@scality/module-federation": "github:scality/module-federation.git#1.0.0",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "formik": "2.2.5",
     "jest-environment-jsdom-sixteen": "^1.0.3",
     "jsonpath": "^1.1.1",
