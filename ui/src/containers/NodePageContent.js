@@ -39,8 +39,6 @@ const NodePageContent = (props) => {
 
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
-  const prevNodeTableDate = usePrevious(nodeTableData);
-
   useEffect(() => {
     if (!defaultSelectNodeName && nodeTableData[0]?.name?.name) {
       setDefaultSelectNodeName(nodeTableData[0]?.name?.name);

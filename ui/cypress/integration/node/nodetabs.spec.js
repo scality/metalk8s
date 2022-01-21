@@ -136,7 +136,7 @@ describe('Node page volumes tabs', () => {
   it('brings me to the loki-vol volume page', () => {
     cy.stubHistory();
 
-    cy.get('[data-cy="volume_table_name_cell"]')
+    cy.get('[role="gridcell"]')
       .contains('div', 'loki-vol')
       .click({ force: true });
     cy.get('@historyPush').should(
