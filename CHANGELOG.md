@@ -121,6 +121,10 @@
   so that kubelet does not remove it
   (PR[#3624](https://github.com/scality/metalk8s/pull/3624))
 
+- Do not fail if the Control Plane Ingress section exists in the
+  Bootstrap configuration file, but Ingress IP is not set.
+  (PR[#3675](https://github.com/scality/metalk8s/pull/3675))
+
 ## Release 2.10.9 (in development)
 ## Bug fixes
 
