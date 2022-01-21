@@ -229,7 +229,7 @@ def routes():
 
 
 def get_control_plane_ingress_ip():
-    if "ingress" in __pillar__["networks"]["control_plane"]:
+    if __pillar__["networks"]["control_plane"].get("ingress", {}).get("ip"):
         return __pillar__["networks"]["control_plane"]["ingress"]["ip"]
 
     # Use Bootstrap Control Plane IP as Ingress Control plane IP
