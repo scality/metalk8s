@@ -1464,9 +1464,9 @@ stages:
             STEP_NAME: unit_tests_storage_operator
       - ShellCommand: *yum_clean_all
       - ShellCommand:
-          name: Run all storage-operator unit tests
+          name: Run all storage-operator unit and integration tests
           workdir: build/storage-operator
-          command: go test -cover -v ./...
+          command: make test
           haltOnFailure: true
       - ShellCommand:
           <<: *add_final_status_artifact_success

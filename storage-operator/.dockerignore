@@ -1,5 +1,4 @@
-cmd/
-deploy/
-pkg/
-tools.go
-version/
+# More info: https://docs.docker.com/engine/reference/builder/#dockerignore-file
+# Ignore build and test binaries.
+bin/
+testbin/

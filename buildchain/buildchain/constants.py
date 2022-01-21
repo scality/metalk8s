@@ -133,8 +133,8 @@ STORAGE_OPERATOR_SOURCES: FrozenSet[Path] = frozenset(
 GO_SOURCES: FrozenSet[Path] = frozenset(filepath for filepath in ROOT.rglob("*.go"))
 
 OPERATOR_SDK_GENERATE_CMDS: List[List[str]] = [
-    [config.ExtCommand.OPERATOR_SDK.value, "generate", "k8s"],
-    [config.ExtCommand.OPERATOR_SDK.value, "generate", "crds", "--crd-version", "v1"],
+    [config.ExtCommand.MAKE.value, "generate"],
+    [config.ExtCommand.MAKE.value, "manifests"],
 ]
 
 # For mypy, see `--no-implicit-reexport` documentation.

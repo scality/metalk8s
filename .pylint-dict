@@ -91,6 +91,7 @@ IPs
 Jinja
 JsonReporter
 LZ77
+Makefile
 Mio
 RulesGroup
 UI
