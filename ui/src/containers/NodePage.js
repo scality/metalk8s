@@ -11,17 +11,16 @@ import { useTheme } from 'styled-components';
 const NodePage = (props) => {
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
-  const {alerts} = useAlerts();
+  const { alerts } = useAlerts();
   const theme = useTheme();
-  const nodeTableData = useSelector((state) => getNodeListData(alerts, theme)(state, props));
+  const nodeTableData = useSelector((state) =>
+    getNodeListData(alerts, theme)(state, props),
+  );
   const nodesLoading = useSelector((state) => state.app.nodes.isLoading);
 
   return (
     <PageContainer>
-      <NodePageContent
-        nodeTableData={nodeTableData}
-        loading={nodesLoading}
-      />
+      <NodePageContent nodeTableData={nodeTableData} loading={nodesLoading} />
     </PageContainer>
   );
 };

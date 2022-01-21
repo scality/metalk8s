@@ -5,6 +5,7 @@ import {
   computeVolumeCondition,
   bytesToSize,
   formatSizeForDisplay,
+  allSizeUnitsToBytes,
 } from './utils.js';
 import {
   STATUS_UNKNOWN,
@@ -245,6 +246,9 @@ export const getVolumeListData = createSelector(
         storageCapacity: volumeCapacityCurrent?.value[1]
           ? bytesToSize(volumeCapacityCurrent?.value[1])
           : formatSizeForDisplay(volumePV?.spec?.capacity?.storage),
+        storageCapacityBytes: volumeCapacityCurrent?.value[1]
+          ? volumeCapacityCurrent?.value[1]
+          : allSizeUnitsToBytes(volumePV?.spec?.capacity?.storage),
         storageClass: volume?.spec?.storageClassName,
         usageRawData: volumeUsedCurrent?.value[1]
           ? bytesToSize(volumeUsedCurrent?.value[1])

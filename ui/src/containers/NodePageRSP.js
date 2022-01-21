@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useRouteMatch } from 'react-router';
@@ -26,13 +26,12 @@ import {
   TextBadge,
   NoInstanceSelected,
 } from '../components/style/CommonLayoutStyle';
-import {
-  NODE_ALERTS_GROUP,
-  PORT_NODE_EXPORTER,
-} from '../constants';
+import { NODE_ALERTS_GROUP, PORT_NODE_EXPORTER } from '../constants';
 import { useAlerts } from './AlertProvider';
 import { useIntl } from 'react-intl';
 import { queryTimeSpansCodes } from '@scality/core-ui/dist/components/constants';
+
+const THREE_MINUTES = 3 * 60 * 1000;
 
 // <NodePageRSP> fetches the data for all the tabs given the current selected Node
 // handles the refresh for the metrics tab
@@ -42,6 +41,7 @@ const NodePageRSP = (props) => {
   const intl = useIntl();
   const { url } = useRouteMatch();
   const { name } = useParams();
+  const [memoCacheReset, setMemoCacheReset] = useState(0);
   // Initialize the `metricsTimeSpan` in saga state base on the URL query.
   // In order to keep the selected timespan for metrics tab when switch between the tabs.
   const query = useURLQuery();
@@ -71,9 +71,20 @@ const NodePageRSP = (props) => {
 
   // Retrieve the podlist data
   const pods = useSelector((state) => state.app.pods.list);
-  const podsListData = getPodsListData(name, pods);
+  const podsListData = useMemo(
+    () => getPodsListData(name, pods, memoCacheReset),
+    [name, pods, memoCacheReset],
+  );
   const nodes = useSelector((state) => state.app.nodes.list);
   const volumes = useSelector((state) => state.app.volumes.list);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMemoCacheReset((memoCacheReset) => memoCacheReset + 1);
+    }, THREE_MINUTES);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const nodesIPsInfo = useSelector((state) => state.app.nodes.IPsInfo);
   const instanceIP =

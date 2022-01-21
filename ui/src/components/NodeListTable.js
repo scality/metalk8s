@@ -288,10 +288,12 @@ function Table({ columns, data, rowClicked, selectedNodeName }) {
   );
 
   // Synchronizes the params query with the Table sort state
-  const sorted = headerGroups[0].headers.find((item) => item.isSorted === true)
-    ?.id;
-  const desc = headerGroups[0].headers.find((item) => item.isSorted === true)
-    ?.isSortedDesc;
+  const sorted = headerGroups[0].headers.find(
+    (item) => item.isSorted === true,
+  )?.id;
+  const desc = headerGroups[0].headers.find(
+    (item) => item.isSorted === true,
+  )?.isSortedDesc;
   useTableSortURLSync(sorted, desc, data, DEFAULT_SORTING_KEY);
 
   return (
