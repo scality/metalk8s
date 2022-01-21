@@ -100,6 +100,9 @@
 - Explicitly set the Grafana datasource UID to `metalk8s-<datasource_name>`
   (PR[#3668](https://github.com/scality/metalk8s/pull/3668))
 
+- Do not use `cluster.local` suffix in Loki datasources
+  (PR[#3679](https://github.com/scality/metalk8s/pull/3679))
+
 ## Bug fixes
 
 - [#3601](https://github.com/scality/metalk8s/issues/3601) - Marks
