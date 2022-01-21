@@ -1,4 +1,4 @@
-{%- from "metalk8s/map.jinja" import backup_server, certificates with context %}
+{%- from "metalk8s/map.jinja" import backup_server, coredns, certificates with context %}
 
 {%- set private_key_path = "/etc/metalk8s/pki/backup-server/server.key" %}
 
@@ -24,7 +24,7 @@ Create backup server private key:
     'backup',
     'backup.kube-system',
     'backup.kube-system.svc',
-    'backup.kube-system.svc.cluster.local',
+    'backup.kube-system.svc.' ~ coredns.cluster_domain,
 ] %}
 
 Generate backup server certificate:
