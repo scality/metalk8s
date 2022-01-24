@@ -1,4 +1,5 @@
 {%- from "metalk8s/map.jinja" import certificates with context %}
+{%- from "metalk8s/map.jinja" import coredns with context %}
 {%- from "metalk8s/map.jinja" import dex with context %}
 
 {%- set oidc_service_ip = salt.metalk8s_network.get_oidc_service_ip() %}
@@ -29,7 +30,7 @@ Create Dex server private key:
     'dex',
     'dex.metalk8s-auth',
     'dex.metalk8s-auth.svc',
-    'dex.metalk8s-auth.svc.cluster.local',
+    'dex.metalk8s-auth.svc.' ~ coredns.cluster_domain,
     oidc_service_ip,
     grains.metalk8s.control_plane_ip,
 ] %}
