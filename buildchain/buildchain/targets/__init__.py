@@ -9,7 +9,6 @@ from buildchain.targets.checksum import Sha256Sum
 from buildchain.targets.directory import Mkdir
 from buildchain.targets.file_tree import FileTree
 from buildchain.targets.local_image import LocalImage, ExplicitContext
-from buildchain.targets.operator_image import OperatorImage
 from buildchain.targets.package import Package, RPMPackage
 from buildchain.targets.remote_image import (
     ImageSaveFormat,
@@ -36,7 +35,6 @@ __all__ = [
     "FileTree",
     "LocalImage",
     "ExplicitContext",
-    "OperatorImage",
     "Package",
     "RPMPackage",
     "ImageSaveFormat",

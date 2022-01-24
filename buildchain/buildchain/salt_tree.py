@@ -214,17 +214,22 @@ PILLAR_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     ),
 )
 
-OPERATOR_YAML_ROOT: Path = constants.ROOT / "storage-operator/deploy"
+OPERATOR_CONFIG_ROOT: Path = constants.STORAGE_OPERATOR_ROOT / "config"
 
-VOLUME_CRD: Path = OPERATOR_YAML_ROOT.joinpath(
-    "crds",
-    "storage.metalk8s.scality.com_volumes_crd.yaml",
+VOLUME_CRD: Path = OPERATOR_CONFIG_ROOT.joinpath(
+    "crd/bases/storage.metalk8s.scality.com_volumes.yaml"
 )
 
-OPERATOR_ACCOUNT: Path = OPERATOR_YAML_ROOT / "service_account.yaml"
-OPERATOR_ROLE: Path = OPERATOR_YAML_ROOT / "role.yaml"
-OPERATOR_ROLEBINDING: Path = OPERATOR_YAML_ROOT / "role_binding.yaml"
-OPERATOR_DEPLOYMENT: Path = OPERATOR_YAML_ROOT / "operator.yaml"
+OPERATOR_METALK8S_CONFIG: Path = OPERATOR_CONFIG_ROOT / "metalk8s"
+OPERATOR_RBAC_CONFIG: Path = OPERATOR_METALK8S_CONFIG / "rbac"
+OPERATOR_ACCOUNT: Path = OPERATOR_RBAC_CONFIG / "service_account.yaml"
+OPERATOR_ROLE: Path = OPERATOR_RBAC_CONFIG / "role.yaml"
+OPERATOR_ROLEBINDING: Path = OPERATOR_RBAC_CONFIG / "role_binding.yaml"
+OPERATOR_LE_ROLE: Path = OPERATOR_RBAC_CONFIG / "leader_election_role.yaml"
+OPERATOR_LE_ROLEBINDING: Path = (
+    OPERATOR_RBAC_CONFIG / "leader_election_role_binding.yaml"
+)
+OPERATOR_DEPLOYMENT: Path = OPERATOR_METALK8S_CONFIG / "operator.yaml"
 
 LOKI_DASHBOARD: Path = constants.ROOT / "charts/loki-dashboard.json"
 LOGS_DASHBOARD: Path = constants.ROOT / "charts/logs-dashboard.json"
@@ -404,6 +409,10 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
             "ServiceAccount": OPERATOR_ACCOUNT.read_text(encoding="utf-8"),
             "Role": OPERATOR_ROLE.read_text(encoding="utf-8"),
             "RoleBinding": OPERATOR_ROLEBINDING.read_text(encoding="utf-8"),
+            "LeaderElectionRole": OPERATOR_LE_ROLE.read_text(encoding="utf-8"),
+            "LeaderElectionRoleBinding": OPERATOR_LE_ROLEBINDING.read_text(
+                encoding="utf-8"
+            ),
             "Deployment": OPERATOR_DEPLOYMENT.read_text(encoding="utf-8"),
         },
         file_dep=[

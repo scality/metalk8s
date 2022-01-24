@@ -1,0 +1,24 @@
+# permissions for end users to edit volumes.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: volume-editor-role
+rules:
+- apiGroups:
+  - storage.metalk8s.scality.com
+  resources:
+  - volumes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - storage.metalk8s.scality.com
+  resources:
+  - volumes/status
+  verbs:
+  - get
