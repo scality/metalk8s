@@ -56,20 +56,18 @@ class ExtCommand(enum.Enum):
     """External commands used by the build chain."""
 
     GIT = os.getenv("GIT_BIN", "git")
+    GOFMT = os.getenv("GOFMT_BIN", "gofmt")
     HARDLINK = os.getenv("HARDLINK_BIN", "hardlink")
     IMPLANTISOMD5 = os.getenv("IMPLANTISOMD5_BIN", "implantisomd5")
+    MAKE = os.getenv("MAKE_BIN", "make")
     MKISOFS = os.getenv("MKISOFS_BIN", "mkisofs")
     SKOPEO = os.getenv("SKOPEO_BIN", "skopeo")
-    VAGRANT = os.getenv("VAGRANT_BIN", "vagrant")
-    OPERATOR_SDK = os.getenv("OPERATOR_SDK_BIN", "operator-sdk")
-    GOFMT = os.getenv("GOFMT_BIN", "gofmt")
     TOX = os.getenv("TOX_BIN", "tox")
+    VAGRANT = os.getenv("VAGRANT_BIN", "vagrant")
 
     @property
     def command_name(self) -> str:
         """Return the name of the command."""
-        if self == ExtCommand.OPERATOR_SDK:
-            return "operator-sdk"
         # See https://github.com/PyCQA/pylint/issues/2062
         # pylint: disable=no-member
         return self.name.lower()

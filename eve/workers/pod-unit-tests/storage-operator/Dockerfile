@@ -1,8 +1,7 @@
 FROM centos:7
 
 ARG BUILDBOT_VERSION=2.0.1
-ARG GO_VERSION=1.13.10
-ARG OPERATOR_SDK_VERSION=v0.17.0
+ARG GO_VERSION=1.17.5
 
 ENV LANG=en_US.utf8
 
@@ -35,10 +34,7 @@ ENV PATH $GOPATH/bin:$GOROOT/bin:$PATH
 RUN curl -ORL https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz      \
     && tar xzvf go${GO_VERSION}.linux-amd64.tar.gz                             \
     && rm go${GO_VERSION}.linux-amd64.tar.gz                                   \
-    && mv go /usr/local                                                        \
-    && curl -RLo /usr/bin/operator-sdk                                         \
-        https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk-${OPERATOR_SDK_VERSION}-x86_64-linux-gnu \
-    && chmod +x /usr/bin/operator-sdk
+    && mv go /usr/local
 
 USER eve
 

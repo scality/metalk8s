@@ -1,0 +1,6 @@
+apiVersion: storage.metalk8s.scality.com/v1alpha1
+kind: Volume
+metadata:
+  name: volume-sample
+spec:
+  # Add fields here
