@@ -1,4 +1,6 @@
-#! metalk8s_kubernetes
+#!jinja | metalk8s_kubernetes
+
+{%- from "metalk8s/map.jinja" import coredns with context %}
 
 kind: Service
 apiVersion: v1
@@ -13,7 +15,7 @@ metadata:
     heritage: metalk8s
 spec:
   type: ExternalName
-  externalName: kubernetes.default.svc.cluster.local
+  externalName: kubernetes.default.svc.{{ coredns.cluster_domain }}
   ports:
     - name: https
       port: 443
@@ -31,7 +33,7 @@ metadata:
     heritage: metalk8s
 spec:
   type: ExternalName
-  externalName: salt-master.kube-system.svc.cluster.local
+  externalName: salt-master.kube-system.svc.{{ coredns.cluster_domain }}
   ports:
     - name: https
       port: 4507
@@ -49,7 +51,7 @@ metadata:
     heritage: metalk8s
 spec:
   type: ExternalName
-  externalName: thanos-query-http.metalk8s-monitoring.svc.cluster.local
+  externalName: thanos-query-http.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
   ports:
     - name: http
       port: 10902
@@ -67,7 +69,7 @@ metadata:
     heritage: metalk8s
 spec:
   type: ExternalName
-  externalName: prometheus-operator-alertmanager.metalk8s-monitoring.svc.cluster.local
+  externalName: prometheus-operator-alertmanager.metalk8s-monitoring.svc.{{ coredns.cluster_domain }}
   ports:
     - name: http
       port: 9093
@@ -85,7 +87,7 @@ metadata:
     heritage: metalk8s
 spec:
   type: ExternalName
-  externalName: loki.metalk8s-logging.svc.cluster.local
+  externalName: loki.metalk8s-logging.svc.{{ coredns.cluster_domain }}
   ports:
     - name: http
       port: 3100
