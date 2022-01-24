@@ -48,7 +48,7 @@ const REFRESH_VOLUMESTATS = 'REFRESH_VOLUMESTATS';
 const STOP_REFRESH_VOLUMESTATS = 'STOP_REFRESH_VOLUMESTATS';
 
 const UPDATE_CURRENT_VOLUMESTATS = 'UPDATE_CURRENT_VOLUMESTATS';
-const FETCH_CURRENT_VOLUESTATS = 'FETCH_CURRENT_VOLUESTATS';
+const FETCH_CURRENT_VOLUMESTATS = 'FETCH_CURRENT_VOLUMESTATS';
 const REFRESH_CURRENT_VOLUMESTATS = 'REFRESH_CURRENT_VOLUMESTATS';
 const STOP_REFRESH_CURRENT_VOLUMESTATS = 'STOP_REFRESH_CURRENT_VOLUMESTATS';
 
@@ -240,7 +240,7 @@ export const stopRefreshVolumeStatsAction = () => {
   return { type: STOP_REFRESH_VOLUMESTATS };
 };
 export const fetchCurrentVolumeStatsAction = () => {
-  return { type: FETCH_CURRENT_VOLUESTATS };
+  return { type: FETCH_CURRENT_VOLUMESTATS };
 };
 export const refreshCurrentVolumeStatsAction = () => {
   return { type: REFRESH_CURRENT_VOLUMESTATS };
@@ -631,7 +631,7 @@ export function* monitoringSaga() {
   yield takeLatest(FETCH_VOLUMESTATS, fetchVolumeStats);
   yield takeEvery(REFRESH_VOLUMESTATS, refreshVolumeStats);
   yield takeEvery(STOP_REFRESH_VOLUMESTATS, stopRefreshVolumeStats);
-  yield takeLatest(FETCH_CURRENT_VOLUESTATS, fetchCurrentVolumeStats);
+  yield takeLatest(FETCH_CURRENT_VOLUMESTATS, fetchCurrentVolumeStats);
   yield takeEvery(REFRESH_CURRENT_VOLUMESTATS, refreshCurrentVolumeStats);
   yield takeEvery(STOP_REFRESH_CURRENT_VOLUMESTATS, stopRefreshCurrentStats);
   yield takeEvery(REFRESH_CLUSTER_STATUS, refreshClusterStatus);
