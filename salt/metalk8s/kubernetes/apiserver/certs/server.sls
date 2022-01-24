@@ -1,4 +1,5 @@
 {%- from "metalk8s/map.jinja" import certificates with context %}
+{%- from "metalk8s/map.jinja" import coredns with context %}
 {%- from "metalk8s/map.jinja" import kube_api with context %}
 
 {%- set kubernetes_service_ip = salt.metalk8s_network.get_kubernetes_service_ip() %}
@@ -27,7 +28,7 @@ Create kube-apiserver private key:
     'kubernetes',
     'kubernetes.default',
     'kubernetes.default.svc',
-    'kubernetes.default.svc.cluster.local',
+    'kubernetes.default.svc.' ~ coredns.cluster_domain,
     kubernetes_service_ip,
     grains['metalk8s']['control_plane_ip'],
     '127.0.0.1',
