@@ -1,5 +1,7 @@
 # CHANGELOG
-## Release 2.11.0 (in development)
+## Release 2.11.1 (in development)
+
+## Release 2.11.0
 ### Additions
 
 - Deploy a hierarchy of Prometheus alerts to provide different granularities
@@ -44,7 +46,8 @@
 - Bump CoreDNS version to v1.8.4
   (PR[#3525](https://github.com/scality/metalk8s/pull/3525))
 
-- Bump `containerd` version to 1.4.8 (PR [#3466](https://github.com/scality/metalk8s/pull/3466)).
+- Bump `containerd` version to 1.5.8
+  (PR[#3648](https://github.com/scality/metalk8s/pull/3648)).
 
 - Bump Calico version to 3.20.0
   (PR[#3527](https://github.com/scality/metalk8s/pull/3527))
