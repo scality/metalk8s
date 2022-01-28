@@ -25,3 +25,7 @@ Feature: Logging stack is up and running
     Given the Kubernetes API is available
     And the Loki API is available
     Then we can retrieve 'Watchdog' alert from Loki API
+
+  Scenario: We can access a specific Loki instance
+    Given the Kubernetes API is available
+    Then the Loki API is available through Service 'loki-0'
