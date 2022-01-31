@@ -152,7 +152,7 @@ grafana:
 
   image:
     repository: '__image__(grafana)'
-    tag: '8.3.1-ubuntu'
+    tag: '8.3.4-ubuntu'
 
   sidecar:
     image:
