@@ -1,7 +1,7 @@
-# Equal to centos:8.2.2004
+# Equal to rockylinux:8.5
 # SHA256 digest of the base image
-ARG BUILD_IMAGE_SHA256=4062bbdd1bb0801b0aa38e0f83dece70fb7a5e9bce223423a68de2d8b784b43b
-ARG BUILD_IMAGE=docker.io/centos
+ARG BUILD_IMAGE_SHA256=5fed5497b568bcf7a90a00965987fc099edbcf44b1179a5ef6d4b47758281ca5
+ARG BUILD_IMAGE=docker.io/rockylinux
 FROM ${BUILD_IMAGE}@sha256:${BUILD_IMAGE_SHA256} as build
 
 RUN useradd -m build
