@@ -18,7 +18,7 @@ models:
       name: Git pull terraform snapshot
       command: >
         git clone --depth 1 "git@github.com:scality/terraform-snapshot.git"
-        --branch "0.3.2"
+        --branch "0.3.6"
       haltOnFailure: true
   - ShellCommand: &git_pull_ssh
       name: Git pull on bastion
@@ -786,6 +786,7 @@ models:
         case "%(prop:os:-centos-7)s" in
           centos-*) REPORT_OWNER=${REPORT_OWNER:-centos} REPORT_GROUP=${REPORT_GROUP:-centos};;
           rhel-*) REPORT_OWNER=${REPORT_OWNER:-cloud-user} REPORT_GROUP=${REPORT_GROUP:-cloud-user};;
+          rocky-*) REPORT_OWNER=${REPORT_OWNER:-rocky} REPORT_GROUP=${REPORT_GROUP:-rocky};;
         esac
         for host in $HOSTS_LIST; do
           ssh -F "$SSH_CONFIG" $host \
@@ -894,6 +895,7 @@ stages:
             - lifecycle-minor-version
             - lifecycle-major-version
             - bootstrap-restore
+            - single-node-install-rocky-8
           haltOnFailure: true
       - TriggerStages:
           name: Trigger publish stage
@@ -1795,6 +1797,27 @@ stages:
           value: "false"
       - TriggerStages:
           name: Trigger single-node-install with os set to rhel-8
+          stage_names:
+            - single-node-install
+
+  single-node-install-rocky-8:
+    worker:
+      type: local
+    steps:
+      - SetProperty:
+          name: Set OS property to Rocky 8
+          property: os
+          value: "rocky-8"
+      - SetProperty:
+          name: Set offline property to false
+          property: offline
+          value: "false"
+      - SetProperty:
+          name: Set use_proxy property to false
+          property: use_proxy
+          value: "false"
+      - TriggerStages:
+          name: Trigger single-node-install with OS set to Rocky 8
           stage_names:
             - single-node-install
 
