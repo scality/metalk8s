@@ -57,20 +57,8 @@ def test_logging_pipeline_is_working(host):
 
 
 @given("the Loki API is available")
-def check_loki_api(k8s_client):
-    def _check_loki_ready():
-        # NOTE: We use Kubernetes client instead of DynamicClient as it
-        # ease the "service proxy path"
-        client = kubernetes.client.CoreV1Api(api_client=k8s_client.client)
-        try:
-            response = client.connect_get_namespaced_service_proxy_with_path(
-                "loki:http-metrics", "metalk8s-logging", path="ready"
-            )
-        except Exception as exc:  # pylint: disable=broad-except
-            assert False, str(exc)
-        assert response == "ready\n"
-
-    utils.retry(_check_loki_ready, times=10, wait=2, name="checking Loki API ready")
+def given_check_loki_api(k8s_client):
+    check_loki_api(k8s_client, "loki")
 
 
 @given("we have set up a logger pod", target_fixture="pod_creation_ts")
@@ -232,6 +220,11 @@ def retrieve_alert_from_loki(k8s_client, alertname):
     )
 
 
+@then("the Loki API is available through Service '{service}'")
+def then_check_loki_api(k8s_client, service):
+    check_loki_api(k8s_client, service)
+
+
 # }}}
 
 # Helpers {{{
@@ -258,6 +251,22 @@ def query_loki_api(k8s_client, content, route="query"):
     assert response[0]["status"] == "success"
 
     return response
+
+
+def check_loki_api(k8s_client, service):
+    def _check_loki_ready():
+        # NOTE: We use Kubernetes client instead of DynamicClient as it
+        # ease the "service proxy path"
+        client = kubernetes.client.CoreV1Api(api_client=k8s_client.client)
+        try:
+            response = client.connect_get_namespaced_service_proxy_with_path(
+                f"{service}:http-metrics", "metalk8s-logging", path="ready"
+            )
+        except Exception as exc:  # pylint: disable=broad-except
+            assert False, str(exc)
+        assert response == "ready\n"
+
+    utils.retry(_check_loki_ready, times=10, wait=2, name="checking Loki API ready")
 
 
 # }}}

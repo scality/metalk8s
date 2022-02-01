@@ -2008,6 +2008,23 @@
       "valueName": "current"
     },
     {
+      "datasource": null,
+      "description": "",
+      "gridPos": {
+        "h": 2,
+        "w": 18,
+        "x": 6,
+        "y": 33
+      },
+      "id": 110,
+      "options": {
+        "content": "<p style=\"color: orange; text-align: center;\"><b>You can select a specific Loki instance from the dropdown selector \"logs\" above, to force the instance queried.</b></p>",
+        "mode": "html"
+      },
+      "pluginVersion": "8.0.7",
+      "type": "text"
+    },
+    {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,

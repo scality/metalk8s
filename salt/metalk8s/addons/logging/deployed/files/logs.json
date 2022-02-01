@@ -837,6 +837,23 @@
       }
     },
     {
+      "datasource": null,
+      "description": "",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 44,
+      "options": {
+        "content": "<p style=\"color: orange; text-align: center;\"><b>You can select a specific Loki instance from the dropdown selector \"logs\" above, to force the instance queried.</b></p>",
+        "mode": "html"
+      },
+      "pluginVersion": "8.0.7",
+      "type": "text"
+    },
+    {
       "datasource": "$logs",
       "gridPos": {
         "h": 19,

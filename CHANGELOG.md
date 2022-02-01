@@ -16,8 +16,12 @@
 ## Release 2.11.1 (in development)
 ### Enhancements
 
+- Add each Loki instance as datasources in Grafana dashboards
+  (PR[#3681](https://github.com/scality/metalk8s/pull/3681))
+
 - Bump Grafana image version to 8.3.4-ubuntu
   (PR[#3684](https://github.com/scality/metalk8s/pull/3684))
+
 ## Release 2.11.0
 ### Additions
 
