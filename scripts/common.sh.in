@@ -23,7 +23,7 @@ determine_os() {
         OS=$ID
         OS_VERSION=$VERSION_ID
         [[ $OS = rhel ]] && OS=redhat
-        if [[ $OS =~ ^(redhat|centos)$ ]]; then
+        if [[ $OS =~ ^(redhat|centos|rocky)$ ]]; then
             OS_FAMILY=redhat
         fi
     else
@@ -227,6 +227,10 @@ check_dist_redhat() {
              "subscription management service" >&2
 }
 
+check_dist_rocky() {
+    check_package_manager_yum
+}
+
 pre_minion_checks() {
     if declare -f "check_dist_$OS" &> /dev/null; then
         "check_dist_$OS"
@@ -272,6 +276,10 @@ configure_salt_minion_local_mode() {
 
     "$SALT_CALL" --file-root="$file_root" \
         --local --retcode-passthrough saltutil.sync_all saltenv=base
+    # Workaround waiting for Rocky Linux support in Salt
+    "$SALT_CALL" --file-root="$file_root" \
+        --local --retcode-passthrough state.sls \
+	metalk8s.node.rocky-linux-grains saltenv=base
     "$SALT_CALL" --file-root="$file_root" \
         --local --retcode-passthrough state.sls metalk8s.salt.minion.local \
         pillar="{'metalk8s': {'archives': '$BASE_DIR'}}" saltenv=base

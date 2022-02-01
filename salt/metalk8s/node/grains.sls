@@ -1,3 +1,6 @@
+include:
+  - .rocky-linux-grains
+
 {%- if '_errors' in pillar.networks %}
   {{ raise('Errors in networks pillar: ' ~ pillar.networks._errors) }}
 {%- endif %}
