@@ -229,6 +229,49 @@ def utils_image(registry_address, version):
 
 
 @pytest.fixture
+def utils_manifest(utils_image):
+    manifest_file = pathlib.Path(__file__).parent.resolve() / "files" / "utils.yaml"
+
+    with open(manifest_file, encoding="utf-8") as fd:
+        manifest = yaml.safe_load(fd)
+
+    manifest["spec"]["containers"][0]["image"] = utils_image
+
+    return manifest
+
+
+@pytest.fixture
+def utils_pod(k8s_client, utils_manifest):
+    # Create the Pod
+    pod_name = utils_manifest["metadata"]["name"]
+
+    pod_k8s_client = k8s_client.resources.get(api_version="v1", kind="Pod")
+
+    pod_k8s_client.create(body=utils_manifest, namespace="default")
+
+    # Wait for the Pod to be ready
+    utils.retry(
+        kube_utils.check_pod_status(
+            k8s_client, name=pod_name, namespace="default", state="Running"
+        ),
+        times=10,
+        wait=12,
+        name="wait for Pod '{}'".format(pod_name),
+    )
+
+    yield pod_name
+
+    # Clean-up resources
+    pod_k8s_client.delete(
+        name=pod_name,
+        namespace="default",
+        body=kubernetes.client.V1DeleteOptions(
+            grace_period_seconds=0,  # Force deletion instantly
+        ),
+    )
+
+
+@pytest.fixture
 def ssh_config(request):
     return request.config.getoption("--ssh-config")
 
