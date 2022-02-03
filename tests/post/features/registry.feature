@@ -6,6 +6,11 @@ Feature: Registry is up and running
     When we pull metalk8s utils image from node 'bootstrap'
     Then pull succeeds
 
+  Scenario: We can reach registry from a container
+    Given the Kubernetes API is available
+    And pods with label 'app.kubernetes.io/name=repositories' are 'Ready'
+    Then we can reach registry from inside a container
+
   @registry_ha
   Scenario: Pull container image from registry (HA)
     Given the Kubernetes API is available

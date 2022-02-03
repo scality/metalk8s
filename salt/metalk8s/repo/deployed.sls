@@ -24,3 +24,23 @@ Deploy repo service object:
           selector:
             app.kubernetes.io/name: repositories
           type: ClusterIP
+
+Deploy repo internal service object:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: repositories-internal
+          namespace: kube-system
+          labels:
+            app.kubernetes.io/name: repositories
+        spec:
+          ports:
+          - name: http
+            port: 80
+            protocol: TCP
+            targetPort: http
+          selector:
+            app.kubernetes.io/name: repositories
+          type: ClusterIP

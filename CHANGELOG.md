@@ -13,6 +13,9 @@
 - Bump CoreDNS version to [v1.8.6](https://github.com/coredns/coredns/releases/tag/v1.8.6)
   (PR[#3634](https://github.com/scality/metalk8s/pull/3634))
 
+- Allow to resolve the registry endpoint from inside containers using CoreDNS
+  (PR[#3690](https://github.com/scality/metalk8s/pull/3690))
+
 ## Release 2.11.1 (in development)
 ### Enhancements
 

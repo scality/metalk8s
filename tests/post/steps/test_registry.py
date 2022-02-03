@@ -41,6 +41,11 @@ def test_pull_registry(host):
     pass
 
 
+@scenario("../features/registry.feature", "We can reach registry from a container")
+def test_get_registry_from_container(host):
+    pass
+
+
 @scenario("../features/registry.feature", "Pull container image from registry (HA)")
 def test_pull_registry_ha(host, teardown):
     pass
@@ -155,6 +160,18 @@ def pull_fails(context):
         context["pull_ret"].command,
         context["pull_ret"].stdout,
         context["pull_ret"].stderr,
+    )
+
+
+@then("we can reach registry from inside a container")
+def reach_registry(utils_pod, host, registry_address):
+    output = utils.kubectl_exec(
+        host=host, pod=utils_pod, command=["curl", "--fail", registry_address]
+    )
+
+    assert output.exit_status == 0, (
+        f"Unable to reach '{registry_address}' from container:"
+        f"\nout: {output.stdout}\nerr: {output.stderr}"
     )
 
 

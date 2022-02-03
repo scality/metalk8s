@@ -1,5 +1,6 @@
 {%- from "metalk8s/map.jinja" import coredns with context %}
 {%- from "metalk8s/map.jinja" import metalk8s with context %}
+{%- from "metalk8s/map.jinja" import repo with context %}
 
 {%- set cluster_dns_ip = salt.metalk8s_network.get_cluster_dns_ip() %}
 
@@ -28,6 +29,7 @@ Create coredns ConfigMap:
                   lameduck 5s
                 }
                 ready
+                rewrite name {{ repo.registry_endpoint }} repositories-internal.kube-system.svc.{{ coredns.cluster_domain }}
                 kubernetes {{ coredns.cluster_domain }} {{ coredns.reverse_cidrs }} {
                   pods insecure
                   fallthrough in-addr.arpa ip6.arpa
