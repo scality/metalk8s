@@ -96,13 +96,15 @@ Create kube-apiserver Pod manifest:
           - --bind-address={{ host }}
           - --encryption-provider-config={{ encryption_k8s_path }}
           - --cors-allowed-origins=.*
+          {%- if pillar.addons.dex.enabled %}
           - --oidc-issuer-url={{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}/oidc
           - --oidc-client-id=oidc-auth-client
           - --oidc-ca-file=/etc/metalk8s/pki/nginx-ingress/ca.crt
           - --oidc-username-claim=email
-          - '"--oidc-username-prefix=oidc:"'
           - --oidc-groups-claim=groups
+          - '"--oidc-username-prefix=oidc:"'
           - '"--oidc-groups-prefix=oidc:"'
+          {%- endif %}
           - --v={{ 2 if metalk8s.debug else 0 }}
           {% if feature_gates %}
           - --feature-gates={{ feature_gates | join(",") }}

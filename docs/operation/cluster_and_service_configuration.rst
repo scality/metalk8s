@@ -97,7 +97,7 @@ The default configuration values for MetalK8s UI are specified below:
 
 .. literalinclude:: ../../salt/metalk8s/addons/ui/config/metalk8s-ui-config.yaml.j2
    :language: yaml
-   :lines: 3-
+   :lines: 3-6,8-14,16-
 
 See :ref:`csc-ui-customization` to override these defaults.
 

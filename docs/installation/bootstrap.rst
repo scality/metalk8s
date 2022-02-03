@@ -73,6 +73,9 @@ Configuration
         minion: <hostname-of-the-bootstrap-node>
       archives:
         - <path-to-metalk8s-iso>
+      addons:
+        dex:
+          enabled: True
       kubernetes:
         apiServer:
           featureGates:
@@ -187,6 +190,14 @@ For example;
 The ``archives`` field is a list of absolute paths to MetalK8s ISO files. When
 the bootstrap script is executed, those ISOs are automatically mounted and the
 system is configured to re-mount them automatically after a reboot.
+
+The ``addons`` field can be omitted if you do not have any specific addons
+to configure.
+
+  If you need to disable deployment of ``dex`` as default OIDC used by
+  MetalK8s you can disable it by setting ``addons.dex.enabled`` to ``false``.
+  If ``dex`` is disabled you will not be able to use the MetalK8s UI and
+  Grafana.
 
 The ``kubernetes`` field can be omitted if you do not have any specific
 Kubernetes `Feature Gates`_ to enable or disable and if you are ok with

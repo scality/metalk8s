@@ -190,6 +190,14 @@ def _load_kubernetes(config_data):
     return kubernetes_data
 
 
+def _load_addons(config_data):
+    addons_data = config_data.get("addons", {})
+
+    addons_data.setdefault("dex", {}).setdefault("enabled", True)
+
+    return addons_data
+
+
 def ext_pillar(minion_id, pillar, bootstrap_config):  # pylint: disable=unused-argument
     config = _load_config(bootstrap_config)
     if config.get("_errors"):
@@ -215,6 +223,7 @@ def ext_pillar(minion_id, pillar, bootstrap_config):  # pylint: disable=unused-a
             "metalk8s": metal_data,
             "proxies": config.get("proxies", {}),
             "kubernetes": _load_kubernetes(config),
+            "addons": _load_addons(config),
         }
 
         if not isinstance(metal_data["archives"], list):

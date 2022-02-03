@@ -480,7 +480,7 @@ def main():
     config = []
     for name, configmap, path, service_namespace in args.service_configs or []:
         import_csc_yaml.append(
-            "{{% set {0}_defaults = "
+            "{{%- set {0}_defaults = "
             "salt.slsutil.renderer('salt://{1}', saltenv=saltenv) %}}".format(
                 name,
                 path,

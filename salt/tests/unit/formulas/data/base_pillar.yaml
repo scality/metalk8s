@@ -184,3 +184,6 @@ kubernetes:
       podAntiAffinity:
         soft:
           - topologyKey: kubernetes.io/hostname
+addons:
+  dex:
+    enabled: True

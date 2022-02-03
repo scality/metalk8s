@@ -59,9 +59,7 @@ def get_service_conf(
         ) from exc
 
     if manifest is None:
-        raise CommandExecutionError(
-            "Expected ConfigMap object but got {}".format(manifest)
-        )
+        return default_csc
 
     try:
         conf_section = manifest.get("data", {}).get("config.yaml", {})

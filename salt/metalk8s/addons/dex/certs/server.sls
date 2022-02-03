@@ -1,3 +1,5 @@
+{%- if pillar.addons.dex.enabled %}
+
 {%- from "metalk8s/map.jinja" import certificates with context %}
 {%- from "metalk8s/map.jinja" import coredns with context %}
 {%- from "metalk8s/map.jinja" import dex with context %}
@@ -56,3 +58,10 @@ Generate Dex server certificate:
     - dir_mode: '0755'
     - require:
       - x509: Create Dex server private key
+
+{%- else %}
+
+Dex is disabled, no certificates to generate:
+  test.nop
+
+{%- endif %}

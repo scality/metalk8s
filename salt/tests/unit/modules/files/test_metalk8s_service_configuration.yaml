@@ -64,6 +64,24 @@ get_service_config:
           containers:
             - name: my_new_container
 
+  #. Success: retrieved ConfigMap manifest is empty
+  - configmap_name: 'my_configmap'
+    configmap_obj: null
+    default_csc:
+      apiVersion: my_apiVersion1
+      kind: my_kind1
+      spec:
+        deployment:
+          replicas: my_replicas
+          containers: my_containers
+    result:
+      apiVersion: my_apiVersion1
+      kind: my_kind1
+      spec:
+        deployment:
+          replicas: my_replicas
+          containers: my_containers
+
   #. Error: missing configmap_name
   - configmap_name: null
     result: "Expected a ConfigMap name but got None"
@@ -79,12 +97,6 @@ get_service_config:
   - configmap_name: 'my_configmap'
     object_get: False
     result: "Failed to read ConfigMap object my_configmap"
-    raises: True
-
-  #. Error: retrieved ConfigMap manifest is empty
-  - configmap_name: 'my_configmap'
-    configmap_obj: null
-    result: "Expected ConfigMap object but got None"
     raises: True
 
   #. Error: yaml error raised when reading config.yaml

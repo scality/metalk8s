@@ -1,7 +1,9 @@
 #!jinja|yaml
 
-{%- set dex_defaults = salt.slsutil.renderer('salt://metalk8s/addons/dex/config/dex.yaml.j2', saltenv=saltenv) %}
-{%- set dex = salt.metalk8s_service_configuration.get_service_conf('metalk8s-auth', 'metalk8s-dex-config', dex_defaults) %}
+{%- if pillar.addons.dex.enabled %}
+  {%- set dex_defaults = salt.slsutil.renderer('salt://metalk8s/addons/dex/config/dex.yaml.j2', saltenv=saltenv) %}
+  {%- set dex = salt.metalk8s_service_configuration.get_service_conf('metalk8s-auth', 'metalk8s-dex-config', dex_defaults) %}
+{%- endif %}
 {%- set metalk8s_ui_defaults = salt.slsutil.renderer(
         'salt://metalk8s/addons/ui/config/metalk8s-ui-config.yaml.j2', saltenv=saltenv
     )
@@ -12,11 +14,11 @@
     )
 %}
 
-
 # Defaults for shell UI configuration
 apiVersion: addons.metalk8s.scality.com/v1alpha2
 kind: ShellUIConfig
 spec:
+{%- if pillar.addons.dex.enabled %}
   oidc:
     providerUrl: "/oidc"
     redirectUrl: "{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}/{{ metalk8s_ui_config.spec.basePath.lstrip('/') }}"
@@ -24,9 +26,10 @@ spec:
     responseType: "id_token"
     scopes: "openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
   userGroupsMapping:
-{%- for user in dex.spec.config.staticPasswords | map(attribute='email') %}
+  {%- for user in dex.spec.config.staticPasswords | map(attribute='email') %}
     "{{ user }}": [metalk8s:admin]
-{%- endfor %}
+  {%- endfor %}
+{%- endif %}
   discoveryUrl: "/shell/deployed-ui-apps.json"
   logo:
     light: /brand/assets/logo-light.svg
