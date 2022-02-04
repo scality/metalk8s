@@ -214,25 +214,8 @@ grafana:
     hosts:
       - 'null'
 
-  grafana.ini:
-    server:
-      root_url: '__escape__({{ "{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}" }}/grafana)'
-    analytics:
-      reporting_enabled: false
-      check_for_updates: false
-    auth:
-      oauth_auto_login: true
-    auth.generic_oauth:
-      enabled: true
-      tls_skip_verify_insecure: true
-      scopes: "openid profile email groups"
-      client_id: "grafana-ui"
-      client_secret: "4lqK98NcsWG5qBRHJUqYM1"
-      auth_url: '__escape__({{ "{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}" }}/oidc/auth)'
-      token_url:  '__escape__({{ "{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}" }}/oidc/token)'
-      api_url: '__escape__({{ "{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}" }}/oidc/userinfo)'
-      role_attribute_path: >-
-        contains(`{% endraw %}{{ "{{ dex.spec.config.staticPasswords | map(attribute='email') | list | tojson }}" }}{% raw %}`, email) && 'Admin'
+  # NOTE: This config is managed directly in a salt state
+  grafana.ini: {}
 
   testFramework:
     enabled: false

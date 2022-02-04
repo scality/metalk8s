@@ -3,6 +3,7 @@ include:
   - .namespace
   - .cleanup
   - .alertmanager-configuration-secret
+  - .grafana-ini-configmap
   - .dashboards
   - .service-configuration
   - .chart

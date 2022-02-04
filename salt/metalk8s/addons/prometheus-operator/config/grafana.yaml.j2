@@ -1,0 +1,44 @@
+#!jinja|yaml
+
+{%- if pillar.addons.dex.enabled %}
+  {%- set dex_defaults = salt.slsutil.renderer('salt://metalk8s/addons/dex/config/dex.yaml.j2', saltenv=saltenv) %}
+  {%- set dex = salt.metalk8s_service_configuration.get_service_conf('metalk8s-auth', 'metalk8s-dex-config', dex_defaults) %}
+{%- endif %}
+{%- set control_plane_ingress_endpoint = salt.metalk8s_network.get_control_plane_ingress_endpoint() %}
+
+# Configuration of the Grafana service
+apiVersion: addons.metalk8s.scality.com
+kind: GrafanaConfig
+spec:
+  # Configure the Grafana Deployment
+  deployment:
+    replicas: 1
+  config:
+    grafana.ini:
+      analytics:
+        check_for_updates: false
+        reporting_enabled: false
+      paths:
+        data: /var/lib/grafana/
+        logs: /var/log/grafana
+        plugins: /var/lib/grafana/plugins
+        provisioning: /etc/grafana/provisioning
+      log:
+        mode: console
+      server:
+        root_url: "{{ control_plane_ingress_endpoint }}/grafana"
+      auth:
+        disable_login_form: true
+{%- if pillar.addons.dex.enabled %}
+        oauth_auto_login: true
+      auth.generic_oauth:
+        api_url: "{{ control_plane_ingress_endpoint }}/oidc/userinfo"
+        auth_url: "{{ control_plane_ingress_endpoint }}/oidc/auth"
+        client_id: grafana-ui
+        client_secret: 4lqK98NcsWG5qBRHJUqYM1
+        enabled: true
+        role_attribute_path: contains(`{{ dex.spec.config.staticPasswords | map(attribute='email') | list | tojson }}`, email) && 'Admin'
+        scopes: openid profile email groups
+        tls_skip_verify_insecure: true
+        token_url: "{{ control_plane_ingress_endpoint }}/oidc/token"
+{%- endif %}
