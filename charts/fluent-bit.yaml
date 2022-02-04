@@ -120,7 +120,10 @@ volumeMounts:
   readOnly: true
 
 serviceMonitor:
-  enabled: true
+  # Disabled for the moment as http_server does not work with current
+  # fluent-bit version + kubernetes version
+  # See: https://github.com/fluent/fluent-bit/issues/4063
+  enabled: false
   interval: ""
   additionalLabels:
     metalk8s.scality.com/monitor: ''
