@@ -21,6 +21,7 @@ SYSTEM_PARTITION_WARNING, SYSTEM_PARTITION_CRITICAL = severity_pair(
         Existing.critical("NodeFilesystemSpaceFillingUp"),
     ],
     duration="1m",
+    group_by=["mountpoint", "instance"],
 )
 
 NODE_WARNING, NODE_CRITICAL = severity_pair(
@@ -50,4 +51,5 @@ NODE_WARNING, NODE_CRITICAL = severity_pair(
         SYSTEM_PARTITION_CRITICAL,
     ],
     duration="1m",
+    group_by=["instance"],
 )
