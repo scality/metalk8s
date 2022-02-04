@@ -147,30 +147,6 @@ subjects:
 - kind: ServiceAccount
   name: fluent-bit
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: fluent-bit
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: fluent-bit
-    app.kubernetes.io/part-of: metalk8s
-    chart: fluent-bit-2.2.0
-    heritage: metalk8s
-    release: fluent-bit
-  name: fluent-bit-headless
-  namespace: metalk8s-logging
-spec:
-  clusterIP: None
-  ports:
-  - name: http-metrics
-    port: 2020
-    protocol: TCP
-    targetPort: http-metrics
-  selector:
-    app: fluent-bit
-    release: fluent-bit
----
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -257,30 +233,5 @@ spec:
         name: runlog
   updateStrategy:
     type: RollingUpdate
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  labels:
-    app: fluent-bit
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: fluent-bit
-    app.kubernetes.io/part-of: metalk8s
-    chart: fluent-bit-2.2.0
-    heritage: metalk8s
-    metalk8s.scality.com/monitor: ''
-  name: fluent-bit
-  namespace: metalk8s-logging
-spec:
-  endpoints:
-  - path: /api/v1/metrics/prometheus
-    port: http-metrics
-  namespaceSelector:
-    matchNames:
-    - metalk8s-logging
-  selector:
-    matchLabels:
-      app: fluent-bit
-      release: fluent-bit
 
 {% endraw %}
