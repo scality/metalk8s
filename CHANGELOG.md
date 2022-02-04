@@ -25,6 +25,12 @@
 - Bump Grafana image version to 8.3.4-ubuntu
   (PR[#3684](https://github.com/scality/metalk8s/pull/3684))
 
+### Bug fixes
+
+- Disable fluent-bit service monitor as currently the fluent-bit
+  HTTP server that serve metrics does not work
+  (PR[#3689](https://github.com/scality/metalk8s/pull/3689))
+
 ## Release 2.11.0
 ### Additions
 
