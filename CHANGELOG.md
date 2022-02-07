@@ -25,6 +25,10 @@
 - Bump Grafana image version to 8.3.4-ubuntu
   (PR[#3684](https://github.com/scality/metalk8s/pull/3684))
 
+- Bump ingress-nginx chart version to 4.0.9
+  nginx-ingress-controller image has been bumped accordingly to v1.0.5
+  (PR[#3691](https://github.com/scality/metalk8s/pull/3691))
+
 ### Bug fixes
 
 - Disable fluent-bit service monitor as currently the fluent-bit

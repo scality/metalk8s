@@ -11,6 +11,8 @@ controller:
     name: nginx-control-plane
     controllerValue: "k8s.io/ingress-nginx-control-plane"
 
+  ingressClass: nginx-control-plane
+
   admissionWebhooks:
     enabled: false
 
