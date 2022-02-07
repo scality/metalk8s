@@ -113,6 +113,10 @@ prometheus:
     nodeSelector:
       node-role.kubernetes.io/infra: ''
 
+    podMonitorSelector:
+      matchLabels:
+        metalk8s.scality.com/monitor: ''
+
     serviceMonitorSelector:
       matchLabels:
         metalk8s.scality.com/monitor: ''
