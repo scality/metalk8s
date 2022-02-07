@@ -31,6 +31,13 @@
   HTTP server that serve metrics does not work
   (PR[#3689](https://github.com/scality/metalk8s/pull/3689))
 
+### Breaking changes
+
+- [#2199](https://github.com/scality/metalk8s/issues/2199) - Prometheus label
+  selector for `PodMonitor` has changed from `release: prometheus-operator` to
+  `metalk8s.scality.com/monitor: ''`
+  (PR[#3692](https://github.com/scality/metalk8s/pull/3692))
+
 ## Release 2.11.0
 ### Additions
 

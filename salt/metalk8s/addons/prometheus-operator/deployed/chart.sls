@@ -62331,7 +62331,7 @@ spec:
   podMonitorNamespaceSelector: {}
   podMonitorSelector:
     matchLabels:
-      release: prometheus-operator
+      metalk8s.scality.com/monitor: ''
   portName: http-web
   probeNamespaceSelector: {}
   probeSelector:
