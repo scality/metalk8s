@@ -1,11 +1,10 @@
 annotations:
   artifacthub.io/changes: |
-    - Support for Ingress object v1 and drop support for v1beta1
-    - Update to go 1.17
-    - Fix some bugs
+    - choice option for internal/external loadbalancer type service
+    - use controller v1.0.5
   artifacthub.io/prerelease: "false"
 apiVersion: v2
-appVersion: 1.0.0
+appVersion: 1.0.5
 description: Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer
 home: https://github.com/kubernetes/ingress-nginx
 icon: https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Nginx_logo.svg/500px-Nginx_logo.svg.png
@@ -19,4 +18,4 @@ name: ingress-nginx
 sources:
 - https://github.com/kubernetes/ingress-nginx
 type: application
-version: 4.0.1
+version: 4.0.9

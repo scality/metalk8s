@@ -2,13 +2,14 @@
 
 [ingress-nginx](https://github.com/kubernetes/ingress-nginx) Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer
 
-To use, add the `kubernetes.io/ingress.class: nginx` annotation to your Ingress resources.
+To use, add `ingressClassName: nginx` spec field or the `kubernetes.io/ingress.class: nginx` annotation to your Ingress resources.
 
 This chart bootstraps an ingress-nginx deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
 
 ## Prerequisites
 
-- Kubernetes v1.16+
+- Chart version 3.x.x: Kubernetes v1.16+
+- Chart version 4.x.x and above: Kubernetes v1.19+
 
 ## Get Repo Info
 
@@ -84,7 +85,8 @@ else it would make it impossible to evacuate a node. See [gh issue #7127](https:
 
 The Nginx ingress controller can export Prometheus metrics, by setting `controller.metrics.enabled` to `true`.
 
-You can add Prometheus annotations to the metrics service using `controller.metrics.service.annotations`. Alternatively, if you use the Prometheus Operator, you can enable ServiceMonitor creation using `controller.metrics.serviceMonitor.enabled`.
+You can add Prometheus annotations to the metrics service using `controller.metrics.service.annotations`.
+Alternatively, if you use the Prometheus Operator, you can enable ServiceMonitor creation using `controller.metrics.serviceMonitor.enabled`. And set `controller.metrics.serviceMonitor.additionalLabels.release="prometheus"`. "release=prometheus" should match the label configured in the prometheus servicemonitor ( see `kubectl get servicemonitor prometheus-kube-prom-prometheus -oyaml -n prometheus`)
 
 ### ingress-nginx nginx\_status page/stats server
 
@@ -176,8 +178,8 @@ controller:
         networking.gke.io/load-balancer-type: "Internal"
         # For earlier versions
         # cloud.google.com/load-balancer-type: "Internal"
-        
-        # Any other annotation can be declared here. 
+
+        # Any other annotation can be declared here.
 ```
 
 Example for Azure:

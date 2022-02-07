@@ -161,8 +161,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="nginx-ingress-controller",
-        version="v1.0.0",
-        digest="sha256:0851b34f69f69352bf168e6ccf30e1e20714a264ab1ecd1933e4d8c0fc3215c6",
+        version="v1.0.5",
+        digest="sha256:55a1fcda5b7657c372515fe402c3e39ad93aa59f6e4378e82acd99912fe6028d",
     ),
     Image(
         name="nginx-ingress-defaultbackend-amd64",
