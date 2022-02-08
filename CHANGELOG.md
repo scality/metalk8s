@@ -1,5 +1,5 @@
 # CHANGELOG
-## Release 2.11.1 (in development)
+## Release 2.11.1
 ### Enhancements
 
 - Add each Loki instance as datasources in Grafana dashboards
@@ -17,6 +17,9 @@
 - Disable fluent-bit service monitor as currently the fluent-bit
   HTTP server that serve metrics does not work
   (PR[#3689](https://github.com/scality/metalk8s/pull/3689))
+
+- Fix the incomplete alert name in MetalK8s UI alert page
+  (PR[#3669](https://github.com/scality/metalk8s/pull/3669))
 
 ### Breaking changes
 
