@@ -1,5 +1,5 @@
 # CHANGELOG
-## Release 2.11.2 (in development)
+## Release 2.11.2
 ### Bug fixes
 
 - Downgrade ingress-nginx chart version to 4.0.6
