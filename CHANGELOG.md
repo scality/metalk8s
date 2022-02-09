@@ -3,7 +3,7 @@
 ### Bug fixes
 
 - Downgrade ingress-nginx chart version to 4.0.6
-  nginx-ingress-controller image has been bumped accordingly to v1.0.4
+  nginx-ingress-controller image has been downgraded accordingly to v1.0.4
   in order to fix regression about `nginx.ingress.kubernetes.io/server-snippet`
   ingress annotation
   (PR[#3694](https://github.com/scality/metalk8s/pull/3694))
