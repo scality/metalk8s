@@ -16,8 +16,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.0.5
-    helm.sh/chart: ingress-nginx-4.0.9
+    app.kubernetes.io/version: 1.0.4
+    helm.sh/chart: ingress-nginx-4.0.6
     heritage: metalk8s
   name: ingress-nginx
   namespace: metalk8s-ingress
@@ -32,8 +32,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.0.5
-    helm.sh/chart: ingress-nginx-4.0.9
+    app.kubernetes.io/version: 1.0.4
+    helm.sh/chart: ingress-nginx-4.0.6
     heritage: metalk8s
   name: ingress-nginx-backend
   namespace: metalk8s-ingress
@@ -49,8 +49,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.0.5
-    helm.sh/chart: ingress-nginx-4.0.9
+    app.kubernetes.io/version: 1.0.4
+    helm.sh/chart: ingress-nginx-4.0.6
     heritage: metalk8s
   name: ingress-nginx-controller
   namespace: metalk8s-ingress
@@ -63,8 +63,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.0.5
-    helm.sh/chart: ingress-nginx-4.0.9
+    app.kubernetes.io/version: 1.0.4
+    helm.sh/chart: ingress-nginx-4.0.6
     heritage: metalk8s
   name: ingress-nginx
   namespace: metalk8s-ingress
@@ -77,7 +77,6 @@ rules:
   - nodes
   - pods
   - secrets
-  - namespaces
   verbs:
   - list
   - watch
@@ -133,8 +132,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.0.5
-    helm.sh/chart: ingress-nginx-4.0.9
+    app.kubernetes.io/version: 1.0.4
+    helm.sh/chart: ingress-nginx-4.0.6
     heritage: metalk8s
   name: ingress-nginx
   namespace: metalk8s-ingress
@@ -156,8 +155,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.0.5
-    helm.sh/chart: ingress-nginx-4.0.9
+    app.kubernetes.io/version: 1.0.4
+    helm.sh/chart: ingress-nginx-4.0.6
     heritage: metalk8s
   name: ingress-nginx
   namespace: metalk8s-ingress
@@ -241,8 +240,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.0.5
-    helm.sh/chart: ingress-nginx-4.0.9
+    app.kubernetes.io/version: 1.0.4
+    helm.sh/chart: ingress-nginx-4.0.6
     heritage: metalk8s
   name: ingress-nginx
   namespace: metalk8s-ingress
@@ -264,8 +263,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.0.5
-    helm.sh/chart: ingress-nginx-4.0.9
+    app.kubernetes.io/version: 1.0.4
+    helm.sh/chart: ingress-nginx-4.0.6
     heritage: metalk8s
   name: ingress-nginx-controller-metrics
   namespace: metalk8s-ingress
@@ -291,8 +290,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.0.5
-    helm.sh/chart: ingress-nginx-4.0.9
+    app.kubernetes.io/version: 1.0.4
+    helm.sh/chart: ingress-nginx-4.0.6
     heritage: metalk8s
   name: ingress-nginx-controller
   namespace: metalk8s-ingress
@@ -326,8 +325,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.0.5
-    helm.sh/chart: ingress-nginx-4.0.9
+    app.kubernetes.io/version: 1.0.4
+    helm.sh/chart: ingress-nginx-4.0.6
     heritage: metalk8s
   name: ingress-nginx-defaultbackend
   namespace: metalk8s-ingress
@@ -353,8 +352,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.0.5
-    helm.sh/chart: ingress-nginx-4.0.9
+    app.kubernetes.io/version: 1.0.4
+    helm.sh/chart: ingress-nginx-4.0.6
     heritage: metalk8s
   name: ingress-nginx-controller
   namespace: metalk8s-ingress
@@ -395,7 +394,7 @@ spec:
         - name: LD_PRELOAD
           value: /usr/local/lib/libmimalloc.so
         image: '{%- endraw -%}{{ build_image_name("nginx-ingress-controller", False)
-          }}{%- raw -%}:v1.0.5'
+          }}{%- raw -%}:v1.0.4'
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -469,8 +468,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.0.5
-    helm.sh/chart: ingress-nginx-4.0.9
+    app.kubernetes.io/version: 1.0.4
+    helm.sh/chart: ingress-nginx-4.0.6
     heritage: metalk8s
   name: ingress-nginx-defaultbackend
   namespace: metalk8s-ingress
@@ -550,8 +549,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.0.5
-    helm.sh/chart: ingress-nginx-4.0.9
+    app.kubernetes.io/version: 1.0.4
+    helm.sh/chart: ingress-nginx-4.0.6
     heritage: metalk8s
   name: nginx
   namespace: metalk8s-ingress
@@ -567,8 +566,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.0.5
-    helm.sh/chart: ingress-nginx-4.0.9
+    app.kubernetes.io/version: 1.0.4
+    helm.sh/chart: ingress-nginx-4.0.6
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
   name: ingress-nginx-controller
@@ -577,6 +576,9 @@ spec:
   endpoints:
   - interval: 30s
     port: metrics
+  namespaceSelector:
+    matchNames:
+    - metalk8s-ingress
   selector:
     matchLabels:
       app.kubernetes.io/component: controller
