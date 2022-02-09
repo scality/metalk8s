@@ -15,8 +15,8 @@ controller:
     # for backwards compatibility consider setting the full image url via the repository value below
     # use *either* current default registry/image or repository format or installing chart by providing the values.yaml will fail
     # repository:
-    tag: "v1.0.5"
-    digest: sha256:55a1fcda5b7657c372515fe402c3e39ad93aa59f6e4378e82acd99912fe6028d
+    tag: "v1.0.4"
+    digest: sha256:545cff00370f28363dad31e3b59a94ba377854d3a11f18988f5f9e56841ef9ef
     pullPolicy: IfNotPresent
     # www-data -> uid 101
     runAsUser: 101
@@ -137,9 +137,6 @@ controller:
   scope:
     enabled: false
     namespace: ""   # defaults to $(POD_NAMESPACE)
-    # When scope.enabled == false, instead of watching all namespaces, we watching namespaces whose labels
-    #   only match with namespaceSelector. Format like foo=bar. Defaults to empty, means watching all namespaces.
-    namespaceSelector: ""
 
   ## Allows customization of the configmap / nginx-configmap namespace
   ##
@@ -187,7 +184,7 @@ controller:
   annotations: {}
   #  keel.sh/pollSchedule: "@every 60m"
 
-  ## Labels to be added to the controller Deployment or DaemonSet and other resources that do not have option to specify labels
+  ## Labels to be added to the controller Deployment or DaemonSet
   ##
   labels: {}
   #  keel.sh/policy: patch
@@ -494,9 +491,6 @@ controller:
       tcp: {}
       udp: {}
 
-    external:
-      enabled: true
-
     ## Enables an additional internal load balancer (besides the external one).
     ## Annotations are mandatory for the load balancer to come up. Varies with the cloud service.
     internal:
@@ -563,8 +557,6 @@ controller:
     key: "/usr/local/certificates/key"
     namespaceSelector: {}
     objectSelector: {}
-    ## Labels to be added to admission webhooks
-    labels: {}
 
     # Use an existing PSP instead of creating one
     existingPsp: ""
@@ -608,8 +600,6 @@ controller:
       nodeSelector:
         kubernetes.io/os: linux
       tolerations: []
-      ## Labels to be added to patch job resources
-      labels: {}
       runAsUser: 2000
 
   metrics:
@@ -778,12 +768,6 @@ defaultBackend:
   ##
   podSecurityContext: {}
 
-  ## Security Context policies for controller main container.
-  ## See https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster/ for
-  ## notes on enabling and using sysctls
-  ##
-  containerSecurityContext: {}
-
   # labels to add to the pod container metadata
   podLabels: {}
   #  key: value
@@ -844,8 +828,6 @@ defaultBackend:
     type: ClusterIP
 
   priorityClassName: ""
-  ## Labels to be added to the default backend resources
-  labels: {}
 
 ## Enable RBAC as per https://github.com/kubernetes/ingress-nginx/blob/main/docs/deploy/rbac.md and https://github.com/kubernetes/ingress-nginx/issues/266
 rbac:
