@@ -40,7 +40,6 @@ K8S_CONTROL_WARNING, K8S_CONTROL_CRITICAL = severity_pair(
         Existing.critical("etcdGRPCRequestsSlow"),
         Existing.critical("etcdHighNumberOfFailedHTTPRequests"),
         Existing.critical("etcdInsufficientMembers"),
-        Existing.critical("etcdMembersDown"),
         Existing.critical("etcdNoLeader"),
         Existing.critical("KubeStateMetricsListErrors"),
         Existing.critical("KubeStateMetricsWatchErrors"),

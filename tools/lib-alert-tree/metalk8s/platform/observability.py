@@ -61,7 +61,6 @@ ALERTING_WARNING, ALERTING_CRITICAL = severity_pair(
     summary_name="The alerting service",
     relationship=Relationship.ANY,
     warning_children=[
-        Existing.warning("AlertmanagerFailedReload"),
         *statefulset_alerts(
             "alertmanager-prometheus-operator-alertmanager",
             severity="warning",
