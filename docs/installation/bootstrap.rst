@@ -78,6 +78,7 @@ Configuration
           enabled: True
       kubernetes:
         apiServer:
+          oidc: {}
           featureGates:
             <feature_gate_name>: True
         controllerManager:
@@ -207,6 +208,20 @@ defaults kubernetes configuration.
   configure the corresponding entries in the
   ``kubernetes.apiServer.featureGates`` mapping.
 
+  If ``dex`` is enabled, it will be used as ``oidc`` for ``kube-apiserver``
+  but you can use a `specific OpenID for kube-apiserver`_, to do so:
+
+    .. code-block:: yaml
+
+      kubernetes:
+        apiServer:
+          oidc:
+            issuerURL: <OIDC issuer URL>
+            clientID: <Client ID>
+            CAFile: <Certificate Authority certificate file>
+            usernameClaim: <Username Claim>
+            groupsClaim: <Groups Claim>
+
   If you want to override the default ``coreDNS`` podAntiAffinity or number of
   replicas, by default MetalK8s deploy 2 replicas and use soft podAntiAffinity
   on hostname so that if it's possible ``coreDNS`` pods will be spread on
@@ -230,6 +245,7 @@ defaults kubernetes configuration.
   disabled (default to ``500``)
 
 .. _Feature Gates: https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/
+.. _specific OpenID for kube-apiserver: https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens
 
 .. _Bootstrap SSH Provisioning:
 

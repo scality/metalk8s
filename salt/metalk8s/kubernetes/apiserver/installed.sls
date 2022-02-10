@@ -34,6 +34,19 @@ include:
 {%-   do feature_gates.append(feature ~ "=" ~ value) %}
 {%- endfor %}
 
+{%- set oidc_config = {} %}
+{%- if pillar.kubernetes.get("apiServer", {}).get("oidc") %}
+  {%- do oidc_config.update(pillar.kubernetes.apiServer.oidc) %}
+{%- elif pillar.addons.dex.enabled %}
+  {%- do oidc_config.update({
+    "issuerURL": salt.metalk8s_network.get_control_plane_ingress_endpoint() ~ "/oidc",
+    "clientID": "oidc-auth-client",
+    "CAFile": "/etc/metalk8s/pki/nginx-ingress/ca.crt",
+    "usernameClaim": "email",
+    "groupsClaim": "groups",
+  }) %}
+{%- endif %}
+
 Create kube-apiserver Pod manifest:
   metalk8s.static_pod_managed:
     - name: /etc/kubernetes/manifests/kube-apiserver.yaml
@@ -96,12 +109,12 @@ Create kube-apiserver Pod manifest:
           - --bind-address={{ host }}
           - --encryption-provider-config={{ encryption_k8s_path }}
           - --cors-allowed-origins=.*
-          {%- if pillar.addons.dex.enabled %}
-          - --oidc-issuer-url={{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}/oidc
-          - --oidc-client-id=oidc-auth-client
-          - --oidc-ca-file=/etc/metalk8s/pki/nginx-ingress/ca.crt
-          - --oidc-username-claim=email
-          - --oidc-groups-claim=groups
+          {%- if oidc_config %}
+          - --oidc-issuer-url={{ oidc_config.issuerURL }}
+          - --oidc-client-id={{ oidc_config.clientID }}
+          - --oidc-ca-file={{ oidc_config.CAFile }}
+          - --oidc-username-claim={{ oidc_config.usernameClaim }}
+          - --oidc-groups-claim={{ oidc_config.groupsClaim }}
           - '"--oidc-username-prefix=oidc:"'
           - '"--oidc-groups-prefix=oidc:"'
           {%- endif %}
