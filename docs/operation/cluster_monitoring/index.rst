@@ -8,4 +8,5 @@ of pre-configured alerting and recording rules.
 .. toctree::
 
    monitoring_stack
+   alerting
    prometheus

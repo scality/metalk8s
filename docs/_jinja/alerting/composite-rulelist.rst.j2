@@ -1,0 +1,19 @@
+{% for rule in composite_rules | sort(attribute="name") %}
+.. _composite-alert-{{ rule.name }}:
+
+{{ rule.name }}
+{{ options.header_char * (rule.name | length) }}
+
+:Severity: {{ rule.alert_rule.labels.severity | upper }}
+:Message: {{ rule.alert_rule.annotations.summary }}
+:Relationship: {{ rule.relationship.name }}
+:Children:
+{% for child in rule.children %}
+  {%- if child.children is defined %}
+    {%- set ref = 'composite-alert-' ~ child.name %}
+  {%- else %}
+    {%- set ref = 'simple-alert-' ~ child.name ~ '-' ~ child.alert_rule.labels.severity %}
+  {%- endif %}
+    - :ref:`{{ child }} <{{ ref }}>`
+{% endfor %}
+{% endfor %}

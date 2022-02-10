@@ -5,6 +5,7 @@
 # http://www.sphinx-doc.org/en/master/config
 
 import datetime
+import json
 import os
 import pathlib
 import subprocess
@@ -29,6 +30,8 @@ from buildchain import versions
 # `lib_alert_tree` tooling library
 _lib_alert_tree_path = pathlib.Path(__file__) / "../../tools/lib-alert-tree"
 sys.path.insert(0, str(_lib_alert_tree_path.resolve()))
+import metalk8s as metalk8s_alert_tree
+import lib_alert_tree.models
 
 
 # -- Environment toggles -----------------------------------------------------
@@ -87,6 +90,22 @@ for infos in volumes_values["volume_types"].values():
     with open(infos["example"]["path"]) as fd:
         infos["example"]["content"] = fd.read()
 
+# Read deployed alerting rules
+with open("../tools/rule_extractor/alerting_rules.json", "r") as fd:
+    alerting_rules = json.load(fd)
+
+# Extract the list of composite rules
+alert_tree_roots = [
+    metalk8s_alert_tree.CLUSTER_WARNING,
+    metalk8s_alert_tree.CLUSTER_CRITICAL,
+]
+composite_alerting_rules = []
+for root in alert_tree_roots:
+    tree = root.build_tree()
+    for nid in tree.expand_tree(mode=tree.DEPTH):
+        alert = tree.get_node(nid).data
+        if isinstance(alert, lib_alert_tree.models.DerivedAlert):
+            composite_alerting_rules.append(alert)
 
 # -- General configuration ---------------------------------------------------
 
@@ -238,6 +257,14 @@ jinja_contexts = {
             "git_revision": constants.GIT_REF,
             "on_readthedocs": ON_RTD,
         },
+    },
+    "alerting": {
+        "alert_roots": {
+            "cluster-degraded": metalk8s_alert_tree.CLUSTER_WARNING,
+            "cluster-at-risk": metalk8s_alert_tree.CLUSTER_CRITICAL,
+        },
+        "all_rules": alerting_rules,
+        "composite_rules": composite_alerting_rules,
     },
     "salt_values": {
         "listening_processes": salt_defaults["networks"]["listening_process_per_role"],

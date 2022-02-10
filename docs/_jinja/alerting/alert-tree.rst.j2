@@ -1,0 +1,38 @@
+The alerts have a severity level attached, either **WARNING** or **CRITICAL**.
+We can represent the full hierarchy by describing the parent-child
+relationships of each *composite* alert, building a tree from one of the
+root-level alerts:
+
+{% for root_key, root in alert_roots.items() %}
+- :ref:`{{ root.name }} <alert-tree-{{ root_key}}>`
+  (**{{ root.alert_rule.labels.severity | upper }}**)
+{% endfor %}
+
+{% for root_key, root in alert_roots.items() %}
+.. _alert-tree-{{ root_key }}:
+
+{{ root.name }}
+{{ options.header_char * (root | string | length) }}
+
+{{ root.doc }}
+
+{% set tree = root.build_tree() -%}
+{% for nid in tree.expand_tree(mode=tree.DEPTH) %}
+{% set node = tree.get_node(nid).data %}
+{% set labels = node.alert_rule.labels %}
+{% set indent = '  ' * tree.level(nid) %}
+{% if node.children is defined %}
+  {% set ref = 'composite-alert-' ~ node.name %}
+{% else %}
+  {% set ref = 'simple-alert-' ~ node.name ~ '-' ~ labels.severity %}
+{% endif %}
+{{ indent }}- :ref:`{{ node.name }} <{{ ref }}>` *({{ labels.severity | upper }})*
+{% if (labels.keys() | list | length) > 1 %}
+
+{{ indent }}  {% for key, value in labels.items() | rejectattr(0, "eq", "severity") -%}
+*{{ key | capitalize }}*: ``{{ value }}``{% if not loop.last %}, {% endif %}
+{%- endfor %}
+{% endif %}
+{% endfor %}
+
+{% endfor %}
