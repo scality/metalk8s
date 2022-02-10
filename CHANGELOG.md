@@ -22,6 +22,12 @@
   [v1.1.1](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.1.1)
   (PR[#3697](https://github.com/scality/metalk8s/pull/3697))
 
+- Bump Loki chart version to
+  [2.9.1](https://github.com/grafana/helm-charts/releases/tag/loki-2.9.1)
+  The Loki image has been bumped accordingly to
+  [2.4.2](https://github.com/grafana/loki/releases/tag/v2.4.2)
+  (PR[#3698](https://github.com/scality/metalk8s/pull/3698))
+
 ## Release 2.11.3 (in development)
 
 ## Release 2.11.2

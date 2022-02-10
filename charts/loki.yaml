@@ -1,6 +1,9 @@
 image:
   repository: '__image__(loki)'
 
+config:
+  existingSecret: loki
+
 persistence:
   enabled: true
   size: 10Gi
