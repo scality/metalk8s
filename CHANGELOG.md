@@ -16,6 +16,12 @@
 - Allow to resolve the registry endpoint from inside containers using CoreDNS
   (PR[#3690](https://github.com/scality/metalk8s/pull/3690))
 
+- Bump ingress-nginx chart version to
+  [4.0.17](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.0.17)
+  The controller image has been bumped accordingly to
+  [v1.1.1](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.1.1)
+  (PR[#3697](https://github.com/scality/metalk8s/pull/3697))
+
 ## Release 2.11.3 (in development)
 
 ## Release 2.11.2
