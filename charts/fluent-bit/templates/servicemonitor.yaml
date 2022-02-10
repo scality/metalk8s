@@ -1,35 +1,45 @@
-{{- if .Values.serviceMonitor.enabled }}
+{{- if and ( .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" ) .Values.serviceMonitor.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ template "fluent-bit-loki.fullname" . }}
-  labels:
-    app: {{ template "fluent-bit-loki.name" . }}
-    chart: {{ template "fluent-bit-loki.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
-    {{- if .Values.serviceMonitor.additionalLabels }}
-{{ toYaml .Values.serviceMonitor.additionalLabels | indent 4 }}
-    {{- end }}
-  {{- if .Values.serviceMonitor.annotations }}
-  annotations:
-{{ toYaml .Values.serviceMonitor.annotations | indent 4 }}
+  name: {{ template "fluent-bit.fullname" . }}
+  {{- with .Values.serviceMonitor.namespace }}
+  namespace: {{ . }}
   {{- end }}
+  labels:
+    {{- include "fluent-bit.labels" . | nindent 4 }}
+    {{- with .Values.serviceMonitor.selector }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
-  selector:
-    matchLabels:
-      app: {{ template "fluent-bit-loki.name" . }}
-      release: {{ .Release.Name | quote }}
+  {{- if .Values.serviceMonitor.jobLabel }}
+  jobLabel: {{ .Values.serviceMonitor.jobLabel }}
+  {{- end }}
+  endpoints:
+    - port: http
+      path: /api/v1/metrics/prometheus
+      {{- with .Values.serviceMonitor.interval }}
+      interval: {{ . }}
+      {{- end }}
+      {{- with .Values.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ . }}
+      {{- end }}
+      {{- with .Values.serviceMonitor.metricRelabelings }}
+      metricRelabelings:
+      {{- if kindIs "string" . }}
+        {{- tpl . $ | nindent 8 }}
+      {{- else }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- with .Values.serviceMonitor.relabelings }}
+      relabelings:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
   namespaceSelector:
     matchNames:
-      - {{ .Release.Namespace | quote }}
-  endpoints:
-  - port: http-metrics
-    path: /api/v1/metrics/prometheus
-    {{- if .Values.serviceMonitor.interval }}
-    interval: {{ .Values.serviceMonitor.interval }}
-    {{- end }}
-    {{- if .Values.serviceMonitor.scrapeTimeout }}
-    scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
-    {{- end }}
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      {{- include "fluent-bit.selectorLabels" . | nindent 6 }}
 {{- end }}

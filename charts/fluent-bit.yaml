@@ -1,92 +1,19 @@
----
-loki:
-  serviceName: loki  # Defaults to "${RELEASE}-loki" if not set
-  servicePort: 3100
-  serviceScheme: http
-  servicePath: /api/prom/push
-  # user: user
-  # password: pass
-  # the whole `config` block is not used as it does not allow us to add
-  # additional inputs. To workaround this, we're deploying our own
-  # ConfigMap instead.
-  # config:
-  #   port: 2020
-  #   tenantID: '""'
-  #   batchWait: 1
-  #   batchSize: 10240
-  #   loglevel: warn
-  #   lineFormat: json
-  #   k8sLoggingParser: "Off"
-  #   removeKeys:
-  #     - kubernetes
-  #     - stream
-  #   autoKubernetesLabels: false
-  #   labels: '{job="fluent-bit"}'
-  #   labelMap:
-  #     kubernetes:
-  #       namespace_name: namespace
-  #       labels:
-  #         app: app
-  #         release: release
-  #       host: node
-  #       container_name: container
-  #       pod_name: instance
-  #     stream: stream
-  # parsers: # Allow to define custom parsers. The key here is the same as the one in the [PARSER] section of parsers.conf file.
-  #  - Name: json
-  #    Format: json
-  #    Time_Key: time
-  #    Time_Format: "%d/%b/%Y:%H:%M:%S %z"
-
-  # extraOutputs: # Allow to define extra outputs in addition to the one automatically created
-  #   - Name: stdout
-  #     Format: json
-  #     json_date_format: time
-
-affinity: {}
-
-annotations: {}
-
-deploymentStrategy: RollingUpdate
-
 image:
-  repository: '__image__(fluent-bit-plugin-loki)'
+  repository: '__image__(fluent-bit)'
   pullPolicy: IfNotPresent
 
-nameOverride: fluent-bit
-
-## Node labels for pod assignment
-## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
-nodeSelector: {}
-
-## Pod Labels
-podLabels: {}
+existingConfigMap: fluent-bit
 
 podAnnotations:
   prometheus.io/scrape: "true"
   prometheus.io/port: "2020"
   prometheus.io/path: /api/v1/metrics/prometheus
 
-## Assign a PriorityClassName to pods if set
-# priorityClassName:
-
-rbac:
-  create: true
-  pspEnabled: true
-
 resources:
-  limits:
-    memory: 100Mi
   requests:
     cpu: 100m
     memory: 100Mi
 
-serviceAccount:
-  create: true
-  name:
-
-## Tolerations for pod assignment
-## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 tolerations:
 - key: node-role.kubernetes.io/bootstrap
   effect: NoSchedule
@@ -102,7 +29,11 @@ tolerations:
   operator: Exists
 
 # Extra volumes to scrape logs from
-volumes:
+daemonSetVolumes:
+# /run/fluent-bit is used for fluent-bit DB
+- name: run
+  hostPath:
+    path: /run/fluent-bit
 - name: varlog
   hostPath:
     path: /var/log
@@ -111,7 +42,9 @@ volumes:
   hostPath:
     path: /run/log
 
-volumeMounts:
+daemonSetVolumeMounts:
+- name: run
+  mountPath: /run/fluent-bit
 - name: varlog
   mountPath: /var/log
   readOnly: true
@@ -120,12 +53,6 @@ volumeMounts:
   readOnly: true
 
 serviceMonitor:
-  # Disabled for the moment as http_server does not work with current
-  # fluent-bit version + kubernetes version
-  # See: https://github.com/fluent/fluent-bit/issues/4063
-  enabled: false
-  interval: ""
-  additionalLabels:
+  enabled: true
+  selector:
     metalk8s.scality.com/monitor: ''
-  annotations: {}
-  # scrapeTimeout: 10s

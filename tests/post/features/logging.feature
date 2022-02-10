@@ -7,7 +7,7 @@ Feature: Logging stack is up and running
   Scenario: Expected Pods
     Given the Kubernetes API is available
     Then we have 1 running pod labeled 'app=loki' in namespace 'metalk8s-logging'
-    And we have 1 running pod labeled 'app=fluent-bit' in namespace 'metalk8s-logging' on node 'bootstrap'
+    And we have 1 running pod labeled 'app.kubernetes.io/name=fluent-bit' in namespace 'metalk8s-logging' on node 'bootstrap'
 
   Scenario: Pushing log to Loki directly
     Given the Kubernetes API is available

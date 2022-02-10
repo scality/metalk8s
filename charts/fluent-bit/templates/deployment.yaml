@@ -1,6 +1,6 @@
-{{- if eq .Values.kind "DaemonSet" }}
+{{- if eq .Values.kind "Deployment" }}
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
   name: {{ include "fluent-bit.fullname" . }}
   labels:
@@ -13,13 +13,16 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  {{- with .Values.updateStrategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "fluent-bit.selectorLabels" . | nindent 6 }}
-  {{- with .Values.updateStrategy }}
-  updateStrategy:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
   template:
     metadata:
       annotations:

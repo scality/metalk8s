@@ -185,7 +185,7 @@ def retrieve_pod_logs_from_loki(k8s_client, pod_creation_ts):
 
     utils.retry(
         _check_log_line_exists,
-        times=40,
+        times=60,
         wait=5,
         name="check that a log exists for 'logger' pod",
     )

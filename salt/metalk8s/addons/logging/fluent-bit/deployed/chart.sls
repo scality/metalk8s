@@ -6,54 +6,17 @@
 
 {% raw %}
 
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  labels:
-    app: fluent-bit
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: fluent-bit
-    app.kubernetes.io/part-of: metalk8s
-    chart: fluent-bit-2.2.0
-    heritage: metalk8s
-    release: fluent-bit
-  name: fluent-bit
-  namespace: metalk8s-logging
-spec:
-  allowPrivilegeEscalation: false
-  fsGroup:
-    rule: RunAsAny
-  hostIPC: false
-  hostNetwork: false
-  hostPID: false
-  privileged: false
-  readOnlyRootFilesystem: true
-  requiredDropCapabilities:
-  - ALL
-  runAsUser:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    rule: RunAsAny
-  volumes:
-  - secret
-  - configMap
-  - hostPath
-  - projected
-  - downwardAPI
----
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
-    app: fluent-bit
+    app.kubernetes.io/instance: fluent-bit
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    chart: fluent-bit-2.2.0
+    app.kubernetes.io/version: 1.8.12
+    helm.sh/chart: fluent-bit-0.19.19
     heritage: metalk8s
-    release: fluent-bit
   name: fluent-bit
   namespace: metalk8s-logging
 ---
@@ -61,14 +24,14 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    app: fluent-bit
+    app.kubernetes.io/instance: fluent-bit
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    chart: fluent-bit-2.2.0
+    app.kubernetes.io/version: 1.8.12
+    helm.sh/chart: fluent-bit-0.19.19
     heritage: metalk8s
-    release: fluent-bit
-  name: fluent-bit-clusterrole
+  name: fluent-bit
   namespace: metalk8s-logging
 rules:
 - apiGroups:
@@ -78,122 +41,112 @@ rules:
   - pods
   verbs:
   - get
-  - watch
   - list
+  - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
-    app: fluent-bit
+    app.kubernetes.io/instance: fluent-bit
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    chart: fluent-bit-2.2.0
+    app.kubernetes.io/version: 1.8.12
+    helm.sh/chart: fluent-bit-0.19.19
     heritage: metalk8s
-    release: fluent-bit
-  name: fluent-bit-clusterrolebinding
+  name: fluent-bit
   namespace: metalk8s-logging
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: fluent-bit-clusterrole
+  name: fluent-bit
 subjects:
 - kind: ServiceAccount
   name: fluent-bit
   namespace: metalk8s-logging
 ---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+apiVersion: v1
+kind: Service
 metadata:
   labels:
-    app: fluent-bit
+    app.kubernetes.io/instance: fluent-bit
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    chart: fluent-bit-2.2.0
+    app.kubernetes.io/version: 1.8.12
+    helm.sh/chart: fluent-bit-0.19.19
     heritage: metalk8s
-    release: fluent-bit
   name: fluent-bit
   namespace: metalk8s-logging
-rules:
-- apiGroups:
-  - extensions
-  resourceNames:
-  - fluent-bit
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  labels:
-    app: fluent-bit
-    app.kubernetes.io/managed-by: salt
+spec:
+  ports:
+  - name: http
+    port: 2020
+    protocol: TCP
+    targetPort: http
+  selector:
+    app.kubernetes.io/instance: fluent-bit
     app.kubernetes.io/name: fluent-bit
-    app.kubernetes.io/part-of: metalk8s
-    chart: fluent-bit-2.2.0
-    heritage: metalk8s
-    release: fluent-bit
-  name: fluent-bit
-  namespace: metalk8s-logging
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: fluent-bit
-subjects:
-- kind: ServiceAccount
-  name: fluent-bit
+  type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  annotations: {}
   labels:
-    app: fluent-bit
+    app.kubernetes.io/instance: fluent-bit
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    chart: fluent-bit-2.2.0
+    app.kubernetes.io/version: 1.8.12
+    helm.sh/chart: fluent-bit-0.19.19
     heritage: metalk8s
-    release: fluent-bit
   name: fluent-bit
   namespace: metalk8s-logging
 spec:
   selector:
     matchLabels:
-      app: fluent-bit
-      release: fluent-bit
+      app.kubernetes.io/instance: fluent-bit
+      app.kubernetes.io/name: fluent-bit
   template:
     metadata:
       annotations:
-        checksum/config: 7f6f78193f3a6250a31fdc23769553e5afb6a6831286b03f617c2853a535ff75
+        checksum/config: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        checksum/luascripts: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
         prometheus.io/path: /api/v1/metrics/prometheus
         prometheus.io/port: '2020'
         prometheus.io/scrape: 'true'
       labels:
-        app: fluent-bit
-        release: fluent-bit
+        app.kubernetes.io/instance: fluent-bit
+        app.kubernetes.io/name: fluent-bit
     spec:
-      affinity: {}
       containers:
-      - image: {% endraw -%}{{ build_image_name("fluent-bit-plugin-loki", False) }}{%- raw %}:2.1.0-amd64
+      - image: {% endraw -%}{{ build_image_name("fluent-bit", False) }}{%- raw %}:1.8.12
         imagePullPolicy: IfNotPresent
-        name: fluent-bit-loki
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+        name: fluent-bit
         ports:
         - containerPort: 2020
-          name: http-metrics
+          name: http
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: http
         resources:
-          limits:
-            memory: 100Mi
           requests:
             cpu: 100m
             memory: 100Mi
         volumeMounts:
-        - mountPath: /fluent-bit/etc
+        - mountPath: /fluent-bit/etc/fluent-bit.conf
           name: config
+          subPath: fluent-bit.conf
+        - mountPath: /fluent-bit/etc/custom_parsers.conf
+          name: config
+          subPath: custom_parsers.conf
         - mountPath: /run/fluent-bit
           name: run
         - mountPath: /var/log
@@ -202,9 +155,9 @@ spec:
         - mountPath: /run/log
           name: runlog
           readOnly: true
-      nodeSelector: {}
+      dnsPolicy: ClusterFirst
+      hostNetwork: false
       serviceAccountName: fluent-bit
-      terminationGracePeriodSeconds: 10
       tolerations:
       - effect: NoSchedule
         key: node-role.kubernetes.io/bootstrap
@@ -231,7 +184,31 @@ spec:
       - hostPath:
           path: /run/log
         name: runlog
-  updateStrategy:
-    type: RollingUpdate
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/instance: fluent-bit
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: fluent-bit
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 1.8.12
+    helm.sh/chart: fluent-bit-0.19.19
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+  name: fluent-bit
+  namespace: metalk8s-logging
+spec:
+  endpoints:
+  - path: /api/v1/metrics/prometheus
+    port: http
+  namespaceSelector:
+    matchNames:
+    - metalk8s-logging
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: fluent-bit
+      app.kubernetes.io/name: fluent-bit
 
 {% endraw %}
