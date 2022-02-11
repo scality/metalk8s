@@ -125,7 +125,9 @@ imagePullSecrets:
   - name: {{ . }}
 {{- end}}
 {{- end }}
+{{- if not .Values.enableKubeBackwardCompatibility }}
 enableServiceLinks: {{ .Values.enableServiceLinks }}
+{{- end }}
 containers:
 {{- if .Values.sidecar.dashboards.enabled }}
   - name: {{ template "grafana.name" . }}-sc-dashboard
@@ -214,24 +216,26 @@ containers:
       - name: SKIP_TLS_VERIFY
         value: "{{ .Values.sidecar.skipTlsVerify }}"
       {{- end }}
-      {{- if not .Values.env.GF_SECURITY_ADMIN_USER }}
+      {{- if and (not .Values.env.GF_SECURITY_ADMIN_USER) (not .Values.env.GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION) }}
       - name: REQ_USERNAME
         valueFrom:
           secretKeyRef:
             name: {{ .Values.admin.existingSecret | default (include "grafana.fullname" .) }}
             key: {{ .Values.admin.userKey | default "admin-user" }}
       {{- end }}
-      {{- if and (not .Values.env.GF_SECURITY_ADMIN_PASSWORD) (not .Values.env.GF_SECURITY_ADMIN_PASSWORD__FILE) }}
+      {{- if and (not .Values.env.GF_SECURITY_ADMIN_PASSWORD) (not .Values.env.GF_SECURITY_ADMIN_PASSWORD__FILE) (not .Values.env.GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION) }}
       - name: REQ_PASSWORD
         valueFrom:
           secretKeyRef:
             name: {{ .Values.admin.existingSecret | default (include "grafana.fullname" .) }}
             key: {{ .Values.admin.passwordKey | default "admin-password" }}
       {{- end }}
+      {{- if not .Values.sidecar.datasources.skipReload }}
       - name: REQ_URL
         value: {{ .Values.sidecar.datasources.reloadURL }}
       - name: REQ_METHOD
         value: POST
+      {{- end }}
     resources:
 {{ toYaml .Values.sidecar.resources | indent 6 }}
 {{- if .Values.sidecar.securityContext }}
@@ -391,12 +395,12 @@ containers:
             name: {{ .Values.smtp.existingSecret }}
             key: {{ .Values.smtp.passwordKey | default "password" }}
       {{- end }}
-      {{ if .Values.imageRenderer.enabled }}
+      {{- if .Values.imageRenderer.enabled }}
       - name: GF_RENDERING_SERVER_URL
         value: http://{{ template "grafana.fullname" . }}-image-renderer.{{ template "grafana.namespace" . }}:{{ .Values.imageRenderer.service.port }}/render
       - name: GF_RENDERING_CALLBACK_URL
-        value: http://{{ template "grafana.fullname" . }}.{{ template "grafana.namespace" . }}:{{ .Values.service.port }}/{{ .Values.imageRenderer.grafanaSubPath }}
-      {{ end }}
+        value: {{ .Values.imageRenderer.grafanaProtocol }}://{{ template "grafana.fullname" . }}.{{ template "grafana.namespace" . }}:{{ .Values.service.port }}/{{ .Values.imageRenderer.grafanaSubPath }}
+      {{- end }}
       - name: GF_PATHS_DATA
         value: {{ (get .Values "grafana.ini").paths.data }}
       - name: GF_PATHS_LOGS

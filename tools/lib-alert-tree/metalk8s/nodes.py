@@ -38,7 +38,6 @@ NODE_WARNING, NODE_CRITICAL = severity_pair(
         Existing.warning("KubeletPodStartUpLatencyHigh"),
         Existing.warning("KubeletServerCertificateExpiration"),
         Existing.warning("KubeletServerCertificateRenewalErrors"),
-        Existing.warning("KubeletTooManyPods"),
         Existing.warning("NodeClockNotSynchronising"),
         Existing.warning("NodeClockSkewDetected"),
         Existing.warning("NodeRAIDDiskFailure"),

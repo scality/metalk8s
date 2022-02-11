@@ -75,13 +75,24 @@ spec:
                       items:
                         description: Matcher defines how to match on alert's labels.
                         properties:
+                          matchType:
+                            description: Match operation available with AlertManager
+                              >= v0.22.0 and takes precedence over Regex (deprecated)
+                              if non-empty.
+                            enum:
+                            - '!='
+                            - '='
+                            - =~
+                            - '!~'
+                            type: string
                           name:
                             description: Label to match.
                             minLength: 1
                             type: string
                           regex:
                             description: Whether to match on equality (false) or regular-expression
-                              (true).
+                              (true). Deprecated as of AlertManager >= v0.22.0 where
+                              a user should use MatchType instead.
                             type: boolean
                           value:
                             description: Label value to match.
@@ -97,19 +108,112 @@ spec:
                       items:
                         description: Matcher defines how to match on alert's labels.
                         properties:
+                          matchType:
+                            description: Match operation available with AlertManager
+                              >= v0.22.0 and takes precedence over Regex (deprecated)
+                              if non-empty.
+                            enum:
+                            - '!='
+                            - '='
+                            - =~
+                            - '!~'
+                            type: string
                           name:
                             description: Label to match.
                             minLength: 1
                             type: string
                           regex:
                             description: Whether to match on equality (false) or regular-expression
-                              (true).
+                              (true). Deprecated as of AlertManager >= v0.22.0 where
+                              a user should use MatchType instead.
                             type: boolean
                           value:
                             description: Label value to match.
                             type: string
                         required:
                         - name
+                        type: object
+                      type: array
+                  type: object
+                type: array
+              muteTimeIntervals:
+                description: List of MuteTimeInterval specifying when the routes should
+                  be muted.
+                items:
+                  description: MuteTimeInterval specifies the periods in time when
+                    notifications will be muted
+                  properties:
+                    name:
+                      description: Name of the time interval
+                      type: string
+                    timeIntervals:
+                      description: TimeIntervals is a list of TimeInterval
+                      items:
+                        description: TimeInterval describes intervals of time
+                        properties:
+                          daysOfMonth:
+                            description: DaysOfMonth is a list of DayOfMonthRange
+                            items:
+                              description: DayOfMonthRange is an inclusive range of
+                                days of the month beginning at 1
+                              properties:
+                                end:
+                                  description: End of the inclusive range
+                                  maximum: 31
+                                  minimum: -31
+                                  type: integer
+                                start:
+                                  description: Start of the inclusive range
+                                  maximum: 31
+                                  minimum: -31
+                                  type: integer
+                              type: object
+                            type: array
+                          months:
+                            description: Months is a list of MonthRange
+                            items:
+                              description: MonthRange is an inclusive range of months
+                                of the year beginning in January Months can be specified
+                                by name (e.g 'January') by numerical month (e.g '1')
+                                or as an inclusive range (e.g 'January:March', '1:3',
+                                '1:March')
+                              pattern: ^((?i)january|february|march|april|may|june|july|august|september|october|november|december|[1-12])(?:((:((?i)january|february|march|april|may|june|july|august|september|october|november|december|[1-12]))$)|$)
+                              type: string
+                            type: array
+                          times:
+                            description: Times is a list of TimeRange
+                            items:
+                              description: TimeRange defines a start and end time
+                                in 24hr format
+                              properties:
+                                endTime:
+                                  description: EndTime is the end time in 24hr format.
+                                  pattern: ^((([01][0-9])|(2[0-3])):[0-5][0-9])$|(^24:00$)
+                                  type: string
+                                startTime:
+                                  description: StartTime is the start time in 24hr
+                                    format.
+                                  pattern: ^((([01][0-9])|(2[0-3])):[0-5][0-9])$|(^24:00$)
+                                  type: string
+                              type: object
+                            type: array
+                          weekdays:
+                            description: Weekdays is a list of WeekdayRange
+                            items:
+                              description: WeekdayRange is an inclusive range of days
+                                of the week beginning on Sunday Days can be specified
+                                by name (e.g 'Sunday') or as an inclusive range (e.g
+                                'Monday:Friday')
+                              pattern: ^((?i)sun|mon|tues|wednes|thurs|fri|satur)day(?:((:(sun|mon|tues|wednes|thurs|fri|satur)day)$)|$)
+                              type: string
+                            type: array
+                          years:
+                            description: Years is a list of YearRange
+                            items:
+                              description: YearRange is an inclusive range of years
+                              pattern: ^2\d{3}(?::2\d{3}|$)
+                              type: string
+                            type: array
                         type: object
                       type: array
                   type: object
@@ -964,6 +1068,43 @@ spec:
                                     type: string
                                 type: object
                             type: object
+                          pagerDutyImageConfigs:
+                            description: A list of image details to attach that provide
+                              further detail about an incident.
+                            items:
+                              description: PagerDutyImageConfig attaches images to
+                                an incident
+                              properties:
+                                alt:
+                                  description: Alt is the optional alternative text
+                                    for the image.
+                                  type: string
+                                href:
+                                  description: Optional URL; makes the image a clickable
+                                    link.
+                                  type: string
+                                src:
+                                  description: Src of the image being attached to
+                                    the incident
+                                  type: string
+                              type: object
+                            type: array
+                          pagerDutyLinkConfigs:
+                            description: A list of link details to attach that provide
+                              further detail about an incident.
+                            items:
+                              description: PagerDutyLinkConfig attaches text links
+                                to an incident
+                              properties:
+                                alt:
+                                  description: Text that describes the purpose of
+                                    the link, and can be used as the link's text.
+                                  type: string
+                                href:
+                                  description: Href is the URL of the link to be attached
+                                  type: string
+                              type: object
+                            type: array
                           routingKey:
                             description: The secret's key that contains the PagerDuty
                               integration key (when using Events API v2). Either this
@@ -1032,6 +1173,7 @@ spec:
                             description: How long your notification will continue
                               to be retried for, unless the user acknowledges the
                               notification.
+                            pattern: ^(([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?$
                             type: string
                           html:
                             description: Whether notification message is HTML or plain
@@ -1284,6 +1426,7 @@ spec:
                             description: How often the Pushover servers will send
                               the same notification to the user. Must be at least
                               30 seconds.
+                            pattern: ^(([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?$
                             type: string
                           sendResolved:
                             description: Whether or not to notify about resolved alerts.
@@ -1727,6 +1870,348 @@ spec:
                           titleLink:
                             type: string
                           username:
+                            type: string
+                        type: object
+                      type: array
+                    snsConfigs:
+                      description: List of SNS configurations
+                      items:
+                        description: SNSConfig configures notifications via AWS SNS.
+                          See https://prometheus.io/docs/alerting/latest/configuration/#sns_configs
+                        properties:
+                          apiURL:
+                            description: The SNS API URL i.e. https://sns.us-east-2.amazonaws.com.
+                              If not specified, the SNS API URL from the SNS SDK will
+                              be used.
+                            type: string
+                          attributes:
+                            additionalProperties:
+                              type: string
+                            description: SNS message attributes.
+                            type: object
+                          httpConfig:
+                            description: HTTP client configuration.
+                            properties:
+                              authorization:
+                                description: Authorization header configuration for
+                                  the client. This is mutually exclusive with BasicAuth
+                                  and is only available starting from Alertmanager
+                                  v0.22+.
+                                properties:
+                                  credentials:
+                                    description: The secret's key that contains the
+                                      credentials of the request
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  type:
+                                    description: Set the authentication type. Defaults
+                                      to Bearer, Basic will cause an error
+                                    type: string
+                                type: object
+                              basicAuth:
+                                description: BasicAuth for the client. This is mutually
+                                  exclusive with Authorization. If both are defined,
+                                  BasicAuth takes precedence.
+                                properties:
+                                  password:
+                                    description: The secret in the service monitor
+                                      namespace that contains the password for authentication.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  username:
+                                    description: The secret in the service monitor
+                                      namespace that contains the username for authentication.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                type: object
+                              bearerTokenSecret:
+                                description: The secret's key that contains the bearer
+                                  token to be used by the client for authentication.
+                                  The secret needs to be in the same namespace as
+                                  the AlertmanagerConfig object and accessible by
+                                  the Prometheus Operator.
+                                properties:
+                                  key:
+                                    description: The key of the secret to select from.  Must
+                                      be a valid secret key.
+                                    type: string
+                                  name:
+                                    description: 'Name of the referent. More info:
+                                      https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                      TODO: Add other useful fields. apiVersion, kind,
+                                      uid?'
+                                    type: string
+                                  optional:
+                                    description: Specify whether the Secret or its
+                                      key must be defined
+                                    type: boolean
+                                required:
+                                - key
+                                type: object
+                              proxyURL:
+                                description: Optional proxy URL.
+                                type: string
+                              tlsConfig:
+                                description: TLS configuration for the client.
+                                properties:
+                                  ca:
+                                    description: Struct containing the CA cert to
+                                      use for the targets.
+                                    properties:
+                                      configMap:
+                                        description: ConfigMap containing data to
+                                          use for the targets.
+                                        properties:
+                                          key:
+                                            description: The key to select.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the ConfigMap
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                      secret:
+                                        description: Secret containing data to use
+                                          for the targets.
+                                        properties:
+                                          key:
+                                            description: The key of the secret to
+                                              select from.  Must be a valid secret
+                                              key.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                    type: object
+                                  cert:
+                                    description: Struct containing the client cert
+                                      file for the targets.
+                                    properties:
+                                      configMap:
+                                        description: ConfigMap containing data to
+                                          use for the targets.
+                                        properties:
+                                          key:
+                                            description: The key to select.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the ConfigMap
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                      secret:
+                                        description: Secret containing data to use
+                                          for the targets.
+                                        properties:
+                                          key:
+                                            description: The key of the secret to
+                                              select from.  Must be a valid secret
+                                              key.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                    type: object
+                                  insecureSkipVerify:
+                                    description: Disable target certificate validation.
+                                    type: boolean
+                                  keySecret:
+                                    description: Secret containing the client key
+                                      file for the targets.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                  serverName:
+                                    description: Used to verify the hostname for the
+                                      targets.
+                                    type: string
+                                type: object
+                            type: object
+                          message:
+                            description: The message content of the SNS notification.
+                            type: string
+                          phoneNumber:
+                            description: Phone number if message is delivered via
+                              SMS in E.164 format. If you don't specify this value,
+                              you must specify a value for the TopicARN or TargetARN.
+                            type: string
+                          sendResolved:
+                            description: Whether or not to notify about resolved alerts.
+                            type: boolean
+                          sigv4:
+                            description: Configures AWS's Signature Verification 4
+                              signing process to sign requests.
+                            properties:
+                              accessKey:
+                                description: AccessKey is the AWS API key. If blank,
+                                  the environment variable `AWS_ACCESS_KEY_ID` is
+                                  used.
+                                properties:
+                                  key:
+                                    description: The key of the secret to select from.  Must
+                                      be a valid secret key.
+                                    type: string
+                                  name:
+                                    description: 'Name of the referent. More info:
+                                      https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                      TODO: Add other useful fields. apiVersion, kind,
+                                      uid?'
+                                    type: string
+                                  optional:
+                                    description: Specify whether the Secret or its
+                                      key must be defined
+                                    type: boolean
+                                required:
+                                - key
+                                type: object
+                              profile:
+                                description: Profile is the named AWS profile used
+                                  to authenticate.
+                                type: string
+                              region:
+                                description: Region is the AWS region. If blank, the
+                                  region from the default credentials chain used.
+                                type: string
+                              roleArn:
+                                description: RoleArn is the named AWS profile used
+                                  to authenticate.
+                                type: string
+                              secretKey:
+                                description: SecretKey is the AWS API secret. If blank,
+                                  the environment variable `AWS_SECRET_ACCESS_KEY`
+                                  is used.
+                                properties:
+                                  key:
+                                    description: The key of the secret to select from.  Must
+                                      be a valid secret key.
+                                    type: string
+                                  name:
+                                    description: 'Name of the referent. More info:
+                                      https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                      TODO: Add other useful fields. apiVersion, kind,
+                                      uid?'
+                                    type: string
+                                  optional:
+                                    description: Specify whether the Secret or its
+                                      key must be defined
+                                    type: boolean
+                                required:
+                                - key
+                                type: object
+                            type: object
+                          subject:
+                            description: Subject line when the message is delivered
+                              to email endpoints.
+                            type: string
+                          targetARN:
+                            description: The  mobile platform endpoint ARN if message
+                              is delivered via mobile notifications. If you don't
+                              specify this value, you must specify a value for the
+                              topic_arn or PhoneNumber.
+                            type: string
+                          topicARN:
+                            description: SNS topic ARN, i.e. arn:aws:sns:us-east-2:698519295917:My-Topic
+                              If you don't specify this value, you must specify a
+                              value for the PhoneNumber or TargetARN.
                             type: string
                         type: object
                       type: array
@@ -2626,19 +3111,21 @@ spec:
                       to true for the first-level route by the Prometheus operator.
                     type: boolean
                   groupBy:
-                    description: List of labels to group by.
+                    description: List of labels to group by. Labels must not be repeated
+                      (unique list). Special label "..." (aggregate by all possible
+                      labels), if provided, must be the only element in the list.
                     items:
                       type: string
                     type: array
                   groupInterval:
-                    description: How long to wait before sending an updated notification.
-                      Must match the regular expression `[0-9]+(ms|s|m|h)` (milliseconds
-                      seconds minutes hours).
+                    description: 'How long to wait before sending an updated notification.
+                      Must match the regular expression`^(([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?$`
+                      Example: "5m"'
                     type: string
                   groupWait:
-                    description: How long to wait before sending the initial notification.
-                      Must match the regular expression `[0-9]+(ms|s|m|h)` (milliseconds
-                      seconds minutes hours).
+                    description: 'How long to wait before sending the initial notification.
+                      Must match the regular expression`^(([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?$`
+                      Example: "30s"'
                     type: string
                   matchers:
                     description: "List of matchers that the alert\u2019s labels should\
@@ -2648,13 +3135,24 @@ spec:
                     items:
                       description: Matcher defines how to match on alert's labels.
                       properties:
+                        matchType:
+                          description: Match operation available with AlertManager
+                            >= v0.22.0 and takes precedence over Regex (deprecated)
+                            if non-empty.
+                          enum:
+                          - '!='
+                          - '='
+                          - =~
+                          - '!~'
+                          type: string
                         name:
                           description: Label to match.
                           minLength: 1
                           type: string
                         regex:
                           description: Whether to match on equality (false) or regular-expression
-                            (true).
+                            (true). Deprecated as of AlertManager >= v0.22.0 where
+                            a user should use MatchType instead.
                           type: boolean
                         value:
                           description: Label value to match.
@@ -2663,14 +3161,27 @@ spec:
                       - name
                       type: object
                     type: array
+                  muteTimeIntervals:
+                    description: 'Note: this comment applies to the field definition
+                      above but appears below otherwise it gets included in the generated
+                      manifest. CRD schema doesn''t support self-referential types
+                      for now (see https://github.com/kubernetes/kubernetes/issues/62872).
+                      We have to use an alternative type to circumvent the limitation.
+                      The downside is that the Kube API can''t validate the data beyond
+                      the fact that it is a valid JSON representation. MuteTimeIntervals
+                      is a list of MuteTimeInterval names that will mute this route
+                      when matched,'
+                    items:
+                      type: string
+                    type: array
                   receiver:
                     description: Name of the receiver for this route. If not empty,
                       it should be listed in the `receivers` field.
                     type: string
                   repeatInterval:
-                    description: How long to wait before repeating the last notification.
-                      Must match the regular expression `[0-9]+(ms|s|m|h)` (milliseconds
-                      seconds minutes hours).
+                    description: 'How long to wait before repeating the last notification.
+                      Must match the regular expression`^(([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?$`
+                      Example: "4h"'
                     type: string
                   routes:
                     description: Child routes.
@@ -3916,8 +4427,7 @@ spec:
                             info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
                           properties:
                             exec:
-                              description: One and only one of the following should
-                                be specified. Exec specifies the action to take.
+                              description: Exec specifies the action to take.
                               properties:
                                 command:
                                   description: Command is the command line to execute
@@ -3978,9 +4488,10 @@ spec:
                               - port
                               type: object
                             tcpSocket:
-                              description: 'TCPSocket specifies an action involving
-                                a TCP port. TCP hooks not yet supported TODO: implement
-                                a realistic TCP lifecycle hook'
+                              description: Deprecated. TCPSocket is NOT supported
+                                as a LifecycleHandler and kept for the backward compatibility.
+                                There are no validation of this field and lifecycle
+                                hooks will fail in runtime when tcp handler is specified.
                               properties:
                                 host:
                                   description: 'Optional: Host name to connect to,
@@ -4003,18 +4514,16 @@ spec:
                             is terminated due to an API request or management event
                             such as liveness/startup probe failure, preemption, resource
                             contention, etc. The handler is not called if the container
-                            crashes or exits. The reason for termination is passed
-                            to the handler. The Pod''s termination grace period countdown
-                            begins before the PreStop hooked is executed. Regardless
-                            of the outcome of the handler, the container will eventually
-                            terminate within the Pod''s termination grace period.
-                            Other management of the container blocks until the hook
-                            completes or until the termination grace period is reached.
-                            More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
+                            crashes or exits. The Pod''s termination grace period
+                            countdown begins before the PreStop hook is executed.
+                            Regardless of the outcome of the handler, the container
+                            will eventually terminate within the Pod''s termination
+                            grace period (unless delayed by finalizers). Other management
+                            of the container blocks until the hook completes or until
+                            the termination grace period is reached. More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
                           properties:
                             exec:
-                              description: One and only one of the following should
-                                be specified. Exec specifies the action to take.
+                              description: Exec specifies the action to take.
                               properties:
                                 command:
                                   description: Command is the command line to execute
@@ -4075,9 +4584,10 @@ spec:
                               - port
                               type: object
                             tcpSocket:
-                              description: 'TCPSocket specifies an action involving
-                                a TCP port. TCP hooks not yet supported TODO: implement
-                                a realistic TCP lifecycle hook'
+                              description: Deprecated. TCPSocket is NOT supported
+                                as a LifecycleHandler and kept for the backward compatibility.
+                                There are no validation of this field and lifecycle
+                                hooks will fail in runtime when tcp handler is specified.
                               properties:
                                 host:
                                   description: 'Optional: Host name to connect to,
@@ -4102,8 +4612,7 @@ spec:
                         info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
-                          description: One and only one of the following should be
-                            specified. Exec specifies the action to take.
+                          description: Exec specifies the action to take.
                           properties:
                             command:
                               description: Command is the command line to execute
@@ -4124,6 +4633,25 @@ spec:
                             to 3. Minimum value is 1.
                           format: int32
                           type: integer
+                        grpc:
+                          description: GRPC specifies an action involving a GRPC port.
+                            This is an alpha field and requires enabling GRPCContainerProbe
+                            feature gate.
+                          properties:
+                            port:
+                              description: Port number of the gRPC service. Number
+                                must be in the range 1 to 65535.
+                              format: int32
+                              type: integer
+                            service:
+                              description: "Service is the name of the service to\
+                                \ place in the gRPC HealthCheckRequest (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).\
+                                \ \n If this is not specified, the default behavior\
+                                \ is defined by gRPC."
+                              type: string
+                          required:
+                          - port
+                          type: object
                         httpGet:
                           description: HTTPGet specifies the http request to perform.
                           properties:
@@ -4187,9 +4715,8 @@ spec:
                           format: int32
                           type: integer
                         tcpSocket:
-                          description: 'TCPSocket specifies an action involving a
-                            TCP port. TCP hooks not yet supported TODO: implement
-                            a realistic TCP lifecycle hook'
+                          description: TCPSocket specifies an action involving a TCP
+                            port.
                           properties:
                             host:
                               description: 'Optional: Host name to connect to, defaults
@@ -4287,8 +4814,7 @@ spec:
                         fails. Cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
-                          description: One and only one of the following should be
-                            specified. Exec specifies the action to take.
+                          description: Exec specifies the action to take.
                           properties:
                             command:
                               description: Command is the command line to execute
@@ -4309,6 +4835,25 @@ spec:
                             to 3. Minimum value is 1.
                           format: int32
                           type: integer
+                        grpc:
+                          description: GRPC specifies an action involving a GRPC port.
+                            This is an alpha field and requires enabling GRPCContainerProbe
+                            feature gate.
+                          properties:
+                            port:
+                              description: Port number of the gRPC service. Number
+                                must be in the range 1 to 65535.
+                              format: int32
+                              type: integer
+                            service:
+                              description: "Service is the name of the service to\
+                                \ place in the gRPC HealthCheckRequest (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).\
+                                \ \n If this is not specified, the default behavior\
+                                \ is defined by gRPC."
+                              type: string
+                          required:
+                          - port
+                          type: object
                         httpGet:
                           description: HTTPGet specifies the http request to perform.
                           properties:
@@ -4372,9 +4917,8 @@ spec:
                           format: int32
                           type: integer
                         tcpSocket:
-                          description: 'TCPSocket specifies an action involving a
-                            TCP port. TCP hooks not yet supported TODO: implement
-                            a realistic TCP lifecycle hook'
+                          description: TCPSocket specifies an action involving a TCP
+                            port.
                           properties:
                             host:
                               description: 'Optional: Host name to connect to, defaults
@@ -4455,12 +4999,14 @@ spec:
                             This bool directly controls if the no_new_privs flag will
                             be set on the container process. AllowPrivilegeEscalation
                             is true always when the container is: 1) run as Privileged
-                            2) has CAP_SYS_ADMIN'
+                            2) has CAP_SYS_ADMIN Note that this field cannot be set
+                            when spec.os.name is windows.'
                           type: boolean
                         capabilities:
                           description: The capabilities to add/drop when running containers.
                             Defaults to the default set of capabilities granted by
-                            the container runtime.
+                            the container runtime. Note that this field cannot be
+                            set when spec.os.name is windows.
                           properties:
                             add:
                               description: Added capabilities
@@ -4480,25 +5026,29 @@ spec:
                         privileged:
                           description: Run container in privileged mode. Processes
                             in privileged containers are essentially equivalent to
-                            root on the host. Defaults to false.
+                            root on the host. Defaults to false. Note that this field
+                            cannot be set when spec.os.name is windows.
                           type: boolean
                         procMount:
                           description: procMount denotes the type of proc mount to
                             use for the containers. The default is DefaultProcMount
                             which uses the container runtime defaults for readonly
                             paths and masked paths. This requires the ProcMountType
-                            feature flag to be enabled.
+                            feature flag to be enabled. Note that this field cannot
+                            be set when spec.os.name is windows.
                           type: string
                         readOnlyRootFilesystem:
                           description: Whether this container has a read-only root
-                            filesystem. Default is false.
+                            filesystem. Default is false. Note that this field cannot
+                            be set when spec.os.name is windows.
                           type: boolean
                         runAsGroup:
                           description: The GID to run the entrypoint of the container
                             process. Uses runtime default if unset. May also be set
                             in PodSecurityContext.  If set in both SecurityContext
                             and PodSecurityContext, the value specified in SecurityContext
-                            takes precedence.
+                            takes precedence. Note that this field cannot be set when
+                            spec.os.name is windows.
                           format: int64
                           type: integer
                         runAsNonRoot:
@@ -4516,7 +5066,8 @@ spec:
                             process. Defaults to user specified in image metadata
                             if unspecified. May also be set in PodSecurityContext.  If
                             set in both SecurityContext and PodSecurityContext, the
-                            value specified in SecurityContext takes precedence.
+                            value specified in SecurityContext takes precedence. Note
+                            that this field cannot be set when spec.os.name is windows.
                           format: int64
                           type: integer
                         seLinuxOptions:
@@ -4525,7 +5076,8 @@ spec:
                             random SELinux context for each container.  May also be
                             set in PodSecurityContext.  If set in both SecurityContext
                             and PodSecurityContext, the value specified in SecurityContext
-                            takes precedence.
+                            takes precedence. Note that this field cannot be set when
+                            spec.os.name is windows.
                           properties:
                             level:
                               description: Level is SELinux level label that applies
@@ -4548,6 +5100,8 @@ spec:
                           description: The seccomp options to use by this container.
                             If seccomp options are provided at both the pod & container
                             level, the container options override the pod options.
+                            Note that this field cannot be set when spec.os.name is
+                            windows.
                           properties:
                             localhostProfile:
                               description: localhostProfile indicates a profile defined
@@ -4573,6 +5127,8 @@ spec:
                             containers. If unspecified, the options from the PodSecurityContext
                             will be used. If set in both SecurityContext and PodSecurityContext,
                             the value specified in SecurityContext takes precedence.
+                            Note that this field cannot be set when spec.os.name is
+                            linux.
                           properties:
                             gmsaCredentialSpec:
                               description: GMSACredentialSpec is where the GMSA admission
@@ -4618,8 +5174,7 @@ spec:
                         This cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
-                          description: One and only one of the following should be
-                            specified. Exec specifies the action to take.
+                          description: Exec specifies the action to take.
                           properties:
                             command:
                               description: Command is the command line to execute
@@ -4640,6 +5195,25 @@ spec:
                             to 3. Minimum value is 1.
                           format: int32
                           type: integer
+                        grpc:
+                          description: GRPC specifies an action involving a GRPC port.
+                            This is an alpha field and requires enabling GRPCContainerProbe
+                            feature gate.
+                          properties:
+                            port:
+                              description: Port number of the gRPC service. Number
+                                must be in the range 1 to 65535.
+                              format: int32
+                              type: integer
+                            service:
+                              description: "Service is the name of the service to\
+                                \ place in the gRPC HealthCheckRequest (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).\
+                                \ \n If this is not specified, the default behavior\
+                                \ is defined by gRPC."
+                              type: string
+                          required:
+                          - port
+                          type: object
                         httpGet:
                           description: HTTPGet specifies the http request to perform.
                           properties:
@@ -4703,9 +5277,8 @@ spec:
                           format: int32
                           type: integer
                         tcpSocket:
-                          description: 'TCPSocket specifies an action involving a
-                            TCP port. TCP hooks not yet supported TODO: implement
-                            a realistic TCP lifecycle hook'
+                          description: TCPSocket specifies an action involving a TCP
+                            port.
                           properties:
                             host:
                               description: 'Optional: Host name to connect to, defaults
@@ -5110,8 +5683,7 @@ spec:
                             info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
                           properties:
                             exec:
-                              description: One and only one of the following should
-                                be specified. Exec specifies the action to take.
+                              description: Exec specifies the action to take.
                               properties:
                                 command:
                                   description: Command is the command line to execute
@@ -5172,9 +5744,10 @@ spec:
                               - port
                               type: object
                             tcpSocket:
-                              description: 'TCPSocket specifies an action involving
-                                a TCP port. TCP hooks not yet supported TODO: implement
-                                a realistic TCP lifecycle hook'
+                              description: Deprecated. TCPSocket is NOT supported
+                                as a LifecycleHandler and kept for the backward compatibility.
+                                There are no validation of this field and lifecycle
+                                hooks will fail in runtime when tcp handler is specified.
                               properties:
                                 host:
                                   description: 'Optional: Host name to connect to,
@@ -5197,18 +5770,16 @@ spec:
                             is terminated due to an API request or management event
                             such as liveness/startup probe failure, preemption, resource
                             contention, etc. The handler is not called if the container
-                            crashes or exits. The reason for termination is passed
-                            to the handler. The Pod''s termination grace period countdown
-                            begins before the PreStop hooked is executed. Regardless
-                            of the outcome of the handler, the container will eventually
-                            terminate within the Pod''s termination grace period.
-                            Other management of the container blocks until the hook
-                            completes or until the termination grace period is reached.
-                            More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
+                            crashes or exits. The Pod''s termination grace period
+                            countdown begins before the PreStop hook is executed.
+                            Regardless of the outcome of the handler, the container
+                            will eventually terminate within the Pod''s termination
+                            grace period (unless delayed by finalizers). Other management
+                            of the container blocks until the hook completes or until
+                            the termination grace period is reached. More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
                           properties:
                             exec:
-                              description: One and only one of the following should
-                                be specified. Exec specifies the action to take.
+                              description: Exec specifies the action to take.
                               properties:
                                 command:
                                   description: Command is the command line to execute
@@ -5269,9 +5840,10 @@ spec:
                               - port
                               type: object
                             tcpSocket:
-                              description: 'TCPSocket specifies an action involving
-                                a TCP port. TCP hooks not yet supported TODO: implement
-                                a realistic TCP lifecycle hook'
+                              description: Deprecated. TCPSocket is NOT supported
+                                as a LifecycleHandler and kept for the backward compatibility.
+                                There are no validation of this field and lifecycle
+                                hooks will fail in runtime when tcp handler is specified.
                               properties:
                                 host:
                                   description: 'Optional: Host name to connect to,
@@ -5296,8 +5868,7 @@ spec:
                         info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
-                          description: One and only one of the following should be
-                            specified. Exec specifies the action to take.
+                          description: Exec specifies the action to take.
                           properties:
                             command:
                               description: Command is the command line to execute
@@ -5318,6 +5889,25 @@ spec:
                             to 3. Minimum value is 1.
                           format: int32
                           type: integer
+                        grpc:
+                          description: GRPC specifies an action involving a GRPC port.
+                            This is an alpha field and requires enabling GRPCContainerProbe
+                            feature gate.
+                          properties:
+                            port:
+                              description: Port number of the gRPC service. Number
+                                must be in the range 1 to 65535.
+                              format: int32
+                              type: integer
+                            service:
+                              description: "Service is the name of the service to\
+                                \ place in the gRPC HealthCheckRequest (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).\
+                                \ \n If this is not specified, the default behavior\
+                                \ is defined by gRPC."
+                              type: string
+                          required:
+                          - port
+                          type: object
                         httpGet:
                           description: HTTPGet specifies the http request to perform.
                           properties:
@@ -5381,9 +5971,8 @@ spec:
                           format: int32
                           type: integer
                         tcpSocket:
-                          description: 'TCPSocket specifies an action involving a
-                            TCP port. TCP hooks not yet supported TODO: implement
-                            a realistic TCP lifecycle hook'
+                          description: TCPSocket specifies an action involving a TCP
+                            port.
                           properties:
                             host:
                               description: 'Optional: Host name to connect to, defaults
@@ -5481,8 +6070,7 @@ spec:
                         fails. Cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
-                          description: One and only one of the following should be
-                            specified. Exec specifies the action to take.
+                          description: Exec specifies the action to take.
                           properties:
                             command:
                               description: Command is the command line to execute
@@ -5503,6 +6091,25 @@ spec:
                             to 3. Minimum value is 1.
                           format: int32
                           type: integer
+                        grpc:
+                          description: GRPC specifies an action involving a GRPC port.
+                            This is an alpha field and requires enabling GRPCContainerProbe
+                            feature gate.
+                          properties:
+                            port:
+                              description: Port number of the gRPC service. Number
+                                must be in the range 1 to 65535.
+                              format: int32
+                              type: integer
+                            service:
+                              description: "Service is the name of the service to\
+                                \ place in the gRPC HealthCheckRequest (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).\
+                                \ \n If this is not specified, the default behavior\
+                                \ is defined by gRPC."
+                              type: string
+                          required:
+                          - port
+                          type: object
                         httpGet:
                           description: HTTPGet specifies the http request to perform.
                           properties:
@@ -5566,9 +6173,8 @@ spec:
                           format: int32
                           type: integer
                         tcpSocket:
-                          description: 'TCPSocket specifies an action involving a
-                            TCP port. TCP hooks not yet supported TODO: implement
-                            a realistic TCP lifecycle hook'
+                          description: TCPSocket specifies an action involving a TCP
+                            port.
                           properties:
                             host:
                               description: 'Optional: Host name to connect to, defaults
@@ -5649,12 +6255,14 @@ spec:
                             This bool directly controls if the no_new_privs flag will
                             be set on the container process. AllowPrivilegeEscalation
                             is true always when the container is: 1) run as Privileged
-                            2) has CAP_SYS_ADMIN'
+                            2) has CAP_SYS_ADMIN Note that this field cannot be set
+                            when spec.os.name is windows.'
                           type: boolean
                         capabilities:
                           description: The capabilities to add/drop when running containers.
                             Defaults to the default set of capabilities granted by
-                            the container runtime.
+                            the container runtime. Note that this field cannot be
+                            set when spec.os.name is windows.
                           properties:
                             add:
                               description: Added capabilities
@@ -5674,25 +6282,29 @@ spec:
                         privileged:
                           description: Run container in privileged mode. Processes
                             in privileged containers are essentially equivalent to
-                            root on the host. Defaults to false.
+                            root on the host. Defaults to false. Note that this field
+                            cannot be set when spec.os.name is windows.
                           type: boolean
                         procMount:
                           description: procMount denotes the type of proc mount to
                             use for the containers. The default is DefaultProcMount
                             which uses the container runtime defaults for readonly
                             paths and masked paths. This requires the ProcMountType
-                            feature flag to be enabled.
+                            feature flag to be enabled. Note that this field cannot
+                            be set when spec.os.name is windows.
                           type: string
                         readOnlyRootFilesystem:
                           description: Whether this container has a read-only root
-                            filesystem. Default is false.
+                            filesystem. Default is false. Note that this field cannot
+                            be set when spec.os.name is windows.
                           type: boolean
                         runAsGroup:
                           description: The GID to run the entrypoint of the container
                             process. Uses runtime default if unset. May also be set
                             in PodSecurityContext.  If set in both SecurityContext
                             and PodSecurityContext, the value specified in SecurityContext
-                            takes precedence.
+                            takes precedence. Note that this field cannot be set when
+                            spec.os.name is windows.
                           format: int64
                           type: integer
                         runAsNonRoot:
@@ -5710,7 +6322,8 @@ spec:
                             process. Defaults to user specified in image metadata
                             if unspecified. May also be set in PodSecurityContext.  If
                             set in both SecurityContext and PodSecurityContext, the
-                            value specified in SecurityContext takes precedence.
+                            value specified in SecurityContext takes precedence. Note
+                            that this field cannot be set when spec.os.name is windows.
                           format: int64
                           type: integer
                         seLinuxOptions:
@@ -5719,7 +6332,8 @@ spec:
                             random SELinux context for each container.  May also be
                             set in PodSecurityContext.  If set in both SecurityContext
                             and PodSecurityContext, the value specified in SecurityContext
-                            takes precedence.
+                            takes precedence. Note that this field cannot be set when
+                            spec.os.name is windows.
                           properties:
                             level:
                               description: Level is SELinux level label that applies
@@ -5742,6 +6356,8 @@ spec:
                           description: The seccomp options to use by this container.
                             If seccomp options are provided at both the pod & container
                             level, the container options override the pod options.
+                            Note that this field cannot be set when spec.os.name is
+                            windows.
                           properties:
                             localhostProfile:
                               description: localhostProfile indicates a profile defined
@@ -5767,6 +6383,8 @@ spec:
                             containers. If unspecified, the options from the PodSecurityContext
                             will be used. If set in both SecurityContext and PodSecurityContext,
                             the value specified in SecurityContext takes precedence.
+                            Note that this field cannot be set when spec.os.name is
+                            linux.
                           properties:
                             gmsaCredentialSpec:
                               description: GMSACredentialSpec is where the GMSA admission
@@ -5812,8 +6430,7 @@ spec:
                         This cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
-                          description: One and only one of the following should be
-                            specified. Exec specifies the action to take.
+                          description: Exec specifies the action to take.
                           properties:
                             command:
                               description: Command is the command line to execute
@@ -5834,6 +6451,25 @@ spec:
                             to 3. Minimum value is 1.
                           format: int32
                           type: integer
+                        grpc:
+                          description: GRPC specifies an action involving a GRPC port.
+                            This is an alpha field and requires enabling GRPCContainerProbe
+                            feature gate.
+                          properties:
+                            port:
+                              description: Port number of the gRPC service. Number
+                                must be in the range 1 to 65535.
+                              format: int32
+                              type: integer
+                            service:
+                              description: "Service is the name of the service to\
+                                \ place in the gRPC HealthCheckRequest (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).\
+                                \ \n If this is not specified, the default behavior\
+                                \ is defined by gRPC."
+                              type: string
+                          required:
+                          - port
+                          type: object
                         httpGet:
                           description: HTTPGet specifies the http request to perform.
                           properties:
@@ -5897,9 +6533,8 @@ spec:
                           format: int32
                           type: integer
                         tcpSocket:
-                          description: 'TCPSocket specifies an action involving a
-                            TCP port. TCP hooks not yet supported TODO: implement
-                            a realistic TCP lifecycle hook'
+                          description: TCPSocket specifies an action involving a TCP
+                            port.
                           properties:
                             host:
                               description: 'Optional: Host name to connect to, defaults
@@ -6177,7 +6812,8 @@ spec:
                       \ is set (new files created in the volume will be owned by FSGroup)\
                       \ 3. The permission bits are OR'd with rw-rw---- \n If unset,\
                       \ the Kubelet will not modify the ownership and permissions\
-                      \ of any volume."
+                      \ of any volume. Note that this field cannot be set when spec.os.name\
+                      \ is windows."
                     format: int64
                     type: integer
                   fsGroupChangePolicy:
@@ -6187,13 +6823,15 @@ spec:
                       support fsGroup based ownership(and permissions). It will have
                       no effect on ephemeral volume types such as: secret, configmaps
                       and emptydir. Valid values are "OnRootMismatch" and "Always".
-                      If not specified, "Always" is used.'
+                      If not specified, "Always" is used. Note that this field cannot
+                      be set when spec.os.name is windows.'
                     type: string
                   runAsGroup:
                     description: The GID to run the entrypoint of the container process.
                       Uses runtime default if unset. May also be set in SecurityContext.  If
                       set in both SecurityContext and PodSecurityContext, the value
                       specified in SecurityContext takes precedence for that container.
+                      Note that this field cannot be set when spec.os.name is windows.
                     format: int64
                     type: integer
                   runAsNonRoot:
@@ -6210,7 +6848,8 @@ spec:
                       Defaults to user specified in image metadata if unspecified.
                       May also be set in SecurityContext.  If set in both SecurityContext
                       and PodSecurityContext, the value specified in SecurityContext
-                      takes precedence for that container.
+                      takes precedence for that container. Note that this field cannot
+                      be set when spec.os.name is windows.
                     format: int64
                     type: integer
                   seLinuxOptions:
@@ -6219,6 +6858,7 @@ spec:
                       SELinux context for each container.  May also be set in SecurityContext.  If
                       set in both SecurityContext and PodSecurityContext, the value
                       specified in SecurityContext takes precedence for that container.
+                      Note that this field cannot be set when spec.os.name is windows.
                     properties:
                       level:
                         description: Level is SELinux level label that applies to
@@ -6239,7 +6879,8 @@ spec:
                     type: object
                   seccompProfile:
                     description: The seccomp options to use by the containers in this
-                      pod.
+                      pod. Note that this field cannot be set when spec.os.name is
+                      windows.
                     properties:
                       localhostProfile:
                         description: localhostProfile indicates a profile defined
@@ -6261,7 +6902,8 @@ spec:
                   supplementalGroups:
                     description: A list of groups applied to the first process run
                       in each container, in addition to the container's primary GID.  If
-                      unspecified, no groups will be added to any container.
+                      unspecified, no groups will be added to any container. Note
+                      that this field cannot be set when spec.os.name is windows.
                     items:
                       format: int64
                       type: integer
@@ -6269,7 +6911,8 @@ spec:
                   sysctls:
                     description: Sysctls hold a list of namespaced sysctls used for
                       the pod. Pods with unsupported sysctls (by the container runtime)
-                      might fail to launch.
+                      might fail to launch. Note that this field cannot be set when
+                      spec.os.name is windows.
                     items:
                       description: Sysctl defines a kernel parameter to be set
                       properties:
@@ -6288,7 +6931,8 @@ spec:
                     description: The Windows specific settings applied to all containers.
                       If unspecified, the options within a container's SecurityContext
                       will be used. If set in both SecurityContext and PodSecurityContext,
-                      the value specified in SecurityContext takes precedence.
+                      the value specified in SecurityContext takes precedence. Note
+                      that this field cannot be set when spec.os.name is linux.
                     properties:
                       gmsaCredentialSpec:
                         description: GMSACredentialSpec is where the GMSA admission
@@ -6484,7 +7128,11 @@ spec:
                                 type: object
                               resources:
                                 description: 'Resources represents the minimum resources
-                                  the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
+                                  the volume should have. If RecoverVolumeExpansionFailure
+                                  feature is enabled users are allowed to specify
+                                  resource requirements that are lower than previous
+                                  value but must still be higher than capacity recorded
+                                  in the status field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                                 properties:
                                   limits:
                                     additionalProperties:
@@ -6699,7 +7347,11 @@ spec:
                             type: object
                           resources:
                             description: 'Resources represents the minimum resources
-                              the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
+                              the volume should have. If RecoverVolumeExpansionFailure
+                              feature is enabled users are allowed to specify resource
+                              requirements that are lower than previous value but
+                              must still be higher than capacity recorded in the status
+                              field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                             properties:
                               limits:
                                 additionalProperties:
@@ -6795,6 +7447,27 @@ spec:
                             items:
                               type: string
                             type: array
+                          allocatedResources:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: The storage resource within AllocatedResources
+                              tracks the capacity allocated to a PVC. It may be larger
+                              than the actual capacity when a volume expansion operation
+                              is requested. For storage quota, the larger value from
+                              allocatedResources and PVC.spec.resources is used. If
+                              allocatedResources is not set, PVC.spec.resources alone
+                              is used for quota calculation. If a volume expansion
+                              capacity request is lowered, allocatedResources is only
+                              lowered if there are no expansion operations in progress
+                              and if the actual volume capacity is equal or lower
+                              than the requested capacity. This is an alpha field
+                              and requires enabling RecoverVolumeExpansionFailure
+                              feature.
+                            type: object
                           capacity:
                             additionalProperties:
                               anyOf:
@@ -6846,6 +7519,13 @@ spec:
                             type: array
                           phase:
                             description: Phase represents the current phase of PersistentVolumeClaim.
+                            type: string
+                          resizeStatus:
+                            description: ResizeStatus stores status of resize operation.
+                              ResizeStatus is not set by default but when expansion
+                              is complete resizeStatus is set to empty string by resize
+                              controller or kubelet. This is an alpha field and requires
+                              enabling RecoverVolumeExpansionFailure feature.
                             type: string
                         type: object
                     type: object
@@ -6979,7 +7659,7 @@ spec:
                         tells the scheduler to schedule the pod in any location,   but
                         giving higher precedence to topologies that would help reduce
                         the   skew. A constraint is considered "Unsatisfiable" for
-                        an incoming pod if and only if every possible node assigment
+                        an incoming pod if and only if every possible node assignment
                         for that pod would violate "MaxSkew" on some topology. For
                         example, in a 3-zone cluster, MaxSkew is set to 1, and pods
                         with the same labelSelector spread as 3/1/1: | zone1 | zone2
@@ -7443,8 +8123,7 @@ spec:
                         \ driver is meant to be used that way - see the documentation\
                         \ of the driver for more information. \n A pod can use both\
                         \ types of ephemeral volumes and persistent volumes at the\
-                        \ same time. \n This is a beta feature and only available\
-                        \ when the GenericEphemeralVolume feature gate is enabled."
+                        \ same time."
                       properties:
                         volumeClaimTemplate:
                           description: "Will be used to create a stand-alone PVC to\
@@ -7561,7 +8240,11 @@ spec:
                                   type: object
                                 resources:
                                   description: 'Resources represents the minimum resources
-                                    the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
+                                    the volume should have. If RecoverVolumeExpansionFailure
+                                    feature is enabled users are allowed to specify
+                                    resource requirements that are lower than previous
+                                    value but must still be higher than capacity recorded
+                                    in the status field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                                   properties:
                                     limits:
                                       additionalProperties:
@@ -8757,8 +9440,17 @@ spec:
                           configuration. More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs'
                         properties:
                           action:
+                            default: replace
                             description: Action to perform based on regex matching.
                               Default is 'replace'
+                            enum:
+                            - replace
+                            - keep
+                            - drop
+                            - hashmod
+                            - labelmap
+                            - labeldrop
+                            - labelkeep
                             type: string
                           modulus:
                             description: Modulus to take of the hash of the source
@@ -8907,8 +9599,17 @@ spec:
                           configuration. More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs'
                         properties:
                           action:
+                            default: replace
                             description: Action to perform based on regex matching.
                               Default is 'replace'
+                            enum:
+                            - replace
+                            - keep
+                            - drop
+                            - hashmod
+                            - labelmap
+                            - labeldrop
+                            - labelkeep
                             type: string
                           modulus:
                             description: Modulus to take of the hash of the source
@@ -9309,8 +10010,17 @@ spec:
                     of Prometheus configuration. More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs'
                   properties:
                     action:
+                      default: replace
                       description: Action to perform based on regex matching. Default
                         is 'replace'
+                      enum:
+                      - replace
+                      - keep
+                      - drop
+                      - hashmod
+                      - labelmap
+                      - labeldrop
+                      - labelkeep
                       type: string
                     modulus:
                       description: Modulus to take of the hash of the source label
@@ -9495,8 +10205,17 @@ spec:
                             configuration. More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs'
                           properties:
                             action:
+                              default: replace
                               description: Action to perform based on regex matching.
                                 Default is 'replace'
+                              enum:
+                              - replace
+                              - keep
+                              - drop
+                              - hashmod
+                              - labelmap
+                              - labeldrop
+                              - labelkeep
                               type: string
                             modulus:
                               description: Modulus to take of the hash of the source
@@ -9597,8 +10316,17 @@ spec:
                             configuration. More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs'
                           properties:
                             action:
+                              default: replace
                               description: Action to perform based on regex matching.
                                 Default is 'replace'
+                              enum:
+                              - replace
+                              - keep
+                              - drop
+                              - hashmod
+                              - labelmap
+                              - labeldrop
+                              - labelkeep
                               type: string
                             modulus:
                               description: Modulus to take of the hash of the source
@@ -11399,8 +12127,7 @@ spec:
                             info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
                           properties:
                             exec:
-                              description: One and only one of the following should
-                                be specified. Exec specifies the action to take.
+                              description: Exec specifies the action to take.
                               properties:
                                 command:
                                   description: Command is the command line to execute
@@ -11461,9 +12188,10 @@ spec:
                               - port
                               type: object
                             tcpSocket:
-                              description: 'TCPSocket specifies an action involving
-                                a TCP port. TCP hooks not yet supported TODO: implement
-                                a realistic TCP lifecycle hook'
+                              description: Deprecated. TCPSocket is NOT supported
+                                as a LifecycleHandler and kept for the backward compatibility.
+                                There are no validation of this field and lifecycle
+                                hooks will fail in runtime when tcp handler is specified.
                               properties:
                                 host:
                                   description: 'Optional: Host name to connect to,
@@ -11486,18 +12214,16 @@ spec:
                             is terminated due to an API request or management event
                             such as liveness/startup probe failure, preemption, resource
                             contention, etc. The handler is not called if the container
-                            crashes or exits. The reason for termination is passed
-                            to the handler. The Pod''s termination grace period countdown
-                            begins before the PreStop hooked is executed. Regardless
-                            of the outcome of the handler, the container will eventually
-                            terminate within the Pod''s termination grace period.
-                            Other management of the container blocks until the hook
-                            completes or until the termination grace period is reached.
-                            More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
+                            crashes or exits. The Pod''s termination grace period
+                            countdown begins before the PreStop hook is executed.
+                            Regardless of the outcome of the handler, the container
+                            will eventually terminate within the Pod''s termination
+                            grace period (unless delayed by finalizers). Other management
+                            of the container blocks until the hook completes or until
+                            the termination grace period is reached. More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
                           properties:
                             exec:
-                              description: One and only one of the following should
-                                be specified. Exec specifies the action to take.
+                              description: Exec specifies the action to take.
                               properties:
                                 command:
                                   description: Command is the command line to execute
@@ -11558,9 +12284,10 @@ spec:
                               - port
                               type: object
                             tcpSocket:
-                              description: 'TCPSocket specifies an action involving
-                                a TCP port. TCP hooks not yet supported TODO: implement
-                                a realistic TCP lifecycle hook'
+                              description: Deprecated. TCPSocket is NOT supported
+                                as a LifecycleHandler and kept for the backward compatibility.
+                                There are no validation of this field and lifecycle
+                                hooks will fail in runtime when tcp handler is specified.
                               properties:
                                 host:
                                   description: 'Optional: Host name to connect to,
@@ -11585,8 +12312,7 @@ spec:
                         info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
-                          description: One and only one of the following should be
-                            specified. Exec specifies the action to take.
+                          description: Exec specifies the action to take.
                           properties:
                             command:
                               description: Command is the command line to execute
@@ -11607,6 +12333,25 @@ spec:
                             to 3. Minimum value is 1.
                           format: int32
                           type: integer
+                        grpc:
+                          description: GRPC specifies an action involving a GRPC port.
+                            This is an alpha field and requires enabling GRPCContainerProbe
+                            feature gate.
+                          properties:
+                            port:
+                              description: Port number of the gRPC service. Number
+                                must be in the range 1 to 65535.
+                              format: int32
+                              type: integer
+                            service:
+                              description: "Service is the name of the service to\
+                                \ place in the gRPC HealthCheckRequest (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).\
+                                \ \n If this is not specified, the default behavior\
+                                \ is defined by gRPC."
+                              type: string
+                          required:
+                          - port
+                          type: object
                         httpGet:
                           description: HTTPGet specifies the http request to perform.
                           properties:
@@ -11670,9 +12415,8 @@ spec:
                           format: int32
                           type: integer
                         tcpSocket:
-                          description: 'TCPSocket specifies an action involving a
-                            TCP port. TCP hooks not yet supported TODO: implement
-                            a realistic TCP lifecycle hook'
+                          description: TCPSocket specifies an action involving a TCP
+                            port.
                           properties:
                             host:
                               description: 'Optional: Host name to connect to, defaults
@@ -11770,8 +12514,7 @@ spec:
                         fails. Cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
-                          description: One and only one of the following should be
-                            specified. Exec specifies the action to take.
+                          description: Exec specifies the action to take.
                           properties:
                             command:
                               description: Command is the command line to execute
@@ -11792,6 +12535,25 @@ spec:
                             to 3. Minimum value is 1.
                           format: int32
                           type: integer
+                        grpc:
+                          description: GRPC specifies an action involving a GRPC port.
+                            This is an alpha field and requires enabling GRPCContainerProbe
+                            feature gate.
+                          properties:
+                            port:
+                              description: Port number of the gRPC service. Number
+                                must be in the range 1 to 65535.
+                              format: int32
+                              type: integer
+                            service:
+                              description: "Service is the name of the service to\
+                                \ place in the gRPC HealthCheckRequest (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).\
+                                \ \n If this is not specified, the default behavior\
+                                \ is defined by gRPC."
+                              type: string
+                          required:
+                          - port
+                          type: object
                         httpGet:
                           description: HTTPGet specifies the http request to perform.
                           properties:
@@ -11855,9 +12617,8 @@ spec:
                           format: int32
                           type: integer
                         tcpSocket:
-                          description: 'TCPSocket specifies an action involving a
-                            TCP port. TCP hooks not yet supported TODO: implement
-                            a realistic TCP lifecycle hook'
+                          description: TCPSocket specifies an action involving a TCP
+                            port.
                           properties:
                             host:
                               description: 'Optional: Host name to connect to, defaults
@@ -11938,12 +12699,14 @@ spec:
                             This bool directly controls if the no_new_privs flag will
                             be set on the container process. AllowPrivilegeEscalation
                             is true always when the container is: 1) run as Privileged
-                            2) has CAP_SYS_ADMIN'
+                            2) has CAP_SYS_ADMIN Note that this field cannot be set
+                            when spec.os.name is windows.'
                           type: boolean
                         capabilities:
                           description: The capabilities to add/drop when running containers.
                             Defaults to the default set of capabilities granted by
-                            the container runtime.
+                            the container runtime. Note that this field cannot be
+                            set when spec.os.name is windows.
                           properties:
                             add:
                               description: Added capabilities
@@ -11963,25 +12726,29 @@ spec:
                         privileged:
                           description: Run container in privileged mode. Processes
                             in privileged containers are essentially equivalent to
-                            root on the host. Defaults to false.
+                            root on the host. Defaults to false. Note that this field
+                            cannot be set when spec.os.name is windows.
                           type: boolean
                         procMount:
                           description: procMount denotes the type of proc mount to
                             use for the containers. The default is DefaultProcMount
                             which uses the container runtime defaults for readonly
                             paths and masked paths. This requires the ProcMountType
-                            feature flag to be enabled.
+                            feature flag to be enabled. Note that this field cannot
+                            be set when spec.os.name is windows.
                           type: string
                         readOnlyRootFilesystem:
                           description: Whether this container has a read-only root
-                            filesystem. Default is false.
+                            filesystem. Default is false. Note that this field cannot
+                            be set when spec.os.name is windows.
                           type: boolean
                         runAsGroup:
                           description: The GID to run the entrypoint of the container
                             process. Uses runtime default if unset. May also be set
                             in PodSecurityContext.  If set in both SecurityContext
                             and PodSecurityContext, the value specified in SecurityContext
-                            takes precedence.
+                            takes precedence. Note that this field cannot be set when
+                            spec.os.name is windows.
                           format: int64
                           type: integer
                         runAsNonRoot:
@@ -11999,7 +12766,8 @@ spec:
                             process. Defaults to user specified in image metadata
                             if unspecified. May also be set in PodSecurityContext.  If
                             set in both SecurityContext and PodSecurityContext, the
-                            value specified in SecurityContext takes precedence.
+                            value specified in SecurityContext takes precedence. Note
+                            that this field cannot be set when spec.os.name is windows.
                           format: int64
                           type: integer
                         seLinuxOptions:
@@ -12008,7 +12776,8 @@ spec:
                             random SELinux context for each container.  May also be
                             set in PodSecurityContext.  If set in both SecurityContext
                             and PodSecurityContext, the value specified in SecurityContext
-                            takes precedence.
+                            takes precedence. Note that this field cannot be set when
+                            spec.os.name is windows.
                           properties:
                             level:
                               description: Level is SELinux level label that applies
@@ -12031,6 +12800,8 @@ spec:
                           description: The seccomp options to use by this container.
                             If seccomp options are provided at both the pod & container
                             level, the container options override the pod options.
+                            Note that this field cannot be set when spec.os.name is
+                            windows.
                           properties:
                             localhostProfile:
                               description: localhostProfile indicates a profile defined
@@ -12056,6 +12827,8 @@ spec:
                             containers. If unspecified, the options from the PodSecurityContext
                             will be used. If set in both SecurityContext and PodSecurityContext,
                             the value specified in SecurityContext takes precedence.
+                            Note that this field cannot be set when spec.os.name is
+                            linux.
                           properties:
                             gmsaCredentialSpec:
                               description: GMSACredentialSpec is where the GMSA admission
@@ -12101,8 +12874,7 @@ spec:
                         This cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
-                          description: One and only one of the following should be
-                            specified. Exec specifies the action to take.
+                          description: Exec specifies the action to take.
                           properties:
                             command:
                               description: Command is the command line to execute
@@ -12123,6 +12895,25 @@ spec:
                             to 3. Minimum value is 1.
                           format: int32
                           type: integer
+                        grpc:
+                          description: GRPC specifies an action involving a GRPC port.
+                            This is an alpha field and requires enabling GRPCContainerProbe
+                            feature gate.
+                          properties:
+                            port:
+                              description: Port number of the gRPC service. Number
+                                must be in the range 1 to 65535.
+                              format: int32
+                              type: integer
+                            service:
+                              description: "Service is the name of the service to\
+                                \ place in the gRPC HealthCheckRequest (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).\
+                                \ \n If this is not specified, the default behavior\
+                                \ is defined by gRPC."
+                              type: string
+                          required:
+                          - port
+                          type: object
                         httpGet:
                           description: HTTPGet specifies the http request to perform.
                           properties:
@@ -12186,9 +12977,8 @@ spec:
                           format: int32
                           type: integer
                         tcpSocket:
-                          description: 'TCPSocket specifies an action involving a
-                            TCP port. TCP hooks not yet supported TODO: implement
-                            a realistic TCP lifecycle hook'
+                          description: TCPSocket specifies an action involving a TCP
+                            port.
                           properties:
                             host:
                               description: 'Optional: Host name to connect to, defaults
@@ -12685,8 +13475,7 @@ spec:
                             info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
                           properties:
                             exec:
-                              description: One and only one of the following should
-                                be specified. Exec specifies the action to take.
+                              description: Exec specifies the action to take.
                               properties:
                                 command:
                                   description: Command is the command line to execute
@@ -12747,9 +13536,10 @@ spec:
                               - port
                               type: object
                             tcpSocket:
-                              description: 'TCPSocket specifies an action involving
-                                a TCP port. TCP hooks not yet supported TODO: implement
-                                a realistic TCP lifecycle hook'
+                              description: Deprecated. TCPSocket is NOT supported
+                                as a LifecycleHandler and kept for the backward compatibility.
+                                There are no validation of this field and lifecycle
+                                hooks will fail in runtime when tcp handler is specified.
                               properties:
                                 host:
                                   description: 'Optional: Host name to connect to,
@@ -12772,18 +13562,16 @@ spec:
                             is terminated due to an API request or management event
                             such as liveness/startup probe failure, preemption, resource
                             contention, etc. The handler is not called if the container
-                            crashes or exits. The reason for termination is passed
-                            to the handler. The Pod''s termination grace period countdown
-                            begins before the PreStop hooked is executed. Regardless
-                            of the outcome of the handler, the container will eventually
-                            terminate within the Pod''s termination grace period.
-                            Other management of the container blocks until the hook
-                            completes or until the termination grace period is reached.
-                            More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
+                            crashes or exits. The Pod''s termination grace period
+                            countdown begins before the PreStop hook is executed.
+                            Regardless of the outcome of the handler, the container
+                            will eventually terminate within the Pod''s termination
+                            grace period (unless delayed by finalizers). Other management
+                            of the container blocks until the hook completes or until
+                            the termination grace period is reached. More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
                           properties:
                             exec:
-                              description: One and only one of the following should
-                                be specified. Exec specifies the action to take.
+                              description: Exec specifies the action to take.
                               properties:
                                 command:
                                   description: Command is the command line to execute
@@ -12844,9 +13632,10 @@ spec:
                               - port
                               type: object
                             tcpSocket:
-                              description: 'TCPSocket specifies an action involving
-                                a TCP port. TCP hooks not yet supported TODO: implement
-                                a realistic TCP lifecycle hook'
+                              description: Deprecated. TCPSocket is NOT supported
+                                as a LifecycleHandler and kept for the backward compatibility.
+                                There are no validation of this field and lifecycle
+                                hooks will fail in runtime when tcp handler is specified.
                               properties:
                                 host:
                                   description: 'Optional: Host name to connect to,
@@ -12871,8 +13660,7 @@ spec:
                         info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
-                          description: One and only one of the following should be
-                            specified. Exec specifies the action to take.
+                          description: Exec specifies the action to take.
                           properties:
                             command:
                               description: Command is the command line to execute
@@ -12893,6 +13681,25 @@ spec:
                             to 3. Minimum value is 1.
                           format: int32
                           type: integer
+                        grpc:
+                          description: GRPC specifies an action involving a GRPC port.
+                            This is an alpha field and requires enabling GRPCContainerProbe
+                            feature gate.
+                          properties:
+                            port:
+                              description: Port number of the gRPC service. Number
+                                must be in the range 1 to 65535.
+                              format: int32
+                              type: integer
+                            service:
+                              description: "Service is the name of the service to\
+                                \ place in the gRPC HealthCheckRequest (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).\
+                                \ \n If this is not specified, the default behavior\
+                                \ is defined by gRPC."
+                              type: string
+                          required:
+                          - port
+                          type: object
                         httpGet:
                           description: HTTPGet specifies the http request to perform.
                           properties:
@@ -12956,9 +13763,8 @@ spec:
                           format: int32
                           type: integer
                         tcpSocket:
-                          description: 'TCPSocket specifies an action involving a
-                            TCP port. TCP hooks not yet supported TODO: implement
-                            a realistic TCP lifecycle hook'
+                          description: TCPSocket specifies an action involving a TCP
+                            port.
                           properties:
                             host:
                               description: 'Optional: Host name to connect to, defaults
@@ -13056,8 +13862,7 @@ spec:
                         fails. Cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
-                          description: One and only one of the following should be
-                            specified. Exec specifies the action to take.
+                          description: Exec specifies the action to take.
                           properties:
                             command:
                               description: Command is the command line to execute
@@ -13078,6 +13883,25 @@ spec:
                             to 3. Minimum value is 1.
                           format: int32
                           type: integer
+                        grpc:
+                          description: GRPC specifies an action involving a GRPC port.
+                            This is an alpha field and requires enabling GRPCContainerProbe
+                            feature gate.
+                          properties:
+                            port:
+                              description: Port number of the gRPC service. Number
+                                must be in the range 1 to 65535.
+                              format: int32
+                              type: integer
+                            service:
+                              description: "Service is the name of the service to\
+                                \ place in the gRPC HealthCheckRequest (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).\
+                                \ \n If this is not specified, the default behavior\
+                                \ is defined by gRPC."
+                              type: string
+                          required:
+                          - port
+                          type: object
                         httpGet:
                           description: HTTPGet specifies the http request to perform.
                           properties:
@@ -13141,9 +13965,8 @@ spec:
                           format: int32
                           type: integer
                         tcpSocket:
-                          description: 'TCPSocket specifies an action involving a
-                            TCP port. TCP hooks not yet supported TODO: implement
-                            a realistic TCP lifecycle hook'
+                          description: TCPSocket specifies an action involving a TCP
+                            port.
                           properties:
                             host:
                               description: 'Optional: Host name to connect to, defaults
@@ -13224,12 +14047,14 @@ spec:
                             This bool directly controls if the no_new_privs flag will
                             be set on the container process. AllowPrivilegeEscalation
                             is true always when the container is: 1) run as Privileged
-                            2) has CAP_SYS_ADMIN'
+                            2) has CAP_SYS_ADMIN Note that this field cannot be set
+                            when spec.os.name is windows.'
                           type: boolean
                         capabilities:
                           description: The capabilities to add/drop when running containers.
                             Defaults to the default set of capabilities granted by
-                            the container runtime.
+                            the container runtime. Note that this field cannot be
+                            set when spec.os.name is windows.
                           properties:
                             add:
                               description: Added capabilities
@@ -13249,25 +14074,29 @@ spec:
                         privileged:
                           description: Run container in privileged mode. Processes
                             in privileged containers are essentially equivalent to
-                            root on the host. Defaults to false.
+                            root on the host. Defaults to false. Note that this field
+                            cannot be set when spec.os.name is windows.
                           type: boolean
                         procMount:
                           description: procMount denotes the type of proc mount to
                             use for the containers. The default is DefaultProcMount
                             which uses the container runtime defaults for readonly
                             paths and masked paths. This requires the ProcMountType
-                            feature flag to be enabled.
+                            feature flag to be enabled. Note that this field cannot
+                            be set when spec.os.name is windows.
                           type: string
                         readOnlyRootFilesystem:
                           description: Whether this container has a read-only root
-                            filesystem. Default is false.
+                            filesystem. Default is false. Note that this field cannot
+                            be set when spec.os.name is windows.
                           type: boolean
                         runAsGroup:
                           description: The GID to run the entrypoint of the container
                             process. Uses runtime default if unset. May also be set
                             in PodSecurityContext.  If set in both SecurityContext
                             and PodSecurityContext, the value specified in SecurityContext
-                            takes precedence.
+                            takes precedence. Note that this field cannot be set when
+                            spec.os.name is windows.
                           format: int64
                           type: integer
                         runAsNonRoot:
@@ -13285,7 +14114,8 @@ spec:
                             process. Defaults to user specified in image metadata
                             if unspecified. May also be set in PodSecurityContext.  If
                             set in both SecurityContext and PodSecurityContext, the
-                            value specified in SecurityContext takes precedence.
+                            value specified in SecurityContext takes precedence. Note
+                            that this field cannot be set when spec.os.name is windows.
                           format: int64
                           type: integer
                         seLinuxOptions:
@@ -13294,7 +14124,8 @@ spec:
                             random SELinux context for each container.  May also be
                             set in PodSecurityContext.  If set in both SecurityContext
                             and PodSecurityContext, the value specified in SecurityContext
-                            takes precedence.
+                            takes precedence. Note that this field cannot be set when
+                            spec.os.name is windows.
                           properties:
                             level:
                               description: Level is SELinux level label that applies
@@ -13317,6 +14148,8 @@ spec:
                           description: The seccomp options to use by this container.
                             If seccomp options are provided at both the pod & container
                             level, the container options override the pod options.
+                            Note that this field cannot be set when spec.os.name is
+                            windows.
                           properties:
                             localhostProfile:
                               description: localhostProfile indicates a profile defined
@@ -13342,6 +14175,8 @@ spec:
                             containers. If unspecified, the options from the PodSecurityContext
                             will be used. If set in both SecurityContext and PodSecurityContext,
                             the value specified in SecurityContext takes precedence.
+                            Note that this field cannot be set when spec.os.name is
+                            linux.
                           properties:
                             gmsaCredentialSpec:
                               description: GMSACredentialSpec is where the GMSA admission
@@ -13387,8 +14222,7 @@ spec:
                         This cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
-                          description: One and only one of the following should be
-                            specified. Exec specifies the action to take.
+                          description: Exec specifies the action to take.
                           properties:
                             command:
                               description: Command is the command line to execute
@@ -13409,6 +14243,25 @@ spec:
                             to 3. Minimum value is 1.
                           format: int32
                           type: integer
+                        grpc:
+                          description: GRPC specifies an action involving a GRPC port.
+                            This is an alpha field and requires enabling GRPCContainerProbe
+                            feature gate.
+                          properties:
+                            port:
+                              description: Port number of the gRPC service. Number
+                                must be in the range 1 to 65535.
+                              format: int32
+                              type: integer
+                            service:
+                              description: "Service is the name of the service to\
+                                \ place in the gRPC HealthCheckRequest (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).\
+                                \ \n If this is not specified, the default behavior\
+                                \ is defined by gRPC."
+                              type: string
+                          required:
+                          - port
+                          type: object
                         httpGet:
                           description: HTTPGet specifies the http request to perform.
                           properties:
@@ -13472,9 +14325,8 @@ spec:
                           format: int32
                           type: integer
                         tcpSocket:
-                          description: 'TCPSocket specifies an action involving a
-                            TCP port. TCP hooks not yet supported TODO: implement
-                            a realistic TCP lifecycle hook'
+                          description: TCPSocket specifies an action involving a TCP
+                            port.
                           properties:
                             host:
                               description: 'Optional: Host name to connect to, defaults
@@ -14021,6 +14873,14 @@ spec:
                     bearerTokenFile:
                       description: File to read bearer token for remote read.
                       type: string
+                    headers:
+                      additionalProperties:
+                        type: string
+                      description: Custom HTTP headers to be sent along with each
+                        remote read request. Be aware that headers that are set by
+                        Prometheus itself can't be overwritten. Only valid in Prometheus
+                        versions 2.26.0 and newer.
+                      type: object
                     name:
                       description: The name of the remote read queue, must be unique
                         if specified. The name is used in metrics and logging in order
@@ -14496,6 +15356,11 @@ spec:
                           description: MinShards is the minimum number of shards,
                             i.e. amount of concurrency.
                           type: integer
+                        retryOnRateLimit:
+                          description: Retry upon receiving a 429 status code from
+                            the remote-write storage. This is experimental feature
+                            and might change in the future.
+                          type: boolean
                       type: object
                     remoteTimeout:
                       description: Timeout for requests to the remote write endpoint.
@@ -14698,8 +15563,17 @@ spec:
                           configuration. More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs'
                         properties:
                           action:
+                            default: replace
                             description: Action to perform based on regex matching.
                               Default is 'replace'
+                            enum:
+                            - replace
+                            - keep
+                            - drop
+                            - hashmod
+                            - labelmap
+                            - labeldrop
+                            - labelkeep
                             type: string
                           modulus:
                             description: Modulus to take of the hash of the source
@@ -14933,7 +15807,8 @@ spec:
                       \ is set (new files created in the volume will be owned by FSGroup)\
                       \ 3. The permission bits are OR'd with rw-rw---- \n If unset,\
                       \ the Kubelet will not modify the ownership and permissions\
-                      \ of any volume."
+                      \ of any volume. Note that this field cannot be set when spec.os.name\
+                      \ is windows."
                     format: int64
                     type: integer
                   fsGroupChangePolicy:
@@ -14943,13 +15818,15 @@ spec:
                       support fsGroup based ownership(and permissions). It will have
                       no effect on ephemeral volume types such as: secret, configmaps
                       and emptydir. Valid values are "OnRootMismatch" and "Always".
-                      If not specified, "Always" is used.'
+                      If not specified, "Always" is used. Note that this field cannot
+                      be set when spec.os.name is windows.'
                     type: string
                   runAsGroup:
                     description: The GID to run the entrypoint of the container process.
                       Uses runtime default if unset. May also be set in SecurityContext.  If
                       set in both SecurityContext and PodSecurityContext, the value
                       specified in SecurityContext takes precedence for that container.
+                      Note that this field cannot be set when spec.os.name is windows.
                     format: int64
                     type: integer
                   runAsNonRoot:
@@ -14966,7 +15843,8 @@ spec:
                       Defaults to user specified in image metadata if unspecified.
                       May also be set in SecurityContext.  If set in both SecurityContext
                       and PodSecurityContext, the value specified in SecurityContext
-                      takes precedence for that container.
+                      takes precedence for that container. Note that this field cannot
+                      be set when spec.os.name is windows.
                     format: int64
                     type: integer
                   seLinuxOptions:
@@ -14975,6 +15853,7 @@ spec:
                       SELinux context for each container.  May also be set in SecurityContext.  If
                       set in both SecurityContext and PodSecurityContext, the value
                       specified in SecurityContext takes precedence for that container.
+                      Note that this field cannot be set when spec.os.name is windows.
                     properties:
                       level:
                         description: Level is SELinux level label that applies to
@@ -14995,7 +15874,8 @@ spec:
                     type: object
                   seccompProfile:
                     description: The seccomp options to use by the containers in this
-                      pod.
+                      pod. Note that this field cannot be set when spec.os.name is
+                      windows.
                     properties:
                       localhostProfile:
                         description: localhostProfile indicates a profile defined
@@ -15017,7 +15897,8 @@ spec:
                   supplementalGroups:
                     description: A list of groups applied to the first process run
                       in each container, in addition to the container's primary GID.  If
-                      unspecified, no groups will be added to any container.
+                      unspecified, no groups will be added to any container. Note
+                      that this field cannot be set when spec.os.name is windows.
                     items:
                       format: int64
                       type: integer
@@ -15025,7 +15906,8 @@ spec:
                   sysctls:
                     description: Sysctls hold a list of namespaced sysctls used for
                       the pod. Pods with unsupported sysctls (by the container runtime)
-                      might fail to launch.
+                      might fail to launch. Note that this field cannot be set when
+                      spec.os.name is windows.
                     items:
                       description: Sysctl defines a kernel parameter to be set
                       properties:
@@ -15044,7 +15926,8 @@ spec:
                     description: The Windows specific settings applied to all containers.
                       If unspecified, the options within a container's SecurityContext
                       will be used. If set in both SecurityContext and PodSecurityContext,
-                      the value specified in SecurityContext takes precedence.
+                      the value specified in SecurityContext takes precedence. Note
+                      that this field cannot be set when spec.os.name is linux.
                     properties:
                       gmsaCredentialSpec:
                         description: GMSACredentialSpec is where the GMSA admission
@@ -15341,7 +16224,11 @@ spec:
                                 type: object
                               resources:
                                 description: 'Resources represents the minimum resources
-                                  the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
+                                  the volume should have. If RecoverVolumeExpansionFailure
+                                  feature is enabled users are allowed to specify
+                                  resource requirements that are lower than previous
+                                  value but must still be higher than capacity recorded
+                                  in the status field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                                 properties:
                                   limits:
                                     additionalProperties:
@@ -15556,7 +16443,11 @@ spec:
                             type: object
                           resources:
                             description: 'Resources represents the minimum resources
-                              the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
+                              the volume should have. If RecoverVolumeExpansionFailure
+                              feature is enabled users are allowed to specify resource
+                              requirements that are lower than previous value but
+                              must still be higher than capacity recorded in the status
+                              field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                             properties:
                               limits:
                                 additionalProperties:
@@ -15652,6 +16543,27 @@ spec:
                             items:
                               type: string
                             type: array
+                          allocatedResources:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: The storage resource within AllocatedResources
+                              tracks the capacity allocated to a PVC. It may be larger
+                              than the actual capacity when a volume expansion operation
+                              is requested. For storage quota, the larger value from
+                              allocatedResources and PVC.spec.resources is used. If
+                              allocatedResources is not set, PVC.spec.resources alone
+                              is used for quota calculation. If a volume expansion
+                              capacity request is lowered, allocatedResources is only
+                              lowered if there are no expansion operations in progress
+                              and if the actual volume capacity is equal or lower
+                              than the requested capacity. This is an alpha field
+                              and requires enabling RecoverVolumeExpansionFailure
+                              feature.
+                            type: object
                           capacity:
                             additionalProperties:
                               anyOf:
@@ -15703,6 +16615,13 @@ spec:
                             type: array
                           phase:
                             description: Phase represents the current phase of PersistentVolumeClaim.
+                            type: string
+                          resizeStatus:
+                            description: ResizeStatus stores status of resize operation.
+                              ResizeStatus is not set by default but when expansion
+                              is complete resizeStatus is set to empty string by resize
+                              controller or kubelet. This is an alpha field and requires
+                              enabling RecoverVolumeExpansionFailure feature.
                             type: string
                         type: object
                     type: object
@@ -16141,7 +17060,7 @@ spec:
                         tells the scheduler to schedule the pod in any location,   but
                         giving higher precedence to topologies that would help reduce
                         the   skew. A constraint is considered "Unsatisfiable" for
-                        an incoming pod if and only if every possible node assigment
+                        an incoming pod if and only if every possible node assignment
                         for that pod would violate "MaxSkew" on some topology. For
                         example, in a 3-zone cluster, MaxSkew is set to 1, and pods
                         with the same labelSelector spread as 3/1/1: | zone1 | zone2
@@ -16605,8 +17524,7 @@ spec:
                         \ driver is meant to be used that way - see the documentation\
                         \ of the driver for more information. \n A pod can use both\
                         \ types of ephemeral volumes and persistent volumes at the\
-                        \ same time. \n This is a beta feature and only available\
-                        \ when the GenericEphemeralVolume feature gate is enabled."
+                        \ same time."
                       properties:
                         volumeClaimTemplate:
                           description: "Will be used to create a stand-alone PVC to\
@@ -16723,7 +17641,11 @@ spec:
                                   type: object
                                 resources:
                                   description: 'Resources represents the minimum resources
-                                    the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
+                                    the volume should have. If RecoverVolumeExpansionFailure
+                                    feature is enabled users are allowed to specify
+                                    resource requirements that are lower than previous
+                                    value but must still be higher than capacity recorded
+                                    in the status field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                                   properties:
                                     limits:
                                       additionalProperties:
@@ -17930,7 +18852,7 @@ spec:
                   description: 'RuleGroup is a list of sequentially evaluated recording
                     and alerting rules. Note: PartialResponseStrategy is only used
                     by ThanosRuler and will be ignored by Prometheus instances.  Valid
-                    values for this field are ''warn'' or ''abort''.  More info: https://github.com/thanos-io/thanos/blob/master/docs/components/rule.md#partial-response'
+                    values for this field are ''warn'' or ''abort''.  More info: https://github.com/thanos-io/thanos/blob/main/docs/components/rule.md#partial-response'
                   properties:
                     interval:
                       type: string
@@ -18146,8 +19068,17 @@ spec:
                           configuration. More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs'
                         properties:
                           action:
+                            default: replace
                             description: Action to perform based on regex matching.
                               Default is 'replace'
+                            enum:
+                            - replace
+                            - keep
+                            - drop
+                            - hashmod
+                            - labelmap
+                            - labeldrop
+                            - labelkeep
                             type: string
                           modulus:
                             description: Modulus to take of the hash of the source
@@ -18296,8 +19227,17 @@ spec:
                           configuration. More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs'
                         properties:
                           action:
+                            default: replace
                             description: Action to perform based on regex matching.
                               Default is 'replace'
+                            enum:
+                            - replace
+                            - keep
+                            - drop
+                            - hashmod
+                            - labelmap
+                            - labeldrop
+                            - labelkeep
                             type: string
                           modulus:
                             description: Modulus to take of the hash of the source
@@ -18614,7 +19554,15 @@ spec:
     singular: thanosruler
   scope: Namespaced
   versions:
-  - name: v1
+  - additionalPrinterColumns:
+    - description: The desired replicas number of Thanos Rulers
+      jsonPath: .spec.replicas
+      name: Replicas
+      type: integer
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1
     schema:
       openAPIV3Schema:
         description: ThanosRuler defines a ThanosRuler deployment.
@@ -19747,8 +20695,7 @@ spec:
                             info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
                           properties:
                             exec:
-                              description: One and only one of the following should
-                                be specified. Exec specifies the action to take.
+                              description: Exec specifies the action to take.
                               properties:
                                 command:
                                   description: Command is the command line to execute
@@ -19809,9 +20756,10 @@ spec:
                               - port
                               type: object
                             tcpSocket:
-                              description: 'TCPSocket specifies an action involving
-                                a TCP port. TCP hooks not yet supported TODO: implement
-                                a realistic TCP lifecycle hook'
+                              description: Deprecated. TCPSocket is NOT supported
+                                as a LifecycleHandler and kept for the backward compatibility.
+                                There are no validation of this field and lifecycle
+                                hooks will fail in runtime when tcp handler is specified.
                               properties:
                                 host:
                                   description: 'Optional: Host name to connect to,
@@ -19834,18 +20782,16 @@ spec:
                             is terminated due to an API request or management event
                             such as liveness/startup probe failure, preemption, resource
                             contention, etc. The handler is not called if the container
-                            crashes or exits. The reason for termination is passed
-                            to the handler. The Pod''s termination grace period countdown
-                            begins before the PreStop hooked is executed. Regardless
-                            of the outcome of the handler, the container will eventually
-                            terminate within the Pod''s termination grace period.
-                            Other management of the container blocks until the hook
-                            completes or until the termination grace period is reached.
-                            More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
+                            crashes or exits. The Pod''s termination grace period
+                            countdown begins before the PreStop hook is executed.
+                            Regardless of the outcome of the handler, the container
+                            will eventually terminate within the Pod''s termination
+                            grace period (unless delayed by finalizers). Other management
+                            of the container blocks until the hook completes or until
+                            the termination grace period is reached. More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
                           properties:
                             exec:
-                              description: One and only one of the following should
-                                be specified. Exec specifies the action to take.
+                              description: Exec specifies the action to take.
                               properties:
                                 command:
                                   description: Command is the command line to execute
@@ -19906,9 +20852,10 @@ spec:
                               - port
                               type: object
                             tcpSocket:
-                              description: 'TCPSocket specifies an action involving
-                                a TCP port. TCP hooks not yet supported TODO: implement
-                                a realistic TCP lifecycle hook'
+                              description: Deprecated. TCPSocket is NOT supported
+                                as a LifecycleHandler and kept for the backward compatibility.
+                                There are no validation of this field and lifecycle
+                                hooks will fail in runtime when tcp handler is specified.
                               properties:
                                 host:
                                   description: 'Optional: Host name to connect to,
@@ -19933,8 +20880,7 @@ spec:
                         info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
-                          description: One and only one of the following should be
-                            specified. Exec specifies the action to take.
+                          description: Exec specifies the action to take.
                           properties:
                             command:
                               description: Command is the command line to execute
@@ -19955,6 +20901,25 @@ spec:
                             to 3. Minimum value is 1.
                           format: int32
                           type: integer
+                        grpc:
+                          description: GRPC specifies an action involving a GRPC port.
+                            This is an alpha field and requires enabling GRPCContainerProbe
+                            feature gate.
+                          properties:
+                            port:
+                              description: Port number of the gRPC service. Number
+                                must be in the range 1 to 65535.
+                              format: int32
+                              type: integer
+                            service:
+                              description: "Service is the name of the service to\
+                                \ place in the gRPC HealthCheckRequest (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).\
+                                \ \n If this is not specified, the default behavior\
+                                \ is defined by gRPC."
+                              type: string
+                          required:
+                          - port
+                          type: object
                         httpGet:
                           description: HTTPGet specifies the http request to perform.
                           properties:
@@ -20018,9 +20983,8 @@ spec:
                           format: int32
                           type: integer
                         tcpSocket:
-                          description: 'TCPSocket specifies an action involving a
-                            TCP port. TCP hooks not yet supported TODO: implement
-                            a realistic TCP lifecycle hook'
+                          description: TCPSocket specifies an action involving a TCP
+                            port.
                           properties:
                             host:
                               description: 'Optional: Host name to connect to, defaults
@@ -20118,8 +21082,7 @@ spec:
                         fails. Cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
-                          description: One and only one of the following should be
-                            specified. Exec specifies the action to take.
+                          description: Exec specifies the action to take.
                           properties:
                             command:
                               description: Command is the command line to execute
@@ -20140,6 +21103,25 @@ spec:
                             to 3. Minimum value is 1.
                           format: int32
                           type: integer
+                        grpc:
+                          description: GRPC specifies an action involving a GRPC port.
+                            This is an alpha field and requires enabling GRPCContainerProbe
+                            feature gate.
+                          properties:
+                            port:
+                              description: Port number of the gRPC service. Number
+                                must be in the range 1 to 65535.
+                              format: int32
+                              type: integer
+                            service:
+                              description: "Service is the name of the service to\
+                                \ place in the gRPC HealthCheckRequest (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).\
+                                \ \n If this is not specified, the default behavior\
+                                \ is defined by gRPC."
+                              type: string
+                          required:
+                          - port
+                          type: object
                         httpGet:
                           description: HTTPGet specifies the http request to perform.
                           properties:
@@ -20203,9 +21185,8 @@ spec:
                           format: int32
                           type: integer
                         tcpSocket:
-                          description: 'TCPSocket specifies an action involving a
-                            TCP port. TCP hooks not yet supported TODO: implement
-                            a realistic TCP lifecycle hook'
+                          description: TCPSocket specifies an action involving a TCP
+                            port.
                           properties:
                             host:
                               description: 'Optional: Host name to connect to, defaults
@@ -20286,12 +21267,14 @@ spec:
                             This bool directly controls if the no_new_privs flag will
                             be set on the container process. AllowPrivilegeEscalation
                             is true always when the container is: 1) run as Privileged
-                            2) has CAP_SYS_ADMIN'
+                            2) has CAP_SYS_ADMIN Note that this field cannot be set
+                            when spec.os.name is windows.'
                           type: boolean
                         capabilities:
                           description: The capabilities to add/drop when running containers.
                             Defaults to the default set of capabilities granted by
-                            the container runtime.
+                            the container runtime. Note that this field cannot be
+                            set when spec.os.name is windows.
                           properties:
                             add:
                               description: Added capabilities
@@ -20311,25 +21294,29 @@ spec:
                         privileged:
                           description: Run container in privileged mode. Processes
                             in privileged containers are essentially equivalent to
-                            root on the host. Defaults to false.
+                            root on the host. Defaults to false. Note that this field
+                            cannot be set when spec.os.name is windows.
                           type: boolean
                         procMount:
                           description: procMount denotes the type of proc mount to
                             use for the containers. The default is DefaultProcMount
                             which uses the container runtime defaults for readonly
                             paths and masked paths. This requires the ProcMountType
-                            feature flag to be enabled.
+                            feature flag to be enabled. Note that this field cannot
+                            be set when spec.os.name is windows.
                           type: string
                         readOnlyRootFilesystem:
                           description: Whether this container has a read-only root
-                            filesystem. Default is false.
+                            filesystem. Default is false. Note that this field cannot
+                            be set when spec.os.name is windows.
                           type: boolean
                         runAsGroup:
                           description: The GID to run the entrypoint of the container
                             process. Uses runtime default if unset. May also be set
                             in PodSecurityContext.  If set in both SecurityContext
                             and PodSecurityContext, the value specified in SecurityContext
-                            takes precedence.
+                            takes precedence. Note that this field cannot be set when
+                            spec.os.name is windows.
                           format: int64
                           type: integer
                         runAsNonRoot:
@@ -20347,7 +21334,8 @@ spec:
                             process. Defaults to user specified in image metadata
                             if unspecified. May also be set in PodSecurityContext.  If
                             set in both SecurityContext and PodSecurityContext, the
-                            value specified in SecurityContext takes precedence.
+                            value specified in SecurityContext takes precedence. Note
+                            that this field cannot be set when spec.os.name is windows.
                           format: int64
                           type: integer
                         seLinuxOptions:
@@ -20356,7 +21344,8 @@ spec:
                             random SELinux context for each container.  May also be
                             set in PodSecurityContext.  If set in both SecurityContext
                             and PodSecurityContext, the value specified in SecurityContext
-                            takes precedence.
+                            takes precedence. Note that this field cannot be set when
+                            spec.os.name is windows.
                           properties:
                             level:
                               description: Level is SELinux level label that applies
@@ -20379,6 +21368,8 @@ spec:
                           description: The seccomp options to use by this container.
                             If seccomp options are provided at both the pod & container
                             level, the container options override the pod options.
+                            Note that this field cannot be set when spec.os.name is
+                            windows.
                           properties:
                             localhostProfile:
                               description: localhostProfile indicates a profile defined
@@ -20404,6 +21395,8 @@ spec:
                             containers. If unspecified, the options from the PodSecurityContext
                             will be used. If set in both SecurityContext and PodSecurityContext,
                             the value specified in SecurityContext takes precedence.
+                            Note that this field cannot be set when spec.os.name is
+                            linux.
                           properties:
                             gmsaCredentialSpec:
                               description: GMSACredentialSpec is where the GMSA admission
@@ -20449,8 +21442,7 @@ spec:
                         This cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
-                          description: One and only one of the following should be
-                            specified. Exec specifies the action to take.
+                          description: Exec specifies the action to take.
                           properties:
                             command:
                               description: Command is the command line to execute
@@ -20471,6 +21463,25 @@ spec:
                             to 3. Minimum value is 1.
                           format: int32
                           type: integer
+                        grpc:
+                          description: GRPC specifies an action involving a GRPC port.
+                            This is an alpha field and requires enabling GRPCContainerProbe
+                            feature gate.
+                          properties:
+                            port:
+                              description: Port number of the gRPC service. Number
+                                must be in the range 1 to 65535.
+                              format: int32
+                              type: integer
+                            service:
+                              description: "Service is the name of the service to\
+                                \ place in the gRPC HealthCheckRequest (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).\
+                                \ \n If this is not specified, the default behavior\
+                                \ is defined by gRPC."
+                              type: string
+                          required:
+                          - port
+                          type: object
                         httpGet:
                           description: HTTPGet specifies the http request to perform.
                           properties:
@@ -20534,9 +21545,8 @@ spec:
                           format: int32
                           type: integer
                         tcpSocket:
-                          description: 'TCPSocket specifies an action involving a
-                            TCP port. TCP hooks not yet supported TODO: implement
-                            a realistic TCP lifecycle hook'
+                          description: TCPSocket specifies an action involving a TCP
+                            port.
                           properties:
                             host:
                               description: 'Optional: Host name to connect to, defaults
@@ -21060,8 +22070,7 @@ spec:
                             info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
                           properties:
                             exec:
-                              description: One and only one of the following should
-                                be specified. Exec specifies the action to take.
+                              description: Exec specifies the action to take.
                               properties:
                                 command:
                                   description: Command is the command line to execute
@@ -21122,9 +22131,10 @@ spec:
                               - port
                               type: object
                             tcpSocket:
-                              description: 'TCPSocket specifies an action involving
-                                a TCP port. TCP hooks not yet supported TODO: implement
-                                a realistic TCP lifecycle hook'
+                              description: Deprecated. TCPSocket is NOT supported
+                                as a LifecycleHandler and kept for the backward compatibility.
+                                There are no validation of this field and lifecycle
+                                hooks will fail in runtime when tcp handler is specified.
                               properties:
                                 host:
                                   description: 'Optional: Host name to connect to,
@@ -21147,18 +22157,16 @@ spec:
                             is terminated due to an API request or management event
                             such as liveness/startup probe failure, preemption, resource
                             contention, etc. The handler is not called if the container
-                            crashes or exits. The reason for termination is passed
-                            to the handler. The Pod''s termination grace period countdown
-                            begins before the PreStop hooked is executed. Regardless
-                            of the outcome of the handler, the container will eventually
-                            terminate within the Pod''s termination grace period.
-                            Other management of the container blocks until the hook
-                            completes or until the termination grace period is reached.
-                            More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
+                            crashes or exits. The Pod''s termination grace period
+                            countdown begins before the PreStop hook is executed.
+                            Regardless of the outcome of the handler, the container
+                            will eventually terminate within the Pod''s termination
+                            grace period (unless delayed by finalizers). Other management
+                            of the container blocks until the hook completes or until
+                            the termination grace period is reached. More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks'
                           properties:
                             exec:
-                              description: One and only one of the following should
-                                be specified. Exec specifies the action to take.
+                              description: Exec specifies the action to take.
                               properties:
                                 command:
                                   description: Command is the command line to execute
@@ -21219,9 +22227,10 @@ spec:
                               - port
                               type: object
                             tcpSocket:
-                              description: 'TCPSocket specifies an action involving
-                                a TCP port. TCP hooks not yet supported TODO: implement
-                                a realistic TCP lifecycle hook'
+                              description: Deprecated. TCPSocket is NOT supported
+                                as a LifecycleHandler and kept for the backward compatibility.
+                                There are no validation of this field and lifecycle
+                                hooks will fail in runtime when tcp handler is specified.
                               properties:
                                 host:
                                   description: 'Optional: Host name to connect to,
@@ -21246,8 +22255,7 @@ spec:
                         info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
-                          description: One and only one of the following should be
-                            specified. Exec specifies the action to take.
+                          description: Exec specifies the action to take.
                           properties:
                             command:
                               description: Command is the command line to execute
@@ -21268,6 +22276,25 @@ spec:
                             to 3. Minimum value is 1.
                           format: int32
                           type: integer
+                        grpc:
+                          description: GRPC specifies an action involving a GRPC port.
+                            This is an alpha field and requires enabling GRPCContainerProbe
+                            feature gate.
+                          properties:
+                            port:
+                              description: Port number of the gRPC service. Number
+                                must be in the range 1 to 65535.
+                              format: int32
+                              type: integer
+                            service:
+                              description: "Service is the name of the service to\
+                                \ place in the gRPC HealthCheckRequest (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).\
+                                \ \n If this is not specified, the default behavior\
+                                \ is defined by gRPC."
+                              type: string
+                          required:
+                          - port
+                          type: object
                         httpGet:
                           description: HTTPGet specifies the http request to perform.
                           properties:
@@ -21331,9 +22358,8 @@ spec:
                           format: int32
                           type: integer
                         tcpSocket:
-                          description: 'TCPSocket specifies an action involving a
-                            TCP port. TCP hooks not yet supported TODO: implement
-                            a realistic TCP lifecycle hook'
+                          description: TCPSocket specifies an action involving a TCP
+                            port.
                           properties:
                             host:
                               description: 'Optional: Host name to connect to, defaults
@@ -21431,8 +22457,7 @@ spec:
                         fails. Cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
-                          description: One and only one of the following should be
-                            specified. Exec specifies the action to take.
+                          description: Exec specifies the action to take.
                           properties:
                             command:
                               description: Command is the command line to execute
@@ -21453,6 +22478,25 @@ spec:
                             to 3. Minimum value is 1.
                           format: int32
                           type: integer
+                        grpc:
+                          description: GRPC specifies an action involving a GRPC port.
+                            This is an alpha field and requires enabling GRPCContainerProbe
+                            feature gate.
+                          properties:
+                            port:
+                              description: Port number of the gRPC service. Number
+                                must be in the range 1 to 65535.
+                              format: int32
+                              type: integer
+                            service:
+                              description: "Service is the name of the service to\
+                                \ place in the gRPC HealthCheckRequest (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).\
+                                \ \n If this is not specified, the default behavior\
+                                \ is defined by gRPC."
+                              type: string
+                          required:
+                          - port
+                          type: object
                         httpGet:
                           description: HTTPGet specifies the http request to perform.
                           properties:
@@ -21516,9 +22560,8 @@ spec:
                           format: int32
                           type: integer
                         tcpSocket:
-                          description: 'TCPSocket specifies an action involving a
-                            TCP port. TCP hooks not yet supported TODO: implement
-                            a realistic TCP lifecycle hook'
+                          description: TCPSocket specifies an action involving a TCP
+                            port.
                           properties:
                             host:
                               description: 'Optional: Host name to connect to, defaults
@@ -21599,12 +22642,14 @@ spec:
                             This bool directly controls if the no_new_privs flag will
                             be set on the container process. AllowPrivilegeEscalation
                             is true always when the container is: 1) run as Privileged
-                            2) has CAP_SYS_ADMIN'
+                            2) has CAP_SYS_ADMIN Note that this field cannot be set
+                            when spec.os.name is windows.'
                           type: boolean
                         capabilities:
                           description: The capabilities to add/drop when running containers.
                             Defaults to the default set of capabilities granted by
-                            the container runtime.
+                            the container runtime. Note that this field cannot be
+                            set when spec.os.name is windows.
                           properties:
                             add:
                               description: Added capabilities
@@ -21624,25 +22669,29 @@ spec:
                         privileged:
                           description: Run container in privileged mode. Processes
                             in privileged containers are essentially equivalent to
-                            root on the host. Defaults to false.
+                            root on the host. Defaults to false. Note that this field
+                            cannot be set when spec.os.name is windows.
                           type: boolean
                         procMount:
                           description: procMount denotes the type of proc mount to
                             use for the containers. The default is DefaultProcMount
                             which uses the container runtime defaults for readonly
                             paths and masked paths. This requires the ProcMountType
-                            feature flag to be enabled.
+                            feature flag to be enabled. Note that this field cannot
+                            be set when spec.os.name is windows.
                           type: string
                         readOnlyRootFilesystem:
                           description: Whether this container has a read-only root
-                            filesystem. Default is false.
+                            filesystem. Default is false. Note that this field cannot
+                            be set when spec.os.name is windows.
                           type: boolean
                         runAsGroup:
                           description: The GID to run the entrypoint of the container
                             process. Uses runtime default if unset. May also be set
                             in PodSecurityContext.  If set in both SecurityContext
                             and PodSecurityContext, the value specified in SecurityContext
-                            takes precedence.
+                            takes precedence. Note that this field cannot be set when
+                            spec.os.name is windows.
                           format: int64
                           type: integer
                         runAsNonRoot:
@@ -21660,7 +22709,8 @@ spec:
                             process. Defaults to user specified in image metadata
                             if unspecified. May also be set in PodSecurityContext.  If
                             set in both SecurityContext and PodSecurityContext, the
-                            value specified in SecurityContext takes precedence.
+                            value specified in SecurityContext takes precedence. Note
+                            that this field cannot be set when spec.os.name is windows.
                           format: int64
                           type: integer
                         seLinuxOptions:
@@ -21669,7 +22719,8 @@ spec:
                             random SELinux context for each container.  May also be
                             set in PodSecurityContext.  If set in both SecurityContext
                             and PodSecurityContext, the value specified in SecurityContext
-                            takes precedence.
+                            takes precedence. Note that this field cannot be set when
+                            spec.os.name is windows.
                           properties:
                             level:
                               description: Level is SELinux level label that applies
@@ -21692,6 +22743,8 @@ spec:
                           description: The seccomp options to use by this container.
                             If seccomp options are provided at both the pod & container
                             level, the container options override the pod options.
+                            Note that this field cannot be set when spec.os.name is
+                            windows.
                           properties:
                             localhostProfile:
                               description: localhostProfile indicates a profile defined
@@ -21717,6 +22770,8 @@ spec:
                             containers. If unspecified, the options from the PodSecurityContext
                             will be used. If set in both SecurityContext and PodSecurityContext,
                             the value specified in SecurityContext takes precedence.
+                            Note that this field cannot be set when spec.os.name is
+                            linux.
                           properties:
                             gmsaCredentialSpec:
                               description: GMSACredentialSpec is where the GMSA admission
@@ -21762,8 +22817,7 @@ spec:
                         This cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                       properties:
                         exec:
-                          description: One and only one of the following should be
-                            specified. Exec specifies the action to take.
+                          description: Exec specifies the action to take.
                           properties:
                             command:
                               description: Command is the command line to execute
@@ -21784,6 +22838,25 @@ spec:
                             to 3. Minimum value is 1.
                           format: int32
                           type: integer
+                        grpc:
+                          description: GRPC specifies an action involving a GRPC port.
+                            This is an alpha field and requires enabling GRPCContainerProbe
+                            feature gate.
+                          properties:
+                            port:
+                              description: Port number of the gRPC service. Number
+                                must be in the range 1 to 65535.
+                              format: int32
+                              type: integer
+                            service:
+                              description: "Service is the name of the service to\
+                                \ place in the gRPC HealthCheckRequest (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).\
+                                \ \n If this is not specified, the default behavior\
+                                \ is defined by gRPC."
+                              type: string
+                          required:
+                          - port
+                          type: object
                         httpGet:
                           description: HTTPGet specifies the http request to perform.
                           properties:
@@ -21847,9 +22920,8 @@ spec:
                           format: int32
                           type: integer
                         tcpSocket:
-                          description: 'TCPSocket specifies an action involving a
-                            TCP port. TCP hooks not yet supported TODO: implement
-                            a realistic TCP lifecycle hook'
+                          description: TCPSocket specifies an action involving a TCP
+                            port.
                           properties:
                             host:
                               description: 'Optional: Host name to connect to, defaults
@@ -22283,7 +23355,8 @@ spec:
                       \ is set (new files created in the volume will be owned by FSGroup)\
                       \ 3. The permission bits are OR'd with rw-rw---- \n If unset,\
                       \ the Kubelet will not modify the ownership and permissions\
-                      \ of any volume."
+                      \ of any volume. Note that this field cannot be set when spec.os.name\
+                      \ is windows."
                     format: int64
                     type: integer
                   fsGroupChangePolicy:
@@ -22293,13 +23366,15 @@ spec:
                       support fsGroup based ownership(and permissions). It will have
                       no effect on ephemeral volume types such as: secret, configmaps
                       and emptydir. Valid values are "OnRootMismatch" and "Always".
-                      If not specified, "Always" is used.'
+                      If not specified, "Always" is used. Note that this field cannot
+                      be set when spec.os.name is windows.'
                     type: string
                   runAsGroup:
                     description: The GID to run the entrypoint of the container process.
                       Uses runtime default if unset. May also be set in SecurityContext.  If
                       set in both SecurityContext and PodSecurityContext, the value
                       specified in SecurityContext takes precedence for that container.
+                      Note that this field cannot be set when spec.os.name is windows.
                     format: int64
                     type: integer
                   runAsNonRoot:
@@ -22316,7 +23391,8 @@ spec:
                       Defaults to user specified in image metadata if unspecified.
                       May also be set in SecurityContext.  If set in both SecurityContext
                       and PodSecurityContext, the value specified in SecurityContext
-                      takes precedence for that container.
+                      takes precedence for that container. Note that this field cannot
+                      be set when spec.os.name is windows.
                     format: int64
                     type: integer
                   seLinuxOptions:
@@ -22325,6 +23401,7 @@ spec:
                       SELinux context for each container.  May also be set in SecurityContext.  If
                       set in both SecurityContext and PodSecurityContext, the value
                       specified in SecurityContext takes precedence for that container.
+                      Note that this field cannot be set when spec.os.name is windows.
                     properties:
                       level:
                         description: Level is SELinux level label that applies to
@@ -22345,7 +23422,8 @@ spec:
                     type: object
                   seccompProfile:
                     description: The seccomp options to use by the containers in this
-                      pod.
+                      pod. Note that this field cannot be set when spec.os.name is
+                      windows.
                     properties:
                       localhostProfile:
                         description: localhostProfile indicates a profile defined
@@ -22367,7 +23445,8 @@ spec:
                   supplementalGroups:
                     description: A list of groups applied to the first process run
                       in each container, in addition to the container's primary GID.  If
-                      unspecified, no groups will be added to any container.
+                      unspecified, no groups will be added to any container. Note
+                      that this field cannot be set when spec.os.name is windows.
                     items:
                       format: int64
                       type: integer
@@ -22375,7 +23454,8 @@ spec:
                   sysctls:
                     description: Sysctls hold a list of namespaced sysctls used for
                       the pod. Pods with unsupported sysctls (by the container runtime)
-                      might fail to launch.
+                      might fail to launch. Note that this field cannot be set when
+                      spec.os.name is windows.
                     items:
                       description: Sysctl defines a kernel parameter to be set
                       properties:
@@ -22394,7 +23474,8 @@ spec:
                     description: The Windows specific settings applied to all containers.
                       If unspecified, the options within a container's SecurityContext
                       will be used. If set in both SecurityContext and PodSecurityContext,
-                      the value specified in SecurityContext takes precedence.
+                      the value specified in SecurityContext takes precedence. Note
+                      that this field cannot be set when spec.os.name is linux.
                     properties:
                       gmsaCredentialSpec:
                         description: GMSACredentialSpec is where the GMSA admission
@@ -22582,7 +23663,11 @@ spec:
                                 type: object
                               resources:
                                 description: 'Resources represents the minimum resources
-                                  the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
+                                  the volume should have. If RecoverVolumeExpansionFailure
+                                  feature is enabled users are allowed to specify
+                                  resource requirements that are lower than previous
+                                  value but must still be higher than capacity recorded
+                                  in the status field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                                 properties:
                                   limits:
                                     additionalProperties:
@@ -22797,7 +23882,11 @@ spec:
                             type: object
                           resources:
                             description: 'Resources represents the minimum resources
-                              the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
+                              the volume should have. If RecoverVolumeExpansionFailure
+                              feature is enabled users are allowed to specify resource
+                              requirements that are lower than previous value but
+                              must still be higher than capacity recorded in the status
+                              field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                             properties:
                               limits:
                                 additionalProperties:
@@ -22893,6 +23982,27 @@ spec:
                             items:
                               type: string
                             type: array
+                          allocatedResources:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: The storage resource within AllocatedResources
+                              tracks the capacity allocated to a PVC. It may be larger
+                              than the actual capacity when a volume expansion operation
+                              is requested. For storage quota, the larger value from
+                              allocatedResources and PVC.spec.resources is used. If
+                              allocatedResources is not set, PVC.spec.resources alone
+                              is used for quota calculation. If a volume expansion
+                              capacity request is lowered, allocatedResources is only
+                              lowered if there are no expansion operations in progress
+                              and if the actual volume capacity is equal or lower
+                              than the requested capacity. This is an alpha field
+                              and requires enabling RecoverVolumeExpansionFailure
+                              feature.
+                            type: object
                           capacity:
                             additionalProperties:
                               anyOf:
@@ -22944,6 +24054,13 @@ spec:
                             type: array
                           phase:
                             description: Phase represents the current phase of PersistentVolumeClaim.
+                            type: string
+                          resizeStatus:
+                            description: ResizeStatus stores status of resize operation.
+                              ResizeStatus is not set by default but when expansion
+                              is complete resizeStatus is set to empty string by resize
+                              controller or kubelet. This is an alpha field and requires
+                              enabling RecoverVolumeExpansionFailure feature.
                             type: string
                         type: object
                     type: object
@@ -23509,8 +24626,7 @@ spec:
                         \ driver is meant to be used that way - see the documentation\
                         \ of the driver for more information. \n A pod can use both\
                         \ types of ephemeral volumes and persistent volumes at the\
-                        \ same time. \n This is a beta feature and only available\
-                        \ when the GenericEphemeralVolume feature gate is enabled."
+                        \ same time."
                       properties:
                         volumeClaimTemplate:
                           description: "Will be used to create a stand-alone PVC to\
@@ -23627,7 +24743,11 @@ spec:
                                   type: object
                                 resources:
                                   description: 'Resources represents the minimum resources
-                                    the volume should have. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
+                                    the volume should have. If RecoverVolumeExpansionFailure
+                                    feature is enabled users are allowed to specify
+                                    resource requirements that are lower than previous
+                                    value but must still be higher than capacity recorded
+                                    in the status field of the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#resources'
                                   properties:
                                     limits:
                                       additionalProperties:
@@ -24624,277 +25744,13 @@ spec:
         type: object
     served: true
     storage: true
+    subresources: {}
 status:
   acceptedNames:
     kind: ''
     plural: ''
   conditions: []
   storedVersions: []
----
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  annotations:
-    apparmor.security.beta.kubernetes.io/allowedProfileNames: runtime/default
-    apparmor.security.beta.kubernetes.io/defaultProfileName: runtime/default
-    seccomp.security.alpha.kubernetes.io/allowedProfileNames: docker/default,runtime/default
-    seccomp.security.alpha.kubernetes.io/defaultProfileName: docker/default
-  labels:
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: grafana
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.3.4-ubuntu
-    helm.sh/chart: grafana-6.19.0
-    heritage: metalk8s
-  name: prometheus-operator-grafana
-  namespace: metalk8s-monitoring
-spec:
-  allowPrivilegeEscalation: false
-  fsGroup:
-    ranges:
-    - max: 65535
-      min: 1
-    rule: MustRunAs
-  hostIPC: false
-  hostNetwork: false
-  hostPID: false
-  privileged: false
-  readOnlyRootFilesystem: false
-  requiredDropCapabilities:
-  - ALL
-  runAsUser:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    ranges:
-    - max: 65535
-      min: 1
-    rule: MustRunAs
-  volumes:
-  - configMap
-  - emptyDir
-  - projected
-  - csi
-  - secret
-  - downwardAPI
-  - persistentVolumeClaim
----
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  labels:
-    app.kubernetes.io/component: metrics
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: kube-state-metrics
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.2.4
-    helm.sh/chart: kube-state-metrics-4.1.1
-    heritage: metalk8s
-  name: prometheus-operator-kube-state-metrics
-  namespace: metalk8s-monitoring
-spec:
-  fsGroup:
-    ranges:
-    - max: 65535
-      min: 1
-    rule: MustRunAs
-  hostIPC: false
-  hostNetwork: false
-  hostPID: false
-  privileged: false
-  readOnlyRootFilesystem: false
-  runAsUser:
-    rule: MustRunAsNonRoot
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    ranges:
-    - max: 65535
-      min: 1
-    rule: MustRunAs
-  volumes:
-  - secret
----
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  labels:
-    app: prometheus-node-exporter
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-node-exporter
-    app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-2.2.2
-    heritage: metalk8s
-    jobLabel: node-exporter
-    release: prometheus-operator
-  name: prometheus-operator-prometheus-node-exporter
-  namespace: metalk8s-monitoring
-spec:
-  fsGroup:
-    ranges:
-    - max: 65535
-      min: 0
-    rule: MustRunAs
-  hostIPC: false
-  hostNetwork: true
-  hostPID: true
-  hostPorts:
-  - max: 65535
-    min: 0
-  privileged: false
-  readOnlyRootFilesystem: false
-  runAsUser:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    ranges:
-    - max: 65535
-      min: 0
-    rule: MustRunAs
-  volumes:
-  - configMap
-  - emptyDir
-  - projected
-  - secret
-  - downwardAPI
-  - persistentVolumeClaim
-  - hostPath
----
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  labels:
-    app: prometheus-operator-alertmanager
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-operator-alertmanager
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
-    heritage: metalk8s
-    metalk8s.scality.com/monitor: ''
-    release: prometheus-operator
-  name: prometheus-operator-alertmanager
-  namespace: metalk8s-monitoring
-spec:
-  fsGroup:
-    ranges:
-    - max: 65535
-      min: 0
-    rule: MustRunAs
-  hostIPC: false
-  hostNetwork: false
-  hostPID: false
-  privileged: false
-  readOnlyRootFilesystem: false
-  runAsUser:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    ranges:
-    - max: 65535
-      min: 0
-    rule: MustRunAs
-  volumes:
-  - configMap
-  - emptyDir
-  - projected
-  - secret
-  - downwardAPI
-  - persistentVolumeClaim
----
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  labels:
-    app: prometheus-operator-operator
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-operator-operator
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
-    heritage: metalk8s
-    metalk8s.scality.com/monitor: ''
-    release: prometheus-operator
-  name: prometheus-operator-operator
-  namespace: metalk8s-monitoring
-spec:
-  fsGroup:
-    ranges:
-    - max: 65535
-      min: 0
-    rule: MustRunAs
-  hostIPC: false
-  hostNetwork: false
-  hostPID: false
-  privileged: false
-  readOnlyRootFilesystem: false
-  runAsUser:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    ranges:
-    - max: 65535
-      min: 0
-    rule: MustRunAs
-  volumes:
-  - configMap
-  - emptyDir
-  - projected
-  - secret
-  - downwardAPI
-  - persistentVolumeClaim
----
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  labels:
-    app: prometheus-operator-prometheus
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-operator-prometheus
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
-    heritage: metalk8s
-    metalk8s.scality.com/monitor: ''
-    release: prometheus-operator
-  name: prometheus-operator-prometheus
-  namespace: metalk8s-monitoring
-spec:
-  fsGroup:
-    ranges:
-    - max: 65535
-      min: 0
-    rule: MustRunAs
-  hostIPC: false
-  hostNetwork: false
-  hostPID: false
-  privileged: false
-  readOnlyRootFilesystem: false
-  runAsUser:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    ranges:
-    - max: 65535
-      min: 0
-    rule: MustRunAs
-  volumes:
-  - configMap
-  - emptyDir
-  - projected
-  - secret
-  - downwardAPI
-  - persistentVolumeClaim
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -24905,7 +25761,7 @@ metadata:
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 8.3.4-ubuntu
-    helm.sh/chart: grafana-6.19.0
+    helm.sh/chart: grafana-6.21.2
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -24920,9 +25776,10 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.2.4
-    helm.sh/chart: kube-state-metrics-4.1.1
+    app.kubernetes.io/version: 2.3.0
+    helm.sh/chart: kube-state-metrics-4.4.3
     heritage: metalk8s
+    release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
 ---
@@ -24936,7 +25793,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-2.2.2
+    chart: prometheus-node-exporter-2.5.0
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-prometheus-node-exporter
@@ -24952,8 +25809,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -24970,8 +25827,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -24988,8 +25845,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -25009,7 +25866,7 @@ metadata:
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 8.3.4-ubuntu
-    helm.sh/chart: grafana-6.19.0
+    helm.sh/chart: grafana-6.21.2
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -25037,7 +25894,7 @@ metadata:
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 8.3.4-ubuntu
-    helm.sh/chart: grafana-6.19.0
+    helm.sh/chart: grafana-6.21.2
     heritage: metalk8s
   name: prometheus-operator-grafana-config-dashboards
   namespace: metalk8s-monitoring
@@ -25079,7 +25936,7 @@ metadata:
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 8.3.4-ubuntu
-    helm.sh/chart: grafana-6.19.0
+    helm.sh/chart: grafana-6.21.2
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -25105,8 +25962,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_datasource: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -25181,7 +26038,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(alertmanager_alerts{namespace=\"$namespace\",service=\"$service\"}) by (namespace,service,instance)",
+                                "expr": "sum(alertmanager_alerts{namespace=~\"$namespace\",service=~\"$service\"}) by (namespace,service,instance)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}}",
@@ -25268,14 +26125,14 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(rate(alertmanager_alerts_received_total{namespace=\"$namespace\",service=\"$service\"}[5m])) by (namespace,service,instance)",
+                                "expr": "sum(rate(alertmanager_alerts_received_total{namespace=~\"$namespace\",service=~\"$service\"}[$__rate_interval])) by (namespace,service,instance)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}} Received",
                                 "refId": "A"
                             },
                             {
-                                "expr": "sum(rate(alertmanager_alerts_invalid_total{namespace=\"$namespace\",service=\"$service\"}[5m])) by (namespace,service,instance)",
+                                "expr": "sum(rate(alertmanager_alerts_invalid_total{namespace=~\"$namespace\",service=~\"$service\"}[$__rate_interval])) by (namespace,service,instance)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}} Invalid",
@@ -25374,14 +26231,14 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(rate(alertmanager_notifications_total{namespace=\"$namespace\",service=\"$service\", integration=\"$integration\"}[5m])) by (integration,namespace,service,instance)",
+                                "expr": "sum(rate(alertmanager_notifications_total{namespace=~\"$namespace\",service=~\"$service\", integration=\"$integration\"}[$__rate_interval])) by (integration,namespace,service,instance)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}} Total",
                                 "refId": "A"
                             },
                             {
-                                "expr": "sum(rate(alertmanager_notifications_failed_total{namespace=\"$namespace\",service=\"$service\", integration=\"$integration\"}[5m])) by (integration,namespace,service,instance)",
+                                "expr": "sum(rate(alertmanager_notifications_failed_total{namespace=~\"$namespace\",service=~\"$service\", integration=\"$integration\"}[$__rate_interval])) by (integration,namespace,service,instance)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}} Failed",
@@ -25467,21 +26324,21 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "histogram_quantile(0.99,\n  sum(rate(alertmanager_notification_latency_seconds_bucket{namespace=\"$namespace\",service=\"$service\", integration=\"$integration\"}[5m])) by (le,namespace,service,instance)\n) \n",
+                                "expr": "histogram_quantile(0.99,\n  sum(rate(alertmanager_notification_latency_seconds_bucket{namespace=~\"$namespace\",service=~\"$service\", integration=\"$integration\"}[$__rate_interval])) by (le,namespace,service,instance)\n) \n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}} 99th Percentile",
                                 "refId": "A"
                             },
                             {
-                                "expr": "histogram_quantile(0.50,\n  sum(rate(alertmanager_notification_latency_seconds_bucket{namespace=\"$namespace\",service=\"$service\", integration=\"$integration\"}[5m])) by (le,namespace,service,instance)\n) \n",
+                                "expr": "histogram_quantile(0.50,\n  sum(rate(alertmanager_notification_latency_seconds_bucket{namespace=~\"$namespace\",service=~\"$service\", integration=\"$integration\"}[$__rate_interval])) by (le,namespace,service,instance)\n) \n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}} Median",
                                 "refId": "B"
                             },
                             {
-                                "expr": "sum(rate(alertmanager_notification_latency_seconds_sum{namespace=\"$namespace\",service=\"$service\", integration=\"$integration\"}[5m])) by (namespace,service,instance)\n/\nsum(rate(alertmanager_notification_latency_seconds_count{namespace=\"$namespace\",service=\"$service\", integration=\"$integration\"}[5m])) by (namespace,service,instance)\n",
+                                "expr": "sum(rate(alertmanager_notification_latency_seconds_sum{namespace=~\"$namespace\",service=~\"$service\", integration=\"$integration\"}[$__rate_interval])) by (namespace,service,instance)\n/\nsum(rate(alertmanager_notification_latency_seconds_count{namespace=~\"$namespace\",service=~\"$service\", integration=\"$integration\"}[$__rate_interval])) by (namespace,service,instance)\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}} Average",
@@ -25549,7 +26406,7 @@ data:
                         "value": "Prometheus"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
                     ],
@@ -25567,7 +26424,7 @@ data:
                     "datasource": "$datasource",
                     "hide": 0,
                     "includeAll": false,
-                    "label": null,
+                    "label": "namespace",
                     "multi": false,
                     "name": "namespace",
                     "options": [
@@ -25592,7 +26449,7 @@ data:
                     "datasource": "$datasource",
                     "hide": 0,
                     "includeAll": false,
-                    "label": null,
+                    "label": "service",
                     "multi": false,
                     "name": "service",
                     "options": [
@@ -25678,8 +26535,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -25753,7 +26610,11 @@ data:
                         "gridPos": {
                         },
                         "id": 3,
-                        "interval": null,
+                        "interval": "1m",
+                        "legend": {
+                            "alignAsTable": true,
+                            "rightSide": true
+                        },
                         "links": [
                         ],
                         "mappingType": 1,
@@ -25828,13 +26689,14 @@ data:
                         "gridPos": {
                         },
                         "id": 4,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -25941,7 +26803,11 @@ data:
                         "gridPos": {
                         },
                         "id": 5,
-                        "interval": null,
+                        "interval": "1m",
+                        "legend": {
+                            "alignAsTable": true,
+                            "rightSide": true
+                        },
                         "links": [
                         ],
                         "mappingType": 1,
@@ -26015,13 +26881,14 @@ data:
                         "gridPos": {
                         },
                         "id": 6,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -26119,13 +26986,14 @@ data:
                         "gridPos": {
                         },
                         "id": 7,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -26207,13 +27075,14 @@ data:
                         "gridPos": {
                         },
                         "id": 8,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -26318,7 +27187,11 @@ data:
                         "gridPos": {
                         },
                         "id": 9,
-                        "interval": null,
+                        "interval": "1m",
+                        "legend": {
+                            "alignAsTable": true,
+                            "rightSide": true
+                        },
                         "links": [
                         ],
                         "mappingType": 1,
@@ -26392,13 +27265,14 @@ data:
                         "gridPos": {
                         },
                         "id": 10,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -26496,13 +27370,14 @@ data:
                         "gridPos": {
                         },
                         "id": 11,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -26584,13 +27459,14 @@ data:
                         "gridPos": {
                         },
                         "id": 12,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -26684,13 +27560,14 @@ data:
                         "gridPos": {
                         },
                         "id": 13,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": false,
                             "sideWidth": null,
                             "total": false,
@@ -26714,7 +27591,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(rate(workqueue_adds_total{job=\"apiserver\", instance=~\"$instance\", cluster=\"$cluster\"}[5m])) by (instance, name)",
+                                "expr": "sum(rate(workqueue_adds_total{job=\"apiserver\", instance=~\"$instance\", cluster=\"$cluster\"}[$__rate_interval])) by (instance, name)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}} {{name}}",
@@ -26771,13 +27648,14 @@ data:
                         "gridPos": {
                         },
                         "id": 14,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": false,
                             "sideWidth": null,
                             "total": false,
@@ -26801,7 +27679,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(rate(workqueue_depth{job=\"apiserver\", instance=~\"$instance\", cluster=\"$cluster\"}[5m])) by (instance, name)",
+                                "expr": "sum(rate(workqueue_depth{job=\"apiserver\", instance=~\"$instance\", cluster=\"$cluster\"}[$__rate_interval])) by (instance, name)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}} {{name}}",
@@ -26858,6 +27736,7 @@ data:
                         "gridPos": {
                         },
                         "id": 15,
+                        "interval": "1m",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -26888,7 +27767,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "histogram_quantile(0.99, sum(rate(workqueue_queue_duration_seconds_bucket{job=\"apiserver\", instance=~\"$instance\", cluster=\"$cluster\"}[5m])) by (instance, name, le))",
+                                "expr": "histogram_quantile(0.99, sum(rate(workqueue_queue_duration_seconds_bucket{job=\"apiserver\", instance=~\"$instance\", cluster=\"$cluster\"}[$__rate_interval])) by (instance, name, le))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}} {{name}}",
@@ -26958,13 +27837,14 @@ data:
                         "gridPos": {
                         },
                         "id": 16,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -27045,13 +27925,14 @@ data:
                         "gridPos": {
                         },
                         "id": 17,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -27075,7 +27956,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "rate(process_cpu_seconds_total{job=\"apiserver\",instance=~\"$instance\", cluster=\"$cluster\"}[5m])",
+                                "expr": "rate(process_cpu_seconds_total{job=\"apiserver\",instance=~\"$instance\", cluster=\"$cluster\"}[$__rate_interval])",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}}",
@@ -27132,13 +28013,14 @@ data:
                         "gridPos": {
                         },
                         "id": 18,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -27230,7 +28112,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
                     ],
@@ -27251,7 +28133,7 @@ data:
                     "name": "cluster",
                     "options": [
                     ],
-                    "query": "label_values(apiserver_request_total, cluster)",
+                    "query": "label_values(up{job=\"apiserver\"}, cluster)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -27274,7 +28156,7 @@ data:
                     "name": "instance",
                     "options": [
                     ],
-                    "query": "label_values(apiserver_request_total{job=\"apiserver\", cluster=\"$cluster\"}, instance)",
+                    "query": "label_values(up{job=\"apiserver\", cluster=\"$cluster\"}, instance)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -27330,8 +28212,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -29046,7 +29928,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
                     ],
@@ -29123,8 +30005,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -29178,7 +30060,11 @@ data:
                         "gridPos": {
                         },
                         "id": 2,
-                        "interval": null,
+                        "interval": "1m",
+                        "legend": {
+                            "alignAsTable": true,
+                            "rightSide": true
+                        },
                         "links": [
                         ],
                         "mappingType": 1,
@@ -29251,6 +30137,7 @@ data:
                         "gridPos": {
                         },
                         "id": 3,
+                        "interval": "1m",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -29281,7 +30168,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(rate(workqueue_adds_total{cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\"}[5m])) by (cluster, instance, name)",
+                                "expr": "sum(rate(workqueue_adds_total{cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\"}[$__rate_interval])) by (cluster, instance, name)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{cluster}} {{instance}} {{name}}",
@@ -29351,6 +30238,7 @@ data:
                         "gridPos": {
                         },
                         "id": 4,
+                        "interval": "1m",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -29381,7 +30269,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(rate(workqueue_depth{cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\"}[5m])) by (cluster, instance, name)",
+                                "expr": "sum(rate(workqueue_depth{cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\"}[$__rate_interval])) by (cluster, instance, name)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{cluster}} {{instance}} {{name}}",
@@ -29451,6 +30339,7 @@ data:
                         "gridPos": {
                         },
                         "id": 5,
+                        "interval": "1m",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -29481,7 +30370,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "histogram_quantile(0.99, sum(rate(workqueue_queue_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\"}[5m])) by (cluster, instance, name, le))",
+                                "expr": "histogram_quantile(0.99, sum(rate(workqueue_queue_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\"}[$__rate_interval])) by (cluster, instance, name, le))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{cluster}} {{instance}} {{name}}",
@@ -29551,13 +30440,14 @@ data:
                         "gridPos": {
                         },
                         "id": 6,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -29581,28 +30471,28 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(rate(rest_client_requests_total{job=\"kube-controller-manager\", instance=~\"$instance\",code=~\"2..\"}[5m]))",
+                                "expr": "sum(rate(rest_client_requests_total{job=\"kube-controller-manager\", instance=~\"$instance\",code=~\"2..\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "2xx",
                                 "refId": "A"
                             },
                             {
-                                "expr": "sum(rate(rest_client_requests_total{job=\"kube-controller-manager\", instance=~\"$instance\",code=~\"3..\"}[5m]))",
+                                "expr": "sum(rate(rest_client_requests_total{job=\"kube-controller-manager\", instance=~\"$instance\",code=~\"3..\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "3xx",
                                 "refId": "B"
                             },
                             {
-                                "expr": "sum(rate(rest_client_requests_total{job=\"kube-controller-manager\", instance=~\"$instance\",code=~\"4..\"}[5m]))",
+                                "expr": "sum(rate(rest_client_requests_total{job=\"kube-controller-manager\", instance=~\"$instance\",code=~\"4..\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "4xx",
                                 "refId": "C"
                             },
                             {
-                                "expr": "sum(rate(rest_client_requests_total{job=\"kube-controller-manager\", instance=~\"$instance\",code=~\"5..\"}[5m]))",
+                                "expr": "sum(rate(rest_client_requests_total{job=\"kube-controller-manager\", instance=~\"$instance\",code=~\"5..\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "5xx",
@@ -29659,13 +30549,14 @@ data:
                         "gridPos": {
                         },
                         "id": 7,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -29689,7 +30580,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\", verb=\"POST\"}[5m])) by (verb, url, le))",
+                                "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\", verb=\"POST\"}[$__rate_interval])) by (verb, url, le))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{verb}} {{url}}",
@@ -29759,6 +30650,7 @@ data:
                         "gridPos": {
                         },
                         "id": 8,
+                        "interval": "1m",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -29789,7 +30681,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\", verb=\"GET\"}[5m])) by (verb, url, le))",
+                                "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-controller-manager\", instance=~\"$instance\", verb=\"GET\"}[$__rate_interval])) by (verb, url, le))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{verb}} {{url}}",
@@ -29859,13 +30751,14 @@ data:
                         "gridPos": {
                         },
                         "id": 9,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -29946,13 +30839,14 @@ data:
                         "gridPos": {
                         },
                         "id": 10,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -29976,7 +30870,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "rate(process_cpu_seconds_total{cluster=\"$cluster\", job=\"kube-controller-manager\",instance=~\"$instance\"}[5m])",
+                                "expr": "rate(process_cpu_seconds_total{cluster=\"$cluster\", job=\"kube-controller-manager\",instance=~\"$instance\"}[$__rate_interval])",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}}",
@@ -30033,13 +30927,14 @@ data:
                         "gridPos": {
                         },
                         "id": 11,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -30131,7 +31026,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
                     ],
@@ -30231,8 +31126,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -30251,7 +31146,6 @@ data:
         "editable": true,
         "gnetId": null,
         "hideControls": false,
-        "id": 6,
         "links": [],
         "refresh": "10s",
         "rows": [
@@ -31348,13 +32242,617 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
   name: prometheus-operator-etcd
+  namespace: metalk8s-monitoring
+---
+apiVersion: v1
+data:
+  grafana-overview.json: |-
+    {
+        "annotations": {
+            "list": [
+                {
+                    "builtIn": 1,
+                    "datasource": "-- Grafana --",
+                    "enable": true,
+                    "hide": true,
+                    "iconColor": "rgba(0, 211, 255, 1)",
+                    "name": "Annotations & Alerts",
+                    "target": {
+                        "limit": 100,
+                        "matchAny": false,
+                        "tags": [
+                        ],
+                        "type": "dashboard"
+                    },
+                    "type": "dashboard"
+                }
+            ]
+        },
+        "editable": true,
+        "gnetId": null,
+        "graphTooltip": 0,
+        "id": 3085,
+        "iteration": 1631554945276,
+        "links": [
+        ],
+        "panels": [
+            {
+                "datasource": "$datasource",
+                "fieldConfig": {
+                    "defaults": {
+                        "mappings": [
+                        ],
+                        "noValue": "0",
+                        "thresholds": {
+                            "mode": "absolute",
+                            "steps": [
+                                {
+                                    "color": "green",
+                                    "value": null
+                                },
+                                {
+                                    "color": "red",
+                                    "value": 80
+                                }
+                            ]
+                        }
+                    },
+                    "overrides": [
+                    ]
+                },
+                "gridPos": {
+                    "h": 5,
+                    "w": 6,
+                    "x": 0,
+                    "y": 0
+                },
+                "id": 6,
+                "options": {
+                    "colorMode": "value",
+                    "graphMode": "area",
+                    "justifyMode": "auto",
+                    "orientation": "auto",
+                    "reduceOptions": {
+                        "calcs": [
+                            "mean"
+                        ],
+                        "fields": "",
+                        "values": false
+                    },
+                    "text": {
+                    },
+                    "textMode": "auto"
+                },
+                "pluginVersion": "8.1.3",
+                "targets": [
+                    {
+                        "expr": "grafana_alerting_result_total{job=~\"$job\", instance=~\"$instance\", state=\"alerting\"}",
+                        "instant": true,
+                        "interval": "",
+                        "legendFormat": "",
+                        "refId": "A"
+                    }
+                ],
+                "timeFrom": null,
+                "timeShift": null,
+                "title": "Firing Alerts",
+                "type": "stat"
+            },
+            {
+                "datasource": "$datasource",
+                "fieldConfig": {
+                    "defaults": {
+                        "mappings": [
+                        ],
+                        "thresholds": {
+                            "mode": "absolute",
+                            "steps": [
+                                {
+                                    "color": "green",
+                                    "value": null
+                                },
+                                {
+                                    "color": "red",
+                                    "value": 80
+                                }
+                            ]
+                        }
+                    },
+                    "overrides": [
+                    ]
+                },
+                "gridPos": {
+                    "h": 5,
+                    "w": 6,
+                    "x": 6,
+                    "y": 0
+                },
+                "id": 8,
+                "options": {
+                    "colorMode": "value",
+                    "graphMode": "area",
+                    "justifyMode": "auto",
+                    "orientation": "auto",
+                    "reduceOptions": {
+                        "calcs": [
+                            "mean"
+                        ],
+                        "fields": "",
+                        "values": false
+                    },
+                    "text": {
+                    },
+                    "textMode": "auto"
+                },
+                "pluginVersion": "8.1.3",
+                "targets": [
+                    {
+                        "expr": "sum(grafana_stat_totals_dashboard{job=~\"$job\", instance=~\"$instance\"})",
+                        "interval": "",
+                        "legendFormat": "",
+                        "refId": "A"
+                    }
+                ],
+                "timeFrom": null,
+                "timeShift": null,
+                "title": "Dashboards",
+                "type": "stat"
+            },
+            {
+                "datasource": "$datasource",
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {
+                            "align": null,
+                            "displayMode": "auto"
+                        },
+                        "mappings": [
+                        ],
+                        "thresholds": {
+                            "mode": "absolute",
+                            "steps": [
+                                {
+                                    "color": "green",
+                                    "value": null
+                                },
+                                {
+                                    "color": "red",
+                                    "value": 80
+                                }
+                            ]
+                        }
+                    },
+                    "overrides": [
+                    ]
+                },
+                "gridPos": {
+                    "h": 5,
+                    "w": 12,
+                    "x": 12,
+                    "y": 0
+                },
+                "id": 10,
+                "options": {
+                    "showHeader": true
+                },
+                "pluginVersion": "8.1.3",
+                "targets": [
+                    {
+                        "expr": "grafana_build_info{job=~\"$job\", instance=~\"$instance\"}",
+                        "instant": true,
+                        "interval": "",
+                        "legendFormat": "",
+                        "refId": "A"
+                    }
+                ],
+                "timeFrom": null,
+                "timeShift": null,
+                "title": "Build Info",
+                "transformations": [
+                    {
+                        "id": "labelsToFields",
+                        "options": {
+                        }
+                    },
+                    {
+                        "id": "organize",
+                        "options": {
+                            "excludeByName": {
+                                "Time": true,
+                                "Value": true,
+                                "branch": true,
+                                "container": true,
+                                "goversion": true,
+                                "namespace": true,
+                                "pod": true,
+                                "revision": true
+                            },
+                            "indexByName": {
+                                "Time": 7,
+                                "Value": 11,
+                                "branch": 4,
+                                "container": 8,
+                                "edition": 2,
+                                "goversion": 6,
+                                "instance": 1,
+                                "job": 0,
+                                "namespace": 9,
+                                "pod": 10,
+                                "revision": 5,
+                                "version": 3
+                            },
+                            "renameByName": {
+                            }
+                        }
+                    }
+                ],
+                "type": "table"
+            },
+            {
+                "aliasColors": {
+                },
+                "bars": false,
+                "dashLength": 10,
+                "dashes": false,
+                "datasource": "$datasource",
+                "fieldConfig": {
+                    "defaults": {
+                        "links": [
+                        ]
+                    },
+                    "overrides": [
+                    ]
+                },
+                "fill": 1,
+                "fillGradient": 0,
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 0,
+                    "y": 5
+                },
+                "hiddenSeries": false,
+                "id": 2,
+                "legend": {
+                    "avg": false,
+                    "current": false,
+                    "max": false,
+                    "min": false,
+                    "show": true,
+                    "total": false,
+                    "values": false
+                },
+                "lines": true,
+                "linewidth": 1,
+                "nullPointMode": "null",
+                "options": {
+                    "alertThreshold": true
+                },
+                "percentage": false,
+                "pluginVersion": "8.1.3",
+                "pointradius": 2,
+                "points": false,
+                "renderer": "flot",
+                "seriesOverrides": [
+                ],
+                "spaceLength": 10,
+                "stack": true,
+                "steppedLine": false,
+                "targets": [
+                    {
+                        "expr": "sum by (status_code) (irate(grafana_http_request_duration_seconds_count{job=~\"$job\", instance=~\"$instance\"}[1m])) ",
+                        "interval": "",
+                        "legendFormat": "{{status_code}}",
+                        "refId": "A"
+                    }
+                ],
+                "thresholds": [
+                ],
+                "timeFrom": null,
+                "timeRegions": [
+                ],
+                "timeShift": null,
+                "title": "RPS",
+                "tooltip": {
+                    "shared": true,
+                    "sort": 0,
+                    "value_type": "individual"
+                },
+                "type": "graph",
+                "xaxis": {
+                    "buckets": null,
+                    "mode": "time",
+                    "name": null,
+                    "show": true,
+                    "values": [
+                    ]
+                },
+                "yaxes": [
+                    {
+                        "$$hashKey": "object:157",
+                        "format": "reqps",
+                        "label": null,
+                        "logBase": 1,
+                        "max": null,
+                        "min": null,
+                        "show": true
+                    },
+                    {
+                        "$$hashKey": "object:158",
+                        "format": "short",
+                        "label": null,
+                        "logBase": 1,
+                        "max": null,
+                        "min": null,
+                        "show": false
+                    }
+                ],
+                "yaxis": {
+                    "align": false,
+                    "alignLevel": null
+                }
+            },
+            {
+                "aliasColors": {
+                },
+                "bars": false,
+                "dashLength": 10,
+                "dashes": false,
+                "datasource": "$datasource",
+                "fieldConfig": {
+                    "defaults": {
+                        "links": [
+                        ]
+                    },
+                    "overrides": [
+                    ]
+                },
+                "fill": 1,
+                "fillGradient": 0,
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 12,
+                    "y": 5
+                },
+                "hiddenSeries": false,
+                "id": 4,
+                "legend": {
+                    "avg": false,
+                    "current": false,
+                    "max": false,
+                    "min": false,
+                    "show": true,
+                    "total": false,
+                    "values": false
+                },
+                "lines": true,
+                "linewidth": 1,
+                "nullPointMode": "null",
+                "options": {
+                    "alertThreshold": true
+                },
+                "percentage": false,
+                "pluginVersion": "8.1.3",
+                "pointradius": 2,
+                "points": false,
+                "renderer": "flot",
+                "seriesOverrides": [
+                ],
+                "spaceLength": 10,
+                "stack": false,
+                "steppedLine": false,
+                "targets": [
+                    {
+                        "exemplar": true,
+                        "expr": "histogram_quantile(0.99, sum(irate(grafana_http_request_duration_seconds_bucket{instance=~\"$instance\", job=~\"$job\"}[$__rate_interval])) by (le)) * 1",
+                        "interval": "",
+                        "legendFormat": "99th Percentile",
+                        "refId": "A"
+                    },
+                    {
+                        "exemplar": true,
+                        "expr": "histogram_quantile(0.50, sum(irate(grafana_http_request_duration_seconds_bucket{instance=~\"$instance\", job=~\"$job\"}[$__rate_interval])) by (le)) * 1",
+                        "interval": "",
+                        "legendFormat": "50th Percentile",
+                        "refId": "B"
+                    },
+                    {
+                        "exemplar": true,
+                        "expr": "sum(irate(grafana_http_request_duration_seconds_sum{instance=~\"$instance\", job=~\"$job\"}[$__rate_interval])) * 1 / sum(irate(grafana_http_request_duration_seconds_count{instance=~\"$instance\", job=~\"$job\"}[$__rate_interval]))",
+                        "interval": "",
+                        "legendFormat": "Average",
+                        "refId": "C"
+                    }
+                ],
+                "thresholds": [
+                ],
+                "timeFrom": null,
+                "timeRegions": [
+                ],
+                "timeShift": null,
+                "title": "Request Latency",
+                "tooltip": {
+                    "shared": true,
+                    "sort": 0,
+                    "value_type": "individual"
+                },
+                "type": "graph",
+                "xaxis": {
+                    "buckets": null,
+                    "mode": "time",
+                    "name": null,
+                    "show": true,
+                    "values": [
+                    ]
+                },
+                "yaxes": [
+                    {
+                        "$$hashKey": "object:210",
+                        "format": "ms",
+                        "label": null,
+                        "logBase": 1,
+                        "max": null,
+                        "min": null,
+                        "show": true
+                    },
+                    {
+                        "$$hashKey": "object:211",
+                        "format": "short",
+                        "label": null,
+                        "logBase": 1,
+                        "max": null,
+                        "min": null,
+                        "show": true
+                    }
+                ],
+                "yaxis": {
+                    "align": false,
+                    "alignLevel": null
+                }
+            }
+        ],
+        "schemaVersion": 30,
+        "style": "dark",
+        "tags": [
+        ],
+        "templating": {
+            "list": [
+                {
+                    "current": {
+                        "selected": true,
+                        "text": "dev-cortex",
+                        "value": "dev-cortex"
+                    },
+                    "description": null,
+                    "error": null,
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": null,
+                    "multi": false,
+                    "name": "datasource",
+                    "options": [
+                    ],
+                    "query": "prometheus",
+                    "queryValue": "",
+                    "refresh": 1,
+                    "regex": "",
+                    "skipUrlSync": false,
+                    "type": "datasource"
+                },
+                {
+                    "allValue": ".*",
+                    "current": {
+                        "selected": false,
+                        "text": [
+                            "default/grafana"
+                        ],
+                        "value": [
+                            "default/grafana"
+                        ]
+                    },
+                    "datasource": "$datasource",
+                    "definition": "label_values(grafana_build_info, job)",
+                    "description": null,
+                    "error": null,
+                    "hide": 0,
+                    "includeAll": true,
+                    "label": null,
+                    "multi": true,
+                    "name": "job",
+                    "options": [
+                    ],
+                    "query": {
+                        "query": "label_values(grafana_build_info, job)",
+                        "refId": "Billing Admin-job-Variable-Query"
+                    },
+                    "refresh": 1,
+                    "regex": "",
+                    "skipUrlSync": false,
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
+                    "allValue": ".*",
+                    "current": {
+                        "selected": false,
+                        "text": "All",
+                        "value": "$__all"
+                    },
+                    "datasource": "$datasource",
+                    "definition": "label_values(grafana_build_info, instance)",
+                    "description": null,
+                    "error": null,
+                    "hide": 0,
+                    "includeAll": true,
+                    "label": null,
+                    "multi": true,
+                    "name": "instance",
+                    "options": [
+                    ],
+                    "query": {
+                        "query": "label_values(grafana_build_info, instance)",
+                        "refId": "Billing Admin-instance-Variable-Query"
+                    },
+                    "refresh": 1,
+                    "regex": "",
+                    "skipUrlSync": false,
+                    "sort": 0,
+                    "tagValuesQuery": "",
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                }
+            ]
+        },
+        "time": {
+            "from": "now-6h",
+            "to": "now"
+        },
+        "timepicker": {
+            "refresh_intervals": [
+                "10s",
+                "30s",
+                "1m",
+                "5m",
+                "15m",
+                "30m",
+                "1h",
+                "2h",
+                "1d"
+            ]
+        },
+        "timezone": "utc",
+        "title": "Grafana Overview",
+        "uid": "6be0s85Mk",
+        "version": 2
+    }
+kind: ConfigMap
+metadata:
+  annotations: {}
+  labels:
+    app: prometheus-operator-grafana
+    app.kubernetes.io/instance: prometheus-operator
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: prometheus-operator-grafana
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
+    grafana_dashboard: '1'
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+    release: prometheus-operator
+  name: prometheus-operator-grafana-overview
   namespace: metalk8s-monitoring
 ---
 apiVersion: v1
@@ -31462,7 +32960,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(coredns_dns_request_count_total{instance=~\"$instance\"}[5m])) by (proto) or\nsum(rate(coredns_dns_requests_total{instance=~\"$instance\"}[5m])) by (proto)",
+              "expr": "sum(rate(coredns_dns_request_count_total{job=\"coredns\",instance=~\"$instance\"}[5m])) by (proto) or\nsum(rate(coredns_dns_requests_total{job=\"coredns\",instance=~\"$instance\"}[5m])) by (proto)",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 2,
@@ -31572,7 +33070,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(coredns_dns_request_type_count_total{instance=~\"$instance\"}[5m])) by (type) or \nsum(rate(coredns_dns_requests_total{instance=~\"$instance\"}[5m])) by (type)",
+              "expr": "sum(rate(coredns_dns_request_type_count_total{job=\"coredns\",instance=~\"$instance\"}[5m])) by (type) or \nsum(rate(coredns_dns_requests_total{job=\"coredns\",instance=~\"$instance\"}[5m])) by (type)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{type}}",
@@ -31677,7 +33175,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(coredns_dns_request_count_total{instance=~\"$instance\"}[5m])) by (zone) or\nsum(rate(coredns_dns_requests_total{instance=~\"$instance\"}[5m])) by (zone)",
+              "expr": "sum(rate(coredns_dns_request_count_total{job=\"coredns\",instance=~\"$instance\"}[5m])) by (zone) or\nsum(rate(coredns_dns_requests_total{job=\"coredns\",instance=~\"$instance\"}[5m])) by (zone)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{zone}}",
@@ -31782,7 +33280,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(coredns_dns_request_do_count_total{instance=~\"$instance\"}[5m])) or\nsum(rate(coredns_dns_do_requests_total{instance=~\"$instance\"}[5m]))",
+              "expr": "sum(rate(coredns_dns_request_do_count_total{job=\"coredns\",instance=~\"$instance\"}[5m])) or\nsum(rate(coredns_dns_do_requests_total{job=\"coredns\",instance=~\"$instance\"}[5m]))",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "DO",
@@ -31790,7 +33288,7 @@ data:
               "step": 40
             },
             {
-              "expr": "sum(rate(coredns_dns_request_count_total{instance=~\"$instance\"}[5m])) or\nsum(rate(coredns_dns_requests_total{instance=~\"$instance\"}[5m]))",
+              "expr": "sum(rate(coredns_dns_request_count_total{job=\"coredns\",instance=~\"$instance\"}[5m])) or\nsum(rate(coredns_dns_requests_total{job=\"coredns\",instance=~\"$instance\"}[5m]))",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "total",
@@ -31903,7 +33401,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.99, sum(rate(coredns_dns_request_size_bytes_bucket{instance=~\"$instance\",proto=\"udp\"}[5m])) by (le,proto))",
+              "expr": "histogram_quantile(0.99, sum(rate(coredns_dns_request_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"udp\"}[5m])) by (le,proto))",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{proto}}:99 ",
@@ -31911,14 +33409,14 @@ data:
               "step": 60
             },
             {
-              "expr": "histogram_quantile(0.90, sum(rate(coredns_dns_request_size_bytes_bucket{instance=~\"$instance\",proto=\"udp\"}[5m])) by (le,proto))",
+              "expr": "histogram_quantile(0.90, sum(rate(coredns_dns_request_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"udp\"}[5m])) by (le,proto))",
               "intervalFactor": 2,
               "legendFormat": "{{proto}}:90",
               "refId": "B",
               "step": 60
             },
             {
-              "expr": "histogram_quantile(0.50, sum(rate(coredns_dns_request_size_bytes_bucket{instance=~\"$instance\",proto=\"udp\"}[5m])) by (le,proto))",
+              "expr": "histogram_quantile(0.50, sum(rate(coredns_dns_request_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"udp\"}[5m])) by (le,proto))",
               "intervalFactor": 2,
               "legendFormat": "{{proto}}:50",
               "refId": "C",
@@ -32030,7 +33528,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.99, sum(rate(coredns_dns_request_size_bytes_bucket{instance=~\"$instance\",proto=\"tcp\"}[5m])) by (le,proto))",
+              "expr": "histogram_quantile(0.99, sum(rate(coredns_dns_request_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"tcp\"}[5m])) by (le,proto))",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 2,
@@ -32039,7 +33537,7 @@ data:
               "step": 60
             },
             {
-              "expr": "histogram_quantile(0.90, sum(rate(coredns_dns_request_size_bytes_bucket{instance=~\"$instance\",proto=\"tcp\"}[5m])) by (le,proto))",
+              "expr": "histogram_quantile(0.90, sum(rate(coredns_dns_request_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"tcp\"}[5m])) by (le,proto))",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 2,
@@ -32048,7 +33546,7 @@ data:
               "step": 60
             },
             {
-              "expr": "histogram_quantile(0.50, sum(rate(coredns_dns_request_size_bytes_bucket{instance=~\"$instance\",proto=\"tcp\"}[5m])) by (le,proto))",
+              "expr": "histogram_quantile(0.50, sum(rate(coredns_dns_request_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"tcp\"}[5m])) by (le,proto))",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 2,
@@ -32149,7 +33647,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(coredns_dns_response_rcode_count_total{instance=~\"$instance\"}[5m])) by (rcode) or\nsum(rate(coredns_dns_responses_total{instance=~\"$instance\"}[5m])) by (rcode)",
+              "expr": "sum(rate(coredns_dns_response_rcode_count_total{job=\"coredns\",instance=~\"$instance\"}[5m])) by (rcode) or\nsum(rate(coredns_dns_responses_total{job=\"coredns\",instance=~\"$instance\"}[5m])) by (rcode)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{rcode}}",
@@ -32249,7 +33747,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.99, sum(rate(coredns_dns_request_duration_seconds_bucket{instance=~\"$instance\"}[5m])) by (le, job))",
+              "expr": "histogram_quantile(0.99, sum(rate(coredns_dns_request_duration_seconds_bucket{job=\"coredns\",instance=~\"$instance\"}[5m])) by (le, job))",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "99%",
@@ -32257,7 +33755,7 @@ data:
               "step": 40
             },
             {
-              "expr": "histogram_quantile(0.90, sum(rate(coredns_dns_request_duration_seconds_bucket{instance=~\"$instance\"}[5m])) by (le))",
+              "expr": "histogram_quantile(0.90, sum(rate(coredns_dns_request_duration_seconds_bucket{job=\"coredns\",instance=~\"$instance\"}[5m])) by (le))",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "90%",
@@ -32265,7 +33763,7 @@ data:
               "step": 40
             },
             {
-              "expr": "histogram_quantile(0.50, sum(rate(coredns_dns_request_duration_seconds_bucket{instance=~\"$instance\"}[5m])) by (le))",
+              "expr": "histogram_quantile(0.50, sum(rate(coredns_dns_request_duration_seconds_bucket{job=\"coredns\",instance=~\"$instance\"}[5m])) by (le))",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "50%",
@@ -32382,7 +33880,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.99, sum(rate(coredns_dns_response_size_bytes_bucket{instance=~\"$instance\",proto=\"udp\"}[5m])) by (le,proto)) ",
+              "expr": "histogram_quantile(0.99, sum(rate(coredns_dns_response_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"udp\"}[5m])) by (le,proto)) ",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{proto}}:99%",
@@ -32390,7 +33888,7 @@ data:
               "step": 40
             },
             {
-              "expr": "histogram_quantile(0.90, sum(rate(coredns_dns_response_size_bytes_bucket{instance=~\"$instance\",proto=\"udp\"}[5m])) by (le,proto)) ",
+              "expr": "histogram_quantile(0.90, sum(rate(coredns_dns_response_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"udp\"}[5m])) by (le,proto)) ",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{proto}}:90%",
@@ -32398,7 +33896,7 @@ data:
               "step": 40
             },
             {
-              "expr": "histogram_quantile(0.50, sum(rate(coredns_dns_response_size_bytes_bucket{instance=~\"$instance\",proto=\"udp\"}[5m])) by (le,proto)) ",
+              "expr": "histogram_quantile(0.50, sum(rate(coredns_dns_response_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"udp\"}[5m])) by (le,proto)) ",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{proto}}:50%",
@@ -32516,7 +34014,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "histogram_quantile(0.99, sum(rate(coredns_dns_response_size_bytes_bucket{instance=~\"$instance\",proto=\"tcp\"}[5m])) by (le,proto)) ",
+              "expr": "histogram_quantile(0.99, sum(rate(coredns_dns_response_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"tcp\"}[5m])) by (le,proto)) ",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{proto}}:99%",
@@ -32524,7 +34022,7 @@ data:
               "step": 40
             },
             {
-              "expr": "histogram_quantile(0.90, sum(rate(coredns_dns_response_size_bytes_bucket{instance=~\"$instance\",proto=\"tcp\"}[5m])) by (le,proto)) ",
+              "expr": "histogram_quantile(0.90, sum(rate(coredns_dns_response_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"tcp\"}[5m])) by (le,proto)) ",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{proto}}:90%",
@@ -32532,7 +34030,7 @@ data:
               "step": 40
             },
             {
-              "expr": "histogram_quantile(0.50, sum(rate(coredns_dns_response_size_bytes_bucket{instance=~\"$instance\",proto=\"tcp\"}[5m])) by (le, proto)) ",
+              "expr": "histogram_quantile(0.50, sum(rate(coredns_dns_response_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"tcp\"}[5m])) by (le, proto)) ",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{proto}}:50%",
@@ -32633,7 +34131,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(coredns_cache_size{instance=~\"$instance\"}) by (type) or\nsum(coredns_cache_entries{instance=~\"$instance\"}) by (type)",
+              "expr": "sum(coredns_cache_size{job=\"coredns\",instance=~\"$instance\"}) by (type) or\nsum(coredns_cache_entries{job=\"coredns\",instance=~\"$instance\"}) by (type)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{type}}",
@@ -32738,7 +34236,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(coredns_cache_hits_total{instance=~\"$instance\"}[5m])) by (type)",
+              "expr": "sum(rate(coredns_cache_hits_total{job=\"coredns\",instance=~\"$instance\"}[5m])) by (type)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "hits:{{type}}",
@@ -32746,7 +34244,7 @@ data:
               "step": 40
             },
             {
-              "expr": "sum(rate(coredns_cache_misses_total{instance=~\"$instance\"}[5m])) by (type)",
+              "expr": "sum(rate(coredns_cache_misses_total{job=\"coredns\",instance=~\"$instance\"}[5m])) by (type)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "misses",
@@ -32881,8 +34379,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -32922,10 +34420,12 @@ data:
                         "id": 1,
                         "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -32947,7 +34447,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "1 - avg(rate(node_cpu_seconds_total{mode=\"idle\", cluster=\"$cluster\"}[$__rate_interval]))",
+                                "expr": "1 - sum(avg by (mode) (rate(node_cpu_seconds_total{job=\"node-exporter\", mode=~\"idle|iowait|steal\", cluster=\"$cluster\"}[$__rate_interval])))",
                                 "format": "time_series",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -32960,7 +34460,7 @@ data:
                         "title": "CPU Utilisation",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "singlestat",
@@ -33001,11 +34501,14 @@ data:
                         "fill": 1,
                         "format": "percentunit",
                         "id": 2,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -33027,7 +34530,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(namespace_cpu:kube_pod_container_resource_requests:sum{cluster=\"$cluster\"}) / sum(kube_node_status_allocatable{resource=\"cpu\",cluster=\"$cluster\"})",
+                                "expr": "sum(namespace_cpu:kube_pod_container_resource_requests:sum{cluster=\"$cluster\"}) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\",cluster=\"$cluster\"})",
                                 "format": "time_series",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -33040,7 +34543,7 @@ data:
                         "title": "CPU Requests Commitment",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "singlestat",
@@ -33081,11 +34584,14 @@ data:
                         "fill": 1,
                         "format": "percentunit",
                         "id": 3,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -33107,7 +34613,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(namespace_cpu:kube_pod_container_resource_limits:sum{cluster=\"$cluster\"}) / sum(kube_node_status_allocatable{resource=\"cpu\",cluster=\"$cluster\"})",
+                                "expr": "sum(namespace_cpu:kube_pod_container_resource_limits:sum{cluster=\"$cluster\"}) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\",cluster=\"$cluster\"})",
                                 "format": "time_series",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -33120,7 +34626,7 @@ data:
                         "title": "CPU Limits Commitment",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "singlestat",
@@ -33161,11 +34667,14 @@ data:
                         "fill": 1,
                         "format": "percentunit",
                         "id": 4,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -33187,7 +34696,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "1 - sum(:node_memory_MemAvailable_bytes:sum{cluster=\"$cluster\"}) / sum(node_memory_MemTotal_bytes{cluster=\"$cluster\"})",
+                                "expr": "1 - sum(:node_memory_MemAvailable_bytes:sum{cluster=\"$cluster\"}) / sum(node_memory_MemTotal_bytes{job=\"node-exporter\",cluster=\"$cluster\"})",
                                 "format": "time_series",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -33200,7 +34709,7 @@ data:
                         "title": "Memory Utilisation",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "singlestat",
@@ -33241,11 +34750,14 @@ data:
                         "fill": 1,
                         "format": "percentunit",
                         "id": 5,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -33267,7 +34779,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(namespace_memory:kube_pod_container_resource_requests:sum{cluster=\"$cluster\"}) / sum(kube_node_status_allocatable{resource=\"memory\",cluster=\"$cluster\"})",
+                                "expr": "sum(namespace_memory:kube_pod_container_resource_requests:sum{cluster=\"$cluster\"}) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\",cluster=\"$cluster\"})",
                                 "format": "time_series",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -33280,7 +34792,7 @@ data:
                         "title": "Memory Requests Commitment",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "singlestat",
@@ -33321,11 +34833,14 @@ data:
                         "fill": 1,
                         "format": "percentunit",
                         "id": 6,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -33347,7 +34862,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(namespace_memory:kube_pod_container_resource_limits:sum{cluster=\"$cluster\"}) / sum(kube_node_status_allocatable{resource=\"memory\",cluster=\"$cluster\"})",
+                                "expr": "sum(namespace_memory:kube_pod_container_resource_limits:sum{cluster=\"$cluster\"}) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\",cluster=\"$cluster\"})",
                                 "format": "time_series",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -33360,7 +34875,7 @@ data:
                         "title": "Memory Limits Commitment",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "singlestat",
@@ -33412,11 +34927,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 7,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -33453,7 +34971,7 @@ data:
                         "title": "CPU Usage",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -33505,11 +35023,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 1,
                         "id": 8,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -33688,7 +35209,7 @@ data:
                         ],
                         "targets": [
                             {
-                                "expr": "sum(kube_pod_owner{cluster=\"$cluster\"}) by (namespace)",
+                                "expr": "sum(kube_pod_owner{job=\"kube-state-metrics\", cluster=\"$cluster\"}) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -33758,7 +35279,7 @@ data:
                         "title": "CPU Quota",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -33811,11 +35332,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 9,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -33837,7 +35361,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(container_memory_rss{cluster=\"$cluster\", container!=\"\"}) by (namespace)",
+                                "expr": "sum(container_memory_rss{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", container!=\"\"}) by (namespace)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -33852,7 +35376,7 @@ data:
                         "title": "Memory Usage (w/o cache)",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -33904,11 +35428,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 1,
                         "id": 10,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -34087,7 +35614,7 @@ data:
                         ],
                         "targets": [
                             {
-                                "expr": "sum(kube_pod_owner{cluster=\"$cluster\"}) by (namespace)",
+                                "expr": "sum(kube_pod_owner{job=\"kube-state-metrics\", cluster=\"$cluster\"}) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34105,7 +35632,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_rss{cluster=\"$cluster\", container!=\"\"}) by (namespace)",
+                                "expr": "sum(container_memory_rss{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", container!=\"\"}) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34123,7 +35650,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_rss{cluster=\"$cluster\", container!=\"\"}) by (namespace) / sum(namespace_memory:kube_pod_container_resource_requests:sum{cluster=\"$cluster\"}) by (namespace)",
+                                "expr": "sum(container_memory_rss{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", container!=\"\"}) by (namespace) / sum(namespace_memory:kube_pod_container_resource_requests:sum{cluster=\"$cluster\"}) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34141,7 +35668,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_rss{cluster=\"$cluster\", container!=\"\"}) by (namespace) / sum(namespace_memory:kube_pod_container_resource_limits:sum{cluster=\"$cluster\"}) by (namespace)",
+                                "expr": "sum(container_memory_rss{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", container!=\"\"}) by (namespace) / sum(namespace_memory:kube_pod_container_resource_limits:sum{cluster=\"$cluster\"}) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34157,7 +35684,7 @@ data:
                         "title": "Requests by Namespace",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -34212,10 +35739,12 @@ data:
                         "id": 11,
                         "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -34377,7 +35906,7 @@ data:
                         ],
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34386,7 +35915,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34395,7 +35924,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_receive_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34404,7 +35933,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_transmit_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34413,7 +35942,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_receive_packets_dropped_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34422,7 +35951,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -34438,7 +35967,7 @@ data:
                         "title": "Current Network Usage",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -34491,11 +36020,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 12,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -34517,7 +36049,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -34532,7 +36064,7 @@ data:
                         "title": "Receive Bandwidth",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -34572,11 +36104,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 13,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -34598,7 +36133,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -34613,7 +36148,7 @@ data:
                         "title": "Transmit Bandwidth",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -34665,11 +36200,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 14,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -34691,7 +36229,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                                "expr": "avg(irate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -34706,7 +36244,7 @@ data:
                         "title": "Average Container Bandwidth by Namespace: Received",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -34746,11 +36284,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 15,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -34772,7 +36313,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                                "expr": "avg(irate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -34787,7 +36328,7 @@ data:
                         "title": "Average Container Bandwidth by Namespace: Transmitted",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -34839,11 +36380,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 16,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -34865,7 +36409,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_receive_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -34880,7 +36424,7 @@ data:
                         "title": "Rate of Received Packets",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -34920,11 +36464,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 17,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -34946,7 +36493,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_transmit_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -34961,7 +36508,7 @@ data:
                         "title": "Rate of Transmitted Packets",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -35013,11 +36560,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 18,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -35039,7 +36589,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_receive_packets_dropped_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -35054,7 +36604,7 @@ data:
                         "title": "Rate of Received Packets Dropped",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -35094,11 +36644,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 19,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -35120,7 +36673,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
+                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval])) by (namespace)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -35135,7 +36688,7 @@ data:
                         "title": "Rate of Transmitted Packets Dropped",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -35188,11 +36741,14 @@ data:
                         "decimals": -1,
                         "fill": 10,
                         "id": 20,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -35214,7 +36770,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "ceil(sum by(namespace) (rate(container_fs_reads_total{container!=\"\", cluster=\"$cluster\"}[5m]) + rate(container_fs_writes_total{container!=\"\", cluster=\"$cluster\"}[5m])))",
+                                "expr": "ceil(sum by(namespace) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\"}[$__rate_interval]) + rate(container_fs_writes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\"}[$__rate_interval])))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -35229,7 +36785,7 @@ data:
                         "title": "IOPS(Reads+Writes)",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -35269,11 +36825,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 21,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -35295,7 +36854,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum by(namespace) (rate(container_fs_reads_bytes_total{container!=\"\", cluster=\"$cluster\"}[5m]) + rate(container_fs_writes_bytes_total{container!=\"\", cluster=\"$cluster\"}[5m]))",
+                                "expr": "sum by(namespace) (rate(container_fs_reads_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\"}[$__rate_interval]) + rate(container_fs_writes_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{namespace}}",
@@ -35310,7 +36869,7 @@ data:
                         "title": "ThroughPut(Read+Write)",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -35362,11 +36921,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 1,
                         "id": 22,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -35532,7 +37094,7 @@ data:
                         ],
                         "targets": [
                             {
-                                "expr": "sum by(namespace) (rate(container_fs_reads_total{container!=\"\", cluster=\"$cluster\"}[5m]))",
+                                "expr": "sum by(namespace) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -35541,7 +37103,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(namespace) (rate(container_fs_writes_total{container!=\"\", cluster=\"$cluster\"}[5m]))",
+                                "expr": "sum by(namespace) (rate(container_fs_writes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -35550,7 +37112,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(namespace) (rate(container_fs_reads_total{container!=\"\", cluster=\"$cluster\"}[5m]) + rate(container_fs_writes_total{container!=\"\", cluster=\"$cluster\"}[5m]))",
+                                "expr": "sum by(namespace) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\"}[$__rate_interval]) + rate(container_fs_writes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -35559,7 +37121,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(namespace) (rate(container_fs_reads_bytes_total{container!=\"\", cluster=\"$cluster\"}[5m]))",
+                                "expr": "sum by(namespace) (rate(container_fs_reads_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -35568,7 +37130,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(namespace) (rate(container_fs_writes_bytes_total{container!=\"\", cluster=\"$cluster\"}[5m]))",
+                                "expr": "sum by(namespace) (rate(container_fs_writes_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -35577,7 +37139,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(namespace) (rate(container_fs_reads_bytes_total{container!=\"\", cluster=\"$cluster\"}[5m]) + rate(container_fs_writes_bytes_total{container!=\"\", cluster=\"$cluster\"}[5m]))",
+                                "expr": "sum by(namespace) (rate(container_fs_reads_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\"}[$__rate_interval]) + rate(container_fs_writes_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -35593,7 +37155,7 @@ data:
                         "title": "Current Storage IO",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -35647,7 +37209,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
                     ],
@@ -35726,8 +37288,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -35765,11 +37327,14 @@ data:
                         "fill": 1,
                         "format": "percentunit",
                         "id": 1,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -35791,7 +37356,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\"}) / sum(kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"})",
+                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\"}) / sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"})",
                                 "format": "time_series",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -35804,7 +37369,7 @@ data:
                         "title": "CPU Utilisation (from requests)",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "singlestat",
@@ -35845,11 +37410,14 @@ data:
                         "fill": 1,
                         "format": "percentunit",
                         "id": 2,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -35871,7 +37439,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\"}) / sum(kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"})",
+                                "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\"}) / sum(kube_pod_container_resource_limits{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"})",
                                 "format": "time_series",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -35884,7 +37452,7 @@ data:
                         "title": "CPU Utilisation (from limits)",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "singlestat",
@@ -35925,11 +37493,14 @@ data:
                         "fill": 1,
                         "format": "percentunit",
                         "id": 3,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -35951,7 +37522,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\", image!=\"\"}) / sum(kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"})",
+                                "expr": "sum(container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\", image!=\"\"}) / sum(kube_pod_container_resource_requests{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"})",
                                 "format": "time_series",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -35964,7 +37535,7 @@ data:
                         "title": "Memory Utilisation (from requests)",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "singlestat",
@@ -36005,11 +37576,14 @@ data:
                         "fill": 1,
                         "format": "percentunit",
                         "id": 4,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -36031,7 +37605,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\", image!=\"\"}) / sum(kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"})",
+                                "expr": "sum(container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\", image!=\"\"}) / sum(kube_pod_container_resource_limits{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"})",
                                 "format": "time_series",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -36044,7 +37618,7 @@ data:
                         "title": "Memory Utilisation (from limits)",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "singlestat",
@@ -36096,11 +37670,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 5,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -36175,7 +37752,7 @@ data:
                         "title": "CPU Usage",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -36227,11 +37804,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 1,
                         "id": 6,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -36428,7 +38008,7 @@ data:
                         "title": "CPU Quota",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -36481,11 +38061,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 7,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -36529,7 +38112,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\", image!=\"\"}) by (pod)",
+                                "expr": "sum(container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\", image!=\"\"}) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -36560,7 +38143,7 @@ data:
                         "title": "Memory Usage (w/o cache)",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -36612,11 +38195,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 1,
                         "id": 8,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -36812,7 +38398,7 @@ data:
                         ],
                         "targets": [
                             {
-                                "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\", image!=\"\"}) by (pod)",
+                                "expr": "sum(container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\", image!=\"\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -36830,7 +38416,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\", image!=\"\"}) by (pod) / sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\"}) by (pod)",
+                                "expr": "sum(container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\", image!=\"\"}) by (pod) / sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -36848,7 +38434,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\", image!=\"\"}) by (pod) / sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\"}) by (pod)",
+                                "expr": "sum(container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\", image!=\"\"}) by (pod) / sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -36857,7 +38443,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_rss{cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\"}) by (pod)",
+                                "expr": "sum(container_memory_rss{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -36866,7 +38452,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_cache{cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\"}) by (pod)",
+                                "expr": "sum(container_memory_cache{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -36875,7 +38461,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_swap{cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\"}) by (pod)",
+                                "expr": "sum(container_memory_swap{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",container!=\"\"}) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -36891,7 +38477,7 @@ data:
                         "title": "Memory Quota",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -36946,10 +38532,12 @@ data:
                         "id": 9,
                         "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -37111,7 +38699,7 @@ data:
                         ],
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -37120,7 +38708,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -37129,7 +38717,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -37138,7 +38726,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -37147,7 +38735,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_packets_dropped_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -37156,7 +38744,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -37172,7 +38760,7 @@ data:
                         "title": "Current Network Usage",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -37225,11 +38813,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 10,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -37251,7 +38842,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -37266,7 +38857,7 @@ data:
                         "title": "Receive Bandwidth",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -37306,11 +38897,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 11,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -37332,7 +38926,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -37347,7 +38941,7 @@ data:
                         "title": "Transmit Bandwidth",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -37399,11 +38993,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 12,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -37425,7 +39022,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -37440,7 +39037,7 @@ data:
                         "title": "Rate of Received Packets",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -37480,11 +39077,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 13,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -37506,7 +39106,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -37521,7 +39121,7 @@ data:
                         "title": "Rate of Transmitted Packets",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -37573,11 +39173,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 14,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -37599,7 +39202,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -37614,7 +39217,7 @@ data:
                         "title": "Rate of Received Packets Dropped",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -37654,11 +39257,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 15,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -37680,7 +39286,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -37695,7 +39301,7 @@ data:
                         "title": "Rate of Transmitted Packets Dropped",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -37748,11 +39354,14 @@ data:
                         "decimals": -1,
                         "fill": 10,
                         "id": 16,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -37774,7 +39383,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "ceil(sum by(pod) (rate(container_fs_reads_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\"}[5m]) + rate(container_fs_writes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\"}[5m])))",
+                                "expr": "ceil(sum by(pod) (rate(container_fs_reads_total{container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]) + rate(container_fs_writes_total{container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval])))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -37789,7 +39398,7 @@ data:
                         "title": "IOPS(Reads+Writes)",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -37829,11 +39438,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 17,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -37855,7 +39467,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum by(pod) (rate(container_fs_reads_bytes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\"}[5m]) + rate(container_fs_writes_bytes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\"}[5m]))",
+                                "expr": "sum by(pod) (rate(container_fs_reads_bytes_total{container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]) + rate(container_fs_writes_bytes_total{container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -37870,7 +39482,7 @@ data:
                         "title": "ThroughPut(Read+Write)",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -37922,11 +39534,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 1,
                         "id": 18,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -38092,7 +39707,7 @@ data:
                         ],
                         "targets": [
                             {
-                                "expr": "sum by(pod) (rate(container_fs_reads_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\"}[5m]))",
+                                "expr": "sum by(pod) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -38101,7 +39716,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(pod) (rate(container_fs_writes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\"}[5m]))",
+                                "expr": "sum by(pod) (rate(container_fs_writes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -38110,7 +39725,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(pod) (rate(container_fs_reads_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\"}[5m]) + rate(container_fs_writes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\"}[5m]))",
+                                "expr": "sum by(pod) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]) + rate(container_fs_writes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -38119,7 +39734,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(pod) (rate(container_fs_reads_bytes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\"}[5m]))",
+                                "expr": "sum by(pod) (rate(container_fs_reads_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -38128,7 +39743,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(pod) (rate(container_fs_writes_bytes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\"}[5m]))",
+                                "expr": "sum by(pod) (rate(container_fs_writes_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -38137,7 +39752,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(pod) (rate(container_fs_reads_bytes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\"}[5m]) + rate(container_fs_writes_bytes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\"}[5m]))",
+                                "expr": "sum by(pod) (rate(container_fs_reads_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]) + rate(container_fs_writes_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -38153,7 +39768,7 @@ data:
                         "title": "Current Storage IO",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -38207,7 +39822,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
                     ],
@@ -38230,7 +39845,7 @@ data:
                     "name": "cluster",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info, cluster)",
+                    "query": "label_values(up{job=\"kube-state-metrics\"}, cluster)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -38255,7 +39870,7 @@ data:
                     "name": "namespace",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info{cluster=\"$cluster\"}, namespace)",
+                    "query": "label_values(kube_namespace_status_phase{job=\"kube-state-metrics\", cluster=\"$cluster\"}, namespace)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -38311,8 +39926,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -38349,11 +39964,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 1,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -38368,12 +39986,31 @@ data:
                         "points": false,
                         "renderer": "flot",
                         "seriesOverrides": [
+                            {
+                                "alias": "max capacity",
+                                "color": "#F2495C",
+                                "dashes": true,
+                                "fill": 0,
+                                "hiddenSeries": true,
+                                "hideTooltip": true,
+                                "legend": true,
+                                "linewidth": 2,
+                                "stack": false
+                            }
                         ],
                         "spaceLength": 10,
                         "span": 12,
                         "stack": true,
                         "steppedLine": false,
                         "targets": [
+                            {
+                                "expr": "sum(kube_node_status_capacity{cluster=\"$cluster\", node=~\"$node\", resource=\"cpu\"})",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "legendFormat": "max capacity",
+                                "legendLink": null,
+                                "step": 10
+                            },
                             {
                                 "expr": "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", node=~\"$node\"}) by (pod)",
                                 "format": "time_series",
@@ -38390,7 +40027,7 @@ data:
                         "title": "CPU Usage",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -38442,11 +40079,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 1,
                         "id": 2,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -38643,7 +40283,7 @@ data:
                         "title": "CPU Quota",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -38696,11 +40336,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 3,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -38715,12 +40358,31 @@ data:
                         "points": false,
                         "renderer": "flot",
                         "seriesOverrides": [
+                            {
+                                "alias": "max capacity",
+                                "color": "#F2495C",
+                                "dashes": true,
+                                "fill": 0,
+                                "hiddenSeries": true,
+                                "hideTooltip": true,
+                                "legend": true,
+                                "linewidth": 2,
+                                "stack": false
+                            }
                         ],
                         "spaceLength": 10,
                         "span": 12,
                         "stack": true,
                         "steppedLine": false,
                         "targets": [
+                            {
+                                "expr": "sum(kube_node_status_capacity{cluster=\"$cluster\", node=~\"$node\", resource=\"memory\"})",
+                                "format": "time_series",
+                                "intervalFactor": 2,
+                                "legendFormat": "max capacity",
+                                "legendLink": null,
+                                "step": 10
+                            },
                             {
                                 "expr": "sum(node_namespace_pod_container:container_memory_working_set_bytes{cluster=\"$cluster\", node=~\"$node\", container!=\"\"}) by (pod)",
                                 "format": "time_series",
@@ -38737,7 +40399,7 @@ data:
                         "title": "Memory Usage (w/o cache)",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -38789,11 +40451,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 1,
                         "id": 4,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -39068,7 +40733,7 @@ data:
                         "title": "Memory Quota",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -39122,7 +40787,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
                     ],
@@ -39145,7 +40810,7 @@ data:
                     "name": "cluster",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info, cluster)",
+                    "query": "label_values(up{job=\"kube-state-metrics\"}, cluster)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -39170,7 +40835,7 @@ data:
                     "name": "node",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info{cluster=\"$cluster\"}, node)",
+                    "query": "label_values(kube_node_info{cluster=\"$cluster\"}, node)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -39226,8 +40891,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -39264,11 +40929,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 1,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -39316,7 +40984,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n    kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"cpu\"}\n)\n",
+                                "expr": "sum(\n    kube_pod_container_resource_requests{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"cpu\"}\n)\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "requests",
@@ -39324,7 +40992,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n    kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"cpu\"}\n)\n",
+                                "expr": "sum(\n    kube_pod_container_resource_limits{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"cpu\"}\n)\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "limits",
@@ -39339,7 +41007,7 @@ data:
                         "title": "CPU Usage",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -39391,11 +41059,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 2,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": true,
                             "max": true,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -39417,7 +41088,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(increase(container_cpu_cfs_throttled_periods_total{namespace=\"$namespace\", pod=\"$pod\", container!=\"\", cluster=\"$cluster\"}[5m])) by (container) /sum(increase(container_cpu_cfs_periods_total{namespace=\"$namespace\", pod=\"$pod\", container!=\"\", cluster=\"$cluster\"}[5m])) by (container)",
+                                "expr": "sum(increase(container_cpu_cfs_throttled_periods_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", namespace=\"$namespace\", pod=\"$pod\", container!=\"\", cluster=\"$cluster\"}[$__rate_interval])) by (container) /sum(increase(container_cpu_cfs_periods_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", namespace=\"$namespace\", pod=\"$pod\", container!=\"\", cluster=\"$cluster\"}[$__rate_interval])) by (container)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{container}}",
@@ -39440,7 +41111,7 @@ data:
                         "title": "CPU Throttling",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -39492,11 +41163,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 1,
                         "id": 3,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -39693,7 +41367,7 @@ data:
                         "title": "CPU Quota",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -39746,11 +41420,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 4,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -39792,7 +41469,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", container!=\"\", image!=\"\"}) by (container)",
+                                "expr": "sum(container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", container!=\"\", image!=\"\"}) by (container)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{container}}",
@@ -39800,7 +41477,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n    kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"memory\"}\n)\n",
+                                "expr": "sum(\n    kube_pod_container_resource_requests{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"memory\"}\n)\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "requests",
@@ -39808,7 +41485,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n    kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"memory\"}\n)\n",
+                                "expr": "sum(\n    kube_pod_container_resource_limits{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", resource=\"memory\"}\n)\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "limits",
@@ -39823,7 +41500,7 @@ data:
                         "title": "Memory Usage (WSS)",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -39875,11 +41552,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 1,
                         "id": 5,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -40075,7 +41755,7 @@ data:
                         ],
                         "targets": [
                             {
-                                "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", container!=\"\", image!=\"\"}) by (container)",
+                                "expr": "sum(container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", container!=\"\", image!=\"\"}) by (container)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -40093,7 +41773,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", image!=\"\"}) by (container) / sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}) by (container)",
+                                "expr": "sum(container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", image!=\"\"}) by (container) / sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}) by (container)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -40111,7 +41791,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", container!=\"\", image!=\"\"}) by (container) / sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}) by (container)",
+                                "expr": "sum(container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", container!=\"\", image!=\"\"}) by (container) / sum(cluster:namespace:pod_memory:active:kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}) by (container)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -40120,7 +41800,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_rss{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", container != \"\", container != \"POD\"}) by (container)",
+                                "expr": "sum(container_memory_rss{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", container != \"\", container != \"POD\"}) by (container)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -40129,7 +41809,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_cache{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", container != \"\", container != \"POD\"}) by (container)",
+                                "expr": "sum(container_memory_cache{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", container != \"\", container != \"POD\"}) by (container)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -40138,7 +41818,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(container_memory_swap{cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", container != \"\", container != \"POD\"}) by (container)",
+                                "expr": "sum(container_memory_swap{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\", container != \"\", container != \"POD\"}) by (container)",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -40154,7 +41834,7 @@ data:
                         "title": "Memory Quota",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -40209,10 +41889,12 @@ data:
                         "id": 6,
                         "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -40234,7 +41916,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\", pod=~\"$pod\"}[$__rate_interval])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -40249,7 +41931,7 @@ data:
                         "title": "Receive Bandwidth",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -40291,10 +41973,12 @@ data:
                         "id": 7,
                         "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -40316,7 +42000,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\", pod=~\"$pod\"}[$__rate_interval])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -40331,7 +42015,7 @@ data:
                         "title": "Transmit Bandwidth",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -40385,10 +42069,12 @@ data:
                         "id": 8,
                         "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -40410,7 +42096,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\", pod=~\"$pod\"}[$__rate_interval])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -40425,7 +42111,7 @@ data:
                         "title": "Rate of Received Packets",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -40467,10 +42153,12 @@ data:
                         "id": 9,
                         "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -40492,7 +42180,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\", pod=~\"$pod\"}[$__rate_interval])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -40507,7 +42195,7 @@ data:
                         "title": "Rate of Transmitted Packets",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -40561,10 +42249,12 @@ data:
                         "id": 10,
                         "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -40586,7 +42276,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\", pod=~\"$pod\"}[$__rate_interval])) by (pod)",
+                                "expr": "sum(irate(container_network_receive_packets_dropped_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -40601,7 +42291,7 @@ data:
                         "title": "Rate of Received Packets Dropped",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -40643,10 +42333,12 @@ data:
                         "id": 11,
                         "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -40668,7 +42360,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\", pod=~\"$pod\"}[$__rate_interval])) by (pod)",
+                                "expr": "sum(irate(container_network_transmit_packets_dropped_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval])) by (pod)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -40683,7 +42375,7 @@ data:
                         "title": "Rate of Transmitted Packets Dropped",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -40736,11 +42428,14 @@ data:
                         "decimals": -1,
                         "fill": 10,
                         "id": 12,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -40762,7 +42457,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "ceil(sum by(pod) (rate(container_fs_reads_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\", pod=~\"$pod\"}[5m])))",
+                                "expr": "ceil(sum by(pod) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval])))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "Reads",
@@ -40770,7 +42465,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "ceil(sum by(pod) (rate(container_fs_writes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\", pod=~\"$pod\"}[5m])))",
+                                "expr": "ceil(sum by(pod) (rate(container_fs_writes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval])))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "Writes",
@@ -40785,7 +42480,7 @@ data:
                         "title": "IOPS",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -40825,11 +42520,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 13,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -40851,7 +42549,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum by(pod) (rate(container_fs_reads_bytes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))",
+                                "expr": "sum by(pod) (rate(container_fs_reads_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "Reads",
@@ -40859,7 +42557,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(pod) (rate(container_fs_writes_bytes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\", pod=~\"$pod\"}[5m]))",
+                                "expr": "sum by(pod) (rate(container_fs_writes_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "Writes",
@@ -40874,7 +42572,7 @@ data:
                         "title": "ThroughPut",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -40927,11 +42625,14 @@ data:
                         "decimals": -1,
                         "fill": 10,
                         "id": 14,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -40953,7 +42654,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "ceil(sum by(container) (rate(container_fs_reads_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\", pod=\"$pod\"}[5m]) + rate(container_fs_writes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\", pod=\"$pod\"}[5m])))",
+                                "expr": "ceil(sum by(container) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]) + rate(container_fs_writes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval])))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{container}}",
@@ -40968,7 +42669,7 @@ data:
                         "title": "IOPS(Reads+Writes)",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -41008,11 +42709,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 15,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -41034,7 +42738,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum by(container) (rate(container_fs_reads_bytes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\", pod=\"$pod\"}[5m]) + rate(container_fs_writes_bytes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\", pod=\"$pod\"}[5m]))",
+                                "expr": "sum by(container) (rate(container_fs_reads_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]) + rate(container_fs_writes_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{container}}",
@@ -41049,7 +42753,7 @@ data:
                         "title": "ThroughPut(Read+Write)",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -41101,11 +42805,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 1,
                         "id": 16,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -41271,7 +42978,7 @@ data:
                         ],
                         "targets": [
                             {
-                                "expr": "sum by(container) (rate(container_fs_reads_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\", pod=\"$pod\"}[5m]))",
+                                "expr": "sum by(container) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -41280,7 +42987,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(container) (rate(container_fs_writes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\", pod=\"$pod\"}[5m]))",
+                                "expr": "sum by(container) (rate(container_fs_writes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -41289,7 +42996,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(container) (rate(container_fs_reads_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\", pod=\"$pod\"}[5m]) + rate(container_fs_writes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\", pod=\"$pod\"}[5m]))",
+                                "expr": "sum by(container) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]) + rate(container_fs_writes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -41298,7 +43005,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(container) (rate(container_fs_reads_bytes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\", pod=\"$pod\"}[5m]))",
+                                "expr": "sum by(container) (rate(container_fs_reads_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -41307,7 +43014,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(container) (rate(container_fs_writes_bytes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\", pod=\"$pod\"}[5m]))",
+                                "expr": "sum by(container) (rate(container_fs_writes_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -41316,7 +43023,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(container) (rate(container_fs_reads_bytes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\", pod=\"$pod\"}[5m]) + rate(container_fs_writes_bytes_total{container!=\"\", cluster=\"$cluster\",namespace=~\"$namespace\", pod=\"$pod\"}[5m]))",
+                                "expr": "sum by(container) (rate(container_fs_reads_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]) + rate(container_fs_writes_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -41332,7 +43039,7 @@ data:
                         "title": "Current Storage IO",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -41386,7 +43093,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
                     ],
@@ -41409,7 +43116,7 @@ data:
                     "name": "cluster",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info, cluster)",
+                    "query": "label_values(up{job=\"kube-state-metrics\"}, cluster)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -41434,7 +43141,7 @@ data:
                     "name": "namespace",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info{cluster=\"$cluster\"}, namespace)",
+                    "query": "label_values(kube_namespace_status_phase{job=\"kube-state-metrics\", cluster=\"$cluster\"}, namespace)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -41459,7 +43166,7 @@ data:
                     "name": "pod",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info{cluster=\"$cluster\", namespace=\"$namespace\"}, pod)",
+                    "query": "label_values(kube_pod_info{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\"}, pod)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -41515,8 +43222,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -41553,11 +43260,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 1,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -41594,7 +43304,7 @@ data:
                         "title": "CPU Usage",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -41646,11 +43356,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 1,
                         "id": 2,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -41804,7 +43517,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n    kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n",
+                                "expr": "sum(\n    kube_pod_container_resource_requests{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -41813,7 +43526,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n    node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n/sum(\n    kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n",
+                                "expr": "sum(\n    node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n/sum(\n    kube_pod_container_resource_requests{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -41822,7 +43535,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n    kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n",
+                                "expr": "sum(\n    kube_pod_container_resource_limits{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -41831,7 +43544,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n    node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n/sum(\n    kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n",
+                                "expr": "sum(\n    node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n/sum(\n    kube_pod_container_resource_limits{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -41847,7 +43560,7 @@ data:
                         "title": "CPU Quota",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -41900,11 +43613,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 3,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -41941,7 +43657,7 @@ data:
                         "title": "Memory Usage",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -41993,11 +43709,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 1,
                         "id": 4,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -42151,7 +43870,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n    kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n",
+                                "expr": "sum(\n    kube_pod_container_resource_requests{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -42160,7 +43879,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n    container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\", image!=\"\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n/sum(\n    kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n",
+                                "expr": "sum(\n    container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\", image!=\"\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n/sum(\n    kube_pod_container_resource_requests{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -42169,7 +43888,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n    kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n",
+                                "expr": "sum(\n    kube_pod_container_resource_limits{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -42178,7 +43897,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n    container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\", image!=\"\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n/sum(\n    kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n",
+                                "expr": "sum(\n    container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\", image!=\"\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n/sum(\n    kube_pod_container_resource_limits{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\", workload_type=\"$type\"}\n) by (pod)\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -42194,7 +43913,7 @@ data:
                         "title": "Memory Quota",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -42249,10 +43968,12 @@ data:
                         "id": 5,
                         "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -42414,7 +44135,7 @@ data:
                         ],
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -42423,7 +44144,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -42432,7 +44153,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_receive_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -42441,7 +44162,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_transmit_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -42450,7 +44171,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_receive_packets_dropped_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -42459,7 +44180,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_transmit_packets_dropped_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -42475,7 +44196,7 @@ data:
                         "title": "Current Network Usage",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -42528,11 +44249,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 6,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -42554,7 +44278,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -42569,7 +44293,7 @@ data:
                         "title": "Receive Bandwidth",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -42609,11 +44333,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 7,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -42635,7 +44362,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -42650,7 +44377,7 @@ data:
                         "title": "Transmit Bandwidth",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -42702,11 +44429,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 8,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -42728,7 +44458,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(avg(irate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -42743,7 +44473,7 @@ data:
                         "title": "Average Container Bandwidth by Pod: Received",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -42783,11 +44513,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 9,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -42809,7 +44542,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(avg(irate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -42824,7 +44557,7 @@ data:
                         "title": "Average Container Bandwidth by Pod: Transmitted",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -42876,11 +44609,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 10,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -42902,7 +44638,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_receive_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -42917,7 +44653,7 @@ data:
                         "title": "Rate of Received Packets",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -42957,11 +44693,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 11,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -42983,7 +44722,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_transmit_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -42998,7 +44737,7 @@ data:
                         "title": "Rate of Transmitted Packets",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -43050,11 +44789,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 12,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -43076,7 +44818,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_receive_packets_dropped_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -43091,7 +44833,7 @@ data:
                         "title": "Rate of Received Packets Dropped",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -43131,11 +44873,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 13,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -43157,7 +44902,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "(sum(irate(container_network_transmit_packets_dropped_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{pod}}",
@@ -43172,7 +44917,7 @@ data:
                         "title": "Rate of Transmitted Packets Dropped",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -43225,7 +44970,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
                     ],
@@ -43248,7 +44993,7 @@ data:
                     "name": "cluster",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info, cluster)",
+                    "query": "label_values(up{job=\"kube-state-metrics\"}, cluster)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -43273,32 +45018,7 @@ data:
                     "name": "namespace",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info{cluster=\"$cluster\"}, namespace)",
-                    "refresh": 2,
-                    "regex": "",
-                    "sort": 1,
-                    "tagValuesQuery": "",
-                    "tags": [
-                    ],
-                    "tagsQuery": "",
-                    "type": "query",
-                    "useTags": false
-                },
-                {
-                    "allValue": null,
-                    "current": {
-                        "text": "",
-                        "value": ""
-                    },
-                    "datasource": "$datasource",
-                    "hide": 0,
-                    "includeAll": false,
-                    "label": null,
-                    "multi": false,
-                    "name": "workload",
-                    "options": [
-                    ],
-                    "query": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\"}, workload)",
+                    "query": "label_values(kube_namespace_status_phase{job=\"kube-state-metrics\", cluster=\"$cluster\"}, namespace)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -43323,7 +45043,32 @@ data:
                     "name": "type",
                     "options": [
                     ],
-                    "query": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=\"$workload\"}, workload_type)",
+                    "query": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\"}, workload_type)",
+                    "refresh": 2,
+                    "regex": "",
+                    "sort": 1,
+                    "tagValuesQuery": "",
+                    "tags": [
+                    ],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
+                    "allValue": null,
+                    "current": {
+                        "text": "",
+                        "value": ""
+                    },
+                    "datasource": "$datasource",
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": null,
+                    "multi": false,
+                    "name": "workload",
+                    "options": [
+                    ],
+                    "query": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}, workload)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -43379,8 +45124,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -43417,11 +45162,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 1,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -43496,7 +45244,7 @@ data:
                         "title": "CPU Usage",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -43548,11 +45296,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 1,
                         "id": 2,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -43749,7 +45500,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n  kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
+                                "expr": "sum(\n  kube_pod_container_resource_requests{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -43758,7 +45509,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n  node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n/sum(\n  kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
+                                "expr": "sum(\n  node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n/sum(\n  kube_pod_container_resource_requests{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -43767,7 +45518,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n  kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
+                                "expr": "sum(\n  kube_pod_container_resource_limits{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -43776,7 +45527,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n  node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n/sum(\n  kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
+                                "expr": "sum(\n  node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=\"$cluster\", namespace=\"$namespace\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n/sum(\n  kube_pod_container_resource_limits{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"cpu\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -43792,7 +45543,7 @@ data:
                         "title": "CPU Quota",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -43845,11 +45596,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 3,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -43893,7 +45647,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(\n    container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\", image!=\"\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
+                                "expr": "sum(\n    container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\", image!=\"\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{workload}} - {{workload_type}}",
@@ -43924,7 +45678,7 @@ data:
                         "title": "Memory Usage",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -43976,11 +45730,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 1,
                         "id": 4,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -44168,7 +45925,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n    container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\", image!=\"\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
+                                "expr": "sum(\n    container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\", image!=\"\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -44177,7 +45934,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n  kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
+                                "expr": "sum(\n  kube_pod_container_resource_requests{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -44186,7 +45943,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n    container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\", image!=\"\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n/sum(\n  kube_pod_container_resource_requests{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
+                                "expr": "sum(\n    container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\", image!=\"\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n/sum(\n  kube_pod_container_resource_requests{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -44195,7 +45952,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n  kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
+                                "expr": "sum(\n  kube_pod_container_resource_limits{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -44204,7 +45961,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum(\n    container_memory_working_set_bytes{cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\", image!=\"\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n/sum(\n  kube_pod_container_resource_limits{cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
+                                "expr": "sum(\n    container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\", container!=\"\", image!=\"\"}\n  * on(namespace,pod)\n    group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n/sum(\n  kube_pod_container_resource_limits{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", resource=\"memory\"}\n* on(namespace,pod)\n  group_left(workload, workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}\n) by (workload, workload_type)\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -44220,7 +45977,7 @@ data:
                         "title": "Memory Quota",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -44275,10 +46032,12 @@ data:
                         "id": 5,
                         "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -44457,7 +46216,7 @@ data:
                         ],
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -44466,7 +46225,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -44475,7 +46234,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_receive_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -44484,7 +46243,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_transmit_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -44493,7 +46252,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_receive_packets_dropped_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -44502,7 +46261,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_transmit_packets_dropped_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -44518,7 +46277,7 @@ data:
                         "title": "Current Network Usage",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -44571,11 +46330,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 6,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -44597,7 +46359,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{workload}}",
@@ -44612,7 +46374,7 @@ data:
                         "title": "Receive Bandwidth",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -44652,11 +46414,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 7,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -44678,7 +46443,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{workload}}",
@@ -44693,7 +46458,7 @@ data:
                         "title": "Transmit Bandwidth",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -44745,11 +46510,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 8,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -44771,7 +46539,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(avg(irate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{workload}}",
@@ -44786,7 +46554,7 @@ data:
                         "title": "Average Container Bandwidth by Workload: Received",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -44826,11 +46594,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 9,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -44852,7 +46623,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(avg(irate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{workload}}",
@@ -44867,7 +46638,7 @@ data:
                         "title": "Average Container Bandwidth by Workload: Transmitted",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -44919,11 +46690,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 10,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -44945,7 +46719,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_receive_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{workload}}",
@@ -44960,7 +46734,7 @@ data:
                         "title": "Rate of Received Packets",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -45000,11 +46774,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 11,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -45026,7 +46803,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_transmit_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{workload}}",
@@ -45041,7 +46818,7 @@ data:
                         "title": "Rate of Transmitted Packets",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -45093,11 +46870,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 12,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -45119,7 +46899,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_receive_packets_dropped_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{workload}}",
@@ -45134,7 +46914,7 @@ data:
                         "title": "Rate of Received Packets Dropped",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -45174,11 +46954,14 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 13,
+                        "interval": "1m",
                         "legend": {
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
+                            "rightSide": true,
                             "show": true,
                             "total": false,
                             "values": false
@@ -45200,7 +46983,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\", namespace=~\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "(sum(irate(container_network_transmit_packets_dropped_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{workload}}",
@@ -45215,7 +46998,7 @@ data:
                         "title": "Rate of Transmitted Packets Dropped",
                         "tooltip": {
                             "shared": false,
-                            "sort": 0,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -45268,7 +47051,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
                     ],
@@ -45291,40 +47074,10 @@ data:
                     "name": "cluster",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info, cluster)",
+                    "query": "label_values(up{job=\"kube-state-metrics\"}, cluster)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
-                    "tagValuesQuery": "",
-                    "tags": [
-                    ],
-                    "tagsQuery": "",
-                    "type": "query",
-                    "useTags": false
-                },
-                {
-                    "allValue": null,
-                    "auto": false,
-                    "auto_count": 30,
-                    "auto_min": "10s",
-                    "current": {
-                        "text": "deployment",
-                        "value": "deployment"
-                    },
-                    "datasource": "$datasource",
-                    "definition": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\"}, workload_type)",
-                    "hide": 0,
-                    "includeAll": false,
-                    "label": null,
-                    "multi": false,
-                    "name": "type",
-                    "options": [
-                    ],
-                    "query": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=~\"$namespace\", workload=~\".+\"}, workload_type)",
-                    "refresh": 2,
-                    "regex": "",
-                    "skipUrlSync": false,
-                    "sort": 0,
                     "tagValuesQuery": "",
                     "tags": [
                     ],
@@ -45346,10 +47099,40 @@ data:
                     "name": "namespace",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info{cluster=\"$cluster\"}, namespace)",
+                    "query": "label_values(kube_pod_info{job=\"kube-state-metrics\", cluster=\"$cluster\"}, namespace)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
+                    "tagValuesQuery": "",
+                    "tags": [
+                    ],
+                    "tagsQuery": "",
+                    "type": "query",
+                    "useTags": false
+                },
+                {
+                    "allValue": null,
+                    "auto": false,
+                    "auto_count": 30,
+                    "auto_min": "10s",
+                    "current": {
+                        "text": "deployment",
+                        "value": "deployment"
+                    },
+                    "datasource": "$datasource",
+                    "definition": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\".+\"}, workload_type)",
+                    "hide": 0,
+                    "includeAll": false,
+                    "label": null,
+                    "multi": false,
+                    "name": "type",
+                    "options": [
+                    ],
+                    "query": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\", workload=~\".+\"}, workload_type)",
+                    "refresh": 2,
+                    "regex": "",
+                    "skipUrlSync": false,
+                    "sort": 0,
                     "tagValuesQuery": "",
                     "tags": [
                     ],
@@ -45402,8 +47185,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -45586,7 +47369,7 @@ data:
                         "refId": "A"
                     }
                 ],
-                "title": "Running Container",
+                "title": "Running Containers",
                 "transparent": false,
                 "type": "stat"
             },
@@ -45738,7 +47521,7 @@ data:
                 "pluginVersion": "7",
                 "targets": [
                     {
-                        "expr": "sum(rate(kubelet_node_config_error{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"}[5m]))",
+                        "expr": "sum(rate(kubelet_node_config_error{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"}[$__rate_interval]))",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{instance}}",
@@ -45794,7 +47577,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sum(rate(kubelet_runtime_operations_total{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[5m])) by (operation_type, instance)",
+                        "expr": "sum(rate(kubelet_runtime_operations_total{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (operation_type, instance)",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{instance}} {{operation_type}}",
@@ -45884,7 +47667,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sum(rate(kubelet_runtime_operations_errors_total{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[5m])) by (instance, operation_type)",
+                        "expr": "sum(rate(kubelet_runtime_operations_errors_total{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance, operation_type)",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{instance}} {{operation_type}}",
@@ -45974,7 +47757,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "histogram_quantile(0.99, sum(rate(kubelet_runtime_operations_duration_seconds_bucket{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[5m])) by (instance, operation_type, le))",
+                        "expr": "histogram_quantile(0.99, sum(rate(kubelet_runtime_operations_duration_seconds_bucket{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance, operation_type, le))",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{instance}} {{operation_type}}",
@@ -46064,14 +47847,14 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sum(rate(kubelet_pod_start_duration_seconds_count{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[5m])) by (instance)",
+                        "expr": "sum(rate(kubelet_pod_start_duration_seconds_count{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance)",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{instance}} pod",
                         "refId": "A"
                     },
                     {
-                        "expr": "sum(rate(kubelet_pod_worker_duration_seconds_count{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[5m])) by (instance)",
+                        "expr": "sum(rate(kubelet_pod_worker_duration_seconds_count{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance)",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{instance}} worker",
@@ -46161,14 +47944,14 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "histogram_quantile(0.99, sum(rate(kubelet_pod_start_duration_seconds_count{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[5m])) by (instance, le))",
+                        "expr": "histogram_quantile(0.99, sum(rate(kubelet_pod_start_duration_seconds_count{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance, le))",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{instance}} pod",
                         "refId": "A"
                     },
                     {
-                        "expr": "histogram_quantile(0.99, sum(rate(kubelet_pod_worker_duration_seconds_bucket{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[5m])) by (instance, le))",
+                        "expr": "histogram_quantile(0.99, sum(rate(kubelet_pod_worker_duration_seconds_bucket{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance, le))",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{instance}} worker",
@@ -46260,7 +48043,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sum(rate(storage_operation_duration_seconds_count{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[5m])) by (instance, operation_name, volume_plugin)",
+                        "expr": "sum(rate(storage_operation_duration_seconds_count{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance, operation_name, volume_plugin)",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{instance}} {{operation_name}} {{volume_plugin}}",
@@ -46352,7 +48135,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sum(rate(storage_operation_errors_total{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[5m])) by (instance, operation_name, volume_plugin)",
+                        "expr": "sum(rate(storage_operation_errors_total{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance, operation_name, volume_plugin)",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{instance}} {{operation_name}} {{volume_plugin}}",
@@ -46444,7 +48227,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "histogram_quantile(0.99, sum(rate(storage_operation_duration_seconds_bucket{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"}[5m])) by (instance, operation_name, volume_plugin, le))",
+                        "expr": "histogram_quantile(0.99, sum(rate(storage_operation_duration_seconds_bucket{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"}[$__rate_interval])) by (instance, operation_name, volume_plugin, le))",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{instance}} {{operation_name}} {{volume_plugin}}",
@@ -46534,7 +48317,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sum(rate(kubelet_cgroup_manager_duration_seconds_count{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"}[5m])) by (instance, operation_type)",
+                        "expr": "sum(rate(kubelet_cgroup_manager_duration_seconds_count{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"}[$__rate_interval])) by (instance, operation_type)",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{operation_type}}",
@@ -46624,7 +48407,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "histogram_quantile(0.99, sum(rate(kubelet_cgroup_manager_duration_seconds_bucket{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"}[5m])) by (instance, operation_type, le))",
+                        "expr": "histogram_quantile(0.99, sum(rate(kubelet_cgroup_manager_duration_seconds_bucket{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"}[$__rate_interval])) by (instance, operation_type, le))",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{instance}} {{operation_type}}",
@@ -46715,7 +48498,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sum(rate(kubelet_pleg_relist_duration_seconds_count{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"}[5m])) by (instance)",
+                        "expr": "sum(rate(kubelet_pleg_relist_duration_seconds_count{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"}[$__rate_interval])) by (instance)",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{instance}}",
@@ -46805,7 +48588,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "histogram_quantile(0.99, sum(rate(kubelet_pleg_relist_interval_seconds_bucket{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[5m])) by (instance, le))",
+                        "expr": "histogram_quantile(0.99, sum(rate(kubelet_pleg_relist_interval_seconds_bucket{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance, le))",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{instance}}",
@@ -46895,7 +48678,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "histogram_quantile(0.99, sum(rate(kubelet_pleg_relist_duration_seconds_bucket{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[5m])) by (instance, le))",
+                        "expr": "histogram_quantile(0.99, sum(rate(kubelet_pleg_relist_duration_seconds_bucket{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])) by (instance, le))",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{instance}}",
@@ -46985,28 +48768,28 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\",code=~\"2..\"}[5m]))",
+                        "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\",code=~\"2..\"}[$__rate_interval]))",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "2xx",
                         "refId": "A"
                     },
                     {
-                        "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\",code=~\"3..\"}[5m]))",
+                        "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\",code=~\"3..\"}[$__rate_interval]))",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "3xx",
                         "refId": "B"
                     },
                     {
-                        "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\",code=~\"4..\"}[5m]))",
+                        "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\",code=~\"4..\"}[$__rate_interval]))",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "4xx",
                         "refId": "C"
                     },
                     {
-                        "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\",code=~\"5..\"}[5m]))",
+                        "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\",code=~\"5..\"}[$__rate_interval]))",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "5xx",
@@ -47096,7 +48879,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"}[5m])) by (instance, verb, url, le))",
+                        "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\", instance=~\"$instance\"}[$__rate_interval])) by (instance, verb, url, le))",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{instance}} {{verb}} {{url}}",
@@ -47276,7 +49059,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "rate(process_cpu_seconds_total{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[5m])",
+                        "expr": "rate(process_cpu_seconds_total{cluster=\"$cluster\",job=\"kubelet\", metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])",
                         "format": "time_series",
                         "intervalFactor": 2,
                         "legendFormat": "{{instance}}",
@@ -47428,7 +49211,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
                     ],
@@ -47467,12 +49250,12 @@ data:
                     "datasource": "$datasource",
                     "hide": 0,
                     "includeAll": true,
-                    "label": null,
+                    "label": "Data Source",
                     "multi": false,
                     "name": "instance",
                     "options": [
                     ],
-                    "query": "label_values(kubelet_runtime_operations_total{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\"}, instance)",
+                    "query": "label_values(up{job=\"kubelet\", metrics_path=\"/metrics\",cluster=\"$cluster\"}, instance)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -47528,8 +49311,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -48738,7 +50521,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
                     ],
@@ -48923,8 +50706,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -49033,7 +50816,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{ workload }}",
@@ -49132,7 +50915,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{ workload }}",
@@ -49411,7 +51194,7 @@ data:
                 ],
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -49420,7 +51203,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -49429,7 +51212,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -49438,7 +51221,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -49447,7 +51230,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -49456,7 +51239,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -49465,7 +51248,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -49474,7 +51257,7 @@ data:
                         "step": 10
                     },
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "table",
                         "instant": true,
                         "intervalFactor": 2,
@@ -49551,7 +51334,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "sort_desc(avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{ workload }}",
@@ -49650,7 +51433,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "sort_desc(avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{ workload }}",
@@ -49776,7 +51559,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{workload}}",
@@ -49872,7 +51655,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{workload}}",
@@ -49979,7 +51762,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "sort_desc(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{workload}}",
@@ -50075,7 +51858,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{workload}}",
@@ -50191,7 +51974,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "sort_desc(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{workload}}",
@@ -50287,7 +52070,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
+                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\", workload_type=\"$type\"}) by (workload))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{workload}}",
@@ -50359,7 +52142,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
                     ],
@@ -50431,7 +52214,7 @@ data:
                         "value": "deployment"
                     },
                     "datasource": "$datasource",
-                    "definition": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\"}, workload_type)",
+                    "definition": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\"}, workload_type)",
                     "hide": 0,
                     "includeAll": false,
                     "label": null,
@@ -50439,7 +52222,7 @@ data:
                     "name": "type",
                     "options": [
                     ],
-                    "query": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\".+\"}, workload_type)",
+                    "query": "label_values(namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\", workload=~\".+\"}, workload_type)",
                     "refresh": 2,
                     "regex": "",
                     "skipUrlSync": false,
@@ -50574,8 +52357,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -51442,7 +53225,7 @@ data:
                         "value": "Prometheus"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [],
                     "query": "prometheus",
@@ -51518,8 +53301,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -52386,7 +54169,7 @@ data:
                         "value": "Prometheus"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [],
                     "query": "prometheus",
@@ -52482,8 +54265,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -52550,7 +54333,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "(\n  (1 - rate(node_cpu_seconds_total{job=\"node-exporter\", mode=\"idle\", instance=\"$instance\"}[$__rate_interval]))\n/ ignoring(cpu) group_left\n  count without (cpu)( node_cpu_seconds_total{job=\"node-exporter\", mode=\"idle\", instance=\"$instance\"})\n)\n",
+                                "expr": "(\n  (1 - sum without (mode) (rate(node_cpu_seconds_total{job=\"node-exporter\", mode=~\"idle|iowait|steal\", instance=\"$instance\"}[$__rate_interval])))\n/ ignoring(cpu) group_left\n  count without (cpu, mode) (node_cpu_seconds_total{job=\"node-exporter\", mode=\"idle\", instance=\"$instance\"})\n)\n",
                                 "format": "time_series",
                                 "intervalFactor": 5,
                                 "legendFormat": "{{cpu}}",
@@ -53299,7 +55082,7 @@ data:
                         "value": "Prometheus"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [],
                     "query": "prometheus",
@@ -53372,8 +55155,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -53418,13 +55201,14 @@ data:
                         "gridPos": {
                         },
                         "id": 2,
+                        "interval": "1m",
                         "legend": {
                             "alignAsTable": true,
                             "avg": true,
                             "current": true,
                             "max": true,
                             "min": true,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -53521,7 +55305,11 @@ data:
                         "gridPos": {
                         },
                         "id": 3,
-                        "interval": null,
+                        "interval": "1m",
+                        "legend": {
+                            "alignAsTable": true,
+                            "rightSide": true
+                        },
                         "links": [
                         ],
                         "mappingType": 1,
@@ -53607,13 +55395,14 @@ data:
                         "gridPos": {
                         },
                         "id": 4,
+                        "interval": "1m",
                         "legend": {
                             "alignAsTable": true,
                             "avg": true,
                             "current": true,
                             "max": true,
                             "min": true,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -53710,7 +55499,11 @@ data:
                         "gridPos": {
                         },
                         "id": 5,
-                        "interval": null,
+                        "interval": "1m",
+                        "legend": {
+                            "alignAsTable": true,
+                            "rightSide": true
+                        },
                         "links": [
                         ],
                         "mappingType": 1,
@@ -53794,7 +55587,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
                     ],
@@ -53815,7 +55608,7 @@ data:
                     "name": "cluster",
                     "options": [
                     ],
-                    "query": "label_values(kubelet_volume_stats_capacity_bytes, cluster)",
+                    "query": "label_values(kubelet_volume_stats_capacity_bytes{job=\"kubelet\", metrics_path=\"/metrics\"}, cluster)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -53917,8 +55710,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -54876,7 +56669,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
                     ],
@@ -55091,8 +56884,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -55267,8 +57060,8 @@ data:
                         "timeShift": null,
                         "title": "Prometheus Stats",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "transform": "table",
@@ -55356,8 +57149,8 @@ data:
                         "timeShift": null,
                         "title": "Target Sync",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -55432,8 +57225,8 @@ data:
                         "timeShift": null,
                         "title": "Targets",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -55520,8 +57313,8 @@ data:
                         "timeShift": null,
                         "title": "Average Scrape Interval Duration",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -55628,8 +57421,8 @@ data:
                         "timeShift": null,
                         "title": "Scrape failures",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -55704,8 +57497,8 @@ data:
                         "timeShift": null,
                         "title": "Appended Samples",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -55792,8 +57585,8 @@ data:
                         "timeShift": null,
                         "title": "Head Series",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -55868,8 +57661,8 @@ data:
                         "timeShift": null,
                         "title": "Head Chunks",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -55956,8 +57749,8 @@ data:
                         "timeShift": null,
                         "title": "Query Rate",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -56032,8 +57825,8 @@ data:
                         "timeShift": null,
                         "title": "Stage Duration",
                         "tooltip": {
-                            "shared": false,
-                            "sort": 0,
+                            "shared": true,
+                            "sort": 2,
                             "value_type": "individual"
                         },
                         "type": "graph",
@@ -56085,7 +57878,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [],
                     "query": "prometheus",
@@ -56186,8 +57979,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -56241,7 +58034,11 @@ data:
                         "gridPos": {
                         },
                         "id": 2,
-                        "interval": null,
+                        "interval": "1m",
+                        "legend": {
+                            "alignAsTable": true,
+                            "rightSide": true
+                        },
                         "links": [
                         ],
                         "mappingType": 1,
@@ -56314,13 +58111,14 @@ data:
                         "gridPos": {
                         },
                         "id": 3,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -56344,7 +58142,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(rate(kubeproxy_sync_proxy_rules_duration_seconds_count{cluster=\"$cluster\", job=\"kube-proxy\", instance=~\"$instance\"}[5m]))",
+                                "expr": "sum(rate(kubeproxy_sync_proxy_rules_duration_seconds_count{cluster=\"$cluster\", job=\"kube-proxy\", instance=~\"$instance\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "rate",
@@ -56401,6 +58199,7 @@ data:
                         "gridPos": {
                         },
                         "id": 4,
+                        "interval": "1m",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -56431,7 +58230,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "histogram_quantile(0.99,rate(kubeproxy_sync_proxy_rules_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-proxy\", instance=~\"$instance\"}[5m]))",
+                                "expr": "histogram_quantile(0.99,rate(kubeproxy_sync_proxy_rules_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-proxy\", instance=~\"$instance\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}}",
@@ -56501,13 +58300,14 @@ data:
                         "gridPos": {
                         },
                         "id": 5,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -56531,7 +58331,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(rate(kubeproxy_network_programming_duration_seconds_count{cluster=\"$cluster\", job=\"kube-proxy\", instance=~\"$instance\"}[5m]))",
+                                "expr": "sum(rate(kubeproxy_network_programming_duration_seconds_count{cluster=\"$cluster\", job=\"kube-proxy\", instance=~\"$instance\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "rate",
@@ -56588,6 +58388,7 @@ data:
                         "gridPos": {
                         },
                         "id": 6,
+                        "interval": "1m",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -56618,7 +58419,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "histogram_quantile(0.99, sum(rate(kubeproxy_network_programming_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-proxy\", instance=~\"$instance\"}[5m])) by (instance, le))",
+                                "expr": "histogram_quantile(0.99, sum(rate(kubeproxy_network_programming_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-proxy\", instance=~\"$instance\"}[$__rate_interval])) by (instance, le))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}}",
@@ -56688,13 +58489,14 @@ data:
                         "gridPos": {
                         },
                         "id": 7,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -56718,28 +58520,28 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", job=\"kube-proxy\", instance=~\"$instance\",code=~\"2..\"}[5m]))",
+                                "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", job=\"kube-proxy\", instance=~\"$instance\",code=~\"2..\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "2xx",
                                 "refId": "A"
                             },
                             {
-                                "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", job=\"kube-proxy\", instance=~\"$instance\",code=~\"3..\"}[5m]))",
+                                "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", job=\"kube-proxy\", instance=~\"$instance\",code=~\"3..\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "3xx",
                                 "refId": "B"
                             },
                             {
-                                "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", job=\"kube-proxy\", instance=~\"$instance\",code=~\"4..\"}[5m]))",
+                                "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", job=\"kube-proxy\", instance=~\"$instance\",code=~\"4..\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "4xx",
                                 "refId": "C"
                             },
                             {
-                                "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", job=\"kube-proxy\", instance=~\"$instance\",code=~\"5..\"}[5m]))",
+                                "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", job=\"kube-proxy\", instance=~\"$instance\",code=~\"5..\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "5xx",
@@ -56796,13 +58598,14 @@ data:
                         "gridPos": {
                         },
                         "id": 8,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -56826,7 +58629,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-proxy\",instance=~\"$instance\",verb=\"POST\"}[5m])) by (verb, url, le))",
+                                "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-proxy\",instance=~\"$instance\",verb=\"POST\"}[$__rate_interval])) by (verb, url, le))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{verb}} {{url}}",
@@ -56896,6 +58699,7 @@ data:
                         "gridPos": {
                         },
                         "id": 9,
+                        "interval": "1m",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -56926,7 +58730,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-proxy\", instance=~\"$instance\", verb=\"GET\"}[5m])) by (verb, url, le))",
+                                "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-proxy\", instance=~\"$instance\", verb=\"GET\"}[$__rate_interval])) by (verb, url, le))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{verb}} {{url}}",
@@ -56996,13 +58800,14 @@ data:
                         "gridPos": {
                         },
                         "id": 10,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -57083,13 +58888,14 @@ data:
                         "gridPos": {
                         },
                         "id": 11,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -57113,7 +58919,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "rate(process_cpu_seconds_total{cluster=\"$cluster\", job=\"kube-proxy\",instance=~\"$instance\"}[5m])",
+                                "expr": "rate(process_cpu_seconds_total{cluster=\"$cluster\", job=\"kube-proxy\",instance=~\"$instance\"}[$__rate_interval])",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}}",
@@ -57170,13 +58976,14 @@ data:
                         "gridPos": {
                         },
                         "id": 12,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -57268,7 +59075,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
                     ],
@@ -57289,7 +59096,7 @@ data:
                     "name": "cluster",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info, cluster)",
+                    "query": "label_values(up{job=\"kube-proxy\"}, cluster)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -57312,7 +59119,7 @@ data:
                     "name": "instance",
                     "options": [
                     ],
-                    "query": "label_values(kubeproxy_network_programming_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-proxy\"}, instance)",
+                    "query": "label_values(up{job=\"kube-proxy\", cluster=\"$cluster\", job=\"kube-proxy\"}, instance)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -57368,8 +59175,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -57423,7 +59230,11 @@ data:
                         "gridPos": {
                         },
                         "id": 2,
-                        "interval": null,
+                        "interval": "1m",
+                        "legend": {
+                            "alignAsTable": true,
+                            "rightSide": true
+                        },
                         "links": [
                         ],
                         "mappingType": 1,
@@ -57496,6 +59307,7 @@ data:
                         "gridPos": {
                         },
                         "id": 3,
+                        "interval": "1m",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -57526,28 +59338,28 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(rate(scheduler_e2e_scheduling_duration_seconds_count{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\"}[5m])) by (cluster, instance)",
+                                "expr": "sum(rate(scheduler_e2e_scheduling_duration_seconds_count{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\"}[$__rate_interval])) by (cluster, instance)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{cluster}} {{instance}} e2e",
                                 "refId": "A"
                             },
                             {
-                                "expr": "sum(rate(scheduler_binding_duration_seconds_count{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\"}[5m])) by (cluster, instance)",
+                                "expr": "sum(rate(scheduler_binding_duration_seconds_count{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\"}[$__rate_interval])) by (cluster, instance)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{cluster}} {{instance}} binding",
                                 "refId": "B"
                             },
                             {
-                                "expr": "sum(rate(scheduler_scheduling_algorithm_duration_seconds_count{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\"}[5m])) by (cluster, instance)",
+                                "expr": "sum(rate(scheduler_scheduling_algorithm_duration_seconds_count{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\"}[$__rate_interval])) by (cluster, instance)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{cluster}} {{instance}} scheduling algorithm",
                                 "refId": "C"
                             },
                             {
-                                "expr": "sum(rate(scheduler_volume_scheduling_duration_seconds_count{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\"}[5m])) by (cluster, instance)",
+                                "expr": "sum(rate(scheduler_volume_scheduling_duration_seconds_count{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\"}[$__rate_interval])) by (cluster, instance)",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{cluster}} {{instance}} volume",
@@ -57604,6 +59416,7 @@ data:
                         "gridPos": {
                         },
                         "id": 4,
+                        "interval": "1m",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -57634,28 +59447,28 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "histogram_quantile(0.99, sum(rate(scheduler_e2e_scheduling_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-scheduler\",instance=~\"$instance\"}[5m])) by (cluster, instance, le))",
+                                "expr": "histogram_quantile(0.99, sum(rate(scheduler_e2e_scheduling_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-scheduler\",instance=~\"$instance\"}[$__rate_interval])) by (cluster, instance, le))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{cluster}} {{instance}} e2e",
                                 "refId": "A"
                             },
                             {
-                                "expr": "histogram_quantile(0.99, sum(rate(scheduler_binding_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-scheduler\",instance=~\"$instance\"}[5m])) by (cluster, instance, le))",
+                                "expr": "histogram_quantile(0.99, sum(rate(scheduler_binding_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-scheduler\",instance=~\"$instance\"}[$__rate_interval])) by (cluster, instance, le))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{cluster}} {{instance}} binding",
                                 "refId": "B"
                             },
                             {
-                                "expr": "histogram_quantile(0.99, sum(rate(scheduler_scheduling_algorithm_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-scheduler\",instance=~\"$instance\"}[5m])) by (cluster, instance, le))",
+                                "expr": "histogram_quantile(0.99, sum(rate(scheduler_scheduling_algorithm_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-scheduler\",instance=~\"$instance\"}[$__rate_interval])) by (cluster, instance, le))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{cluster}} {{instance}} scheduling algorithm",
                                 "refId": "C"
                             },
                             {
-                                "expr": "histogram_quantile(0.99, sum(rate(scheduler_volume_scheduling_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-scheduler\",instance=~\"$instance\"}[5m])) by (cluster, instance, le))",
+                                "expr": "histogram_quantile(0.99, sum(rate(scheduler_volume_scheduling_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-scheduler\",instance=~\"$instance\"}[$__rate_interval])) by (cluster, instance, le))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{cluster}} {{instance}} volume",
@@ -57725,13 +59538,14 @@ data:
                         "gridPos": {
                         },
                         "id": 5,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -57755,28 +59569,28 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\",code=~\"2..\"}[5m]))",
+                                "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\",code=~\"2..\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "2xx",
                                 "refId": "A"
                             },
                             {
-                                "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\",code=~\"3..\"}[5m]))",
+                                "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\",code=~\"3..\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "3xx",
                                 "refId": "B"
                             },
                             {
-                                "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\",code=~\"4..\"}[5m]))",
+                                "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\",code=~\"4..\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "4xx",
                                 "refId": "C"
                             },
                             {
-                                "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\",code=~\"5..\"}[5m]))",
+                                "expr": "sum(rate(rest_client_requests_total{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\",code=~\"5..\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "5xx",
@@ -57833,13 +59647,14 @@ data:
                         "gridPos": {
                         },
                         "id": 6,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -57863,7 +59678,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\", verb=\"POST\"}[5m])) by (verb, url, le))",
+                                "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\", verb=\"POST\"}[$__rate_interval])) by (verb, url, le))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{verb}} {{url}}",
@@ -57933,6 +59748,7 @@ data:
                         "gridPos": {
                         },
                         "id": 7,
+                        "interval": "1m",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -57963,7 +59779,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\", verb=\"GET\"}[5m])) by (verb, url, le))",
+                                "expr": "histogram_quantile(0.99, sum(rate(rest_client_request_duration_seconds_bucket{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\", verb=\"GET\"}[$__rate_interval])) by (verb, url, le))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{verb}} {{url}}",
@@ -58033,13 +59849,14 @@ data:
                         "gridPos": {
                         },
                         "id": 8,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -58120,13 +59937,14 @@ data:
                         "gridPos": {
                         },
                         "id": 9,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -58150,7 +59968,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "rate(process_cpu_seconds_total{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\"}[5m])",
+                                "expr": "rate(process_cpu_seconds_total{cluster=\"$cluster\", job=\"kube-scheduler\", instance=~\"$instance\"}[$__rate_interval])",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "{{instance}}",
@@ -58207,13 +60025,14 @@ data:
                         "gridPos": {
                         },
                         "id": 10,
+                        "interval": "1m",
                         "legend": {
-                            "alignAsTable": false,
+                            "alignAsTable": true,
                             "avg": false,
                             "current": false,
                             "max": false,
                             "min": false,
-                            "rightSide": false,
+                            "rightSide": true,
                             "show": true,
                             "sideWidth": null,
                             "total": false,
@@ -58305,7 +60124,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
                     ],
@@ -58349,7 +60168,7 @@ data:
                     "name": "instance",
                     "options": [
                     ],
-                    "query": "label_values(process_cpu_seconds_total{cluster=\"$cluster\", job=\"kube-scheduler\"}, instance)",
+                    "query": "label_values(up{job=\"kube-scheduler\", cluster=\"$cluster\"}, instance)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 1,
@@ -58405,8 +60224,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -59297,8 +61116,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -59407,7 +61226,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{ pod }}",
@@ -59506,7 +61325,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{ pod }}",
@@ -59616,7 +61435,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(avg(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "sort_desc(avg(irate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{ pod }}",
@@ -59715,7 +61534,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(avg(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "sort_desc(avg(irate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{ pod }}",
@@ -59841,7 +61660,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                        "expr": "sort_desc(sum(irate(container_network_receive_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{pod}}",
@@ -59937,7 +61756,7 @@ data:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                        "expr": "sort_desc(sum(irate(container_network_transmit_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                         "format": "time_series",
                         "intervalFactor": 1,
                         "legendFormat": "{{pod}}",
@@ -60044,7 +61863,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_receive_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "sort_desc(sum(irate(container_network_receive_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{pod}}",
@@ -60140,7 +61959,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{pod}}",
@@ -60256,7 +62075,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_receive_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "sort_desc(sum(irate(container_network_receive_packets_dropped_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{pod}}",
@@ -60352,7 +62171,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
+                                "expr": "sort_desc(sum(irate(container_network_transmit_packets_dropped_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n* on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\", workload=~\"$workload\", workload_type=\"$type\"}) by (pod))\n",
                                 "format": "time_series",
                                 "intervalFactor": 1,
                                 "legendFormat": "{{pod}}",
@@ -60424,7 +62243,7 @@ data:
                         "value": "default"
                     },
                     "hide": 0,
-                    "label": null,
+                    "label": "Data Source",
                     "name": "datasource",
                     "options": [
                     ],
@@ -60445,7 +62264,7 @@ data:
                     "name": "cluster",
                     "options": [
                     ],
-                    "query": "label_values(kube_pod_info, cluster)",
+                    "query": "label_values(kube_pod_info{job=\"kube-state-metrics\"}, cluster)",
                     "refresh": 2,
                     "regex": "",
                     "sort": 0,
@@ -60466,7 +62285,7 @@ data:
                         "value": "kube-system"
                     },
                     "datasource": "$datasource",
-                    "definition": "label_values(container_network_receive_packets_total{cluster=\"$cluster\"}, namespace)",
+                    "definition": "label_values(container_network_receive_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\"}, namespace)",
                     "hide": 0,
                     "includeAll": true,
                     "label": null,
@@ -60474,7 +62293,7 @@ data:
                     "name": "namespace",
                     "options": [
                     ],
-                    "query": "label_values(container_network_receive_packets_total{cluster=\"$cluster\"}, namespace)",
+                    "query": "label_values(container_network_receive_packets_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\"}, namespace)",
                     "refresh": 2,
                     "regex": "",
                     "skipUrlSync": false,
@@ -60669,8 +62488,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -60687,7 +62506,7 @@ metadata:
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 8.3.4-ubuntu
-    helm.sh/chart: grafana-6.19.0
+    helm.sh/chart: grafana-6.21.2
     heritage: metalk8s
   name: prometheus-operator-grafana-clusterrole
   namespace: metalk8s-monitoring
@@ -60711,33 +62530,10 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.2.4
-    helm.sh/chart: kube-state-metrics-4.1.1
+    app.kubernetes.io/version: 2.3.0
+    helm.sh/chart: kube-state-metrics-4.4.3
     heritage: metalk8s
-  name: psp-prometheus-operator-kube-state-metrics
-  namespace: metalk8s-monitoring
-rules:
-- apiGroups:
-  - policy
-  resourceNames:
-  - prometheus-operator-kube-state-metrics
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  labels:
-    app.kubernetes.io/component: metrics
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: kube-state-metrics
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 4.1.1
-    helm.sh/chart: kube-state-metrics-4.1.1
-    heritage: metalk8s
+    release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
 rules:
@@ -60939,37 +62735,13 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    app: prometheus-node-exporter
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-node-exporter
-    app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-2.2.2
-    heritage: metalk8s
-    jobLabel: node-exporter
-    release: prometheus-operator
-  name: psp-prometheus-operator-prometheus-node-exporter
-  namespace: metalk8s-monitoring
-rules:
-- apiGroups:
-  - extensions
-  resourceNames:
-  - prometheus-operator-prometheus-node-exporter
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  labels:
     app: prometheus-operator-operator
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -61051,39 +62823,13 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
-    app: prometheus-operator-operator
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-operator-operator
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
-    heritage: metalk8s
-    metalk8s.scality.com/monitor: ''
-    release: prometheus-operator
-  name: prometheus-operator-operator-psp
-  namespace: metalk8s-monitoring
-rules:
-- apiGroups:
-  - policy
-  resourceNames:
-  - prometheus-operator-operator
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  labels:
     app: prometheus-operator-prometheus
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -61117,32 +62863,6 @@ rules:
   - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  labels:
-    app: prometheus-operator-prometheus
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-operator-prometheus
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
-    heritage: metalk8s
-    metalk8s.scality.com/monitor: ''
-    release: prometheus-operator
-  name: prometheus-operator-prometheus-psp
-  namespace: metalk8s-monitoring
-rules:
-- apiGroups:
-  - policy
-  resourceNames:
-  - prometheus-operator-prometheus
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
----
-apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
@@ -61151,7 +62871,7 @@ metadata:
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 8.3.4-ubuntu
-    helm.sh/chart: grafana-6.19.0
+    helm.sh/chart: grafana-6.21.2
     heritage: metalk8s
   name: prometheus-operator-grafana-clusterrolebinding
   namespace: metalk8s-monitoring
@@ -61173,64 +62893,19 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.2.4
-    helm.sh/chart: kube-state-metrics-4.1.1
+    app.kubernetes.io/version: 2.3.0
+    helm.sh/chart: kube-state-metrics-4.4.3
     heritage: metalk8s
-  name: prometheus-operator-kube-state-metrics
-  namespace: metalk8s-monitoring
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: prometheus-operator-kube-state-metrics
-subjects:
-- kind: ServiceAccount
-  name: prometheus-operator-kube-state-metrics
-  namespace: metalk8s-monitoring
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  labels:
-    app.kubernetes.io/component: metrics
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: kube-state-metrics
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.2.4
-    helm.sh/chart: kube-state-metrics-4.1.1
-    heritage: metalk8s
-  name: psp-prometheus-operator-kube-state-metrics
-  namespace: metalk8s-monitoring
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: psp-prometheus-operator-kube-state-metrics
-subjects:
-- kind: ServiceAccount
-  name: prometheus-operator-kube-state-metrics
-  namespace: metalk8s-monitoring
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  labels:
-    app: prometheus-node-exporter
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-node-exporter
-    app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-2.2.2
-    heritage: metalk8s
-    jobLabel: node-exporter
     release: prometheus-operator
-  name: psp-prometheus-operator-prometheus-node-exporter
+  name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: psp-prometheus-operator-prometheus-node-exporter
+  name: prometheus-operator-kube-state-metrics
 subjects:
 - kind: ServiceAccount
-  name: prometheus-operator-prometheus-node-exporter
+  name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -61242,8 +62917,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -61253,31 +62928,6 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: prometheus-operator-operator
-subjects:
-- kind: ServiceAccount
-  name: prometheus-operator-operator
-  namespace: metalk8s-monitoring
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  labels:
-    app: prometheus-operator-operator
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-operator-operator
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
-    heritage: metalk8s
-    metalk8s.scality.com/monitor: ''
-    release: prometheus-operator
-  name: prometheus-operator-operator-psp
-  namespace: metalk8s-monitoring
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: prometheus-operator-operator-psp
 subjects:
 - kind: ServiceAccount
   name: prometheus-operator-operator
@@ -61292,8 +62942,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -61309,31 +62959,6 @@ subjects:
   namespace: metalk8s-monitoring
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  labels:
-    app: prometheus-operator-prometheus
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-operator-prometheus
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
-    heritage: metalk8s
-    metalk8s.scality.com/monitor: ''
-    release: prometheus-operator
-  name: prometheus-operator-prometheus-psp
-  namespace: metalk8s-monitoring
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: prometheus-operator-prometheus-psp
-subjects:
-- kind: ServiceAccount
-  name: prometheus-operator-prometheus
-  namespace: metalk8s-monitoring
----
-apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   labels:
@@ -61342,45 +62967,11 @@ metadata:
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 8.3.4-ubuntu
-    helm.sh/chart: grafana-6.19.0
+    helm.sh/chart: grafana-6.21.2
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
-rules:
-- apiGroups:
-  - extensions
-  resourceNames:
-  - prometheus-operator-grafana
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  labels:
-    app: prometheus-operator-alertmanager
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-operator-alertmanager
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
-    heritage: metalk8s
-    metalk8s.scality.com/monitor: ''
-    release: prometheus-operator
-  name: prometheus-operator-alertmanager
-  namespace: metalk8s-monitoring
-rules:
-- apiGroups:
-  - policy
-  resourceNames:
-  - prometheus-operator-alertmanager
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
+rules: []
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -61391,7 +62982,7 @@ metadata:
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 8.3.4-ubuntu
-    helm.sh/chart: grafana-6.19.0
+    helm.sh/chart: grafana-6.21.2
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -61402,31 +62993,6 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus-operator-grafana
-  namespace: metalk8s-monitoring
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  labels:
-    app: prometheus-operator-alertmanager
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-operator-alertmanager
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
-    heritage: metalk8s
-    metalk8s.scality.com/monitor: ''
-    release: prometheus-operator
-  name: prometheus-operator-alertmanager
-  namespace: metalk8s-monitoring
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: prometheus-operator-alertmanager
-subjects:
-- kind: ServiceAccount
-  name: prometheus-operator-alertmanager
   namespace: metalk8s-monitoring
 ---
 apiVersion: v1
@@ -61438,7 +63004,7 @@ metadata:
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 8.3.4-ubuntu
-    helm.sh/chart: grafana-6.19.0
+    helm.sh/chart: grafana-6.21.2
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -61464,9 +63030,10 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.2.4
-    helm.sh/chart: kube-state-metrics-4.1.1
+    app.kubernetes.io/version: 2.3.0
+    helm.sh/chart: kube-state-metrics-4.4.3
     heritage: metalk8s
+    release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
 spec:
@@ -61490,7 +63057,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-2.2.2
+    chart: prometheus-node-exporter-2.5.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -61516,8 +63083,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -61544,8 +63111,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     jobLabel: coredns
     metalk8s.scality.com/monitor: ''
@@ -61571,8 +63138,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     jobLabel: kube-controller-manager
     metalk8s.scality.com/monitor: ''
@@ -61599,8 +63166,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     jobLabel: kube-etcd
     metalk8s.scality.com/monitor: ''
@@ -61627,8 +63194,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     jobLabel: kube-proxy
     metalk8s.scality.com/monitor: ''
@@ -61655,8 +63222,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     jobLabel: kube-scheduler
     metalk8s.scality.com/monitor: ''
@@ -61683,8 +63250,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -61709,8 +63276,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -61722,6 +63289,7 @@ spec:
   - name: http-web
     port: 9090
     targetPort: 9090
+  publishNotReadyAddresses: false
   selector:
     app.kubernetes.io/name: prometheus
     prometheus: prometheus-operator-prometheus
@@ -61736,8 +63304,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-thanos-discovery
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -61765,7 +63333,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-node-exporter-2.2.2
+    chart: prometheus-node-exporter-2.5.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -61785,7 +63353,7 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-node-exporter
         app.kubernetes.io/part-of: metalk8s
-        chart: prometheus-node-exporter-2.2.2
+        chart: prometheus-node-exporter-2.5.0
         heritage: metalk8s
         jobLabel: node-exporter
         release: prometheus-operator
@@ -61803,7 +63371,7 @@ spec:
         env:
         - name: HOST_IP
           value: 0.0.0.0
-        image: {% endraw -%}{{ build_image_name("node-exporter", False) }}{%- raw %}:v1.2.2
+        image: {% endraw -%}{{ build_image_name("node-exporter", False) }}{%- raw %}:v1.3.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -61865,7 +63433,7 @@ metadata:
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 8.3.4-ubuntu
-    helm.sh/chart: grafana-6.19.0
+    helm.sh/chart: grafana-6.21.2
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -61885,8 +63453,8 @@ spec:
           apiVersion="v1", namespace="metalk8s-monitoring", name="prometheus-operator-grafana",
           path="data:grafana.ini")
         checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
-        checksum/sc-dashboard-provider-config: 2543a65af58de101f7adf267afcbb339e99ba4cf807c2b744c7d9f0392950bc4
-        checksum/secret: 4383dfe6842124ee060bbb6737b2dc181278d3fe886ae741f18e69452312810b
+        checksum/sc-dashboard-provider-config: 3c9ae84c0d2adeafb6159b9c96b0d8c7a1923863ad9eb5f566892d75c6c8414e
+        checksum/secret: 7505b02602b2932c49cbfe4ea3bc495ee8120e946071e7fa921aaa541cb9ae4f
       labels:
         app.kubernetes.io/instance: prometheus-operator
         app.kubernetes.io/name: grafana
@@ -61898,6 +63466,8 @@ spec:
           value: WATCH
         - name: LABEL
           value: grafana_dashboard
+        - name: LABEL_VALUE
+          value: '1'
         - name: FOLDER
           value: /tmp/dashboards
         - name: RESOURCE
@@ -61906,7 +63476,7 @@ spec:
           value: ALL
         - name: FOLDER_ANNOTATION
           value: metalk8s.scality.com/grafana-folder-name
-        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.14.2
+        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.15.1
         imagePullPolicy: IfNotPresent
         name: grafana-sc-dashboard
         resources: {}
@@ -61918,6 +63488,8 @@ spec:
           value: WATCH
         - name: LABEL
           value: grafana_datasource
+        - name: LABEL_VALUE
+          value: '1'
         - name: FOLDER
           value: /etc/grafana/provisioning/datasources
         - name: RESOURCE
@@ -61936,7 +63508,7 @@ spec:
           value: http://localhost:3000/api/admin/provisioning/datasources/reload
         - name: REQ_METHOD
           value: POST
-        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.14.2
+        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.15.1
         imagePullPolicy: IfNotPresent
         name: grafana-sc-datasources
         resources: {}
@@ -62035,9 +63607,10 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.2.4
-    helm.sh/chart: kube-state-metrics-4.1.1
+    app.kubernetes.io/version: 2.3.0
+    helm.sh/chart: kube-state-metrics-4.4.3
     heritage: metalk8s
+    release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
   namespace: metalk8s-monitoring
 spec:
@@ -62054,16 +63627,17 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: kube-state-metrics
         app.kubernetes.io/part-of: metalk8s
-        app.kubernetes.io/version: 2.2.4
-        helm.sh/chart: kube-state-metrics-4.1.1
+        app.kubernetes.io/version: 2.3.0
+        helm.sh/chart: kube-state-metrics-4.4.3
         heritage: metalk8s
+        release: prometheus-operator
     spec:
       containers:
       - args:
         - --port=8080
         - --resources=certificatesigningrequests,configmaps,cronjobs,daemonsets,deployments,endpoints,horizontalpodautoscalers,ingresses,jobs,limitranges,mutatingwebhookconfigurations,namespaces,networkpolicies,nodes,persistentvolumeclaims,persistentvolumes,poddisruptionbudgets,pods,replicasets,replicationcontrollers,resourcequotas,secrets,services,statefulsets,storageclasses,validatingwebhookconfigurations,volumeattachments
         - --telemetry-port=8081
-        image: {% endraw -%}{{ build_image_name("kube-state-metrics", False) }}{%- raw %}:v2.2.4
+        image: {% endraw -%}{{ build_image_name("kube-state-metrics", False) }}{%- raw %}:v2.3.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -62106,8 +63680,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -62127,8 +63701,8 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-operator-operator
         app.kubernetes.io/part-of: metalk8s
-        app.kubernetes.io/version: 23.2.0
-        chart: kube-prometheus-stack-23.2.0
+        app.kubernetes.io/version: 32.2.0
+        chart: kube-prometheus-stack-32.2.0
         heritage: metalk8s
         metalk8s.scality.com/monitor: ''
         release: prometheus-operator
@@ -62137,13 +63711,13 @@ spec:
       - args:
         - --kubelet-service=kube-system/prometheus-operator-kubelet
         - --localhost=127.0.0.1
-        - --prometheus-config-reloader={% endraw -%}{{ build_image_name("prometheus-config-reloader", False) }}{%- raw %}:v0.52.1
+        - --prometheus-config-reloader={% endraw -%}{{ build_image_name("prometheus-config-reloader", False) }}{%- raw %}:v0.54.0
         - --config-reloader-cpu-request=100m
         - --config-reloader-cpu-limit=100m
         - --config-reloader-memory-request=50Mi
         - --config-reloader-memory-limit=50Mi
-        - --thanos-default-base-image={% endraw -%}{{ build_image_name("thanos", False) }}{%- raw %}:v0.23.1
-        image: {% endraw -%}{{ build_image_name("prometheus-operator", False) }}{%- raw %}:v0.52.1
+        - --thanos-default-base-image={% endraw -%}{{ build_image_name("thanos", False) }}{%- raw %}:v0.24.0
+        image: {% endraw -%}{{ build_image_name("prometheus-operator", False) }}{%- raw %}:v0.54.0
         imagePullPolicy: IfNotPresent
         name: prometheus-operator
         ports:
@@ -62180,7 +63754,7 @@ metadata:
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 8.3.4-ubuntu
-    helm.sh/chart: grafana-6.19.0
+    helm.sh/chart: grafana-6.21.2
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -62207,8 +63781,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -62221,7 +63795,7 @@ spec:
       - podAffinityTerm:
           labelSelector:
             matchExpressions:
-            - key: app
+            - key: app.kubernetes.io/name
               operator: In
               values:
               - alertmanager
@@ -62288,8 +63862,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -62321,7 +63895,7 @@ spec:
       port: http-web
   enableAdminAPI: {% endraw -%}{{ prometheus.spec.config.enable_admin_api }}{%- raw %}
   externalUrl: http://prometheus-operator-prometheus.metalk8s-monitoring:9090
-  image: {% endraw -%}{{ build_image_name("prometheus", False) }}{%- raw %}:v2.31.1
+  image: {% endraw -%}{{ build_image_name("prometheus", False) }}{%- raw %}:v2.33.1
   listenLocal: false
   logFormat: logfmt
   logLevel: info
@@ -62377,7 +63951,7 @@ spec:
   - effect: NoSchedule
     key: node-role.kubernetes.io/infra
     operator: Exists
-  version: v2.31.1
+  version: v2.33.1
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -62388,8 +63962,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -62403,7 +63977,7 @@ spec:
       annotations:
         description: Configuration has failed to load for {{ $labels.namespace }}/{{
           $labels.pod}}.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-alertmanagerfailedreload
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedreload
         summary: Reloading an Alertmanager configuration has failed.
       expr: |-
         # Without max_over_time, failed scrapes could create false negatives, see
@@ -62416,7 +63990,7 @@ spec:
       annotations:
         description: Alertmanager {{ $labels.namespace }}/{{ $labels.pod}} has only
           found {{ $value }} members of the {{$labels.job}} cluster.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-alertmanagermembersinconsistent
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagermembersinconsistent
         summary: A member of an Alertmanager cluster has not found all other cluster
           members.
       expr: |-
@@ -62433,7 +64007,7 @@ spec:
         description: Alertmanager {{ $labels.namespace }}/{{ $labels.pod}} failed
           to send {{ $value | humanizePercentage }} of notifications to {{ $labels.integration
           }}.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-alertmanagerfailedtosendalerts
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerfailedtosendalerts
         summary: An Alertmanager instance failed to send notifications.
       expr: |-
         (
@@ -62450,7 +64024,7 @@ spec:
         description: The minimum notification failure rate to {{ $labels.integration
           }} sent from any instance in the {{$labels.job}} cluster is {{ $value |
           humanizePercentage }}.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-alertmanagerclusterfailedtosendalerts
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerclusterfailedtosendalerts
         summary: All Alertmanager instances in a cluster failed to send notifications
           to a critical integration.
       expr: |-
@@ -62468,7 +64042,7 @@ spec:
         description: The minimum notification failure rate to {{ $labels.integration
           }} sent from any instance in the {{$labels.job}} cluster is {{ $value |
           humanizePercentage }}.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-alertmanagerclusterfailedtosendalerts
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerclusterfailedtosendalerts
         summary: All Alertmanager instances in a cluster failed to send notifications
           to a non-critical integration.
       expr: |-
@@ -62485,7 +64059,7 @@ spec:
       annotations:
         description: Alertmanager instances within the {{$labels.job}} cluster have
           different configurations.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-alertmanagerconfiginconsistent
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerconfiginconsistent
         summary: Alertmanager instances within the same cluster have different configurations.
       expr: |-
         count by (namespace,service) (
@@ -62500,7 +64074,7 @@ spec:
         description: '{{ $value | humanizePercentage }} of Alertmanager instances
           within the {{$labels.job}} cluster have been up for less than half of the
           last 5m.'
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-alertmanagerclusterdown
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerclusterdown
         summary: Half or more of the Alertmanager instances within the same cluster
           are down.
       expr: |-
@@ -62522,7 +64096,7 @@ spec:
         description: '{{ $value | humanizePercentage }} of Alertmanager instances
           within the {{$labels.job}} cluster have restarted at least 5 times in the
           last 10m.'
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-alertmanagerclustercrashlooping
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/alertmanager/alertmanagerclustercrashlooping
         summary: Half or more of the Alertmanager instances within the same cluster
           are crashlooping.
       expr: |-
@@ -62549,8 +64123,41 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+    release: prometheus-operator
+  name: prometheus-operator-config-reloaders
+  namespace: metalk8s-monitoring
+spec:
+  groups:
+  - name: config-reloaders
+    rules:
+    - alert: ConfigReloaderSidecarErrors
+      annotations:
+        description: |-
+          Errors encountered while the {{$labels.pod}} config-reloader sidecar attempts to sync config in {{$labels.namespace}} namespace.
+          As a result, configuration for service running in {{$labels.pod}} may be stale and cannot be updated anymore.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus-operator/configreloadersidecarerrors
+        summary: config-reloader sidecar has not had a successful reload for 10m
+      expr: max_over_time(reloader_last_reload_successful{namespace=~".+"}[5m]) ==
+        0
+      for: 10m
+      labels:
+        severity: warning
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: prometheus-operator
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -62697,8 +64304,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -62712,7 +64319,7 @@ spec:
       annotations:
         description: '{{ printf "%.4g" $value }}% of the {{ $labels.job }}/{{ $labels.service
           }} targets in {{ $labels.namespace }} namespace are down.'
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-targetdown
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/general/targetdown
         summary: One or more targets are unreachable.
       expr: 100 * (count(up == 0) BY (job, namespace, service) / count(up) BY (job,
         namespace, service)) > 10
@@ -62727,10 +64334,25 @@ spec:
           and always fire against a receiver. There are integrations with various notification
           mechanisms that send a notification when this alert is not firing. For example the
           "DeadMansSnitch" integration in PagerDuty.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-watchdog
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/general/watchdog
         summary: An alert that should always be firing to certify that Alertmanager
           is working properly.
       expr: vector(1)
+      labels:
+        severity: none
+    - alert: InfoInhibitor
+      annotations:
+        description: |-
+          This is an alert that is used to inhibit info alerts.
+          By themselves, the info-level alerts are sometimes very noisy, but they are relevant when combined with
+          other alerts.
+          This alert fires whenever there's a severity="info" alert, and stops firing when another alert with a
+          severity of 'warning' or 'critical' starts firing on the same namespace.
+          This alert should be routed to a null receiver and configured to inhibit alerts with severity="info".
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/general/infoinhibitor
+        summary: Info-level alert inhibition.
+      expr: ALERTS{severity = "info"} == 1 unless on(namespace) ALERTS{alertname !=
+        "InfoInhibitor", severity =~ "warning|critical", alertstate="firing"} == 1
       labels:
         severity: none
 ---
@@ -62743,8 +64365,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -62787,7 +64409,7 @@ spec:
       record: node_namespace_pod_container:container_memory_swap
     - expr: |-
         kube_pod_container_resource_requests{resource="memory",job="kube-state-metrics"}  * on (namespace, pod, cluster)
-        group_left() max by (namespace, pod) (
+        group_left() max by (namespace, pod, cluster) (
           (kube_pod_status_phase{phase=~"Pending|Running"} == 1)
         )
       record: cluster:namespace:pod_memory:active:kube_pod_container_resource_requests
@@ -62796,7 +64418,7 @@ spec:
             sum by (namespace, pod, cluster) (
                 max by (namespace, pod, container, cluster) (
                   kube_pod_container_resource_requests{resource="memory",job="kube-state-metrics"}
-                ) * on(namespace, pod, cluster) group_left() max by (namespace, pod) (
+                ) * on(namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (
                   kube_pod_status_phase{phase=~"Pending|Running"} == 1
                 )
             )
@@ -62804,7 +64426,7 @@ spec:
       record: namespace_memory:kube_pod_container_resource_requests:sum
     - expr: |-
         kube_pod_container_resource_requests{resource="cpu",job="kube-state-metrics"}  * on (namespace, pod, cluster)
-        group_left() max by (namespace, pod) (
+        group_left() max by (namespace, pod, cluster) (
           (kube_pod_status_phase{phase=~"Pending|Running"} == 1)
         )
       record: cluster:namespace:pod_cpu:active:kube_pod_container_resource_requests
@@ -62813,7 +64435,7 @@ spec:
             sum by (namespace, pod, cluster) (
                 max by (namespace, pod, container, cluster) (
                   kube_pod_container_resource_requests{resource="cpu",job="kube-state-metrics"}
-                ) * on(namespace, pod, cluster) group_left() max by (namespace, pod) (
+                ) * on(namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (
                   kube_pod_status_phase{phase=~"Pending|Running"} == 1
                 )
             )
@@ -62821,7 +64443,7 @@ spec:
       record: namespace_cpu:kube_pod_container_resource_requests:sum
     - expr: |-
         kube_pod_container_resource_limits{resource="memory",job="kube-state-metrics"}  * on (namespace, pod, cluster)
-        group_left() max by (namespace, pod) (
+        group_left() max by (namespace, pod, cluster) (
           (kube_pod_status_phase{phase=~"Pending|Running"} == 1)
         )
       record: cluster:namespace:pod_memory:active:kube_pod_container_resource_limits
@@ -62830,7 +64452,7 @@ spec:
             sum by (namespace, pod, cluster) (
                 max by (namespace, pod, container, cluster) (
                   kube_pod_container_resource_limits{resource="memory",job="kube-state-metrics"}
-                ) * on(namespace, pod, cluster) group_left() max by (namespace, pod) (
+                ) * on(namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (
                   kube_pod_status_phase{phase=~"Pending|Running"} == 1
                 )
             )
@@ -62838,7 +64460,7 @@ spec:
       record: namespace_memory:kube_pod_container_resource_limits:sum
     - expr: |-
         kube_pod_container_resource_limits{resource="cpu",job="kube-state-metrics"}  * on (namespace, pod, cluster)
-        group_left() max by (namespace, pod) (
+        group_left() max by (namespace, pod, cluster) (
          (kube_pod_status_phase{phase=~"Pending|Running"} == 1)
          )
       record: cluster:namespace:pod_cpu:active:kube_pod_container_resource_limits
@@ -62847,7 +64469,7 @@ spec:
             sum by (namespace, pod, cluster) (
                 max by (namespace, pod, container, cluster) (
                   kube_pod_container_resource_limits{resource="cpu",job="kube-state-metrics"}
-                ) * on(namespace, pod, cluster) group_left() max by (namespace, pod) (
+                ) * on(namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (
                   kube_pod_status_phase{phase=~"Pending|Running"} == 1
                 )
             )
@@ -62890,6 +64512,16 @@ spec:
       labels:
         workload_type: statefulset
       record: namespace_workload_pod:kube_pod_owner:relabel
+    - expr: |-
+        max by (cluster, namespace, workload, pod) (
+          label_replace(
+            kube_pod_owner{job="kube-state-metrics", owner_kind="Job"},
+            "workload", "$1", "owner_name", "(.*)"
+          )
+        )
+      labels:
+        workload_type: job
+      record: namespace_workload_pod:kube_pod_owner:relabel
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -62900,8 +64532,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -62923,28 +64555,38 @@ spec:
       labels:
         verb: write
       record: code:apiserver_request_total:increase30d
+    - expr: sum by (cluster, verb, scope) (increase(apiserver_request_duration_seconds_count[1h]))
+      record: cluster_verb_scope:apiserver_request_duration_seconds_count:increase1h
+    - expr: sum by (cluster, verb, scope) (avg_over_time(cluster_verb_scope:apiserver_request_duration_seconds_count:increase1h[30d])
+        * 24 * 30)
+      record: cluster_verb_scope:apiserver_request_duration_seconds_count:increase30d
+    - expr: sum by (cluster, verb, scope, le) (increase(apiserver_request_duration_seconds_bucket[1h]))
+      record: cluster_verb_scope_le:apiserver_request_duration_seconds_bucket:increase1h
+    - expr: sum by (cluster, verb, scope, le) (avg_over_time(cluster_verb_scope_le:apiserver_request_duration_seconds_bucket:increase1h[30d])
+        * 24 * 30)
+      record: cluster_verb_scope_le:apiserver_request_duration_seconds_bucket:increase30d
     - expr: |-
         1 - (
           (
             # write too slow
-            sum by (cluster) (increase(apiserver_request_duration_seconds_count{verb=~"POST|PUT|PATCH|DELETE"}[30d]))
+            sum by (cluster) (cluster_verb_scope:apiserver_request_duration_seconds_count:increase30d{verb=~"POST|PUT|PATCH|DELETE"})
             -
-            sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{verb=~"POST|PUT|PATCH|DELETE",le="1"}[30d]))
+            sum by (cluster) (cluster_verb_scope_le:apiserver_request_duration_seconds_bucket:increase30d{verb=~"POST|PUT|PATCH|DELETE",le="1"})
           ) +
           (
             # read too slow
-            sum by (cluster) (increase(apiserver_request_duration_seconds_count{verb=~"LIST|GET"}[30d]))
+            sum by (cluster) (cluster_verb_scope:apiserver_request_duration_seconds_count:increase30d{verb=~"LIST|GET"})
             -
             (
               (
-                sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{verb=~"LIST|GET",scope=~"resource|",le="1"}[30d]))
+                sum by (cluster) (cluster_verb_scope_le:apiserver_request_duration_seconds_bucket:increase30d{verb=~"LIST|GET",scope=~"resource|",le="1"})
                 or
                 vector(0)
               )
               +
-              sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{verb=~"LIST|GET",scope="namespace",le="5"}[30d]))
+              sum by (cluster) (cluster_verb_scope_le:apiserver_request_duration_seconds_bucket:increase30d{verb=~"LIST|GET",scope="namespace",le="5"})
               +
-              sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{verb=~"LIST|GET",scope="cluster",le="40"}[30d]))
+              sum by (cluster) (cluster_verb_scope_le:apiserver_request_duration_seconds_bucket:increase30d{verb=~"LIST|GET",scope="cluster",le="30"})
             )
           ) +
           # errors
@@ -62957,19 +64599,19 @@ spec:
       record: apiserver_request:availability30d
     - expr: |-
         1 - (
-          sum by (cluster) (increase(apiserver_request_duration_seconds_count{job="apiserver",verb=~"LIST|GET"}[30d]))
+          sum by (cluster) (cluster_verb_scope:apiserver_request_duration_seconds_count:increase30d{verb=~"LIST|GET"})
           -
           (
             # too slow
             (
-              sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope=~"resource|",le="1"}[30d]))
+              sum by (cluster) (cluster_verb_scope_le:apiserver_request_duration_seconds_bucket:increase30d{verb=~"LIST|GET",scope=~"resource|",le="1"})
               or
               vector(0)
             )
             +
-            sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="namespace",le="5"}[30d]))
+            sum by (cluster) (cluster_verb_scope_le:apiserver_request_duration_seconds_bucket:increase30d{verb=~"LIST|GET",scope="namespace",le="5"})
             +
-            sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="40"}[30d]))
+            sum by (cluster) (cluster_verb_scope_le:apiserver_request_duration_seconds_bucket:increase30d{verb=~"LIST|GET",scope="cluster",le="30"})
           )
           +
           # errors
@@ -62984,9 +64626,9 @@ spec:
         1 - (
           (
             # too slow
-            sum by (cluster) (increase(apiserver_request_duration_seconds_count{verb=~"POST|PUT|PATCH|DELETE"}[30d]))
+            sum by (cluster) (cluster_verb_scope:apiserver_request_duration_seconds_count:increase30d{verb=~"POST|PUT|PATCH|DELETE"})
             -
-            sum by (cluster) (increase(apiserver_request_duration_seconds_bucket{verb=~"POST|PUT|PATCH|DELETE",le="1"}[30d]))
+            sum by (cluster) (cluster_verb_scope_le:apiserver_request_duration_seconds_bucket:increase30d{verb=~"POST|PUT|PATCH|DELETE",le="1"})
           )
           +
           # errors
@@ -63023,8 +64665,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -63049,7 +64691,7 @@ spec:
               +
               sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="namespace",le="5"}[1d]))
               +
-              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="40"}[1d]))
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="30"}[1d]))
             )
           )
           +
@@ -63076,7 +64718,7 @@ spec:
               +
               sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="namespace",le="5"}[1h]))
               +
-              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="40"}[1h]))
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="30"}[1h]))
             )
           )
           +
@@ -63103,7 +64745,7 @@ spec:
               +
               sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="namespace",le="5"}[2h]))
               +
-              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="40"}[2h]))
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="30"}[2h]))
             )
           )
           +
@@ -63130,7 +64772,7 @@ spec:
               +
               sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="namespace",le="5"}[30m]))
               +
-              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="40"}[30m]))
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="30"}[30m]))
             )
           )
           +
@@ -63157,7 +64799,7 @@ spec:
               +
               sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="namespace",le="5"}[3d]))
               +
-              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="40"}[3d]))
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="30"}[3d]))
             )
           )
           +
@@ -63184,7 +64826,7 @@ spec:
               +
               sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="namespace",le="5"}[5m]))
               +
-              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="40"}[5m]))
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="30"}[5m]))
             )
           )
           +
@@ -63211,7 +64853,7 @@ spec:
               +
               sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="namespace",le="5"}[6h]))
               +
-              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="40"}[6h]))
+              sum by (cluster) (rate(apiserver_request_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",scope="cluster",le="30"}[6h]))
             )
           )
           +
@@ -63345,8 +64987,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -63393,8 +65035,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -63407,7 +65049,7 @@ spec:
     - alert: KubeAPIErrorBudgetBurn
       annotations:
         description: The API server is burning too much error budget.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapierrorbudgetburn
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapierrorbudgetburn
         summary: The API server is burning too much error budget.
       expr: |-
         sum(apiserver_request:burnrate1h) > (14.40 * 0.01000)
@@ -63421,7 +65063,7 @@ spec:
     - alert: KubeAPIErrorBudgetBurn
       annotations:
         description: The API server is burning too much error budget.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapierrorbudgetburn
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapierrorbudgetburn
         summary: The API server is burning too much error budget.
       expr: |-
         sum(apiserver_request:burnrate6h) > (6.00 * 0.01000)
@@ -63435,7 +65077,7 @@ spec:
     - alert: KubeAPIErrorBudgetBurn
       annotations:
         description: The API server is burning too much error budget.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapierrorbudgetburn
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapierrorbudgetburn
         summary: The API server is burning too much error budget.
       expr: |-
         sum(apiserver_request:burnrate1d) > (3.00 * 0.01000)
@@ -63449,7 +65091,7 @@ spec:
     - alert: KubeAPIErrorBudgetBurn
       annotations:
         description: The API server is burning too much error budget.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapierrorbudgetburn
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapierrorbudgetburn
         summary: The API server is burning too much error budget.
       expr: |-
         sum(apiserver_request:burnrate3d) > (1.00 * 0.01000)
@@ -63470,8 +65112,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -63827,8 +65469,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -63852,8 +65494,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -63889,8 +65531,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -63955,8 +65597,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -63971,7 +65613,7 @@ spec:
         description: kube-state-metrics is experiencing errors at an elevated rate
           in list operations. This is likely causing it to not be able to expose metrics
           about Kubernetes objects correctly or at all.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubestatemetricslisterrors
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kube-state-metrics/kubestatemetricslisterrors
         summary: kube-state-metrics is experiencing errors in list operations.
       expr: |-
         (sum(rate(kube_state_metrics_list_total{job="kube-state-metrics",result="error"}[5m]))
@@ -63986,7 +65628,7 @@ spec:
         description: kube-state-metrics is experiencing errors at an elevated rate
           in watch operations. This is likely causing it to not be able to expose
           metrics about Kubernetes objects correctly or at all.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubestatemetricswatcherrors
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kube-state-metrics/kubestatemetricswatcherrors
         summary: kube-state-metrics is experiencing errors in watch operations.
       expr: |-
         (sum(rate(kube_state_metrics_watch_total{job="kube-state-metrics",result="error"}[5m]))
@@ -64001,7 +65643,7 @@ spec:
         description: kube-state-metrics pods are running with different --total-shards
           configuration, some Kubernetes objects may be exposed multiple times or
           not exposed at all.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubestatemetricsshardingmismatch
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kube-state-metrics/kubestatemetricsshardingmismatch
         summary: kube-state-metrics sharding is misconfigured.
       expr: stdvar (kube_state_metrics_total_shards{job="kube-state-metrics"}) !=
         0
@@ -64012,7 +65654,7 @@ spec:
       annotations:
         description: kube-state-metrics shards are missing, some Kubernetes objects
           are not being exposed.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubestatemetricsshardsmissing
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kube-state-metrics/kubestatemetricsshardsmissing
         summary: kube-state-metrics shards are missing.
       expr: |-
         2^max(kube_state_metrics_total_shards{job="kube-state-metrics"}) - 1
@@ -64032,8 +65674,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -64071,8 +65713,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -64084,14 +65726,12 @@ spec:
     rules:
     - alert: KubePodCrashLooping
       annotations:
-        description: Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container
-          }}) is restarting {{ printf "%.2f" $value }} times / 10 minutes.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepodcrashlooping
+        description: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container
+          }}) is in waiting state (reason: "CrashLoopBackOff").'
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodcrashlooping
         summary: Pod is crash looping.
-      expr: |-
-        increase(kube_pod_container_status_restarts_total{job="kube-state-metrics", namespace=~".*"}[10m]) > 0
-        and
-        kube_pod_container_status_waiting{job="kube-state-metrics", namespace=~".*"} == 1
+      expr: max_over_time(kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff",
+        job="kube-state-metrics", namespace=~".*"}[5m]) >= 1
       for: 15m
       labels:
         severity: warning
@@ -64099,7 +65739,7 @@ spec:
       annotations:
         description: Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a non-ready
           state for longer than 15 minutes.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepodnotready
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodnotready
         summary: Pod has been in a non-ready state for more than 15 minutes.
       expr: |-
         sum by (namespace, pod) (
@@ -64117,7 +65757,7 @@ spec:
         description: Deployment generation for {{ $labels.namespace }}/{{ $labels.deployment
           }} does not match, this indicates that the Deployment has failed but has
           not been rolled back.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedeploymentgenerationmismatch
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubedeploymentgenerationmismatch
         summary: Deployment generation mismatch due to possible roll-back
       expr: |-
         kube_deployment_status_observed_generation{job="kube-state-metrics", namespace=~".*"}
@@ -64130,7 +65770,7 @@ spec:
       annotations:
         description: Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has
           not matched the expected number of replicas for longer than 15 minutes.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedeploymentreplicasmismatch
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubedeploymentreplicasmismatch
         summary: Deployment has not matched the expected number of replicas.
       expr: |-
         (
@@ -64149,7 +65789,7 @@ spec:
       annotations:
         description: StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }}
           has not matched the expected number of replicas for longer than 15 minutes.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubestatefulsetreplicasmismatch
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubestatefulsetreplicasmismatch
         summary: Deployment has not matched the expected number of replicas.
       expr: |-
         (
@@ -64169,7 +65809,7 @@ spec:
         description: StatefulSet generation for {{ $labels.namespace }}/{{ $labels.statefulset
           }} does not match, this indicates that the StatefulSet has failed but has
           not been rolled back.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubestatefulsetgenerationmismatch
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubestatefulsetgenerationmismatch
         summary: StatefulSet generation mismatch due to possible roll-back
       expr: |-
         kube_statefulset_status_observed_generation{job="kube-state-metrics", namespace=~".*"}
@@ -64182,7 +65822,7 @@ spec:
       annotations:
         description: StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }}
           update has not been rolled out.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubestatefulsetupdatenotrolledout
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubestatefulsetupdatenotrolledout
         summary: StatefulSet update has not been rolled out.
       expr: |-
         (
@@ -64209,7 +65849,7 @@ spec:
       annotations:
         description: DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset }} has
           not finished or progressed for at least 15 minutes.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedaemonsetrolloutstuck
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubedaemonsetrolloutstuck
         summary: DaemonSet rollout is stuck.
       expr: |-
         (
@@ -64222,7 +65862,7 @@ spec:
              !=
             0
           ) or (
-            kube_daemonset_updated_number_scheduled{job="kube-state-metrics", namespace=~".*"}
+            kube_daemonset_status_updated_number_scheduled{job="kube-state-metrics", namespace=~".*"}
              !=
             kube_daemonset_status_desired_number_scheduled{job="kube-state-metrics", namespace=~".*"}
           ) or (
@@ -64231,7 +65871,7 @@ spec:
             kube_daemonset_status_desired_number_scheduled{job="kube-state-metrics", namespace=~".*"}
           )
         ) and (
-          changes(kube_daemonset_updated_number_scheduled{job="kube-state-metrics", namespace=~".*"}[5m])
+          changes(kube_daemonset_status_updated_number_scheduled{job="kube-state-metrics", namespace=~".*"}[5m])
             ==
           0
         )
@@ -64240,9 +65880,10 @@ spec:
         severity: warning
     - alert: KubeContainerWaiting
       annotations:
-        description: Pod {{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container}}
-          has been in waiting state for longer than 1 hour.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubecontainerwaiting
+        description: pod/{{ $labels.pod }} in namespace {{ $labels.namespace }} on
+          container {{ $labels.container}} has been in waiting state for longer than
+          1 hour.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubecontainerwaiting
         summary: Pod container waiting longer than 1 hour
       expr: sum by (namespace, pod, container) (kube_pod_container_status_waiting_reason{job="kube-state-metrics",
         namespace=~".*"}) > 0
@@ -64253,7 +65894,7 @@ spec:
       annotations:
         description: '{{ $value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset
           }} are not scheduled.'
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedaemonsetnotscheduled
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubedaemonsetnotscheduled
         summary: DaemonSet pods are not scheduled.
       expr: |-
         kube_daemonset_status_desired_number_scheduled{job="kube-state-metrics", namespace=~".*"}
@@ -64266,7 +65907,7 @@ spec:
       annotations:
         description: '{{ $value }} Pods of DaemonSet {{ $labels.namespace }}/{{ $labels.daemonset
           }} are running where they are not supposed to run.'
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubedaemonsetmisscheduled
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubedaemonsetmisscheduled
         summary: DaemonSet pods are misscheduled.
       expr: kube_daemonset_status_number_misscheduled{job="kube-state-metrics", namespace=~".*"}
         > 0
@@ -64277,7 +65918,7 @@ spec:
       annotations:
         description: Job {{ $labels.namespace }}/{{ $labels.job_name }} is taking
           more than 12 hours to complete.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubejobcompletion
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubejobcompletion
         summary: Job did not complete in time
       expr: kube_job_spec_completions{job="kube-state-metrics", namespace=~".*"} -
         kube_job_status_succeeded{job="kube-state-metrics", namespace=~".*"}  > 0
@@ -64288,7 +65929,7 @@ spec:
       annotations:
         description: Job {{ $labels.namespace }}/{{ $labels.job_name }} failed to
           complete. Removing failed job after investigation should clear this alert.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubejobfailed
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubejobfailed
         summary: Job failed to complete.
       expr: kube_job_failed{job="kube-state-metrics", namespace=~".*"}  > 0
       for: 15m
@@ -64298,7 +65939,7 @@ spec:
       annotations:
         description: HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler  }}
           has not matched the desired number of replicas for longer than 15 minutes.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubehpareplicasmismatch
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubehpareplicasmismatch
         summary: HPA has not matched descired number of replicas.
       expr: |-
         (kube_horizontalpodautoscaler_status_desired_replicas{job="kube-state-metrics", namespace=~".*"}
@@ -64321,7 +65962,7 @@ spec:
       annotations:
         description: HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler  }}
           has been running at max replicas for longer than 15 minutes.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubehpamaxedout
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubehpamaxedout
         summary: HPA is running at max replicas
       expr: |-
         kube_horizontalpodautoscaler_status_current_replicas{job="kube-state-metrics", namespace=~".*"}
@@ -64340,8 +65981,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -64353,45 +65994,39 @@ spec:
     rules:
     - alert: KubeCPUOvercommit
       annotations:
-        description: Cluster has overcommitted CPU resource requests for Pods and
-          cannot tolerate node failure.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubecpuovercommit
+        description: Cluster has overcommitted CPU resource requests for Pods by {{
+          $value }} CPU shares and cannot tolerate node failure.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubecpuovercommit
         summary: Cluster has overcommitted CPU resource requests.
       expr: |-
-        sum(namespace_cpu:kube_pod_container_resource_requests:sum{})
-          /
-        sum(kube_node_status_allocatable{resource="cpu"})
-          >
-        ((count(kube_node_status_allocatable{resource="cpu"}) > 1) - 1) / count(kube_node_status_allocatable{resource="cpu"})
-      for: 5m
+        sum(namespace_cpu:kube_pod_container_resource_requests:sum{}) - (sum(kube_node_status_allocatable{resource="cpu"}) - max(kube_node_status_allocatable{resource="cpu"})) > 0
+        and
+        (sum(kube_node_status_allocatable{resource="cpu"}) - max(kube_node_status_allocatable{resource="cpu"})) > 0
+      for: 10m
       labels:
         severity: warning
     - alert: KubeMemoryOvercommit
       annotations:
-        description: Cluster has overcommitted memory resource requests for Pods and
-          cannot tolerate node failure.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubememoryovercommit
+        description: Cluster has overcommitted memory resource requests for Pods by
+          {{ $value | humanize }} bytes and cannot tolerate node failure.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubememoryovercommit
         summary: Cluster has overcommitted memory resource requests.
       expr: |-
-        sum(namespace_memory:kube_pod_container_resource_requests:sum{})
-          /
-        sum(kube_node_status_allocatable{resource="memory"})
-          >
-        ((count(kube_node_status_allocatable{resource="memory"}) > 1) - 1)
-          /
-        count(kube_node_status_allocatable{resource="memory"})
-      for: 5m
+        sum(namespace_memory:kube_pod_container_resource_requests:sum{}) - (sum(kube_node_status_allocatable{resource="memory"}) - max(kube_node_status_allocatable{resource="memory"})) > 0
+        and
+        (sum(kube_node_status_allocatable{resource="memory"}) - max(kube_node_status_allocatable{resource="memory"})) > 0
+      for: 10m
       labels:
         severity: warning
     - alert: KubeCPUQuotaOvercommit
       annotations:
         description: Cluster has overcommitted CPU resource requests for Namespaces.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubecpuquotaovercommit
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubecpuquotaovercommit
         summary: Cluster has overcommitted CPU resource requests.
       expr: |-
-        sum(kube_resourcequota{job="kube-state-metrics", type="hard", resource="cpu"})
+        sum(min without(resource) (kube_resourcequota{job="kube-state-metrics", type="hard", resource=~"(cpu|requests.cpu)"}))
           /
-        sum(kube_node_status_allocatable{resource="cpu"})
+        sum(kube_node_status_allocatable{resource="cpu", job="kube-state-metrics"})
           > 1.5
       for: 5m
       labels:
@@ -64399,12 +66034,12 @@ spec:
     - alert: KubeMemoryQuotaOvercommit
       annotations:
         description: Cluster has overcommitted memory resource requests for Namespaces.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubememoryquotaovercommit
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubememoryquotaovercommit
         summary: Cluster has overcommitted memory resource requests.
       expr: |-
-        sum(kube_resourcequota{job="kube-state-metrics", type="hard", resource="memory"})
+        sum(min without(resource) (kube_resourcequota{job="kube-state-metrics", type="hard", resource=~"(memory|requests.memory)"}))
           /
-        sum(kube_node_status_allocatable{resource="memory",job="kube-state-metrics"})
+        sum(kube_node_status_allocatable{resource="memory", job="kube-state-metrics"})
           > 1.5
       for: 5m
       labels:
@@ -64413,7 +66048,7 @@ spec:
       annotations:
         description: Namespace {{ $labels.namespace }} is using {{ $value | humanizePercentage
           }} of its {{ $labels.resource }} quota.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubequotaalmostfull
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubequotaalmostfull
         summary: Namespace quota is going to be full.
       expr: |-
         kube_resourcequota{job="kube-state-metrics", type="used"}
@@ -64427,7 +66062,7 @@ spec:
       annotations:
         description: Namespace {{ $labels.namespace }} is using {{ $value | humanizePercentage
           }} of its {{ $labels.resource }} quota.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubequotafullyused
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubequotafullyused
         summary: Namespace quota is fully used.
       expr: |-
         kube_resourcequota{job="kube-state-metrics", type="used"}
@@ -64441,7 +66076,7 @@ spec:
       annotations:
         description: Namespace {{ $labels.namespace }} is using {{ $value | humanizePercentage
           }} of its {{ $labels.resource }} quota.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubequotaexceeded
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubequotaexceeded
         summary: Namespace quota has exceeded the limits.
       expr: |-
         kube_resourcequota{job="kube-state-metrics", type="used"}
@@ -64456,7 +66091,7 @@ spec:
         description: '{{ $value | humanizePercentage }} throttling of CPU in namespace
           {{ $labels.namespace }} for container {{ $labels.container }} in pod {{
           $labels.pod }}.'
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-cputhrottlinghigh
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/cputhrottlinghigh
         summary: Processes experience elevated CPU throttling.
       expr: |-
         sum(increase(container_cpu_cfs_throttled_periods_total{container!="", }[5m])) by (container, pod, namespace)
@@ -64476,8 +66111,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -64492,7 +66127,7 @@ spec:
         description: The PersistentVolume claimed by {{ $labels.persistentvolumeclaim
           }} in Namespace {{ $labels.namespace }} is only {{ $value | humanizePercentage
           }} free.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumefillingup
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepersistentvolumefillingup
         summary: PersistentVolume is filling up.
       expr: |-
         (
@@ -64502,6 +66137,10 @@ spec:
         ) < 0.03
         and
         kubelet_volume_stats_used_bytes{job="kubelet", namespace=~".*", metrics_path="/metrics"} > 0
+        unless on(namespace, persistentvolumeclaim)
+        kube_persistentvolumeclaim_access_mode{ access_mode="ReadOnlyMany"} == 1
+        unless on(namespace, persistentvolumeclaim)
+        kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
       for: 1m
       labels:
         severity: critical
@@ -64511,7 +66150,7 @@ spec:
           $labels.persistentvolumeclaim }} in Namespace {{ $labels.namespace }} is
           expected to fill up within four days. Currently {{ $value | humanizePercentage
           }} is available.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumefillingup
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepersistentvolumefillingup
         summary: PersistentVolume is filling up.
       expr: |-
         (
@@ -64523,6 +66162,10 @@ spec:
         kubelet_volume_stats_used_bytes{job="kubelet", namespace=~".*", metrics_path="/metrics"} > 0
         and
         predict_linear(kubelet_volume_stats_available_bytes{job="kubelet", namespace=~".*", metrics_path="/metrics"}[6h], 4 * 24 * 3600) < 0
+        unless on(namespace, persistentvolumeclaim)
+        kube_persistentvolumeclaim_access_mode{ access_mode="ReadOnlyMany"} == 1
+        unless on(namespace, persistentvolumeclaim)
+        kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
       for: 1h
       labels:
         severity: warning
@@ -64530,7 +66173,7 @@ spec:
       annotations:
         description: The persistent volume {{ $labels.persistentvolume }} has status
           {{ $labels.phase }}.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubepersistentvolumeerrors
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepersistentvolumeerrors
         summary: PersistentVolume is having issues with provisioning.
       expr: kube_persistentvolume_status_phase{phase=~"Failed|Pending",job="kube-state-metrics"}
         > 0
@@ -64547,8 +66190,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -64560,9 +66203,9 @@ spec:
     rules:
     - alert: KubeClientCertificateExpiration
       annotations:
-        description: A client certificate used to authenticate to the apiserver is
-          expiring in less than 7.0 days.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeclientcertificateexpiration
+        description: A client certificate used to authenticate to kubernetes apiserver
+          is expiring in less than 7.0 days.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeclientcertificateexpiration
         summary: Client certificate is about to expire.
       expr: apiserver_client_certificate_expiration_seconds_count{job="apiserver"}
         > 0 and on(job) histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m])))
@@ -64571,32 +66214,32 @@ spec:
         severity: warning
     - alert: KubeClientCertificateExpiration
       annotations:
-        description: A client certificate used to authenticate to the apiserver is
-          expiring in less than 24.0 hours.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeclientcertificateexpiration
+        description: A client certificate used to authenticate to kubernetes apiserver
+          is expiring in less than 24.0 hours.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeclientcertificateexpiration
         summary: Client certificate is about to expire.
       expr: apiserver_client_certificate_expiration_seconds_count{job="apiserver"}
         > 0 and on(job) histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m])))
         < 86400
       labels:
         severity: critical
-    - alert: AggregatedAPIErrors
+    - alert: KubeAggregatedAPIErrors
       annotations:
-        description: An aggregated API {{ $labels.name }}/{{ $labels.namespace }}
-          has reported errors. It has appeared unavailable {{ $value | humanize }}
-          times averaged over the past 10m.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-aggregatedapierrors
-        summary: An aggregated API has reported errors.
+        description: Kubernetes aggregated API {{ $labels.name }}/{{ $labels.namespace
+          }} has reported errors. It has appeared unavailable {{ $value | humanize
+          }} times averaged over the past 10m.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeaggregatedapierrors
+        summary: Kubernetes aggregated API has reported errors.
       expr: sum by(name, namespace)(increase(aggregator_unavailable_apiservice_total[10m]))
         > 4
       labels:
         severity: warning
-    - alert: AggregatedAPIDown
+    - alert: KubeAggregatedAPIDown
       annotations:
-        description: An aggregated API {{ $labels.name }}/{{ $labels.namespace }}
-          has been only {{ $value | humanize }}% available over the last 10m.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-aggregatedapidown
-        summary: An aggregated API is down.
+        description: Kubernetes aggregated API {{ $labels.name }}/{{ $labels.namespace
+          }} has been only {{ $value | humanize }}% available over the last 10m.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeaggregatedapidown
+        summary: Kubernetes aggregated API is down.
       expr: (1 - max by(name, namespace)(avg_over_time(aggregator_unavailable_apiservice[10m])))
         * 100 < 85
       for: 5m
@@ -64605,7 +66248,7 @@ spec:
     - alert: KubeAPIDown
       annotations:
         description: KubeAPI has disappeared from Prometheus target discovery.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapidown
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapidown
         summary: Target disappeared from Prometheus target discovery.
       expr: absent(up{job="apiserver"} == 1)
       for: 15m
@@ -64613,11 +66256,11 @@ spec:
         severity: critical
     - alert: KubeAPITerminatedRequests
       annotations:
-        description: The apiserver has terminated {{ $value | humanizePercentage }}
-          of its incoming requests.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapiterminatedrequests
-        summary: The apiserver has terminated {{ $value | humanizePercentage }} of
-          its incoming requests.
+        description: The kubernetes apiserver has terminated {{ $value | humanizePercentage
+          }} of its incoming requests.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapiterminatedrequests
+        summary: The kubernetes apiserver has terminated {{ $value | humanizePercentage
+          }} of its incoming requests.
       expr: sum(rate(apiserver_request_terminations_total{job="apiserver"}[10m]))  /
         (  sum(rate(apiserver_request_total{job="apiserver"}[10m])) + sum(rate(apiserver_request_terminations_total{job="apiserver"}[10m]))
         ) > 0.20
@@ -64634,8 +66277,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -64649,7 +66292,7 @@ spec:
       annotations:
         description: KubeControllerManager has disappeared from Prometheus target
           discovery.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubecontrollermanagerdown
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubecontrollermanagerdown
         summary: Target disappeared from Prometheus target discovery.
       expr: absent(up{job="kube-controller-manager"} == 1)
       for: 15m
@@ -64665,8 +66308,38 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+    release: prometheus-operator
+  name: prometheus-operator-kubernetes-system-kube-proxy
+  namespace: metalk8s-monitoring
+spec:
+  groups:
+  - name: kubernetes-system-kube-proxy
+    rules:
+    - alert: KubeProxyDown
+      annotations:
+        description: KubeProxy has disappeared from Prometheus target discovery.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeproxydown
+        summary: Target disappeared from Prometheus target discovery.
+      expr: absent(up{job="kube-proxy"} == 1)
+      for: 15m
+      labels:
+        severity: critical
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: prometheus-operator
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -64679,7 +66352,7 @@ spec:
     - alert: KubeNodeNotReady
       annotations:
         description: '{{ $labels.node }} has been unready for more than 15 minutes.'
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubenodenotready
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubenodenotready
         summary: Node is not ready.
       expr: kube_node_status_condition{job="kube-state-metrics",condition="Ready",status="true"}
         == 0
@@ -64690,7 +66363,7 @@ spec:
       annotations:
         description: '{{ $labels.node }} is unreachable and some workloads may be
           rescheduled.'
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubenodeunreachable
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubenodeunreachable
         summary: Node is unreachable.
       expr: (kube_node_spec_taint{job="kube-state-metrics",key="node.kubernetes.io/unreachable",effect="NoSchedule"}
         unless ignoring(key,value) kube_node_spec_taint{job="kube-state-metrics",key=~"ToBeDeletedByClusterAutoscaler|cloud.google.com/impending-node-termination|aws-node-termination-handler/spot-itn"})
@@ -64702,7 +66375,7 @@ spec:
       annotations:
         description: Kubelet '{{ $labels.node }}' is running at {{ $value | humanizePercentage
           }} of its Pod capacity.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubelettoomanypods
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubelettoomanypods
         summary: Kubelet is running at capacity.
       expr: |-
         count by(node) (
@@ -64714,12 +66387,12 @@ spec:
         ) > 0.95
       for: 15m
       labels:
-        severity: warning
+        severity: info
     - alert: KubeNodeReadinessFlapping
       annotations:
         description: The readiness status of node {{ $labels.node }} has changed {{
           $value }} times in the last 15 minutes.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubenodereadinessflapping
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubenodereadinessflapping
         summary: Node readiness status is flapping.
       expr: sum(changes(kube_node_status_condition{status="true",condition="Ready"}[15m]))
         by (node) > 2
@@ -64730,7 +66403,7 @@ spec:
       annotations:
         description: The Kubelet Pod Lifecycle Event Generator has a 99th percentile
           duration of {{ $value }} seconds on node {{ $labels.node }}.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeletplegdurationhigh
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeletplegdurationhigh
         summary: Kubelet Pod Lifecycle Event Generator is taking too long to relist.
       expr: node_quantile:kubelet_pleg_relist_duration_seconds:histogram_quantile{quantile="0.99"}
         >= 10
@@ -64741,7 +66414,7 @@ spec:
       annotations:
         description: Kubelet Pod startup 99th percentile latency is {{ $value }} seconds
           on node {{ $labels.node }}.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeletpodstartuplatencyhigh
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeletpodstartuplatencyhigh
         summary: Kubelet Pod startup latency is too high.
       expr: histogram_quantile(0.99, sum(rate(kubelet_pod_worker_duration_seconds_bucket{job="kubelet",
         metrics_path="/metrics"}[5m])) by (instance, le)) * on(instance) group_left(node)
@@ -64753,7 +66426,7 @@ spec:
       annotations:
         description: Client certificate for Kubelet on node {{ $labels.node }} expires
           in {{ $value | humanizeDuration }}.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeletclientcertificateexpiration
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeletclientcertificateexpiration
         summary: Kubelet client certificate is about to expire.
       expr: kubelet_certificate_manager_client_ttl_seconds < 604800
       labels:
@@ -64762,7 +66435,7 @@ spec:
       annotations:
         description: Client certificate for Kubelet on node {{ $labels.node }} expires
           in {{ $value | humanizeDuration }}.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeletclientcertificateexpiration
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeletclientcertificateexpiration
         summary: Kubelet client certificate is about to expire.
       expr: kubelet_certificate_manager_client_ttl_seconds < 86400
       labels:
@@ -64771,7 +66444,7 @@ spec:
       annotations:
         description: Server certificate for Kubelet on node {{ $labels.node }} expires
           in {{ $value | humanizeDuration }}.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeletservercertificateexpiration
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeletservercertificateexpiration
         summary: Kubelet server certificate is about to expire.
       expr: kubelet_certificate_manager_server_ttl_seconds < 604800
       labels:
@@ -64780,7 +66453,7 @@ spec:
       annotations:
         description: Server certificate for Kubelet on node {{ $labels.node }} expires
           in {{ $value | humanizeDuration }}.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeletservercertificateexpiration
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeletservercertificateexpiration
         summary: Kubelet server certificate is about to expire.
       expr: kubelet_certificate_manager_server_ttl_seconds < 86400
       labels:
@@ -64789,7 +66462,7 @@ spec:
       annotations:
         description: Kubelet on node {{ $labels.node }} has failed to renew its client
           certificate ({{ $value | humanize }} errors in the last 5 minutes).
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeletclientcertificaterenewalerrors
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeletclientcertificaterenewalerrors
         summary: Kubelet has failed to renew its client certificate.
       expr: increase(kubelet_certificate_manager_client_expiration_renew_errors[5m])
         > 0
@@ -64800,7 +66473,7 @@ spec:
       annotations:
         description: Kubelet on node {{ $labels.node }} has failed to renew its server
           certificate ({{ $value | humanize }} errors in the last 5 minutes).
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeletservercertificaterenewalerrors
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeletservercertificaterenewalerrors
         summary: Kubelet has failed to renew its server certificate.
       expr: increase(kubelet_server_expiration_renew_errors[5m]) > 0
       for: 15m
@@ -64809,7 +66482,7 @@ spec:
     - alert: KubeletDown
       annotations:
         description: Kubelet has disappeared from Prometheus target discovery.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeletdown
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeletdown
         summary: Target disappeared from Prometheus target discovery.
       expr: absent(up{job="kubelet", metrics_path="/metrics"} == 1)
       for: 15m
@@ -64825,8 +66498,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -64839,7 +66512,7 @@ spec:
     - alert: KubeSchedulerDown
       annotations:
         description: KubeScheduler has disappeared from Prometheus target discovery.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeschedulerdown
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeschedulerdown
         summary: Target disappeared from Prometheus target discovery.
       expr: absent(up{job="kube-scheduler"} == 1)
       for: 15m
@@ -64855,8 +66528,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -64870,7 +66543,7 @@ spec:
       annotations:
         description: There are {{ $value }} different semantic versions of Kubernetes
           components running.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeversionmismatch
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeversionmismatch
         summary: Different semantic versions of Kubernetes components running.
       expr: count(count by (git_version) (label_replace(kubernetes_build_info{job!~"kube-dns|coredns"},"git_version","$1","git_version","(v[0-9]*.[0-9]*).*")))
         > 1
@@ -64881,12 +66554,12 @@ spec:
       annotations:
         description: Kubernetes API server client '{{ $labels.job }}/{{ $labels.instance
           }}' is experiencing {{ $value | humanizePercentage }} errors.'
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeclienterrors
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeclienterrors
         summary: Kubernetes API server client is experiencing errors.
       expr: |-
-        (sum(rate(rest_client_requests_total{code=~"5.."}[5m])) by (instance, job)
+        (sum(rate(rest_client_requests_total{code=~"5.."}[5m])) by (instance, job, namespace)
           /
-        sum(rate(rest_client_requests_total[5m])) by (instance, job))
+        sum(rate(rest_client_requests_total[5m])) by (instance, job, namespace))
         > 0.01
       for: 15m
       labels:
@@ -64901,8 +66574,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -64913,15 +66586,13 @@ spec:
   - name: node-exporter.rules
     rules:
     - expr: |-
-        count without (cpu) (
-          count without (mode) (
-            node_cpu_seconds_total{job="node-exporter"}
-          )
+        count without (cpu, mode) (
+          node_cpu_seconds_total{job="node-exporter",mode="idle"}
         )
       record: instance:node_num_cpu:sum
     - expr: |-
-        1 - avg without (cpu, mode) (
-          rate(node_cpu_seconds_total{job="node-exporter", mode="idle"}[5m])
+        1 - avg without (cpu) (
+          sum without (mode) (rate(node_cpu_seconds_total{job="node-exporter", mode=~"idle|iowait|steal"}[5m]))
         )
       record: instance:node_cpu_utilisation:rate5m
     - expr: |-
@@ -64933,7 +66604,19 @@ spec:
       record: instance:node_load1_per_cpu:ratio
     - expr: |-
         1 - (
-          node_memory_MemAvailable_bytes{job="node-exporter"}
+          (
+            node_memory_MemAvailable_bytes{job="node-exporter"}
+            or
+            (
+              node_memory_Buffers_bytes{job="node-exporter"}
+              +
+              node_memory_Cached_bytes{job="node-exporter"}
+              +
+              node_memory_MemFree_bytes{job="node-exporter"}
+              +
+              node_memory_Slab_bytes{job="node-exporter"}
+            )
+          )
         /
           node_memory_MemTotal_bytes{job="node-exporter"}
         )
@@ -64974,8 +66657,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -64987,10 +66670,10 @@ spec:
     rules:
     - alert: NodeNetworkInterfaceFlapping
       annotations:
-        description: Network interface "{{ $labels.device }}" changing it's up status
+        description: Network interface "{{ $labels.device }}" changing its up status
           often on node-exporter {{ $labels.namespace }}/{{ $labels.pod }}
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-nodenetworkinterfaceflapping
-        summary: Network interface is often changin it's status
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/general/nodenetworkinterfaceflapping
+        summary: Network interface is often changing its status
       expr: changes(node_network_up{job="node-exporter",device!~"veth.+"}[2m]) > 2
       for: 2m
       labels:
@@ -65005,8 +66688,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -65050,8 +66733,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -65065,7 +66748,7 @@ spec:
       annotations:
         description: Errors while performing List operations in controller {{$labels.controller}}
           in {{$labels.namespace}} namespace.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusoperatorlisterrors
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus-operator/prometheusoperatorlisterrors
         summary: Errors while performing list operations in controller.
       expr: (sum by (controller,namespace) (rate(prometheus_operator_list_operations_failed_total{job="prometheus-operator-operator",namespace="metalk8s-monitoring"}[10m]))
         / sum by (controller,namespace) (rate(prometheus_operator_list_operations_total{job="prometheus-operator-operator",namespace="metalk8s-monitoring"}[10m])))
@@ -65077,7 +66760,7 @@ spec:
       annotations:
         description: Errors while performing watch operations in controller {{$labels.controller}}
           in {{$labels.namespace}} namespace.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusoperatorwatcherrors
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus-operator/prometheusoperatorwatcherrors
         summary: Errors while performing watch operations in controller.
       expr: (sum by (controller,namespace) (rate(prometheus_operator_watch_operations_failed_total{job="prometheus-operator-operator",namespace="metalk8s-monitoring"}[10m]))
         / sum by (controller,namespace) (rate(prometheus_operator_watch_operations_total{job="prometheus-operator-operator",namespace="metalk8s-monitoring"}[10m])))
@@ -65089,7 +66772,7 @@ spec:
       annotations:
         description: Controller {{ $labels.controller }} in {{ $labels.namespace }}
           namespace fails to reconcile {{ $value }} objects.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusoperatorsyncfailed
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus-operator/prometheusoperatorsyncfailed
         summary: Last controller reconciliation failed
       expr: min_over_time(prometheus_operator_syncs{status="failed",job="prometheus-operator-operator",namespace="metalk8s-monitoring"}[5m])
         > 0
@@ -65101,7 +66784,7 @@ spec:
         description: '{{ $value | humanizePercentage }} of reconciling operations
           failed for {{ $labels.controller }} controller in {{ $labels.namespace }}
           namespace.'
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusoperatorreconcileerrors
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus-operator/prometheusoperatorreconcileerrors
         summary: Errors while reconciling controller.
       expr: (sum by (controller,namespace) (rate(prometheus_operator_reconcile_errors_total{job="prometheus-operator-operator",namespace="metalk8s-monitoring"}[5m])))
         / (sum by (controller,namespace) (rate(prometheus_operator_reconcile_operations_total{job="prometheus-operator-operator",namespace="metalk8s-monitoring"}[5m])))
@@ -65113,7 +66796,7 @@ spec:
       annotations:
         description: Errors while reconciling Prometheus in {{ $labels.namespace }}
           Namespace.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusoperatornodelookuperrors
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus-operator/prometheusoperatornodelookuperrors
         summary: Errors while reconciling Prometheus.
       expr: rate(prometheus_operator_node_address_lookup_errors_total{job="prometheus-operator-operator",namespace="metalk8s-monitoring"}[5m])
         > 0.1
@@ -65124,7 +66807,7 @@ spec:
       annotations:
         description: Prometheus operator in {{ $labels.namespace }} namespace isn't
           ready to reconcile {{ $labels.controller }} resources.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusoperatornotready
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus-operator/prometheusoperatornotready
         summary: Prometheus operator not ready
       expr: min by(namespace, controller) (max_over_time(prometheus_operator_ready{job="prometheus-operator-operator",namespace="metalk8s-monitoring"}[5m])
         == 0)
@@ -65136,7 +66819,7 @@ spec:
         description: Prometheus operator in {{ $labels.namespace }} namespace rejected
           {{ printf "%0.0f" $value }} {{ $labels.controller }}/{{ $labels.resource
           }} resources.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusoperatorrejectedresources
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus-operator/prometheusoperatorrejectedresources
         summary: Resources rejected by Prometheus operator
       expr: min_over_time(prometheus_operator_managed_resources{state="rejected",job="prometheus-operator-operator",namespace="metalk8s-monitoring"}[5m])
         > 0
@@ -65153,8 +66836,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -65168,7 +66851,7 @@ spec:
       annotations:
         description: Prometheus {{$labels.namespace}}/{{$labels.pod}} has failed to
           reload its configuration.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusbadconfig
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheusbadconfig
         summary: Failed Prometheus configuration reload.
       expr: |-
         # Without max_over_time, failed scrapes could create false negatives, see
@@ -65181,7 +66864,7 @@ spec:
       annotations:
         description: Alert notification queue of Prometheus {{$labels.namespace}}/{{$labels.pod}}
           is running full.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusnotificationqueuerunningfull
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheusnotificationqueuerunningfull
         summary: Prometheus alert notification queue predicted to run full in less
           than 30m.
       expr: |-
@@ -65199,7 +66882,7 @@ spec:
       annotations:
         description: '{{ printf "%.1f" $value }}% errors while sending alerts from
           Prometheus {{$labels.namespace}}/{{$labels.pod}} to Alertmanager {{$labels.alertmanager}}.'
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheuserrorsendingalertstosomealertmanagers
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheuserrorsendingalertstosomealertmanagers
         summary: Prometheus has encountered more than 1% errors sending alerts to
           a specific Alertmanager.
       expr: |-
@@ -65217,7 +66900,7 @@ spec:
       annotations:
         description: Prometheus {{$labels.namespace}}/{{$labels.pod}} is not connected
           to any Alertmanagers.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusnotconnectedtoalertmanagers
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheusnotconnectedtoalertmanagers
         summary: Prometheus is not connected to any Alertmanagers.
       expr: |-
         # Without max_over_time, failed scrapes could create false negatives, see
@@ -65230,7 +66913,7 @@ spec:
       annotations:
         description: Prometheus {{$labels.namespace}}/{{$labels.pod}} has detected
           {{$value | humanize}} reload failures over the last 3h.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheustsdbreloadsfailing
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheustsdbreloadsfailing
         summary: Prometheus has issues reloading blocks from disk.
       expr: increase(prometheus_tsdb_reloads_failures_total{job="prometheus-operator-prometheus",namespace="metalk8s-monitoring"}[3h])
         > 0
@@ -65241,7 +66924,7 @@ spec:
       annotations:
         description: Prometheus {{$labels.namespace}}/{{$labels.pod}} has detected
           {{$value | humanize}} compaction failures over the last 3h.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheustsdbcompactionsfailing
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheustsdbcompactionsfailing
         summary: Prometheus has issues compacting blocks.
       expr: increase(prometheus_tsdb_compactions_failed_total{job="prometheus-operator-prometheus",namespace="metalk8s-monitoring"}[3h])
         > 0
@@ -65252,7 +66935,7 @@ spec:
       annotations:
         description: Prometheus {{$labels.namespace}}/{{$labels.pod}} is not ingesting
           samples.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusnotingestingsamples
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheusnotingestingsamples
         summary: Prometheus is not ingesting samples.
       expr: |-
         (
@@ -65272,7 +66955,7 @@ spec:
         description: Prometheus {{$labels.namespace}}/{{$labels.pod}} is dropping
           {{ printf "%.4g" $value  }} samples/s with different values but duplicated
           timestamp.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusduplicatetimestamps
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheusduplicatetimestamps
         summary: Prometheus is dropping samples with duplicate timestamps.
       expr: rate(prometheus_target_scrapes_sample_duplicate_timestamp_total{job="prometheus-operator-prometheus",namespace="metalk8s-monitoring"}[5m])
         > 0
@@ -65283,7 +66966,7 @@ spec:
       annotations:
         description: Prometheus {{$labels.namespace}}/{{$labels.pod}} is dropping
           {{ printf "%.4g" $value  }} samples/s with timestamps arriving out of order.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusoutofordertimestamps
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheusoutofordertimestamps
         summary: Prometheus drops samples with out-of-order timestamps.
       expr: rate(prometheus_target_scrapes_sample_out_of_order_total{job="prometheus-operator-prometheus",namespace="metalk8s-monitoring"}[5m])
         > 0
@@ -65295,7 +66978,7 @@ spec:
         description: Prometheus {{$labels.namespace}}/{{$labels.pod}} failed to send
           {{ printf "%.1f" $value }}% of the samples to {{ $labels.remote_name}}:{{
           $labels.url }}
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusremotestoragefailures
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheusremotestoragefailures
         summary: Prometheus fails to send samples to remote storage.
       expr: |-
         (
@@ -65317,7 +67000,7 @@ spec:
         description: Prometheus {{$labels.namespace}}/{{$labels.pod}} remote write
           is {{ printf "%.1f" $value }}s behind for {{ $labels.remote_name}}:{{ $labels.url
           }}.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusremotewritebehind
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheusremotewritebehind
         summary: Prometheus remote write is behind.
       expr: |-
         # Without max_over_time, failed scrapes could create false negatives, see
@@ -65338,7 +67021,7 @@ spec:
           $labels.remote_name}}:{{ $labels.url }}, which is more than the max of {{
           printf `prometheus_remote_storage_shards_max{instance="%s",job="prometheus-operator-prometheus",namespace="metalk8s-monitoring"}`
           $labels.instance | query | first | value }}.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusremotewritedesiredshards
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheusremotewritedesiredshards
         summary: Prometheus remote write desired shards calculation wants to run more
           than configured max shards.
       expr: |-
@@ -65356,7 +67039,7 @@ spec:
       annotations:
         description: Prometheus {{$labels.namespace}}/{{$labels.pod}} has failed to
           evaluate {{ printf "%.0f" $value }} rules in the last 5m.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusrulefailures
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheusrulefailures
         summary: Prometheus is failing rule evaluations.
       expr: increase(prometheus_rule_evaluation_failures_total{job="prometheus-operator-prometheus",namespace="metalk8s-monitoring"}[5m])
         > 0
@@ -65367,7 +67050,7 @@ spec:
       annotations:
         description: Prometheus {{$labels.namespace}}/{{$labels.pod}} has missed {{
           printf "%.0f" $value }} rule group evaluations in the last 5m.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheusmissingruleevaluations
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheusmissingruleevaluations
         summary: Prometheus is missing rule evaluations due to slow rule group evaluation.
       expr: increase(prometheus_rule_group_iterations_missed_total{job="prometheus-operator-prometheus",namespace="metalk8s-monitoring"}[5m])
         > 0
@@ -65379,7 +67062,7 @@ spec:
         description: Prometheus {{$labels.namespace}}/{{$labels.pod}} has dropped
           {{ printf "%.0f" $value }} targets because the number of targets exceeded
           the configured target_limit.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheustargetlimithit
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheustargetlimithit
         summary: Prometheus has dropped targets because some scrape configs have exceeded
           the targets limit.
       expr: increase(prometheus_target_scrape_pool_exceeded_target_limit_total{job="prometheus-operator-prometheus",namespace="metalk8s-monitoring"}[5m])
@@ -65392,7 +67075,7 @@ spec:
         description: Prometheus {{$labels.namespace}}/{{$labels.pod}} has dropped
           {{ printf "%.0f" $value }} targets because some samples exceeded the configured
           label_limit, label_name_length_limit or label_value_length_limit.
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheuslabellimithit
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheuslabellimithit
         summary: Prometheus has dropped targets because some scrape configs have exceeded
           the labels limit.
       expr: increase(prometheus_target_scrape_pool_exceeded_label_limits_total{job="prometheus-operator-prometheus",namespace="metalk8s-monitoring"}[5m])
@@ -65404,7 +67087,7 @@ spec:
       annotations:
         description: '{{ printf "%.0f" $value }} targets in Prometheus {{$labels.namespace}}/{{$labels.pod}}
           have failed to sync because invalid configuration was supplied.'
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheustargetsyncfailure
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheustargetsyncfailure
         summary: Prometheus has failed to sync targets.
       expr: increase(prometheus_target_sync_failed_total{job="prometheus-operator-prometheus",namespace="metalk8s-monitoring"}[30m])
         > 0
@@ -65415,7 +67098,7 @@ spec:
       annotations:
         description: '{{ printf "%.1f" $value }}% minimum errors while sending alerts
           from Prometheus {{$labels.namespace}}/{{$labels.pod}} to any Alertmanager.'
-        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-prometheuserrorsendingalertstoanyalertmanager
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/prometheus/prometheuserrorsendingalertstoanyalertmanager
         summary: Prometheus encounters more than 3% errors sending alerts to any Alertmanager.
       expr: |-
         min without (alertmanager) (
@@ -65433,13 +67116,95 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   labels:
+    app.kubernetes.io/instance: prometheus-operator
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 8.3.4-ubuntu
+    helm.sh/chart: grafana-6.21.2
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+  name: prometheus-operator-grafana
+  namespace: metalk8s-monitoring
+spec:
+  endpoints:
+  - honorLabels: true
+    interval: null
+    path: /metrics
+    port: http-web
+    scheme: http
+    scrapeTimeout: 30s
+  jobLabel: prometheus-operator
+  namespaceSelector:
+    matchNames:
+    - metalk8s-monitoring
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: prometheus-operator
+      app.kubernetes.io/name: grafana
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/component: metrics
+    app.kubernetes.io/instance: prometheus-operator
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: kube-state-metrics
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 2.3.0
+    helm.sh/chart: kube-state-metrics-4.4.3
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+    release: prometheus-operator
+  name: prometheus-operator-kube-state-metrics
+  namespace: metalk8s-monitoring
+spec:
+  endpoints:
+  - honorLabels: true
+    port: http
+  jobLabel: app.kubernetes.io/name
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: prometheus-operator
+      app.kubernetes.io/name: kube-state-metrics
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: prometheus-node-exporter
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: prometheus-node-exporter
+    app.kubernetes.io/part-of: metalk8s
+    chart: prometheus-node-exporter-2.5.0
+    heritage: metalk8s
+    jobLabel: node-exporter
+    metalk8s.scality.com/monitor: ''
+    release: prometheus-operator
+  name: prometheus-operator-prometheus-node-exporter
+  namespace: metalk8s-monitoring
+spec:
+  endpoints:
+  - port: http-metrics
+    scheme: http
+  jobLabel: jobLabel
+  selector:
+    matchLabels:
+      app: prometheus-node-exporter
+      release: prometheus-operator
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
     app: prometheus-operator-alertmanager
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -65467,8 +67232,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -65496,8 +67261,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-apiserver
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -65530,8 +67295,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -65563,8 +67328,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -65592,8 +67357,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -65621,8 +67386,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -65649,39 +67414,13 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   labels:
-    app: prometheus-operator-kube-state-metrics
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-operator-kube-state-metrics
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
-    heritage: metalk8s
-    metalk8s.scality.com/monitor: ''
-    release: prometheus-operator
-  name: prometheus-operator-kube-state-metrics
-  namespace: metalk8s-monitoring
-spec:
-  endpoints:
-  - honorLabels: true
-    port: http
-  jobLabel: app.kubernetes.io/name
-  selector:
-    matchLabels:
-      app.kubernetes.io/instance: prometheus-operator
-      app.kubernetes.io/name: kube-state-metrics
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  labels:
     app: prometheus-operator-kubelet
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kubelet
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -65740,63 +67479,13 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   labels:
-    app: prometheus-operator-node-exporter
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-operator-node-exporter
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
-    heritage: metalk8s
-    metalk8s.scality.com/monitor: ''
-    release: prometheus-operator
-  name: prometheus-operator-node-exporter
-  namespace: metalk8s-monitoring
-spec:
-  endpoints:
-  - port: http-metrics
-  jobLabel: jobLabel
-  selector:
-    matchLabels:
-      app: prometheus-node-exporter
-      release: prometheus-operator
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  labels:
-    app: prometheus-operator-grafana
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-operator-grafana
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
-    heritage: metalk8s
-    metalk8s.scality.com/monitor: ''
-    release: prometheus-operator
-  name: prometheus-operator-grafana
-  namespace: metalk8s-monitoring
-spec:
-  endpoints:
-  - path: /metrics
-    port: http-web
-  selector:
-    matchLabels:
-      app.kubernetes.io/instance: prometheus-operator
-      app.kubernetes.io/name: grafana
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  labels:
     app: prometheus-operator-operator
     app.kubernetes.io/instance: prometheus-operator
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -65823,8 +67512,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 23.2.0
-    chart: kube-prometheus-stack-23.2.0
+    app.kubernetes.io/version: 32.2.0
+    chart: kube-prometheus-stack-32.2.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator

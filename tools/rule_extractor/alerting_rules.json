@@ -134,7 +134,7 @@
     {
         "message": "The node {{ $labels.instance }} is degraded.",
         "name": "NodeDegraded",
-        "query": "sum by(instance) (ALERTS{alertname=\"KubeNodeNotReady\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeNodeReadinessFlapping\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeNodeUnreachable\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletClientCertificateExpiration\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletClientCertificateRenewalErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletPlegDurationHigh\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletPodStartUpLatencyHigh\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletServerCertificateExpiration\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletServerCertificateRenewalErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletTooManyPods\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeClockNotSynchronising\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeClockSkewDetected\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeRAIDDiskFailure\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeTextFileCollectorScrapeError\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"SystemPartitionDegraded\",alertstate=\"firing\",severity=\"warning\"}) >= 1",
+        "query": "sum by(instance) (ALERTS{alertname=\"KubeNodeNotReady\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeNodeReadinessFlapping\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeNodeUnreachable\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletClientCertificateExpiration\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletClientCertificateRenewalErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletPlegDurationHigh\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletPodStartUpLatencyHigh\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletServerCertificateExpiration\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletServerCertificateRenewalErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeClockNotSynchronising\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeClockSkewDetected\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeRAIDDiskFailure\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeTextFileCollectorScrapeError\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"SystemPartitionDegraded\",alertstate=\"firing\",severity=\"warning\"}) >= 1",
         "severity": "warning"
     },
     {
@@ -208,6 +208,12 @@
         "name": "AlertmanagerMembersInconsistent",
         "query": "max_over_time(alertmanager_cluster_members{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) < on(namespace, service) group_left() count by(namespace, service) (max_over_time(alertmanager_cluster_members{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]))",
         "severity": "critical"
+    },
+    {
+        "message": "config-reloader sidecar has not had a successful reload for 10m",
+        "name": "ConfigReloaderSidecarErrors",
+        "query": "max_over_time(reloader_last_reload_successful{namespace=~\".+\"}[5m]) == 0",
+        "severity": "warning"
     },
     {
         "message": "etcd cluster \"{{ $labels.job }}\": gRPC requests to {{ $labels.grpc_method }} are taking {{ $value }}s on etcd instance {{ $labels.instance }}.",
@@ -286,6 +292,12 @@
         "name": "etcdNoLeader",
         "query": "etcd_server_has_leader{job=~\".*etcd.*\"} == 0",
         "severity": "critical"
+    },
+    {
+        "message": "Info-level alert inhibition.",
+        "name": "InfoInhibitor",
+        "query": "ALERTS{severity=\"info\"} == 1 unless on(namespace) ALERTS{alertname!=\"InfoInhibitor\",alertstate=\"firing\",severity=~\"warning|critical\"} == 1",
+        "severity": "none"
     },
     {
         "message": "One or more targets are unreachable.",
@@ -368,7 +380,7 @@
     {
         "message": "DaemonSet rollout is stuck.",
         "name": "KubeDaemonSetRolloutStuck",
-        "query": "((kube_daemonset_status_current_number_scheduled{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_daemonset_status_desired_number_scheduled{job=\"kube-state-metrics\",namespace=~\".*\"}) or (kube_daemonset_status_number_misscheduled{job=\"kube-state-metrics\",namespace=~\".*\"} != 0) or (kube_daemonset_updated_number_scheduled{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_daemonset_status_desired_number_scheduled{job=\"kube-state-metrics\",namespace=~\".*\"}) or (kube_daemonset_status_number_available{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_daemonset_status_desired_number_scheduled{job=\"kube-state-metrics\",namespace=~\".*\"})) and (changes(kube_daemonset_updated_number_scheduled{job=\"kube-state-metrics\",namespace=~\".*\"}[5m]) == 0)",
+        "query": "((kube_daemonset_status_current_number_scheduled{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_daemonset_status_desired_number_scheduled{job=\"kube-state-metrics\",namespace=~\".*\"}) or (kube_daemonset_status_number_misscheduled{job=\"kube-state-metrics\",namespace=~\".*\"} != 0) or (kube_daemonset_status_updated_number_scheduled{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_daemonset_status_desired_number_scheduled{job=\"kube-state-metrics\",namespace=~\".*\"}) or (kube_daemonset_status_number_available{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_daemonset_status_desired_number_scheduled{job=\"kube-state-metrics\",namespace=~\".*\"})) and (changes(kube_daemonset_status_updated_number_scheduled{job=\"kube-state-metrics\",namespace=~\".*\"}[5m]) == 0)",
         "severity": "warning"
     },
     {
@@ -410,7 +422,7 @@
     {
         "message": "Pod is crash looping.",
         "name": "KubePodCrashLooping",
-        "query": "increase(kube_pod_container_status_restarts_total{job=\"kube-state-metrics\",namespace=~\".*\"}[10m]) > 0 and kube_pod_container_status_waiting{job=\"kube-state-metrics\",namespace=~\".*\"} == 1",
+        "query": "max_over_time(kube_pod_container_status_waiting_reason{job=\"kube-state-metrics\",namespace=~\".*\",reason=\"CrashLoopBackOff\"}[5m]) >= 1",
         "severity": "warning"
     },
     {
@@ -446,25 +458,25 @@
     {
         "message": "Cluster has overcommitted CPU resource requests.",
         "name": "KubeCPUOvercommit",
-        "query": "sum(namespace_cpu:kube_pod_container_resource_requests:sum) / sum(kube_node_status_allocatable{resource=\"cpu\"}) > ((count(kube_node_status_allocatable{resource=\"cpu\"}) > 1) - 1) / count(kube_node_status_allocatable{resource=\"cpu\"})",
+        "query": "sum(namespace_cpu:kube_pod_container_resource_requests:sum) - (sum(kube_node_status_allocatable{resource=\"cpu\"}) - max(kube_node_status_allocatable{resource=\"cpu\"})) > 0 and (sum(kube_node_status_allocatable{resource=\"cpu\"}) - max(kube_node_status_allocatable{resource=\"cpu\"})) > 0",
         "severity": "warning"
     },
     {
         "message": "Cluster has overcommitted CPU resource requests.",
         "name": "KubeCPUQuotaOvercommit",
-        "query": "sum(kube_resourcequota{job=\"kube-state-metrics\",resource=\"cpu\",type=\"hard\"}) / sum(kube_node_status_allocatable{resource=\"cpu\"}) > 1.5",
+        "query": "sum(min without(resource) (kube_resourcequota{job=\"kube-state-metrics\",resource=~\"(cpu|requests.cpu)\",type=\"hard\"})) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"}) > 1.5",
         "severity": "warning"
     },
     {
         "message": "Cluster has overcommitted memory resource requests.",
         "name": "KubeMemoryOvercommit",
-        "query": "sum(namespace_memory:kube_pod_container_resource_requests:sum) / sum(kube_node_status_allocatable{resource=\"memory\"}) > ((count(kube_node_status_allocatable{resource=\"memory\"}) > 1) - 1) / count(kube_node_status_allocatable{resource=\"memory\"})",
+        "query": "sum(namespace_memory:kube_pod_container_resource_requests:sum) - (sum(kube_node_status_allocatable{resource=\"memory\"}) - max(kube_node_status_allocatable{resource=\"memory\"})) > 0 and (sum(kube_node_status_allocatable{resource=\"memory\"}) - max(kube_node_status_allocatable{resource=\"memory\"})) > 0",
         "severity": "warning"
     },
     {
         "message": "Cluster has overcommitted memory resource requests.",
         "name": "KubeMemoryQuotaOvercommit",
-        "query": "sum(kube_resourcequota{job=\"kube-state-metrics\",resource=\"memory\",type=\"hard\"}) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"}) > 1.5",
+        "query": "sum(min without(resource) (kube_resourcequota{job=\"kube-state-metrics\",resource=~\"(memory|requests.memory)\",type=\"hard\"})) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"}) > 1.5",
         "severity": "warning"
     },
     {
@@ -494,19 +506,19 @@
     {
         "message": "PersistentVolume is filling up.",
         "name": "KubePersistentVolumeFillingUp",
-        "query": "(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.03 and kubelet_volume_stats_used_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0",
+        "query": "(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.03 and kubelet_volume_stats_used_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 unless on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
         "severity": "critical"
     },
     {
         "message": "PersistentVolume is filling up.",
         "name": "KubePersistentVolumeFillingUp",
-        "query": "(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.15 and kubelet_volume_stats_used_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 and predict_linear(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}[6h], 4 * 24 * 3600) < 0",
+        "query": "(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.15 and kubelet_volume_stats_used_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 and predict_linear(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}[6h], 4 * 24 * 3600) < 0 unless on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
         "severity": "warning"
     },
     {
         "message": "Kubernetes API server client is experiencing errors.",
         "name": "KubeClientErrors",
-        "query": "(sum by(instance, job) (rate(rest_client_requests_total{code=~\"5..\"}[5m])) / sum by(instance, job) (rate(rest_client_requests_total[5m]))) > 0.01",
+        "query": "(sum by(instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\"}[5m])) / sum by(instance, job, namespace) (rate(rest_client_requests_total[5m]))) > 0.01",
         "severity": "warning"
     },
     {
@@ -516,27 +528,27 @@
         "severity": "warning"
     },
     {
-        "message": "An aggregated API is down.",
-        "name": "AggregatedAPIDown",
-        "query": "(1 - max by(name, namespace) (avg_over_time(aggregator_unavailable_apiservice[10m]))) * 100 < 85",
-        "severity": "warning"
-    },
-    {
-        "message": "An aggregated API has reported errors.",
-        "name": "AggregatedAPIErrors",
-        "query": "sum by(name, namespace) (increase(aggregator_unavailable_apiservice_total[10m])) > 4",
-        "severity": "warning"
-    },
-    {
         "message": "Target disappeared from Prometheus target discovery.",
         "name": "KubeAPIDown",
         "query": "absent(up{job=\"apiserver\"} == 1)",
         "severity": "critical"
     },
     {
-        "message": "The apiserver has terminated {{ $value | humanizePercentage }} of its incoming requests.",
+        "message": "The kubernetes apiserver has terminated {{ $value | humanizePercentage }} of its incoming requests.",
         "name": "KubeAPITerminatedRequests",
         "query": "sum(rate(apiserver_request_terminations_total{job=\"apiserver\"}[10m])) / (sum(rate(apiserver_request_total{job=\"apiserver\"}[10m])) + sum(rate(apiserver_request_terminations_total{job=\"apiserver\"}[10m]))) > 0.2",
+        "severity": "warning"
+    },
+    {
+        "message": "Kubernetes aggregated API is down.",
+        "name": "KubeAggregatedAPIDown",
+        "query": "(1 - max by(name, namespace) (avg_over_time(aggregator_unavailable_apiservice[10m]))) * 100 < 85",
+        "severity": "warning"
+    },
+    {
+        "message": "Kubernetes aggregated API has reported errors.",
+        "name": "KubeAggregatedAPIErrors",
+        "query": "sum by(name, namespace) (increase(aggregator_unavailable_apiservice_total[10m])) > 4",
         "severity": "warning"
     },
     {
@@ -555,6 +567,12 @@
         "message": "Target disappeared from Prometheus target discovery.",
         "name": "KubeControllerManagerDown",
         "query": "absent(up{job=\"kube-controller-manager\"} == 1)",
+        "severity": "critical"
+    },
+    {
+        "message": "Target disappeared from Prometheus target discovery.",
+        "name": "KubeProxyDown",
+        "query": "absent(up{job=\"kube-proxy\"} == 1)",
         "severity": "critical"
     },
     {
@@ -633,7 +651,7 @@
         "message": "Kubelet is running at capacity.",
         "name": "KubeletTooManyPods",
         "query": "count by(node) ((kube_pod_status_phase{job=\"kube-state-metrics\",phase=\"Running\"} == 1) * on(instance, pod, namespace, cluster) group_left(node) topk by(instance, pod, namespace, cluster) (1, kube_pod_info{job=\"kube-state-metrics\"})) / max by(node) (kube_node_status_capacity{job=\"kube-state-metrics\",resource=\"pods\"} != 1) > 0.95",
-        "severity": "warning"
+        "severity": "info"
     },
     {
         "message": "Target disappeared from Prometheus target discovery.",
@@ -750,7 +768,7 @@
         "severity": "warning"
     },
     {
-        "message": "Network interface is often changin it's status",
+        "message": "Network interface is often changing its status",
         "name": "NodeNetworkInterfaceFlapping",
         "query": "changes(node_network_up{device!~\"veth.+\",job=\"node-exporter\"}[2m]) > 2",
         "severity": "warning"

@@ -126,8 +126,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="k8s-sidecar",
-        version="1.14.2",
-        digest="sha256:35654389f8a9b7816193a4811cf3ceb6cf309ece8874e84b3d2d8399e618059b",
+        version="1.15.1",
+        digest="sha256:a25886092fa4dae9de14825366a1ded3dcfa170c4335e104b7c11830936339c3",
     ),
     Image(
         name="kube-apiserver",
@@ -151,8 +151,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="kube-state-metrics",
-        version="v2.2.4",
-        digest="sha256:ea4ebe736165cf084fc6fbabf3af07d76bbfe9213d621acb3295353fc36286ae",
+        version="v2.3.0",
+        digest="sha256:c9137505edaef138cc23479c73e46e9a3ef7ec6225b64789a03609c973b99030",
     ),
     Image(
         name="nginx",
@@ -171,8 +171,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="node-exporter",
-        version="v1.2.2",
-        digest="sha256:a990408ed288669bbad5b5b374fe1584e54825cde4a911c1a3d6301a907a030c",
+        version="v1.3.1",
+        digest="sha256:f2269e73124dd0f60a7d19a2ce1264d33d08a985aed0ee6b0b89d0be470592cd",
     ),
     Image(
         name="metallb-controller",
@@ -191,8 +191,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="prometheus",
-        version="v2.31.1",
-        digest="sha256:a8779cfe553e0331e9046268e26c539fa39ecf90d59836d828163e65e8f4fa35",
+        version="v2.33.1",
+        digest="sha256:3a75763d209af6ef82aca8fb202a76092a690d25f24d2def7f4eff64e79b7ed9",
     ),
     Image(
         name="k8s-prometheus-adapter-amd64",
@@ -201,13 +201,13 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="prometheus-config-reloader",
-        version="v0.52.1",
-        digest="sha256:a3a9de90d09cdd51bd0c80dbfd7b3e2c69ef6c514126968811364b0b6395bd43",
+        version="v0.54.0",
+        digest="sha256:90935d5dbd61cf9c7f3061ef3c359f58029af66a378fd1ce3e88052851e4a865",
     ),
     Image(
         name="prometheus-operator",
-        version="v0.52.1",
-        digest="sha256:e2151b743cb808a7353a1749054e3b622bffe01c056a91678288f6e9cec1251f",
+        version="v0.54.0",
+        digest="sha256:be2aef39a2f8b7ad1186ca52070475dd9ac6c23d6cb6b0d11ebe49cfd71f91bc",
     ),
     Image(
         name="thanos",

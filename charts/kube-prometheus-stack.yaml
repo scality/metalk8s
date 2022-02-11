@@ -152,6 +152,10 @@ prometheus:
     enableAdminAPI: '__var__(prometheus.spec.config.enable_admin_api)'
 
 grafana:
+  serviceMonitor:
+    labels:
+      metalk8s.scality.com/monitor: ''
+
   adminPassword: admin
 
   image:
@@ -235,6 +239,11 @@ grafana:
 
 
 kube-state-metrics:
+  prometheus:
+    monitor:
+      additionalLabels:
+        metalk8s.scality.com/monitor: ''
+
   image:
     repository: '__image__(kube-state-metrics)'
 
@@ -251,6 +260,11 @@ kube-state-metrics:
 
 
 prometheus-node-exporter:
+  prometheus:
+    monitor:
+      additionalLabels:
+        metalk8s.scality.com/monitor: ''
+
   image:
     repository: '__image__(node-exporter)'
   extraArgs:
