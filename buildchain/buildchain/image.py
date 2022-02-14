@@ -198,7 +198,7 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "kube-state-metrics",
     ],
     constants.PROMETHEUS_ADAPTER_REPOSITORY: [
-        "k8s-prometheus-adapter-amd64",
+        "prometheus-adapter",
     ],
     constants.PROMETHEUS_OPERATOR_REPOSITORY: [
         "prometheus-config-reloader",
