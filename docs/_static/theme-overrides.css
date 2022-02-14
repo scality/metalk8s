@@ -11,4 +11,30 @@
     .wy-table-responsive {
         overflow: visible !important;
     }
- }
+}
+
+/* Fixes for ugly field lists, especially on Chrome */
+dl.field-list > dt {
+    background-color: #ffd1c6;
+    word-break: unset;
+}
+dl.field-list > dd pre {
+    text-align: left;
+    white-space: pre-wrap;
+    -webkit-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+}
+
+/* ReadTheDocs specific fixes for field lists */
+html.writer-html5 .rst-content dl.field-list > dt {
+    background: none;
+}
+
+html.writer-html5 .rst-content dl.field-list > dd pre {
+    text-align: left;
+    white-space: pre-wrap;
+    -webkit-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+}
