@@ -13,8 +13,8 @@
 :Severity: {{ rule.severity | upper }}
 :Message: {{ rule.message }}
 :Query:
-    {%- endif %}
-    .. code::
+    {%- endif %}{# Note: PromQL lexer doesn't handle colons yet #}
+    .. code:: {% if ':' not in rule.query -%} promql {%- else -%} none {%- endif %}
 
        {{ rule.query }}
     {%- set refs.prev = refs.cur %}
