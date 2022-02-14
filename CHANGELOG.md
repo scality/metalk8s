@@ -1,5 +1,10 @@
 # CHANGELOG
 ## Release 2.11.3 (in development)
+### Bug fixes
+
+- Fix a bug during the upgrade that makes the workload plane Ingress controller
+  ignore the Ingress object that does not have the class explicitly set
+  (PR[#3704](https://github.com/scality/metalk8s/pull/3704))
 
 ## Release 2.11.2
 ### Bug fixes
