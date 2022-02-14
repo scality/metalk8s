@@ -7,7 +7,6 @@ purposes.
 """
 
 import argparse
-import csv
 import ipaddress
 import json
 import pathlib
@@ -46,21 +45,6 @@ def write_json_to_file(content, rule_name):
             json.dump(content, f, indent=4, sort_keys=True)
     except IOError as exc:
         sys.stderr.write("Failed to write json file: {!s}".format(exc))
-        sys.exit(1)
-
-
-def write_csv_to_file(content, rule_name):
-    filename = "{}.csv".format(rule_name)
-    filepath = pathlib.Path(__file__).parent / filename
-    csv_columns = ["name", "severity", "message"]
-    try:
-        with open("{}".format(filepath), "w") as csvfile:
-            writer = csv.DictWriter(
-                csvfile, fieldnames=csv_columns, extrasaction="ignore"
-            )
-            writer.writerows(content)
-    except IOError as exc:
-        sys.stderr.write("Failed to write csv file: {!s}".format(exc))
         sys.exit(1)
 
 
@@ -140,7 +124,6 @@ def main():
                     recording_rules.append(fixup_record_rules)
 
         write_json_to_file(alerting_rules, "alerting_rules")
-        write_csv_to_file(alerting_rules, "alerting_rules")
     else:
         sys.stderr.write("Input argument {} is unsupported".format(args.object_type))
         sys.exit(1)

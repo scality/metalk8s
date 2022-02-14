@@ -1,0 +1,22 @@
+{% set refs = namespace(prev=none, cur=none) %}
+{% for rule in all_rules | sort(attribute="name,severity") %}
+  {%- if 'ALERTS' not in rule.query %} {# filter out composite rules #}
+    {%- set refs.cur = rule.name ~ '-' ~ rule.severity %}
+    {%- if refs.cur == refs.prev %}
+:Additional query:
+    {%- else %}
+.. _simple-alert-{{ refs.cur }}:
+
+{{ rule.name }}
+{{ options.header_char * (rule.name | length) }}
+
+:Severity: {{ rule.severity | upper }}
+:Message: {{ rule.message }}
+:Query:
+    {%- endif %}{# Note: PromQL lexer doesn't handle colons yet #}
+    .. code:: {% if ':' not in rule.query -%} promql {%- else -%} none {%- endif %}
+
+       {{ rule.query }}
+    {%- set refs.prev = refs.cur %}
+  {%- endif %}
+{% endfor %}
