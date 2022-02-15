@@ -382,6 +382,7 @@ spec:
         - --controller-class=k8s.io/ingress-nginx
         - --ingress-class=nginx
         - --configmap=$(POD_NAMESPACE)/ingress-nginx-controller
+        - --watch-ingress-without-class=true
         - --default-ssl-certificate=metalk8s-ingress/ingress-workload-plane-default-certificate
         - --metrics-per-host=false
         env:

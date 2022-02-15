@@ -3,6 +3,7 @@ import os
 import re
 import requests
 import requests.exceptions
+import time
 
 import pytest
 from pytest_bdd import given, parsers, scenario, then, when
@@ -18,6 +19,21 @@ def test_access_http_services(host):
 
 @scenario("../features/ingress.feature", "Access HTTPS services")
 def test_access_https_services(host):
+    pass
+
+
+@scenario("../features/ingress.feature", "Create new Ingress object (without class)")
+def test_create_ingress_object_no_class(host, teardown):
+    pass
+
+
+@scenario("../features/ingress.feature", "Create new Ingress object (nginx class)")
+def test_create_ingress_object_nginx_class(host, teardown):
+    pass
+
+
+@scenario("../features/ingress.feature", "Create new Ingress object (invalid class)")
+def test_create_ingress_object_invalid_class(host, teardown):
     pass
 
 
@@ -58,6 +74,14 @@ def context():
 @pytest.fixture
 def teardown(context, host, ssh_config, version, k8s_client):
     yield
+    if "ingress_to_delete" in context:
+        k8s_client.resources.get(
+            api_version="networking.k8s.io/v1", kind="Ingress"
+        ).delete(
+            name=context["ingress_to_delete"]["name"],
+            namespace=context["ingress_to_delete"]["namespace"],
+        )
+
     if "node_to_uncordon" in context:
         k8s_client.resources.get(api_version="v1", kind="Node").patch(
             name=context["node_to_uncordon"], body={"spec": {"unschedulable": False}}
@@ -116,16 +140,13 @@ def disable_metallb(host, context, ssh_config, version):
         re_configure_cp_ingress(host, version, ssh_config)
 
 
-@when(parsers.parse("we perform an {protocol} request on port {port} on a {plane} IP"))
-def perform_request(host, context, protocol, port, plane):
-    protocols = {
-        "HTTP": "http",
-        "HTTPS": "https",
-    }
-
-    if protocol not in protocols:
-        raise NotImplementedError
-
+@when(
+    parsers.re(
+        r"we perform an (?P<protocol>HTTPS?) request (?:on path '(?P<path>[^']+)' )?"
+        r"on port (?P<port>\d+) on a (?P<plane>.*) IP"
+    )
+)
+def perform_request(host, context, protocol, port, plane, path):
     grains = {
         "workload-plane": "metalk8s:workload_plane_ip",
         "control-plane": "metalk8s:control_plane_ip",
@@ -138,11 +159,63 @@ def perform_request(host, context, protocol, port, plane):
 
     try:
         context["response"] = requests.get(
-            "{proto}://{ip}:{port}".format(proto=protocols[protocol], ip=ip, port=port),
+            "{proto}://{ip}:{port}/{path}".format(
+                proto=protocol.lower(), ip=ip, port=port, path=path or ""
+            ),
             verify=False,
         )
     except Exception as exc:
         context["exception"] = exc
+
+
+@when(
+    parsers.re(
+        r"we create a '(?P<name>[^']+)' Ingress (?:with class '(?P<ingress_class>[^']+)' )?"
+        r"on path '(?P<path>[^']+)' on '(?P<svc_name>[^']+)' service on '(?P<port_name>[^']+)' "
+        r"in '(?P<namespace>[^']+)' namespace"
+    )
+)
+def create_ingress(
+    context, k8s_client, name, ingress_class, path, svc_name, port_name, namespace
+):
+    body = {
+        "apiVersion": "networking.k8s.io/v1",
+        "kind": "Ingress",
+        "metadata": {
+            "name": name,
+            "namespace": namespace,
+            "annotations": {"nginx.ingress.kubernetes.io/rewrite-target": "/"},
+        },
+        "spec": {
+            "ingressClassName": ingress_class,
+            "rules": [
+                {
+                    "http": {
+                        "paths": [
+                            {
+                                "path": path,
+                                "pathType": "Prefix",
+                                "backend": {
+                                    "service": {
+                                        "name": svc_name,
+                                        "port": {"name": port_name},
+                                    }
+                                },
+                            }
+                        ]
+                    }
+                }
+            ],
+        },
+    }
+
+    k8s_client.resources.get(api_version="networking.k8s.io/v1", kind="Ingress").create(
+        body=body, namespace=namespace
+    )
+    context["ingress_to_delete"] = {"name": name, "namespace": namespace}
+
+    # Wait a bit after Ingress creation
+    time.sleep(5)
 
 
 @when("we stop the node hosting the Control Plane Ingress VIP")
