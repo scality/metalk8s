@@ -1892,7 +1892,7 @@ stages:
           env:
             <<: *_env_final_status_artifact_success
             <<: *_install_single-node_junit_info
-            STEP_NAME: single-node-install-rhel
+            STEP_NAME: "single-node-install-%(prop:os:-centos-7)s"
       - Upload: *upload_final_status_artifact
       # NOTE: This section only run if property "generate_snapshot" is True
       # {{{
