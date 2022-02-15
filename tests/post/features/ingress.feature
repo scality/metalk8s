@@ -12,6 +12,27 @@ Feature: Ingress
         When we perform an HTTPS request on port 443 on a workload-plane IP
         Then the server returns 404 'Not Found'
 
+    Scenario: Create new Ingress object (without class)
+        Given the Kubernetes API is available
+        And pods with label 'app.kubernetes.io/name=ingress-nginx' are 'Ready'
+        When we create a 'metalk8s-test-1' Ingress on path '/_metalk8s-test-1' on 'repositories' service on 'http' in 'kube-system' namespace
+        And we perform an HTTPS request on path '/_metalk8s-test-1' on port 443 on a workload-plane IP
+        Then the server returns 200 'OK'
+
+    Scenario: Create new Ingress object (nginx class)
+        Given the Kubernetes API is available
+        And pods with label 'app.kubernetes.io/name=ingress-nginx' are 'Ready'
+        When we create a 'metalk8s-test-2' Ingress with class 'nginx' on path '/_metalk8s-test-2' on 'repositories' service on 'http' in 'kube-system' namespace
+        And we perform an HTTPS request on path '/_metalk8s-test-2' on port 443 on a workload-plane IP
+        Then the server returns 200 'OK'
+
+    Scenario: Create new Ingress object (invalid class)
+        Given the Kubernetes API is available
+        And pods with label 'app.kubernetes.io/name=ingress-nginx' are 'Ready'
+        When we create a 'metalk8s-test-3' Ingress with class 'invalid-class' on path '/_metalk8s-test-3' on 'repositories' service on 'http' in 'kube-system' namespace
+        And we perform an HTTPS request on path '/_metalk8s-test-3' on port 443 on a workload-plane IP
+        Then the server returns 404 'Not Found'
+
     Scenario: Access HTTP services on control-plane IP
         Given the Kubernetes API is available
         And pods with label 'app.kubernetes.io/name=ingress-nginx' are 'Ready'
