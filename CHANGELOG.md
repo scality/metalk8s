@@ -16,6 +16,19 @@
 - Allow to resolve the registry endpoint from inside containers using CoreDNS
   (PR[#3690](https://github.com/scality/metalk8s/pull/3690))
 
+- Bump kube-prometheus-stack charts version to
+  [32.2.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-32.2.0)
+  The following images have also been bumped accordingly:
+   - k8s-sidecar to [1.15.1](https://github.com/kiwigrid/k8s-sidecar/releases/tag/1.15.1)
+   - kube-state-metrics to [v2.3.0](https://github.com/kubernetes/kube-state-metrics/releases/tag/v2.3.0)
+   - node-exporter to [v1.3.1](https://github.com/prometheus/node_exporter/releases/tag/v1.3.1)
+   - prometheus to [v2.33.1](https://github.com/prometheus/prometheus/releases/tag/v2.33.1)
+   - prometheus-config-reloader to [v0.54.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.54.0)
+   - prometheus-operator to [v0.54.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.54.0)
+   This new version also come with Grafana metrics and a dashboard to
+   monitor Grafana
+  (PR[#3701](https://github.com/scality/metalk8s/pull/3701))
+
 - Bump ingress-nginx chart version to
   [4.0.17](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.0.17)
   The controller image has been bumped accordingly to

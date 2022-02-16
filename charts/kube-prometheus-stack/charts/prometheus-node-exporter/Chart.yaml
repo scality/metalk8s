@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 1.2.2
+appVersion: 1.3.1
 description: A Helm chart for prometheus node-exporter
 home: https://github.com/prometheus/node_exporter/
 keywords:
@@ -14,4 +14,4 @@ name: prometheus-node-exporter
 sources:
 - https://github.com/prometheus/node_exporter/
 type: application
-version: 2.2.2
+version: 2.5.0

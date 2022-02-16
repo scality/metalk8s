@@ -40,6 +40,14 @@ from yaml.dumper import SafeDumper
 from yaml.representer import SafeRepresenter
 
 
+# Needed to load some yaml value
+# ```
+# import yaml
+# yaml.safe_load("- =")
+# ```
+yaml.SafeLoader.add_constructor("tag:yaml.org,2002:value", lambda _, n: n.value)
+
+
 START_BLOCK = """
 #!jinja | metalk8s_kubernetes
 
