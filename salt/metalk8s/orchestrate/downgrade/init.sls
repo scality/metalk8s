@@ -111,6 +111,27 @@ Deploy Kubernetes service config objects:
   - require_in:
     - salt: Deploy Kubernetes objects
 
+{#- Due to a change of prometheus-adapter deployment labelSelector in 123.0, which is immutable field
+    Manually delete the prometheus-adapter deployment object if dest_version < 123.0.0
+    NOTE: This logic can be removed in `development/124.0` #}
+{%- if salt.pkg.version_cmp(dest_version, '123.0.0') == -1 %}
+
+Delete prometheus-adapter Deployment:
+  metalk8s_kubernetes.object_absent:
+    - apiVersion: apps/v1
+    - kind: Deployment
+    - name: prometheus-adapter
+    - namespace: metalk8s-monitoring
+    - wait:
+        attempts: 30
+        sleep: 10
+    - require:
+      - salt: Deploy Kubernetes service config objects
+    - require_in:
+      - salt: Deploy Kubernetes objects
+
+{%- endif %}
+
 Deploy Kubernetes objects:
   salt.runner:
     - name: state.orchestrate
