@@ -41,6 +41,13 @@
   [2.4.2](https://github.com/grafana/loki/releases/tag/v2.4.2)
   (PR[#3698](https://github.com/scality/metalk8s/pull/3698))
 
+- Bump MetalLB chart version to
+  [2.6.2](https://artifacthub.io/packages/helm/bitnami/metallb/2.6.2)
+  The following images have also been bumped accordingly:
+  - metallb-controller to [0.11.0-debian-10-r73](https://github.com/bitnami/bitnami-docker-metallb-controller/releases/tag/0.11.0-debian-10-r73)
+  - metallb-speaker to [0.11.0-debian-10-r74](https://github.com/bitnami/bitnami-docker-metallb-speaker/releases/tag/0.11.0-debian-10-r74)
+  (PR[#3706](https://github.com/scality/metalk8s/pull/3706))
+
 ## Release 2.11.3 (in development)
 ### Bug fixes
 
