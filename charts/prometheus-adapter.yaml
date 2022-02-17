@@ -1,5 +1,5 @@
 image:
-  repository: '{%- endraw -%}{{ build_image_name(\"k8s-prometheus-adapter-amd64\", False) }}{%- raw -%}'
+  repository: '{%- endraw -%}{{ build_image_name(\"prometheus-adapter\", False) }}{%- raw -%}'
 
 nodeSelector:
   node-role.kubernetes.io/infra: ''
