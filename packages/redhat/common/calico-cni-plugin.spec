@@ -1,17 +1,17 @@
 %global provider        github
 %global provider_tld    com
 %global project         projectcalico
-%global repo            cni-plugin
+%global repo            calico
 %global provider_prefix %{provider}.%{provider_tld}/%{project}/%{repo}
 
 %ifarch x86_64
 %global built_arch              amd64
-%global calico_sha256           3a8b8e80599597bed8a4c10a43bad6424c2f3d8c00b3bb26f1268a0cae2a60da
-%global calico_ipam_sha256      3a8b8e80599597bed8a4c10a43bad6424c2f3d8c00b3bb26f1268a0cae2a60da
+%global calico_sha256           6bac456294a08a5bba3121e44056e264f11085f78582b1770df740ebe9a5de5c
+%global calico_ipam_sha256      6bac456294a08a5bba3121e44056e264f11085f78582b1770df740ebe9a5de5c
 %endif
 
 Name:           calico-cni-plugin
-Version:        3.20.0
+Version:        3.22.0
 Release:        1%{?dist}
 Summary:        Calico CNI plugin
 
@@ -21,8 +21,7 @@ ExclusiveOS:    Linux
 License:        ASL 2.0
 URL:            https://%{provider_prefix}
 Source0:        https://%{provider_prefix}/archive/v%{version}.tar.gz
-Source1:        https://%{provider_prefix}/releases/download/v%{version}/calico-%{built_arch}
-Source2:        https://%{provider_prefix}/releases/download/v%{version}/calico-ipam-%{built_arch}
+Source1:        https://%{provider_prefix}/releases/download/v%{version}/release-v%{version}.tgz
 
 BuildRequires:  /usr/bin/sha256sum
 Requires:       kubernetes-cni
@@ -31,15 +30,17 @@ Requires:       kubernetes-cni
 %{summary}
 
 %prep
-%setup -q -n %{repo}-%{version}
-echo "%{calico_sha256}  %{SOURCE1}" | /usr/bin/sha256sum --status --strict --check
-echo "%{calico_ipam_sha256}  %{SOURCE2}" | /usr/bin/sha256sum --status --strict --check
+%setup -b 1 -q -n release-v%{version}/bin/cni/%{built_arch}
+echo "%{calico_sha256}  calico" | /usr/bin/sha256sum --status --strict --check
+echo "%{calico_ipam_sha256}  calico-ipam" | /usr/bin/sha256sum --status --strict --check
+
+%setup -q -n %{repo}-%{version}/cni-plugin
 
 %install
 install -m 755 -d %{buildroot}/opt/cni/bin
 
-install -p -m 755 %{SOURCE1} %{buildroot}/opt/cni/bin/calico
-install -p -m 755 %{SOURCE2} %{buildroot}/opt/cni/bin/calico-ipam
+install -p -m 755 %{_builddir}/release-v%{version}/bin/cni/%{built_arch}/calico %{buildroot}/opt/cni/bin/calico
+install -p -m 755 %{_builddir}/release-v%{version}/bin/cni/%{built_arch}/calico-ipam %{buildroot}/opt/cni/bin/calico-ipam
 
 %files
 /opt/cni/bin/calico
@@ -49,6 +50,9 @@ install -p -m 755 %{SOURCE2} %{buildroot}/opt/cni/bin/calico-ipam
 %doc README.md
 
 %changelog
+* Fri Feb 18 2022 Teddy Andrieux <teddy.andrieux@scality.com> - 3.22.0.1-1
+- Version bump
+
 * Wed Sep 8 2021 Teddy Andrieux <teddy.andrieux@scality.com> - 3.20.0.1-1
 - Version bump
 

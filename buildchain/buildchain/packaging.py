@@ -334,9 +334,8 @@ def _rpm_package_calico(releasever: str) -> targets.RPMPackage:
         name="calico-cni-plugin",
         releasever=releasever,
         sources=[
-            Path("calico-amd64"),
-            Path("calico-ipam-amd64"),
             Path("v{}.tar.gz".format(versions.CALICO_VERSION)),
+            Path("release-v{}.tgz".format(versions.CALICO_VERSION)),
         ],
     )
 
