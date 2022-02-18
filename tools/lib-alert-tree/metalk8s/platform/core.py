@@ -9,6 +9,7 @@ K8S_CONTROL_WARNING, K8S_CONTROL_CRITICAL = severity_pair(
     relationship=Relationship.ANY,
     warning_children=[
         Existing.warning("KubeAPIErrorBudgetBurn"),
+        Existing.warning("KubeAPITerminatedRequests"),
         Existing.warning("etcdHighNumberOfFailedGRPCRequests"),
         Existing.warning("etcdHTTPRequestsSlow"),
         Existing.warning("etcdHighCommitDurations"),

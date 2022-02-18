@@ -1,151 +1,151 @@
+AlertingServiceAtRisk,critical,The alerting service is at risk.
 ClusterAtRisk,critical,The cluster is at risk.
-NodeAtRisk,critical,The node {{ $labels.instance }} is at risk.
-SystemPartitionAtRisk,critical,The system partition {{ $labels.mountpoint }} on node {{ $labels.instance }} is at risk.
-PlatformServicesAtRisk,critical,The Platform services are at risk.
 CoreServicesAtRisk,critical,The Core services are at risk.
 KubernetesControlPlaneAtRisk,critical,The Kubernetes control plane is at risk.
-ObservabilityServicesAtRisk,critical,The observability services are at risk.
 MonitoringServiceAtRisk,critical,The monitoring service is at risk.
-AlertingServiceAtRisk,critical,The alerting service is at risk.
+NodeAtRisk,critical,The node {{ $labels.instance }} is at risk.
+ObservabilityServicesAtRisk,critical,The observability services are at risk.
+PlatformServicesAtRisk,critical,The Platform services are at risk.
+SystemPartitionAtRisk,critical,The system partition {{ $labels.mountpoint }} on node {{ $labels.instance }} is at risk.
 VolumeAtRisk,critical,The volume {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} on node {{ $labels.instance }} is at risk.
+AccessServicesDegraded,warning,The Access services are degraded.
+AlertingServiceDegraded,warning,The alerting service is degraded.
+AuthenticationServiceDegraded,warning,The Authentication service for K8S API is degraded.
+BootstrapServicesDegraded,warning,The MetalK8s Bootstrap services are degraded.
 ClusterDegraded,warning,The cluster is degraded.
+CoreServicesDegraded,warning,The Core services are degraded.
+DashboardingServiceDegraded,warning,The dashboarding service is degraded.
+IngressControllerServicesDegraded,warning,The Ingress Controllers for control plane and workload plane are degraded.
+KubernetesControlPlaneDegraded,warning,The Kubernetes control plane is degraded.
+LoggingServiceDegraded,warning,The logging service is degraded.
+MonitoringServiceDegraded,warning,The monitoring service is degraded.
 NetworkDegraded,warning,The network is degraded.
 NodeDegraded,warning,The node {{ $labels.instance }} is degraded.
-SystemPartitionDegraded,warning,The system partition {{ $labels.mountpoint }} on node {{ $labels.instance }} is degraded.
-PlatformServicesDegraded,warning,The Platform services are degraded.
-AccessServicesDegraded,warning,The Access services are degraded.
-AuthenticationServiceDegraded,warning,The Authentication service for K8S API is degraded.
-IngressControllerServicesDegraded,warning,The Ingress Controllers for control plane and workload plane are degraded.
-CoreServicesDegraded,warning,The Core services are degraded.
-KubernetesControlPlaneDegraded,warning,The Kubernetes control plane is degraded.
-BootstrapServicesDegraded,warning,The MetalK8s Bootstrap services are degraded.
 ObservabilityServicesDegraded,warning,The observability services are degraded.
-MonitoringServiceDegraded,warning,The monitoring service is degraded.
-AlertingServiceDegraded,warning,The alerting service is degraded.
-LoggingServiceDegraded,warning,The logging service is degraded.
-DashboardingServiceDegraded,warning,The dashboarding service is degraded.
+PlatformServicesDegraded,warning,The Platform services are degraded.
+SystemPartitionDegraded,warning,The system partition {{ $labels.mountpoint }} on node {{ $labels.instance }} is degraded.
 VolumeDegraded,warning,The volume {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} on node {{ $labels.instance }} is degraded.
-AlertmanagerFailedReload,critical,Reloading an Alertmanager configuration has failed.
-AlertmanagerMembersInconsistent,critical,A member of an Alertmanager cluster has not found all other cluster members.
-AlertmanagerFailedToSendAlerts,warning,An Alertmanager instance failed to send notifications.
+AlertmanagerClusterCrashlooping,critical,Half or more of the Alertmanager instances within the same cluster are crashlooping.
+AlertmanagerClusterDown,critical,Half or more of the Alertmanager instances within the same cluster are down.
 AlertmanagerClusterFailedToSendAlerts,critical,All Alertmanager instances in a cluster failed to send notifications to a critical integration.
 AlertmanagerClusterFailedToSendAlerts,warning,All Alertmanager instances in a cluster failed to send notifications to a non-critical integration.
 AlertmanagerConfigInconsistent,critical,Alertmanager instances within the same cluster have different configurations.
-AlertmanagerClusterDown,critical,Half or more of the Alertmanager instances within the same cluster are down.
-AlertmanagerClusterCrashlooping,critical,Half or more of the Alertmanager instances within the same cluster are crashlooping.
-etcdInsufficientMembers,critical,"etcd cluster ""{{ $labels.job }}"": insufficient members ({{ $value }})."
-etcdNoLeader,critical,"etcd cluster ""{{ $labels.job }}"": member {{ $labels.instance }} has no leader."
-etcdHighNumberOfLeaderChanges,warning,"etcd cluster ""{{ $labels.job }}"": instance {{ $labels.instance }} has seen {{ $value }} leader changes within the last hour."
-etcdHighNumberOfFailedGRPCRequests,warning,"etcd cluster ""{{ $labels.job }}"": {{ $value }}% of requests for {{ $labels.grpc_method }} failed on etcd instance {{ $labels.instance }}."
-etcdHighNumberOfFailedGRPCRequests,critical,"etcd cluster ""{{ $labels.job }}"": {{ $value }}% of requests for {{ $labels.grpc_method }} failed on etcd instance {{ $labels.instance }}."
+AlertmanagerFailedReload,critical,Reloading an Alertmanager configuration has failed.
+AlertmanagerFailedToSendAlerts,warning,An Alertmanager instance failed to send notifications.
+AlertmanagerMembersInconsistent,critical,A member of an Alertmanager cluster has not found all other cluster members.
 etcdGRPCRequestsSlow,critical,"etcd cluster ""{{ $labels.job }}"": gRPC requests to {{ $labels.grpc_method }} are taking {{ $value }}s on etcd instance {{ $labels.instance }}."
-etcdMemberCommunicationSlow,warning,"etcd cluster ""{{ $labels.job }}"": member communication with {{ $labels.To }} is taking {{ $value }}s on etcd instance {{ $labels.instance }}."
-etcdHighNumberOfFailedProposals,warning,"etcd cluster ""{{ $labels.job }}"": {{ $value }} proposal failures within the last hour on etcd instance {{ $labels.instance }}."
-etcdHighFsyncDurations,warning,"etcd cluster ""{{ $labels.job }}"": 99th percentile fync durations are {{ $value }}s on etcd instance {{ $labels.instance }}."
-etcdHighCommitDurations,warning,"etcd cluster ""{{ $labels.job }}"": 99th percentile commit durations {{ $value }}s on etcd instance {{ $labels.instance }}."
-etcdHighNumberOfFailedHTTPRequests,warning,{{ $value }}% of requests for {{ $labels.method }} failed on etcd instance {{ $labels.instance }}
-etcdHighNumberOfFailedHTTPRequests,critical,{{ $value }}% of requests for {{ $labels.method }} failed on etcd instance {{ $labels.instance }}.
 etcdHTTPRequestsSlow,warning,etcd instance {{ $labels.instance }} HTTP requests to {{ $labels.method }} are slow.
+etcdHighCommitDurations,warning,"etcd cluster ""{{ $labels.job }}"": 99th percentile commit durations {{ $value }}s on etcd instance {{ $labels.instance }}."
+etcdHighFsyncDurations,warning,"etcd cluster ""{{ $labels.job }}"": 99th percentile fync durations are {{ $value }}s on etcd instance {{ $labels.instance }}."
+etcdHighNumberOfFailedGRPCRequests,critical,"etcd cluster ""{{ $labels.job }}"": {{ $value }}% of requests for {{ $labels.grpc_method }} failed on etcd instance {{ $labels.instance }}."
+etcdHighNumberOfFailedGRPCRequests,warning,"etcd cluster ""{{ $labels.job }}"": {{ $value }}% of requests for {{ $labels.grpc_method }} failed on etcd instance {{ $labels.instance }}."
+etcdHighNumberOfFailedHTTPRequests,critical,{{ $value }}% of requests for {{ $labels.method }} failed on etcd instance {{ $labels.instance }}.
+etcdHighNumberOfFailedHTTPRequests,warning,{{ $value }}% of requests for {{ $labels.method }} failed on etcd instance {{ $labels.instance }}
+etcdHighNumberOfFailedProposals,warning,"etcd cluster ""{{ $labels.job }}"": {{ $value }} proposal failures within the last hour on etcd instance {{ $labels.instance }}."
+etcdHighNumberOfLeaderChanges,warning,"etcd cluster ""{{ $labels.job }}"": instance {{ $labels.instance }} has seen {{ $value }} leader changes within the last hour."
+etcdInsufficientMembers,critical,"etcd cluster ""{{ $labels.job }}"": insufficient members ({{ $value }})."
+etcdMemberCommunicationSlow,warning,"etcd cluster ""{{ $labels.job }}"": member communication with {{ $labels.To }} is taking {{ $value }}s on etcd instance {{ $labels.instance }}."
+etcdNoLeader,critical,"etcd cluster ""{{ $labels.job }}"": member {{ $labels.instance }} has no leader."
 TargetDown,warning,One or more targets are unreachable.
 Watchdog,none,An alert that should always be firing to certify that Alertmanager is working properly.
-KubeAPIErrorBudgetBurn,critical,The API server is burning too much error budget.
+KubeAPIErrorBudgetBurn,warning,The API server is burning too much error budget.
 KubeAPIErrorBudgetBurn,critical,The API server is burning too much error budget.
 KubeAPIErrorBudgetBurn,warning,The API server is burning too much error budget.
-KubeAPIErrorBudgetBurn,warning,The API server is burning too much error budget.
+KubeAPIErrorBudgetBurn,critical,The API server is burning too much error budget.
 KubeStateMetricsListErrors,critical,kube-state-metrics is experiencing errors in list operations.
-KubeStateMetricsWatchErrors,critical,kube-state-metrics is experiencing errors in watch operations.
 KubeStateMetricsShardingMismatch,critical,kube-state-metrics sharding is misconfigured.
 KubeStateMetricsShardsMissing,critical,kube-state-metrics shards are missing.
-KubePodCrashLooping,warning,Pod is crash looping.
-KubePodNotReady,warning,Pod has been in a non-ready state for more than 15 minutes.
+KubeStateMetricsWatchErrors,critical,kube-state-metrics is experiencing errors in watch operations.
+KubeContainerWaiting,warning,Pod container waiting longer than 1 hour
+KubeDaemonSetMisScheduled,warning,DaemonSet pods are misscheduled.
+KubeDaemonSetNotScheduled,warning,DaemonSet pods are not scheduled.
+KubeDaemonSetRolloutStuck,warning,DaemonSet rollout is stuck.
 KubeDeploymentGenerationMismatch,warning,Deployment generation mismatch due to possible roll-back
 KubeDeploymentReplicasMismatch,warning,Deployment has not matched the expected number of replicas.
-KubeStatefulSetReplicasMismatch,warning,Deployment has not matched the expected number of replicas.
-KubeStatefulSetGenerationMismatch,warning,StatefulSet generation mismatch due to possible roll-back
-KubeStatefulSetUpdateNotRolledOut,warning,StatefulSet update has not been rolled out.
-KubeDaemonSetRolloutStuck,warning,DaemonSet rollout is stuck.
-KubeContainerWaiting,warning,Pod container waiting longer than 1 hour
-KubeDaemonSetNotScheduled,warning,DaemonSet pods are not scheduled.
-KubeDaemonSetMisScheduled,warning,DaemonSet pods are misscheduled.
+KubeHpaMaxedOut,warning,HPA is running at max replicas
+KubeHpaReplicasMismatch,warning,HPA has not matched descired number of replicas.
 KubeJobCompletion,warning,Job did not complete in time
 KubeJobFailed,warning,Job failed to complete.
-KubeHpaReplicasMismatch,warning,HPA has not matched descired number of replicas.
-KubeHpaMaxedOut,warning,HPA is running at max replicas
+KubePodCrashLooping,warning,Pod is crash looping.
+KubePodNotReady,warning,Pod has been in a non-ready state for more than 15 minutes.
+KubeStatefulSetGenerationMismatch,warning,StatefulSet generation mismatch due to possible roll-back
+KubeStatefulSetReplicasMismatch,warning,Deployment has not matched the expected number of replicas.
+KubeStatefulSetUpdateNotRolledOut,warning,StatefulSet update has not been rolled out.
+CPUThrottlingHigh,info,Processes experience elevated CPU throttling.
 KubeCPUOvercommit,warning,Cluster has overcommitted CPU resource requests.
-KubeMemoryOvercommit,warning,Cluster has overcommitted memory resource requests.
 KubeCPUQuotaOvercommit,warning,Cluster has overcommitted CPU resource requests.
+KubeMemoryOvercommit,warning,Cluster has overcommitted memory resource requests.
 KubeMemoryQuotaOvercommit,warning,Cluster has overcommitted memory resource requests.
 KubeQuotaAlmostFull,info,Namespace quota is going to be full.
-KubeQuotaFullyUsed,info,Namespace quota is fully used.
 KubeQuotaExceeded,warning,Namespace quota has exceeded the limits.
-CPUThrottlingHigh,info,Processes experience elevated CPU throttling.
+KubeQuotaFullyUsed,info,Namespace quota is fully used.
+KubePersistentVolumeErrors,critical,PersistentVolume is having issues with provisioning.
 KubePersistentVolumeFillingUp,critical,PersistentVolume is filling up.
 KubePersistentVolumeFillingUp,warning,PersistentVolume is filling up.
-KubePersistentVolumeErrors,critical,PersistentVolume is having issues with provisioning.
-KubeVersionMismatch,warning,Different semantic versions of Kubernetes components running.
 KubeClientErrors,warning,Kubernetes API server client is experiencing errors.
-KubeClientCertificateExpiration,warning,Client certificate is about to expire.
-KubeClientCertificateExpiration,critical,Client certificate is about to expire.
-AggregatedAPIErrors,warning,An aggregated API has reported errors.
+KubeVersionMismatch,warning,Different semantic versions of Kubernetes components running.
 AggregatedAPIDown,warning,An aggregated API is down.
+AggregatedAPIErrors,warning,An aggregated API has reported errors.
 KubeAPIDown,critical,Target disappeared from Prometheus target discovery.
 KubeAPITerminatedRequests,warning,The apiserver has terminated {{ $value | humanizePercentage }} of its incoming requests.
+KubeClientCertificateExpiration,critical,Client certificate is about to expire.
+KubeClientCertificateExpiration,warning,Client certificate is about to expire.
 KubeControllerManagerDown,critical,Target disappeared from Prometheus target discovery.
 KubeNodeNotReady,warning,Node is not ready.
-KubeNodeUnreachable,warning,Node is unreachable.
-KubeletTooManyPods,warning,Kubelet is running at capacity.
 KubeNodeReadinessFlapping,warning,Node readiness status is flapping.
+KubeNodeUnreachable,warning,Node is unreachable.
+KubeletClientCertificateExpiration,critical,Kubelet client certificate is about to expire.
+KubeletClientCertificateExpiration,warning,Kubelet client certificate is about to expire.
+KubeletClientCertificateRenewalErrors,warning,Kubelet has failed to renew its client certificate.
+KubeletDown,critical,Target disappeared from Prometheus target discovery.
 KubeletPlegDurationHigh,warning,Kubelet Pod Lifecycle Event Generator is taking too long to relist.
 KubeletPodStartUpLatencyHigh,warning,Kubelet Pod startup latency is too high.
-KubeletClientCertificateExpiration,warning,Kubelet client certificate is about to expire.
-KubeletClientCertificateExpiration,critical,Kubelet client certificate is about to expire.
-KubeletServerCertificateExpiration,warning,Kubelet server certificate is about to expire.
 KubeletServerCertificateExpiration,critical,Kubelet server certificate is about to expire.
-KubeletClientCertificateRenewalErrors,warning,Kubelet has failed to renew its client certificate.
+KubeletServerCertificateExpiration,warning,Kubelet server certificate is about to expire.
 KubeletServerCertificateRenewalErrors,warning,Kubelet has failed to renew its server certificate.
-KubeletDown,critical,Target disappeared from Prometheus target discovery.
+KubeletTooManyPods,warning,Kubelet is running at capacity.
 KubeSchedulerDown,critical,Target disappeared from Prometheus target discovery.
-NodeFilesystemSpaceFillingUp,warning,Filesystem is predicted to run out of space within the next 24 hours.
-NodeFilesystemSpaceFillingUp,critical,Filesystem is predicted to run out of space within the next 4 hours.
-NodeFilesystemAlmostOutOfSpace,warning,Filesystem has less than 20% space left.
-NodeFilesystemAlmostOutOfSpace,critical,Filesystem has less than 12% space left.
-NodeFilesystemFilesFillingUp,warning,Filesystem is predicted to run out of inodes within the next 24 hours.
-NodeFilesystemFilesFillingUp,critical,Filesystem is predicted to run out of inodes within the next 4 hours.
-NodeFilesystemAlmostOutOfFiles,warning,Filesystem has less than 15% inodes left.
+NodeClockNotSynchronising,warning,Clock on {{ $labels.instance }} is not synchronising. Ensure NTP is configured on this host.
+NodeClockSkewDetected,warning,Clock on {{ $labels.instance }} is out of sync by more than 300s. Ensure NTP is configured correctly on this host.
+NodeFileDescriptorLimit,critical,Kernel is predicted to exhaust file descriptors limit soon.
+NodeFileDescriptorLimit,warning,Kernel is predicted to exhaust file descriptors limit soon.
 NodeFilesystemAlmostOutOfFiles,critical,Filesystem has less than 8% inodes left.
+NodeFilesystemAlmostOutOfFiles,warning,Filesystem has less than 15% inodes left.
+NodeFilesystemAlmostOutOfSpace,critical,Filesystem has less than 12% space left.
+NodeFilesystemAlmostOutOfSpace,warning,Filesystem has less than 20% space left.
+NodeFilesystemFilesFillingUp,critical,Filesystem is predicted to run out of inodes within the next 4 hours.
+NodeFilesystemFilesFillingUp,warning,Filesystem is predicted to run out of inodes within the next 24 hours.
+NodeFilesystemSpaceFillingUp,critical,Filesystem is predicted to run out of space within the next 4 hours.
+NodeFilesystemSpaceFillingUp,warning,Filesystem is predicted to run out of space within the next 24 hours.
+NodeHighNumberConntrackEntriesUsed,warning,Number of conntrack are getting close to the limit
 NodeNetworkReceiveErrs,warning,Network interface is reporting many receive errors.
 NodeNetworkTransmitErrs,warning,Network interface is reporting many transmit errors.
-NodeHighNumberConntrackEntriesUsed,warning,Number of conntrack are getting close to the limit
-NodeClockSkewDetected,warning,Clock on {{ $labels.instance }} is out of sync by more than 300s. Ensure NTP is configured correctly on this host.
-NodeClockNotSynchronising,warning,Clock on {{ $labels.instance }} is not synchronising. Ensure NTP is configured on this host.
-NodeTextFileCollectorScrapeError,warning,Node Exporter text file collector failed to scrape.
 NodeRAIDDegraded,critical,RAID Array is degraded
 NodeRAIDDiskFailure,warning,Failed device in RAID array
-NodeFileDescriptorLimit,warning,Kernel is predicted to exhaust file descriptors limit soon.
-NodeFileDescriptorLimit,critical,Kernel is predicted to exhaust file descriptors limit soon.
+NodeTextFileCollectorScrapeError,warning,Node Exporter text file collector failed to scrape.
 NodeNetworkInterfaceFlapping,warning,Network interface is often changin it's status
 PrometheusBadConfig,critical,Failed Prometheus configuration reload.
-PrometheusNotificationQueueRunningFull,warning,Prometheus alert notification queue predicted to run full in less than 30m.
-PrometheusErrorSendingAlertsToSomeAlertmanagers,warning,Prometheus has encountered more than 1% errors sending alerts to a specific Alertmanager.
-PrometheusNotConnectedToAlertmanagers,warning,Prometheus is not connected to any Alertmanagers.
-PrometheusTSDBReloadsFailing,warning,Prometheus has issues reloading blocks from disk.
-PrometheusTSDBCompactionsFailing,warning,Prometheus has issues compacting blocks.
-PrometheusNotIngestingSamples,warning,Prometheus is not ingesting samples.
 PrometheusDuplicateTimestamps,warning,Prometheus is dropping samples with duplicate timestamps.
+PrometheusErrorSendingAlertsToAnyAlertmanager,critical,Prometheus encounters more than 3% errors sending alerts to any Alertmanager.
+PrometheusErrorSendingAlertsToSomeAlertmanagers,warning,Prometheus has encountered more than 1% errors sending alerts to a specific Alertmanager.
+PrometheusLabelLimitHit,warning,Prometheus has dropped targets because some scrape configs have exceeded the labels limit.
+PrometheusMissingRuleEvaluations,warning,Prometheus is missing rule evaluations due to slow rule group evaluation.
+PrometheusNotConnectedToAlertmanagers,warning,Prometheus is not connected to any Alertmanagers.
+PrometheusNotIngestingSamples,warning,Prometheus is not ingesting samples.
+PrometheusNotificationQueueRunningFull,warning,Prometheus alert notification queue predicted to run full in less than 30m.
 PrometheusOutOfOrderTimestamps,warning,Prometheus drops samples with out-of-order timestamps.
 PrometheusRemoteStorageFailures,critical,Prometheus fails to send samples to remote storage.
 PrometheusRemoteWriteBehind,critical,Prometheus remote write is behind.
 PrometheusRemoteWriteDesiredShards,warning,Prometheus remote write desired shards calculation wants to run more than configured max shards.
 PrometheusRuleFailures,critical,Prometheus is failing rule evaluations.
-PrometheusMissingRuleEvaluations,warning,Prometheus is missing rule evaluations due to slow rule group evaluation.
+PrometheusTSDBCompactionsFailing,warning,Prometheus has issues compacting blocks.
+PrometheusTSDBReloadsFailing,warning,Prometheus has issues reloading blocks from disk.
 PrometheusTargetLimitHit,warning,Prometheus has dropped targets because some scrape configs have exceeded the targets limit.
-PrometheusLabelLimitHit,warning,Prometheus has dropped targets because some scrape configs have exceeded the labels limit.
 PrometheusTargetSyncFailure,critical,Prometheus has failed to sync targets.
-PrometheusErrorSendingAlertsToAnyAlertmanager,critical,Prometheus encounters more than 3% errors sending alerts to any Alertmanager.
 PrometheusOperatorListErrors,warning,Errors while performing list operations in controller.
-PrometheusOperatorWatchErrors,warning,Errors while performing watch operations in controller.
-PrometheusOperatorSyncFailed,warning,Last controller reconciliation failed
-PrometheusOperatorReconcileErrors,warning,Errors while reconciling controller.
 PrometheusOperatorNodeLookupErrors,warning,Errors while reconciling Prometheus.
 PrometheusOperatorNotReady,warning,Prometheus operator not ready
+PrometheusOperatorReconcileErrors,warning,Errors while reconciling controller.
 PrometheusOperatorRejectedResources,warning,Resources rejected by Prometheus operator
+PrometheusOperatorSyncFailed,warning,Last controller reconciliation failed
+PrometheusOperatorWatchErrors,warning,Errors while performing watch operations in controller.
