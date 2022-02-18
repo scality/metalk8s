@@ -54,6 +54,9 @@
   - metallb-speaker to [0.11.0-debian-10-r74](https://github.com/bitnami/bitnami-docker-metallb-speaker/releases/tag/0.11.0-debian-10-r74)
   (PR[#3706](https://github.com/scality/metalk8s/pull/3706))
 
+- Bump pause image to [3.5](https://github.com/kubernetes/kubernetes/blob/b167fc24d7fb7349e9f50402c076b3d84d92ca95/build/pause/CHANGELOG.md#35)
+  (PR[#3708](https://github.com/scality/metalk8s/pull/3708))
+
 ## Release 2.11.3 (in development)
 ### Bug fixes
 
