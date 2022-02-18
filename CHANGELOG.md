@@ -54,6 +54,9 @@
   - metallb-speaker to [0.11.0-debian-10-r74](https://github.com/bitnami/bitnami-docker-metallb-speaker/releases/tag/0.11.0-debian-10-r74)
   (PR[#3706](https://github.com/scality/metalk8s/pull/3706))
 
+- Bump nginx image to [1.21.6-alpine](https://github.com/nginx/nginx/releases/tag/release-1.21.6)
+  (PR[#3710](https://github.com/scality/metalk8s/pull/3710))
+
 ## Release 2.11.3 (in development)
 ### Bug fixes
 

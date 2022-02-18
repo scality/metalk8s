@@ -70,7 +70,7 @@ CENTOS_BASE_IMAGE_SHA256: str = (
     "e4ca2ed0202e76be184e75fb26d14bf974193579039d5573fb2348664deef76e"
 )
 
-NGINX_IMAGE_VERSION: str = "1.19.6-alpine"
+NGINX_IMAGE_VERSION: str = "1.21.6-alpine"
 NODEJS_IMAGE_VERSION: str = "14.16.0"
 
 # Current build IDs, to be augmented whenever we rebuild the corresponding
@@ -157,7 +157,7 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     Image(
         name="nginx",
         version=NGINX_IMAGE_VERSION,
-        digest="sha256:629df02b47c8733258baf6663e308a86cd23f80247d35407022c35fd91a50ea3",
+        digest="sha256:bef258acf10dc257d641c47c3a600c92f87be4b4ce4a5e4752b3eade7533dcd9",
     ),
     Image(
         name="nginx-ingress-controller",
