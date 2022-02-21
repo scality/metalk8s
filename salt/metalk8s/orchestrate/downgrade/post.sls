@@ -2,3 +2,4 @@
 
 include:
   - metalk8s.addons.prometheus-operator.post-downgrade
+  - metalk8s.addons.logging.fluent-bit.deployed.post-downgrade

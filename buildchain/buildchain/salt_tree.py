@@ -329,6 +329,8 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/logging/fluent-bit/deployed/chart.sls"),
     Path("salt/metalk8s/addons/logging/fluent-bit/deployed/configmap.sls"),
     Path("salt/metalk8s/addons/logging/fluent-bit/deployed/init.sls"),
+    Path("salt/metalk8s/addons/logging/fluent-bit/deployed/post-upgrade.sls"),
+    Path("salt/metalk8s/addons/logging/fluent-bit/deployed/post-downgrade.sls"),
     Path("salt/metalk8s/addons/logging/loki/config/loki.yaml"),
     Path("salt/metalk8s/addons/logging/loki/deployed/chart.sls"),
     Path("salt/metalk8s/addons/logging/loki/deployed/datasource.sls"),
