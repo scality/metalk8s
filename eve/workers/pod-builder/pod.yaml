@@ -47,7 +47,7 @@ spec:
           memory: 6Gi
         limits:
           cpu: "3"
-          memory: 6Gi
+          memory: 12Gi
       env:
         - name: DOCKER_TLS_CERTDIR
           value: ''
