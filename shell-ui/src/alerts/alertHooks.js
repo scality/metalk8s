@@ -79,8 +79,9 @@ export const useHighestSeverityAlerts = (filters: FilterLabels): Alert[] => {
   const query = useAlerts(filters);
   const filteredAlerts = query && query.alerts;
 
-  const health = getHealthStatus(filteredAlerts);
   if (!filteredAlerts || !filteredAlerts.length) return [];
+
+  const health = getHealthStatus(filteredAlerts);
   return filteredAlerts.filter((alert) => alert.severity === health);
 };
 

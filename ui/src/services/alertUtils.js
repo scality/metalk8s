@@ -175,7 +175,7 @@ export const getHealthStatus = (
   alerts: Alert[],
   activeOn?: string = new Date().toISOString(),
 ): Health => {
-  if (!alerts.length) return STATUS_HEALTH;
+  if (!alerts || !alerts.length) return STATUS_HEALTH;
 
   const severityArr = alerts.map((alert) => {
     if (dateIsBetween(alert.startsAt, alert.endsAt, activeOn)) {
