@@ -40,6 +40,7 @@ Feature: Ingress
         When we perform an HTTP request on port 80 on a control-plane IP
         Then the server should not respond
 
+    @authentication
     Scenario: Failover of Control Plane Ingress VIP using MetalLB
         Given the Kubernetes API is available
         And we are on a multi node cluster
@@ -48,6 +49,7 @@ Feature: Ingress
         Then the node hosting the Control Plane Ingress VIP changed
         And we are able to login to Dex as 'admin@metalk8s.invalid' using password 'password'
 
+    @authentication
     Scenario: Change Control Plane Ingress IP to node-1 IP
         Given the Kubernetes API is available
         And we are on a multi node cluster
@@ -59,6 +61,7 @@ Feature: Ingress
         Then the control plane ingress IP is equal to node 'node-1' IP
         And we are able to login to Dex as 'admin@metalk8s.invalid' using password 'password'
 
+    @authentication
     Scenario: Enable MetalLB
         Given the Kubernetes API is available
         And a VIP for Control Plane Ingress is available

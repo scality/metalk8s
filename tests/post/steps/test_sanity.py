@@ -63,6 +63,14 @@ def test_statefulset_running(host):
 
 @scenario(
     "../features/sanity.feature",
+    "Dex has available replicas",
+)
+def test_dex_deploy(host):
+    pass
+
+
+@scenario(
+    "../features/sanity.feature",
     "Control Plane Ingress Controller when MetalLB is disabled",
 )
 def test_cp_ingress_controller_no_metallb(host):

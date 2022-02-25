@@ -35,7 +35,6 @@ Feature: Cluster Sanity Checks
         | kube-system         | calico-kube-controllers                |
         | kube-system         | coredns                                |
         | kube-system         | storage-operator                       |
-        | metalk8s-auth       | dex                                    |
         | metalk8s-ingress    | ingress-nginx-defaultbackend           |
         | metalk8s-monitoring | prometheus-adapter                     |
         | metalk8s-monitoring | prometheus-operator-grafana            |
@@ -54,6 +53,11 @@ Feature: Cluster Sanity Checks
         | metalk8s-ingress    | ingress-nginx-controller                     |
         | metalk8s-monitoring | prometheus-operator-prometheus-node-exporter |
         | metalk8s-logging    | fluent-bit                                   |
+
+    # We do a special case for Dex since Dex may not be deployed in every environment
+    @authentication
+    Scenario: Dex has available replicas
+        Then the Deployment 'dex' in the 'metalk8s-auth' namespace has all desired replicas available
 
     # We do a special case for Control Plane Ingress Controller and MetalLB
     # since those ones are not deployed in every environment
