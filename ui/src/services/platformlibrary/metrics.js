@@ -1211,7 +1211,7 @@ export const getClusterAlertSegmentQuery = (
       ) || { values: [] };
       const watchdogResult = resolve.data.result.find(
         (result) => result.metric.alertname === 'Watchdog',
-      );
+      ) || { values: [] };
       const pointsAtRisk = addMissingDataPoint(
         clusterAtRiskResult.values,
         Date.parse(startingTimeISO) / 1000,

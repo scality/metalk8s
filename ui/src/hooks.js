@@ -101,7 +101,7 @@ export const useVolumesWithAlerts = (nodeName?: string) => {
   //This forces alerts to have been fetched at least once (watchdog alert should be present)
   // before rendering volume list
   // TODO enhance this using useAlerts status
-  if (alerts.length === 0) return [];
+  if (!alerts || alerts.length === 0) return [];
   const volumeListWithStatus = volumeListData.map((volume) => {
     const volumeAlerts = filterAlerts(alerts, {
       persistentvolumeclaim: volume.persistentvolumeclaim,
