@@ -7,7 +7,7 @@ FROM ${BUILD_IMAGE}@sha256:${BUILD_IMAGE_SHA256} as build
 RUN useradd -m build
 
 ARG SALT_VERSION
-ARG GO_VERSION=1.15.15
+ARG GO_VERSION=1.16.14
 
 ADD common/yum_repositories/*.repo /etc/yum.repos.d/
 RUN sed -i s/@SALT_VERSION@/$SALT_VERSION/ /etc/yum.repos.d/saltstack.repo

@@ -13,6 +13,10 @@
 - Bump CoreDNS version to [v1.8.6](https://github.com/coredns/coredns/releases/tag/v1.8.6)
   (PR[#3634](https://github.com/scality/metalk8s/pull/3634))
 
+- Bump containerd to [1.6.0](https://github.com/containerd/containerd/releases/tag/v1.6.0)
+  The pause image has been bump to 3.6
+  (PR[#3711](https://github.com/scality/metalk8s/pull/3711))
+
 - Allow to resolve the registry endpoint from inside containers using CoreDNS
   (PR[#3690](https://github.com/scality/metalk8s/pull/3690))
 
