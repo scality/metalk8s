@@ -348,6 +348,7 @@ models:
         ARCHIVE: metalk8s.iso
         COREDNS_AFFINITY: "{}"
         CP_INGRESS_AFFINITY: "{}"
+        DEX_ENABLED: "true"
       command: |
         ssh -F ssh_config bootstrap "
         sudo bash << EOF
@@ -371,6 +372,9 @@ models:
         archives:
           - \"\$(readlink -f \"${ARCHIVE}\")\"
         debug: ${DEBUG}
+        addons:
+          dex:
+            enabled: ${DEX_ENABLED}
         kubernetes:
           coreDNS:
             affinity: ${COREDNS_AFFINITY}
@@ -896,6 +900,7 @@ stages:
             - lifecycle-major-version
             - bootstrap-restore
             - single-node-install-rocky-8
+            - single-node-no-idp
           haltOnFailure: true
       - TriggerStages:
           name: Trigger publish stage
@@ -2777,6 +2782,74 @@ stages:
           <<: *wait_debug
           env:
             STEP_NAME: single-node-solutions
+      - ShellCommand: *terraform_destroy
+
+  single-node-no-idp:
+    _metalk8s_internal_info:
+      junit_info: &_no-idp_single-node_junit_info
+        TEST_SUITE: install
+        CLASS_NAME: "single node.%(prop:os:-centos-7)s"
+        TEST_NAME: no idp
+    simultaneous_builds: 20
+    worker: *openstack_worker
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            <<: *_no-idp_single-node_junit_info
+            STEP_NAME: single-node-no-idp
+      - ShellCommand: *yum_clean_all
+      - ShellCommand: *ssh_ip_setup
+      - ShellCommand: *git_pull_terraform
+      - ShellCommand: *retrieve_iso
+      - ShellCommand: *retrieve_iso_checksum
+      - ShellCommand: *check_iso_checksum
+      - ShellCommand: *terraform_install
+      - ShellCommand: *terraform_install_check
+      - ShellCommand: *terraform_init
+      - ShellCommand: *terraform_validate
+      - ShellCommand: *terraform_apply
+      - ShellCommand: *set_bootstrap_minion_id_ssh
+      - ShellCommand:
+          <<: *bootstrap_config_ssh
+          env:
+            <<: *_env_bootstrap_config_ssh
+            DEX_ENABLED: "false"
+      - ShellCommand: *copy_iso_bootstrap_ssh
+      - ShellCommand: *create_mountpoint_ssh
+      - ShellCommand: *mount_iso_ssh
+      - ShellCommand: *run_bootstrap_ssh
+      - ShellCommand: *provision_volumes_ssh
+      - ShellCommand:
+          <<: *untaint_bootstrap_ssh
+          doStepIf: true
+      - ShellCommand: *wait_pods_stable_ssh
+      - ShellCommand: *git_pull_ssh
+      - ShellCommand:
+          <<: *bastion_fast_tests
+          env:
+            <<: *_env_bastion_tests
+            PYTEST_FILTERS: "post and ci and not multinode and not slow and not registry_ha and not authentication"
+      - ShellCommand: *generate_report_over_ssh
+      - ShellCommand:
+          <<: *collect_report_over_ssh
+          env:
+            <<: *_env_collect_report_over_ssh
+            STEP_NAME: single-node-no-idp
+      - Upload: *upload_report_artifacts
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            <<: *_no-idp_single-node_junit_info
+            STEP_NAME: single-node-no-idp
+      - Upload: *upload_final_status_artifact
+      - ShellCommand:
+          <<: *wait_debug
+          env:
+            STEP_NAME: single-node-no-idp
       - ShellCommand: *terraform_destroy
 
   generate-snapshot:
