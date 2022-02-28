@@ -9,7 +9,7 @@ def pod_alerts(name, severity="warning", namespace="default"):
         models.ExistingAlert(
             alertname, severity=severity, namespace=namespace, pod=name
         )
-        for alertname in ["KubePodNotReady"]
+        for alertname in ["KubePodNotReady", "KubePodCrashLooping"]
     ]
 
 
@@ -51,4 +51,14 @@ def statefulset_alerts(name, severity="warning", namespace="default"):
             "KubeStatefulSetGenerationMismatch",
             "KubeStatefulSetUpdateNotRolledOut",
         ]
+    ]
+
+
+def job_alerts(name, severity="warning", namespace="default"):
+    """Common alerts for Jobs."""
+    return [
+        models.ExistingAlert(
+            alertname, severity=severity, namespace=namespace, job=name
+        )
+        for alertname in ["KubeJobCompletion", "KubeJobFailed"]
     ]

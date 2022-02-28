@@ -9,12 +9,14 @@ SYSTEM_PARTITION_WARNING, SYSTEM_PARTITION_CRITICAL = severity_pair(
     ),
     relationship=Relationship.ANY,
     warning_children=[
+        Existing.warning("NodeFileDescriptorLimit"),
         Existing.warning("NodeFilesystemAlmostOutOfSpace"),
         Existing.warning("NodeFilesystemAlmostOutOfFiles"),
         Existing.warning("NodeFilesystemFilesFillingUp"),
         Existing.warning("NodeFilesystemSpaceFillingUp"),
     ],
     critical_children=[
+        Existing.critical("NodeFileDescriptorLimit"),
         Existing.critical("NodeFilesystemAlmostOutOfSpace"),
         Existing.critical("NodeFilesystemAlmostOutOfFiles"),
         Existing.critical("NodeFilesystemFilesFillingUp"),

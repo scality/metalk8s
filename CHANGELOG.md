@@ -71,6 +71,11 @@
   (PR[#3710](https://github.com/scality/metalk8s/pull/3710))
 
 ## Release 2.11.3 (in development)
+### Enhancements
+
+- Add some missing alerts in the alerts hierarchy
+  (PR[#3714](https://github.com/scality/metalk8s/pull/3714))
+
 ### Bug fixes
 
 - Fix a bug during the upgrade that makes the workload plane Ingress controller

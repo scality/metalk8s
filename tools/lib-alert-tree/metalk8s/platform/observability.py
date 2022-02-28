@@ -12,6 +12,7 @@ MONITORING_WARNING, MONITORING_CRITICAL = severity_pair(
     summary_name="The monitoring service",
     relationship=Relationship.ANY,
     warning_children=[
+        Existing.warning("PrometheusLabelLimitHit"),
         Existing.warning("PrometheusTargetLimitHit"),
         Existing.warning("PrometheusTSDBReloadsFailing"),
         Existing.warning("PrometheusTSDBCompactionsFailing"),
@@ -47,11 +48,14 @@ MONITORING_WARNING, MONITORING_CRITICAL = severity_pair(
         ),
     ],
     critical_children=[
+        Existing.critical("KubeStateMetricsShardingMismatch"),
+        Existing.critical("KubeStateMetricsShardsMissing"),
         Existing.critical("PrometheusRuleFailures"),
         Existing.critical("PrometheusRemoteWriteBehind"),
         Existing.critical("PrometheusRemoteStorageFailures"),
         Existing.critical("PrometheusErrorSendingAlertsToAnyAlertmanager"),
         Existing.critical("PrometheusBadConfig"),
+        Existing.critical("PrometheusTargetSyncFailure"),
     ],
     duration="1m",
 )
@@ -61,6 +65,8 @@ ALERTING_WARNING, ALERTING_CRITICAL = severity_pair(
     summary_name="The alerting service",
     relationship=Relationship.ANY,
     warning_children=[
+        Existing.warning("AlertmanagerClusterFailedToSendAlerts"),
+        Existing.warning("AlertmanagerFailedToSendAlerts"),
         *statefulset_alerts(
             "alertmanager-prometheus-operator-alertmanager",
             severity="warning",
@@ -68,6 +74,9 @@ ALERTING_WARNING, ALERTING_CRITICAL = severity_pair(
         ),
     ],
     critical_children=[
+        Existing.critical("AlertmanagerClusterCrashlooping"),
+        Existing.critical("AlertmanagerClusterDown"),
+        Existing.critical("AlertmanagerClusterFailedToSendAlerts"),
         Existing.critical("AlertmanagerConfigInconsistent"),
         Existing.critical("AlertmanagerMembersInconsistent"),
         Existing.critical("AlertmanagerFailedReload"),
