@@ -82,6 +82,10 @@
   ignore the Ingress object that does not have the class explicitly set
   (PR[#3704](https://github.com/scality/metalk8s/pull/3704))
 
+- Fix a bug during the upgrade that remove the Loki instance services used by
+  Grafana datasources
+  (PR[#3717](https://github.com/scality/metalk8s/pull/3717))
+
 ## Release 2.11.2
 ### Bug fixes
 

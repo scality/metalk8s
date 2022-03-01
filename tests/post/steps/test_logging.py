@@ -52,6 +52,11 @@ def test_logging_pipeline_is_working(host):
     pass
 
 
+@scenario("../features/logging.feature", "We can access a specific Loki instance")
+def test_instance_service(host):
+    pass
+
+
 # }}}
 # Given {{{
 
@@ -220,7 +225,7 @@ def retrieve_alert_from_loki(k8s_client, alertname):
     )
 
 
-@then("the Loki API is available through Service '{service}'")
+@then(parsers.parse("the Loki API is available through Service '{service}'"))
 def then_check_loki_api(k8s_client, service):
     check_loki_api(k8s_client, service)
 

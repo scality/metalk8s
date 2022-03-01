@@ -338,7 +338,6 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/logging/loki/deployed/loki-configuration-secret.sls"),
     Path("salt/metalk8s/addons/logging/loki/deployed/service.sls"),
     Path("salt/metalk8s/addons/logging/loki/deployed/service-configuration.sls"),
-    Path("salt/metalk8s/addons/logging/loki/post-upgrade.sls"),
     Path("salt/metalk8s/addons/prometheus-adapter/deployed/chart.sls"),
     Path("salt/metalk8s/addons/prometheus-adapter/deployed/init.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/macros.j2"),
