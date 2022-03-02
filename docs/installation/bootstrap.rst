@@ -73,8 +73,12 @@ Configuration
         minion: <hostname-of-the-bootstrap-node>
       archives:
         - <path-to-metalk8s-iso>
+      addons:
+        dex:
+          enabled: True
       kubernetes:
         apiServer:
+          oidc: {}
           featureGates:
             <feature_gate_name>: True
         controllerManager:
@@ -188,6 +192,14 @@ The ``archives`` field is a list of absolute paths to MetalK8s ISO files. When
 the bootstrap script is executed, those ISOs are automatically mounted and the
 system is configured to re-mount them automatically after a reboot.
 
+The ``addons`` field can be omitted if you do not have any specific addons
+to configure.
+
+  If you need to disable deployment of ``dex`` as default OIDC used by
+  MetalK8s you can disable it by setting ``addons.dex.enabled`` to ``false``.
+  If ``dex`` is disabled you will not be able to use the MetalK8s UI and
+  Grafana.
+
 The ``kubernetes`` field can be omitted if you do not have any specific
 Kubernetes `Feature Gates`_ to enable or disable and if you are ok with
 defaults kubernetes configuration.
@@ -195,6 +207,20 @@ defaults kubernetes configuration.
   If you need to enable or disable specific features for ``kube-apiserver``
   configure the corresponding entries in the
   ``kubernetes.apiServer.featureGates`` mapping.
+
+  If ``dex`` is enabled, it will be used as ``oidc`` for ``kube-apiserver``
+  but you can use a `specific OpenID for kube-apiserver`_, to do so:
+
+    .. code-block:: yaml
+
+      kubernetes:
+        apiServer:
+          oidc:
+            issuerURL: <OIDC issuer URL>
+            clientID: <Client ID>
+            CAFile: <Certificate Authority certificate file>
+            usernameClaim: <Username Claim>
+            groupsClaim: <Groups Claim>
 
   If you want to override the default ``coreDNS`` podAntiAffinity or number of
   replicas, by default MetalK8s deploy 2 replicas and use soft podAntiAffinity
@@ -219,6 +245,7 @@ defaults kubernetes configuration.
   disabled (default to ``500``)
 
 .. _Feature Gates: https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/
+.. _specific OpenID for kube-apiserver: https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens
 
 .. _Bootstrap SSH Provisioning:
 

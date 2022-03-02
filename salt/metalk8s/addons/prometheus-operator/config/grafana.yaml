@@ -1,9 +1,0 @@
-#!yaml
-
-# Configuration of the Grafana service
-apiVersion: addons.metalk8s.scality.com
-kind: GrafanaConfig
-spec:
-  # Configure the Grafana Deployment
-  deployment:
-    replicas: 1

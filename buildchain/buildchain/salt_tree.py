@@ -345,7 +345,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/prometheus-operator/post-downgrade.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/post-upgrade.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/config/alertmanager.yaml"),
-    Path("salt/metalk8s/addons/prometheus-operator/config/grafana.yaml"),
+    Path("salt/metalk8s/addons/prometheus-operator/config/grafana.yaml.j2"),
     Path("salt/metalk8s/addons/prometheus-operator/config/prometheus.yaml"),
     Path(
         "salt/metalk8s/addons/prometheus-operator/deployed/",
@@ -358,6 +358,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
         "salt/metalk8s/addons/prometheus-operator/deployed/files/",
         "node-exporter-full.json",
     ),
+    Path("salt/metalk8s/addons/prometheus-operator/deployed/grafana-ini-configmap.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/init.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/namespace.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/prometheus-rules.sls"),

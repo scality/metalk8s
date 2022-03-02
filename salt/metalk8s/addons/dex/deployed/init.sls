@@ -9,6 +9,8 @@
 # * chart                  -> charts used to deploy Dex
 # * clusterrolebinding     -> binds dex static user to cluster admin
 
+{%- if pillar.addons.dex.enabled %}
+
 include:
 - .namespace
 - .tls-secret
@@ -18,3 +20,10 @@ include:
 - .secret
 - .chart
 - .clusterrolebinding
+
+{%- else %}
+
+Dex is disabled, nothing to deploy:
+  test.nop
+
+{%- endif %}

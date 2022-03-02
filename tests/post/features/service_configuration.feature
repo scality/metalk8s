@@ -1,5 +1,6 @@
 @post @local @ci @csc
 Feature: Cluster and Services Configurations
+    @authentication
     Scenario: Propagation of Service Configurations to underlying Services
         Given the Kubernetes API is available
         And pods with label 'app.kubernetes.io/name=dex' are 'Ready'
@@ -10,6 +11,7 @@ Feature: Cluster and Services Configurations
         And we wait for the rollout of 'deploy/dex' in namespace 'metalk8s-auth' to complete
         Then we have '3' at 'status.availableReplicas' for 'dex' Deployment in namespace 'metalk8s-auth'
 
+    @authentication
     Scenario: Update Admin static user password
         Given the Kubernetes API is available
         And we have a 'metalk8s-dex-config' CSC in namespace 'metalk8s-auth'
@@ -30,6 +32,7 @@ Feature: Cluster and Services Configurations
         And we apply the 'metalk8s.addons.prometheus-operator.deployed' state
         Then we have an alert rule 'NodeFilesystemSpaceFillingUp' in group 'node-exporter' with severity 'warning' and 'annotations.summary' equal to 'Filesystem is predicted to run out of space within the next 48 hours.'
 
+    @authentication
     Scenario: Dex pods spreading
         Given the Kubernetes API is available
         And we are on a multi node cluster

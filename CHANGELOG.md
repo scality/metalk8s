@@ -1,6 +1,12 @@
 # CHANGELOG
 ## Release 123.0.0 (in development)
 
+### Additions
+
+- Add ability to deploy MetalK8s without Dex and possibility to configure
+  your own IDP for kube-apiserver, Grafana and MetalK8s UI
+  (PR[#3688](https://github.com/scality/metalk8s/pull/3688))
+
 ### Enhancements
 
 - Bump Kubernetes version to

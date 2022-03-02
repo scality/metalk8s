@@ -51,9 +51,9 @@ Prometheus, with nice graphs.
 
 The default configuration values for Grafana are specified below:
 
-.. literalinclude:: ../../salt/metalk8s/addons/prometheus-operator/config/grafana.yaml
+.. literalinclude:: ../../salt/metalk8s/addons/prometheus-operator/config/grafana.yaml.j2
    :language: yaml
-   :lines: 3-
+   :lines: 8-31,33-43
 
 .. _csc-prometheus-default-configuration:
 
@@ -97,7 +97,7 @@ The default configuration values for MetalK8s UI are specified below:
 
 .. literalinclude:: ../../salt/metalk8s/addons/ui/config/metalk8s-ui-config.yaml.j2
    :language: yaml
-   :lines: 3-
+   :lines: 3-6,8-14,16-
 
 See :ref:`csc-ui-customization` to override these defaults.
 

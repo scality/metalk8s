@@ -185,6 +185,22 @@ metalk8s:
                   HTTPS_PROXY: https://my-proxy.local
 
   kubernetes:
+    apiserver:
+      files:
+        installed.sls:
+          _cases:
+            "With an external OIDC":
+              pillar_overrides:
+                kubernetes:
+                  apiServer:
+                    oidc:
+                      issuerURL: "https://issuer-url/oidc"
+                      clientID: "oidc-client"
+                      CAFile: "/path/to/some/ca.crt"
+                      usernameClaim: "email"
+                      groupsClaim: "groups"
+            "With default OIDC (Dex)": {}
+
     apiserver-proxy:
       files:
         apiserver-proxy.yaml.j2:

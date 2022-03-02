@@ -1,14 +1,12 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
-{% set grafana_defaults = salt.slsutil.renderer('salt://metalk8s/addons/prometheus-operator/config/grafana.yaml', saltenv=saltenv) %}
-{% set prometheus_defaults = salt.slsutil.renderer('salt://metalk8s/addons/prometheus-operator/config/prometheus.yaml', saltenv=saltenv) %}
-{% set alertmanager_defaults = salt.slsutil.renderer('salt://metalk8s/addons/prometheus-operator/config/alertmanager.yaml', saltenv=saltenv) %}
-{% set dex_defaults = salt.slsutil.renderer('salt://metalk8s/addons/dex/config/dex.yaml.j2', saltenv=saltenv) %}
+{%- set grafana_defaults = salt.slsutil.renderer('salt://metalk8s/addons/prometheus-operator/config/grafana.yaml.j2', saltenv=saltenv) %}
+{%- set prometheus_defaults = salt.slsutil.renderer('salt://metalk8s/addons/prometheus-operator/config/prometheus.yaml', saltenv=saltenv) %}
+{%- set alertmanager_defaults = salt.slsutil.renderer('salt://metalk8s/addons/prometheus-operator/config/alertmanager.yaml', saltenv=saltenv) %}
 {%- set grafana = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-grafana-config', grafana_defaults) %}
 {%- set prometheus = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-prometheus-config', prometheus_defaults) %}
 {%- set alertmanager = salt.metalk8s_service_configuration.get_service_conf('metalk8s-monitoring', 'metalk8s-alertmanager-config', alertmanager_defaults) %}
-{%- set dex = salt.metalk8s_service_configuration.get_service_conf('metalk8s-auth', 'metalk8s-dex-config', dex_defaults) %}
 
 {% raw %}
 
@@ -25897,48 +25895,6 @@ metadata:
     helm.sh/chart: grafana-6.21.2
     heritage: metalk8s
   name: prometheus-operator-grafana-config-dashboards
-  namespace: metalk8s-monitoring
----
-apiVersion: v1
-data:
-  grafana.ini: |-
-    [analytics]
-    check_for_updates = false
-    reporting_enabled = false
-    [auth]
-    oauth_auto_login = true
-    [auth.generic_oauth]
-    api_url = "{% endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}/oidc/userinfo{%- raw %}"
-    auth_url = "{% endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}/oidc/auth{%- raw %}"
-    client_id = grafana-ui
-    client_secret = 4lqK98NcsWG5qBRHJUqYM1
-    enabled = true
-    role_attribute_path = contains(`{% endraw %}{{ dex.spec.config.staticPasswords | map(attribute='email') | list | tojson }}{% raw %}`, email) && 'Admin'
-    scopes = openid profile email groups
-    tls_skip_verify_insecure = true
-    token_url = "{% endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}/oidc/token{%- raw %}"
-    [grafana_net]
-    url = https://grafana.net
-    [log]
-    mode = console
-    [paths]
-    data = /var/lib/grafana/
-    logs = /var/log/grafana
-    plugins = /var/lib/grafana/plugins
-    provisioning = /etc/grafana/provisioning
-    [server]
-    root_url = "{% endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_endpoint() }}/grafana{%- raw %}"
-kind: ConfigMap
-metadata:
-  labels:
-    app.kubernetes.io/instance: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: grafana
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 8.3.4-ubuntu
-    helm.sh/chart: grafana-6.21.2
-    heritage: metalk8s
-  name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
 ---
 apiVersion: v1

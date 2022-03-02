@@ -89,7 +89,9 @@ Create metalk8s-ui ConfigMap:
                   "ui_base_path": "{{ normalized_base_path }}",
                   "url_support": "https://github.com/scality/metalk8s/discussions/new"
                 },
+                {%- if metalk8s_ui_config.spec.get("auth") %}
                 "auth": {{ metalk8s_ui_config.spec.auth | tojson }}
+                {%- endif %}
               }
             }
           config.json: |
@@ -108,6 +110,7 @@ Create metalk8s-ui ConfigMap:
               "alerts_lib_version": "@@ShellUIVersion",
               "url_support": "https://github.com/scality/metalk8s/discussions/new"
             }
+
 Create shell-ui ConfigMap:
   metalk8s_kubernetes.object_present:
     - manifest:
