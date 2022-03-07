@@ -35,5 +35,5 @@ Optional
 Development
 -----------
 
-If you want to develop on the buildchain, you can add the development
-dependencies with ``pip install -r requirements/build-dev-requirements.txt``.
+If you want to develop on the buildchain, you can install the development
+dependencies with ``pip install -r buildchain/requirements.txt``.
