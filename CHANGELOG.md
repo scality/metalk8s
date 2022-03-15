@@ -15,6 +15,10 @@
   Grafana datasources
   (PR[#3717](https://github.com/scality/metalk8s/pull/3717))
 
+- Fix a bug during the upgrade that block the eviction of the Control Plane Ingress
+  controller Pod
+  (PR[#3724](https://github.com/scality/metalk8s/pull/3724))
+
 ## Release 2.11.2
 ### Bug fixes
 
