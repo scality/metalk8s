@@ -2,21 +2,6 @@
 # NOTE: This state should be called by salt-master using the saltenv of
 # the destination version (salt-master should have been upgraded)
 
-# In 2.10.x we deploy an invalid PodDisruptionBudget with minAvailable set to 0
-# this PDB may break the upgrade as the Ingress Controller does not work properly
-# during this upgrade
-# NOTE: It only happen when the Control Plane Ingress is deployed as a Deployment
-# Since it's a really specific case we just delete this PDB so that we are able to
-# upgrade in this case
-# NOTE: We do no longer deploy this PDB in 2.11+
-# NOTE: It should be removed in `development/123.0`
-Ensure the Control Plane Ingress PodDisruptionBudget does not exists:
-  metalk8s_kubernetes.object_absent:
-    - apiVersion: policy/v1
-    - kind: PodDisruptionBudget
-    - name: ingress-nginx-control-plane-controller
-    - namespace: metalk8s-ingress
-
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') %}
 {%- if cp_nodes|length == 1 %}
 
