@@ -96,6 +96,10 @@
   controller Pod
   (PR[#3724](https://github.com/scality/metalk8s/pull/3724))
 
+- [#2166](https://github.com/scality/metalk8s/issues/2166) - Make
+  Prometheus node exporter listening only on the Control Plane IP
+  (PR[#3725](https://github.com/scality/metalk8s/pull/3725))
+
 ## Release 2.11.2
 ### Bug fixes
 

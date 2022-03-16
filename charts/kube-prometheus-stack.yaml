@@ -248,6 +248,9 @@ prometheus-node-exporter:
       additionalLabels:
         metalk8s.scality.com/monitor: ''
 
+  service:
+    listenOnAllInterfaces: false
+
   image:
     repository: '__image__(node-exporter)'
   extraArgs:
