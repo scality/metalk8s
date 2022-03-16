@@ -61802,7 +61802,10 @@ spec:
         - --collector.filesystem.ignored-fs-types=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$
         env:
         - name: HOST_IP
-          value: 0.0.0.0
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
         image: {% endraw -%}{{ build_image_name("node-exporter", False) }}{%- raw %}:v1.2.2
         imagePullPolicy: IfNotPresent
         livenessProbe:

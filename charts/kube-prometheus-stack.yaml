@@ -251,6 +251,8 @@ kube-state-metrics:
 
 
 prometheus-node-exporter:
+  service:
+    listenOnAllInterfaces: false
   image:
     repository: '__image__(node-exporter)'
   extraArgs:

@@ -122,7 +122,7 @@ networks:
       127.0.0.1:9099:
         expected: calico-node
         description: Calico node
-      0.0.0.0:9100:
+      control_plane_ip:9100:
         expected: node_exporter
         description: Node exporter
       127.0.0.1:10248:
