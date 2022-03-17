@@ -79,6 +79,9 @@
 ## Release 2.11.3 (in development)
 ### Enhancements
 
+- Bump Kubernetes version to 1.22.8
+  (PR[#3726](https://github.com/scality/metalk8s/pull/3726))
+
 - Add some missing alerts in the alerts hierarchy
   (PR[#3714](https://github.com/scality/metalk8s/pull/3714))
 
