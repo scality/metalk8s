@@ -3,7 +3,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 from parameterized import parameterized
-from salt.exceptions import CheckError
+from salt.exceptions import CheckError, CommandExecutionError
 import yaml
 
 from _modules import metalk8s_checks
@@ -41,6 +41,7 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
         services_ret=True,
         ports_ret=True,
         route_exists_ret=True,
+        fs_check_ret=True,
         pillar=None,
         **kwargs
     ):
@@ -51,11 +52,13 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
         services_mock = MagicMock(return_value=services_ret)
         ports_mock = MagicMock(return_value=ports_ret)
         route_exists_mock = MagicMock(return_value=route_exists_ret)
+        fs_mock = MagicMock(return_value=fs_check_ret)
 
         salt_dict = {
             "metalk8s_checks.packages": packages_mock,
             "metalk8s_checks.services": services_mock,
             "metalk8s_checks.ports": ports_mock,
+            "metalk8s_checks.containerd_filesystem": fs_mock,
         }
 
         with patch.dict(metalk8s_checks.__grains__, {"id": "my_node_1"}), patch.dict(
@@ -179,6 +182,46 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 )
             else:
                 self.assertEqual(metalk8s_checks.sysctl(params, raises=False), result)
+
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["containerd_filesystem"])
+    def test_containerd_filesystem(
+        self,
+        result,
+        run_all_df_ret=None,
+        xfs_info_ret=None,
+        path_exists=None,
+        expect_raise=False,
+        **kwargs
+    ):
+        """
+        Tests the return of `containerd_filesystem` function
+        """
+
+        def exists_patch(path):
+            if path in ("/", path_exists):
+                return True
+            return False
+
+        run_all_df_mock = MagicMock(return_value=run_all_df_ret)
+        xfs_info_mock = MagicMock()
+        if xfs_info_ret and "exception" in xfs_info_ret:
+            xfs_info_mock.side_effect = CommandExecutionError(xfs_info_ret["exception"])
+        else:
+            xfs_info_mock.return_value = xfs_info_ret
+
+        patch_dict = {"cmd.run_all": run_all_df_mock, "xfs.info": xfs_info_mock}
+
+        with patch.dict(metalk8s_checks.__salt__, patch_dict), patch(
+            "os.path.exists", exists_patch
+        ):
+            if expect_raise:
+                self.assertRaisesRegex(
+                    CheckError, result, metalk8s_checks.containerd_filesystem, **kwargs
+                )
+            else:
+                self.assertEqual(
+                    metalk8s_checks.containerd_filesystem(**kwargs), result
+                )
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["route_exists"])
     def test_route_exists(

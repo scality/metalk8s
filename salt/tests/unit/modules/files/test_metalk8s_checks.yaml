@@ -5,6 +5,8 @@ node:
     services_ret: True
     ports_ret: True
     route_exists_ret: True
+    fs_check_ret: True
+
     pillar:
       networks:
         service: 10.96.0.0/12
@@ -54,16 +56,24 @@ node:
       interface and route for this range (for details, see
       https://github.com/kubernetes/kubernetes/issues/57534#issuecomment-527653412).
 
-  # 7. Error: Combined errors
+  # 7. Error: fs_check
+  - <<: *node_nominal
+    fs_check_ret: "Containerd XFS filesystem (/var/lib/containerd) has ftype=2 expected 1"
+    expect_raise: True
+    result: 'Node my_node_1: Containerd XFS filesystem \(/var/lib/containerd\) has ftype=2 expected 1'
+
+  # 8. Error: Combined errors
   - <<: *node_nominal
     packages_ret: "Package abcd got an error because of banana"
     services_ret: "Service abcd got an error because of penguin"
     ports_ret: "Monkey should be listening on Tree"
+    fs_check_ret: "Filesystem only supports vim please remove emacs"
     expect_raise: True
     result: |-
       Node my_node_1: Package abcd got an error because of banana
       Service abcd got an error because of penguin
       Monkey should be listening on Tree
+      Filesystem only supports vim please remove emacs
   - <<: *node_nominal
     packages_ret: "Package abcd got an error because of banana"
     route_exists_ret: "No route exists for penguin"
@@ -601,3 +611,54 @@ route_exists:
     error: >-
       A route was found for 10.96.0.0, but it does not match the full
       destination network 10.96.0.0/12
+
+containerd_filesystem:
+  # 1. Success Not XFS
+  - run_all_df_ret:
+      stdout: |-
+        Filesystem Type
+        /dev/sda1 ext4
+      retcode: 0
+    result: True
+  # 2. Success XFS with ftype=1
+  - run_all_df_ret:
+      stdout: |-
+        Filesystem Type
+        /dev/sda1 xfs
+      retcode: 0
+    xfs_info_ret:
+      naming:
+        ftype: "1"
+    result: True
+  # 3. Error: Cannot read fs type
+  - run_all_df_ret:
+      stdout: ""
+      retcode: 1
+      stderr: "Failed because reasons"
+    path_exists: "/var/lib/containerd"
+    result: 'Cannot check filesystem of /var/lib/containerd, \(Failed because reasons\)'
+    expect_raise: True
+  # 4. Error xfs but ftype != 1 no exception
+  - run_all_df_ret:
+      stdout: |-
+        Filesystem Type
+        /dev/sda1 xfs
+      retcode: 0
+    xfs_info_ret:
+      naming:
+        ftype: "2"
+    path_exists: "/var/lib/containerd"
+    result: 'Containerd XFS filesystem (/var/lib/containerd) has ftype=2 expected 1'
+    raises: False
+    expect_raise: False
+  # 5. xfs info data missing
+  - run_all_df_ret:
+      stdout: |-
+        Filesystem Type
+        /dev/sda1 xfs
+      retcode: 0
+    xfs_info_ret:
+      exception: "Error"
+    path_exists: "/"
+    result: 'Error checking ftype value from /, \(Error\)'
+    expect_raise: True
