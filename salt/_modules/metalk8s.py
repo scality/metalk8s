@@ -149,6 +149,14 @@ def _get_archive_info(info):
 
 
 def archive_info_from_product_txt(archive):
+    """Extract archive information from the 'product.txt' file in an archive.
+
+    Will ensure that the information describes a valid MetalK8s archive (including a
+    version).
+
+    Arguments:
+        archive (str): path to an ISO or a directory
+    """
     if os.path.isdir(archive):
         info = archive_info_from_tree(archive)
         info.update(
@@ -168,6 +176,18 @@ def archive_info_from_product_txt(archive):
     else:
         raise CommandExecutionError(
             "Invalid archive path {0}, should be an iso or a directory.".format(archive)
+        )
+
+    if info["name"] != "MetalK8s":
+        raise CommandExecutionError(
+            "Invalid archive '{}', 'NAME' should be 'MetalK8s', found '{}'.".format(
+                archive, info["name"]
+            )
+        )
+
+    if not info["version"]:
+        raise CommandExecutionError(
+            "Invalid archive '{}', 'VERSION' must be provided.".format(archive)
         )
 
     return info
@@ -216,6 +236,32 @@ def archive_info_from_iso(path):
         )
 
     return _get_archive_info(result["stdout"])
+
+
+def get_mounted_archives():
+    """List the MetalK8s ISOs mounted under /srv/scality."""
+    archives = {}
+    active_mounts = __salt__["mount.active"]()
+
+    for mountpoint, mount_info in active_mounts.items():
+        if not mountpoint.startswith("/srv/scality/metalk8s-"):
+            continue
+
+        archive = mount_info["alt_device"]
+        try:
+            archive_info = archive_info_from_product_txt(archive)
+        except CommandExecutionError as exc:
+            log.info(
+                "Skipping %s (mounted at %s): not a valid MetalK8s archive - %s",
+                archive,
+                mountpoint,
+                exc,
+            )
+            continue
+
+        env_name = "metalk8s-{0}".format(archive_info["version"])
+        archives[env_name] = archive_info
+    return archives
 
 
 def get_archives(archives=None):
@@ -669,8 +715,10 @@ def _write_bootstrap_config(config):
 
 def configure_archive(archive, remove=False):
     """Add (or remove) a MetalK8s archive in the bootstrap config file."""
-    # raise if the archive does not exist or is invalid
-    archive_info_from_product_txt(archive)
+    if not remove:
+        # raise if the archive does not exist or is invalid
+        archive_info_from_product_txt(archive)
+
     config = _read_bootstrap_config()
 
     if remove:

@@ -224,10 +224,22 @@ def grains_filter_by(
 
 @register("metalk8s.get_archives")
 def metalk8s_get_archives(salt_mock: SaltMock) -> Dict[str, Dict[str, str]]:
-    """Derive a map of MetalK8s archives from available pillar data."""
+    """Derive a map of MetalK8s archives from available pillar data.
+
+    NOTE: Some archives names are "special" for playing with rendering in the
+    `metalk8s.archives.[un]mounted` states. They should be used with care if
+    testing other states.
+    """
     current_version = salt_mock._pillar["metalk8s"]["cluster_version"]
     major_minor, _, patch_suffix = current_version.rpartition(".")
     patch, _, _ = patch_suffix.partition("-")
+
+    special_archives = {
+        "/directory-archive": {
+            "path": "/directory-archive",
+            "iso": None,
+        },
+    }
 
     result = {}
     for idx, archive in enumerate(salt_mock._pillar["metalk8s"]["archives"]):
@@ -238,8 +250,26 @@ def metalk8s_get_archives(salt_mock: SaltMock) -> Dict[str, Dict[str, str]]:
             "path": f"/srv/scality/metalk8s-{version}",
             "iso": archive,
             "version": f"{version}",
+            "name": "MetalK8s",
         }
+        if archive in special_archives:
+            result[f"metalk8s-{version}"].update(special_archives[archive])
+
     return result
+
+
+@register("metalk8s.get_mounted_archives")
+def metalk8s_get_mounted_archives(salt_mock: SaltMock) -> Dict[str, Dict[str, str]]:
+    """Return all configured archives, optionally with one extra.
+
+    This is only used in `metalk8s.archives.unmounted`.
+    """
+    archives: Dict[str, Dict[str, str]] = metalk8s_get_archives(salt_mock)
+    extra: Dict[str, str]
+    extra = salt_mock._pillar.get("__TEST_INTERNAL__", {}).get("extra_mounted_archive")
+    if extra:
+        return dict(archives, extra=extra)
+    return archives
 
 
 @register("metalk8s.minions_by_role")

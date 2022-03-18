@@ -153,6 +153,30 @@ metalk8s:
                             soft:
                               - topologyKey: kubernetes.io/hostname
 
+  archives:
+    mounted.sls:
+      _cases:
+        "Single MetalK8s archive (default)": {}
+        "With an additional directory archive":
+          pillar_overrides:
+            metalk8s:
+              archives:
+                - /srv/scality/releases/metalk8s-123.0.0.iso
+                - /directory-archive
+        "Without any archives configured":
+          pillar_overrides:
+            metalk8s:
+              archives: []
+    unmounted.sls:
+      _cases:
+        "Nothing to unmount (default)": {}
+        "One extra archive to unmount":
+          pillar_overrides:
+            __TEST_INTERNAL__:
+              extra_mounted_archive:
+                path: /srv/scality/extra
+                iso: /extra.iso
+
   backup:
     deployed:
       secret-credentials.sls:

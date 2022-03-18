@@ -67,6 +67,73 @@ get_archives:
     raises: True
     result: "Invalid archives: list or string expected, got .*"
 
+get_mounted_archives:
+  # 0. Nothing mounted at all
+  - mounts: {}
+    logs: []
+    result: {}
+  # 1. Nothing mounted under /srv/scality/metalk8s-*
+  - mounts:
+      /mnt/example: &other_mnt
+        alt_device: /example.iso
+    logs: []
+    result: {}
+  # 2. Invalid archive mounted (skipped)
+  - mounts:
+      /srv/scality/metalk8s-broken: &invalid_metalk8s_mnt
+        alt_device: /broken.iso
+        info_raises: KAPUT!
+    logs:
+    - level: INFO
+      contains: >-
+        Skipping /broken.iso (mounted at /srv/scality/metalk8s-broken): not a
+        valid MetalK8s archive - KAPUT!
+    result: {}
+  # 3. Nominal case
+  - mounts:
+      /srv/scality/metalk8s-123.0.0: &valid_metalk8s_mnt
+        alt_device: /srv/scality/releases/metalk8s-123.0.0.iso
+        info_ret:
+          name: MetalK8s
+          version: "123.0.0"
+          iso: /srv/scality/releases/metalk8s-123.0.0.iso
+          path: /srv/scality/metalk8s-123.0.0
+    logs: []
+    result:
+      metalk8s-123.0.0:
+        name: MetalK8s
+        version: "123.0.0"
+        iso: /srv/scality/releases/metalk8s-123.0.0.iso
+        path: /srv/scality/metalk8s-123.0.0
+  # 4. A little bit of everything
+  - mounts:
+      /mnt/example: *other_mnt
+      /srv/scality/metalk8s-broken: *invalid_metalk8s_mnt
+      /srv/scality/metalk8s-123.0.0: *valid_metalk8s_mnt
+      /srv/scality/metalk8s-2.11.7:
+        alt_device: /archives/metalk8s-2.11.7.iso
+        info_ret:
+          name: MetalK8s
+          version: "2.11.7"
+          iso: /archives/metalk8s-2.11.7.iso
+          path: /srv/scality/metalk8s-2.11.7
+    logs:
+    - level: INFO
+      contains: >-
+        Skipping /broken.iso (mounted at /srv/scality/metalk8s-broken): not a
+        valid MetalK8s archive - KAPUT!
+    result:
+      metalk8s-2.11.7:
+        name: MetalK8s
+        version: "2.11.7"
+        iso: /archives/metalk8s-2.11.7.iso
+        path: /srv/scality/metalk8s-2.11.7
+      metalk8s-123.0.0:
+        name: MetalK8s
+        version: "123.0.0"
+        iso: /srv/scality/releases/metalk8s-123.0.0.iso
+        path: /srv/scality/metalk8s-123.0.0
+
 check_pillar_keys:
   - keys: "my-simple-key"
     pillar_content: {
@@ -394,37 +461,61 @@ archive_info_from_product_txt:
     info: null
     raises: True
     result: Invalid archive path /my/invalid, should be an iso or a directory.
+  # 3. Nok - Invalid name
+  - archive: /my/iso
+    is_file: True
+    info:
+      version: 2.8.0
+      name: Other
+    raises: True
+    result: Invalid archive '/my/iso', 'NAME' should be 'MetalK8s', found 'Other'.
+  # 4. Nok - Empty version
+  - archive: /my/iso
+    is_file: True
+    info:
+      version: null
+      name: MetalK8s
+    raises: True
+    result: Invalid archive '/my/iso', 'VERSION' must be provided.
 
 configure_archive:
-  # 0. Ok -
+  # 0. Ok - Nominal add
   - archive: /my/archive
     config:
       archives: []
     result: Archive '/my/archive' added to bootstrap configuration
-  # 1. Ok -
+  # 1. Ok - Nominal remove
   - archive: /my/archive
     remove: True
     config:
       archives:
         - /my/archive
     result: Archive '/my/archive' removed from bootstrap configuration
-  # 2. Ok -
+  # 2. Ok - Add without effect
   - archive: /my/archive
     config:
       archives:
         - /my/archive
     result: Archive '/my/archive' already present in bootstrap configuration
-  # 3. Ok -
+  # 3. Ok - Remove without effect
   - archive: /my/archive
     remove: True
     config:
       archives: []
     result: Archive '/my/archive' already absent in bootstrap configuration
-  # 4. Nok -
+  # 4. Nok - Add invalid archive
   - archive: /my/archive
     invalid_path: True
     raises: True
     result: Invalid archive path
+  # 5. Ok - Remove invalid archive
+  - archive: /my/archive
+    invalid_path: True
+    remove: True
+    config:
+      archives:
+        - /my/archive
+    result: Archive '/my/archive' removed from bootstrap configuration
 
 backup_node:
   # 0. Ok - Backup succeed

@@ -608,6 +608,7 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/archives/configured.sls"),
     Path("salt/metalk8s/archives/init.sls"),
     Path("salt/metalk8s/archives/mounted.sls"),
+    Path("salt/metalk8s/archives/unmounted.sls"),
     Path("salt/metalk8s/service-configuration/deployed/init.sls"),
     targets.TemplateFile(
         task_name="salt/metalk8s/reactor/certs/renew.sls",

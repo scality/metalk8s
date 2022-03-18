@@ -48,3 +48,26 @@ Generate container registry configuration:
     - backup: false
     - defaults:
         archives: {{ archives }}
+
+{%- set existing_includes = salt.file.find(
+      repo.config.directory,
+      type="f",
+      regex="99-metalk8s-[0-9].*"
+    ) %}
+
+{%- set expected_includes = [] %}
+{%- for env in archives %}
+  {%- do expected_includes.append(
+        salt.file.join(repo.config.directory, '99-' ~ env ~ '-registry.inc')
+      ) %}
+{%- endfor %}
+
+{%- for inc in existing_includes %}
+  {%- if inc not in expected_includes %}
+
+Remove unexpected version-specific configuration '{{ inc }}':
+    file.absent:
+      - name: {{ inc }}
+
+  {%- endif %}
+{% endfor %}
