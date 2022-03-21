@@ -77,6 +77,11 @@
   (PR[#3710](https://github.com/scality/metalk8s/pull/3710))
 
 ## Release 2.11.4 (in development)
+### Bug fixes
+
+- Downgrade Kubernetes version to 1.22.4 in order to avoid a regression
+  about static pod restart
+  (PR[#3731](https://github.com/scality/metalk8s/pull/3731))
 
 ## Release 2.11.3
 ### Enhancements
