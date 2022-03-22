@@ -1,5 +1,5 @@
 # CHANGELOG
-## Release 2.11.4 (in development)
+## Release 2.11.4
 ### Bug fixes
 
 - Downgrade Kubernetes version to 1.22.4 in order to avoid a regression
