@@ -83,6 +83,9 @@
   about static pod restart
   (PR[#3731](https://github.com/scality/metalk8s/pull/3731))
 
+- Make kube-proxy listening only on the Control Plane IP
+  (PR[#3732](https://github.com/scality/metalk8s/pull/3732))
+
 ## Release 2.11.3
 ### Enhancements
 

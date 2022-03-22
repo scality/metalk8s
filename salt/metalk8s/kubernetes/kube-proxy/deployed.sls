@@ -47,41 +47,50 @@ Deploy kube-proxy (ConfigMap):
           config.conf: |-
             apiVersion: kubeproxy.config.k8s.io/v1alpha1
             bindAddress: 0.0.0.0
+            bindAddressHardFail: false
             clientConnection:
               acceptContentTypes: ""
-              burst: 10
-              contentType: application/vnd.kubernetes.protobuf
+              burst: 0
+              contentType: ""
               kubeconfig: /var/lib/kube-proxy/kubeconfig.conf
-              qps: 5
+              qps: 0
             clusterCIDR: {{ networks.pod }}
-            configSyncPeriod: 15m0s
+            configSyncPeriod: 0s
             conntrack:
-              max: null
-              maxPerCore: 32768
-              min: 131072
-              tcpCloseWaitTimeout: 1h0m0s
-              tcpEstablishedTimeout: 24h0m0s
+              maxPerCore: null
+              min: null
+              tcpCloseWaitTimeout: null
+              tcpEstablishedTimeout: null
+            detectLocalMode: ""
             enableProfiling: false
-            healthzBindAddress: 0.0.0.0:10256
+            healthzBindAddress: @HOST_IP@:10256
             hostnameOverride: ""
             iptables:
               masqueradeAll: false
-              masqueradeBit: 14
+              masqueradeBit: null
               minSyncPeriod: 0s
-              syncPeriod: 30s
+              syncPeriod: 0s
             ipvs:
               excludeCIDRs: null
               minSyncPeriod: 0s
               scheduler: ""
-              syncPeriod: 30s
+              strictARP: false
+              syncPeriod: 0s
+              tcpFinTimeout: 0s
+              tcpTimeout: 0s
+              udpTimeout: 0s
             kind: KubeProxyConfiguration
-            metricsBindAddress: 0.0.0.0:10249
+            metricsBindAddress: @HOST_IP@:10249
             mode: ""
             nodePortAddresses: {{ networks.workload_plane.cidr | tojson }}
-            oomScoreAdj: -999
+            oomScoreAdj: null
             portRange: ""
-            resourceContainer: /kube-proxy
-            udpIdleTimeout: 250ms
+            showHiddenMetricsForVersion: ""
+            udpIdleTimeout: 0s
+            winkernel:
+              enableDSR: false
+              networkName: ""
+              sourceVip: ""
           kubeconfig.conf: |-
             apiVersion: v1
             kind: Config
@@ -127,16 +136,29 @@ Deploy kube-proxy (DaemonSet):
             spec:
               containers:
               - command:
-                - /usr/local/bin/kube-proxy
-                - --config=/var/lib/kube-proxy/config.conf
-                - --hostname-override=$(NODE_NAME)
-                - --v={{ 2 if metalk8s.debug else 0 }}
+                # NOTE: We need to use a sed here since overriding the bind addresses
+                # from CLI is not supported
+                # See: https://github.com/kubernetes/kubernetes/issues/108737
+                - /bin/sh
+                - -c
+                - >-
+                  sed "s/@HOST_IP@/$HOST_IP/g"
+                  /var/lib/kube-proxy/config.conf > /etc/kube-proxy.conf &&
+                  /usr/local/bin/kube-proxy
+                  --config=/etc/kube-proxy.conf
+                  --hostname-override=$(NODE_NAME)
+                  --v={{ 2 if metalk8s.debug else 0 }}
                 env:
                 - name: NODE_NAME
                   valueFrom:
                     fieldRef:
                       apiVersion: v1
                       fieldPath: spec.nodeName
+                - name: HOST_IP
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: status.hostIP
                 image: {{ image }}
                 imagePullPolicy: IfNotPresent
                 name: kube-proxy

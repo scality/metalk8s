@@ -128,13 +128,13 @@ networks:
       127.0.0.1:10248:
         expected: kubelet
         description: Kubelet health check
-      0.0.0.0:10249:
+      control_plane_ip:10249:
         expected: kube-proxy
         description: Kubernetes proxy metrics
       control_plane_ip:10250:
         expected: kubelet
         description: Kubelet
-      0.0.0.0:10256:
+      control_plane_ip:10256:
         expected: kube-proxy
         description: Kubernetes proxy health check
 
