@@ -63,7 +63,7 @@ Deploy kube-proxy (ConfigMap):
               tcpEstablishedTimeout: null
             detectLocalMode: ""
             enableProfiling: false
-            healthzBindAddress: 0.0.0.0:10256
+            healthzBindAddress: @HOST_IP@:10256
             hostnameOverride: ""
             iptables:
               masqueradeAll: false
@@ -80,7 +80,7 @@ Deploy kube-proxy (ConfigMap):
               tcpTimeout: 0s
               udpTimeout: 0s
             kind: KubeProxyConfiguration
-            metricsBindAddress: 0.0.0.0:10249
+            metricsBindAddress: @HOST_IP@:10249
             mode: ""
             nodePortAddresses: {{ networks.workload_plane.cidr | tojson }}
             oomScoreAdj: null
@@ -136,16 +136,29 @@ Deploy kube-proxy (DaemonSet):
             spec:
               containers:
               - command:
-                - /usr/local/bin/kube-proxy
-                - --config=/var/lib/kube-proxy/config.conf
-                - --hostname-override=$(NODE_NAME)
-                - --v={{ 2 if metalk8s.debug else 0 }}
+                # NOTE: We need to use a sed here since overriding the bind addresses
+                # from CLI is not supported
+                # See: https://github.com/kubernetes/kubernetes/issues/108737
+                - /bin/sh
+                - -c
+                - >-
+                  sed "s/@HOST_IP@/$HOST_IP/g"
+                  /var/lib/kube-proxy/config.conf > /etc/kube-proxy.conf &&
+                  /usr/local/bin/kube-proxy
+                  --config=/etc/kube-proxy.conf
+                  --hostname-override=$(NODE_NAME)
+                  --v={{ 2 if metalk8s.debug else 0 }}
                 env:
                 - name: NODE_NAME
                   valueFrom:
                     fieldRef:
                       apiVersion: v1
                       fieldPath: spec.nodeName
+                - name: HOST_IP
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: status.hostIP
                 image: {{ image }}
                 imagePullPolicy: IfNotPresent
                 name: kube-proxy
