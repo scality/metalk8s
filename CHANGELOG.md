@@ -1,6 +1,9 @@
 # CHANGELOG
 ## Release 2.11.5 (in development)
+### Enhancements
 
+- Make Loki pod resources configurable
+  (PR[#3737](https://github.com/scality/metalk8s/pull/3737))
 ## Release 2.11.4
 ### Bug fixes
 

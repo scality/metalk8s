@@ -690,6 +690,36 @@ configuration, see the official `Loki documentation`_.
 
 .. _Loki documentation: https://grafana.com/docs/loki/latest/configuration/
 
+Add Loki memory limit
+"""""""""""""""""""""
+
+Loki consumes some memory to store chunks before they get written to disks.
+Its memory consumption really depends on the usage, which is why we do not
+set any limit by default.
+
+However, if Loki is unable to write to the disk for any reason, it will
+continue keeping logs in memory, leading to large memory consumption until
+the issue is resolved. To prevent Loki from taking too much from the host,
+potentially leading to starvation, you can define a resource limit on the
+Pod.
+
+For example, to set the limit to 4 GiB, the ConfigMap must be
+edited as follows:
+
+.. code-block:: yaml
+
+    apiVersion: v1
+    kind: ConfigMap
+    data:
+      config.yaml: |-
+        apiVersion: addons.metalk8s.scality.com
+        kind: LokiConfig
+        spec:
+          deployment:
+            resources:
+              limits:
+                memory: "4Gi"
+
 Changing the logs retention period
 """"""""""""""""""""""""""""""""""
 

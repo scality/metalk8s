@@ -6,6 +6,9 @@ kind: LokiConfig
 spec:
   deployment:
     replicas: 1
+    resources:
+      requests:
+        memory: "256Mi"
   config:
     auth_enabled: false
     chunk_store_config:

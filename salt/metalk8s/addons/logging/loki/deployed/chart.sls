@@ -227,7 +227,7 @@ spec:
             path: /ready
             port: http-metrics
           initialDelaySeconds: 45
-        resources: {}
+        resources: {% endraw -%}{{ loki.spec.deployment.resources }}{%- raw %}
         securityContext:
           readOnlyRootFilesystem: true
         volumeMounts:

@@ -157,7 +157,7 @@ readinessProbe:
 
 replicas: '__var__(loki.spec.deployment.replicas)'
 
-resources: {}
+resources: '__var__(loki.spec.deployment.resources)'
 # limits:
 #   cpu: 200m
 #   memory: 256Mi
