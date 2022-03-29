@@ -495,16 +495,16 @@ def _quantity_to_bytes(quantity):
     """
     UNIT_FACTOR = {
         None: 1,
-        "Ki": 2 ** 10,
-        "Mi": 2 ** 20,
-        "Gi": 2 ** 30,
-        "Ti": 2 ** 40,
-        "Pi": 2 ** 50,
-        "k": 10 ** 3,
-        "M": 10 ** 6,
-        "G": 10 ** 9,
-        "T": 10 ** 12,
-        "P": 10 ** 15,
+        "Ki": 2**10,
+        "Mi": 2**20,
+        "Gi": 2**30,
+        "Ti": 2**40,
+        "Pi": 2**50,
+        "k": 10**3,
+        "M": 10**6,
+        "G": 10**9,
+        "T": 10**12,
+        "P": 10**15,
     }
     size_regex = r"^(?P<size>[1-9][0-9]*)(?P<unit>[kKMGTP]i?)?$"
     match = re.match(size_regex, quantity)

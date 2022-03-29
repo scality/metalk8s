@@ -18,6 +18,8 @@ podAnnotations:
 
 replicas: '__var__(loki.spec.deployment.replicas)'
 
+resources: '__var__(loki.spec.deployment.resources)'
+
 tolerations:
   - key: "node-role.kubernetes.io/bootstrap"
     operator: "Exists"
