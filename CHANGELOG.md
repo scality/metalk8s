@@ -10,6 +10,10 @@
 - Fix MetalK8s sosreport plugin so that it properly retrieve namespaces
   (PR[#3740](https://github.com/scality/metalk8s/pull/3740))
 
+- Fix an issue that, if the upgrade fail at some point, you may be
+  left with no solutions Images available from the internal registry
+  (PR[#3741](https://github.com/scality/metalk8s/pull/3741))
+
 ## Release 2.11.4
 ### Bug fixes
 
