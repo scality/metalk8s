@@ -4,6 +4,12 @@
 
 - Make Loki pod resources configurable
   (PR[#3737](https://github.com/scality/metalk8s/pull/3737))
+
+### Bug fixes
+
+- Fix MetalK8s sosreport plugin so that it properly retrieve namespaces
+  (PR[#3740](https://github.com/scality/metalk8s/pull/3740))
+
 ## Release 2.11.4
 ### Bug fixes
 
