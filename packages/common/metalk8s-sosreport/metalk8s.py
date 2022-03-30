@@ -131,7 +131,7 @@ class metalk8s(Plugin, RedHatPlugin):
 
             # get all namespaces in use
             namespaces_result = self.exec_cmd(
-                "{0} get namespaces --no-headers"
+                "{0} get namespaces --no-headers "
                 "--output custom-columns=':metadata.name'".format(kube_cmd)
             )
             kube_namespaces = namespaces_result["output"].splitlines()
