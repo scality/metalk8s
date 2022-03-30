@@ -12,6 +12,7 @@ Prepare for Salt Master upgrade:
       - metalk8s.salt.master.certs
       - metalk8s.salt.master.kubeconfig
       - metalk8s.kubernetes.apiserver-proxy
+      - metalk8s.repo.installed
     - tgt: {{ salt['metalk8s.minions_by_role']('bootstrap') | first }}
     - saltenv: {{ saltenv }}
     - sync_mods: all

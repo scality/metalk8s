@@ -75,22 +75,17 @@ trap cleanup EXIT
 . "$BASE_DIR"/common.sh
 
 upgrade_bootstrap () {
-    local saltmaster_endpoint repo_endpoint
     "$SALT_CALL" saltutil.sync_all saltenv="$SALTENV"
-    saltmaster_endpoint="$($SALT_CALL pillar.get \
-        metalk8s:endpoints:salt-master --out txt | cut -d' ' -f2- )"
-    repo_endpoint="$($SALT_CALL pillar.get \
-        metalk8s:endpoints:repositories --out txt | cut -d' ' -f2- )"
 
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
         metalk8s.orchestrate.bootstrap.pre-upgrade \
         saltenv="$SALTENV"
 
+    # Upgrade salt-master in local mode since salt-master will
+    # restart
     "${SALT_CALL}" --local --retcode-passthrough state.sls sync_mods="all" \
-        metalk8s.roles.bootstrap.components saltenv="$SALTENV" \
-        pillar="{'metalk8s': {'endpoints': {'salt-master': $saltmaster_endpoint, \
-        'repositories': $repo_endpoint}}}"
+        metalk8s.salt.master.installed saltenv="$SALTENV"
 }
 
 launch_pre_upgrade () {
