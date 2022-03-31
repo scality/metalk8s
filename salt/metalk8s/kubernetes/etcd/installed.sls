@@ -80,6 +80,9 @@ Create local etcd Pod manifest:
           - --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
         # }
           - --initial-cluster-state={{ state }}
+          # See https://github.com/etcd-io/etcd/issues/13766
+          # https://groups.google.com/a/kubernetes.io/g/dev/c/B7gJs88XtQc/m/rSgNOzV2BwAJ?utm_medium=email&utm_source=footer
+          - --experimental-initial-corrupt-check=true
         volumes:
           - path: /var/lib/etcd
             name: etcd-data

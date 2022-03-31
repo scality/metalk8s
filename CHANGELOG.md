@@ -91,6 +91,10 @@
   left with no solutions Images available from the internal registry
   (PR[#3741](https://github.com/scality/metalk8s/pull/3741))
 
+- Enable `initial-corrupt-check` for etcd in order to try
+  to avoid data inconsistency issue in etcd
+  (PR[#3742](https://github.com/scality/metalk8s/pull/3742))
+
 ## Release 2.11.4
 ### Bug fixes
 
