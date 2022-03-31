@@ -76,7 +76,9 @@
 - Bump nginx image to [1.21.6-alpine](https://github.com/nginx/nginx/releases/tag/release-1.21.6)
   (PR[#3710](https://github.com/scality/metalk8s/pull/3710))
 
-## Release 2.11.5 (in development)
+## Release 2.11.6 (in development)
+
+## Release 2.11.5
 ### Enhancements
 
 - Make Loki pod resources configurable
