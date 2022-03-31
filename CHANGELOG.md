@@ -1,5 +1,5 @@
 # CHANGELOG
-## Release 2.11.5 (in development)
+## Release 2.11.5
 ### Enhancements
 
 - Make Loki pod resources configurable
