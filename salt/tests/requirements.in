@@ -4,7 +4,7 @@ salt == 3002.7
 mock == 3.0.5
 parameterized == 0.7.4
 etcd3 != 0.11.0
-kubernetes
+kubernetes == 18.20.0
 urllib3
 pyfakefs
 psutil
