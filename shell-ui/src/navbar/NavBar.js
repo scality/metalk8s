@@ -3,7 +3,7 @@ import CoreUINavbar from '@scality/core-ui/dist/components/navbar/Navbar.compone
 import Dropdown from '@scality/core-ui/dist/components/dropdown/Dropdown.component';
 import { type Item as CoreUIDropdownItem } from '@scality/core-ui/src/lib/components/dropdown/Dropdown.component';
 import { useEffect, useLayoutEffect, useState, useCallback } from 'react';
-import styled from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
 import type {
   Options,
   SolutionsNavbarProps,
@@ -42,6 +42,12 @@ export const LoadingNavbar = ({ logo }: { logo: string }): Node => (
     tabs={[{ title: 'loading' }]}
   />
 );
+
+const GlobalStyle = createGlobalStyle`
+  body {
+    background-color: ${(props) => props.theme.backgroundLevel1};
+  }
+`;
 
 const NavbarDropDownItem = styled.div`
   display: flex;
@@ -319,6 +325,7 @@ export const Navbar = ({
 
   return (
     <>
+      <GlobalStyle />
       <CoreUINavbar
         logo={<Logo src={logo} alt="logo" />}
         rightActions={rightActions}
