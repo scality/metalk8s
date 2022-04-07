@@ -4,7 +4,7 @@ const path = require('path');
 const deps = require('./package.json').dependencies;
 
 module.exports = {
-  entry: './src/App.jsx',
+  entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'build'),
     publicPath: '/shell/',
@@ -78,16 +78,10 @@ module.exports = {
       },
       shared: {
         ...Object.fromEntries(
-          Object.entries(deps).map(([key, version]) => [
-            key,
-            {
-              eager: true,
-            },
-          ]),
+          Object.entries(deps).map(([key, version]) => [key, {}]),
         ),
         '@scality/core-ui': {
           singleton: true,
-          eager: true,
         },
         '@scality/module-federation': {
           singleton: true,
@@ -107,6 +101,26 @@ module.exports = {
           singleton: true,
           eager: true,
           requiredVersion: deps['react-dom'],
+        },
+        'react-query': {
+          singleton: true,
+          eager: true,
+        },
+        'react-router': {
+          singleton: true,
+          eager: true,
+        },
+        'react-router-dom': {
+          singleton: true,
+          eager: true,
+        },
+        polished: {
+          singleton: true,
+          eager: true,
+        },
+        'oidc-client': {
+          singleton: true,
+          eager: true,
         },
       },
     }),

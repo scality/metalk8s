@@ -98,34 +98,24 @@ module.exports = (env) => ({
       },
       shared: {
         ...Object.fromEntries(
-          Object.entries(deps).map(([key, version]) => [
-            key,
-            {
-              eager: true,
-            },
-          ]),
+          Object.entries(deps).map(([key, version]) => [key, {}]),
         ),
         '@scality/core-ui': {
           singleton: true,
-          eager: true,
         },
         '@scality/module-federation': {
           singleton: true,
-          eager: true,
         },
         'styled-components': {
           singleton: true,
-          eager: true,
           requiredVersion: deps['styled-components'],
         },
         react: {
           singleton: true,
-          eager: true,
           requiredVersion: deps.react,
         },
         'react-dom': {
           singleton: true,
-          eager: true,
           requiredVersion: deps['react-dom'],
         },
       },
