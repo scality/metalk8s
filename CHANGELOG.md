@@ -1,5 +1,7 @@
 # CHANGELOG
-## Release 2.11.6 (in development)
+## Release 2.11.7 (in development)
+
+## Release 2.11.6
 ### Enhancements
 
  - Bump Salt version to 3002.8
