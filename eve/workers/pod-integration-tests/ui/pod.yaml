@@ -33,6 +33,7 @@ spec:
     volumeMounts:
       - name: shell-ui-files
         mountPath: /tmp/shell-ui-files
+  hostIPC: true
   containers:
   - name: worker
     image: {{ images['worker'] }}

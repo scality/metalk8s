@@ -2,7 +2,6 @@
 import React, { useLayoutEffect, type Node, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import reactToWebComponent from 'react-to-webcomponent';
 import { ThemeProvider as StyledComponentsProvider } from 'styled-components';
 import { WebStorageStateStore } from 'oidc-client';
 import { QueryClient, QueryClientProvider, useQuery } from 'react-query';
