@@ -280,9 +280,7 @@ metadata:
   name: ingress-nginx-control-plane-controller
   namespace: metalk8s-ingress
 spec:
-  externalIPs:
-  - '{%- endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_ip() }}{%- raw
-    -%}'
+  externalIPs: {% endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_external_ips() | tojson }}{%- raw %}
   ipFamilies:
   - IPv4
   ipFamilyPolicy: SingleStack

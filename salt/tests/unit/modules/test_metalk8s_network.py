@@ -363,3 +363,39 @@ class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 self.assertEqual(
                     metalk8s_network.get_control_plane_ingress_endpoint(), result
                 )
+
+    @utils.parameterized_from_cases(
+        YAML_TESTS_CASES["get_control_plane_ingress_external_ips"]
+    )
+    def test_get_control_plane_ingress_external_ips(
+        self,
+        result,
+        raises=False,
+        cp_ingress_ip_ret=None,
+        master_nodes_ret=None,
+        mine_ret=None,
+    ):
+        """
+        Tests the return of `get_control_plane_ingress_external_ips` function
+        """
+        salt_dict = {
+            "metalk8s_network.get_control_plane_ingress_ip": MagicMock(
+                return_value=cp_ingress_ip_ret
+            ),
+            "metalk8s.minions_by_role": MagicMock(
+                return_value=master_nodes_ret or ["bootstrap"]
+            ),
+            "saltutil.runner": MagicMock(return_value=mine_ret),
+        }
+
+        with patch.dict(metalk8s_network.__salt__, salt_dict):
+            if raises:
+                self.assertRaisesRegex(
+                    CommandExecutionError,
+                    result,
+                    metalk8s_network.get_control_plane_ingress_external_ips,
+                )
+            else:
+                self.assertEqual(
+                    metalk8s_network.get_control_plane_ingress_external_ips(), result
+                )

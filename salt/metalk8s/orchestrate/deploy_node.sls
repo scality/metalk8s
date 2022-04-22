@@ -326,3 +326,18 @@ Restart CoreDNS pods:
       - metalk8s_cordon: Uncordon the node
 
 {%- endif %}
+
+{%- if 'master' in roles and 'master' not in skip_roles %}
+
+# Trigger a reconfiguration of the Control Plane Ingress Controller as we
+# want to expose the Controller on every master node Control Plane IP
+Reconfigure Control Plane Ingress:
+  salt.runner:
+    - name: state.orchestrate
+    - mods:
+      - metalk8s.addons.nginx-ingress-control-plane.deployed
+    - saltenv: {{ saltenv }}
+    - require:
+      - metalk8s_cordon: Uncordon the node
+
+{%- endif %}

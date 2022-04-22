@@ -257,3 +257,25 @@ def get_control_plane_ingress_endpoint():
     return "https://{}:8443".format(
         __salt__["metalk8s_network.get_control_plane_ingress_ip"]()
     )
+
+
+def get_control_plane_ingress_external_ips():
+    """Get all Control Plane Ingress external IPs
+
+    NOTE: Only the first one will be used as redirect IP for oidc
+    """
+    master_nodes = __salt__["metalk8s.minions_by_role"]("master")
+
+    # This function only run on master
+    mine_ret = __salt__["saltutil.runner"](
+        "mine.get", tgt=",".join(master_nodes), tgt_type="list", fun="control_plane_ip"
+    )
+
+    if not isinstance(mine_ret, dict):
+        raise CommandExecutionError(
+            f"Unable to get master Control Plane IPs: {mine_ret}"
+        )
+
+    return [__salt__["metalk8s_network.get_control_plane_ingress_ip"]()] + sorted(
+        list(mine_ret.values())
+    )
