@@ -1,6 +1,6 @@
 //@flow
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
@@ -9,6 +9,7 @@ import { Button } from '@scality/core-ui/dist/next';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import {
   deployNodeAction,
+  fetchClusterVersionAction,
   refreshNodesAction,
   stopRefreshNodesAction,
 } from '../ducks/app/nodes';
@@ -61,6 +62,11 @@ const NodeList = () => {
   const deployNode = (payload) => dispatch(deployNodeAction(payload));
   const intl = useIntl();
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
+
+  //Node deployment rely on the cluster version hence we need to ensure to have fetch it here 
+  useEffect(() => {
+    dispatch(fetchClusterVersionAction());
+  }, [dispatch]);
 
   const [sortBy, setSortBy] = useState('name');
   const [sortDirection, setSortDirection] = useState('ASC');
