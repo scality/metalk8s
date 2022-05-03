@@ -26,13 +26,12 @@ Create Workload-Plane Ingress server private key:
 {%- set certSANs = [
     grains.fqdn,
     'localhost',
-    '127.0.0.1',
     'nginx-ingress-workload-plane',
     'nginx-ingress-workload-plane.metalk8s-ingress',
     'nginx-ingress-workload-plane.metalk8s-ingress.svc',
     'nginx-ingress-workload-plane.metalk8s-ingress.svc.' ~ coredns.cluster_domain,
-    grains.metalk8s.workload_plane_ip,
 ] %}
+{%- do certSANs.extend(salt.metalk8s_network.get_portmap_ips()) %}
 
 Generate Workload-Plane Ingress server certificate:
   x509.certificate_managed:

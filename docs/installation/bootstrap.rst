@@ -63,6 +63,9 @@ Configuration
           mtu: <network-MTU>
         pods: <CIDR-notation>
         services: <CIDR-notation>
+        portmap:
+          cidr:
+            - <CIDR-notation>
       proxies:
         http: <http://proxy-ip:proxy-port>
         https: <https://proxy-ip:proxy-port>
@@ -171,6 +174,19 @@ notation for it's various subfields.
             networks:
               pods: 10.233.0.0/16
               services: 10.96.0.0/12
+
+      The ``portmap`` field is not mandatory, though can be changed in order
+      to expose the ``hostPort`` on different IPs, with ``cidr`` you can
+      define a list of range of IP addresses that will be used at the host
+      level for each member of the cluster to expose the ``portmap`` (default
+      to node Workload Plane IP)
+
+      .. note::
+
+        The Workload Plane Ingress rely on those ``hostPort``, which means
+        that if you change this ``portmap`` the Workload Plane Ingress will
+        be exposed on IPs matching the ``portmap`` range of IP on every
+        member of the cluster
 
 The ``proxies`` field can be omitted if there is no proxy to configure.
 The 2 entries ``http`` and ``https`` are used to configure the containerd

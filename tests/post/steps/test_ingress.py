@@ -43,6 +43,13 @@ def test_access_http_services_on_control_plane_ip(host):
 
 
 @scenario(
+    "../features/ingress.feature", "Expose Workload Plane Ingress on Control Plane"
+)
+def test_expose_wp_ingress_on_control_plane_ip(host, teardown):
+    pass
+
+
+@scenario(
     "../features/ingress.feature", "Failover of Control Plane Ingress VIP using MetalLB"
 )
 def test_failover_cp_ingress_vip(host, teardown):
@@ -95,7 +102,11 @@ def teardown(context, host, ssh_config, version, k8s_client):
                 )
             )
 
+    if context.get("reconfigure_cp_ingress"):
         re_configure_cp_ingress(host, version, ssh_config)
+
+    if context.get("reconfigure_portmap"):
+        re_configure_portmap(host, version, ssh_config)
 
 
 @given("the node control-plane IP is not equal to its workload-plane IP")
@@ -137,7 +148,7 @@ def disable_metallb(host, context, ssh_config, version):
         }
 
         patch_bootstrap_config(context, host, bootstrap_patch)
-        re_configure_cp_ingress(host, version, ssh_config)
+        re_configure_cp_ingress(host, version, ssh_config, context=context)
 
 
 @when(
@@ -249,7 +260,7 @@ def update_cp_ingress_ip(host, context, ssh_config, version, node_name):
     bootstrap_patch = {"networks": {"controlPlane": {"ingress": {"ip": ip}}}}
 
     patch_bootstrap_config(context, host, bootstrap_patch)
-    re_configure_cp_ingress(host, version, ssh_config)
+    re_configure_cp_ingress(host, version, ssh_config, context=context)
 
 
 @when(parsers.parse("we enable MetalLB and set control plane ingress IP to '{ip}'"))
@@ -263,7 +274,37 @@ def update_control_plane_ingress_ip(host, context, ssh_config, version, ip):
     }
 
     patch_bootstrap_config(context, host, bootstrap_patch)
-    re_configure_cp_ingress(host, version, ssh_config)
+    re_configure_cp_ingress(host, version, ssh_config, context=context)
+
+
+@when(parsers.parse("we set portmap CIDRs to {plane} CIDR"))
+def update_portmap_cidr(host, context, ssh_config, version, plane):
+    pillar = {
+        "workload-plane": "networks:workload_plane:cidr",
+        "control-plane": "networks:control_plane:cidr",
+    }
+
+    new_cidrs = utils.get_pillar(host, pillar[plane])
+
+    bootstrap_patch = {"networks": {"portmap": {"cidr": new_cidrs}}}
+
+    patch_bootstrap_config(context, host, bootstrap_patch)
+    re_configure_portmap(host, version, ssh_config, context=context)
+
+
+@when(
+    parsers.parse(
+        "we trigger a rollout restart of '{resource}' in namespace '{namespace}'"
+    )
+)
+def rollout_restart(host, resource, namespace):
+    with host.sudo():
+        result = host.run(
+            "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
+            "rollout restart %s --namespace %s",
+            resource,
+            namespace,
+        )
 
 
 @then(
@@ -281,6 +322,36 @@ def server_returns(host, context, status_code, reason):
 def server_does_not_respond(host, context):
     assert "exception" in context
     assert isinstance(context["exception"], requests.exceptions.ConnectionError)
+
+
+@then(
+    parsers.re(
+        r"an (?P<protocol>HTTPS?) request (?:on path '(?P<path>[^']+)' )?"
+        r"on port (?P<port>\d+) on a (?P<plane>.*) IP returns "
+        r"(?P<status_code>\d+) '(?P<reason>.+)'"
+    ),
+    converters=dict(status_code=int),
+)
+def server_request_returns(
+    host, context, protocol, port, plane, path, status_code, reason
+):
+    perform_request(
+        host=host, context=context, protocol=protocol, port=port, plane=plane, path=path
+    )
+    server_returns(host=host, context=context, status_code=status_code, reason=reason)
+
+
+@then(
+    parsers.re(
+        r"an (?P<protocol>HTTPS?) request (?:on path '(?P<path>[^']+)' )?"
+        r"on port (?P<port>\d+) on a (?P<plane>.*) IP should not return"
+    ),
+)
+def server_request_does_not_return(host, context, protocol, port, plane, path):
+    perform_request(
+        host=host, context=context, protocol=protocol, port=port, plane=plane, path=path
+    )
+    server_does_not_respond(host=host, context=context)
 
 
 @then("the node hosting the Control Plane Ingress VIP changed")
@@ -354,7 +425,7 @@ def patch_bootstrap_config(context, host, patch):
         )
 
 
-def re_configure_cp_ingress(host, version, ssh_config):
+def re_configure_cp_ingress(host, version, ssh_config, context=None):
     with host.sudo():
         host.check_output(
             "salt-call --retcode-passthrough state.sls "
@@ -369,3 +440,21 @@ def re_configure_cp_ingress(host, version, ssh_config):
     ]
 
     utils.run_salt_command(host, command, ssh_config)
+
+    if context is not None:
+        context["reconfigure_cp_ingress"] = True
+
+
+def re_configure_portmap(host, version, ssh_config, context=None):
+    command = [
+        "salt",
+        "'*'",
+        "state.sls",
+        "metalk8s.kubernetes.cni.calico,metalk8s.addons.nginx-ingress.certs",
+        f"saltenv=metalk8s-{version}",
+    ]
+
+    utils.run_salt_command(host, command, ssh_config)
+
+    if context is not None:
+        context["reconfigure_portmap"] = True

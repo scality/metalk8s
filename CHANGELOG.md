@@ -7,6 +7,10 @@
   your own IDP for kube-apiserver, Grafana and MetalK8s UI
   (PR[#3688](https://github.com/scality/metalk8s/pull/3688))
 
+- Add ability to change the portmap CIDRs, so that Workload Plane
+  Ingress could be exposed on a different IP
+  (PR[#3755](https://github.com/scality/metalk8s/pull/3755))
+
 ### Enhancements
 
 - Bump Kubernetes version to

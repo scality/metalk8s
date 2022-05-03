@@ -363,3 +363,25 @@ class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 self.assertEqual(
                     metalk8s_network.get_control_plane_ingress_endpoint(), result
                 )
+
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["get_portmap_ips"])
+    def test_get_portmap_ips(self, result, cidrs=None, ip_addrs=None, **kwargs):
+        """
+        Tests the return of `get_portmap_ips` function
+        """
+        grains = {"metalk8s": {"workload_plane_ip": "10.10.10.10"}}
+
+        def _get_ip_addrs(cidr):
+            if isinstance(ip_addrs, dict):
+                return ip_addrs.get(cidr)
+            return ip_addrs
+
+        salt_dict = {
+            "pillar.get": MagicMock(return_value=cidrs),
+            "network.ip_addrs": MagicMock(side_effect=_get_ip_addrs),
+        }
+
+        with patch.dict(metalk8s_network.__salt__, salt_dict), patch.dict(
+            metalk8s_network.__grains__, grains
+        ):
+            self.assertEqual(result, metalk8s_network.get_portmap_ips(**kwargs))

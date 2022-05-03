@@ -128,6 +128,7 @@ def _load_networks(config_data):
         "workload_plane": networks_data["workloadPlane"],
         "pod": networks_data.get("pods", DEFAULT_POD_NETWORK),
         "service": networks_data.get("services", DEFAULT_SERVICE_NETWORK),
+        "portmap": networks_data.get("portmap"),
     }
 
 

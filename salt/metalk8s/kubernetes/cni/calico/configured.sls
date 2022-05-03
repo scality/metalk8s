@@ -63,7 +63,9 @@ Create CNI calico configuration file:
             snat: true
             capabilities:
               portMappings: true
-            conditionsV4: ["-d", "{{ grains.metalk8s.workload_plane_ip }}/32,127.0.0.1/32"]
+            conditionsV4:
+              - "-d"
+              - "{{ salt.metalk8s_network.get_portmap_ips(as_cidr=True) | join(',') }}"
           # Note: Calico upstream enables the `bandwidth` CNI plugin by default.
           # However, this plugin (executable) is not available in the CNI RPM
           # package we currently install. Hence, not enabling this functionality
