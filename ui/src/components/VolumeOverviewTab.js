@@ -19,7 +19,7 @@ import {
   STATUS_WARNING,
   LVM_LOGICAL_VOLUME,
 } from '../constants';
-import { Modal, ProgressBar } from '@scality/core-ui';
+import { Banner, Modal, ProgressBar } from '@scality/core-ui';
 import { Button } from '@scality/core-ui/dist/next';
 import { useIntl } from 'react-intl';
 import {
@@ -33,6 +33,7 @@ import {
   ActiveAlertWrapper,
 } from './style/CommonLayoutStyle';
 import { formatSizeForDisplay } from '../services/utils';
+import { RenderNoDataAvailable } from '../containers/NodePageMetricsTab';
 
 const VolumeDetailCardContainer = styled.div`
   display: flex;
@@ -121,7 +122,7 @@ const VolumeDetailCard = (props) => {
   const intl = useIntl();
   const query = new URLSearchParams(location.search);
   const theme = useTheme();
-
+  const isVolumeUsageRetrievable = volumeUsagePercentage !== undefined;
   const deleteVolume = (deleteVolumeName) =>
     dispatch(deleteVolumeAction(deleteVolumeName));
   const [isDeleteConfirmationModalOpen, setisDeleteConfirmationModalOpen] =
@@ -192,6 +193,21 @@ const VolumeDetailCard = (props) => {
           data-cy="delete_volume_button"
         />
       </VolumeTitleSection>
+      {/*TODO: To be replaced by new <Box></Box> component*/}
+      {!isVolumeUsageRetrievable && (
+        <div style={{ width: '48rem', padding: '0 0 2rem 20px' }}>
+          <Banner
+            variant="warning"
+            icon={<i className="fas fa-exclamation-triangle" />}
+            title={intl.formatMessage({
+              id: 'monitoring_information_unavailable',
+            })}
+          >
+            {intl.formatMessage({ id: 'some_data_not_retrieved' })}
+          </Banner>
+        </div>
+      )}
+
       <VolumeDetailCardContainer>
         <div>
           <OverviewInformationSpan>
@@ -323,27 +339,27 @@ const VolumeDetailCard = (props) => {
               />
             </ActiveAlertWrapper>
           )}
-          {volumeUsagePercentage !== undefined &&
-            condition === VOLUME_CONDITION_LINK && (
-              <VolumeUsage>
-                <VolumeSectionTitle>
-                  {intl.formatMessage({ id: 'usage' })}
-                </VolumeSectionTitle>
-                <ProgressBarContainer>
-                  <ProgressBar
-                    size="large"
-                    percentage={volumeUsagePercentage}
-                    topRightLabel={`${volumeUsagePercentage}%`}
-                    bottomLeftLabel={`${volumeUsageBytes} USED`}
-                    bottomRightLabel={`${formatSizeForDisplay(
-                      storageCapacity,
-                    )} TOTAL`}
-                    color={theme.infoSecondary}
-                    backgroundColor={theme.buttonSecondary}
-                  />
-                </ProgressBarContainer>
-              </VolumeUsage>
+          <VolumeUsage>
+            <VolumeSectionTitle>
+              {intl.formatMessage({ id: 'usage' })}
+            </VolumeSectionTitle>
+            {!isVolumeUsageRetrievable && <RenderNoDataAvailable />}
+            {isVolumeUsageRetrievable && condition === VOLUME_CONDITION_LINK && (
+              <ProgressBarContainer>
+                <ProgressBar
+                  size="large"
+                  percentage={volumeUsagePercentage}
+                  topRightLabel={`${volumeUsagePercentage}%`}
+                  bottomLeftLabel={`${volumeUsageBytes} USED`}
+                  bottomRightLabel={`${formatSizeForDisplay(
+                    storageCapacity,
+                  )} TOTAL`}
+                  color={theme.infoSecondary}
+                  backgroundColor={theme.buttonSecondary}
+                />
+              </ProgressBarContainer>
             )}
+          </VolumeUsage>
         </VolumeGraph>
         <Modal
           close={() => setisDeleteConfirmationModalOpen(false)}
