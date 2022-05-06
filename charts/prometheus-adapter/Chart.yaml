@@ -17,4 +17,4 @@ name: prometheus-adapter
 sources:
 - https://github.com/kubernetes/charts
 - https://github.com/kubernetes-sigs/prometheus-adapter
-version: 3.0.2
+version: 3.2.2
