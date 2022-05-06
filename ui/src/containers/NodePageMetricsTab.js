@@ -90,9 +90,24 @@ const MetricsToggleWrapper = styled.div`
 
 const NoDataAvailable = styled.div`
   display: flex;
-  padding-top: ${spacing.sp40};
   justify-content: center;
 `;
+
+export const RenderNoDataAvailable = () => {
+  const intl = useIntl();
+
+  return (
+    <NoDataAvailable>
+      <BasicText>
+        <i
+          className="fas fa-exclamation-triangle"
+          style={{ paddingRight: `${spacing.sp4}` }}
+        ></i>
+        {intl.formatMessage({ id: 'no_data_available_for_metrics' })}
+      </BasicText>
+    </NoDataAvailable>
+  );
+};
 
 const NodePageMetricsTab = ({
   nodeName,
@@ -266,15 +281,9 @@ const NodePageMetricsTab = ({
           </GraphGrid>
         </SyncedCursorCharts>
       ) : (
-        <NoDataAvailable>
-          <BasicText>
-            <i
-              className="fas fa-exclamation-triangle"
-              style={{ paddingRight: `${spacing.sp4}` }}
-            ></i>
-            {intl.formatMessage({ id: 'no_data_available_for_metrics' })}
-          </BasicText>
-        </NoDataAvailable>
+        <div style={{ paddingTop: `${spacing.sp40}` }}>
+          <RenderNoDataAvailable />
+        </div>
       )}
     </NodeTab>
   );
