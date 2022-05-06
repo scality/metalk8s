@@ -115,10 +115,10 @@
   (PR[#3762](https://github.com/scality/metalk8s/pull/3762))
 
 - Migrate from grafana fluent-bit deprecated chart to fluent-bit fluent chart
-  version [0.19.19](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.19.19)
+  version [0.20.3](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.20.3)
   The fluent-bit-plugin-loki image has been changed accordingly to fluent-bit
-  version [1.8.12](https://github.com/fluent/fluent-bit/releases/tag/v1.8.12)
-  (PR[#3709](https://github.com/scality/metalk8s/pull/3709))
+  version [1.9.5](https://github.com/fluent/fluent-bit/releases/tag/v1.9.5)
+  (PR[#3761](https://github.com/scality/metalk8s/pull/3761))
 
 - Bump MetalLB chart version to
   [3.0.6](https://artifacthub.io/packages/helm/bitnami/metallb/3.0.6)
