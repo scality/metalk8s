@@ -176,7 +176,7 @@ def replace_magic_strings(rendered_yaml):
     # Handle __var_tojson__
     result = re.sub(
         r"__var_tojson__\((?P<varname>[\w\-_]+(?:\.[\w\-_()|]+)*)\)",
-        r"  {% endraw -%}{{ \g<varname> | tojson }}{%- raw %}",
+        r"{% endraw -%}{{ \g<varname> | tojson }}{%- raw %}",
         result,
     )
 

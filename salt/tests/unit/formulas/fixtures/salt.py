@@ -427,6 +427,16 @@ register_basic("metalk8s_network.get_control_plane_ingress_endpoint")(
 register_basic("metalk8s_network.get_portmap_ips")(
     MagicMock(return_value=["192.168.1.100", "127.0.0.1"])
 )
+register_basic("metalk8s_network.get_control_plane_ingress_external_ips")(
+    MagicMock(
+        return_value=[
+            "192.168.1.240",
+            "192.168.1.100",
+            "192.168.1.101",
+            "192.168.1.102",
+        ]
+    )
+)
 
 
 @register_basic("metalk8s_network.get_ip_from_cidrs")

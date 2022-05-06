@@ -81,6 +81,11 @@
   (PR[#3710](https://github.com/scality/metalk8s/pull/3710))
 
 ## Release 2.11.7 (in development)
+### Enhancements
+
+- Allow to set Control Plane Ingress IP to an external IP (like
+  a load balancer IP)
+  (PR[#3752](https://github.com/scality/metalk8s/pull/3752))
 
 ## Release 2.11.6
 ### Enhancements
