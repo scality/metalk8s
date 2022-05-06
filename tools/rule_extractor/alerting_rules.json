@@ -408,15 +408,15 @@
         "severity": "warning"
     },
     {
-        "message": "Job did not complete in time",
-        "name": "KubeJobCompletion",
-        "query": "kube_job_spec_completions{job=\"kube-state-metrics\",namespace=~\".*\"} - kube_job_status_succeeded{job=\"kube-state-metrics\",namespace=~\".*\"} > 0",
-        "severity": "warning"
-    },
-    {
         "message": "Job failed to complete.",
         "name": "KubeJobFailed",
         "query": "kube_job_failed{job=\"kube-state-metrics\",namespace=~\".*\"} > 0",
+        "severity": "warning"
+    },
+    {
+        "message": "Job did not complete in time",
+        "name": "KubeJobNotCompleted",
+        "query": "time() - max by(namespace, job_name) (kube_job_status_start_time{job=\"kube-state-metrics\",namespace=~\".*\"} and kube_job_status_active{job=\"kube-state-metrics\",namespace=~\".*\"} > 0) > 43200",
         "severity": "warning"
     },
     {
@@ -516,9 +516,21 @@
         "severity": "warning"
     },
     {
+        "message": "PersistentVolumeInodes are filling up.",
+        "name": "KubePersistentVolumeInodesFillingUp",
+        "query": "(kubelet_volume_stats_inodes_free{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_inodes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.03 and kubelet_volume_stats_inodes_used{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 unless on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
+        "severity": "critical"
+    },
+    {
+        "message": "PersistentVolumeInodes are filling up.",
+        "name": "KubePersistentVolumeInodesFillingUp",
+        "query": "(kubelet_volume_stats_inodes_free{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_inodes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.15 and kubelet_volume_stats_inodes_used{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 and predict_linear(kubelet_volume_stats_inodes_free{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}[6h], 4 * 24 * 3600) < 0 unless on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
+        "severity": "warning"
+    },
+    {
         "message": "Kubernetes API server client is experiencing errors.",
         "name": "KubeClientErrors",
-        "query": "(sum by(instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\"}[5m])) / sum by(instance, job, namespace) (rate(rest_client_requests_total[5m]))) > 0.01",
+        "query": "(sum by(cluster, instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\"}[5m])) / sum by(cluster, instance, job, namespace) (rate(rest_client_requests_total[5m]))) > 0.01",
         "severity": "warning"
     },
     {
@@ -584,7 +596,7 @@
     {
         "message": "Node readiness status is flapping.",
         "name": "KubeNodeReadinessFlapping",
-        "query": "sum by(node) (changes(kube_node_status_condition{condition=\"Ready\",status=\"true\"}[15m])) > 2",
+        "query": "sum by(cluster, node) (changes(kube_node_status_condition{condition=\"Ready\",status=\"true\"}[15m])) > 2",
         "severity": "warning"
     },
     {
@@ -626,7 +638,7 @@
     {
         "message": "Kubelet Pod startup latency is too high.",
         "name": "KubeletPodStartUpLatencyHigh",
-        "query": "histogram_quantile(0.99, sum by(instance, le) (rate(kubelet_pod_worker_duration_seconds_bucket{job=\"kubelet\",metrics_path=\"/metrics\"}[5m]))) * on(instance) group_left(node) kubelet_node_name{job=\"kubelet\",metrics_path=\"/metrics\"} > 60",
+        "query": "histogram_quantile(0.99, sum by(cluster, instance, le) (rate(kubelet_pod_worker_duration_seconds_bucket{job=\"kubelet\",metrics_path=\"/metrics\"}[5m]))) * on(cluster, instance) group_left(node) kubelet_node_name{job=\"kubelet\",metrics_path=\"/metrics\"} > 60",
         "severity": "warning"
     },
     {
@@ -650,7 +662,7 @@
     {
         "message": "Kubelet is running at capacity.",
         "name": "KubeletTooManyPods",
-        "query": "count by(node) ((kube_pod_status_phase{job=\"kube-state-metrics\",phase=\"Running\"} == 1) * on(instance, pod, namespace, cluster) group_left(node) topk by(instance, pod, namespace, cluster) (1, kube_pod_info{job=\"kube-state-metrics\"})) / max by(node) (kube_node_status_capacity{job=\"kube-state-metrics\",resource=\"pods\"} != 1) > 0.95",
+        "query": "count by(cluster, node) ((kube_pod_status_phase{job=\"kube-state-metrics\",phase=\"Running\"} == 1) * on(instance, pod, namespace, cluster) group_left(node) topk by(instance, pod, namespace, cluster) (1, kube_pod_info{job=\"kube-state-metrics\"})) / max by(cluster, node) (kube_node_status_capacity{job=\"kube-state-metrics\",resource=\"pods\"} != 1) > 0.95",
         "severity": "info"
     },
     {
@@ -858,6 +870,18 @@
         "severity": "critical"
     },
     {
+        "message": "Prometheus has dropped some targets that exceeded body size limit.",
+        "name": "PrometheusScrapeBodySizeLimitHit",
+        "query": "increase(prometheus_target_scrapes_exceeded_body_size_limit_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) > 0",
+        "severity": "warning"
+    },
+    {
+        "message": "Prometheus has failed scrapes that have exceeded the configured sample limit.",
+        "name": "PrometheusScrapeSampleLimitHit",
+        "query": "increase(prometheus_target_scrapes_exceeded_sample_limit_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) > 0",
+        "severity": "warning"
+    },
+    {
         "message": "Prometheus has issues compacting blocks.",
         "name": "PrometheusTSDBCompactionsFailing",
         "query": "increase(prometheus_tsdb_compactions_failed_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[3h]) > 0",
@@ -920,7 +944,7 @@
     {
         "message": "Errors while performing watch operations in controller.",
         "name": "PrometheusOperatorWatchErrors",
-        "query": "(sum by(controller, namespace) (rate(prometheus_operator_watch_operations_failed_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[10m])) / sum by(controller, namespace) (rate(prometheus_operator_watch_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[10m]))) > 0.4",
+        "query": "(sum by(controller, namespace) (rate(prometheus_operator_watch_operations_failed_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m])) / sum by(controller, namespace) (rate(prometheus_operator_watch_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) > 0.4",
         "severity": "warning"
     }
 ]

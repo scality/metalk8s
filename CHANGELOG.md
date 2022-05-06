@@ -11,6 +11,11 @@
   Ingress could be exposed on a different IP
   (PR[#3755](https://github.com/scality/metalk8s/pull/3755))
 
+### Removals
+
+- The `Statefulsets` Grafana dashboard has been removed
+  (PR[#3763](https://github.com/scality/metalk8s/pull/3763))
+
 ### Enhancements
 
 - Bump Kubernetes version to
@@ -34,17 +39,20 @@
   (PR[#3690](https://github.com/scality/metalk8s/pull/3690))
 
 - Bump kube-prometheus-stack charts version to
-  [32.2.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-32.2.0)
+  [35.3.1](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-35.3.1)
   The following images have also been bumped accordingly:
-   - k8s-sidecar to [1.15.1](https://github.com/kiwigrid/k8s-sidecar/releases/tag/1.15.1)
-   - kube-state-metrics to [v2.3.0](https://github.com/kubernetes/kube-state-metrics/releases/tag/v2.3.0)
+   - alertmanager to [v0.24.0](https://github.com/prometheus/alertmanager/releases/tag/v0.24.0)
+   - k8s-sidecar to [1.15.6](https://github.com/kiwigrid/k8s-sidecar/releases/tag/1.15.6)
+   - grafana to [8.5.0-ubuntu](https://github.com/grafana/grafana/releases/tag/v8.4.7)
+   - kube-state-metrics to [v2.4.1](https://github.com/kubernetes/kube-state-metrics/releases/tag/v2.4.1)
    - node-exporter to [v1.3.1](https://github.com/prometheus/node_exporter/releases/tag/v1.3.1)
-   - prometheus to [v2.33.1](https://github.com/prometheus/prometheus/releases/tag/v2.33.1)
-   - prometheus-config-reloader to [v0.54.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.54.0)
-   - prometheus-operator to [v0.54.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.54.0)
+   - prometheus to [v2.35.0](https://github.com/prometheus/prometheus/releases/tag/v2.35.0)
+   - prometheus-config-reloader to [v0.56.2](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.56.2)
+   - prometheus-operator to [v0.56.2](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.56.2)
+   - thanos to [v0.25.2](https://github.com/thanos-io/thanos/releases/tag/v0.25.2)
    This new version also come with Grafana metrics and a dashboard to
    monitor Grafana
-  (PR[#3701](https://github.com/scality/metalk8s/pull/3701))
+  (PR[#3763](https://github.com/scality/metalk8s/pull/3763))
 
 - Bump Prometheus Adapter chart version to
   [3.2.2](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-adapter-3.2.2)
