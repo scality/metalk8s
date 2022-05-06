@@ -14,7 +14,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.9.1
+    chart: loki-2.11.1
     heritage: metalk8s
     release: loki
   name: loki
@@ -60,7 +60,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.9.1
+    chart: loki-2.11.1
     heritage: metalk8s
     release: loki
   name: loki
@@ -74,7 +74,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.9.1
+    chart: loki-2.11.1
     heritage: metalk8s
     release: loki
   name: loki
@@ -97,7 +97,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.9.1
+    chart: loki-2.11.1
     heritage: metalk8s
     release: loki
   name: loki
@@ -118,7 +118,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.9.1
+    chart: loki-2.11.1
     heritage: metalk8s
     release: loki
     variant: headless
@@ -148,7 +148,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.9.1
+    chart: loki-2.11.1
     heritage: metalk8s
     release: loki
   name: loki
@@ -177,7 +177,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.9.1
+    chart: loki-2.11.1
     heritage: metalk8s
     release: loki
   name: loki
@@ -207,7 +207,7 @@ spec:
       - args:
         - -config.file=/etc/loki/loki.yaml
         env: null
-        image: {% endraw -%}{{ build_image_name("loki", False) }}{%- raw %}:2.4.2
+        image: {% endraw -%}{{ build_image_name("loki", False) }}{%- raw %}:2.5.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -231,6 +231,8 @@ spec:
         securityContext:
           readOnlyRootFilesystem: true
         volumeMounts:
+        - mountPath: /tmp
+          name: tmp
         - mountPath: /etc/loki
           name: config
         - mountPath: /data
@@ -253,6 +255,8 @@ spec:
         key: node-role.kubernetes.io/infra
         operator: Exists
       volumes:
+      - emptyDir: {}
+        name: tmp
       - name: config
         secret:
           secretName: loki
@@ -281,7 +285,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.9.1
+    chart: loki-2.11.1
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: loki

@@ -59,10 +59,10 @@
   (PR[#3697](https://github.com/scality/metalk8s/pull/3697))
 
 - Bump Loki chart version to
-  [2.9.1](https://github.com/grafana/helm-charts/releases/tag/loki-2.9.1)
+  [2.11.1](https://github.com/grafana/helm-charts/releases/tag/loki-2.11.1)
   The Loki image has been bumped accordingly to
-  [2.4.2](https://github.com/grafana/loki/releases/tag/v2.4.2)
-  (PR[#3698](https://github.com/scality/metalk8s/pull/3698))
+  [2.5.0](https://github.com/grafana/loki/releases/tag/v2.5.0)
+  (PR[#3762](https://github.com/scality/metalk8s/pull/3762))
 
 - Migrate from grafana fluent-bit deprecated chart to fluent-bit fluent chart
   version [0.19.19](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.19.19)
