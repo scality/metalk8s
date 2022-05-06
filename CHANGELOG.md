@@ -6,6 +6,9 @@
   a load balancer IP)
   (PR[#3752](https://github.com/scality/metalk8s/pull/3752))
 
+- Bump metalk8s-alert-logger base image to `alpine:3.13.10`
+  (PR[#3758](https://github.com/scality/metalk8s/pull/3758))
+
 ## Release 2.11.6
 ### Enhancements
 
