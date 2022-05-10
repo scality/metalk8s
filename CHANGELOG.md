@@ -47,10 +47,10 @@
   (PR[#3701](https://github.com/scality/metalk8s/pull/3701))
 
 - Bump Prometheus Adapter chart version to
-  [3.0.2](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-adapter-3.0.2)
+  [3.2.2](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-adapter-3.2.2)
   The prometheus-adapter image has been bumped accordingly to
   [v0.9.1](https://github.com/kubernetes-sigs/prometheus-adapter/releases/tag/v0.9.1)
-  (PR[#3702](https://github.com/scality/metalk8s/pull/3702))
+  (PR[#3760](https://github.com/scality/metalk8s/pull/3760))
 
 - Bump ingress-nginx chart version to
   [4.0.17](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.0.17)
