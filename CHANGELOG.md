@@ -80,6 +80,10 @@
 - Bump nginx image to [1.21.6-alpine](https://github.com/nginx/nginx/releases/tag/release-1.21.6)
   (PR[#3710](https://github.com/scality/metalk8s/pull/3710))
 
+- Bump Dex chart version to v0.8.2, Dex image has been bumped accordingly
+  to v2.31.1
+  (PR[# ](https://github.com/scality/metalk8s/pull/ ))
+
 ## Release 2.11.7 (in development)
 ### Enhancements
 
