@@ -104,6 +104,11 @@
   `salt-master` container
   (PR[#3773](https://github.com/scality/metalk8s/pull/3773))
 
+- Bump Dex chart version to [0.8.2](https://artifacthub.io/packages/helm/dex/dex/0.8.2),
+  Dex image has been bumped accordingly to
+  [v2.31.1](https://github.com/dexidp/dex/releases/tag/v2.31.1)
+  (PR[#3765](https://github.com/scality/metalk8s/pull/3765))
+
 ## Release 2.11.8 (in development)
 
 ## Release 2.11.7
