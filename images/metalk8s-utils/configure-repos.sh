@@ -2,13 +2,12 @@
 
 set -xue -o pipefail
 
-CENTOS_VERSION=$1
-SALT_VERSION=$2
+SALT_VERSION=$1
 
 cat > /etc/yum.repos.d/kubernetes.repo << EOF
 [kubernetes]
 name=Kubernetes
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el$CENTOS_VERSION-x86_64
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
 enabled=1
 gpgcheck=1
 repo_gpgcheck=0

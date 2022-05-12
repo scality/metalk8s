@@ -10,7 +10,7 @@ ARG KUBERNETES_VERSION
 ARG SALT_VERSION
 
 COPY configure-repos.sh /
-RUN /configure-repos.sh 7 $SALT_VERSION && rm /configure-repos.sh
+RUN /configure-repos.sh $SALT_VERSION && rm /configure-repos.sh
 
 # Timestamp of the build, formatted as RFC3339
 ARG BUILD_DATE
