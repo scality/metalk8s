@@ -27,8 +27,8 @@
   The pause image has been bump to 3.6
   (PR[#3711](https://github.com/scality/metalk8s/pull/3711))
 
-- Bump Calico version to [3.22.0](https://github.com/projectcalico/calico/releases/tag/v3.22.0)
-  (PR[#3712](https://github.com/scality/metalk8s/pull/3712))
+- Bump Calico version to [3.23.1](https://github.com/projectcalico/calico/releases/tag/v3.23.1)
+  (PR[#3771](https://github.com/scality/metalk8s/pull/3771))
 
 - Allow to resolve the registry endpoint from inside containers using CoreDNS
   (PR[#3690](https://github.com/scality/metalk8s/pull/3690))
