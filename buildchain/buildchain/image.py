@@ -262,8 +262,8 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
     _local_image(
         name="metalk8s-utils",
         build_args={
-            "BASE_IMAGE": versions.CENTOS_BASE_IMAGE,
-            "BASE_IMAGE_SHA256": versions.CENTOS_BASE_IMAGE_SHA256,
+            "BASE_IMAGE": versions.ROCKY_BASE_IMAGE,
+            "BASE_IMAGE_SHA256": versions.ROCKY_BASE_IMAGE_SHA256,
             "BUILD_DATE": datetime.datetime.now(datetime.timezone.utc)
             .astimezone()
             .isoformat(),
@@ -271,6 +271,7 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
             "METALK8S_VERSION": versions.VERSION,
             "SALT_VERSION": versions.SALT_VERSION,
             "KUBERNETES_VERSION": versions.K8S_VERSION,
+            "ETCD_VERSION": f"v{versions.ETCD_VERSION}",
         },
     ),
     _local_image(

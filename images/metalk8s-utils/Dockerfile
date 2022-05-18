@@ -1,6 +1,6 @@
 # SHA256 digest of the base image
 ARG BASE_IMAGE_SHA256
-ARG BASE_IMAGE=docker.io/centos
+ARG BASE_IMAGE=docker.io/rockylinux
 
 FROM $BASE_IMAGE@sha256:$BASE_IMAGE_SHA256
 
@@ -8,6 +8,8 @@ FROM $BASE_IMAGE@sha256:$BASE_IMAGE_SHA256
 ARG KUBERNETES_VERSION
 # Salt version
 ARG SALT_VERSION
+# Etcd version
+ARG ETCD_VERSION
 
 COPY configure-repos.sh /
 RUN /configure-repos.sh $SALT_VERSION && rm /configure-repos.sh
@@ -22,7 +24,7 @@ ARG VERSION
 ARG METALK8S_VERSION
 
 # These contain BUILD_DATE so should come 'late' for layer caching
-LABEL maintainer="moonshot-platform@scality.com" \
+LABEL maintainer="squad-metalk8s@scality.com" \
       # http://label-schema.org/rc1/
       org.label-schema.build-date="$BUILD_DATE" \
       org.label-schema.name="metalk8s-utils" \
@@ -35,7 +37,7 @@ LABEL maintainer="moonshot-platform@scality.com" \
       org.label-schema.schema-version="1.0" \
       # https://github.com/opencontainers/image-spec/blob/master/annotations.md
       org.opencontainers.image.created="$BUILD_DATE" \
-      org.opencontainers.image.authors="moonshot-platform@scality.com" \
+      org.opencontainers.image.authors="squad-metalk8s@scality.com" \
       org.opencontainers.image.url="https://github.com/scality/metalk8s/" \
       org.opencontainers.image.source="https://github.com/scality/metalk8s.git" \
       org.opencontainers.image.version="$VERSION" \
@@ -51,10 +53,9 @@ LABEL maintainer="moonshot-platform@scality.com" \
       com.scality.metalk8s.version="$METALK8S_VERSION"
 
 # Final layers, installing tooling
-RUN yum install -y epel-release && \
-    yum install -y --setopt=skip_missing_names_on_install=False \
+RUN dnf install -y epel-release && \
+    dnf install -y \
         bash-completion \
-        bash-completion-extras \
         bind-utils \
         bzip2 \
         conntrack-tools \
@@ -62,13 +63,13 @@ RUN yum install -y epel-release && \
         curl \
         e2fsprogs \
         ebtables \
-        etcd \
         ethtool \
         gdb \
         git \
         htop \
         httpd-tools \
         httpie \
+        iftop \
         iotop \
         iperf \
         iperf3 \
@@ -76,7 +77,6 @@ RUN yum install -y epel-release && \
         ipset \
         iptables \
         ipvsadm \
-        jnettop \
         jq \
         "kubectl-${KUBERNETES_VERSION}" \
         less \
@@ -109,6 +109,16 @@ RUN yum install -y epel-release && \
         wireshark \
         xfsprogs \
         && \
-    yum clean all
+    dnf clean all
+
+# etcd is not packaged in RHEL/Rocky/CentOS 8 Extras repository, so we download/install
+# it manually
+RUN mkdir /tmp/etcd-download && \
+    curl -L https://github.com/etcd-io/etcd/releases/download/${ETCD_VERSION}/etcd-${ETCD_VERSION}-linux-amd64.tar.gz \
+        -o /tmp/etcd-${ETCD_VERSION}-linux-amd64.tar.gz && \
+    tar xzvf /tmp/etcd-${ETCD_VERSION}-linux-amd64.tar.gz -C /tmp/etcd-download --strip-components=1 && \
+    rm -f /tmp/etcd-${ETCD_VERSION}-linux-amd64.tar.gz && \
+    mv /tmp/etcd-download/etcdctl /usr/bin && \
+    rm -rf /tmp/etcd-download
 
 RUN kubectl completion bash > /etc/bash_completion.d/kubectl
