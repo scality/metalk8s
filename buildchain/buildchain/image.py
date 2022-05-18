@@ -240,7 +240,11 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
     ),
     _local_image(
         name="salt-master",
-        build_args={"SALT_VERSION": versions.SALT_VERSION},
+        build_args={
+            "BASE_IMAGE": versions.ROCKY_BASE_IMAGE,
+            "BASE_IMAGE_SHA256": versions.ROCKY_BASE_IMAGE_SHA256,
+            "SALT_VERSION": versions.SALT_VERSION,
+        },
     ),
     _local_image(
         name="metalk8s-ui",

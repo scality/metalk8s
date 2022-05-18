@@ -100,6 +100,10 @@
   `metalk8s-utils` container
   (PR[#3773](https://github.com/scality/metalk8s/pull/3773))
 
+- Change base image from `centos:7.6.1810` to `rockylinux:8.5.20220308` for the
+  `salt-master` container
+  (PR[#3773](https://github.com/scality/metalk8s/pull/3773))
+
 ## Release 2.11.8 (in development)
 
 ## Release 2.11.7
