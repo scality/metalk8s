@@ -53,7 +53,9 @@ LABEL maintainer="squad-metalk8s@scality.com" \
       com.scality.metalk8s.version="$METALK8S_VERSION"
 
 # Final layers, installing tooling
-RUN dnf install -y epel-release && \
+RUN dnf clean expire-cache && \
+    dnf update -y && \
+    dnf install -y epel-release && \
     dnf install -y \
         bash-completion \
         bind-utils \

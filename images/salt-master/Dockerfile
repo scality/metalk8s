@@ -16,6 +16,7 @@ gpgcheck=1\n\
 gpgkey=https://repo.saltproject.io/py3/redhat/\$releasever/\$basearch/archive/%s/SALTSTACK-GPG-KEY.pub\n" ${SALT_VERSION} ${SALT_VERSION} >/etc/yum.repos.d/saltstack.repo \
  && rpm --import https://repo.saltproject.io/py3/redhat/8/x86_64/archive/${SALT_VERSION}/SALTSTACK-GPG-KEY.pub \
  && dnf clean expire-cache \
+ && dnf update -y \
  && dnf install -y glibc-all-langpacks langpacks-en \
  && dnf install -y epel-release \
  && dnf install -y python3-pip \
