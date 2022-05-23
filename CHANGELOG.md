@@ -1,5 +1,7 @@
 # CHANGELOG
-## Release 2.11.7 (in development)
+## Release 2.11.8 (in development)
+
+## Release 2.11.7
 ### Enhancements
 
 - Allow to set Control Plane Ingress IP to an external IP (like

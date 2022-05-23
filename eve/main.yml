@@ -2824,6 +2824,7 @@ stages:
           command: docker build . --tag shell-ui:v%(prop:shell_ui_version)s
           workdir: build/shell-ui
           haltOnFailure: true
+          timeout: 2400
       - ShellCommand:
           name: Save shell-ui container image
           command: >
