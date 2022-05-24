@@ -61,10 +61,10 @@
   (PR[#3760](https://github.com/scality/metalk8s/pull/3760))
 
 - Bump ingress-nginx chart version to
-  [4.0.17](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.0.17)
+  [4.1.2](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.1.2)
   The controller image has been bumped accordingly to
-  [v1.1.1](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.1.1)
-  (PR[#3697](https://github.com/scality/metalk8s/pull/3697))
+  [v1.2.0](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.2.0)
+  (PR[#3779](https://github.com/scality/metalk8s/pull/3779))
 
 - Bump Loki chart version to
   [2.11.1](https://github.com/grafana/helm-charts/releases/tag/loki-2.11.1)
