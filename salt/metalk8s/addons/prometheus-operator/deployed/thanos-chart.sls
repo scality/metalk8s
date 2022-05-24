@@ -99,7 +99,7 @@ spec:
         - --store.sd-dns-resolver=miekgdns
         - --store=dnssrv+_grpc._tcp.prometheus-operator-thanos-discovery
         - --store.sd-interval=5m
-        image: {% endraw -%}{{ build_image_name("thanos", False) }}{%- raw %}:v0.23.1
+        image: {% endraw -%}{{ build_image_name("thanos", False) }}{%- raw %}:v0.25.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

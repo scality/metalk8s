@@ -19,7 +19,7 @@ sidecar:
 
 image:
   repository: '__image__(thanos)'
-  tag: v0.23.1
+  tag: v0.25.2
 
 query:
   enabled: true
