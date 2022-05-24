@@ -7,6 +7,7 @@
 {% raw %}
 
 apiVersion: v1
+automountServiceAccountToken: true
 kind: ServiceAccount
 metadata:
   labels:
@@ -15,12 +16,13 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: metallb
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: metallb-2.6.2
+    helm.sh/chart: metallb-3.0.6
     heritage: metalk8s
   name: metallb-controller
   namespace: metalk8s-loadbalancing
 ---
 apiVersion: v1
+automountServiceAccountToken: true
 kind: ServiceAccount
 metadata:
   labels:
@@ -29,7 +31,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: metallb
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: metallb-2.6.2
+    helm.sh/chart: metallb-3.0.6
     heritage: metalk8s
   name: metallb-speaker
   namespace: metalk8s-loadbalancing
@@ -43,7 +45,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: metallb
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: metallb-2.6.2
+    helm.sh/chart: metallb-3.0.6
     heritage: metalk8s
   name: metallb-controller
   namespace: metalk8s-loadbalancing
@@ -88,7 +90,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: metallb
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: metallb-2.6.2
+    helm.sh/chart: metallb-3.0.6
     heritage: metalk8s
   name: metallb-speaker
   namespace: metalk8s-loadbalancing
@@ -128,7 +130,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: metallb
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: metallb-2.6.2
+    helm.sh/chart: metallb-3.0.6
     heritage: metalk8s
   name: metallb-controller
   namespace: metalk8s-loadbalancing
@@ -150,7 +152,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: metallb
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: metallb-2.6.2
+    helm.sh/chart: metallb-3.0.6
     heritage: metalk8s
   name: metallb-speaker
   namespace: metalk8s-loadbalancing
@@ -171,7 +173,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: metallb
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: metallb-2.6.2
+    helm.sh/chart: metallb-3.0.6
     heritage: metalk8s
   name: metallb-config-watcher
   namespace: metalk8s-loadbalancing
@@ -194,7 +196,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: metallb
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: metallb-2.6.2
+    helm.sh/chart: metallb-3.0.6
     heritage: metalk8s
   name: metallb-pod-lister
   namespace: metalk8s-loadbalancing
@@ -214,7 +216,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: metallb
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: metallb-2.6.2
+    helm.sh/chart: metallb-3.0.6
     heritage: metalk8s
   name: metallb-config-watcher
   namespace: metalk8s-loadbalancing
@@ -237,7 +239,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: metallb
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: metallb-2.6.2
+    helm.sh/chart: metallb-3.0.6
     heritage: metalk8s
   name: metallb-pod-lister
   namespace: metalk8s-loadbalancing
@@ -258,7 +260,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: metallb
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: metallb-2.6.2
+    helm.sh/chart: metallb-3.0.6
     heritage: metalk8s
   name: metallb-speaker
   namespace: metalk8s-loadbalancing
@@ -276,9 +278,24 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: metallb
         app.kubernetes.io/part-of: metalk8s
-        helm.sh/chart: metallb-2.6.2
+        helm.sh/chart: metallb-3.0.6
         heritage: metalk8s
     spec:
+      affinity:
+        nodeAffinity: null
+        podAffinity: null
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: speaker
+                  app.kubernetes.io/instance: metallb
+                  app.kubernetes.io/name: metallb
+              namespaces:
+              - metalk8s-loadbalancing
+              topologyKey: kubernetes.io/hostname
+            weight: 1
       containers:
       - args:
         - --port=7472
@@ -307,7 +324,8 @@ spec:
             secretKeyRef:
               key: secretkey
               name: metallb-memberlist
-        image: {% endraw -%}{{ build_image_name("metallb-speaker", False) }}{%- raw %}:0.11.0-debian-10-r74
+        envFrom: null
+        image: {% endraw -%}{{ build_image_name("metallb-speaker", False) }}{%- raw %}:0.12.1-debian-10-r90
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -349,6 +367,8 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
         node-role.kubernetes.io/master: ''
+      securityContext:
+        fsGroup: 0
       serviceAccountName: metallb-speaker
       terminationGracePeriodSeconds: 2
       tolerations:
@@ -361,6 +381,8 @@ spec:
       - effect: NoSchedule
         key: node-role.kubernetes.io/infra
         operator: Exists
+  updateStrategy:
+    type: RollingUpdate
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -371,17 +393,20 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: metallb
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: metallb-2.6.2
+    helm.sh/chart: metallb-3.0.6
     heritage: metalk8s
   name: metallb-controller
   namespace: metalk8s-loadbalancing
 spec:
+  replicas: 1
   revisionHistoryLimit: 3
   selector:
     matchLabels:
       app.kubernetes.io/component: controller
       app.kubernetes.io/instance: metallb
       app.kubernetes.io/name: metallb
+  strategy:
+    type: RollingUpdate
   template:
     metadata:
       annotations:
@@ -394,7 +419,7 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: metallb
         app.kubernetes.io/part-of: metalk8s
-        helm.sh/chart: metallb-2.6.2
+        helm.sh/chart: metallb-3.0.6
         heritage: metalk8s
     spec:
       affinity:
@@ -416,7 +441,9 @@ spec:
       - args:
         - --port=7472
         - --config=metallb-config
-        image: {% endraw -%}{{ build_image_name("metallb-controller", False) }}{%- raw %}:0.11.0-debian-10-r73
+        env: null
+        envFrom: null
+        image: {% endraw -%}{{ build_image_name("metallb-controller", False) }}{%- raw %}:0.12.1-debian-10-r89
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -449,15 +476,14 @@ spec:
             drop:
             - ALL
           readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1001
       nodeSelector:
         kubernetes.io/os: linux
         node-role.kubernetes.io/master: ''
       securityContext:
         fsGroup: 1001
-        runAsNonRoot: true
-        runAsUser: 1001
       serviceAccountName: metallb-controller
-      terminationGracePeriodSeconds: 0
       tolerations:
       - effect: NoSchedule
         key: node-role.kubernetes.io/bootstrap
@@ -471,7 +497,7 @@ spec:
 ---
 apiVersion: v1
 data:
-  secretkey: NzRieDFTaW92U1h5cWhXYXVuakZyTThlMGx6MU44T0lYTlJQOHZHejlpUkFQZEZiSUdLeFA1WlFXajRCRm1qSmRPc0xRQ00xVTZsNVM0Y0NVYklnVU55RHpJejdyTkFVeWZlSkpqU2UxU0pTU1c1ZzJPUUYzYW5rOExyQnNzNHpVZmoyRFJ5SGZaakJKM2RCVGZpUHpxc200cHpQbWtQTWlPazVpMUdDTnAwclRzSmU2ZjJhSDJkZ2ZIeW8xQkkwU3dmMXY1UzhHUlBzT3JQT1VReW8xRWx1aGJxbGdFZmRuUGJQVDFub1VKODhaQzdodWRSREpmazE2MzBmNFBzVQ==
+  secretkey: V3NINmJucWdkSDFaelRHWHlvZEh1RHNjOHFtbzd0Z0dGam5DbXpKa1MxU1lkNktRcmthVDBrcjlJeU9lOEgyZHI4QndxZm5hOGFlWndsRWhubnY0QmpFcmpOZnJPSWh0TlhpcmowRUVvYmd6VWtqMDBncEcxelZTSGFZRTg1Mk9NcEh4c200Z3RLMkh0bzZsTFpGNUNSdDhTaWFNTzFpTXBYQUVGT0FSZVdqZExKdU52R0RtOVhZMVBNWWtYQlNMOEZaamM1cFpqOUdTR0dPQ3FiSUpsOWozMk1wcml2VGV2OERnN2NnYmhweUVtY1h2alBOczFxcTZOV3BQTWgydw==
 kind: Secret
 metadata:
   annotations:
@@ -483,7 +509,7 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: metallb
     app.kubernetes.io/part-of: metalk8s
-    helm.sh/chart: metallb-2.6.2
+    helm.sh/chart: metallb-3.0.6
     heritage: metalk8s
   name: metallb-memberlist
   namespace: metalk8s-loadbalancing
