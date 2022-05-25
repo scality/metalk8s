@@ -88,7 +88,9 @@
 - Bump nginx image to [1.21.6-alpine](https://github.com/nginx/nginx/releases/tag/release-1.21.6)
   (PR[#3710](https://github.com/scality/metalk8s/pull/3710))
 
-## Release 2.11.7 (in development)
+## Release 2.11.8 (in development)
+
+## Release 2.11.7
 ### Enhancements
 
 - Allow to set Control Plane Ingress IP to an external IP (like
