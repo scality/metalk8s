@@ -188,8 +188,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="pause",
-        version="3.6",
-        digest="sha256:6270bb605e12e581514ada5fd5b3216f727db55dc87d5889c790e4c760683fee",
+        version="3.7",
+        digest="sha256:221177c6082a88ea4f6240ab2450d540955ac6f4d5454f0e15751b653ebda165",
     ),
     Image(
         name="prometheus",
