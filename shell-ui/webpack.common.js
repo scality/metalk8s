@@ -97,6 +97,11 @@ module.exports = {
           eager: true,
           requiredVersion: deps['styled-components'],
         },
+        'styled-system': {
+          singleton: true,
+          eager: true,
+          requiredVersion: deps['styled-components'],
+        },
         'react-dom': {
           singleton: true,
           eager: true,

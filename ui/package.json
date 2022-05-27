@@ -39,6 +39,7 @@
     "redux-saga": "^1.0.2",
     "reselect": "^2.5.4",
     "styled-components": "^5.0.1",
+    "styled-system": "^5.1.5",
     "uuid": "3.3.2",
     "vega": "^5.17.3",
     "vega-embed": "^6.0.0",
