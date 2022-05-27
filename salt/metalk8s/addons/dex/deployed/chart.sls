@@ -277,7 +277,7 @@ spec:
           service:
             name: dex
             port:
-              number: 5556
+              number: 5554
         path: /oidc
         pathType: Prefix
 
