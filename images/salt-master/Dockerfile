@@ -18,7 +18,7 @@ gpgkey=https://repo.saltstack.com/py3/redhat/\$releasever/\$basearch/archive/%s/
  && yum install -y epel-release \
  && yum install -y python3-pip \
  && pip3 install pip==20.1 \
- && pip3 install "etcd3 != 0.11.0" \
+ && pip3 install "protobuf ~= 3.19.4" "etcd3 != 0.11.0" \
  && yum install -y git \
  && pip3 install "git+https://github.com/kubernetes-client/python.git@cef5e9bd10a6d5ca4d9c83da46ccfe2114cdaaf8#egg=kubernetes" \
  && yum remove -y git \
