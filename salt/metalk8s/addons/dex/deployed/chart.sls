@@ -192,7 +192,7 @@ spec:
         env:
         - name: KUBERNETES_POD_NAMESPACE
           value: metalk8s-auth
-        image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.31.1
+        image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.31.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
