@@ -90,6 +90,9 @@ models:
         ./doit.sh -n 4 --verbosity 2 --failure-verbosity 2
       usePTY: true
       haltOnFailure: true
+      # We may need to perform large downloads (e.g. Calico sources include a >1GB file)
+      # which could take a long time, and seem like the build hangs
+      timeout: 2400
   - ShellCommand: &ssh_ip_setup
       name: Install SSH keys and report connection info
       command: |
