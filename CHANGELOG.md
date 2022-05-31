@@ -79,11 +79,11 @@
   (PR[#3709](https://github.com/scality/metalk8s/pull/3709))
 
 - Bump MetalLB chart version to
-  [2.6.2](https://artifacthub.io/packages/helm/bitnami/metallb/2.6.2)
+  [3.0.6](https://artifacthub.io/packages/helm/bitnami/metallb/3.0.6)
   The following images have also been bumped accordingly:
-  - metallb-controller to [0.11.0-debian-10-r73](https://github.com/bitnami/bitnami-docker-metallb-controller/releases/tag/0.11.0-debian-10-r73)
-  - metallb-speaker to [0.11.0-debian-10-r74](https://github.com/bitnami/bitnami-docker-metallb-speaker/releases/tag/0.11.0-debian-10-r74)
-  (PR[#3706](https://github.com/scality/metalk8s/pull/3706))
+  - metallb-controller to [0.12.1-debian-10-r89](https://github.com/bitnami/bitnami-docker-metallb-controller/releases/tag/0.12.1-debian-10-r89)
+  - metallb-speaker to [0.12.1-debian-10-r90](https://github.com/bitnami/bitnami-docker-metallb-speaker/releases/tag/0.12.1-debian-10-r90)
+  (PR[#3777](https://github.com/scality/metalk8s/pull/3777))
 
 - Bump nginx image to [1.21.6-alpine](https://github.com/nginx/nginx/releases/tag/release-1.21.6)
   (PR[#3710](https://github.com/scality/metalk8s/pull/3710))
