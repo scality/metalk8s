@@ -36,9 +36,9 @@
 - Bump CoreDNS version to [v1.8.6](https://github.com/coredns/coredns/releases/tag/v1.8.6)
   (PR[#3634](https://github.com/scality/metalk8s/pull/3634))
 
-- Bump containerd to [1.6.0](https://github.com/containerd/containerd/releases/tag/v1.6.0)
-  The pause image has been bump to 3.6
-  (PR[#3711](https://github.com/scality/metalk8s/pull/3711))
+- Bump containerd to [1.6.4](https://github.com/containerd/containerd/releases/tag/v1.6.4)
+  The pause image has been bump to 3.7
+  (PR[#3778](https://github.com/scality/metalk8s/pull/3778))
 
 - Bump Calico version to [3.23.1](https://github.com/projectcalico/calico/releases/tag/v3.23.1)
   (PR[#3771](https://github.com/scality/metalk8s/pull/3771))
