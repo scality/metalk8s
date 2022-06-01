@@ -13,6 +13,13 @@ peer:
 # Enable grains caching on salt-master
 grains_cache: True
 
+# We now run salt-master on Rocky Linux, but it is not yet fully supported by
+# SaltStack 3002, so we emulate it runs on CentOS, as before. This should be
+# removed with SaltStack 3004.
+grains:
+  os_family: RedHat
+  os: CentOS
+
 # We use information from the `metalk8s_node` ext_pillar to match in
 # `pillar/top.sls`, hence we need to load them first.
 ext_pillar_first: true

@@ -11,10 +11,18 @@
   Ingress could be exposed on a different IP
   (PR[#3755](https://github.com/scality/metalk8s/pull/3755))
 
+- Add the [`iftop`](http://www.ex-parrot.com/pdw/iftop/) tool to the
+  `metalk8s-utils` container
+  (PR[#3773](https://github.com/scality/metalk8s/pull/3773))
+
 ### Removals
 
 - The `Statefulsets` Grafana dashboard has been removed
   (PR[#3763](https://github.com/scality/metalk8s/pull/3763))
+
+- Remove the [`jnettop`](https://sourceforge.net/projects/jnettop/) tool from
+  the `metalk8s-utils` container
+  (PR[#3773](https://github.com/scality/metalk8s/pull/3773))
 
 ### Enhancements
 
@@ -87,6 +95,14 @@
 
 - Bump nginx image to [1.21.6-alpine](https://github.com/nginx/nginx/releases/tag/release-1.21.6)
   (PR[#3710](https://github.com/scality/metalk8s/pull/3710))
+
+- Change base image from `centos:7.9.2009` to `rockylinux:8.5.20220308` for the
+  `metalk8s-utils` container
+  (PR[#3773](https://github.com/scality/metalk8s/pull/3773))
+
+- Change base image from `centos:7.6.1810` to `rockylinux:8.5.20220308` for the
+  `salt-master` container
+  (PR[#3773](https://github.com/scality/metalk8s/pull/3773))
 
 ## Release 2.11.8 (in development)
 

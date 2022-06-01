@@ -64,12 +64,14 @@ SHELL_UI_VERSION: str = json.loads(shell_ui_package_contents)["version"]
 # }}}
 # Container images {{{
 
-CENTOS_BASE_IMAGE: str = "docker.io/centos"
-CENTOS_BASE_IMAGE_SHA256: str = (
-    # centos:7.9.2009
-    "e4ca2ed0202e76be184e75fb26d14bf974193579039d5573fb2348664deef76e"
+ROCKY_BASE_IMAGE: str = "docker.io/rockylinux"
+ROCKY_BASE_IMAGE_SHA256: str = (
+    # rockylinux:8.5.20220308
+    "c7d13ea4d57355aaad6b6ebcdcca50f5be65fc821f54161430f5c25641d68c5c"
 )
 
+ETCD_VERSION: str = "3.5.1"
+ETCD_IMAGE_VERSION: str = f"{ETCD_VERSION}-0"
 NGINX_IMAGE_VERSION: str = "1.21.6-alpine"
 NODEJS_IMAGE_VERSION: str = "14.16.0"
 
@@ -116,7 +118,7 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="etcd",
-        version="3.5.1-0",
+        version=ETCD_IMAGE_VERSION,
         digest="sha256:64b9ea357325d5db9f8a723dcf503b5a449177b17ac87d69481e126bb724c263",
     ),
     Image(
