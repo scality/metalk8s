@@ -443,7 +443,7 @@ models:
         PYTEST_FILTERS: "post and ci and not multinodes"
       command: >
         git checkout "${BRANCH}" &&
-        tox -e tests-local -- -m "${PYTEST_FILTERS}"
+        no_proxy="0.0.0.0/0,$no_proxy" tox -e tests-local -- -m "${PYTEST_FILTERS}"
       haltOnFailure: true
   - ShellCommand: &bastion_tests
       name: Run tests on Bastion

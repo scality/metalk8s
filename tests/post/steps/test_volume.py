@@ -404,8 +404,8 @@ def check_file_content_inside_pod(volume_name, path, content, k8s_client):
                 stdout=True,
                 tty=False,
             )
-        except ApiException:
-            assert False
+        except ApiException as exc:
+            raise AssertionError(f"Unable to execute in {name} pod: {exc}")
         assert (
             result.rstrip("\n") == content
         ), 'unexpected data in {}: expected "{}", got "{}"'.format(
