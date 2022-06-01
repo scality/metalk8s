@@ -433,14 +433,16 @@ def dex_login(username, password, should_fail, control_plane_ingress_ep):
     auth_form = auth_page.text
 
     # The form action looks like:
-    # <form method="post" action="/oidc/auth/local/login?back=&amp;amp;state=ABCD">
+    # <form method="post" action="/oidc/auth/local/login?back=&amp;state=ABCD">
     next_path_match = re.search(r'action=[\'"](?P<next_path>/oidc/\S+)[\'"]', auth_form)
     assert (
         next_path_match is not None
     ), "Could not find an anchor with `action='/oidc/...'` in Dex response:\n{}".format(
         auth_form
     )
-    next_path = next_path_match.group("next_path")
+    # NOTE: recent versions of Go HTTP lib do not allow semicolons in URLs, so
+    # we manually replace the URL-encoded "&amp;" with a plain ampersand
+    next_path = next_path_match.group("next_path").replace("&amp;", "&")
 
     try:
         auth_response = session.post(
