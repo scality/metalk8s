@@ -67,6 +67,22 @@ envFrom: []
 # See the [API reference](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#environment-variables) for details.
 env: {}
 
+# -- Similar to env but with support for all possible configurations.
+# See the [API reference](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#environment-variables) for details.
+envVars: []
+# - name: SOME_ENV_VAR
+#   value: value
+# - name: SOME_ENV_VAR2
+#   valueFrom:
+#     secretKeyRef:
+#       name: secret-name
+#       key: secret-key
+# - name: SOME_ENV_VAR3
+#   valueFrom:
+#     configMapKeyRef:
+#       name: config-map-name
+#       key: config-map-key
+
 serviceAccount:
   # -- Enable service account creation.
   create: true
@@ -82,6 +98,10 @@ rbac:
   # -- Specifies whether RBAC resources should be created.
   # If disabled, the operator is responsible for creating the necessary resources based on the templates.
   create: true
+
+  # -- Specifies which RBAC resources should be created.
+  # If disabled, the operator is responsible for creating the necessary resources (ClusterRole and RoleBinding or CRD's)
+  createClusterScoped: true
 
 # -- Annotations to be added to pods.
 podAnnotations: {}
@@ -174,6 +194,24 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
+serviceMonitor:
+  # -- Enable Prometheus ServiceMonitor.
+  # See the [documentation](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/design.md#servicemonitor) and the [API reference](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/api.md#servicemonitor) for details.
+  enabled: false
+
+  # -- Namespace where the ServiceMonitor resource should be deployed.
+  # @default -- Release namespace.
+  namespace: ""
+
+  # -- (duration) Prometheus scrape interval.
+  interval:
+
+  # -- (duration) Prometheus scrape timeout.
+  scrapeTimeout:
+
+  # -- Labels to be added to the ServiceMonitor.
+  labels: {}
+
 # -- Container resource [requests and limits](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).
 # See the [API reference](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#resources) for details.
 # @default -- No requests or limits.
@@ -208,3 +246,13 @@ tolerations: []
 # -- [Affinity](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity) configuration.
 # See the [API reference](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#scheduling) for details.
 affinity: {}
+
+# -- [TopologySpreadConstraints](https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/) configuration.
+# See the [API reference](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#scheduling) for details.
+topologySpreadConstraints: []
+
+# -- Deployment [strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy) configuration.
+strategy: {}
+  # rollingUpdate:
+  #   maxUnavailable: 1
+  # type: RollingUpdate

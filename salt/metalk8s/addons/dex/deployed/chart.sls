@@ -1,7 +1,7 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
-{% set dex_defaults = salt.slsutil.renderer('salt://metalk8s/addons/dex/config/dex.yaml.j2', saltenv=saltenv) %}
+{%- set dex_defaults = salt.slsutil.renderer('salt://metalk8s/addons/dex/config/dex.yaml.j2', saltenv=saltenv) %}
 {%- set dex = salt.metalk8s_service_configuration.get_service_conf('metalk8s-auth', 'metalk8s-dex-config', dex_defaults) %}
 
 {% raw %}
@@ -14,8 +14,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.30.0
-    helm.sh/chart: dex-0.6.3
+    app.kubernetes.io/version: 2.31.1
+    helm.sh/chart: dex-0.8.2
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -28,23 +28,18 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.30.0
-    helm.sh/chart: dex-0.6.3
+    app.kubernetes.io/version: 2.31.1
+    helm.sh/chart: dex-0.8.2
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
 rules:
 - apiGroups:
-  - dex.coreos.com
-  resources:
-  - '*'
-  verbs:
-  - '*'
-- apiGroups:
   - apiextensions.k8s.io
   resources:
   - customresourcedefinitions
   verbs:
+  - list
   - create
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -55,14 +50,57 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.30.0
-    helm.sh/chart: dex-0.6.3
+    app.kubernetes.io/version: 2.31.1
+    helm.sh/chart: dex-0.8.2
+    heritage: metalk8s
+  name: dex-cluster
+  namespace: metalk8s-auth
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: dex
+subjects:
+- kind: ServiceAccount
+  name: dex
+  namespace: metalk8s-auth
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/instance: dex
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: dex
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 2.31.1
+    helm.sh/chart: dex-0.8.2
+    heritage: metalk8s
+  name: dex
+  namespace: metalk8s-auth
+rules:
+- apiGroups:
+  - dex.coreos.com
+  resources:
+  - '*'
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/instance: dex
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: dex
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 2.31.1
+    helm.sh/chart: dex-0.8.2
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
+  kind: Role
   name: dex
 subjects:
 - kind: ServiceAccount
@@ -77,8 +115,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.30.0
-    helm.sh/chart: dex-0.6.3
+    app.kubernetes.io/version: 2.31.1
+    helm.sh/chart: dex-0.8.2
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -113,8 +151,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.30.0
-    helm.sh/chart: dex-0.6.3
+    app.kubernetes.io/version: 2.31.1
+    helm.sh/chart: dex-0.8.2
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth
@@ -154,7 +192,7 @@ spec:
         env:
         - name: KUBERNETES_POD_NAMESPACE
           value: metalk8s-auth
-        image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.30.0
+        image: {% endraw -%}{{ build_image_name("dex", False) }}{%- raw %}:v2.31.2
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -224,8 +262,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: dex
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.30.0
-    helm.sh/chart: dex-0.6.3
+    app.kubernetes.io/version: 2.31.1
+    helm.sh/chart: dex-0.8.2
     heritage: metalk8s
   name: dex
   namespace: metalk8s-auth

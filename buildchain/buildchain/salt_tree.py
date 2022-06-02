@@ -283,6 +283,8 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/dex/deployed/secret.sls"),
     Path("salt/metalk8s/addons/dex/deployed/service-configuration.sls"),
     Path("salt/metalk8s/addons/dex/deployed/tls-secret.sls"),
+    Path("salt/metalk8s/addons/dex/deployed/post-upgrade.sls"),
+    Path("salt/metalk8s/addons/dex/deployed/post-downgrade.sls"),
     Path("salt/metalk8s/addons/dex/deployed/clusterrolebinding.sls"),
     targets.SerializedData(
         task_name="theme-configmap.sls",
