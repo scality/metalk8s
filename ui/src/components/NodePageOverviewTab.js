@@ -178,7 +178,7 @@ const NodePageOverviewTab = (props) => {
                 label={intl.formatMessage({ id: 'deploy' })}
                 variant="secondary"
                 onClick={() => {
-                  dispatch(deployNodeAction({ nodeName }));
+                  dispatch(deployNodeAction({ name: nodeName }));
                 }}
               />
             ) : (
