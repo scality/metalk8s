@@ -141,7 +141,7 @@ upgrade_local_engines () {
     "${SALT_CALL}" --local --retcode-passthrough state.sls sync_mods="all" \
         metalk8s.kubernetes.kubelet.standalone saltenv="$SALTENV" \
         pillar="{'metalk8s': {'endpoints': {'salt-master': $saltmaster_endpoint, \
-        'repositories': $repo_endpoint}}}" && sleep 20
+        'repositories': $repo_endpoint}}}" && sleep 20 || return 1
 
     # List of containers that need to be running to continue the upgrade
     local -a containers_to_check=(

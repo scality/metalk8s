@@ -147,7 +147,7 @@ downgrade_bootstrap () {
     SALT_MASTER_CALL=(crictl exec -i "$(get_salt_container)")
     "${SALT_MASTER_CALL[@]}" salt-run state.orchestrate \
         metalk8s.orchestrate.bootstrap.pre-downgrade \
-        saltenv="$SALTENV"
+        saltenv="$SALTENV" || return 1
 
     "${SALT_CALL}" --local --retcode-passthrough state.sls sync_mods="all" \
         "metalk8s.roles.bootstrap.local" saltenv="metalk8s-$DESTINATION_VERSION" \

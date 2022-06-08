@@ -110,6 +110,10 @@
   (PR[#3765](https://github.com/scality/metalk8s/pull/3765))
 
 ## Release 2.11.8 (in development)
+### Bug fixes
+
+- Properly exit on failure during upgrade and downgrade
+  (PR[#3790](https://github.com/scality/metalk8s/pull/3790))
 
 ## Release 2.11.7
 ### Enhancements
