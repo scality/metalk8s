@@ -365,11 +365,20 @@ class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 )
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["get_portmap_ips"])
-    def test_get_portmap_ips(self, result, cidrs=None, ip_addrs=None, **kwargs):
+    def test_get_portmap_ips(
+        self, result, portmap_cidrs=None, wp_cidrs=None, ip_addrs=None, **kwargs
+    ):
         """
         Tests the return of `get_portmap_ips` function
         """
         grains = {"metalk8s": {"workload_plane_ip": "10.10.10.10"}}
+
+        def _pillar_get(key):
+            if "portmap" in key:
+                return portmap_cidrs
+            if "workload_plane" in key:
+                return wp_cidrs
+            raise Exception("Should not happen !!")
 
         def _get_ip_addrs(cidr):
             if isinstance(ip_addrs, dict):
@@ -377,7 +386,7 @@ class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
             return ip_addrs
 
         salt_dict = {
-            "pillar.get": MagicMock(return_value=cidrs),
+            "pillar.get": MagicMock(side_effect=_pillar_get),
             "network.ip_addrs": MagicMock(side_effect=_get_ip_addrs),
         }
 

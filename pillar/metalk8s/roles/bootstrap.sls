@@ -5,8 +5,6 @@ certificates:
         watched: True
   kubeconfig:
     files:
-      calico:
-        watched: True
       kubelet:
         watched: True
       salt-master:

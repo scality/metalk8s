@@ -1,19 +1,16 @@
 list_dependents:
   # 3 dependents - all of them in allowed_versions
   - repoquery_output: |
-      calico-cni-plugin 3.8.2-1.el7
       kubelet 1.15.11-0
       kubernetes-cni 0.7.5-0
     allowed_versions:
       kubelet: 1.15.11-0
       kubernetes-cni: 0.7.5-0
-      calico-cni-plugin: 3.8.2-1.el7
       kubectl: 1.15.11-0
     fromrepo: "metalk8s-kubernetes"
     result:
       kubelet: 1.15.11-0
       kubernetes-cni: 0.7.5-0
-      calico-cni-plugin: 3.8.2-1.el7
 
   # 3 dependents - only one in allowed_versions
   - repoquery_output: |
@@ -23,7 +20,6 @@ list_dependents:
     allowed_versions:
       kubelet: 1.15.11-0
       kubernetes-cni: 0.7.5-0
-      calico-cni-plugin: 3.8.2-1.el7
       kubectl: 1.15.11-0
     result:
       kubelet: 1.15.11-0
@@ -37,7 +33,6 @@ list_dependents:
 
   # 3 dependents - empty allowed_versions
   - repoquery_output: |
-      calico-cni-plugin 3.8.2-1.el7
       kubelet 1.15.11-0
       kubernetes-cni 0.7.5-0
     result: {}
@@ -51,7 +46,6 @@ list_dependents:
     allowed_versions:
       kubelet: 1.15.11-0
       kubernetes-cni: 0.7.5-0
-      calico-cni-plugin: 3.8.2-1.el7
       kubectl: 1.15.11-0
     result: {}
 

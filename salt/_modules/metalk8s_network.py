@@ -260,22 +260,29 @@ def get_control_plane_ingress_endpoint():
 
 
 def get_portmap_ips(as_cidr=False):
-    portmap_ips = set()
+    result = set()
     portmap_cidrs = __salt__["pillar.get"]("networks:portmap:cidr")
 
     if portmap_cidrs:
         if not isinstance(portmap_cidrs, list):
             portmap_cidrs = [portmap_cidrs]
-        for cidr in portmap_cidrs:
-            portmap_ips.update(__salt__["network.ip_addrs"](cidr=cidr))
+        if as_cidr:
+            result = set(portmap_cidrs)
+        else:
+            for cidr in portmap_cidrs:
+                result.update(__salt__["network.ip_addrs"](cidr=cidr))
     else:
-        portmap_ips = {__grains__["metalk8s"]["workload_plane_ip"]}
-
-    portmap_ips.add("127.0.0.1")
+        if as_cidr:
+            result = set(__salt__["pillar.get"]("networks:workload_plane:cidr"))
+        else:
+            result = {__grains__["metalk8s"]["workload_plane_ip"]}
 
     if as_cidr:
-        return [f"{ip}/32" for ip in sorted(portmap_ips)]
-    return sorted(portmap_ips)
+        result.add("127.0.0.1/32")
+    else:
+        result.add("127.0.0.1")
+
+    return sorted(result)
 
 
 def get_control_plane_ingress_external_ips():

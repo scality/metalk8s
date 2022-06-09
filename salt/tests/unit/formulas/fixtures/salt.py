@@ -456,9 +456,6 @@ def metalk8s_network_get_ip_from_cidrs(
     return next(map(str, network.hosts()))
 
 
-# Used in metalk8s.kubernetes.cni.calico.configured to setup virtual interfaces.
-register_basic("metalk8s_network.get_mtu_from_ip")(MagicMock(return_value=1500))
-
 # Used in most metalk8s.addons.<addon>.deployed.chart, to inject overrides.
 register_basic("metalk8s_service_configuration.get_service_conf")(
     lambda _namespace, _name, defaults: defaults

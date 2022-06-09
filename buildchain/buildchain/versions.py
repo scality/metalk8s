@@ -97,6 +97,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest="sha256:088464f949de8065b9da7dfce7302a633d700e9d598e2bebc03310712f083b31",
     ),
     Image(
+        name="calico-cni",
+        version=_version_prefix(CALICO_VERSION),
+        digest="sha256:26802bb7714fda18b93765e908f2d48b0230fd1c620789ba2502549afcde4338",
+    ),
+    Image(
         name="calico-node",
         version=_version_prefix(CALICO_VERSION),
         digest="sha256:d2c1613ef26c9ad43af40527691db1f3ad640291d5e4655ae27f1dd9222cc380",
@@ -372,11 +377,6 @@ PACKAGES: Dict[str, Any] = {
     "redhat": {
         "7": (
             PackageVersion(
-                name="calico-cni-plugin",
-                version=CALICO_VERSION,
-                release="{0}.el7".format(CALICO_RELEASE),
-            ),
-            PackageVersion(
                 name="containerd",
                 version=CONTAINERD_VERSION,
                 release="{0}.el7".format(CONTAINERD_RELEASE),
@@ -391,11 +391,6 @@ PACKAGES: Dict[str, Any] = {
             PackageVersion(name="yum-plugin-versionlock"),
         ),
         "8": (
-            PackageVersion(
-                name="calico-cni-plugin",
-                version=CALICO_VERSION,
-                release="{0}.el8".format(CALICO_RELEASE),
-            ),
             PackageVersion(
                 name="containerd",
                 version=CONTAINERD_VERSION,

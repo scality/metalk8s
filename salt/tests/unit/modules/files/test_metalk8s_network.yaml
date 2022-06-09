@@ -141,22 +141,29 @@ get_portmap_ips:
   - result:
       - 10.10.10.10
       - 127.0.0.1
-  - as_cidr: True
+  - wp_cidrs:
+      - 10.10.10.0/16
+    as_cidr: True
     result:
-      - 10.10.10.10/32
+      - 10.10.10.0/16
       - 127.0.0.1/32
 
   # 2. Define CIDR in config
-  - cidrs: 10.20.0.0/16
+  - portmap_cidrs: 10.20.0.0/16
     ip_addrs:
       10.20.0.0/16:
         - 10.20.0.20
     result:
       - 10.20.0.20
       - 127.0.0.1
+  - portmap_cidrs: 10.20.0.0/16
+    as_cidr: True
+    result:
+      - 10.20.0.0/16
+      - 127.0.0.1/32
 
   # 3. Multiple IPs in a single CIDR
-  - cidrs:
+  - portmap_cidrs:
       - 10.20.0.0/16
     ip_addrs:
       10.20.0.0/16:
@@ -168,7 +175,7 @@ get_portmap_ips:
       - 127.0.0.1
 
   # 4. Multiple CIDRs (only an IP in one CIDR)
-  - cidrs:
+  - portmap_cidrs:
       - 10.20.0.0/16
       - 10.30.0.0/16
     ip_addrs:
@@ -180,7 +187,7 @@ get_portmap_ips:
       - 127.0.0.1
 
   # 5. Multiple CIDRs (one IP per CIDR)
-  - cidrs:
+  - portmap_cidrs:
       - 10.20.0.0/16
       - 10.30.0.0/16
     ip_addrs:
@@ -194,7 +201,7 @@ get_portmap_ips:
       - 127.0.0.1
 
   # 6. Multiple IPs in multiple CIDRs
-  - cidrs:
+  - portmap_cidrs:
       - 10.20.0.0/16
       - 10.30.0.0/16
       - 10.40.0.0/16
@@ -218,7 +225,7 @@ get_portmap_ips:
       - 127.0.0.1
 
   # 7. CIDRs overlap
-  - cidrs:
+  - portmap_cidrs:
       - 10.20.10.0/24
       - 10.20.0.0/16
     ip_addrs:

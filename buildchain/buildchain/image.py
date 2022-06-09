@@ -162,6 +162,7 @@ TO_PULL: List[targets.RemoteImage] = []
 IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     constants.BITNAMI_REPOSITORY: ["metallb-controller", "metallb-speaker"],
     constants.CALICO_REPOSITORY: [
+        "calico-cni",
         "calico-node",
         "calico-kube-controllers",
     ],
@@ -217,6 +218,7 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
 }
 
 REMOTE_NAMES: Dict[str, str] = {
+    "calico-cni": "cni",
     "calico-node": "node",
     "calico-kube-controllers": "kube-controllers",
     "nginx-ingress-controller": "controller",

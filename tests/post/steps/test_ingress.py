@@ -447,10 +447,19 @@ def re_configure_cp_ingress(host, version, ssh_config, context=None):
 
 def re_configure_portmap(host, version, ssh_config, context=None):
     command = [
+        "salt-run",
+        "state.sls",
+        "metalk8s.kubernetes.cni.calico.deployed",
+        f"saltenv=metalk8s-{version}",
+    ]
+
+    utils.run_salt_command(host, command, ssh_config)
+
+    command = [
         "salt",
         "'*'",
         "state.sls",
-        "metalk8s.kubernetes.cni.calico,metalk8s.addons.nginx-ingress.certs",
+        "metalk8s.addons.nginx-ingress.certs",
         f"saltenv=metalk8s-{version}",
     ]
 

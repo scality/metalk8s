@@ -22,7 +22,7 @@ Overview;
 ┌─────────┐       │──────>│  build   │──────>│    build     │
 │  mkdir  │──────>│       │ packages │       │ repositories │
 └─────────┘               └──────────┘       └──────────────┘
-                          (e.g: calico)      (e.g.: scality)
+                        (e.g: containerd)     (e.g.: scality)
 """
 
 
@@ -328,18 +328,6 @@ def _rpm_repository(
     )
 
 
-def _rpm_package_calico(releasever: str) -> targets.RPMPackage:
-    """Calico Container Network Interface Plugin RPM package."""
-    return _rpm_package(
-        name="calico-cni-plugin",
-        releasever=releasever,
-        sources=[
-            Path("v{}.tar.gz".format(versions.CALICO_VERSION)),
-            Path("release-v{}.tgz".format(versions.CALICO_VERSION)),
-        ],
-    )
-
-
 def _rpm_package_containerd(releasever: str) -> targets.RPMPackage:
     """Containerd RPM package."""
     extra_sources = []
@@ -375,12 +363,10 @@ def _rpm_package_metalk8s_sosreport(releasever: str) -> targets.RPMPackage:
 RPM_TO_BUILD: Dict[str, Dict[str, Tuple[targets.RPMPackage, ...]]] = {
     "scality": {
         "7": (
-            _rpm_package_calico("7"),
             _rpm_package_containerd("7"),
             _rpm_package_metalk8s_sosreport("7"),
         ),
         "8": (
-            _rpm_package_calico("8"),
             _rpm_package_containerd("8"),
             _rpm_package_metalk8s_sosreport("8"),
         ),

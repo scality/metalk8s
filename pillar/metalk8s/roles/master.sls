@@ -11,8 +11,6 @@ certificates:
     files:
       admin:
         watched: True
-      calico:
-        watched: True
       controller-manager:
         watched: True
       kubelet:

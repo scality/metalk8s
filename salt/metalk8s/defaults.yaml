@@ -260,12 +260,6 @@ certificates:
           sls:
             - metalk8s.kubernetes.apiserver.kubeconfig
         watched: False
-      calico:
-        path: /etc/kubernetes/calico.conf
-        renew:
-          sls:
-            - metalk8s.kubernetes.cni.calico.configured
-        watched: False
       controller-manager:
         path: /etc/kubernetes/controller-manager.conf
         renew:

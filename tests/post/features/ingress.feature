@@ -44,6 +44,7 @@ Feature: Ingress
         Given the Kubernetes API is available
         And the node control-plane IP is not equal to its workload-plane IP
         When we set portmap CIDRs to control-plane CIDR
+        And we wait for the rollout of 'daemonset/calico-node' in namespace 'kube-system' to complete
         And we trigger a rollout restart of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress'
         And we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
         Then an HTTP request on port 80 on a workload-plane IP should not return
