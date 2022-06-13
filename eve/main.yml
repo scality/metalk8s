@@ -2183,6 +2183,26 @@ stages:
             # time to stabilize (e.g.: Rolling update of some DaemonSet that may take
             # some times, especially in multi node context)
             STABILIZATION_TIME: "240"
+      # --- Remove version N-1 ---
+      - SetPropertyFromCommand:
+          name: Save previous ISO path as a property
+          property: previous_iso_path
+          command: >
+            ssh -F ssh_config bootstrap
+            "sudo salt-call slsutil.renderer --out=txt
+            string=\"{{ salt.metalk8s.get_archives()['metalk8s-%(prop:product_promoted_version)s']['iso'] }}\"
+            | cut -c 8-"
+          workdir: *terraform_workdir
+          haltOnFailure: true
+      - ShellCommand:
+          name: Remove previous ISO before running tests
+          command: >
+            ssh -F ssh_config bootstrap "
+            sudo bash
+            /srv/scality/metalk8s-%(prop:metalk8s_version)s/iso-manager.sh
+            --rm-archive \"\$(readlink -f '%(prop:previous_iso_path)s')\" --verbose"
+          workdir: *terraform_workdir
+          haltOnFailure: true
       # --- Test version N ---
       - ShellCommand: *git_pull_ssh
       - ShellCommand:
