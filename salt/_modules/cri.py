@@ -219,3 +219,35 @@ def ready(timeout=10):
     log.debug("Checking for container engine to be ready using: %s", cmd)
 
     return __salt__["cmd.retcode"](cmd) == 0
+
+
+def stop_pod(labels):
+    """Stop pod with matching labels
+
+    .. note::
+
+       This uses the :command:`crictl` command, which should be configured
+       correctly on the system, e.g. in :file:`/etc/crictl.yaml`.
+    """
+    selector = ",".join([f"{key}={value}" for key, value in labels.items()])
+
+    pod_ids_out = __salt__["cmd.run_all"](f"crictl pods --quiet --label={selector}")
+    if pod_ids_out["retcode"] != 0:
+        raise CommandExecutionError(
+            f"Unable to get pods with labels {selector}:\n"
+            f"STDERR: {pod_ids_out['stderr']}\nSTDOUT: {pod_ids_out['stdout']}"
+        )
+
+    pod_ids = pod_ids_out["stdout"]
+    if not pod_ids:
+        return "No pods to stop"
+
+    out = __salt__["cmd.run_all"](f"crictl stopp {pod_ids}")
+
+    if out["retcode"] != 0:
+        raise CommandExecutionError(
+            f"Unable to stop pods with labels {selector}:\n"
+            f"IDS: {pod_ids}\nSTDERR: {out['stderr']}\nSTDOUT: {out['stdout']}"
+        )
+
+    return out["stdout"]

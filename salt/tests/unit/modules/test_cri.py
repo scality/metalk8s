@@ -1,13 +1,23 @@
+import os.path
 import json
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
+import yaml
 
 from parameterized import parameterized
+from salt.exceptions import CommandExecutionError
 
 from _modules import cri
 
 from tests.unit import mixins
 from tests.unit import utils
+
+
+YAML_TESTS_FILE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "files", "test_cri.yaml"
+)
+with open(YAML_TESTS_FILE) as fd:
+    YAML_TESTS_CASES = yaml.safe_load(fd)
 
 
 IMAGES_LIST = [
@@ -276,3 +286,39 @@ class CriTestCase(TestCase, mixins.LoaderModuleMockMixin):
         mock_cmd = MagicMock(return_value=retcode)
         with patch.dict(cri.__salt__, {"cmd.retcode": mock_cmd}):
             self.assertEqual(cri.ready(), result)
+
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["stop_pod"])
+    def test_stop_pod(self, result, pod_ids_out=None, pod_stop_out=None, raises=False):
+        """
+        Tests the return of `stop_pod` function
+        """
+        pod_selector = {"my.label": "ABCD"}
+        pod_selector_str = "--label=my.label=ABCD"
+        pod_id = (pod_ids_out or {}).get("stdout")
+
+        def cmd_run_mock(cmd):
+            if cmd.startswith("crictl pods"):
+                self.assertIn(pod_selector_str, cmd)
+                return utils.cmd_output(**(pod_ids_out or {}))
+            elif cmd.startswith("crictl stopp"):
+                self.assertIn(pod_id, cmd)
+                return utils.cmd_output(**(pod_stop_out or {}))
+            raise Exception("Should not happen !!")
+
+        salt_dict = {"cmd.run_all": MagicMock(side_effect=cmd_run_mock)}
+
+        with patch.dict(cri.__salt__, salt_dict):
+            if raises:
+                self.assertRaisesRegex(
+                    CommandExecutionError,
+                    result,
+                    cri.stop_pod,
+                    pod_selector,
+                )
+            else:
+                self.assertEqual(
+                    cri.stop_pod(
+                        pod_selector,
+                    ),
+                    result,
+                )
