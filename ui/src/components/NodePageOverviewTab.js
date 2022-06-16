@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FormattedDate, FormattedTime } from 'react-intl';
 import styled from 'styled-components';
@@ -11,7 +11,7 @@ import ActiveAlertsCounter from './ActiveAlertsCounter';
 import { Steppers, Loader } from '@scality/core-ui';
 import { Button } from '@scality/core-ui/dist/next';
 import isEmpty from 'lodash.isempty';
-import { deployNodeAction } from '../ducks/app/nodes';
+import { deployNodeAction, fetchClusterVersionAction } from '../ducks/app/nodes';
 import {
   NodeTab,
   OverviewInformationLabel,
@@ -89,6 +89,11 @@ const NodePageOverviewTab = (props) => {
   const { nodeTableData, nodes, volumes, pods, nodeName } = props;
   const intl = useIntl();
   const dispatch = useDispatch();
+
+  //Node deployment rely on the cluster version hence we need to ensure to have fetch it here 
+  useEffect(() => {
+    dispatch(fetchClusterVersionAction());
+  }, [dispatch]);
 
   const jobs = useSelector((state) =>
     state.app.salt.jobs.filter(
@@ -173,7 +178,7 @@ const NodePageOverviewTab = (props) => {
                 label={intl.formatMessage({ id: 'deploy' })}
                 variant="secondary"
                 onClick={() => {
-                  dispatch(deployNodeAction({ nodeName }));
+                  dispatch(deployNodeAction({ name: nodeName }));
                 }}
               />
             ) : (
