@@ -904,6 +904,7 @@ stages:
             - bootstrap-restore
             - single-node-install-rocky-8
             - single-node-no-idp
+            - k8s-conformance-test
           haltOnFailure: true
       - TriggerStages:
           name: Trigger publish stage
@@ -1795,7 +1796,7 @@ stages:
       # FIXME: We disable offline mode for RHEL as it does not work for now,
       # there are some certificates issues when trying to reach RedHat
       # repositories through the company proxy.
-      - SetProperty:
+      - SetProperty: &disable_offline
           name: Set offline property to false
           property: offline
           value: "false"
@@ -2351,7 +2352,7 @@ stages:
   multiple-nodes:
     _metalk8s_internal_info:
       junit_info: &_install_multi-node_junit_info
-        TEST_SUITE: install
+        TEST_SUITE: "%(prop:run_k8s_conformance:?|conformance|install)s"
         CLASS_NAME: "multi node.%(prop:os:-centos-7)s"
         TEST_NAME: "1 bootstrap %(prop:nodes_count:-1)s master,etcd"
     simultaneous_builds: 20
@@ -2369,7 +2370,7 @@ stages:
           env:
             <<: *_env_final_status_artifact_failed
             <<: *_install_multi-node_junit_info
-            STEP_NAME: "multiple-nodes-%(prop:os:-centos-7)s"
+            STEP_NAME: "%(prop:run_k8s_conformance:?|conformance-tests|multiple-nodes-%(prop:os:-centos-7)s)s"
       - ShellCommand: *yum_clean_all
       - ShellCommand: *ssh_ip_setup
       - ShellCommand: *git_pull_terraform
@@ -2490,19 +2491,122 @@ stages:
             PYTEST_ARGS: "--suppress-no-test-exit-code"
             PYTEST_FILTERS: >
               post and ci and slow and not bootstrap and not restore
+      # NOTE: This section only run if property "run_k8s_conformance" is True
+      # {{{
+      - SetPropertyFromCommand:
+          name: Save the Kubernetes version as a property
+          doStepIf: "%(prop:run_k8s_conformance:-false)s"
+          property: k8s_version
+          command: >
+            ssh -F ssh_config bootstrap sudo
+            rpm -q --queryformat '%{VERSION}' kubelet | cut -d'.' -f1,2
+          workdir: *terraform_workdir
+          haltOnFailure: true
+      - ShellCommand:
+          <<: *untaint_bootstrap_ssh
+          doStepIf: "%(prop:run_k8s_conformance:-false)s"
+      - ShellCommand:
+          name: Expose nodeport and portmap on every IPs
+          doStepIf: "%(prop:run_k8s_conformance:-false)s"
+          command: |
+            ssh -F ssh_config bootstrap <<ENDSSH
+            sudo salt-call --local --retcode-passthrough state.single file.serialize /etc/metalk8s/bootstrap.yaml dataset='{"networks": {"nodeport": {"cidr": "0.0.0.0/0"}, "portmap": {"cidr": "0.0.0.0/0"}}}' merge_if_exists=True
+            SALT_MASTER=\$(sudo crictl ps --label="io.kubernetes.container.name=salt-master" -q)
+            sudo crictl exec \$SALT_MASTER salt-run state.sls metalk8s.kubernetes.kube-proxy.deployed saltenv=metalk8s-%(prop:metalk8s_version)s
+            sudo crictl exec \$SALT_MASTER salt-run state.sls metalk8s.kubernetes.cni.calico.deployed saltenv=metalk8s-%(prop:metalk8s_version)s
+            sudo crictl exec \$SALT_MASTER salt '*' state.sls metalk8s.addons.nginx-ingress.certs saltenv=metalk8s-%(prop:metalk8s_version)s
+            ENDSSH
+          workdir: *terraform_workdir
+          haltOnFailure: true
+      - ShellCommand: *wait_pods_stable_ssh
+      - ShellCommand:
+          name: Get sonobuoy bin
+          doStepIf: "%(prop:run_k8s_conformance:-false)s"
+          env:
+            VERSION: "0.56.8"
+          command: |
+            curl -Lo "sonobuoy.tar.gz" https://github.com/vmware-tanzu/sonobuoy/releases/download/v${VERSION}/sonobuoy_${VERSION}_linux_amd64.tar.gz
+            tar xvf sonobuoy.tar.gz
+          haltOnFailure: true
+      - ShellCommand:
+          <<: *copy_iso_bootstrap_ssh
+          name: Copy sonobuoy bin on bootstrap
+          doStepIf: "%(prop:run_k8s_conformance:-false)s"
+          env:
+            <<: *_env_copy_iso_bootstrap_ssh
+            ARCHIVE: sonobuoy
+      - ShellCommand:
+          name: Run conformance test from bootstrap
+          doStepIf: "%(prop:run_k8s_conformance:-false)s"
+          command: >
+            ssh -F ssh_config bootstrap sudo
+            ./sonobuoy run --kubeconfig=/etc/kubernetes/admin.conf --mode=certified-conformance --wait
+          workdir: *terraform_workdir
+          haltOnFailure: true
+      - ShellCommand:
+          name: Retrieve conformance test from bootstrap
+          doStepIf: "%(prop:run_k8s_conformance:-false)s"
+          command: >
+            ssh -F ssh_config bootstrap sudo
+            ./sonobuoy retrieve --kubeconfig=/etc/kubernetes/admin.conf --filename sonobuoy_result.tar.gz
+          workdir: *terraform_workdir
+          haltOnFailure: true
+      - ShellCommand:
+          name: Retrieve conformance test result
+          doStepIf: "%(prop:run_k8s_conformance:-false)s"
+          env: &_env_conformance_test_dest
+            DEST_DIR: "%(prop:builddir)s/build/conformance/conformance/sonobuoy-results"
+            FILENAME: sonobuoy_result.tar.gz
+          command: |
+            mkdir -p "$DEST_DIR"
+            scp -F ssh_config bootstrap:"$FILENAME" "$DEST_DIR"
+            cd "$DEST_DIR"
+            tar xvf "$FILENAME"
+          workdir: *terraform_workdir
+          alwaysRun: true
+      - ShellCommand:
+          name: Check conformance test result
+          doStepIf: "%(prop:run_k8s_conformance:-false)s"
+          env: *_env_conformance_test_dest
+          command: |
+            failed_tests=$(./sonobuoy results "$DEST_DIR/$FILENAME" --mode=detailed --plugin=e2e | jq 'select(.status=="failed")')
+            [ -n "$failed_tests" ] && echo $failed_tests && exit 1 || exit 0
+          haltOnFailure: true
+      - ShellCommand:
+          name: Prepare conformance PR content
+          doStepIf: "%(prop:run_k8s_conformance:-false)s"
+          env:
+            DIRECTORY: "pr-content"
+            SONOBUOY_RES_DIR: sonobuoy-results
+            K8S_VERSION: "%(prop:k8s_version)s"
+            METALK8S_VERSION: "%(prop:metalk8s_short_version)s"
+          command: |
+            %(prop:builddir)s/build/eve/build-conformance-pr-content.sh
+            tar cvf pr-content.tar.gz -C "$DIRECTORY" "v$K8S_VERSION"
+          workdir: "%(prop:builddir)s/build/conformance/conformance"
+          haltOnFailure: true
+      - Upload:
+          name: Upload conformance test result
+          doStepIf: "%(prop:run_k8s_conformance:-false)s"
+          source: conformance
+          alwaysRun: true
+          urls:
+            - conformance/sonobuoy-results/sonobuoy_result.tar.gz
+            - conformance/pr-content.tar.gz
+      # }}}
       - ShellCommand: *generate_report_over_ssh
       - ShellCommand:
           <<: *collect_report_over_ssh
           env:
             <<: *_env_collect_report_over_ssh
-            STEP_NAME: "multiple-nodes-%(prop:os:-centos-7)s"
+            STEP_NAME: "%(prop:run_k8s_conformance:?|conformance-tests|multiple-nodes-%(prop:os:-centos-7)s)s"
       - Upload: *upload_report_artifacts
       - ShellCommand:
           <<: *add_final_status_artifact_success
           env:
             <<: *_env_final_status_artifact_success
             <<: *_install_multi-node_junit_info
-            STEP_NAME: "multiple-nodes-%(prop:os:-centos-7)s"
+            STEP_NAME: "%(prop:run_k8s_conformance:?|conformance-tests|multiple-nodes-%(prop:os:-centos-7)s)s"
       - Upload: *upload_final_status_artifact
       # NOTE: This section only run if property "generate_snapshot" is True
       # {{{
@@ -2512,7 +2616,7 @@ stages:
           <<: *wait_debug
           timeout: 14400
           env:
-            STEP_NAME: "multiple-nodes-%(prop:os:-centos-7)s"
+            STEP_NAME: "%(prop:run_k8s_conformance:?|conformance-tests|multiple-nodes-%(prop:os:-centos-7)s)s"
             DURATION: "14400"
       - ShellCommand: *terraform_destroy
 
@@ -3091,3 +3195,18 @@ stages:
           env:
             <<: *_env_image_registry
             IMAGE_NAME: shell-ui
+
+  k8s-conformance-test:
+    worker:
+      type: local
+    steps:
+      - SetProperty:
+          name: Enable Kubernetes conformance tests
+          property: run_k8s_conformance
+          value: "true"
+      - SetProperty: *prop_3nodes_count
+      - SetProperty: *disable_offline
+      - TriggerStages:
+          name: Trigger multiple-nodes step with conformance tests enabled
+          stage_names:
+            - multiple-nodes
