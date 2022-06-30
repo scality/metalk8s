@@ -8,8 +8,8 @@ import {
   ComponentWithFederatedImports,
   useCurrentApp,
 } from '@scality/module-federation';
-import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
-import ErrorPage500 from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
+import { Loader } from '@scality/core-ui';
+import { ErrorPage500 } from '@scality/core-ui';
 import App from './containers/App';
 import reducer from './ducks/reducer';
 import sagas from './ducks/sagas';

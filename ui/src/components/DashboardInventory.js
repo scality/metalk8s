@@ -3,8 +3,8 @@
 import React from 'react';
 import { useQuery } from 'react-query';
 import styled from 'styled-components';
-import Card from '@scality/core-ui/dist/components/card/Card.component';
-import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
+import { Card } from '@scality/core-ui';
+import { Loader } from '@scality/core-ui';
 import { StatusWrapper, Icon } from '@scality/core-ui';
 import {
   spacing,
@@ -53,13 +53,13 @@ const InventoryValue = styled.span`
 const getStatusColor = (status) => {
   switch (status) {
     case STATUS_WARNING:
-      return "statusWarning";
+      return 'statusWarning';
     case STATUS_CRITICAL:
-      return "statusCritical";
+      return 'statusCritical';
     default:
-      return "statusHealthy";
+      return 'statusHealthy';
   }
-}
+};
 
 const DashboardInventory = () => {
   const intl = useIntl();
@@ -107,7 +107,7 @@ const DashboardInventory = () => {
                 <InventoryIcon>
                   <StatusWrapper status={nodesStatus}>
                     <Icon
-                      name={"Node-backend"}
+                      name={'Node-backend'}
                       color={getStatusColor(nodesStatus)}
                       ariaLabel={nodesStatus}
                     />
@@ -140,7 +140,7 @@ const DashboardInventory = () => {
                 <InventoryIcon>
                   <StatusWrapper status={volumesStatus}>
                     <Icon
-                      name={"Volume-backend"}
+                      name={'Volume-backend'}
                       color={getStatusColor(volumesStatus)}
                       ariaLabel={volumesStatus}
                     />

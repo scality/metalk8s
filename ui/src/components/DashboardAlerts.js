@@ -8,12 +8,9 @@ import {
   useDiscoveredViews,
 } from '../containers/ConfigProvider';
 import { useHistory } from 'react-router';
-import {
-  EmphaseText,
-  SecondaryText,
-} from '@scality/core-ui/dist/components/text/Text.component';
+import { EmphaseText, SecondaryText } from '@scality/core-ui';
 import { useAlertLibrary, useAlerts } from '../containers/AlertProvider';
-import SpacedBox from '@scality/core-ui/dist/components/spacedbox/SpacedBox';
+import { Box } from '@scality/core-ui';
 import { getChildrenAlerts } from '../services/alertUtils';
 
 const AlertsContainer = styled.div`
@@ -82,7 +79,7 @@ const DashboardAlerts = () => {
           {intl.formatMessage({ id: 'no_active_alerts' })}
         </SecondaryText>
       ) : (
-        <SpacedBox pr={24}>
+        <Box pr={24}>
           <BadgesContainer>
             <div>
               Critical
@@ -112,7 +109,7 @@ const DashboardAlerts = () => {
           >
             {intl.formatMessage({ id: 'view_all' })} >
           </Link>
-        </SpacedBox>
+        </Box>
       )}
     </AlertsContainer>
   );

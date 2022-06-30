@@ -3,9 +3,9 @@ import React, { useCallback } from 'react';
 import styled, { useTheme } from 'styled-components';
 import { useTable } from 'react-table';
 import { useQuery } from 'react-query';
-import ProgressBar from '@scality/core-ui/dist/components/progressbar/ProgressBar.component';
-import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
-import EmptyTable from '@scality/core-ui/dist/components/emptytable/Emptytable.component';
+import { ProgressBar } from '@scality/core-ui';
+import { Loader } from '@scality/core-ui';
+import { EmptyTable } from '@scality/core-ui';
 import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
 import {
   queryNodeFSUsage,
@@ -147,16 +147,11 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
       alertNF,
     );
 
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-  } = useTable({
-    columns,
-    data: partitions || [],
-  });
+  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
+    useTable({
+      columns,
+      data: partitions || [],
+    });
 
   return (
     <SystemDeviceTableContainer>
