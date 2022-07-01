@@ -11,6 +11,10 @@
   Ingress could be exposed on a different IP
   (PR[#3755](https://github.com/scality/metalk8s/pull/3755))
 
+- Add ability to change the nodeport CIDRs, so that NodePort
+  services could be exposed on a different IP
+  (PR[#3807](https://github.com/scality/metalk8s/pull/3807))
+
 - Add the [`iftop`](http://www.ex-parrot.com/pdw/iftop/) tool to the
   `metalk8s-utils` container
   (PR[#3773](https://github.com/scality/metalk8s/pull/3773))

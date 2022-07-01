@@ -395,6 +395,26 @@ class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
         ):
             self.assertEqual(result, metalk8s_network.get_portmap_ips(**kwargs))
 
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["get_nodeport_cidrs"])
+    def test_get_nodeport_cidrs(self, result, nodeport_cidrs=None, wp_cidrs=None):
+        """
+        Tests the return of `get_nodeport_cidrs` function
+        """
+
+        def _pillar_get(key):
+            if "nodeport" in key:
+                return nodeport_cidrs
+            if "workload_plane" in key:
+                return wp_cidrs
+            raise Exception("Should not happen !!")
+
+        salt_dict = {
+            "pillar.get": MagicMock(side_effect=_pillar_get),
+        }
+
+        with patch.dict(metalk8s_network.__salt__, salt_dict):
+            self.assertEqual(result, metalk8s_network.get_nodeport_cidrs())
+
     @utils.parameterized_from_cases(
         YAML_TESTS_CASES["get_control_plane_ingress_external_ips"]
     )

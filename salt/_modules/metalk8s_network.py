@@ -285,6 +285,22 @@ def get_portmap_ips(as_cidr=False):
     return sorted(result)
 
 
+def get_nodeport_cidrs():
+    result = set()
+    nodeport_cidrs = __salt__["pillar.get"]("networks:nodeport:cidr")
+
+    if nodeport_cidrs:
+        if not isinstance(nodeport_cidrs, list):
+            nodeport_cidrs = [nodeport_cidrs]
+        result = set(nodeport_cidrs)
+    else:
+        result = set(__salt__["pillar.get"]("networks:workload_plane:cidr"))
+
+    result.add("127.0.0.1/32")
+
+    return sorted(result)
+
+
 def get_control_plane_ingress_external_ips():
     """Get all Control Plane Ingress external IPs
 

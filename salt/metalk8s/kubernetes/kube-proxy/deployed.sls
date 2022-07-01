@@ -82,7 +82,7 @@ Deploy kube-proxy (ConfigMap):
             kind: KubeProxyConfiguration
             metricsBindAddress: @HOST_IP@:10249
             mode: ""
-            nodePortAddresses: {{ networks.workload_plane.cidr | tojson }}
+            nodePortAddresses: {{ salt.metalk8s_network.get_nodeport_cidrs() | tojson }}
             oomScoreAdj: null
             portRange: ""
             showHiddenMetricsForVersion: ""
@@ -130,6 +130,10 @@ Deploy kube-proxy (DaemonSet):
             metadata:
               annotations:
                 scheduler.alpha.kubernetes.io/critical-pod: ""
+                # NOTE: Add annotation for config checksum, so that Pod get restarted on
+                # ConfigMap change
+                checksum/config: __slot__:salt:metalk8s_kubernetes.get_object_digest(kind="ConfigMap",
+                  apiVersion="v1", namespace="kube-system", name="kube-proxy", path="data")
               creationTimestamp: null
               labels:
                 k8s-app: kube-proxy

@@ -239,6 +239,29 @@ get_portmap_ips:
       - 10.20.10.10
       - 127.0.0.1
 
+get_nodeport_cidrs:
+  # 1. Nominal (no CIDRs, using workload plane CIDR)
+  - wp_cidrs:
+      - 10.10.10.0/16
+    result:
+      - 10.10.10.0/16
+      - 127.0.0.1/32
+
+  # 2. Define CIDR in config
+  - nodeport_cidrs: 10.20.0.0/16
+    result:
+      - 10.20.0.0/16
+      - 127.0.0.1/32
+
+  # 4. Multiple CIDRs
+  - nodeport_cidrs:
+      - 10.20.0.0/16
+      - 10.30.0.0/16
+    result:
+      - 10.20.0.0/16
+      - 10.30.0.0/16
+      - 127.0.0.1/32
+
 get_control_plane_ingress_external_ips:
   # 1. Nominal single node (using bootstrap IP)
   - cp_ingress_ip_ret: 1.1.1.1
