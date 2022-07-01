@@ -6,7 +6,8 @@ import {
   useMemo,
 } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import {ErrorPage500 , ScrollbarWrapper} from '@scality/core-ui';
+import {ErrorPage500} from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
+import {ScrollbarWrapper} from '@scality/core-ui/dist/components/scrollbarwrapper/ScrollbarWrapper.component';
 import { SolutionsNavbar } from './navbar';
 import {
   FederatedComponent,

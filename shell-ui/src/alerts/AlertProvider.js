@@ -1,7 +1,7 @@
 //@flow
 import { type Node } from 'react';
 import { useQuery } from 'react-query';
-import { Loader } from '@scality/core-ui';
+import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
 import { getAlerts } from './services/alertManager';
 import { AlertContext } from './alertContext';
 

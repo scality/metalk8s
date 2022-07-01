@@ -3,7 +3,8 @@ import { createContext, useContext, type Node } from 'react';
 import { useQueries } from 'react-query';
 import { useShellConfig } from './ShellConfigProvider';
 import { useDeployedApps, useDeployedAppsRetriever } from './UIListProvider';
-import { Loader, ErrorPage500 } from '@scality/core-ui';
+import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
+import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 import { useShellHistory } from './ShellHistoryProvider';
 
 if (!window.shellContexts) {

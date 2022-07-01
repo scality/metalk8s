@@ -1,5 +1,5 @@
 //@flow
-import { Navbar as CoreUINavbar } from '@scality/core-ui';
+import { Navbar as CoreUINavbar } from '@scality/core-ui/dist/components/navbar/Navbar.component';
 import { useEffect, useCallback } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import type { Node } from 'react';

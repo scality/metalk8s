@@ -1,7 +1,8 @@
 //@flow
 import { createContext, useContext, type Node } from 'react';
 import { useQuery } from 'react-query';
-import { Loader, ErrorPage500 } from '@scality/core-ui';
+import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
+import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 import type { SolutionUI } from '@scality/module-federation';
 
 if (!window.shellContexts) {
