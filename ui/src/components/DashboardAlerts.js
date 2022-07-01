@@ -10,8 +10,8 @@ import {
 import { useHistory } from 'react-router';
 import { EmphaseText, SecondaryText } from '@scality/core-ui';
 import { useAlertLibrary, useAlerts } from '../containers/AlertProvider';
-import { Box } from '@scality/core-ui';
 import { getChildrenAlerts } from '../services/alertUtils';
+import { Box } from '@scality/core-ui/dist/next';
 
 const AlertsContainer = styled.div`
   display: flex;
