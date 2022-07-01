@@ -10,7 +10,6 @@ import {
   Tooltip,
   StatusWrapper,
   Loader,
-  GlobalHealthBar,
   SpacedBox,
 } from '@scality/core-ui';
 import {
@@ -23,6 +22,7 @@ import { useStartingTimeStamp } from '../containers/StartTimeProvider';
 import CircleStatus from './CircleStatus';
 import StatusIcon from './StatusIcon';
 import { getClusterAlertSegmentQuery } from '../services/platformlibrary/metrics';
+import GlobalHealthBar from '@scality/core-ui/dist/components/globalhealthbar/GlobalHealthBar.component';
 import { useQuery } from 'react-query';
 
 const GlobalHealthContainer = styled.div`

@@ -2,18 +2,16 @@
 import { createContext, useContext, type Node } from 'react';
 import { useQueries } from 'react-query';
 import { useShellConfig } from './ShellConfigProvider';
-import { useHistory } from 'react-router-dom';
 import { useDeployedApps, useDeployedAppsRetriever } from './UIListProvider';
-import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
-import ErrorPage500 from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
+import { Loader, ErrorPage500 } from '@scality/core-ui';
 import { useShellHistory } from './ShellHistoryProvider';
 
 if (!window.shellContexts) {
-    window.shellContexts = {};
+  window.shellContexts = {};
 }
 
 if (!window.shellContexts.WebFingersContext) {
-    window.shellContexts.WebFingersContext = createContext(null);
+  window.shellContexts.WebFingersContext = createContext(null);
 }
 
 export type OAuth2ProxyConfig = {
@@ -89,7 +87,9 @@ export function useConfigRetriever(): {
     | null,
 } {
   const { retrieveDeployedApps } = useDeployedAppsRetriever();
-  const webFingerContextValue = useContext(window.shellContexts.WebFingersContext);
+  const webFingerContextValue = useContext(
+    window.shellContexts.WebFingersContext,
+  );
   if (!webFingerContextValue) {
     throw new Error(
       "Can't use useConfigRetriever outside of ConfigurationProvider",
@@ -143,7 +143,9 @@ export function useConfig({
   name: string,
 }): RuntimeWebFinger | BuildtimeWebFinger | null {
   const { retrieveConfiguration } = useConfigRetriever();
-  const webFingerContextValue = useContext(window.shellContexts.WebFingersContext);
+  const webFingerContextValue = useContext(
+    window.shellContexts.WebFingersContext,
+  );
   if (!webFingerContextValue) {
     throw new Error("Can't use useConfig outside of ConfigurationProvider");
   }

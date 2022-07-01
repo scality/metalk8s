@@ -1,36 +1,20 @@
 //@flow
 import '@fortawesome/fontawesome-free/css/all.css';
 import {
-  createContext,
-  useContext,
-  useState,
   useEffect,
-  lazy,
-  Suspense,
   type Node,
-  useRef,
   useMemo,
 } from 'react';
-import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
-import ReactDOM from 'react-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import ErrorPage500 from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
-import ScrollbarWrapper from '@scality/core-ui/dist/components/scrollbarwrapper/ScrollbarWrapper.component';
-import { ThemeProvider as StyledComponentsProvider } from 'styled-components';
-import type { Theme } from './navbar/theme';
-import { SolutionsNavbar, type Browser } from './navbar';
-import { string } from 'prop-types';
+import {ErrorPage500 , ScrollbarWrapper} from '@scality/core-ui';
+import { SolutionsNavbar } from './navbar';
 import {
   FederatedComponent,
   type FederatedComponentProps,
   type SolutionUI,
 } from '@scality/module-federation';
-import { useAuth as useOidcReactAuth, type AuthContextProps } from 'oidc-react';
-import AlertProvider from './alerts/AlertProvider';
 import {
   UIListProvider,
-  useDeployedApps,
-  useDeployedAppsRetriever,
 } from './initFederation/UIListProvider';
 import {
   ConfigurationProvider,
@@ -41,7 +25,6 @@ import { Route, Switch, Router } from 'react-router-dom';
 import {
   ShellConfigProvider,
   useShellConfig,
-  type NavbarEntry,
 } from './initFederation/ShellConfigProvider';
 import { AuthConfigProvider, useAuthConfig } from './auth/AuthConfigProvider';
 import { AuthProvider, useAuth } from './auth/AuthProvider';
