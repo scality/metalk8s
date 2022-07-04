@@ -3,6 +3,7 @@ import ipaddress
 import json
 import logging
 import re
+import os
 import operator
 import testinfra
 import time
@@ -187,6 +188,27 @@ def get_pillar(host, key, local=False):
             )
         )
         return json.loads(output)["local"]
+
+
+def patch_bootstrap_config(context, host, patch):
+    if "bootstrap_to_restore" not in context:
+        with host.sudo():
+            cmd_ret = host.check_output("salt-call --out json --local temp.dir")
+
+        tmp_dir = json.loads(cmd_ret)["local"]
+
+        with host.sudo():
+            host.check_output("cp /etc/metalk8s/bootstrap.yaml {}".format(tmp_dir))
+
+        context["bootstrap_to_restore"] = os.path.join(tmp_dir, "bootstrap.yaml")
+
+    with host.sudo():
+        host.check_output(
+            "salt-call --local --retcode-passthrough state.single "
+            "file.serialize /etc/metalk8s/bootstrap.yaml "
+            "dataset='{}' "
+            "merge_if_exists=True".format(json.dumps(patch))
+        )
 
 
 class BaseAPIError(Exception):

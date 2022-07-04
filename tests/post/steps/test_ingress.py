@@ -1,4 +1,3 @@
-import json
 import os
 import re
 import requests
@@ -109,17 +108,6 @@ def teardown(context, host, ssh_config, version, k8s_client):
         re_configure_portmap(host, version, ssh_config)
 
 
-@given("the node control-plane IP is not equal to its workload-plane IP")
-def node_control_plane_ip_is_not_equal_to_its_workload_plane_ip(host):
-    data = utils.get_grain(host, "metalk8s")
-
-    assert "control_plane_ip" in data
-    assert "workload_plane_ip" in data
-
-    if data["control_plane_ip"] == data["workload_plane_ip"]:
-        pytest.skip("Node control-plane IP is equal to node workload-plane IP")
-
-
 @given("a VIP for Control Plane Ingress is available")
 def we_have_a_vip(context):
     cp_ingress_vip = os.environ.get("CONTROL_PLANE_INGRESS_VIP")
@@ -147,7 +135,7 @@ def disable_metallb(host, context, ssh_config, version):
             "networks": {"controlPlane": {"metalLB": {"enabled": False}, "ingress": {}}}
         }
 
-        patch_bootstrap_config(context, host, bootstrap_patch)
+        utils.patch_bootstrap_config(context, host, bootstrap_patch)
         re_configure_cp_ingress(host, version, ssh_config, context=context)
 
 
@@ -259,7 +247,7 @@ def update_cp_ingress_ip(host, context, ssh_config, version, node_name):
 
     bootstrap_patch = {"networks": {"controlPlane": {"ingress": {"ip": ip}}}}
 
-    patch_bootstrap_config(context, host, bootstrap_patch)
+    utils.patch_bootstrap_config(context, host, bootstrap_patch)
     re_configure_cp_ingress(host, version, ssh_config, context=context)
 
 
@@ -273,7 +261,7 @@ def update_control_plane_ingress_ip(host, context, ssh_config, version, ip):
         }
     }
 
-    patch_bootstrap_config(context, host, bootstrap_patch)
+    utils.patch_bootstrap_config(context, host, bootstrap_patch)
     re_configure_cp_ingress(host, version, ssh_config, context=context)
 
 
@@ -288,7 +276,7 @@ def update_portmap_cidr(host, context, ssh_config, version, plane):
 
     bootstrap_patch = {"networks": {"portmap": {"cidr": new_cidrs}}}
 
-    patch_bootstrap_config(context, host, bootstrap_patch)
+    utils.patch_bootstrap_config(context, host, bootstrap_patch)
     re_configure_portmap(host, version, ssh_config, context=context)
 
 
@@ -402,27 +390,6 @@ def get_node_hosting_cp_ingress_vip(k8s_client):
     assert match, "Unable to get the node hosting the Control Plane Ingress VIP"
 
     return match.group("node")
-
-
-def patch_bootstrap_config(context, host, patch):
-    if "bootstrap_to_restore" not in context:
-        with host.sudo():
-            cmd_ret = host.check_output("salt-call --out json --local temp.dir")
-
-        tmp_dir = json.loads(cmd_ret)["local"]
-
-        with host.sudo():
-            host.check_output("cp /etc/metalk8s/bootstrap.yaml {}".format(tmp_dir))
-
-        context["bootstrap_to_restore"] = os.path.join(tmp_dir, "bootstrap.yaml")
-
-    with host.sudo():
-        host.check_output(
-            "salt-call --local --retcode-passthrough state.single "
-            "file.serialize /etc/metalk8s/bootstrap.yaml "
-            "dataset='{}' "
-            "merge_if_exists=True".format(json.dumps(patch))
-        )
 
 
 def re_configure_cp_ingress(host, version, ssh_config, context=None):

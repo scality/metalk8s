@@ -123,6 +123,17 @@ def check_multi_node(k8s_client):
         pytest.skip("We skip single node cluster for this test")
 
 
+@given("the node control-plane IP is not equal to its workload-plane IP")
+def node_control_plane_ip_is_not_equal_to_its_workload_plane_ip(host):
+    data = utils.get_grain(host, "metalk8s")
+
+    assert "control_plane_ip" in data
+    assert "workload_plane_ip" in data
+
+    if data["control_plane_ip"] == data["workload_plane_ip"]:
+        pytest.skip("Node control-plane IP is equal to node workload-plane IP")
+
+
 # }}}
 
 # Then {{{

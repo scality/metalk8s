@@ -1,14 +1,58 @@
 import json
+import requests
 
 import pytest
-from pytest_bdd import given, scenario, then
+from pytest_bdd import given, scenario, when, then, parsers
 
-from tests import utils
+from tests import utils, kube_utils
 
 
 @scenario("../features/network.feature", "All expected listening processes")
 def test_all_listening_processes(host):
     pass
+
+
+@scenario("../features/network.feature", "Access using NodePort on workload-plane IP")
+def test_access_nodeport_wp(host, teardown):
+    pass
+
+
+@scenario("../features/network.feature", "Access using NodePort on control-plane IP")
+def test_access_nodeport_cp(host, teardown):
+    pass
+
+
+@scenario("../features/network.feature", "Expose NodePort on Control Plane")
+def test_change_nodeport_cidrs(host, teardown):
+    pass
+
+
+@pytest.fixture(scope="function")
+def context():
+    return {}
+
+
+@pytest.fixture
+def teardown(context, host, ssh_config, version, k8s_client):
+    yield
+    for svc_name in context.get("svc_to_delete", []):
+        k8s_client.resources.get(api_version="v1", kind="Pod").delete(
+            name=f"{svc_name}-pod", namespace="default"
+        )
+        k8s_client.resources.get(api_version="v1", kind="Service").delete(
+            name=svc_name, namespace="default"
+        )
+
+    if "bootstrap_to_restore" in context:
+        with host.sudo():
+            host.check_output(
+                "cp {} /etc/metalk8s/bootstrap.yaml".format(
+                    context["bootstrap_to_restore"]
+                )
+            )
+
+    if context.get("reconfigure_nodeport"):
+        re_configure_nodeport(host, version, ssh_config)
 
 
 @given("we run on an untainted single node")
@@ -19,6 +63,67 @@ def running_on_single_node_untainted(k8s_client):
         pytest.skip("We skip multi nodes clusters for this test")
 
     assert not nodes.items[0].spec.taints, "Single node should be untainted"
+
+
+@when(
+    parsers.parse("we create a '{svc_name}' NodePort service that expose a simple pod")
+)
+def create_nodeport_svc(context, k8s_client, utils_manifest, svc_name):
+    utils_manifest["metadata"]["name"] = f"{svc_name}-pod"
+    utils_manifest["metadata"]["labels"] = {"app": f"{svc_name}-app"}
+    utils_manifest["spec"]["containers"][0]["command"] = [
+        "python3",
+        "-m",
+        "http.server",
+        "8080",
+    ]
+
+    svc_manifest = {
+        "apiVersion": "v1",
+        "kind": "Service",
+        "metadata": {"name": svc_name},
+        "spec": {
+            "type": "NodePort",
+            "selector": {"app": f"{svc_name}-app"},
+            "ports": [{"port": 8080}],
+        },
+    }
+
+    context.setdefault("svc_to_delete", []).append(svc_name)
+
+    k8s_client.resources.get(api_version="v1", kind="Pod").create(
+        body=utils_manifest, namespace="default"
+    )
+    k8s_client.resources.get(api_version="v1", kind="Service").create(
+        body=svc_manifest, namespace="default"
+    )
+
+    utils.retry(
+        kube_utils.check_pod_status(
+            k8s_client,
+            f"{svc_name}-pod",
+            namespace="default",
+            state="Running",
+        ),
+        times=10,
+        wait=3,
+        name=f"wait for Pod 'default/{svc_name}-pod'",
+    )
+
+
+@when(parsers.parse("we set nodeport CIDRs to {plane} CIDR"))
+def update_nodeport_cidr(host, context, ssh_config, version, plane):
+    pillar = {
+        "workload-plane": "networks:workload_plane:cidr",
+        "control-plane": "networks:control_plane:cidr",
+    }
+
+    new_cidrs = utils.get_pillar(host, pillar[plane])
+
+    bootstrap_patch = {"networks": {"nodeport": {"cidr": new_cidrs}}}
+
+    utils.patch_bootstrap_config(context, host, bootstrap_patch)
+    re_configure_nodeport(host, version, ssh_config, context=context)
 
 
 @then("ports check succeed")
@@ -121,3 +226,62 @@ def check_all_listening_process(host, version, control_plane_ingress_ip):
             )
 
     assert not errors, "\n".join(errors)
+
+
+@then(
+    parsers.parse(
+        "a request on the '{svc_name}' NodePort on a {plane} IP returns {status_code}"
+    )
+)
+def nodeport_service_request_return(k8s_client, host, svc_name, plane, status_code):
+    response = do_nodeport_service_request(k8s_client, host, plane, svc_name)
+    assert response is not None
+    assert response.status_code == int(status_code)
+
+
+@then(
+    parsers.parse(
+        "a request on the '{svc_name}' NodePort on a {plane} IP should not return"
+    )
+)
+def nodeport_service_request_does_not_respond(k8s_client, host, svc_name, plane):
+    try:
+        response = do_nodeport_service_request(k8s_client, host, plane, svc_name)
+        assert (
+            False
+        ), f"Server should not answer but got {response.status_code}: {response.reason}"
+    except:
+        pass
+
+
+def do_nodeport_service_request(k8s_client, host, plane, svc_name):
+    grains = {
+        "workload-plane": "metalk8s:workload_plane_ip",
+        "control-plane": "metalk8s:control_plane_ip",
+    }
+
+    if plane not in grains:
+        raise NotImplementedError
+
+    ip = utils.get_grain(host, grains[plane])
+
+    svc = k8s_client.resources.get(api_version="v1", kind="Service").get(
+        name=svc_name, namespace="default"
+    )
+    port = svc["spec"]["ports"][0]["nodePort"]
+
+    return requests.get(f"http://{ip}:{port}")
+
+
+def re_configure_nodeport(host, version, ssh_config, context=None):
+    command = [
+        "salt-run",
+        "state.sls",
+        "metalk8s.kubernetes.kube-proxy.deployed",
+        f"saltenv=metalk8s-{version}",
+    ]
+
+    utils.run_salt_command(host, command, ssh_config)
+
+    if context is not None:
+        context["reconfigure_nodeport"] = True
