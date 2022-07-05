@@ -15,9 +15,9 @@ import DashboardChartSystemLoad from './DashboardChartSystemLoad';
 import DashboardChartMemory from './DashboardChartMemory';
 import { useShowQuantileChart, useTypedSelector } from '../hooks';
 import { DashboardScrollableArea } from '../containers/DashboardPage';
-import TooltipComponent from '@scality/core-ui/dist/components/tooltip/Tooltip.component';
-import { SmallerText } from '@scality/core-ui/dist/components/text/Text.component';
-import SpacedBox from '@scality/core-ui/dist/components/spacedbox/SpacedBox';
+import { Tooltip } from '@scality/core-ui';
+import { SmallerText } from '@scality/core-ui';
+import { SpacedBox } from '@scality/core-ui';
 
 const MetricsContainer = styled.div`
   padding: 2px ${padding.smaller};
@@ -47,7 +47,7 @@ const DashboardMetrics = () => {
         <PageSubtitle>
           <SpacedBox mr={8}> {intl.formatMessage({ id: 'metrics' })}</SpacedBox>
           {isShowQuantileChart && (
-            <TooltipComponent
+            <Tooltip
               placement="bottom"
               overlay={
                 <SmallerText
@@ -74,7 +74,7 @@ const DashboardMetrics = () => {
                 className="fas fa-question-circle"
                 style={{ color: theme.buttonSecondary }}
               ></i>
-            </TooltipComponent>
+            </Tooltip>
           )}
         </PageSubtitle>
 

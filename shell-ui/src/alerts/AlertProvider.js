@@ -1,10 +1,8 @@
 //@flow
-import { createContext, useContext, type Node } from 'react';
+import { type Node } from 'react';
 import { useQuery } from 'react-query';
-import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
+import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
 import { getAlerts } from './services/alertManager';
-import { filterAlerts } from './services/alertUtils';
-import type { FilterLabels } from './services/alertUtils';
 import { AlertContext } from './alertContext';
 
 /**

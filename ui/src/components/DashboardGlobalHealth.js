@@ -2,14 +2,16 @@ import React from 'react';
 import styled, { useTheme } from 'styled-components';
 import { spacing } from '@scality/core-ui/dist/style/theme';
 import DashboardAlerts from './DashboardAlerts';
-import SpacedBox from '@scality/core-ui/dist/components/spacedbox/SpacedBox';
+import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import {
   EmphaseText,
   LargerText,
   SmallerText,
-} from '@scality/core-ui/dist/components/text/Text.component';
-import TooltipComponent from '@scality/core-ui/dist/components/tooltip/Tooltip.component';
-import { StatusWrapper } from '@scality/core-ui';
+  Tooltip,
+  StatusWrapper,
+  Loader,
+  SpacedBox,
+} from '@scality/core-ui';
 import {
   highestAlertToStatus,
   useAlertLibrary,
@@ -17,12 +19,10 @@ import {
 } from '../containers/AlertProvider';
 import { useIntl } from 'react-intl';
 import { useStartingTimeStamp } from '../containers/StartTimeProvider';
-import LoaderComponent from '@scality/core-ui/dist/components/loader/Loader.component';
 import CircleStatus from './CircleStatus';
 import StatusIcon from './StatusIcon';
-import GlobalHealthBarComponent from '@scality/core-ui/dist/components/globalhealthbar/GlobalHealthBar.component';
 import { getClusterAlertSegmentQuery } from '../services/platformlibrary/metrics';
-import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
+import { GlobalHealthBar } from '@scality/core-ui/dist/components/globalhealthbar/GlobalHealthBar.component';
 import { useQuery } from 'react-query';
 
 const GlobalHealthContainer = styled.div`
@@ -83,10 +83,7 @@ const DashboardGlobalHealth = () => {
         <SpacedBox ml={12} mr={12}>
           <PlatformStatusIcon>
             <StatusWrapper status={platformStatus}>
-              <StatusIcon
-                status={platformStatus}
-                className="fa fa-warehouse"
-              />
+              <StatusIcon status={platformStatus} className="fa fa-warehouse" />
             </StatusWrapper>
           </PlatformStatusIcon>
         </SpacedBox>
@@ -106,7 +103,7 @@ const DashboardGlobalHealth = () => {
                 </EmphaseText>
               </SpacedBox>
 
-              <TooltipComponent
+              <Tooltip
                 placement="bottom"
                 overlay={
                   <SmallerText style={{ minWidth: '30rem', display: 'block' }}>
@@ -127,19 +124,19 @@ const DashboardGlobalHealth = () => {
                   className="fas fa-question-circle"
                   style={{ color: theme.buttonSecondary }}
                 ></i>
-              </TooltipComponent>
+              </Tooltip>
             </SpacedBox>
             <EmphaseText>
               <CircleStatus status={platformStatus} />
             </EmphaseText>
             {historyAlertStatus === 'loading' && (
               <SpacedBox ml={8}>
-                <LoaderComponent size={'larger'} />
+                <Loader size={'larger'} />
               </SpacedBox>
             )}
           </div>
           <SpacedBox mr={20}>
-            <GlobalHealthBarComponent
+            <GlobalHealthBar
               id={'platform_globalhealth'}
               alerts={
                 historyAlertStatus === 'error'

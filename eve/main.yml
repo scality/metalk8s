@@ -503,7 +503,7 @@ models:
         TARGET_URL: "https://192.168.1.254:8443"
       command: >
         ssh -F ssh_config bastion --
-        "cd metalk8s/ui &&
+        "cd metalk8s/ui && rm -rf babel.config.js &&
         CYPRESS_BASE_URL=$TARGET_URL npm run test:$TEST_FILTER"
       workdir: *terraform_workdir
       haltOnFailure: true
@@ -1268,7 +1268,8 @@ stages:
           workdir: build/ui
           env:
             CYPRESS_BASE_URL: http://localhost:80
-          command: >
+          command: |
+            rm -rf babel.config.js
             npm run test:integration --no-update-notifier
           haltOnFailure: true
       - ShellCommand:

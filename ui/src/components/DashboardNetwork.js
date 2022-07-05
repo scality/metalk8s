@@ -9,10 +9,10 @@ import {
 import DashboardPlaneHealth from './DashboardPlaneHealth';
 import DashboardBandwidthChart from './DashboardBandwidthChart';
 import { DashboardScrollableArea } from '../containers/DashboardPage';
-import SpacedBox from '@scality/core-ui/dist/components/spacedbox/SpacedBox';
+import { SpacedBox } from '@scality/core-ui';
 import { useShowQuantileChart } from '../hooks';
-import TooltipComponent from '@scality/core-ui/dist/components/tooltip/Tooltip.component';
-import { SmallerText } from '@scality/core-ui/dist/components/text/Text.component';
+import { Tooltip } from '@scality/core-ui';
+import { SmallerText } from '@scality/core-ui';
 
 export const NetworkContainer = styled.div`
   padding: ${spacing.sp2} ${spacing.sp4};
@@ -40,7 +40,7 @@ const DashboardNetwork = () => {
         <PageSubtitle>
           <SpacedBox mr={8}> {intl.formatMessage({ id: 'network' })}</SpacedBox>
           {isShowQuantileChart && (
-            <TooltipComponent
+            <Tooltip
               placement="bottom"
               overlay={
                 <SmallerText
@@ -67,7 +67,7 @@ const DashboardNetwork = () => {
                 className="fas fa-question-circle"
                 style={{ color: theme.buttonSecondary }}
               ></i>
-            </TooltipComponent>
+            </Tooltip>
           )}
         </PageSubtitle>
       </PanelActions>

@@ -125,7 +125,7 @@ def run_ui_builder(cmd: str) -> docker_command.DockerRun:
             "src",
             "webpack.common.js",
             "webpack.prod.js",
-            ".babelrc",
+            "babel.config.js",
         ],
     )
 

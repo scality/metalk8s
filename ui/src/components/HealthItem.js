@@ -2,8 +2,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useIntl } from 'react-intl';
-import Tooltip from '@scality/core-ui/dist/components/tooltip/Tooltip.component';
-import { StatusText } from '@scality/core-ui/dist/components/text/Text.component';
+import { Tooltip } from '@scality/core-ui';
+import { StatusText } from '@scality/core-ui';
 import {
   spacing,
   fontSize,

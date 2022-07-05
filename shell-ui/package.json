@@ -47,11 +47,15 @@
     "webpack-dev-server": "^3.11.2"
   },
   "dependencies": {
-    "@scality/core-ui": "github:scality/core-ui.git#v0.25.0",
-    "@scality/module-federation": "github:scality/module-federation.git#1.0.0",
+    "@fortawesome/fontawesome-svg-core": "^1.2.36",
+    "@fortawesome/free-solid-svg-icons": "^5.15.4",
+    "@fortawesome/react-fontawesome": "^0.2.0",
+    "@scality/core-ui": "github:scality/core-ui.git#v0.39.3",
+    "@scality/module-federation": "github:scality/module-federation.git#1.1.0",
     "oidc-client": "^1.11.3",
     "oidc-react": "^1.1.5",
     "polished": "^4.0.5",
+    "pretty-bytes": "^6.0.0",
     "quicklink": "^2.1.0",
     "react": "^17.0.2",
     "react-debounce-input": "^3.2.3",

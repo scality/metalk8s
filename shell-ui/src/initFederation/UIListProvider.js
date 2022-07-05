@@ -1,16 +1,16 @@
 //@flow
-import { createContext, useContext, type Node, useCallback } from 'react';
+import { createContext, useContext, type Node } from 'react';
 import { useQuery } from 'react-query';
-import Loader from '@scality/core-ui/dist/components/loader/Loader.component';
-import ErrorPage500 from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
+import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
+import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 import type { SolutionUI } from '@scality/module-federation';
 
 if (!window.shellContexts) {
-    window.shellContexts = {};
+  window.shellContexts = {};
 }
 
 if (!window.shellContexts.UIListContext) {
-    window.shellContexts.UIListContext = createContext(null);
+  window.shellContexts.UIListContext = createContext(null);
 }
 
 export function useDeployedAppsRetriever(): {

@@ -25,7 +25,7 @@ COPY package.json package-lock.json /home/node/
 
 RUN npm config set unsafe-perm true && npm ci
 
-COPY .babelrc webpack.common.js webpack.prod.js /home/node/
+COPY babel.config.js webpack.common.js webpack.prod.js /home/node/
 COPY public /home/node/public/
 COPY src /home/node/src/
 

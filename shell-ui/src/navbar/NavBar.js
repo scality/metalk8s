@@ -1,23 +1,9 @@
 //@flow
-import CoreUINavbar from '@scality/core-ui/dist/components/navbar/Navbar.component';
-import Dropdown from '@scality/core-ui/dist/components/dropdown/Dropdown.component';
-import { type Item as CoreUIDropdownItem } from '@scality/core-ui/src/lib/components/dropdown/Dropdown.component';
-import { useEffect, useLayoutEffect, useState, useCallback } from 'react';
+import { Navbar as CoreUINavbar } from '@scality/core-ui/dist/components/navbar/Navbar.component';
+import { useEffect, useCallback } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
-import type {
-  Options,
-  SolutionsNavbarProps,
-  PathDescription,
-  UserGroupsMapping,
-} from './index';
 import type { Node } from 'react';
-import { logOut } from './auth/logout';
-import {
-  getAccessiblePathsFromOptions,
-  getUserGroups,
-  isEntryAccessibleByTheUser,
-  normalizePath,
-} from './auth/permissionUtils';
+import { normalizePath } from './auth/permissionUtils';
 import { useTheme } from 'styled-components';
 import { useLanguage } from './lang';
 import { useThemeName } from './theme';
@@ -118,10 +104,8 @@ const Link = ({
 function prefetch(url: string) {
   return new Promise((resolve, reject) => {
     const existingElement = [
-      ...(document.head?.querySelectorAll("script") || []),
-    ].find(
-      (scriptElement) => scriptElement.attributes.src?.value === url
-    );
+      ...(document.head?.querySelectorAll('script') || []),
+    ].find((scriptElement) => scriptElement.attributes.src?.value === url);
     if (existingElement) {
       resolve();
     }
@@ -136,12 +120,10 @@ function prefetch(url: string) {
   });
 }
 
-
 export const Navbar = ({
   logo,
   canChangeLanguage,
   canChangeTheme,
-  providerLogout,
   children,
 }: {
   logo: string,
@@ -201,31 +183,38 @@ export const Navbar = ({
   );
   const selectedSubLoginTab = selectedSubLoginTabs.pop();
 
-
   //Preload non current route
   const { retrieveConfiguration } = useConfigRetriever();
   useEffect(() => {
-    accessibleViews.forEach(view =>{
+    accessibleViews.forEach((view) => {
       if (!view.isFederated) {
         return;
       }
 
       //Check if it is the current route
-      if ((selectedMainTab?.isFederated && view.app.name === selectedMainTab.app.name && view.view.path === selectedMainTab.view.path) ||
-        (selectedSubLoginTab?.isFederated && view.app.name === selectedSubLoginTab.app.name && view.view.path === selectedSubLoginTab.view.path)) {
-          return;
+      if (
+        (selectedMainTab?.isFederated &&
+          view.app.name === selectedMainTab.app.name &&
+          view.view.path === selectedMainTab.view.path) ||
+        (selectedSubLoginTab?.isFederated &&
+          view.app.name === selectedSubLoginTab.app.name &&
+          view.view.path === selectedSubLoginTab.view.path)
+      ) {
+        return;
       }
 
-      const remoteEntryUrl = view.app.url + retrieveConfiguration({
-        configType: 'build',
-        name: view.app.name,
-      }).spec.remoteEntryPath;
+      const remoteEntryUrl =
+        view.app.url +
+        retrieveConfiguration({
+          configType: 'build',
+          name: view.app.name,
+        }).spec.remoteEntryPath;
 
-      prefetch(remoteEntryUrl).catch(e => console.error(`Failed to preload ${remoteEntryUrl}`, e));
-    })
-
+      prefetch(remoteEntryUrl).catch((e) =>
+        console.error(`Failed to preload ${remoteEntryUrl}`, e),
+      );
+    });
   }, [JSON.stringify(accessibleViews)]);
-
 
   const tabs = accessibleViews
     .filter((accessibleView) => accessibleView.navbarGroup === 'main')
