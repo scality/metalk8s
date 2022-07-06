@@ -137,6 +137,11 @@
 - Properly exit on failure during upgrade and downgrade
   (PR[#3790](https://github.com/scality/metalk8s/pull/3790))
 
+### Enhancements
+
+ - Bump Salt version to 3002.9
+  (PR[#3815](https://github.com/scality/metalk8s/pull/3815))
+
 ## Release 2.11.7
 ### Enhancements
 
