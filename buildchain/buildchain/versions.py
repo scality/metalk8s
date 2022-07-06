@@ -20,7 +20,7 @@ Image = namedtuple("Image", ("name", "version", "digest"))
 
 CALICO_VERSION: str = "3.23.1"
 K8S_VERSION: str = "1.23.5"
-SALT_VERSION: str = "3002.8"
+SALT_VERSION: str = "3002.9"
 CONTAINERD_VERSION: str = "1.6.4"
 
 CALICO_RELEASE: str = "1"
