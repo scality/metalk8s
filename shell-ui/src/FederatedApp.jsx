@@ -101,7 +101,7 @@ function ProtectedFederatedRoute({
     });
     return (
       <FederatedComponent
-        url={app.url + appBuildConfig.spec.remoteEntryPath}
+        url={`${app.url}${appBuildConfig.spec.remoteEntryPath}?version=${app.version}`}
         module={module}
         scope={scope}
         app={app}
