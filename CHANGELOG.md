@@ -131,7 +131,9 @@
   [v2.31.2](https://github.com/dexidp/dex/releases/tag/v2.31.2)
   (PR[#3765](https://github.com/scality/metalk8s/pull/3765))
 
-## Release 2.11.8 (in development)
+## Release 2.11.9 (in development)
+
+## Release 2.11.8
 ### Bug fixes
 
 - Properly exit on failure during upgrade and downgrade
