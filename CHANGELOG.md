@@ -1,5 +1,5 @@
 # CHANGELOG
-## Release 123.0.0 (in development)
+## Release 123.0.0
 
 ### Additions
 
@@ -27,6 +27,9 @@
   number of pods that can be scheduled on each nodes
   (PR[#3821](https://github.com/scality/metalk8s/pull/3821))
 
+- Add support for [Rocky Linux](https://rockylinux.org/) version 8
+  (PR[#3686](https://github.com/scality/metalk8s/pull/3686))
+
 ### Removals
 
 - The `Statefulsets` Grafana dashboard has been removed
@@ -46,6 +49,12 @@
   is deprecated in favor of `--add-archive` (shorthand `-a` is still valid).
   This deprecated option will be removed in MetalK8s 124.0.0
   (PR[#3730](https://github.com/scality/metalk8s/pull/3730))
+
+### Bug fixes
+
+- Automatically restart `kubelet` on `kube-apiserver` manifest change if the
+  static Pod isn't restarted
+  (PR[#3818](https://github.com/scality/metalk8s/pull/3818))
 
 ### Enhancements
 
