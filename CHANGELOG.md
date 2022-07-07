@@ -1,5 +1,5 @@
 # CHANGELOG
-## Release 2.11.8 (in development)
+## Release 2.11.8
 ### Bug fixes
 
 - Properly exit on failure during upgrade and downgrade
