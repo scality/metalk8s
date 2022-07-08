@@ -14,13 +14,17 @@ import StartTimeProvider from './StartTimeProvider';
 
 const wrapper = ({ children }) => (
   <MemoryRouter>
-    <QueryClientProvider client={new QueryClient({
-      defaultOptions: {
-        queries: {
-          retry: false,
-        },
-      },   
-    })}>
+    <QueryClientProvider
+      client={
+        new QueryClient({
+          defaultOptions: {
+            queries: {
+              retry: false,
+            },
+          },
+        })
+      }
+    >
       <MetricsTimeSpanProvider>
         <StartTimeProvider>
           <AlertHistoryProvider>{children}</AlertHistoryProvider>
