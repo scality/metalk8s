@@ -3,7 +3,7 @@ import { setupServer } from 'msw/node';
 import { rest } from 'msw';
 import { MetricsTimeSpanProvider } from '@scality/core-ui/dist/next';
 import AlertHistoryProvider, { useHistoryAlerts } from './AlertHistoryProvider';
-import { FAKE_CONTROL_PLANE_IP, waitFor } from '../components/__TEST__/util';
+import { FAKE_CONTROL_PLANE_IP } from '../components/__TEST__/util';
 import { makeQueryRangeResult } from '../../cypress/support/mockUtils';
 import { initialize as initializeProm } from '../services/prometheus/api';
 import { initialize as initializeAM } from '../services/alertmanager/api';
@@ -14,7 +14,13 @@ import StartTimeProvider from './StartTimeProvider';
 
 const wrapper = ({ children }) => (
   <MemoryRouter>
-    <QueryClientProvider client={new QueryClient()}>
+    <QueryClientProvider client={new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+      },   
+    })}>
       <MetricsTimeSpanProvider>
         <StartTimeProvider>
           <AlertHistoryProvider>{children}</AlertHistoryProvider>
@@ -431,7 +437,7 @@ describe('useHistoryAlerts', () => {
   });
 
   it('should retrieve alert history', async () => {
-    const { result } = renderHook(
+    const { result, waitFor } = renderHook(
       () => useHistoryAlerts({ alertname: 'ClusterDegraded' }),
       { wrapper },
     );
