@@ -122,14 +122,6 @@ LIB_ALERT_TREE_ROOT = ROOT / "tools/lib-alert-tree"
 ALERT_TREE_SOURCES: FrozenSet[Path] = frozenset(LIB_ALERT_TREE_ROOT.rglob("*.py"))
 
 # }}}
-# Only keep directories and top-level Go source files.
-STORAGE_OPERATOR_FMT_ARGS: FrozenSet[str] = frozenset(
-    [
-        path.name
-        for path in STORAGE_OPERATOR_ROOT.glob("*")
-        if path.is_dir() or path.suffix == ".go"
-    ]
-)
 STORAGE_OPERATOR_SOURCES: FrozenSet[Path] = frozenset(
     filepath for filepath in STORAGE_OPERATOR_ROOT.rglob("*.go")
 )
