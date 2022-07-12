@@ -97,6 +97,9 @@ Configuration
               hard: []
               soft:
                 - topologyKey: kubernetes.io/hostname
+        kubelet:
+          config:
+            maxPods: 110
 
 The ``networks`` field specifies a range of IP addresses written in CIDR
 notation for it's various subfields.
@@ -268,6 +271,9 @@ defaults kubernetes configuration.
   pods that can exist before the terminated pod garbage collector starts
   deleting them. If it's set to 0, the terminated pod garbage collector is
   disabled (default to ``500``)
+
+  From ``kubelet`` section you can override the max number of pods that can
+  be scheduled on each nodes.
 
 .. _Feature Gates: https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/
 .. _specific OpenID for kube-apiserver: https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens
