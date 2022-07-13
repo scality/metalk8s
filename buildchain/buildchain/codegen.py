@@ -20,17 +20,34 @@ def task_codegen() -> Iterator[types.TaskDict]:
         yield create_codegen_task()
 
 
-def codegen_go() -> types.TaskDict:
-    """Generate Go code using the Operator SDK Makefile."""
-    cwd = constants.STORAGE_OPERATOR_ROOT
+def codegen_metalk8s_operator() -> types.TaskDict:
+    """Generate Go code for the MetalK8s Operator using the Operator SDK Makefile."""
+    cwd = constants.METALK8S_OPERATOR_ROOT
     actions = []
-    for cmd in constants.OPERATOR_SDK_GENERATE_CMDS:
+    for cmd in constants.METALK8S_OPERATOR_SDK_GENERATE_CMDS:
         actions.append(doit.action.CmdAction(" ".join(map(shlex.quote, cmd)), cwd=cwd))
 
     return {
-        "name": "go",
+        "name": "metalk8s_operator",
         "title": utils.title_with_subtask_name("CODEGEN"),
-        "doc": codegen_go.__doc__,
+        "doc": codegen_metalk8s_operator.__doc__,
+        "actions": actions,
+        "task_dep": ["check_for:make"],
+        "file_dep": list(constants.METALK8S_OPERATOR_SOURCES),
+    }
+
+
+def codegen_storage_operator() -> types.TaskDict:
+    """Generate Go code for the Storage Operator using the Operator SDK Makefile."""
+    cwd = constants.STORAGE_OPERATOR_ROOT
+    actions = []
+    for cmd in constants.STORAGE_OPERATOR_SDK_GENERATE_CMDS:
+        actions.append(doit.action.CmdAction(" ".join(map(shlex.quote, cmd)), cwd=cwd))
+
+    return {
+        "name": "storage_operator",
+        "title": utils.title_with_subtask_name("CODEGEN"),
+        "doc": codegen_storage_operator.__doc__,
         "actions": actions,
         "task_dep": ["check_for:make"],
         "file_dep": list(constants.STORAGE_OPERATOR_SOURCES),
@@ -38,7 +55,10 @@ def codegen_go() -> types.TaskDict:
 
 
 # List of available code generation tasks.
-CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (codegen_go,)
+CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
+    codegen_storage_operator,
+    codegen_metalk8s_operator,
+)
 
 
 __all__ = utils.export_only_tasks(__name__)

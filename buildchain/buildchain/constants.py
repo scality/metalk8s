@@ -122,14 +122,22 @@ LIB_ALERT_TREE_ROOT = ROOT / "tools/lib-alert-tree"
 ALERT_TREE_SOURCES: FrozenSet[Path] = frozenset(LIB_ALERT_TREE_ROOT.rglob("*.py"))
 
 # }}}
+METALK8S_OPERATOR_SOURCES: FrozenSet[Path] = frozenset(
+    filepath for filepath in METALK8S_OPERATOR_ROOT.rglob("*.go")
+)
 STORAGE_OPERATOR_SOURCES: FrozenSet[Path] = frozenset(
     filepath for filepath in STORAGE_OPERATOR_ROOT.rglob("*.go")
 )
 GO_SOURCES: FrozenSet[Path] = frozenset(filepath for filepath in ROOT.rglob("*.go"))
 
-OPERATOR_SDK_GENERATE_CMDS: List[List[str]] = [
+STORAGE_OPERATOR_SDK_GENERATE_CMDS: List[List[str]] = [
     [config.ExtCommand.MAKE.value, "generate"],
     [config.ExtCommand.MAKE.value, "manifests"],
+]
+METALK8S_OPERATOR_SDK_GENERATE_CMDS: List[List[str]] = [
+    [config.ExtCommand.MAKE.value, "generate"],
+    [config.ExtCommand.MAKE.value, "manifests"],
+    [config.ExtCommand.MAKE.value, "metalk8s"],
 ]
 
 # For mypy, see `--no-implicit-reexport` documentation.

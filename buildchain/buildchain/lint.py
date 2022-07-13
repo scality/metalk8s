@@ -158,17 +158,18 @@ def check_go_fmt() -> Optional[doit.exceptions.TaskError]:
 
 def check_go_codegen() -> Optional[doit.exceptions.TaskError]:
     """Check if the generated files are up to date."""
-    cwd = constants.STORAGE_OPERATOR_ROOT
     git_diff = [config.ExtCommand.GIT.value, "diff"]
     base = subprocess.check_output(git_diff)
-    for cmd in constants.OPERATOR_SDK_GENERATE_CMDS:
-        subprocess.check_call(cmd, cwd=cwd)
+    for cmd in constants.METALK8S_OPERATOR_SDK_GENERATE_CMDS:
+        subprocess.check_call(cmd, cwd=constants.METALK8S_OPERATOR_ROOT)
+    for cmd in constants.STORAGE_OPERATOR_SDK_GENERATE_CMDS:
+        subprocess.check_call(cmd, cwd=constants.STORAGE_OPERATOR_ROOT)
     current = subprocess.check_output(git_diff)
     # If the diff changed after running the code generation that means that
     # the generated files are not in sync with the "source" files.
     if current != base:
         return doit.exceptions.TaskError(
-            msg="outdated generated Go files, did you run `doit.sh codegen:go`?"
+            msg="outdated generated Go files, did you run `doit.sh codegen`?"
         )
     return None
 
