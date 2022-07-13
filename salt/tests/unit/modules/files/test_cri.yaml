@@ -3,17 +3,16 @@ stop_pod:
   - result: "No pods to stop"
 
   # 2. Nominal a pod get stopped
-  - pod_ids_out:
-      stdout: "123abc"
+  - pod_ids:
+      - 123abc
     pod_stop_out:
       stdout: "Stopped sandbox 123abc"
     result: "Stopped sandbox 123abc"
 
   # 3. 2 pods get stopped
-  - pod_ids_out:
-      stdout: |-
-        123abc
-        456def
+  - pod_ids:
+    - 123abc
+    - 456def
     pod_stop_out:
       stdout: |-
         Stopped sandbox 123abc
@@ -23,24 +22,159 @@ stop_pod:
       Stopped sandbox 456def
 
   # 4. Unable to get pod ID
-  - pod_ids_out:
-      retcode: 1
-      stderr: "Oo eRroR"
+  - pod_ids_raise: Oo eRroR
     raises: True
-    result: |-
-      Unable to get pods with labels my.label=ABCD:
-      STDERR: Oo eRroR
-      STDOUT: 
+    result: Oo eRroR
 
   # 5. Unable to stop a pod
-  - pod_ids_out:
-      stdout: "123abc"
+  - pod_ids:
+      - 123abc
     pod_stop_out:
       retcode: 1
       stderr: "Apparently there is an eRrOr"
     raises: True
     result: |-
-      Unable to stop pods with labels my.label=ABCD:
+      Unable to stop pods with labels 'my.label=ABCD':
       IDS: 123abc
       STDERR: Apparently there is an eRrOr
       STDOUT: 
+
+get_pod_id:
+  # 0. Pod found by name (ok)
+  - &_get_pod_id_base_ok
+    name: example
+    expected_cmd_args: "--name example"
+    pod_ids_out:
+      retcode: 0
+      stdout: &_get_pod_id_found_id abcdef123456
+    result: *_get_pod_id_found_id
+  # 1. Pod found by labels (ok)
+  - <<: *_get_pod_id_base_ok
+    labels:
+      my.label: ABCD
+    expected_cmd_args: "--name example --label my.label=ABCD"
+  # 2. Pod found by state (ok)
+  - <<: *_get_pod_id_base_ok
+    state: ready
+    expected_cmd_args: "--name example --state ready"
+  # 3. Pod not found by name (ok)
+  - &_get_pod_id_base_err
+    <<: *_get_pod_id_base_ok
+    pod_ids_out:
+      retcode: 0
+      stdout: ""
+    raises: True
+    result: No pod found with name 'example'
+  # 4. Pod not found by labels (ok)
+  - <<: *_get_pod_id_base_err
+    name: null
+    labels:
+      my.label: ABCD
+    expected_cmd_args: "--label my.label=ABCD"
+    result: No pod found with labels 'my.label=ABCD'
+  # 5. Pod not found by state (ok)
+  - <<: *_get_pod_id_base_err
+    state: ready
+    expected_cmd_args: "--name example --state ready"
+    result: No pod found with name 'example' and state 'ready'
+  # 6. Multiple pods found (raise)
+  - &_get_pod_id_multiple
+    <<: *_get_pod_id_base_ok
+    pod_ids_out:
+      retcode: 0
+      stdout: |-
+        abcdef123456
+        ghijkl789123
+    raises: True
+    result: More than one pod found with name 'example'
+  # 7. Multiple pods found (ok)
+  - <<: *_get_pod_id_multiple
+    multiple: True
+    raises: False
+    result:
+      - abcdef123456
+      - ghijkl789123
+  # 8. No pod found and no arg (raise)
+  - &_get_pod_id_none
+    <<: *_get_pod_id_base_ok
+    name: null
+    expected_cmd_args: null
+    pod_ids_out:
+      retcode: 0
+      stdout: ""
+    raises: True
+    result: No pod found
+  # 9. No pod found and no arg (ok)
+  - <<: *_get_pod_id_none
+    ignore_not_found: True
+    raises: False
+    result: null
+  # 10. Some crictl error (raise)
+  - <<: *_get_pod_id_base_ok
+    pod_ids_out:
+      retcode: 1
+      stderr: Some Standard Error
+    raises: True
+    result: |-
+      Unable to get pod with name 'example':
+      STDERR: Some Standard Error
+      STDOUT: 
+
+wait_pod:
+  # 0. Pod was created
+  - name: example
+    state: ready
+    timeout: 5
+    sleep: 1
+    pod_ids:
+    - null
+    - null
+    - abc123
+    result: True
+  # 1. Pod was updated
+  - name: example
+    timeout: 5
+    sleep: 1
+    last_id: abc123
+    pod_ids:
+    - abc123
+    - null
+    - def456
+    result: True
+  # 2. Some crictl error (raise)
+  - name: example
+    pod_ids_raise: Oo ErRoR
+    raises: True
+    result: Oo ErRoR
+  # 3. Timed out - check updated (raise)
+  - name: example
+    timeout: 2
+    sleep: 1
+    last_id: abc123
+    pod_ids:
+    - abc123
+    - null
+    - null
+    raises: True
+    result: Pod example was not updated after 2 seconds
+  # 4. Timed out - check created (raise)
+  - name: example
+    timeout: 2
+    sleep: 1
+    pod_ids:
+    - null
+    - null
+    - null
+    raises: True
+    result: Pod example was not created after 2 seconds
+  # 5. Timed out (no raise)
+  - name: example
+    timeout: 2
+    sleep: 1.5
+    last_id: abc123
+    raise_on_timeout: False
+    pod_ids:
+    - abc123
+    - null
+    - null
+    result: False

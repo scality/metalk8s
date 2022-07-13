@@ -47,6 +47,11 @@ include:
   }) %}
 {%- endif %}
 
+{%- set pod_name = "kube-apiserver-" ~ grains.id %}
+{%- set last_pod_id = salt.cri.get_pod_id(
+  name=pod_name, state="ready", ignore_not_found=True
+) %}
+
 Create kube-apiserver Pod manifest:
   metalk8s.static_pod_managed:
     - name: /etc/kubernetes/manifests/kube-apiserver.yaml
@@ -144,12 +149,23 @@ Create kube-apiserver Pod manifest:
       - file: Ensure SA pub key is present
       - file: Ensure Ingress CA cert is present
 
-Delay after apiserver pod deployment:
-  module.run:
-    - test.sleep:
-      - length: 10
-    - onchanges:
+{%- if last_pod_id %}
+Restart kubelet to make it pick up the manifest changes:
+  service.running:
+    - name: kubelet
+    - watch:
       - metalk8s: Create kube-apiserver Pod manifest
+    - unless:
+      # Do not restart kubelet if we see the Pod was updated
+      - fun: cri.wait_pod
+        name: {{ pod_name }}
+        last_id: {{ last_pod_id }}
+        timeout: 120
+        raise_on_timeout: false
+    - require_in:
+      - module: Make sure kube-apiserver container is up and ready
+
+{%- endif %}
 
 Make sure kube-apiserver container is up and ready:
   module.run:
@@ -159,8 +175,6 @@ Make sure kube-apiserver container is up and ready:
       - timeout: 120
     - onchanges:
       - metalk8s: Create kube-apiserver Pod manifest
-    - require:
-      - module: Delay after apiserver pod deployment
   http.wait_for_successful_query:
     - name: https://{{ host }}:6443/healthz
     - verify_ssl: True

@@ -288,37 +288,103 @@ class CriTestCase(TestCase, mixins.LoaderModuleMockMixin):
             self.assertEqual(cri.ready(), result)
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["stop_pod"])
-    def test_stop_pod(self, result, pod_ids_out=None, pod_stop_out=None, raises=False):
-        """
-        Tests the return of `stop_pod` function
-        """
-        pod_selector = {"my.label": "ABCD"}
-        pod_selector_str = "--label=my.label=ABCD"
-        pod_id = (pod_ids_out or {}).get("stdout")
+    def test_stop_pod(
+        self, result, pod_ids=None, pod_ids_raise=None, pod_stop_out=None, raises=False
+    ):
+        """Test the return value of `stop_pod`."""
+        pod_labels = {"my.label": "ABCD"}
+
+        def pod_id_mock(*args, **kwargs):
+            self.assertEqual(args, ())
+            self.assertEqual(
+                kwargs, dict(labels=pod_labels, multiple=True, ignore_not_found=True)
+            )
+            if pod_ids_raise:
+                raise CommandExecutionError(pod_ids_raise)
+            return pod_ids
 
         def cmd_run_mock(cmd):
-            if cmd.startswith("crictl pods"):
-                self.assertIn(pod_selector_str, cmd)
-                return utils.cmd_output(**(pod_ids_out or {}))
-            elif cmd.startswith("crictl stopp"):
-                self.assertIn(pod_id, cmd)
-                return utils.cmd_output(**(pod_stop_out or {}))
-            raise Exception("Should not happen !!")
+            self.assertEqual(cmd, f"crictl stopp {' '.join(pod_ids)}")
+            return utils.cmd_output(**(pod_stop_out or {}))
+
+        salt_dict = {"cmd.run_all": MagicMock(side_effect=cmd_run_mock)}
+
+        with patch.dict(cri.__salt__, salt_dict), patch.object(
+            cri, "get_pod_id", pod_id_mock
+        ):
+            if raises:
+                with self.assertRaises(CommandExecutionError, msg=result):
+                    cri.stop_pod(pod_labels)
+            else:
+                self.assertEqual(cri.stop_pod(pod_labels), result)
+
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["get_pod_id"])
+    def test_get_pod_id(
+        self,
+        result,
+        pod_ids_out=None,
+        pod_stop_out=None,
+        raises=False,
+        expected_cmd_args=None,
+        **kwargs,
+    ):
+        """Test the return value of `get_pod_id`."""
+        expect_cmd = f"crictl pods --quiet"
+        if expected_cmd_args:
+            expect_cmd += f" {expected_cmd_args}"
+
+        def cmd_run_mock(cmd):
+            self.assertEqual(cmd, expect_cmd)
+            return utils.cmd_output(**(pod_ids_out or {}))
 
         salt_dict = {"cmd.run_all": MagicMock(side_effect=cmd_run_mock)}
 
         with patch.dict(cri.__salt__, salt_dict):
             if raises:
-                self.assertRaisesRegex(
-                    CommandExecutionError,
-                    result,
-                    cri.stop_pod,
-                    pod_selector,
-                )
+                with self.assertRaises(CommandExecutionError, msg=result):
+                    cri.get_pod_id(**kwargs)
             else:
-                self.assertEqual(
-                    cri.stop_pod(
-                        pod_selector,
-                    ),
-                    result,
-                )
+                self.assertEqual(cri.get_pod_id(**kwargs), result)
+
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["wait_pod"])
+    def test_wait_pod(
+        self,
+        result,
+        pod_ids=None,
+        pod_ids_raise=None,
+        raises=False,
+        **kwargs,
+    ):
+        """Test the return value of `wait_pod`."""
+        timer = [0]
+
+        def sleep_mock(duration):
+            timer.append(timer[-1] + duration)
+
+        def time_mock():
+            return timer[-1]
+
+        result_iterator = iter(pod_ids or [])
+
+        def pod_ids_mock(*a, **k):
+            self.assertEqual(a, ())
+            self.assertEqual(
+                k,
+                dict(
+                    name=kwargs.get("name"),
+                    state=kwargs.get("state", "ready"),
+                    ignore_not_found=True,
+                ),
+            )
+            if pod_ids_raise:
+                raise CommandExecutionError(pod_ids_raise)
+            return next(result_iterator)
+
+        with patch("time.sleep", sleep_mock), patch(
+            "time.time", time_mock
+        ), patch.object(cri, "get_pod_id", MagicMock(side_effect=pod_ids_mock)):
+            if raises:
+                with self.assertRaises(CommandExecutionError, msg=result):
+                    cri.wait_pod(**kwargs)
+            else:
+                self.assertEqual(cri.wait_pod(**kwargs), result)

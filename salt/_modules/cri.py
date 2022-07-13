@@ -2,8 +2,8 @@
 Various functions to interact with a CRI daemon (through :program:`crictl`).
 """
 
-import re
 import logging
+import re
 import time
 
 from salt.exceptions import CommandExecutionError
@@ -229,25 +229,129 @@ def stop_pod(labels):
        This uses the :command:`crictl` command, which should be configured
        correctly on the system, e.g. in :file:`/etc/crictl.yaml`.
     """
-    selector = ",".join([f"{key}={value}" for key, value in labels.items()])
-
-    pod_ids_out = __salt__["cmd.run_all"](f"crictl pods --quiet --label={selector}")
-    if pod_ids_out["retcode"] != 0:
-        raise CommandExecutionError(
-            f"Unable to get pods with labels {selector}:\n"
-            f"STDERR: {pod_ids_out['stderr']}\nSTDOUT: {pod_ids_out['stdout']}"
-        )
-
-    pod_ids = pod_ids_out["stdout"]
+    pod_ids = get_pod_id(labels=labels, ignore_not_found=True, multiple=True)
     if not pod_ids:
         return "No pods to stop"
 
-    out = __salt__["cmd.run_all"](f"crictl stopp {pod_ids}")
+    out = __salt__["cmd.run_all"](f"crictl stopp {' '.join(pod_ids)}")
 
     if out["retcode"] != 0:
+        selector = ",".join([f"{key}={value}" for key, value in labels.items()])
         raise CommandExecutionError(
-            f"Unable to stop pods with labels {selector}:\n"
-            f"IDS: {pod_ids}\nSTDERR: {out['stderr']}\nSTDOUT: {out['stdout']}"
+            f"Unable to stop pods with labels '{selector}':\n"
+            f"IDS: {' '.join(pod_ids)}\nSTDERR: {out['stderr']}\nSTDOUT: {out['stdout']}"
         )
 
     return out["stdout"]
+
+
+def get_pod_id(
+    name=None, labels=None, state=None, multiple=False, ignore_not_found=False
+):
+    """Retrieve the pod(s) ID(s) in CRI.
+
+    .. note::
+
+       This uses the :command:`crictl` command, which should be configured
+       correctly on the system, e.g. in :file:`/etc/crictl.yaml`.
+
+    name (str, optional)
+        Name of the target pod
+
+    labels (dict, optional)
+        Labels of the target pod(s)
+
+    state (str, optional)
+        The state in which we want to find the target pod(s) (`None` if all states are
+        acceptable)
+
+    multiple (bool)
+        Whether to accept multiple pods returned (raise otherwise)
+
+    ignore_not_found (bool)
+        Whether to raise if no target pod can be found
+    """
+    pod_ids_cmd = "crictl pods --quiet"
+    info_parts = []
+    if name is not None:
+        pod_ids_cmd += f" --name {name}"
+        info_parts.append(f"name '{name}'")
+    if labels is not None:
+        selector = ",".join([f"{key}={value}" for key, value in labels.items()])
+        pod_ids_cmd += f" --label {selector}"
+        info_parts.append(f"labels '{selector}'")
+    if state is not None:
+        pod_ids_cmd += f" --state {state}"
+        info_parts.append(f"state '{state}'")
+    info = f"with {' and '.join(info_parts)}"
+
+    pod_ids_out = __salt__["cmd.run_all"](pod_ids_cmd)
+    if pod_ids_out["retcode"] != 0:
+        raise CommandExecutionError(
+            f"Unable to get pod {info}:\n"
+            f"STDERR: {pod_ids_out['stderr']}\nSTDOUT: {pod_ids_out['stdout']}"
+        )
+
+    pod_ids = pod_ids_out["stdout"].splitlines()
+    if not pod_ids:
+        if ignore_not_found:
+            return None
+        raise CommandExecutionError(f"No pod found {info}")
+
+    if multiple:
+        return pod_ids
+
+    if len(pod_ids) > 1:
+        raise CommandExecutionError(f"More than one pod found {info}")
+
+    return pod_ids[0]
+
+
+def wait_pod(
+    name, state="ready", last_id=None, timeout=60, sleep=5, raise_on_timeout=True
+):
+    """Wait until the pod has been created/updated.
+
+    .. note::
+
+       This uses the :command:`crictl` command, which should be configured
+       correctly on the system, e.g. in :file:`/etc/crictl.yaml`.
+
+    name (str)
+        Name of the target pod
+
+    state (str, optional)
+        The state in which we want to find the target pod (`None` if all states are
+        acceptable)
+
+    last_id (str, optional)
+        ID of the pod before it was updated (set to `None` if just waiting for a new
+        pod)
+
+    timeout (int)
+        Number of seconds to wait before bailing out
+
+    sleep (int)
+        Number of seconds to wait between two checks
+
+    raise_on_timeout (bool)
+        Whether to raise if the timeout period is exceeded (otherwise, return False)
+    """
+    start_time = time.time()
+
+    while time.time() - start_time < timeout:
+        current_id = get_pod_id(name=name, state=state, ignore_not_found=True)
+        if current_id and current_id != last_id:
+            return True
+        remaining = timeout + start_time - time.time()
+        if remaining < sleep:  # Don't sleep if we know it's going to time out
+            break
+        time.sleep(sleep)
+
+    if raise_on_timeout:
+        verb = "updated" if last_id else "created"
+        raise CommandExecutionError(
+            f"Pod {name} was not {verb} after {(time.time() - start_time):.0f} seconds"
+        )
+
+    return False
