@@ -23,6 +23,10 @@
   remove MetalK8s ISOs from a cluster
   (PR[#3730](https://github.com/scality/metalk8s/pull/3730))
 
+- Allow, from the Bootstrap configuration, to manage the maximum
+  number of pods that can be scheduled on each nodes
+  (PR[#3821](https://github.com/scality/metalk8s/pull/3821))
+
 ### Removals
 
 - The `Statefulsets` Grafana dashboard has been removed
