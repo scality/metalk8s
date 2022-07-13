@@ -281,6 +281,19 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
         },
     ),
     _local_image(
+        name="metalk8s-operator",
+        dockerfile=constants.METALK8S_OPERATOR_ROOT / "Dockerfile",
+        build_context=constants.METALK8S_OPERATOR_ROOT,
+        build_args={
+            "BUILD_DATE": datetime.datetime.now(datetime.timezone.utc)
+            .astimezone()
+            .isoformat(),
+            "VCS_REF": constants.GIT_REF or "<unknown>",
+            "METALK8S_VERSION": versions.VERSION,
+            "VERSION": versions.VERSION,
+        },
+    ),
+    _local_image(
         name="storage-operator",
         dockerfile=constants.STORAGE_OPERATOR_ROOT / "Dockerfile",
         build_context=constants.STORAGE_OPERATOR_ROOT,

@@ -245,6 +245,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest=None,
     ),
     Image(
+        name="metalk8s-operator",
+        version=VERSION,
+        digest=None,
+    ),
+    Image(
         name="salt-master",
         version="{version}-{build_id}".format(
             version=SALT_VERSION, build_id=SALT_MASTER_BUILD_ID

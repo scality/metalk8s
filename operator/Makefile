@@ -94,6 +94,11 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
+.PHONY: metalk8s
+metalk8s: manifests kustomize ## Generate MetalK8s resulting manifests
+	$(KUSTOMIZE) build config/metalk8s | \
+	sed 's/BUILD_IMAGE_CLUSTER_OPERATOR:latest/{{ build_image_name("metalk8s-operator") }}/' > deploy/manifests.yaml
+
 .PHONY: fmt
 fmt: ## Run go fmt against code.
 	go fmt ./...

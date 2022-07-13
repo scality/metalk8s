@@ -214,22 +214,28 @@ PILLAR_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     ),
 )
 
-OPERATOR_CONFIG_ROOT: Path = constants.STORAGE_OPERATOR_ROOT / "config"
+METALK8S_OPERATOR_MANIFESTS: Path = (
+    constants.METALK8S_OPERATOR_ROOT / "deploy" / "manifests.yaml"
+)
 
-VOLUME_CRD: Path = OPERATOR_CONFIG_ROOT.joinpath(
+STORAGE_OPERATOR_CONFIG_ROOT: Path = constants.STORAGE_OPERATOR_ROOT / "config"
+
+VOLUME_CRD: Path = STORAGE_OPERATOR_CONFIG_ROOT.joinpath(
     "crd/bases/storage.metalk8s.scality.com_volumes.yaml"
 )
 
-OPERATOR_METALK8S_CONFIG: Path = OPERATOR_CONFIG_ROOT / "metalk8s"
-OPERATOR_RBAC_CONFIG: Path = OPERATOR_METALK8S_CONFIG / "rbac"
-OPERATOR_ACCOUNT: Path = OPERATOR_RBAC_CONFIG / "service_account.yaml"
-OPERATOR_ROLE: Path = OPERATOR_RBAC_CONFIG / "role.yaml"
-OPERATOR_ROLEBINDING: Path = OPERATOR_RBAC_CONFIG / "role_binding.yaml"
-OPERATOR_LE_ROLE: Path = OPERATOR_RBAC_CONFIG / "leader_election_role.yaml"
-OPERATOR_LE_ROLEBINDING: Path = (
-    OPERATOR_RBAC_CONFIG / "leader_election_role_binding.yaml"
+STORAGE_OPERATOR_METALK8S_CONFIG: Path = STORAGE_OPERATOR_CONFIG_ROOT / "metalk8s"
+STORAGE_OPERATOR_RBAC_CONFIG: Path = STORAGE_OPERATOR_METALK8S_CONFIG / "rbac"
+STORAGE_OPERATOR_ACCOUNT: Path = STORAGE_OPERATOR_RBAC_CONFIG / "service_account.yaml"
+STORAGE_OPERATOR_ROLE: Path = STORAGE_OPERATOR_RBAC_CONFIG / "role.yaml"
+STORAGE_OPERATOR_ROLEBINDING: Path = STORAGE_OPERATOR_RBAC_CONFIG / "role_binding.yaml"
+STORAGE_OPERATOR_LE_ROLE: Path = (
+    STORAGE_OPERATOR_RBAC_CONFIG / "leader_election_role.yaml"
 )
-OPERATOR_DEPLOYMENT: Path = OPERATOR_METALK8S_CONFIG / "operator.yaml"
+STORAGE_OPERATOR_LE_ROLEBINDING: Path = (
+    STORAGE_OPERATOR_RBAC_CONFIG / "leader_election_role_binding.yaml"
+)
+STORAGE_OPERATOR_DEPLOYMENT: Path = STORAGE_OPERATOR_METALK8S_CONFIG / "operator.yaml"
 
 LOKI_DASHBOARD: Path = constants.ROOT / "charts/loki-dashboard.json"
 LOGS_DASHBOARD: Path = constants.ROOT / "charts/logs-dashboard.json"
@@ -338,6 +344,17 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/logging/loki/deployed/loki-configuration-secret.sls"),
     Path("salt/metalk8s/addons/logging/loki/deployed/service.sls"),
     Path("salt/metalk8s/addons/logging/loki/deployed/service-configuration.sls"),
+    targets.TemplateFile(
+        task_name="metalk8s-operator.sls",
+        source=constants.ROOT.joinpath(
+            "salt/metalk8s/addons/metalk8s-operator/deployed.sls.in"
+        ),
+        destination=constants.ISO_ROOT.joinpath(
+            "salt/metalk8s/addons/metalk8s-operator/deployed.sls"
+        ),
+        context={"Manifests": METALK8S_OPERATOR_MANIFESTS.read_text(encoding="utf-8")},
+        file_dep=[METALK8S_OPERATOR_MANIFESTS],
+    ),
     Path("salt/metalk8s/addons/prometheus-adapter/deployed/chart.sls"),
     Path("salt/metalk8s/addons/prometheus-adapter/deployed/init.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/macros.j2"),
@@ -409,20 +426,20 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
             "salt/metalk8s/addons/volumes/storage-operator.sls"
         ),
         context={
-            "ServiceAccount": OPERATOR_ACCOUNT.read_text(encoding="utf-8"),
-            "Role": OPERATOR_ROLE.read_text(encoding="utf-8"),
-            "RoleBinding": OPERATOR_ROLEBINDING.read_text(encoding="utf-8"),
-            "LeaderElectionRole": OPERATOR_LE_ROLE.read_text(encoding="utf-8"),
-            "LeaderElectionRoleBinding": OPERATOR_LE_ROLEBINDING.read_text(
+            "ServiceAccount": STORAGE_OPERATOR_ACCOUNT.read_text(encoding="utf-8"),
+            "Role": STORAGE_OPERATOR_ROLE.read_text(encoding="utf-8"),
+            "RoleBinding": STORAGE_OPERATOR_ROLEBINDING.read_text(encoding="utf-8"),
+            "LeaderElectionRole": STORAGE_OPERATOR_LE_ROLE.read_text(encoding="utf-8"),
+            "LeaderElectionRoleBinding": STORAGE_OPERATOR_LE_ROLEBINDING.read_text(
                 encoding="utf-8"
             ),
-            "Deployment": OPERATOR_DEPLOYMENT.read_text(encoding="utf-8"),
+            "Deployment": STORAGE_OPERATOR_DEPLOYMENT.read_text(encoding="utf-8"),
         },
         file_dep=[
-            OPERATOR_ACCOUNT,
-            OPERATOR_ROLE,
-            OPERATOR_ROLEBINDING,
-            OPERATOR_DEPLOYMENT,
+            STORAGE_OPERATOR_ACCOUNT,
+            STORAGE_OPERATOR_ROLE,
+            STORAGE_OPERATOR_ROLEBINDING,
+            STORAGE_OPERATOR_DEPLOYMENT,
         ],
     ),
     targets.TemplateFile(
