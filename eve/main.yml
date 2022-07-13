@@ -1307,6 +1307,7 @@ stages:
             - unit_tests_ui
             - unit_tests_shell_ui
             - unit_tests_crd_client_generator
+            - unit_tests_metalk8s_operator
             - unit_tests_storage_operator
             - unit_tests_salt
             - unit_tests_lib_alert_tree
@@ -1452,6 +1453,42 @@ stages:
             STEP_NAME: unit_tests_crd_client_generator
       - Upload: *upload_final_status_artifact
 
+  unit_tests_metalk8s_operator:
+    _metalk8s_internal_info:
+      junit_info: &_unit-test_metalk8s_operator_junit_info
+        TEST_SUITE: unit test
+        TEST_NAME: metalk8s operator
+    worker:
+      type: kube_pod
+      path: eve/workers/pod-unit-tests/pod.yaml
+      images:
+        docker-unit-tests:
+          context: 'operator'
+          dockerfile: eve/workers/pod-unit-tests/go/Dockerfile
+      vars:
+        name: "metalk8s-unit-tests-metalk8s-operator-worker"
+    steps:
+      - Git: *git_pull
+      - ShellCommand:
+          <<: *add_final_status_artifact_failed
+          env:
+            <<: *_env_final_status_artifact_failed
+            <<: *_unit-test_metalk8s_operator_junit_info
+            STEP_NAME: unit_tests_metalk8s_operator
+      - ShellCommand: *yum_clean_all
+      - ShellCommand:
+          name: Run all MetalK8s operator unit and integration tests
+          workdir: build/operator
+          command: make test
+          haltOnFailure: true
+      - ShellCommand:
+          <<: *add_final_status_artifact_success
+          env:
+            <<: *_env_final_status_artifact_success
+            <<: *_unit-test_metalk8s_operator_junit_info
+            STEP_NAME: unit_tests_metalk8s_operator
+      - Upload: *upload_final_status_artifact
+
   unit_tests_storage_operator:
     _metalk8s_internal_info:
       junit_info: &_unit-test_storage_operator_junit_info
@@ -1463,7 +1500,7 @@ stages:
       images:
         docker-unit-tests:
           context: 'storage-operator'
-          dockerfile: eve/workers/pod-unit-tests/storage-operator/Dockerfile
+          dockerfile: eve/workers/pod-unit-tests/go/Dockerfile
       vars:
         name: "metalk8s-unit-tests-storage-operator-worker"
     steps:
