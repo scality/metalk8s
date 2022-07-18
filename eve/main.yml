@@ -2481,6 +2481,7 @@ stages:
       - ShellCommand: &multi_node_fast_tests
           <<: *bastion_tests
           name: Run fast tests on Bastion
+          timeout: 1800
           env:
             <<: *_env_bastion_tests
             PYTEST_FILTERS: "post and ci and not slow"
