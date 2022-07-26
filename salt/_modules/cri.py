@@ -340,8 +340,13 @@ def wait_pod(
     start_time = time.time()
 
     while time.time() - start_time < timeout:
-        current_id = get_pod_id(name=name, state=state, ignore_not_found=True)
-        if current_id and current_id != last_id:
+        current_ids = get_pod_id(
+            name=name,
+            state=state,
+            ignore_not_found=True,
+            multiple=True,  # We may have two during a replacement
+        )
+        if current_ids and last_id not in current_ids:
             return True
         remaining = timeout + start_time - time.time()
         if remaining < sleep:  # Don't sleep if we know it's going to time out

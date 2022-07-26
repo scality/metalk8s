@@ -129,17 +129,17 @@ wait_pod:
     pod_ids:
     - null
     - null
-    - abc123
+    - [abc123]
     result: True
-  # 1. Pod was updated
+  # 1. Pod was updated (simple delete then create)
   - name: example
     timeout: 5
     sleep: 1
     last_id: abc123
     pod_ids:
-    - abc123
+    - [abc123]
     - null
-    - def456
+    - [def456]
     result: True
   # 2. Some crictl error (raise)
   - name: example
@@ -152,7 +152,7 @@ wait_pod:
     sleep: 1
     last_id: abc123
     pod_ids:
-    - abc123
+    - [abc123]
     - null
     - null
     raises: True
@@ -174,7 +174,17 @@ wait_pod:
     last_id: abc123
     raise_on_timeout: False
     pod_ids:
-    - abc123
+    - [abc123]
     - null
     - null
     result: False
+  # 6. Pod was updated (create then delete)
+  - name: example
+    timeout: 5
+    sleep: 1
+    last_id: abc123
+    pod_ids:
+    - [abc123]
+    - [abc123, def456]
+    - [def456]
+    result: True

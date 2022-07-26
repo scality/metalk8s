@@ -1,6 +1,13 @@
 # CHANGELOG
 ## Release 123.0.1 (in development)
 
+### Bug fixes
+
+- [#3827](https://github.com/scality/metalk8s/issues/3827)
+  Handle an issue with duplicate pods in CRI during a static pod update,
+  preventing upgrades to 123.0.0 when using an inconsistent registry HA setup
+  (PR[#3828](https://github.com/scality/metalk8s/pull/3828))
+
 ## Release 123.0.0
 
 ### Additions

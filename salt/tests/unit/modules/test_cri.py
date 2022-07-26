@@ -374,6 +374,7 @@ class CriTestCase(TestCase, mixins.LoaderModuleMockMixin):
                     name=kwargs.get("name"),
                     state=kwargs.get("state", "ready"),
                     ignore_not_found=True,
+                    multiple=True,
                 ),
             )
             if pod_ids_raise:
