@@ -18,11 +18,15 @@ package controllers
 
 import (
 	"context"
+	"fmt"
+	"time"
 
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	metalk8sscalitycomv1alpha1 "github.com/scality/metalk8s/operator/api/v1alpha1"
 )
@@ -32,6 +36,12 @@ type ClusterConfigReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
+
+// ClusterConfig name to manage, since we only support one ClusterConfig
+// the object is created by the operator and it's the only one that will be managed
+const InstanceName = "main"
+
+var log = logf.Log.WithName("clusterconfig-controller")
 
 //+kubebuilder:rbac:groups=metalk8s.scality.com,resources=clusterconfigs,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=metalk8s.scality.com,resources=clusterconfigs/status,verbs=get;update;patch
@@ -47,15 +57,78 @@ type ClusterConfigReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.1/pkg/reconcile
 func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	reqLogger := log.WithValues("Request.Name", req.Name)
+	reqLogger.Info("reconciling ClusterConfig: START")
+	defer reqLogger.Info("reconciling ClusterConfig: STOP")
+
+	instance := &metalk8sscalitycomv1alpha1.ClusterConfig{}
+	err := r.Get(ctx, req.NamespacedName, instance)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			if req.Name == InstanceName {
+				// NOTE: The main ClusterConfig object get created at operator startup,
+				// so if, for whatever reason, this one get deleted we just "panic" so that
+				// the operator restart and re-create the ClusterConfig
+				panic(fmt.Errorf(
+					"%s ClusterConfig object should not be deleted", req.Name,
+				))
+			}
+			reqLogger.Info("ClusterConfig already deleted: nothing to do")
+			return endReconciliation()
+		}
+		reqLogger.Error(err, "cannot read ClusterConfig: requeue")
+		return requeue(err)
+	}
+
+	if instance.Name != InstanceName {
+		if err := r.Delete(ctx, instance); err != nil {
+			reqLogger.Error(
+				err, "cannot delete extra ClusterConfig: requeue",
+			)
+			return requeue(err)
+		}
+		reqLogger.Info("deleting extra ClusterConfig, consider updating the main one", "Main.Name", InstanceName)
+		return endReconciliation()
+	}
 
 	// TODO(user): your logic here
 
+	return endReconciliation()
+}
+
+// Trigger a reschedule after a short delay.
+func delayedRequeue() (ctrl.Result, error) {
+	delay := 10 * time.Second
+	return ctrl.Result{Requeue: true, RequeueAfter: delay}, nil
+}
+
+// Trigger a reschedule as soon as possible.
+func requeue(err error) (ctrl.Result, error) {
+	return ctrl.Result{Requeue: err == nil}, err
+}
+
+// Don't trigger a reschedule, we're done.
+func endReconciliation() (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *ClusterConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	client := mgr.GetClient()
+
+	instance := &metalk8sscalitycomv1alpha1.ClusterConfig{
+		ObjectMeta: metav1.ObjectMeta{Name: InstanceName},
+		Spec:       metalk8sscalitycomv1alpha1.ClusterConfigSpec{},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
+	err := client.Create(ctx, instance)
+	if err != nil && !errors.IsAlreadyExists(err) {
+		return err
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&metalk8sscalitycomv1alpha1.ClusterConfig{}).
 		Complete(r)
