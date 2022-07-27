@@ -163,20 +163,6 @@ def admin_sa(k8s_client):
                 raise AssertionError("ServiceAccount not yet created")
             raise
 
-        assert sa_obj.secrets
-        assert sa_obj.secrets[0].name
-
-        try:
-            secret_obj = k8s_client.resources.get(api_version="v1", kind="Secret").get(
-                sa_obj.secrets[0].name, sa_namespace
-            )
-        except kubernetes.client.rest.ApiException as err:
-            if err.status == 404:
-                raise AssertionError("Secret not yet created")
-            raise
-
-        assert secret_obj.data.get("token")
-
     # Wait for ClusterRoleBinding to exists
     utils.retry(_check_crb_exists, times=20, wait=3)
 

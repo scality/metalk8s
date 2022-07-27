@@ -1,7 +1,7 @@
 import ast
 import base64
-import json
 
+import kubernetes.client
 import requests
 
 import pytest
@@ -184,13 +184,16 @@ def have_no_perms(host, context):
 
 
 def _login_salt_api_sa(address, k8s_client, name, namespace, username=None):
-    service_account = k8s_client.resources.get(
-        api_version="v1", kind="ServiceAccount"
-    ).get(name=name, namespace=namespace)
-    secret = k8s_client.resources.get(api_version="v1", kind="Secret").get(
-        name=service_account.secrets[0].name, namespace=namespace
+    # NOTE: We use Kubernetes client instead of DynamicClient as it
+    # ease the retrieving of ServiceAccount Token
+    client = kubernetes.client.CoreV1Api(k8s_client.client)
+
+    response = client.create_namespaced_service_account_token(
+        name=name,
+        namespace=namespace,
+        body=kubernetes.client.AuthenticationV1TokenRequest(spec={}),
     )
-    token = base64.decodebytes(secret.data["token"].encode("utf-8"))
+    token = response.status.token
 
     if username is None:
         username = "system:serviceaccount:{}:{}".format(namespace, name)
