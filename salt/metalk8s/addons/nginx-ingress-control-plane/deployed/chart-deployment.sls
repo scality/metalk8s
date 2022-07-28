@@ -284,7 +284,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  annotations: null
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: {% endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_ip() }}{%- raw %}
   labels:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: ingress-nginx-control-plane
@@ -301,7 +302,6 @@ spec:
   ipFamilies:
   - IPv4
   ipFamilyPolicy: SingleStack
-  loadBalancerIP: {% endraw -%}{{ salt.metalk8s_network.get_control_plane_ingress_ip() }}{%- raw %}
   ports:
   - appProtocol: https
     name: https

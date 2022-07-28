@@ -10,6 +10,9 @@
 - Bump etcd version to [3.5.3](https://github.com/etcd-io/etcd/releases/tag/v3.5.3)
   (PR[#3832](https://github.com/scality/metalk8s/pull/3832))
 
+- No longer use deprecated field `loadBalancerIP` for LoadBalancer service
+  (PR[#3834](https://github.com/scality/metalk8s/pull/3834))
+
 ## Release 123.0.2 (in development)
 
 ## Release 123.0.1
