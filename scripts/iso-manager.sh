@@ -24,12 +24,12 @@ _usage() {
 
 ARCHIVES_ADD=()
 ARCHIVES_RM=()
-ARCHIVE_DEPRECATED_OPTION=
+ARCHIVE_DEPRECATED_OPTION=""
 
 while (( "$#" )); do
   case "$1" in
     -a|--archive|--add-archive)
-      ARCHIVE_DEPRECATED_OPTION="true"
+      [ "$1" = "--archive" ] && ARCHIVE_DEPRECATED_OPTION="true"
       ARCHIVES_ADD+=("$(readlink -f "$2")")
       shift 2
       ;;
@@ -58,7 +58,7 @@ while (( "$#" )); do
   esac
 done
 
-if [ -z ${ARCHIVE_DEPRECATED_OPTION} ]; then
+if [ -n "$ARCHIVE_DEPRECATED_OPTION" ]; then
   echo "Warning: Usage of the '--archive' option is deprecated, and will be removed" \
        "in the next MetalK8s major version, 124.0.0. Please make sure to update your" \
        "documentation and automation to use '--add-archive' instead (or the shorthand" \

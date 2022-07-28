@@ -12,6 +12,12 @@
 
 ## Release 123.0.2 (in development)
 
+### Bug fixes
+
+- Remove invalid warning message when using non-deprecated flag
+  from the`iso-manager.sh` script
+  (PR[#3835](https://github.com/scality/metalk8s/pull/3835))
+
 ## Release 123.0.1
 
 ### Bug fixes
