@@ -140,11 +140,6 @@ def upgrade(dest_version, saltenv, raises=True):
     dest = dest_version.split(".")
     min_version = f"{int(dest[0]) - 1}.0.0"
 
-    # NOTE: Add a special case for upgrade from 2.11 to 123.x
-    # this should be removed in `development/124.0`
-    if int(dest[0]) == 123:
-        min_version = "2.11.0"
-
     for node_name, node_info in metalk8s_pillar["nodes"].items():
         if (
             __salt__["salt.cmd"]("pkg.version_cmp", min_version, node_info["version"])
@@ -194,11 +189,6 @@ def downgrade(dest_version, saltenv, raises=True, bypass_disable=False):
     # We only support downgrade from one major version
     dest = dest_version.split(".")
     max_version = f"{int(dest[0]) + 2}.0.0"
-
-    # NOTE: Add a special case for downgrade from 123.x to 2.11
-    # this should be removed in `development/124.0`
-    if int(dest[0]) == 2 and int(dest[1]) == 11:
-        max_version = "124.0.0"
 
     newest_node_version = None
 
