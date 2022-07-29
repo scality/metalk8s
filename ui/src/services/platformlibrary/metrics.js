@@ -84,6 +84,7 @@ export const getCPUUsageQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: instanceIP !== '',
+    select: (data) => ({ ...data, key: 'cpuUsage' }),
   };
 };
 
@@ -162,6 +163,7 @@ export const getCPUUsageAvgQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: showAvg,
+    select: (data) => ({ ...data, key: 'cpuUsageAvg' }),
   };
 };
 
@@ -184,6 +186,7 @@ export const getSystemLoadQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    select: (data) => ({ ...data, key: 'systemLoad' }),
   };
 };
 
@@ -260,6 +263,7 @@ export const getSystemLoadAvgQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    select: (data) => ({ ...data, key: 'systemLoadAvg' }),
   };
 };
 
@@ -282,6 +286,7 @@ export const getMemoryQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    select: (data) => ({ ...data, key: 'memory' }),
   };
 };
 
@@ -360,6 +365,7 @@ export const getMemoryAvgQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: showAvg,
+    select: (data) => ({ ...data, key: 'memoryAvg' }),
   };
 };
 
@@ -397,6 +403,7 @@ export const getControlPlaneBandWidthInQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: planeInterface !== '',
+    select: (data) => ({ ...data, key: 'controlPlaneBandwidthIn' }),
   };
 };
 
@@ -420,6 +427,7 @@ export const getControlPlaneBandWidthOutQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: planeInterface !== '',
+    select: (data) => ({ ...data, key: 'controlPlaneBandwidthOut' }),
   };
 };
 
@@ -461,6 +469,7 @@ export const getControlPlaneBandWidthAvgInQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: !!(showAvg && Object.keys(nodesIPsInfo).length),
+    select: (data) => ({ ...data, key: 'controlPlaneBandwidthInAvg' }),
   };
 };
 
@@ -503,6 +512,7 @@ export const getControlPlaneBandWidthAvgOutQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: !!(showAvg && Object.keys(nodesIPsInfo).length),
+    select: (data) => ({ ...data, key: 'controlPlaneBandwidthOutAvg' }),
   };
 };
 
@@ -780,6 +790,7 @@ export const getIOPSWriteQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    select: (data) => ({ ...data, key: 'IOPSWrite' }),
   };
 };
 
@@ -802,6 +813,7 @@ export const getIOPSReadQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    select: (data) => ({ ...data, key: 'IOPSRead' }),
   };
 };
 
@@ -826,6 +838,7 @@ export const getIOPSWriteAvgQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: showAvg,
+    select: (data) => ({ ...data, key: 'IOPSWriteAvg' }),
   };
 };
 
@@ -850,6 +863,7 @@ export const getIOPSReadAvgQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: showAvg,
+    select: (data) => ({ ...data, key: 'IOPSReadAvg' }),
   };
 };
 
