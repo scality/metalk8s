@@ -1,6 +1,12 @@
 # CHANGELOG
 ## Release 124.0.0 (in development)
 
+### Removals
+
+- The deprecated long name `--archive` for the "add" option to the `iso-manager.sh`
+  script is removed in favor of `--add-archive` (shorthand `-a` is still valid).
+  (PR[#3839](https://github.com/scality/metalk8s/pull/3839))
+
 ### Enhancements
 
 - Bump Kubernetes version to

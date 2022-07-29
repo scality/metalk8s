@@ -14,8 +14,6 @@ _usage() {
     echo "iso-manager.sh [options]"
     echo "Options:"
     echo "-a/--add-archive <archive path>:     Path to an archive folder or ISO to add"
-    echo "    [DEPRECATED] You may also use --archive as an equivalent to the above."
-    echo "                 This option name will be removed in MetalK8s 124.0.0"
     echo "-r/--rm-archive <archive path>:      Path to an archive folder or ISO to remove"
     echo "-l/--log-file <logfile_path>:        Path to log file"
     echo "-v/--verbose:                        Run in verbose mode"
@@ -24,12 +22,10 @@ _usage() {
 
 ARCHIVES_ADD=()
 ARCHIVES_RM=()
-ARCHIVE_DEPRECATED_OPTION=""
 
 while (( "$#" )); do
   case "$1" in
-    -a|--archive|--add-archive)
-      [ "$1" = "--archive" ] && ARCHIVE_DEPRECATED_OPTION="true"
+    -a|--add-archive)
       ARCHIVES_ADD+=("$(readlink -f "$2")")
       shift 2
       ;;
@@ -57,13 +53,6 @@ while (( "$#" )); do
       ;;
   esac
 done
-
-if [ -n "$ARCHIVE_DEPRECATED_OPTION" ]; then
-  echo "Warning: Usage of the '--archive' option is deprecated, and will be removed" \
-       "in the next MetalK8s major version, 124.0.0. Please make sure to update your" \
-       "documentation and automation to use '--add-archive' instead (or the shorthand" \
-       "'-a' variant)." >&2
-fi
 
 TMPFILES=$(mktemp -d)
 
