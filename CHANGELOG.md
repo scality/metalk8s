@@ -1,6 +1,12 @@
 # CHANGELOG
 ## Release 124.0.0 (in development)
 
+### Additions
+
+- Add `metalk8s-operator` to manage NOTHING (TODO: To be updated
+  once the operator will do something)
+  (PR[#3822](https://github.com/scality/metalk8s/pull/3822))
+
 ### Removals
 
 - The deprecated long name `--archive` for the "add" option to the `iso-manager.sh`
