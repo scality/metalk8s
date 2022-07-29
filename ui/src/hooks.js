@@ -190,7 +190,18 @@ export const useChartSeries = ({
   );
 
   const isLoading = queries.find((query) => query.isLoading);
-  const queriesData = queries.map((query) => query.data);
+  const queriesData = queries
+    .map((query) => {
+      return query.data;
+    })
+    /* useQueries is running the requests in paralel and given that
+     * in transformPrometheusDataToSeries (which is a generic function used by multiple charts)
+     * we make an assumption on the order of responses
+     * then we need to make sure that the average query is the second one in the array
+     * That is achieved by giving a key param to the response object (e.g. 'cpuUsage' and 'cpuUsageAvg')
+     * and sorting the array alphanumerically on its 'key' property
+     */
+    .sort((query1, query2) => (query1.key > query2.key ? 1 : -1));
 
   useEffect(() => {
     if (!isLoading && !queries.find((query) => !query.data)) {
@@ -245,9 +256,20 @@ export const useSymetricalChartSeries = ({
   const isLoading =
     aboveQueries.find((query) => query.isLoading) ||
     belowQueries.find((query) => query.isLoading);
-  const queriesAboveData = aboveQueries.map((query) => query.data);
+  const queriesAboveData = aboveQueries
+    .map((query) => query.data)
+    /* useQueries is running the requests in paralel and given that
+     * in transformPrometheusDataToSeries (which is a generic function used by multiple charts)
+     * we make an assumption on the order of responses
+     * then we need to make sure that the average query is the second one in the array
+     * That is achieved by giving a key param to the response object (e.g. 'IOPSRead' and 'IOPSReadAvg')
+     * and sorting the array alphanumerically on its 'key' property
+     */
+    .sort((query1, query2) => (query1.key > query2.key ? 1 : -1));
 
-  const queriesBelowData = belowQueries.map((query) => query.data);
+  const queriesBelowData = belowQueries
+    .map((query) => query.data)
+    .sort((query1, query2) => (query1.key > query2.key ? 1 : -1));
   useEffect(() => {
     if (
       !isLoading &&

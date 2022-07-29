@@ -7,7 +7,7 @@ import { queryPromtheusMetrics } from '../prometheus/fetchMetrics';
 import type { NodesState } from '../../ducks/app/nodes';
 import { queryPrometheus, queryPrometheusRange } from '../prometheus/api';
 import { addMissingDataPoint } from '@scality/core-ui/dist/components/linetemporalchart/ChartUtil';
-import { getNaNSegments, getSegments } from '../utils';
+import { generateSelectWithKey, getNaNSegments, getSegments } from '../utils';
 import { getFormattedLokiAlert } from '../loki/api';
 import { NAN_STRING } from '@scality/core-ui/dist/components/constants';
 
@@ -84,6 +84,7 @@ export const getCPUUsageQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: instanceIP !== '',
+    ...generateSelectWithKey('cpuUsage'),
   };
 };
 
@@ -162,6 +163,7 @@ export const getCPUUsageAvgQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: showAvg,
+    ...generateSelectWithKey('cpuUsage', true),
   };
 };
 
@@ -184,6 +186,7 @@ export const getSystemLoadQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    ...generateSelectWithKey('systemLoad'),
   };
 };
 
@@ -260,6 +263,7 @@ export const getSystemLoadAvgQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    ...generateSelectWithKey('systemLoad', true),
   };
 };
 
@@ -282,6 +286,7 @@ export const getMemoryQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    ...generateSelectWithKey('memory'),
   };
 };
 
@@ -360,6 +365,7 @@ export const getMemoryAvgQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: showAvg,
+    ...generateSelectWithKey('memory', true),
   };
 };
 
@@ -397,6 +403,7 @@ export const getControlPlaneBandWidthInQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: planeInterface !== '',
+    ...generateSelectWithKey('controlPlaneBandwidthIn'),
   };
 };
 
@@ -420,6 +427,7 @@ export const getControlPlaneBandWidthOutQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: planeInterface !== '',
+    ...generateSelectWithKey('controlPlaneBandwidthOut'),
   };
 };
 
@@ -461,6 +469,7 @@ export const getControlPlaneBandWidthAvgInQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: !!(showAvg && Object.keys(nodesIPsInfo).length),
+    ...generateSelectWithKey('controlPlaneBandwidthIn', true),
   };
 };
 
@@ -503,6 +512,7 @@ export const getControlPlaneBandWidthAvgOutQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: !!(showAvg && Object.keys(nodesIPsInfo).length),
+    ...generateSelectWithKey('controlPlaneBandwidthOut', true),
   };
 };
 
@@ -780,6 +790,7 @@ export const getIOPSWriteQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    ...generateSelectWithKey('IOPSWrite'),
   };
 };
 
@@ -802,6 +813,7 @@ export const getIOPSReadQuery = (
     },
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    ...generateSelectWithKey('IOPSRead'),
   };
 };
 
@@ -826,6 +838,7 @@ export const getIOPSWriteAvgQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: showAvg,
+    ...generateSelectWithKey('IOPSWrite', true),
   };
 };
 
@@ -850,6 +863,7 @@ export const getIOPSReadAvgQuery = (
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     enabled: showAvg,
+    ...generateSelectWithKey('IOPSRead', true),
   };
 };
 

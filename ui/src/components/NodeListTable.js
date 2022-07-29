@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useHistory } from 'react-router';
 import { useLocation, useRouteMatch } from 'react-router-dom';
 import styled from 'styled-components';
@@ -452,39 +452,41 @@ const NodeListTable = (props) => {
         sortType: 'status',
       },
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [intl],
   );
 
   // handle the row selection by updating the URL
-  const onClickRow = (row) => {
-    const nodeName = row.values.name.name;
+  const onClickRow = useCallback(
+    (row) => {
+      const nodeName = row.values.name.name;
 
-    const isTabSelected =
-      location.pathname.endsWith('overview') ||
-      location.pathname.endsWith('alerts') ||
-      location.pathname.endsWith('metrics') ||
-      location.pathname.endsWith('volumes') ||
-      location.pathname.endsWith('pods') ||
-      location.pathname.endsWith('partitions') ||
-      location.pathname.endsWith('details');
+      const isTabSelected =
+        location.pathname.endsWith('overview') ||
+        location.pathname.endsWith('alerts') ||
+        location.pathname.endsWith('metrics') ||
+        location.pathname.endsWith('volumes') ||
+        location.pathname.endsWith('pods') ||
+        location.pathname.endsWith('partitions') ||
+        location.pathname.endsWith('details');
 
-    if (isTabSelected) {
-      const newPath = location.pathname.replace(
-        /\/nodes\/[^/]*\//,
-        `/nodes/${nodeName}/`,
-      );
-      history.push({
-        pathname: newPath,
-        search: query.toString(),
-      });
-    } else {
-      history.push({
-        pathname: `${path}/${nodeName}/overview`,
-        search: query.toString(),
-      });
-    }
-  };
+      if (isTabSelected) {
+        const newPath = location.pathname.replace(
+          /\/nodes\/[^/]*\//,
+          `/nodes/${nodeName}/`,
+        );
+        history.push({
+          pathname: newPath,
+          search: query.toString(),
+        });
+      } else {
+        history.push({
+          pathname: `${path}/${nodeName}/overview`,
+          search: query.toString(),
+        });
+      }
+    },
+    [history, location.pathname, path, query],
+  );
 
   return (
     <NodeListContainer>
