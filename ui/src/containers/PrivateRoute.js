@@ -23,7 +23,7 @@ const InternalPrivateRoute = ({
   useMemo(() => {
     dispatch(updateAPIConfigAction(userData));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [!userData]);
+  }, [userData?.token]);
 
   if (isAuthError) {
     return (

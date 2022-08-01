@@ -1,5 +1,5 @@
 //@flow
-import { type Node, useCallback } from 'react';
+import { type Node, useCallback, useEffect } from 'react';
 import { useAuthConfig } from './AuthConfigProvider';
 import {
   AuthProvider as OIDCAuthProvider,
@@ -9,7 +9,12 @@ import {
 } from 'oidc-react';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
 import { getUserGroups } from '../navbar/auth/permissionUtils';
-import { MetadataService, WebStorageStateStore } from 'oidc-client';
+import { Log, MetadataService, WebStorageStateStore } from 'oidc-client';
+
+import type {
+  OIDCConfig,
+  OAuth2ProxyConfig,
+} from '../initFederation/ConfigurationProviders';
 
 export function AuthProvider({ children }: { children: Node }) {
   const { authConfig } = useAuthConfig();
@@ -63,6 +68,20 @@ function OAuth2AuthProvider({ children }: { children: Node }) {
     userStore: new WebStorageStateStore({ store: localStorage }),
   });
 
+  const { logOut } = useInternalLogout(userManager, authConfig);
+
+  //Force logout on silent renewal error
+  useEffect(() => {
+    const onSilentRenewError = (err) => { 
+      console.log("log out following to silent renewal error", err)
+      logOut();
+    };
+    userManager.events.addSilentRenewError(onSilentRenewError);
+    return () => {
+      userManager.events.removeSilentRenewError(onSilentRenewError);
+    };
+  }, [logOut]);
+
   const oidcConfig: AuthProviderProps = {
     onBeforeSignIn: () => {
       localStorage.setItem('redirectUrl', window.location.href);
@@ -111,6 +130,50 @@ export function useAuth(): {
   };
 }
 
+function useInternalLogout(
+  userManager?: UserManager,
+  authConfig: OAuth2ProxyConfig | OIDCConfig | undefined,
+) {
+  return {
+    logOut: useCallback(() => {
+      if (!authConfig) {
+        return;
+      }
+
+      if (authConfig.kind === 'OAuth2Proxy') {
+        throw new Error('OAuth2Proxy authentication kind is not yet supported');
+      }
+
+      if (!userManager) {
+        return;
+      }
+      userManager.revokeAccessToken();
+      if (authConfig.providerLogout) {
+        userManager.signoutRedirect().catch((e) => {
+          if (e.message === 'no end session endpoint') {
+            console.log(
+              "OIDC provider doesn't support end session endpoint, fallback to clearing document cookies",
+            );
+            document.cookie.split(';').forEach(function (c) {
+              document.cookie =
+                c.trim().split('=')[0] +
+                '=;' +
+                'expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+            });
+          } else {
+            console.error(e);
+          }
+          userManager.removeUser();
+          location.reload();
+        });
+      } else {
+        userManager.removeUser();
+        location.reload();
+      }
+    }, [JSON.stringify(authConfig), userManager]),
+  };
+}
+
 export function useLogOut() {
   const { authConfig } = useAuthConfig();
   let auth;
@@ -121,40 +184,9 @@ export function useLogOut() {
     console.log('Failed to retrieve auth informations for OIDC auth kind', e);
   }
 
-  return {
-    logOut: useCallback(() => {
-      if (!authConfig) {
-        return;
-      }
+  const { logOut } = useInternalLogout(auth?.userManager, authConfig);
 
-      if (authConfig.kind === 'OAuth2Proxy') {
-        throw new Error('OAuth2Proxy authentication kind is not yet supported');
-      }
-      if (auth && auth.userManager) {
-        auth.userManager.revokeAccessToken();
-        if (authConfig.providerLogout) {
-          auth.userManager.signoutRedirect().catch((e) => {
-            if (e.message === 'no end session endpoint') {
-              console.log(
-                "OIDC provider doesn't support end session endpoint, fallback to clearing document cookies",
-              );
-              document.cookie.split(';').forEach(function (c) {
-                document.cookie =
-                  c.trim().split('=')[0] +
-                  '=;' +
-                  'expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-              });
-            } else {
-              console.error(e);
-            }
-            auth.userManager.removeUser();
-            location.reload();
-          });
-        } else {
-          auth.userManager.removeUser();
-          location.reload();
-        }
-      }
-    }, [JSON.stringify(authConfig), auth]),
+  return {
+    logOut,
   };
 }
