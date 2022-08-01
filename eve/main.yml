@@ -428,7 +428,7 @@ models:
       command: >
         sudo bash
         "/srv/scality/metalk8s-${PRODUCT_VERSION}/iso-manager.sh"
-        --archive "$(readlink -f "${ISO_PATH}")" --verbose
+        --add-archive "$(readlink -f "${ISO_PATH}")" --verbose
       haltOnFailure: true
   - ShellCommand: &add_archive_ssh
       name: Add ISO to cluster from Bootstrap
@@ -439,7 +439,7 @@ models:
         ssh -F ssh_config bootstrap "
         sudo bash
         /srv/scality/metalk8s-${PRODUCT_VERSION}/iso-manager.sh
-        --archive \"\$(readlink -f \"${ISO_PATH}\")\" --verbose"
+        --add-archive \"\$(readlink -f \"${ISO_PATH}\")\" --verbose"
       workdir: *terraform_workdir
       haltOnFailure: true
   - ShellCommand: &local_tests
