@@ -577,3 +577,14 @@ export const formatDateToMid1 = (isoDate: string): string => {
   const minute = (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
   return `${year}-${month}-${day} ${hour}:${minute}`;
 };
+
+/* A convenience function for creating select post-request processing
+ * (used by react-query, see https://tanstack.com/query/v4/docs/reference/useQuery)
+ * It's useful when utilizing useQueries to perform multiple requests in paralel.
+ * Then you're not sure in which order the responses will arrive
+ * (useQueries returns an array and the order of response objects is not always the
+ *  same as the order in which the request were performed)
+ */
+export const generateSelectWithKey = (key, isAverage) => ({
+  select: (data) => ({ ...data, key: !isAverage ? key : `${key}Avg` }),
+});
