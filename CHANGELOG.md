@@ -1,7 +1,14 @@
 # CHANGELOG
-## Release 123.0.2 (in development)
+
+## Release 123.0.3 (in development)
+
+## Release 123.0.2
 
 ### Bug fixes
+
+- UI: Make sure that K8S client is reinitialised when the access
+  token is renewed
+  (PR[#3841](https://github.com/scality/metalk8s/pull/3841))
 
 - Remove invalid warning message when using non-deprecated flag
   from the`iso-manager.sh` script
