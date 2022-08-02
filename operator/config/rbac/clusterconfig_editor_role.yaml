@@ -1,0 +1,24 @@
+# permissions for end users to edit clusterconfigs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: clusterconfig-editor-role
+rules:
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - clusterconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - clusterconfigs/status
+  verbs:
+  - get
