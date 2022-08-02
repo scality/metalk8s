@@ -35,10 +35,9 @@ spec:
           spec:
             description: ClusterConfigSpec defines the desired state of ClusterConfig
             properties:
-              foo:
-                description: Foo is an example field of ClusterConfig. Edit clusterconfig_types.go
-                  to remove/update
-                type: string
+              workloadPlane:
+                description: Information about the Workload Plane.
+                type: object
             type: object
           status:
             description: ClusterConfigStatus defines the observed state of ClusterConfig
