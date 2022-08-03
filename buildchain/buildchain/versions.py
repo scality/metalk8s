@@ -64,6 +64,12 @@ SHELL_UI_VERSION: str = json.loads(shell_ui_package_contents)["version"]
 # }}}
 # Container images {{{
 
+ALPINE_BASE_IMAGE: str = "docker.io/alpine"
+ALPINE_BASE_IMAGE_SHA256: str = (
+    # alpine:3.16.1
+    "7580ece7963bfa863801466c0a488f11c86f85d9988051a9f9c68cb27f6b7872"
+)
+
 ROCKY_BASE_IMAGE: str = "docker.io/rockylinux"
 ROCKY_BASE_IMAGE_SHA256: str = (
     # rockylinux:8.5.20220308
@@ -74,6 +80,7 @@ ETCD_VERSION: str = "3.5.3"
 ETCD_IMAGE_VERSION: str = f"{ETCD_VERSION}-0"
 NGINX_IMAGE_VERSION: str = "1.21.6-alpine"
 NODEJS_IMAGE_VERSION: str = "14.16.0"
+KEEPALIVED_VERSION: str = "2.2.7"
 
 # Current build IDs, to be augmented whenever we rebuild the corresponding
 # image, e.g. because the `Dockerfile` is changed, or one of the dependencies
@@ -226,6 +233,11 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     # Local images
     Image(
         name="metalk8s-alert-logger",
+        version=VERSION,
+        digest=None,
+    ),
+    Image(
+        name="metalk8s-keepalived",
         version=VERSION,
         digest=None,
     ),

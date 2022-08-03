@@ -241,6 +241,20 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
         name="metalk8s-alert-logger",
     ),
     _local_image(
+        name="metalk8s-keepalived",
+        build_args={
+            "BASE_IMAGE": versions.ALPINE_BASE_IMAGE,
+            "BASE_IMAGE_SHA256": versions.ALPINE_BASE_IMAGE_SHA256,
+            "BUILD_DATE": datetime.datetime.now(datetime.timezone.utc)
+            .astimezone()
+            .isoformat(),
+            "VCS_REF": constants.GIT_REF or "<unknown>",
+            "VERSION": versions.VERSION,
+            "METALK8S_VERSION": versions.VERSION,
+            "KEEPALIVED_VERSION": versions.KEEPALIVED_VERSION,
+        },
+    ),
+    _local_image(
         name="salt-master",
         build_args={
             "BASE_IMAGE": versions.ROCKY_BASE_IMAGE,
