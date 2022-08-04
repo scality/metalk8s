@@ -1,0 +1,13 @@
+#!yaml
+
+# Configuration of the fluent-bit service
+apiVersion: addons.metalk8s.scality.com
+kind: FluentBitConfig
+spec:
+  deployment:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 200Mi
+      limits:
+        memory: 1Gi

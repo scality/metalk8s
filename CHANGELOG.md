@@ -21,6 +21,13 @@
 
 ## Release 123.0.3 (in development)
 
+### Enhancements
+
+- Add default fluent-bit pod memory limits to 1Gi and add
+  ability to change the fluent-bit pod resources request
+  and limits
+  (PR[#3845](https://github.com/scality/metalk8s/pull/3845))
+
 ## Release 123.0.2
 
 ### Bug fixes

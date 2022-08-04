@@ -87,6 +87,19 @@ The default configuration values for Loki are specified below:
    :lines: 3-
 
 
+Fluent-bit Default Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fluent-bit is a logs collectors system, its job is to retrieve local logs to
+forward them to a log aggregation system (loki).
+
+The default configuration values for Fluent-bit are specified below:
+
+.. literalinclude:: ../../salt/metalk8s/addons/logging/fluent-bit/config/fluent-bit.yaml
+   :language: yaml
+   :lines: 3-
+
+
 UI Default Configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -746,6 +759,34 @@ edited as follows:
 
    Due to internal implementation, ``retention_period`` must be a multiple of
    ``24h`` in order to get the expected behavior
+
+Fluent-bit Configuration Customization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Add Fluent-bit memory limit
+"""""""""""""""""""""""""""
+
+Fluent-bit consumes some memory to store logs input before processing them
+and logs chunks before sending them to Loki.
+Its memory consumption really depends on the usage, which is why you may want
+to change it.
+
+For example, to set the limit to 4 GiB, the ConfigMap must be
+edited as follows:
+
+.. code-block:: yaml
+
+    apiVersion: v1
+    kind: ConfigMap
+    data:
+      config.yaml: |-
+        apiVersion: addons.metalk8s.scality.com
+        kind: FluentBitConfig
+        spec:
+          deployment:
+            resources:
+              limits:
+                memory: "4Gi"
 
 .. _csc-ui-customization:
 
