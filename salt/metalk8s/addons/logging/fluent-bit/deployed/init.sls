@@ -1,5 +1,6 @@
 include:
   - .configmap
+  - .service-configuration
   - .chart
 
 {#- Due to a change of fluent-bit DaemonSet labelSelector in 123.0, which is immutable field

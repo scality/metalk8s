@@ -1,8 +1,8 @@
 #!jinja | metalk8s_kubernetes
 
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
-
-
+{%- set fluent_bit_defaults = salt.slsutil.renderer('salt://metalk8s/addons/logging/fluent-bit/config/fluent-bit.yaml', saltenv=saltenv) %}
+{%- set fluent_bit = salt.metalk8s_service_configuration.get_service_conf('metalk8s-logging', 'metalk8s-fluent-bit-config', fluent_bit_defaults) %}
 
 {% raw %}
 
@@ -136,10 +136,7 @@ spec:
           httpGet:
             path: /api/v1/health
             port: http
-        resources:
-          requests:
-            cpu: 100m
-            memory: 200Mi
+        resources: {% endraw -%}{{ fluent_bit.spec.deployment.resources }}{%- raw %}
         volumeMounts:
         - mountPath: /fluent-bit/etc/fluent-bit.conf
           name: config
