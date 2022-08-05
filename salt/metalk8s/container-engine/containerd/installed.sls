@@ -24,26 +24,16 @@ Install container-selinux:
   {{ pkg_installed('container-selinux') }}
     - require:
       - test: Repositories configured
+    - require_in:
+      - metalk8s_package_manager: Install containerd
 {%- endif %}
-
-Install runc:
-  {{ pkg_installed('runc') }}
-    - require:
-      - test: Repositories configured
-      {%- if grains['os_family'].lower() == 'redhat' %}
-      - metalk8s_package_manager: Install container-selinux
-      {%- endif %}
 
 Install containerd:
   {{ pkg_installed('containerd') }}
     - require:
       - test: Repositories configured
-      - metalk8s_package_manager: Install runc
       - file: Create containerd service drop-in
       - file: Configure registry IP in containerd conf
-      {%- if grains['os_family'].lower() == 'redhat' %}
-      - metalk8s_package_manager: Install container-selinux
-      {%- endif %}
     - watch_in:
       - service: Ensure containerd running
 

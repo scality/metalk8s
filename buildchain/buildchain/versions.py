@@ -367,7 +367,6 @@ PACKAGES: Dict[str, Any] = {
         PackageVersion(name="m2crypto"),
         PackageVersion(name="python36-psutil"),
         PackageVersion(name="python36-pyOpenSSL"),
-        PackageVersion(name="runc"),
         PackageVersion(name="salt-minion", version=SALT_VERSION),
         PackageVersion(name="socat"),
         PackageVersion(name="util-linux"),
