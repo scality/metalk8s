@@ -24,7 +24,7 @@ SALT_VERSION: str = "3002.9"
 CONTAINERD_VERSION: str = "1.6.4"
 
 CALICO_RELEASE: str = "1"
-CONTAINERD_RELEASE: str = "1"
+CONTAINERD_RELEASE: str = "2"
 SOSREPORT_RELEASE: str = "2"
 
 
@@ -367,7 +367,6 @@ PACKAGES: Dict[str, Any] = {
         PackageVersion(name="m2crypto"),
         PackageVersion(name="python36-psutil"),
         PackageVersion(name="python36-pyOpenSSL"),
-        PackageVersion(name="runc"),
         PackageVersion(name="salt-minion", version=SALT_VERSION),
         PackageVersion(name="socat"),
         PackageVersion(name="util-linux"),
