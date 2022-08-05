@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Release 123.0.3 (in development)
+## Release 123.0.3
 
 ### Enhancements
 
