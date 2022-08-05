@@ -32,7 +32,7 @@ go build -compiler gc -tags="rpm_crashtraceback ${BUILDTAGS:-seccomp %{!?el7:no_
 
 
 Name:           containerd
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        An industry-standard container runtime
 License:        ASL 2.0
 URL:            https://containerd.io
@@ -54,7 +54,13 @@ BuildRequires:  go-md2man
 BuildRequires:  libseccomp-devel
 BuildRequires:  systemd
 %{?systemd_requires}
-Requires:       runc
+# NOTE: A bug in runc 1.1.3 seems to cause issues with "exec" in containers
+#       See https://github.com/containerd/containerd/issues/7219
+%if 0%{?el7}
+Requires:       runc < 1.1.3
+%else
+Requires:       (runc < 1:1.1.3 or runc > 1:1.1.3)
+%endif
 
 # vendored libraries
 # From github.com/containerd/containerd repository, checkout the corresponding version and run:
@@ -549,6 +555,9 @@ install -D -p -m 0644 %{S:3} %{buildroot}%{_sysctldir}/60-containerd.conf
 
 
 %changelog
+* Fri Aug 5 2022 Guillaume Demonet <guillaume.demonet@scality.com> - 1.6.4-2
+- Constrain runc version to avoid issue with "exec"
+
 * Wed May 25 2022 Guillaume Demonet <guillaume.demonet@scality.com> - 1.6.4-1
 - Latest upstream
 

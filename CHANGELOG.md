@@ -9,6 +9,12 @@
   and limits
   (PR[#3845](https://github.com/scality/metalk8s/pull/3845))
 
+### Bug fixes
+
+- Restrict runc version in containerd dependency to avoid issues with "exec"
+  introduced in runc 1.1.3
+  (PR[#3846](https://github.com/scality/metalk8s/pull/3846))
+
 ## Release 123.0.2
 
 ### Bug fixes
