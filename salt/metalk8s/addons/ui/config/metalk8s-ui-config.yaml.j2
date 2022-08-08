@@ -4,7 +4,20 @@
 apiVersion: addons.metalk8s.scality.com/v1alpha2
 kind: UIConfig
 spec:
+  # Deployment configuration
+  deployment:
+    replicas: 2
+    affinity:
+      podAntiAffinity:
+        soft:
+          - topologyKey: kubernetes.io/hostname
+        #   - topologyKey: my.second.important/topologyKey
+        #     weight: 42
+        # hard:
+        #   - topologyKey: kubernetes.io/hostname
+
 {%- if pillar.addons.dex.enabled %}
+  # Authentication configuration
   auth:
     kind: "OIDC"
     providerUrl: "/oidc"
@@ -13,5 +26,7 @@ spec:
     responseType: "id_token"
     scopes: "openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
 {%- endif %}
+
+  # UI configuration
   title: Metalk8s Platform
   basePath: /

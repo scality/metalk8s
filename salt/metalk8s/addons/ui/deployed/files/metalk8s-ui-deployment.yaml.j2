@@ -12,14 +12,17 @@ metadata:
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/managed-by: salt
 spec:
+  replicas: {{ replicas }}
   selector:
     matchLabels:
-      app: metalk8s-ui
+      {{ label_selector | yaml(False) | indent(8) }}
   template:
     metadata:
       labels:
-        app: metalk8s-ui
+        {{ label_selector | yaml(False) | indent(8) }}
     spec:
+      affinity:
+        {{ affinity | yaml(False) | indent(8) }}
       tolerations:
       - key: "node-role.kubernetes.io/bootstrap"
         operator: "Exists"

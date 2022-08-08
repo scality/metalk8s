@@ -34,10 +34,24 @@ include:
 {%- set stripped_base_path = metalk8s_ui_config.spec.basePath.strip('/') %}
 {%- set normalized_base_path = '/' ~ stripped_base_path %}
 
+
+{%- set label_selector = {"app": "metalk8s-ui"} %}
+
+{%- set replicas = metalk8s_ui_config.spec.deployment.replicas %}
+{%- set pod_affinity = salt.metalk8s_service_configuration.get_pod_affinity(
+    metalk8s_ui_config.spec.deployment.affinity,
+    label_selector,
+    "metalk8s-ui"
+) %}
+
 Create metalk8s-ui deployment:
   metalk8s_kubernetes.object_present:
     - name: salt://{{ slspath }}/files/metalk8s-ui-deployment.yaml.j2
     - template: jinja
+    - defaults:
+        replicas: {{ replicas }}
+        label_selector: {{ label_selector | tojson }}
+        affinity: {{ pod_affinity | tojson }}
 
 Create metalk8s-ui service:
   metalk8s_kubernetes.object_present:
