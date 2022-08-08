@@ -37,6 +37,15 @@ Install containerd:
     - watch_in:
       - service: Ensure containerd running
 
+# Even if `runc` is a dependency of `containerd` we explicitly
+# add it so that it get hold
+Ensure runc is installed and hold:
+  pkg.installed:
+    - name: runc
+    - hold: True
+    - require:
+        - metalk8s_package_manager: Install containerd
+
 Create containerd service drop-in:
   file.managed:
     - name: /etc/systemd/system/containerd.service.d/50-metalk8s.conf
