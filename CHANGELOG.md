@@ -10,6 +10,12 @@
   it's possible each MetalK8s UI pods will sit on a different infra node
   (PR[#3848](https://github.com/scality/metalk8s/pull/3848))
 
+### Bug fixes
+
+- Enforce `runc` version lock so that we ensure that it do not get
+  "wrongly" updated after installation
+  (PR[#3849](https://github.com/scality/metalk8s/pull/3849))
+
 ## Release 123.0.3
 
 ### Enhancements
