@@ -153,6 +153,28 @@ metalk8s:
                             soft:
                               - topologyKey: kubernetes.io/hostname
 
+    ui:
+      deployed:
+        files:
+          metalk8s-ui-deployment.yaml.j2:
+            _cases:
+              "From metalk8s.addons.ui.deployed.ui":
+                extra_context:
+                  replicas: 2
+                  label_selector:
+                    app: metalk8s-ui
+                  affinity:
+                    podAntiAffinity:
+                      preferredDuringSchedulingIgnoredDuringExecution:
+                        - weight: 1
+                          podAffinityTerm:
+                            labelSelector:
+                              matchLabels:
+                                app: metalk8s-ui
+                            namespaces:
+                              - metalk8s-ui
+                            topologyKey: kubernetes.io/hostname
+
   archives:
     mounted.sls:
       _cases:

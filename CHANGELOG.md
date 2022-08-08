@@ -2,6 +2,14 @@
 
 ## Release 123.0.4 (in development)
 
+### Enhancements
+
+- Allow to manage number of replicas and, soft and hard `podAntiAffinity`
+  for MetalK8s UI from Cluster and Services Configurations, with
+  by default 2 replicas and soft anti-affinity on hostname, so that if
+  it's possible each MetalK8s UI pods will sit on a different infra node
+  (PR[#3848](https://github.com/scality/metalk8s/pull/3848))
+
 ## Release 123.0.3
 
 ### Enhancements
