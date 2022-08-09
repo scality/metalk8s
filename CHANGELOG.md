@@ -50,6 +50,9 @@
   removed during the post-upgrade step
   (PR[#3850](https://github.com/scality/metalk8s/pull/3850))
 
+- Always set `NO_PROXY` for containerd for internal IPs
+  (PR[#3852](https://github.com/scality/metalk8s/pull/3852))
+
 ## Release 123.0.3
 
 ### Enhancements

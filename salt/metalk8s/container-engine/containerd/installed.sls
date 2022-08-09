@@ -15,6 +15,15 @@
   {%- do registry_eps.append('"http://' ~ ep.ip ~ ":" ~ ep.ports.http ~ '"') %}
 {%- endfor %}
 
+{%- set no_proxy = [
+  "localhost", "127.0.0.1",
+  networks.control_plane.cidr, networks.workload_plane.cidr,
+  networks.pod, networks.service
+] %}
+{%- if proxies.no_proxy | default %}
+  {%- do no_proxy.extend(proxies.no_proxy) %}
+{%- endif %}
+
 include:
   - metalk8s.repo
   - .running
@@ -61,15 +70,6 @@ Create containerd service drop-in:
           - --log-level
           - {{ "debug" if metalk8s.debug else "info" }}
         environment:
-        {%- if proxies %}
-          {%- set no_proxy = ["localhost", "127.0.0.1"] %}
-          {%- do no_proxy.extend(networks.control_plane.cidr) %}
-          {%- do no_proxy.extend(networks.workload_plane.cidr) %}
-          {%- do no_proxy.append(networks.pod) %}
-          {%- do no_proxy.append(networks.service) %}
-          {%- if proxies.no_proxy | default %}
-            {%- do no_proxy.extend(proxies.no_proxy) %}
-          {%- endif %}
           NO_PROXY: "{{ no_proxy | unique | join(",") }}"
           {%- if proxies.http | default %}
           HTTP_PROXY: "{{ proxies.http }}"
@@ -77,7 +77,6 @@ Create containerd service drop-in:
           {%- if proxies.https | default %}
           HTTPS_PROXY: "{{ proxies.https }}"
           {%- endif %}
-        {%- endif %}
     - watch_in:
       - service: Ensure containerd running
 
