@@ -35,11 +35,20 @@
   it's possible each MetalK8s UI pods will sit on a different infra node
   (PR[#3848](https://github.com/scality/metalk8s/pull/3848))
 
+- Ensure that on RHEL 8 based OS, packages installed by MetalK8s
+  are marked as "installed by user" so that they do not get removed
+  as "unused dependencies"
+  (PR[#3850](https://github.com/scality/metalk8s/pull/3850))
+
 ### Bug fixes
 
 - Enforce `runc` version lock so that we ensure that it do not get
   "wrongly" updated after installation
   (PR[#3849](https://github.com/scality/metalk8s/pull/3849))
+
+- Fix a bug on RHEL 8 based OS, where the `kubelet` package get
+  removed during the post-upgrade step
+  (PR[#3850](https://github.com/scality/metalk8s/pull/3850))
 
 ## Release 123.0.3
 
