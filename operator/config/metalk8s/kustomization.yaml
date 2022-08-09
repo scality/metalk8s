@@ -16,3 +16,6 @@ patches:
 - path: deploy_patch.yaml
   target:
     kind: Deployment
+
+patchesStrategicMerge:
+  - delete_ns.yaml
