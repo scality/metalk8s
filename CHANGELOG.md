@@ -15,6 +15,10 @@
   as "unused dependencies"
   (PR[#3850](https://github.com/scality/metalk8s/pull/3850))
 
+- Retry on containerd ready check, so that we avoid wrong failure
+  when containerd take a bit of time to start
+  (PR[#3853](https://github.com/scality/metalk8s/pull/3853))
+
 ### Bug fixes
 
 - Enforce `runc` version lock so that we ensure that it do not get
