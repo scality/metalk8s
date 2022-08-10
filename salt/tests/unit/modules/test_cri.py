@@ -1,5 +1,6 @@
 import os.path
 import json
+import logging
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 import yaml
@@ -9,6 +10,7 @@ from salt.exceptions import CommandExecutionError
 
 from _modules import cri
 
+from tests.unit.log_utils import capture_logs, check_captured_logs
 from tests.unit import mixins
 from tests.unit import utils
 
@@ -79,6 +81,7 @@ class CriTestCase(TestCase, mixins.LoaderModuleMockMixin):
     """
 
     loader_module = cri
+    module_log_level = logging.DEBUG
 
     def test_virtual(self):
         """
@@ -278,14 +281,36 @@ class CriTestCase(TestCase, mixins.LoaderModuleMockMixin):
         with patch.dict(cri.__salt__, {"cmd.run_all": mock_cmd}):
             self.assertEqual(cri.component_is_running("my_comp"), result)
 
-    @parameterized.expand([(0, True), (1, False)])
-    def test_ready(self, retcode, result):
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["ready"])
+    def test_ready(
+        self, result, retcode=0, stdout=None, stderr=None, log_lines=None, **kwargs
+    ):
         """
         Tests the return of `ready` function
         """
-        mock_cmd = MagicMock(return_value=retcode)
-        with patch.dict(cri.__salt__, {"cmd.retcode": mock_cmd}):
-            self.assertEqual(cri.ready(), result)
+
+        def cmd_run_mock(cmd):
+            if isinstance(retcode, list):
+                code = retcode.pop(0)
+            else:
+                code = retcode
+            if isinstance(stdout, list):
+                out = stdout.pop(0)
+            else:
+                out = stdout
+            if isinstance(stderr, list):
+                err = stderr.pop(0)
+            else:
+                err = stderr
+            return utils.cmd_output(retcode=code, stdout=out, stderr=err)
+
+        salt_dict = {"cmd.run_all": MagicMock(side_effect=cmd_run_mock)}
+
+        with patch.dict(cri.__salt__, salt_dict), patch(
+            "time.sleep", MagicMock()
+        ), capture_logs(cri.log, logging.DEBUG) as captured:
+            self.assertEqual(cri.ready(**kwargs), result)
+            check_captured_logs(captured, log_lines)
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["stop_pod"])
     def test_stop_pod(
