@@ -1,3 +1,100 @@
+ready:
+  # 1. Containerd is ready
+  - result: True
+
+  # 2. Containerd is not ready
+  - retcode: 1
+    stderr: "An error OccUrred"
+    result: False
+    log_lines:
+      - level: DEBUG
+        contains: |-
+          Container engine is still not ready, attempts[1/5]:
+          cmd: crictl --timeout=10s version
+          retcode: 1
+          stdout: 
+          stderr: An error OccUrred
+      - level: DEBUG
+        contains: |-
+          Container engine is still not ready, attempts[2/5]:
+          cmd: crictl --timeout=10s version
+          retcode: 1
+          stdout: 
+          stderr: An error OccUrred
+      - level: DEBUG
+        contains: |-
+          Container engine is still not ready, attempts[3/5]:
+          cmd: crictl --timeout=10s version
+          retcode: 1
+          stdout: 
+          stderr: An error OccUrred
+      - level: DEBUG
+        contains: |-
+          Container engine is still not ready, attempts[4/5]:
+          cmd: crictl --timeout=10s version
+          retcode: 1
+          stdout: 
+          stderr: An error OccUrred
+      - level: DEBUG
+        contains: |-
+          Container engine is still not ready, attempts[5/5]:
+          cmd: crictl --timeout=10s version
+          retcode: 1
+          stdout: 
+          stderr: An error OccUrred
+
+  # 3. Containerd is ready after a retry
+  - retcode:
+      - 1
+      - 0
+    stderr:
+      - ErrOr
+      - ""
+    result: True
+    log_lines:
+      - level: DEBUG
+        contains: |-
+          Container engine is still not ready, attempts[1/5]:
+          cmd: crictl --timeout=10s version
+          retcode: 1
+          stdout: 
+          stderr: ErrOr
+
+  # 4. Containerd is not ready (retries)
+  - retry: 3
+    timeout: 12
+    retcode:
+      - 1
+      - 58
+      - 42
+    stderr:
+      - First Error
+      - Second Error
+      - Third Error
+    result: False
+    log_lines:
+      - level: DEBUG
+        contains: |-
+          Container engine is still not ready, attempts[1/3]:
+          cmd: crictl --timeout=12s version
+          retcode: 1
+          stdout: 
+          stderr: First Error
+      - level: DEBUG
+        contains: |-
+          Container engine is still not ready, attempts[2/3]:
+          cmd: crictl --timeout=12s version
+          retcode: 58
+          stdout: 
+          stderr: Second Error
+      - level: DEBUG
+        contains: |-
+          Container engine is still not ready, attempts[3/3]:
+          cmd: crictl --timeout=12s version
+          retcode: 42
+          stdout: 
+          stderr: Third Error
+
 stop_pod:
   # 1. No pod running
   - result: "No pods to stop"

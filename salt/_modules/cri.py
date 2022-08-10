@@ -204,7 +204,7 @@ def component_is_running(name):
     return len(salt.utils.json.loads(out["stdout"])["items"]) != 0
 
 
-def ready(timeout=10):
+def ready(timeout=10, retry=5):
     """Wait for container engine to be ready.
 
     .. note::
@@ -214,11 +214,28 @@ def ready(timeout=10):
 
     timeout
         time, in seconds, to wait for container engine to respond
+    retry
+        number of retries to do
     """
-    cmd = "crictl --timeout={0}s version".format(timeout)
-    log.debug("Checking for container engine to be ready using: %s", cmd)
+    for attempts in range(1, retry + 1):
+        cmd = f"crictl --timeout={timeout}s version"
+        ret = __salt__["cmd.run_all"](cmd)
+        if ret["retcode"] == 0:
+            return True
 
-    return __salt__["cmd.retcode"](cmd) == 0
+        log.debug(
+            "Container engine is still not ready, attempts[%d/%d]:"
+            "\ncmd: %s\nretcode: %d\nstdout: %s\nstderr: %s",
+            attempts,
+            retry,
+            cmd,
+            ret["retcode"],
+            ret["stdout"],
+            ret["stderr"],
+        )
+        time.sleep(2)
+
+    return False
 
 
 def stop_pod(labels):
