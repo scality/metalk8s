@@ -32,6 +32,10 @@
 - Always set `NO_PROXY` for containerd for internal IPs
   (PR[#3852](https://github.com/scality/metalk8s/pull/3852))
 
+- Fix a bug that may break salt-minion upgrade as the salt-minion
+  restart was not run as the last step of salt-minion upgrade state
+  (PR[#3854](https://github.com/scality/metalk8s/pull/3854))
+
 ## Release 123.0.3
 
 ### Enhancements

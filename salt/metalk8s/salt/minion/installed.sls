@@ -33,6 +33,7 @@ Start and enable Salt minion:
   # we do not want this state to restart salt-minion process just
   # start it if not yet started and enable the service
   service.running:
+    - order: last
     - name: salt-minion
     - enable: True
     - require:
