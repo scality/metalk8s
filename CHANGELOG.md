@@ -25,7 +25,9 @@
 - No longer use deprecated field `loadBalancerIP` for LoadBalancer service
   (PR[#3834](https://github.com/scality/metalk8s/pull/3834))
 
-## Release 123.0.4 (in development)
+## Release 123.0.5 (in development)
+
+## Release 123.0.4
 
 ### Enhancements
 
