@@ -17,13 +17,41 @@ limitations under the License.
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+type SpreadConstraintSpec struct {
+	// Topology label to use to spread the Virtual IPs
+	TopologyKey string `json:"topologyKey"`
+}
+
+// +kubebuilder:validation:Format=ipv4
+type IPAddress string
+
+type VirtualIPPoolSpec struct {
+	// Node Selector to deploy the Virtual IPs manager
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+	// Tolerations to deploy the Virtual IPs manager
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+	// Spread constraints for the Virtual IPs
+	// +optional
+	SpreadConstraints []SpreadConstraintSpec `json:"spreadConstraints,omitempty"`
+
+	// Virtual IP addresses to use
+	// +kubebuilder:validation:MinItems=1
+	Addresses []IPAddress `json:"addresses"`
+}
+
 type WorkloadPlaneSpec struct {
+	// Information about Virtual IP Pools
+	// +optional
+	VirtualIPPools map[string]VirtualIPPoolSpec `json:"virtualIPPools,omitempty"`
 }
 
 // ClusterConfigSpec defines the desired state of ClusterConfig
