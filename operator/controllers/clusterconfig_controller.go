@@ -30,6 +30,7 @@ import (
 
 	metalk8sscalitycomv1alpha1 "github.com/scality/metalk8s/operator/api/v1alpha1"
 	"github.com/scality/metalk8s/operator/pkg/controller/utils"
+	"github.com/scality/metalk8s/operator/pkg/controller/virtualip"
 )
 
 // ClusterConfigReconciler reconciles a ClusterConfig object
@@ -98,6 +99,18 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		}
 		reqLogger.Info("deleting extra ClusterConfig, consider updating the main one", "Main.Name", InstanceName)
 		return utils.EndReconciliation().GetResult()
+	}
+
+	reconcilers := []interface {
+		Reconcile(context.Context) utils.ReconcilerResult
+	}{
+		virtualip.NewReconciler(instance, r.client, r.scheme, reqLogger),
+	}
+
+	for _, rec := range reconcilers {
+		if result := rec.Reconcile(ctx); result.ShouldReturn() {
+			return result.GetResult()
+		}
 	}
 
 	// TODO(user): your logic here
