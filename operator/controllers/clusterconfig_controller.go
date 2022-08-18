@@ -33,8 +33,16 @@ import (
 
 // ClusterConfigReconciler reconciles a ClusterConfig object
 type ClusterConfigReconciler struct {
-	client.Client
-	Scheme *runtime.Scheme
+	client client.Client
+	scheme *runtime.Scheme
+}
+
+// Create a new ClusterConfigReconciler
+func NewClusterConfigReconciler(mgr ctrl.Manager) *ClusterConfigReconciler {
+	return &ClusterConfigReconciler{
+		client: mgr.GetClient(),
+		scheme: mgr.GetScheme(),
+	}
 }
 
 // ClusterConfig name to manage, since we only support one ClusterConfig
@@ -62,7 +70,7 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	defer reqLogger.Info("reconciling ClusterConfig: STOP")
 
 	instance := &metalk8sscalitycomv1alpha1.ClusterConfig{}
-	err := r.Get(ctx, req.NamespacedName, instance)
+	err := r.client.Get(ctx, req.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			if req.Name == InstanceName {
@@ -81,7 +89,7 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	if instance.Name != InstanceName {
-		if err := r.Delete(ctx, instance); err != nil {
+		if err := r.client.Delete(ctx, instance); err != nil {
 			reqLogger.Error(
 				err, "cannot delete extra ClusterConfig: requeue",
 			)
