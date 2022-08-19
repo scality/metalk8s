@@ -29,6 +29,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	metalk8sscalitycomv1alpha1 "github.com/scality/metalk8s/operator/api/v1alpha1"
+	"github.com/scality/metalk8s/operator/pkg/controller/utils"
 )
 
 // ClusterConfigReconciler reconciles a ClusterConfig object
@@ -74,10 +75,10 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 				))
 			}
 			reqLogger.Info("ClusterConfig already deleted: nothing to do")
-			return endReconciliation()
+			return utils.EndReconciliation()
 		}
 		reqLogger.Error(err, "cannot read ClusterConfig: requeue")
-		return requeue(err)
+		return utils.Requeue(err)
 	}
 
 	if instance.Name != InstanceName {
@@ -85,31 +86,15 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 			reqLogger.Error(
 				err, "cannot delete extra ClusterConfig: requeue",
 			)
-			return requeue(err)
+			return utils.Requeue(err)
 		}
 		reqLogger.Info("deleting extra ClusterConfig, consider updating the main one", "Main.Name", InstanceName)
-		return endReconciliation()
+		return utils.EndReconciliation()
 	}
 
 	// TODO(user): your logic here
 
-	return endReconciliation()
-}
-
-// Trigger a reschedule after a short delay.
-func delayedRequeue() (ctrl.Result, error) {
-	delay := 10 * time.Second
-	return ctrl.Result{Requeue: true, RequeueAfter: delay}, nil
-}
-
-// Trigger a reschedule as soon as possible.
-func requeue(err error) (ctrl.Result, error) {
-	return ctrl.Result{Requeue: err == nil}, err
-}
-
-// Don't trigger a reschedule, we're done.
-func endReconciliation() (ctrl.Result, error) {
-	return ctrl.Result{}, nil
+	return utils.EndReconciliation()
 }
 
 // SetupWithManager sets up the controller with the Manager.
