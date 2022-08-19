@@ -14,9 +14,13 @@ COPY main.go main.go
 COPY api/ api/
 COPY controllers/ controllers/
 COPY pkg/ pkg/
+COPY version/ version/
+
+# Version of the project, e.g. `git describe --always --long --dirty --broken`
+ARG METALK8S_VERSION
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager -ldflags "-X 'github.com/scality/metalk8s/operator/version.Version=${METALK8S_VERSION}'" main.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
