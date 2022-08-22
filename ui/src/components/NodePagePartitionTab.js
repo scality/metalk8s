@@ -1,8 +1,7 @@
 // @flow
 import React from 'react';
 import styled from 'styled-components';
-import { Button } from '@scality/core-ui/dist/next';
-import { NodeTab } from './style/CommonLayoutStyle';
+import { Box, Button } from '@scality/core-ui/dist/next';
 import { useIntl } from 'react-intl';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import NodePartitionTable from './NodePartitionTable';
@@ -32,7 +31,7 @@ const NodePagePartitionTab = (props: Object) => {
   )?.metric?.nodename;
 
   return (
-    <NodeTab>
+    <Box height="100%" display="flex" flexDirection={'column'}>
       <TitleContainer>
         {api && api.url_grafana && (
           <a
@@ -52,7 +51,7 @@ const NodePagePartitionTab = (props: Object) => {
         )}
       </TitleContainer>
       <NodePartitionTable instanceIP={instanceIP} />
-    </NodeTab>
+    </Box>
   );
 };
 

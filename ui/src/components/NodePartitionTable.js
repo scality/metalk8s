@@ -1,12 +1,11 @@
 //@flow
 import React, { useCallback } from 'react';
-import styled, { useTheme } from 'styled-components';
-import { useTable } from 'react-table';
+import { useTheme } from 'styled-components';
 import { useQuery } from 'react-query';
-import { ProgressBar } from '@scality/core-ui';
-import { Loader } from '@scality/core-ui';
-import { EmptyTable } from '@scality/core-ui';
-import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
+import { useIntl } from 'react-intl';
+import { Loader, ProgressBar } from '@scality/core-ui';
+import { NoResult } from '@scality/core-ui/dist/components/tablev2/Tablestyle';
+import { Box, Table } from '@scality/core-ui/dist/next';
 import {
   queryNodeFSUsage,
   queryNodeFSSize,
@@ -21,89 +20,48 @@ import {
   NODE_FILESYSTEM_ALMOST_OUTOF_FILES,
   PORT_NODE_EXPORTER,
 } from '../constants';
-import { useIntl } from 'react-intl';
-
-const HeadRow = styled.tr`
-  width: 100%;
-  /* To display scroll bar on the table */
-  display: table;
-  table-layout: fixed;
-`;
-
-const Body = styled.tbody`
-  /* To display scroll bar on the table */
-  display: block;
-  overflow: auto;
-`;
-
-const SystemDeviceTableContainer = styled.div`
-  color: ${(props) => props.theme.textPrimary};
-  padding: 1rem;
-  font-family: 'Lato';
-  font-size: ${fontSize.base};
-  table {
-    border-spacing: 0;
-
-    th {
-      font-weight: bold;
-      height: 56px;
-      border-bottom: 1px solid ${(props) => props.theme.backgroundLevel1};
-    }
-
-    td {
-      margin: 0;
-      padding: 0.5rem;
-      text-align: left;
-      padding: 5px;
-      height: 48px;
-      border-bottom: 1px solid ${(props) => props.theme.backgroundLevel1};
-      :last-child {
-        border-right: 0;
-      }
-    }
-  }
-`;
-
-const Cell = styled.td`
-  overflow-wrap: break-word;
-`;
-
-const columns = [
-  {
-    Header: 'Health',
-    accessor: 'health',
-    cellStyle: { textAlign: 'center', width: '100px' },
-    Cell: (cellProps) => {
-      return (
-        <CircleStatus className="fas fa-circle" status={cellProps.value} />
-      );
-    },
-  },
-  {
-    Header: 'Partition path',
-    accessor: 'partitionPath',
-    cellStyle: { textAlign: 'left' },
-  },
-  {
-    Header: 'Usage',
-    accessor: 'usage',
-    cellStyle: { textAlign: 'center' },
-  },
-  {
-    Header: 'Size',
-    accessor: 'size',
-    cellStyle: { textAlign: 'right', width: '100px' },
-  },
-];
-
-const LoaderContainer = styled.div`
-  display: flex;
-  justify-content: center;
-`;
 
 const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
   const theme = useTheme();
   const intl = useIntl();
+  const columns = [
+    {
+      Header: 'Health',
+      accessor: 'health',
+      cellStyle: { textAlign: 'center', width: '6.25rem' },
+      Cell: ({ value }) => {
+        return <CircleStatus className="fas fa-circle" status={value} />;
+      },
+    },
+    {
+      Header: 'Partition path',
+      accessor: 'partitionPath',
+      cellStyle: { textAlign: 'left', flex: 1 },
+    },
+    {
+      Header: 'Usage',
+      accessor: 'usage',
+      cellStyle: { textAlign: 'center', flex: 1 },
+      Cell: ({ value }) => {
+        return (
+          <ProgressBar
+            size="large"
+            color={theme.infoSecondary}
+            percentage={value}
+            buildinLabel={`${value}%`}
+            backgroundColor={theme.buttonSecondary}
+            aria-label={`${value}%`}
+          />
+        );
+      },
+    },
+    {
+      Header: 'Size',
+      accessor: 'size',
+      cellStyle: { textAlign: 'right', width: '6.25rem' },
+    },
+  ];
+
   const alertList = useAlerts({
     alertname: [
       NODE_FILESYSTEM_SPACE_FILLINGUP,
@@ -147,105 +105,36 @@ const NodePartitionTable = ({ instanceIP }: { instanceIP: string }) => {
       alertNF,
     );
 
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-    useTable({
-      columns,
-      data: partitions || [],
-    });
-
   return (
-    <SystemDeviceTableContainer>
-      <table {...getTableProps()}>
-        <thead>
-          {headerGroups.map((headerGroup) => {
-            return (
-              <HeadRow {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column) => {
-                  const headerStyleProps = column.getHeaderProps({
-                    style: column.cellStyle,
-                  });
-                  return (
-                    <th {...headerStyleProps}>{column.render('Header')}</th>
-                  );
-                })}
-              </HeadRow>
-            );
-          })}
-        </thead>
-        <Body {...getTableBodyProps()}>
-          {status === 'success' && partitions.length === 0 && (
-            <EmptyTable>
-              {intl.formatMessage({ id: 'no_system_partition' })}
-            </EmptyTable>
-          )}
-          {status === 'loading' && (
-            <HeadRow
-              style={{
-                width: '100%',
-                paddingTop: padding.base,
-                height: '60px',
-              }}
-            >
-              <td
-                style={{
-                  width: '100%',
-                  textAlign: 'center',
-                }}
-              >
-                <LoaderContainer>
+    <Box flex={1} pr="1rem">
+      <Table columns={columns} data={partitions} defaultSortingKey={'health'}>
+        <Table.SingleSelectableContent
+          rowHeight="h40"
+          separationLineVariant="backgroundLevel2"
+          backgroundVariant="backgroundLevel4"
+          children={(Rows) => {
+            if (status === 'loading') {
+              return (
+                <Box display="flex" justifyContent="center">
                   <Loader size="large" aria-label="loading" />
-                </LoaderContainer>
-              </td>
-            </HeadRow>
-          )}
-          {status === 'error' && (
-            <HeadRow
-              style={{
-                width: '100%',
-                paddingTop: padding.base,
-                height: '60px',
-              }}
-            >
-              <td
-                style={{
-                  width: '100%',
-                  textAlign: 'center',
-                }}
-              >
-                {intl.formatMessage({ id: 'error_system_partitions' })}
-              </td>
-            </HeadRow>
-          )}
-          {rows.map((row, i) => {
-            prepareRow(row);
-            return (
-              <HeadRow {...row.getRowProps()}>
-                {row.cells.map((cell) => {
-                  let cellProps = cell.getCellProps({
-                    style: { ...cell.column.cellStyle },
-                  });
-                  if (cell.column.Header === 'Usage') {
-                    return (
-                      <Cell {...cellProps}>
-                        <ProgressBar
-                          size="large"
-                          color={theme.infoSecondary}
-                          percentage={cell.value}
-                          buildinLabel={`${cell.value}%`}
-                          backgroundColor={theme.buttonSecondary}
-                          aria-label={`${cell.value}%`}
-                        />
-                      </Cell>
-                    );
-                  }
-                  return <Cell {...cellProps}>{cell.render('Cell')}</Cell>;
-                })}
-              </HeadRow>
-            );
-          })}
-        </Body>
-      </table>
-    </SystemDeviceTableContainer>
+                </Box>
+              );
+            } else if (status === 'error') {
+              return (
+                <> {intl.formatMessage({ id: 'error_system_partitions' })}</>
+              );
+            } else if (status === 'success' && partitions.length === 0) {
+              return (
+                <NoResult>
+                  {intl.formatMessage({ id: 'no_system_partition' })}
+                </NoResult>
+              );
+            }
+            return <>{Rows}</>;
+          }}
+        />
+      </Table>
+    </Box>
   );
 };
 
