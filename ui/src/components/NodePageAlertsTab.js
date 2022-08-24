@@ -1,83 +1,11 @@
 import React from 'react';
-import styled from 'styled-components';
-import { Chips, EmptyTable } from '@scality/core-ui';
-import {
-  fontSize,
-  padding,
-  fontWeight,
-} from '@scality/core-ui/dist/style/theme';
-import { useTable } from 'react-table';
+import { useIntl } from 'react-intl';
+import { Chips, ConstrainedText } from '@scality/core-ui';
+import { Box, Table } from '@scality/core-ui/dist/next';
+import { NoResult } from '@scality/core-ui/dist/components/tablev2/Tablestyle';
 import ActiveAlertsFilter from './ActiveAlertsFilters';
 import { useURLQuery, formatDateToMid1 } from '../services/utils';
-import { NodeTab } from './style/CommonLayoutStyle';
 import { STATUS_WARNING, STATUS_CRITICAL } from '../constants';
-import { useIntl } from 'react-intl';
-
-// Overriding overflow for the Tab since the table components has inner scroll
-const NodeAlertsTab = styled(NodeTab)`
-  overflow: hidden;
-`;
-
-const ActiveAlertsTableContainer = styled.div`
-  color: ${(props) => props.theme.textPrimary};
-  padding: 1rem;
-  font-family: 'Lato';
-  font-size: ${fontSize.base};
-  table {
-    border-spacing: 0;
-
-    th {
-      font-weight: bold;
-      height: 56px;
-      border-bottom: 1px solid ${(props) => props.theme.backgroundLevel1};
-    }
-
-    td {
-      margin: 0;
-      padding: 0.5rem;
-      border-bottom: 1px solid ${(props) => props.theme.backgroundLevel1};
-      text-align: left;
-      padding: 5px;
-
-      :last-child {
-        border-right: 0;
-      }
-    }
-    .sc-emptytable {
-      background-color: ${(props) => props.theme.backgroundLevel4};
-      > * {
-        background-color: ${(props) => props.theme.backgroundLevel4};
-      }
-    }
-  }
-`;
-
-const HeadRow = styled.tr`
-  width: 100%;
-  /* To display scroll bar on the table */
-  display: table;
-  table-layout: fixed;
-`;
-
-const Body = styled.tbody`
-  /* To display scroll bar on the table */
-  display: block;
-  height: calc(100vh - 250px);
-  overflow: auto;
-  overflow-y: auto;
-`;
-
-const ActiveAlertsText = styled.div`
-  color: ${(props) => props.theme.textPrimary};
-  font-weight: ${fontWeight.bold};
-  font-size: ${fontSize.large};
-`;
-
-const TitleContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  padding: ${padding.large} ${padding.base} 0 ${padding.base};
-`;
 
 const NodePageAlertsTab = (props) => {
   const { alertsNode } = props;
@@ -104,122 +32,62 @@ const NodePageAlertsTab = (props) => {
       })
       ?.filter((alert) => alertSeverity.includes(alert.severity)) ?? [];
 
-  // React Table for the volume list
-  function Table({ columns, data }) {
-    // Use the state and functions returned from useTable to build your UI
-    const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-      useTable({
-        columns,
-        data,
-      });
-
-    // Render the UI for your table
-    return (
-      <table {...getTableProps()}>
-        <thead>
-          {headerGroups.map((headerGroup) => {
-            return (
-              <HeadRow {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column) => {
-                  const headerStyleProps = column.getHeaderProps({
-                    style: column.cellStyle,
-                  });
-                  return (
-                    <th {...headerStyleProps}>{column.render('Header')}</th>
-                  );
-                })}
-              </HeadRow>
-            );
-          })}
-        </thead>
-        <Body {...getTableBodyProps()}>
-          {activeAlertListData.length === 0 ? (
-            <EmptyTable>
-              {intl.formatMessage({ id: 'no_active_alerts' })}
-            </EmptyTable>
-          ) : null}
-          {rows.map((row, i) => {
-            prepareRow(row);
-            return (
-              <HeadRow {...row.getRowProps()}>
-                {row.cells.map((cell) => {
-                  let cellProps = cell.getCellProps({
-                    style: { ...cell.column.cellStyle },
-                  });
-                  if (cell.column.Header === 'Active since') {
-                    return (
-                      <td {...cellProps}>
-                        <span>{formatDateToMid1(cell.value)}</span>
-                      </td>
-                    );
-                  } else if (cell.column.Header === 'Severity') {
-                    if (cell.value === STATUS_WARNING) {
-                      return (
-                        <td {...cellProps}>
-                          <Chips
-                            text={cell.render('Cell')}
-                            variant={'statusWarning'}
-                          />
-                        </td>
-                      );
-                    } else if (cell.value === STATUS_CRITICAL) {
-                      return (
-                        <td {...cellProps}>
-                          <Chips
-                            text={cell.render('Cell')}
-                            variant={'statusCritical'}
-                          />
-                        </td>
-                      );
-                    }
-                  }
-                  return <td {...cellProps}>{cell.render('Cell')}</td>;
-                })}
-              </HeadRow>
-            );
-          })}
-        </Body>
-      </table>
-    );
-  }
-  // columns for alert table
-  const columns = React.useMemo(
-    () => [
-      {
-        Header: 'Name',
-        accessor: 'name',
-        cellStyle: {
-          paddingRight: '5px',
-          wordBreak: 'break-all',
-        },
+  const columns = [
+    {
+      Header: 'Name',
+      accessor: 'name',
+      cellStyle: { width: '13rem' },
+    },
+    {
+      Header: 'Severity',
+      accessor: 'severity',
+      cellStyle: { width: '4.5rem' },
+      Cell: ({ value }) => {
+        return <Chips text={value} variant={value} />;
       },
-      {
-        Header: 'Severity',
-        accessor: 'severity',
-        cellStyle: { textAlign: 'center', width: '100px' },
+    },
+    {
+      Header: 'Description',
+      accessor: 'alertDescription',
+      cellStyle: { flex: 1, paddingLeft: '1rem' },
+      Cell: ({ value }) => {
+        return <ConstrainedText lineClamp={2} text={value} />;
       },
-      { Header: 'Description', accessor: 'alertDescription' },
-      {
-        Header: 'Active since',
-        accessor: 'activeSince',
-        cellStyle: { textAlign: 'center', width: '120px' },
+    },
+    {
+      Header: 'Active since',
+      accessor: 'activeSince',
+      cellStyle: { textAlign: 'center', width: '7rem' },
+      Cell: ({ value }) => {
+        return <span>{formatDateToMid1(value)}</span>;
       },
-    ],
-    [],
-  );
+    },
+  ];
 
   return (
-    <NodeAlertsTab>
-      <TitleContainer>
-        <ActiveAlertsText>
-          {intl.formatMessage({ id: 'active_alerts' })}
-        </ActiveAlertsText>
-        <ActiveAlertsFilter />
-      </TitleContainer>
-      <ActiveAlertsTableContainer>
-        <Table columns={columns} data={activeAlertListData} />
-      </ActiveAlertsTableContainer>
-    </NodeAlertsTab>
+    <Box display="flex" flexDirection="column" hgeight="100%" margin="1rem">
+      <Box display="flex" justifyContent={'flex-end'}>
+        {alertsNode?.length !== 0 && <ActiveAlertsFilter />}
+      </Box>
+      <Box pt="1rem" flex={1}>
+        <Table columns={columns} data={activeAlertListData}>
+          <Table.SingleSelectableContent
+            rowHeight="h48"
+            separationLineVariant="backgroundLevel2"
+            backgroundVariant="backgroundLevel4"
+            children={(Rows) => {
+              if (alertsNode?.length === 0)
+                return (
+                  <NoResult>
+                    {intl.formatMessage({ id: 'no_active_alerts' })}
+                  </NoResult>
+                );
+              return <>{Rows}</>;
+            }}
+          />
+        </Table>
+      </Box>
+    </Box>
   );
 };
 
