@@ -45,7 +45,7 @@ const VolumeListTable = React.memo((props) => {
   `;
   const columns = React.useMemo(() => {
     const onClickCell = (name) => {
-      history.push(`/volumes/${name}/overview?node=${nodeName}`);
+      history.push(`/volumes/${name}/overview?search=${nodeName}`);
     };
 
     return [
