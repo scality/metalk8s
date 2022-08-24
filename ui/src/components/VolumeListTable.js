@@ -165,7 +165,7 @@ const VolumeListTable = (props) => {
       location.pathname.endsWith('/details');
 
     if (isAddNodeFilter) {
-      history.push(`/volumes/${row.values.name}/overview?search=${nodeName}`);
+      history.push(`/volumes/${row.values.name}/overview?${query.toString()}`);
     } else {
       if (isTabSelected) {
         const newPath = location.pathname.replace(
