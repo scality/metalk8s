@@ -1,4 +1,4 @@
-ARG NODE_IMAGE_VERSION=14.16.0
+ARG NODE_IMAGE_VERSION=16.14.0
 
 FROM node:${NODE_IMAGE_VERSION}
 
@@ -7,7 +7,7 @@ WORKDIR /home/node
 
 # Setup build dependencies
 COPY package.json package-lock.json /home/node/
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 COPY entrypoint.sh /entrypoint.sh
 

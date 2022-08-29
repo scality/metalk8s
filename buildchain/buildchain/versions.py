@@ -79,7 +79,7 @@ ROCKY_BASE_IMAGE_SHA256: str = (
 ETCD_VERSION: str = "3.5.3"
 ETCD_IMAGE_VERSION: str = f"{ETCD_VERSION}-0"
 NGINX_IMAGE_VERSION: str = "1.21.6-alpine"
-NODEJS_IMAGE_VERSION: str = "14.16.0"
+NODEJS_IMAGE_VERSION: str = "16.14.0"
 KEEPALIVED_VERSION: str = "2.2.7"
 
 # Current build IDs, to be augmented whenever we rebuild the corresponding

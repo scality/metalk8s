@@ -1,5 +1,5 @@
 ARG NGINX_IMAGE_VERSION=1.18.0-alpine
-ARG NODE_IMAGE_VERSION=14.16.0
+ARG NODE_IMAGE_VERSION=16.14.0
 
 FROM node:${NODE_IMAGE_VERSION} AS build-step
 
@@ -8,7 +8,7 @@ COPY package*.json /home/node/
 
 # `npm config set unsafe-perm true` is needed in order to let npm run core-ui prepare script when installing dependencies in a context with root access
 # Ref : https://npm.community/t/npm-ci-not-running-prepare-for-git-dependencies-when-run-as-root-in-docker/4485/2
-RUN npm config set unsafe-perm true && npm ci
+RUN npm config set unsafe-perm true && npm ci --legacy-peer-deps
 
 COPY index-template.html webpack.*.js babel.config.js .flowconfig /home/node/
 COPY public /home/node/public

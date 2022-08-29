@@ -1,29 +1,23 @@
-FROM centos:7
+FROM node:16-bullseye
 
 ENV LANG=en_US.utf8
+ENV CYPRESS_CACHE_FOLDER=/home/node/.cache
 
-RUN curl -sL https://rpm.nodesource.com/setup_12.x | bash -
-RUN yum install -y --setopt=skip_missing_names_on_install=False \
-        epel-release \
-        && \
-    yum install -y --setopt=skip_missing_names_on_install=False \
-        git \
-        nginx \
-        nodejs
+RUN apt-get update -y && apt install software-properties-common -y \
+    && sed -i "/^# deb.*universe/ s/^# //" /etc/apt/sources.list \
+    && apt upgrade -y && apt install -y git nginx python3 
 
 COPY standalone-nginx.conf /etc/nginx/conf.d/default.conf
 RUN rm -rf /usr/share/nginx/html/*
 
 # UI build (cannot use build stages for now) {{{
 
-RUN adduser -u 1000 --home /home/node node
-
 #USER node
 WORKDIR /home/node
 
 COPY package.json package-lock.json /home/node/
 
-RUN npm config set unsafe-perm true && npm ci
+RUN npm config set unsafe-perm true && npm ci --legacy-peer-deps
 
 COPY babel.config.js webpack.common.js webpack.prod.js /home/node/
 COPY public /home/node/public/
@@ -35,6 +29,6 @@ RUN npm run build
 
 # }}}
 
-RUN shopt -s dotglob && cp -r build/* /usr/share/nginx/html/
+RUN bash -c "shopt -s dotglob && cp -r build/* /usr/share/nginx/html/"
 
 CMD ["nginx", "-g", "daemon off;"]

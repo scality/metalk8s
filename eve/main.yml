@@ -238,9 +238,9 @@ models:
       name: Retrieve ISO image
       env: &_env_retrieve_artifact_retry
         <<: *_env_retrieve_artifact
-        MAX_ATTEMPTS: "300"  # retry every 2 seconds for 10 minutes total
-        FILE_SOURCE: 'metalk8s.iso'
-        FILE_DEST: ''
+        MAX_ATTEMPTS: "300" # retry every 2 seconds for 10 minutes total
+        FILE_SOURCE: "metalk8s.iso"
+        FILE_DEST: ""
       command: |
         bash -c '
         in_url="${BASE_URL}/$FILE_SOURCE"
@@ -271,7 +271,7 @@ models:
       env: &_env_copy_iso_bootstrap_ssh
         ARCHIVE_DIRECTORY: "%(prop:builddir)s/build"
         ARCHIVE: "metalk8s.iso"
-        DEST: ''
+        DEST: ""
         NODE: bootstrap
       command: >
         scp -F ssh_config "$ARCHIVE_DIRECTORY/$ARCHIVE"
@@ -523,8 +523,8 @@ models:
           fi
         '
       env: &_env_final_status_artifact
-        STEP_NAME: ''
-        FINAL_STATUS: ''
+        STEP_NAME: ""
+        FINAL_STATUS: ""
         TEXT: |-
           Build Url: %(prop:buildurl)s
           Artifact Url: %(prop:artifacts_public_url)s
@@ -772,9 +772,9 @@ models:
   - Git: &git_pull_prev
       name: clone previous version branch
       command: >
-          git clone "%(prop:repository)s"
-          --branch "%(prop:prev_branch)s"
-          metalk8s-prev
+        git clone "%(prop:repository)s"
+        --branch "%(prop:prev_branch)s"
+        metalk8s-prev
       haltOnFailure: true
 
   - ShellCommand: &generate_report_over_ssh
@@ -812,7 +812,7 @@ models:
         HOSTS_LIST: ""
         SSH_CONFIG: ssh_config
         DEST_DIR: "%(prop:builddir)s/build/sosreport/sosreport"
-        STEP_NAME: ''
+        STEP_NAME: ""
       command: >
         HOSTS_LIST=${HOSTS_LIST:-bootstrap$(seq -s '' --format ' node-%%g' 1 %(prop:nodes_count:-0)s)};
         mkdir -p "$DEST_DIR/$STEP_NAME" &&
@@ -948,9 +948,9 @@ stages:
           name: Set previous version to upgrade from and downgrade to
           property: prev_branch
           command: >
-              major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
-              git branch --remote --list --sort=creatordate --format="%%(refname:lstrip=-2)" \
-                "origin/development/$(( major>123 ? major-1 : 2 )).*" | tail -1
+            major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
+            git branch --remote --list --sort=creatordate --format="%%(refname:lstrip=-2)" \
+              "origin/development/$(( major>123 ? major-1 : 2 )).*" | tail -1
       - TriggerStages:
           name: Trigger build of previous version
           stage_names:
@@ -1123,7 +1123,7 @@ stages:
       path: eve/workers/pod-docs-builder/pod.yaml
       images:
         doc-builder:
-          context: '.'
+          context: "."
           dockerfile: docs/Dockerfile
     steps:
       - Git: *git_pull
@@ -1137,7 +1137,7 @@ stages:
           name: Build documentation for ReadTheDocs
           env:
             # Fake that we are building in a ReadTheDocs environment
-            READTHEDOCS: 'True'
+            READTHEDOCS: "True"
           command: tox --workdir /tmp/tox -e docs -- html
           haltOnFailure: true
       - ShellCommand:
@@ -1187,7 +1187,7 @@ stages:
       path: eve/workers/pod-linter/pod.yaml
       images:
         docker-linter:
-          context: 'storage-operator'
+          context: "storage-operator"
           dockerfile: eve/workers/pod-linter/Dockerfile
     steps:
       - Git: *git_pull
@@ -1221,13 +1221,13 @@ stages:
       path: eve/workers/pod-integration-tests/ui/pod.yaml
       images:
         worker:
-          context: 'ui'
+          context: "ui"
           dockerfile: eve/workers/pod-integration-tests/ui/worker.Dockerfile
         application:
-          context: 'ui'
+          context: "ui"
           dockerfile: eve/workers/pod-integration-tests/ui/app.Dockerfile
         shell-ui:
-          context: 'shell-ui'
+          context: "shell-ui"
           dockerfile: eve/workers/pod-integration-tests/ui/shell-ui.Dockerfile
     steps:
       - Git: *git_pull
@@ -1244,7 +1244,7 @@ stages:
           command: |
             PKGS="har-validator cypress cypress-cucumber-preprocessor cypress-wait-until @testing-library/cypress"
             for pkg in $PKGS; do
-              npm install --no-save --no-package-lock $pkg@$(node -p \
+              npm install --no-save --no-package-lock --legacy-peer-deps $pkg@$(node -p \
                 -e "require('./package-lock.json').dependencies['$pkg'].version" \
               ) || exit 1
             done
@@ -1319,13 +1319,11 @@ stages:
         TEST_NAME: ui
     worker:
       type: kube_pod
-      path: eve/workers/pod-unit-tests/pod.yaml
+      path: eve/workers/pod-unit-tests-ui/pod.yaml
       images:
-        docker-unit-tests:
-          context: 'ui'
-          dockerfile: eve/workers/pod-unit-tests/ui/Dockerfile
-      vars:
-        name: "metalk8s-unit-tests-ui-worker"
+        docker-builder:
+          context: "."
+          dockerfile: eve/workers/pod-unit-tests-ui/worker.Dockerfile
     steps:
       - Git: *git_pull
       - ShellCommand:
@@ -1334,18 +1332,19 @@ stages:
             <<: *_env_final_status_artifact_failed
             <<: *_unit-test_ui_junit_info
             STEP_NAME: unit_tests_ui
-      - ShellCommand: *yum_clean_all
       - ShellCommand:
           name: Install UI dependencies
-          workdir: build/ui
-          command: >
-            npm ci --prefer-offline --no-audit
+          command: |
+            docker build ui -t ui-builder -f eve/workers/pod-unit-tests-ui/ui.Dockerfile
+            docker run -t --rm --entrypoint /bin/sh -v $(pwd)/ui:/tmp ui-builder -c "npm ci --prefer-offline --no-audit --legacy-peer-deps --unsafe-perm --no-optional"
+          timeout: 14400
+          maxTime: 14400
           haltOnFailure: true
       - ShellCommand:
           name: Run all UI unit tests
           workdir: build/ui
           command: >
-            npm run test:nowatch --no-update-notifier
+            docker run -t --rm --entrypoint /bin/sh -v $(pwd):/tmp ui-builder -c "npm run test:nowatch --no-update-notifier"
           haltOnFailure: true
       - ShellCommand:
           name: Prepare upload folder
@@ -1375,13 +1374,11 @@ stages:
         TEST_NAME: shell-ui
     worker:
       type: kube_pod
-      path: eve/workers/pod-unit-tests/pod.yaml
+      path: eve/workers/pod-unit-tests-ui/pod.yaml
       images:
-        docker-unit-tests:
-          context: 'shell-ui'
-          dockerfile: eve/workers/pod-unit-tests/ui/Dockerfile
-      vars:
-        name: "metalk8s-unit-tests-shell-ui-worker"
+        docker-builder:
+          context: "."
+          dockerfile: eve/workers/pod-unit-tests-ui/worker.Dockerfile
     steps:
       - Git: *git_pull
       - ShellCommand:
@@ -1390,18 +1387,19 @@ stages:
             <<: *_env_final_status_artifact_failed
             <<: *_unit-test_shell_ui_junit_info
             STEP_NAME: unit_tests_shell_ui
-      - ShellCommand: *yum_clean_all
       - ShellCommand:
           name: Install UI dependencies
-          workdir: build/shell-ui
-          command: >
-            npm ci --prefer-offline --no-audit
+          command: |
+            docker build shell-ui -t ui-builder -f eve/workers/pod-unit-tests-ui/ui.Dockerfile
+            docker run -t --rm --entrypoint /bin/sh -v $(pwd)/shell-ui:/tmp ui-builder -c "npm ci --prefer-offline --no-audit --legacy-peer-deps -d"
+          timeout: 14400
+          maxTime: 14400
           haltOnFailure: true
       - ShellCommand:
           name: Run all Shell UI unit tests
           workdir: build/shell-ui
           command: >
-            npm run test --no-update-notifier
+            docker run -t --rm --entrypoint /bin/sh -v $(pwd):/tmp ui-builder -c "npm run test --no-update-notifier"
           haltOnFailure: true
       - ShellCommand:
           <<: *add_final_status_artifact_success
@@ -1421,7 +1419,7 @@ stages:
       path: eve/workers/pod-unit-tests/pod.yaml
       images:
         docker-unit-tests:
-          context: 'tools/crd-client-generator-js'
+          context: "tools/crd-client-generator-js"
           dockerfile: eve/workers/pod-unit-tests/ui/Dockerfile
       vars:
         name: "metalk8s-unit-tests-crd-client-generator-worker"
@@ -1438,6 +1436,7 @@ stages:
           workdir: build/tools/crd-client-generator-js
           command: >
             npm ci --prefer-offline --no-audit
+          timeout: 14400
           haltOnFailure: true
       - ShellCommand:
           name: Run all CRD client generator unit tests
@@ -1463,7 +1462,7 @@ stages:
       path: eve/workers/pod-unit-tests/pod.yaml
       images:
         docker-unit-tests:
-          context: 'operator'
+          context: "operator"
           dockerfile: eve/workers/pod-unit-tests/go/Dockerfile
       vars:
         name: "metalk8s-unit-tests-metalk8s-operator-worker"
@@ -1499,7 +1498,7 @@ stages:
       path: eve/workers/pod-unit-tests/pod.yaml
       images:
         docker-unit-tests:
-          context: 'storage-operator'
+          context: "storage-operator"
           dockerfile: eve/workers/pod-unit-tests/go/Dockerfile
       vars:
         name: "metalk8s-unit-tests-storage-operator-worker"
@@ -1535,7 +1534,7 @@ stages:
       path: eve/workers/pod-unit-tests/pod.yaml
       images:
         docker-unit-tests:
-          context: 'salt'
+          context: "salt"
           dockerfile: eve/workers/pod-unit-tests/salt/Dockerfile
       vars:
         name: "metalk8s-unit-tests-salt-worker"
@@ -1570,7 +1569,7 @@ stages:
       path: eve/workers/pod-unit-tests/pod.yaml
       images:
         docker-unit-tests:
-          context: 'tools/lib-alert-tree'
+          context: "tools/lib-alert-tree"
           dockerfile: eve/workers/pod-unit-tests/lib-alert-tree/Dockerfile
       vars:
         name: "metalk8s-unit-tests-lib-alert-tree-worker"
@@ -1963,10 +1962,10 @@ stages:
           name: Set previous patch version to upgrade from and downgrade to
           property: product_promoted_version
           command: >
-              major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
-              minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
-              patch=$(echo "%(prop:product_version)s" | cut -d'.' -f3) &&
-              echo "$major.$minor.$(( patch>0 ? patch-1 : 0 ))"
+            major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
+            minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
+            patch=$(echo "%(prop:product_version)s" | cut -d'.' -f3) &&
+            echo "$major.$minor.$(( patch>0 ? patch-1 : 0 ))"
       - SetPropertyFromCommand: &prop_promoted_version_available
           name: Set the property checking that promoted version is available
           property: promoted_present
@@ -1974,11 +1973,11 @@ stages:
             PRODUCT_VERSION: "%(prop:product_version)s"
             PRODUCT_VERSION_PREV: "%(prop:product_promoted_version)s"
           command: |-
-              if [ -n "$PRODUCT_VERSION_PREV" ] && [ "$PRODUCT_VERSION" != "$PRODUCT_VERSION_PREV" ]; then
-                echo "true"
-              else
-                echo "false"
-              fi
+            if [ -n "$PRODUCT_VERSION_PREV" ] && [ "$PRODUCT_VERSION" != "$PRODUCT_VERSION_PREV" ]; then
+              echo "true"
+            else
+              echo "false"
+            fi
       - TriggerStages: &trigger_promoted_upgrade_downgrade_stages
           name: Trigger upgrade/downgrade stages with promoted Artifact ISO
           doStepIf: "%(prop:promoted_present)s"
@@ -2000,9 +1999,9 @@ stages:
           name: Set previous minor version to upgrade from and downgrade to
           property: product_promoted_version
           command: >
-              major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
-              minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
-              git tag --sort=taggerdate --list "$major.$(( $minor-1 )).*" | grep -v '\-' | tail -1
+            major=$(echo "%(prop:product_version)s" | cut -d'.' -f1) &&
+            minor=$(echo "%(prop:product_version)s" | cut -d'.' -f2) &&
+            git tag --sort=taggerdate --list "$major.$(( $minor-1 )).*" | grep -v '\-' | tail -1
       - SetPropertyFromCommand: *prop_promoted_version_available
       - TriggerStages: *trigger_promoted_upgrade_downgrade_stages
 
@@ -2019,13 +2018,13 @@ stages:
           name: Set previous major version to upgrade from and downgrade to
           property: product_promoted_version
           command: |-
-              major=$(echo "%(prop:product_version)s" | cut -d'.' -f1)
-              if [ "$major" = "123" ]; then
-                prev_version="2.11"
-              else
-                prev_version="$(( major-1 ))"
-              fi
-              git tag --sort=taggerdate --list "$prev_version.*" | grep -v '\-' | tail -1
+            major=$(echo "%(prop:product_version)s" | cut -d'.' -f1)
+            if [ "$major" = "123" ]; then
+              prev_version="2.11"
+            else
+              prev_version="$(( major-1 ))"
+            fi
+            git tag --sort=taggerdate --list "$prev_version.*" | grep -v '\-' | tail -1
       - SetPropertyFromCommand: *prop_promoted_version_available
       - TriggerStages: *trigger_promoted_upgrade_downgrade_stages
 
@@ -2058,7 +2057,6 @@ stages:
           name: Trigger multi-node upgrade stages
           stage_names:
             - snapshot-3-nodes-upgrade
-
 
   snapshot-simple-environment-upgrade:
     # NOTE: This stage just set `environment_name` property to
@@ -2253,8 +2251,8 @@ stages:
       - ShellCommand:
           name: Certificates expiration beacons test
           command: |
-              scp -F ssh_config %(prop:builddir)s/build/tests/test-certificates-beacon.sh bootstrap:
-              ssh -F ssh_config bootstrap "sudo ./test-certificates-beacon.sh /srv/scality/metalk8s-%(prop:metalk8s_version)s"
+            scp -F ssh_config %(prop:builddir)s/build/tests/test-certificates-beacon.sh bootstrap:
+            ssh -F ssh_config bootstrap "sudo ./test-certificates-beacon.sh /srv/scality/metalk8s-%(prop:metalk8s_version)s"
           workdir: *terraform_workdir
           haltOnFailure: true
           doStepIf: "%(prop:check_certs_renewal:-false)s"
@@ -2322,7 +2320,7 @@ stages:
           env: &_env_promoted_artifacts
             DEST_DIR: "/tmp"
             BASE_URL: "http://artifacts/builds/github:scality:metalk8s:\
-                      promoted-%(prop:product_promoted_version)s"
+              promoted-%(prop:product_promoted_version)s"
       - ShellCommand:
           <<: *retrieve_iso
           name: Retrieve promoted ISO image
@@ -2433,13 +2431,13 @@ stages:
             done;
           workdir: *terraform_workdir
           haltOnFailure: true
-      - ShellCommand: &copy_bastion_priv_key_to_bootstrap
-          # FIXME: find a cleaner way with Terraform.
+      - ShellCommand:
+          &copy_bastion_priv_key_to_bootstrap # FIXME: find a cleaner way with Terraform.
           name: Send bastion private key to bootstrap
           command: >
-              ssh -F ssh_config bootstrap "sudo mkdir -p /etc/metalk8s/pki/" &&
-              scp -F ssh_config -3 bastion:.ssh/bastion bootstrap:./         &&
-              ssh -F ssh_config bootstrap "sudo cp bastion /etc/metalk8s/pki/"
+            ssh -F ssh_config bootstrap "sudo mkdir -p /etc/metalk8s/pki/" &&
+            scp -F ssh_config -3 bastion:.ssh/bastion bootstrap:./         &&
+            ssh -F ssh_config bootstrap "sudo cp bastion /etc/metalk8s/pki/"
           workdir: *terraform_workdir
           haltOnFailure: true
       - ShellCommand: *set_bootstrap_minion_id_ssh
@@ -2797,8 +2795,7 @@ stages:
       - ShellCommand:
           name: Create a new bootstrap node
           env: *_env_terraform
-          command:
-            terraform apply -auto-approve -refresh
+          command: terraform apply -auto-approve -refresh
             -target openstack_compute_instance_v2.bootstrap
             -target null_resource.copy_bastion_pub_to_bootstrap
             -target null_resource.ssh_config
@@ -2901,8 +2898,8 @@ stages:
               example-solution-%(prop:example_solution_version)s.iso
             FILE_DEST: example-solution.iso
             BASE_URL: "http://artifacts/builds/github:\
-                       scality:metalk8s-solution-example:\
-                       promoted-%(prop:example_solution_version)s"
+              scality:metalk8s-solution-example:\
+              promoted-%(prop:example_solution_version)s"
       - ShellCommand:
           <<: *retrieve_iso
           name: Retrieve Solution next example-solution ISO image
@@ -2912,8 +2909,8 @@ stages:
               example-solution-%(prop:example_solution_version_next)s.iso
             FILE_DEST: example-solution-next.iso
             BASE_URL: "http://artifacts/builds/github:\
-                       scality:metalk8s-solution-example:\
-                       promoted-%(prop:example_solution_version_next)s"
+              scality:metalk8s-solution-example:\
+              promoted-%(prop:example_solution_version_next)s"
       - ShellCommand:
           name: Copy Solutions ISOs to bootstrap node
           command: >
@@ -3148,10 +3145,10 @@ stages:
                 [ "$GIT_BRANCH" = "development/$LATEST_DEV_BRANCH" ] && echo true || echo false
             fi
           env:
-            GIT_REFERENCE: '%(prop:git_reference)s'
-            GIT_BRANCH: '%(prop:branch)s'
-            IS_LATEST_DEV: '%(prop:is_latest_dev:-unset)s'
-            IS_LATEST_STABLE: '%(prop:is_latest_stable:-unset)s'
+            GIT_REFERENCE: "%(prop:git_reference)s"
+            GIT_BRANCH: "%(prop:branch)s"
+            IS_LATEST_DEV: "%(prop:is_latest_dev:-unset)s"
+            IS_LATEST_STABLE: "%(prop:is_latest_stable:-unset)s"
       - SetPropertyFromCommand:
           name: Set is_stable_version property
           property: is_latest_stable
@@ -3168,15 +3165,15 @@ stages:
                 [ "$VERSION" = "$LATEST_STABLE_RELEASE" ] && echo true || echo false
             fi
           env:
-            GIT_REFERENCE: '%(prop:git_reference)s'
-            IS_LATEST_DEV: '%(prop:is_latest_dev)s'
-            IS_LATEST_STABLE: '%(prop:is_latest_stable:-unset)s'
-            VERSION: '%(prop:metalk8s_version)s'
+            GIT_REFERENCE: "%(prop:git_reference)s"
+            IS_LATEST_DEV: "%(prop:is_latest_dev)s"
+            IS_LATEST_STABLE: "%(prop:is_latest_stable:-unset)s"
+            VERSION: "%(prop:metalk8s_version)s"
       - SetProperty:
           name: Set is_dev property
           property: is_dev
           value: false
-          doStepIf: '%(prop:use_production_registry:-false)s'
+          doStepIf: "%(prop:use_production_registry:-false)s"
       - ShellCommand:
           name: Retrieve shell-ui image from pre-merge artifacts
           command: >
@@ -3197,29 +3194,29 @@ stages:
             docker tag "$IMAGE_SRC" "$REGISTRY_HOST/$PROJECT/$IMAGE_DST"
           env: &_env_image_registry_tag_shell_ui
             <<: *_env_image_registry
-            IMAGE_SRC: 'shell-ui:v%(prop:metalk8s_version)s'
-            IMAGE_DST: 'shell-ui:v%(prop:metalk8s_version)s'
+            IMAGE_SRC: "shell-ui:v%(prop:metalk8s_version)s"
+            IMAGE_DST: "shell-ui:v%(prop:metalk8s_version)s"
       - ShellCommand:
           <<: *image_registry_tag_shell_ui
           name: Tag shell-ui image with commit short revision
           env:
             <<: *_env_image_registry_tag_shell_ui
-            IMAGE_DST: 'shell-ui:v%(prop:metalk8s_version)s-%(prop:commit_short_revision)s'
-          doStepIf: '%(prop:is_dev:-true)s'
+            IMAGE_DST: "shell-ui:v%(prop:metalk8s_version)s-%(prop:commit_short_revision)s"
+          doStepIf: "%(prop:is_dev:-true)s"
       - ShellCommand:
           <<: *image_registry_tag_shell_ui
           name: Tag shell-ui image as stable
           env:
             <<: *_env_image_registry_tag_shell_ui
-            IMAGE_DST: 'shell-ui:stable'
-          doStepIf: '%(prop:is_latest_stable)s'
+            IMAGE_DST: "shell-ui:stable"
+          doStepIf: "%(prop:is_latest_stable)s"
       - ShellCommand:
           <<: *image_registry_tag_shell_ui
           name: Tag shell-ui image as latest
           env:
             <<: *_env_image_registry_tag_shell_ui
-            IMAGE_DST: 'shell-ui:latest'
-          doStepIf: '%(prop:is_latest_dev)s'
+            IMAGE_DST: "shell-ui:latest"
+          doStepIf: "%(prop:is_latest_dev)s"
       - ShellCommand:
           name: Push shell-ui image to the remote registry
           command: |

@@ -3,8 +3,9 @@ FROM centos:7
 ARG BUILDBOT_VERSION=2.0.1
 
 ENV LANG=en_US.utf8
+ENV CYPRESS_CACHE_FOLDER=/home/eve/.cache
 
-RUN curl -sL https://rpm.nodesource.com/setup_12.x | bash -
+RUN curl -sL https://rpm.nodesource.com/setup_16.x | bash -
 RUN yum install -y --setopt=skip_missing_names_on_install=False \
         epel-release \
     && yum install -y --setopt=skip_missing_names_on_install=False \
@@ -32,9 +33,9 @@ USER eve
 # Pre-install Cypress to save it in cache
 WORKDIR /tmp
 COPY package-lock.json ./
-RUN npm install --no-save --no-package-lock har-validator@$(node -p \
+RUN npm install --no-save --no-package-lock --legacy-peer-deps har-validator@$(node -p \
         -e "require('./package-lock.json').dependencies['har-validator'].version" \
-    ) && npm install --no-save --no-package-lock cypress@$(node -p \
+    ) && npm install --no-save --no-package-lock --legacy-peer-deps cypress@$(node -p \
         -e "require('./package-lock.json').dependencies.cypress.version" \
     )
 

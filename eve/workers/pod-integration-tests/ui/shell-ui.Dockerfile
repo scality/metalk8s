@@ -1,15 +1,11 @@
-FROM centos:7
+FROM node:16-bullseye
 
 ENV LANG=en_US.utf8
+ENV CYPRESS_CACHE_FOLDER=/home/node/.cache
 
-RUN curl -sL https://rpm.nodesource.com/setup_12.x | bash -
-RUN yum install -y --setopt=skip_missing_names_on_install=False \
-        epel-release \
-        && \
-    yum install -y --setopt=skip_missing_names_on_install=False \
-        git \
-        nginx \
-        nodejs
+RUN apt-get update -y && apt install software-properties-common -y \
+    && sed -i "/^# deb.*universe/ s/^# //" /etc/apt/sources.list \
+    && apt upgrade -y && apt install -y git nginx python3
 
 COPY shell-ui-docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
@@ -24,14 +20,12 @@ RUN rm -rf /usr/share/nginx/html/*
 
 # UI build (cannot use build stages for now) {{{
 
-RUN adduser -u 1000 --home /home/node node
-
 # USER node
 WORKDIR /home/node
 
 COPY package.json package-lock.json /home/node/
 
-RUN npm config set unsafe-perm true && npm ci
+RUN npm config set unsafe-perm true && npm ci --legacy-peer-deps
 
 COPY index-template.html webpack.*.js babel.config.js .flowconfig /home/node/
 COPY public /home/node/public/

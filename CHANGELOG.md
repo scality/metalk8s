@@ -25,6 +25,9 @@
 - No longer use deprecated field `loadBalancerIP` for LoadBalancer service
   (PR[#3834](https://github.com/scality/metalk8s/pull/3834))
 
+- Bump Node.js version to 16.14.0 and improve UI initial load time
+  (PR[#3745](https://github.com/scality/metalk8s/pull/3745))
+
 ## Release 123.0.5 (in development)
 
 ## Release 123.0.4
