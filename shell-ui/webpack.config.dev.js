@@ -33,7 +33,7 @@ module.exports = (env) => ({
         secure: false,
       },
       {
-        context: ['/api', '/grafana', '/docs', '/oidc'],
+        context: ['/api', '/grafana', '/docs', '/auth'],
         target: controlPlaneBaseUrl,
         secure: false,
       },
