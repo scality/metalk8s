@@ -58,16 +58,6 @@ export const PageContentContainer = styled.div`
   width: 100%;
 `;
 
-export const TextBadge = styled.span`
-  background-color: ${(props) => props.theme[props.variant]};
-  color: ${(props) => props.theme.textReverse};
-  padding: 2px ${padding.smaller};
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: ${fontWeight.bold};
-  margin-left: ${padding.smaller};
-`;
-
 export const VolumeTab = styled.div`
   height: 100%;
   overflow: auto;

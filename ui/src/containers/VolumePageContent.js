@@ -2,8 +2,8 @@
 import React, { Fragment, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useHistory, useLocation, useRouteMatch } from 'react-router';
-import { EmptyState } from '@scality/core-ui';
 import { NoResult } from '@scality/core-ui/dist/components/tablev2/Tablestyle';
+import { EmptyState, TextBadge } from '@scality/core-ui';
 import VolumeListTable from '../components/VolumeListTable';
 import VolumeOverviewTab from '../components/VolumeOverviewTab';
 import AlertsTab from '../components/AlertsTab';
@@ -20,7 +20,6 @@ import {
   LeftSideInstanceList,
   NoInstanceSelectedContainer,
   NoInstanceSelected,
-  TextBadge,
   RightSidePanel,
 } from '../components/style/CommonLayoutStyle';
 import { useIntl } from 'react-intl';
@@ -203,9 +202,10 @@ const VolumePageContent = (props) => {
                   label={intl.formatMessage({ id: 'alerts' })}
                   textBadge={
                     alertlist && alertlist.length ? (
-                      <TextBadge variant={'infoPrimary'}>
-                        {alertlist.length}
-                      </TextBadge>
+                      <TextBadge
+                        variant={'infoPrimary'}
+                        text={alertlist.length}
+                      />
                     ) : null
                   }
                   data-cy="alerts_tab_volume_page"

@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
-import { TextBadge } from './style/CommonLayoutStyle';
 import { useIntl } from 'react-intl';
 import { spacing } from '@scality/core-ui/dist/style/theme';
 import {
@@ -8,7 +7,7 @@ import {
   useDiscoveredViews,
 } from '../containers/ConfigProvider';
 import { useHistory } from 'react-router';
-import { EmphaseText, SecondaryText } from '@scality/core-ui';
+import { EmphaseText, SecondaryText, TextBadge } from '@scality/core-ui';
 import { useAlertLibrary, useAlerts } from '../containers/AlertProvider';
 import { getChildrenAlerts } from '../services/alertUtils';
 import { Box } from '@scality/core-ui/dist/next';
@@ -70,9 +69,11 @@ const DashboardAlerts = () => {
         <EmphaseText>
           {intl.formatMessage({ id: 'platform_active_alerts' })}
         </EmphaseText>
-        <TextBadge variant="infoPrimary" data-testid="all-alert-badge">
-          {totalAlerts}
-        </TextBadge>
+        <TextBadge
+          variant="infoPrimary"
+          data-testid="all-alert-badge"
+          text={totalAlerts}
+        />
       </div>
       {totalAlerts === 0 ? (
         <SecondaryText>
@@ -86,18 +87,16 @@ const DashboardAlerts = () => {
               <TextBadge
                 variant="statusCritical"
                 data-testid="critical-alert-badge"
-              >
-                {criticalAlerts.length}
-              </TextBadge>
+                text={criticalAlerts.length}
+              />
             </div>
             <div>
               Warning
               <TextBadge
                 variant="statusWarning"
                 data-testid="warning-alert-badge"
-              >
-                {warningAlerts.length}
-              </TextBadge>
+                text={warningAlerts.length}
+              />
             </div>
           </BadgesContainer>
           <Link

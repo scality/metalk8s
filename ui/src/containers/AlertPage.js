@@ -1,12 +1,11 @@
 //@flow
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
-import { StatusWrapper, ConstrainedText } from '@scality/core-ui';
+import { StatusWrapper, ConstrainedText, TextBadge } from '@scality/core-ui';
 import { Table } from '@scality/core-ui/dist/next';
 import { padding, fontSize, spacing } from '@scality/core-ui/dist/style/theme';
 import { useAlerts } from './AlertProvider';
 import StatusIcon from '../components/StatusIcon';
-import { TextBadge } from '../components/style/CommonLayoutStyle';
 import { STATUS_WARNING, STATUS_CRITICAL, STATUS_HEALTH } from '../constants';
 import { compareHealth, formatDateToMid1 } from '../services/utils';
 import CircleStatus from '../components/CircleStatus';
@@ -95,7 +94,11 @@ const isEqualAlert = (a = [], b = []) => {
 };
 
 const getAlertStatus = (numbersOfCritical, numbersOfWarning) =>
-numbersOfCritical > 0 ? STATUS_CRITICAL : numbersOfWarning > 0 ? STATUS_WARNING : STATUS_HEALTH;
+  numbersOfCritical > 0
+    ? STATUS_CRITICAL
+    : numbersOfWarning > 0
+    ? STATUS_WARNING
+    : STATUS_HEALTH;
 
 function AlertPageHeader({
   activeAlerts,
@@ -122,18 +125,18 @@ function AlertPageHeader({
 
       <SecondaryTitle>
         <>{intl.formatMessage({ id: 'active_alerts' })}</>
-        <TextBadge variant="infoPrimary">{`${activeAlerts}`}</TextBadge>
+        <TextBadge variant="infoPrimary" text={activeAlerts} />
         <SeperationLine />
       </SecondaryTitle>
 
       <TertiaryTitle>
         <div>
           Critical
-          <TextBadge variant="statusCritical">{`${critical}`}</TextBadge>
+          <TextBadge variant="statusCritical" text={critical} />
         </div>
         <div>
           Warning
-          <TextBadge variant="statusWarning">{`${warning}`}</TextBadge>
+          <TextBadge variant="statusWarning" text={warning} />
         </div>
       </TertiaryTitle>
     </AlertPageHeaderContainer>

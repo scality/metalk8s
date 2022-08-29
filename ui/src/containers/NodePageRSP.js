@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useRouteMatch } from 'react-router';
 import { Tabs } from '@scality/core-ui/dist/next';
 import { NoResult } from '@scality/core-ui/dist/components/tablev2/Tablestyle';
+import { TextBadge } from '@scality/core-ui';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { getPodsListData } from '../services/PodUtils';
 import { useURLQuery, useRefreshEffect } from '../services/utils';
@@ -23,10 +24,7 @@ import NodePageVolumesTab from '../components/NodePageVolumesTab';
 import NodePagePodsTab from '../components/NodePagePodsTab';
 import NodePagePartitionTabs from '../components/NodePagePartitionTab';
 import NodePageDetailsTab from '../components/NodeDetailsTab';
-import {
-  TextBadge,
-  NoInstanceSelected,
-} from '../components/style/CommonLayoutStyle';
+import { NoInstanceSelected } from '../components/style/CommonLayoutStyle';
 import { NODE_ALERTS_GROUP, PORT_NODE_EXPORTER } from '../constants';
 import { useAlerts } from './AlertProvider';
 import { useIntl } from 'react-intl';
@@ -149,7 +147,7 @@ const NodePageRSP = (props) => {
         label={intl.formatMessage({ id: 'alerts' })}
         textBadge={
           alertsNode && alertsNode.length ? (
-            <TextBadge variant={'infoPrimary'}>{alertsNode.length}</TextBadge>
+            <TextBadge variant={'infoPrimary'} text={alertsNode.length} />
           ) : null
         }
         data-cy="alerts_tab_node_page"
