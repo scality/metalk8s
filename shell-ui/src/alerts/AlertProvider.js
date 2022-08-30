@@ -21,7 +21,7 @@ export default function AlertProvider({
 }): Node {
   const query = useQuery('activeAlerts', () => getAlerts(alertManagerUrl), {
     // refetch the alerts every 10 seconds
-    refetchInterval: 10000, // TODO manage this refresh interval globally
+    refetchInterval: 30000, // TODO manage this refresh interval globally
     // avoid stucking at the hard loading state before alertmanager is ready
     initialData: [],
   });

@@ -7,16 +7,20 @@ import { PageContainer } from '../components/style/CommonLayoutStyle';
 import { getNodeListData } from '../services/NodeUtils';
 import { useAlerts } from './AlertProvider';
 import { useTheme } from 'styled-components';
+import { useTypedSelector } from '../hooks';
 
 const NodePage = (props) => {
   useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
   const { alerts } = useAlerts();
   const theme = useTheme();
-  const nodeTableData = useSelector((state) =>
-    getNodeListData(alerts, theme)(state, props),
+  const nodeTableData = useSelector(
+    (state) => getNodeListData(alerts, theme)(state, props),
+    (left, right) => {
+      return JSON.stringify(left) === JSON.stringify(right);
+    },
   );
-  const nodesLoading = useSelector((state) => state.app.nodes.isLoading);
+  const nodesLoading = useTypedSelector((state) => state.app.nodes.isLoading);
 
   return (
     <PageContainer>

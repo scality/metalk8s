@@ -14,7 +14,10 @@ const InternalPrivateRoute = ({
   ...rest
 }) => {
   const { language, api } = useTypedSelector((state) => state.config);
-  const { isAuthError } = useTypedSelector((state) => state.app.authError);
+  const { isAuthError } = useTypedSelector(
+    (state) => state.app.authError,
+    (left, right) => left.isAuthError === right.isAuthError,
+  );
   const url_support = api?.url_support;
   const { userData } = moduleExports['./auth/AuthProvider'].useAuth();
   const dispatch = useDispatch();

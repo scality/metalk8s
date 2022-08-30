@@ -7,8 +7,6 @@ import {
   Redirect,
   useHistory,
 } from 'react-router-dom';
-import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
-import { useRefreshEffect } from '../services/utils';
 import NodeListTable from '../components/NodeListTable';
 import NodePageRSP from './NodePageRSP';
 import {
@@ -36,8 +34,6 @@ const NodePageContent = (props) => {
     if (previousLoading && !loading && !isFirstLoadingDone)
       setIsFirstLoadingDone(true);
   }, [previousLoading, loading, isFirstLoadingDone]);
-
-  useRefreshEffect(refreshNodesAction, stopRefreshNodesAction);
 
   useEffect(() => {
     if (!defaultSelectNodeName && nodeTableData[0]?.name?.name) {
