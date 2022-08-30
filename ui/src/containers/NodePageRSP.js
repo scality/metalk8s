@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useRouteMatch } from 'react-router';
 import { Tabs } from '@scality/core-ui/dist/next';
+import { NoResult } from '@scality/core-ui/dist/components/tablev2/Tablestyle';
 import { fetchPodsAction } from '../ducks/app/pods';
 import { getPodsListData } from '../services/PodUtils';
 import { useURLQuery, useRefreshEffect } from '../services/utils';
@@ -16,7 +17,7 @@ import {
 } from '../ducks/app/volumes';
 import { readNodeAction } from '../ducks/app/nodes';
 import NodePageOverviewTab from '../components/NodePageOverviewTab';
-import NodePageAlertsTab from '../components/NodePageAlertsTab';
+import AlertsTab from '../components/AlertsTab';
 import NodePageMetricsTab from './NodePageMetricsTab';
 import NodePageVolumesTab from '../components/NodePageVolumesTab';
 import NodePagePodsTab from '../components/NodePagePodsTab';
@@ -153,7 +154,19 @@ const NodePageRSP = (props) => {
         }
         data-cy="alerts_tab_node_page"
       >
-        <NodePageAlertsTab alertsNode={alertsNode} />
+        <AlertsTab
+          alerts={alertsNode}
+          children={(Rows) => {
+            if (alertsNode?.length === 0) {
+              return (
+                <NoResult>
+                  {intl.formatMessage({ id: 'no_active_alerts' })}
+                </NoResult>
+              );
+            }
+            return <>{Rows}</>;
+          }}
+        />
       </Tabs.Tab>
       <Tabs.Tab
         path={`${url}/metrics`}

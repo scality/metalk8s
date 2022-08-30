@@ -78,12 +78,13 @@ const ActiveAlertsCard = ({ alertlist, PVCName }) => {
                     {intl.formatMessage({ id: 'volume_is_not_bound' })}
                   </NoResult>
                 );
-              } else if (PVCName && alertlist.length === 0)
+              } else if (PVCName && alertlist.length === 0) {
                 return (
                   <NoResult>
                     {intl.formatMessage({ id: 'no_active_alerts' })}
                   </NoResult>
                 );
+              }
               return <>{Rows}</>;
             }}
           />

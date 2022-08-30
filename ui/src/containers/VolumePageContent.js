@@ -3,9 +3,10 @@ import React, { Fragment, useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useHistory, useLocation, useRouteMatch } from 'react-router';
 import { EmptyState } from '@scality/core-ui';
+import { NoResult } from '@scality/core-ui/dist/components/tablev2/Tablestyle';
 import VolumeListTable from '../components/VolumeListTable';
 import VolumeOverviewTab from '../components/VolumeOverviewTab';
-import VolumeAlertsTab from '../components/VolumeAlertsTab';
+import AlertsTab from '../components/AlertsTab';
 import VolumeMetricsTab from '../components/VolumeMetricsTab';
 import VolumeDetailsTab from '../components/VolumeDetailsTab';
 import {
@@ -34,7 +35,7 @@ const VolumePageContentContainer = styled.div`
 `;
 
 // <VolumePageContent> component extracts volume name from URL and holds the volume-specific data.
-// The three components in RightSidePanel (<VolumeOverviewTab> / <VolumeAlertsTab> / <MetricGraphCard>) are dumb components,
+// The three components in RightSidePanel (<VolumeOverviewTab> / <AlertsTab> / <MetricGraphCard>) are dumb components,
 // so that with the implementation of Tabs no re-render should happen during the switch.
 const VolumePageContent = (props) => {
   const {
@@ -217,7 +218,25 @@ const VolumePageContent = (props) => {
                   }
                   data-cy="alerts_tab_volume_page"
                 >
-                  <VolumeAlertsTab alertlist={alertlist} PVCName={PVCName} />
+                  <AlertsTab
+                    alerts={alertlist}
+                    children={(Rows) => {
+                      if (!PVCName) {
+                        return (
+                          <NoResult>
+                            {intl.formatMessage({ id: 'volume_is_not_bound' })}
+                          </NoResult>
+                        );
+                      } else if (PVCName && alertlist?.length === 0) {
+                        return (
+                          <NoResult>
+                            {intl.formatMessage({ id: 'no_active_alerts' })}
+                          </NoResult>
+                        );
+                      }
+                      return <>{Rows}</>;
+                    }}
+                  />
                 </Tabs.Tab>
                 <Tabs.Tab
                   path={`${match.url}/metrics`}
