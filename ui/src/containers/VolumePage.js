@@ -4,7 +4,6 @@ import { useDispatch } from 'react-redux';
 
 import VolumeContent from './VolumePageContent';
 import { fetchPodsAction } from '../ducks/app/pods';
-import { makeGetNodeFromUrl } from '../services/utils';
 import { fetchNodesAction } from '../ducks/app/nodes';
 import {
   useRefreshVolume,
@@ -41,7 +40,6 @@ const VolumePage = (props) => {
 
   // get all the pods for all the nodes
   const pods = useTypedSelector((state) => state.app.pods.list);
-  const node = useTypedSelector((state) => makeGetNodeFromUrl(state, props));
   const nodes = useTypedSelector((state) => state.app.nodes.list);
   const volumes = useTypedSelector((state) => state.app.volumes.list);
   const volumesLoading = useTypedSelector(
@@ -71,7 +69,6 @@ const VolumePage = (props) => {
         volumes={volumes}
         volumeListData={volumeListData}
         nodes={nodes}
-        node={node}
         pVList={pVList}
         pVCList={pVCList}
         pods={pods}

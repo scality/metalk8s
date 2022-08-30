@@ -183,5 +183,6 @@
   "network_quantile_explanation": "Displays bandwidth statistics for large clusters (8+ nodes).\nQ90 (resp. Q5) is the 90th (resp. 5th) quantile, meaning that 90% (resp. 5%) of the nodes consume less bandwidth than this value.\nQuantiles diverging from the median indicate cluster imbalance with respect to network usage.\nHover over the chart to identify the nodes that are respectively above and below the Q90 and the Q5 thresholds.",
   "error_occur_outpassing_threshold": "Sorry an error occurred and we failed to retrieve the nodes outpassing this threshold.",
   "some_data_not_retrieved": "Some data can not be well retrieved",
-  "monitoring_information_unavailable": "Monitoring information unavailable"
+  "monitoring_information_unavailable": "Monitoring information unavailable",
+  "no_volume_provisioned": "Monitoring through the MetalK8s GUI will not be available until persistent storage volumes for Loki, Prometheus and AlertManager have been successfully provisioned."
 }

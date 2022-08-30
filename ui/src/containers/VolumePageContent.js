@@ -41,7 +41,6 @@ const VolumePageContent = (props) => {
   const {
     volumes,
     nodes,
-    node,
     volumeListData,
     pVList,
     pVCList,
@@ -104,16 +103,10 @@ const VolumePageContent = (props) => {
 
   // prepare the data for <PerformanceGraphCard>
   const deviceName = volume?.status?.deviceName;
-  let instanceIp;
 
-  if (!node.internalIP) {
-    // find the node name of this volume
-    const nodeName = volume?.spec?.nodeName;
-    const currentNode = nodes.find((node) => node.name === nodeName);
-    instanceIp = currentNode?.internalIP;
-  } else {
-    instanceIp = node?.internalIP;
-  }
+  const instanceIp = nodes.find(
+    (node) => node.name === volume?.spec?.nodeName,
+  )?.internalIP;
 
   /*
    ** Used to determine if a first loading has happened
@@ -138,7 +131,6 @@ const VolumePageContent = (props) => {
           <LeftSideInstanceList>
             <VolumeListTable
               volumeListData={volumeListData}
-              nodeName={node?.name}
               volumeName={currentVolumeName}
             ></VolumeListTable>
           </LeftSideInstanceList>

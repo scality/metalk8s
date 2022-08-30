@@ -183,5 +183,6 @@
   "network_quantile_explanation": "Affichage de statistiques pour la bande passante utilisée dans de grands clusters (8+ nœuds).\nQ90 (resp. Q5) est le 90e (resp. 5e) percentile, ce qui signifie que 90% (resp. 5%) des nœuds consomment moins de bande passante que cette valeur.\nSi ces quantiles s'éloignent de la médiane, cela indique une mauvaise répartition de l'utilisation réseau dans le cluster.\nAfin de découvrir les nœuds qui sont respectivement au-dessus et en dessous des seuils Q90 et Q5, veuillez survoler le graphique.",
   "error_occur_outpassing_threshold": "Désolé une erreur nous empêche de retrouver les noeuds dépassant ce seuil.",
   "some_data_not_retrieved": "Certaines données ne peuvent pas être bien récupérées",
-  "monitoring_information_unavailable": "Informations de supervision indisponibles"
+  "monitoring_information_unavailable": "Informations de supervision indisponibles",
+  "no_volume_provisioned": "La supervision via l'interface graphique de MetalK8s ne sera pas disponible tant que les volumes persistants pour Loki, Prometheus et AlertManager n'auront pas été provisionnés."
 }

@@ -60,7 +60,7 @@ const AlertsTab = ({
     {
       Header: 'Active since',
       accessor: 'activeSince',
-      cellStyle: { textAlign: 'center', width: '7rem' },
+      cellStyle: { textAlign: 'right', width: '7rem' },
       Cell: ({ value }) => {
         return <span>{formatDateToMid1(value)}</span>;
       },

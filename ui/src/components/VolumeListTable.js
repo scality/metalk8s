@@ -4,12 +4,13 @@ import { useLocation } from 'react-router-dom';
 import { useTheme } from 'styled-components';
 import { ProgressBar, Tooltip } from '@scality/core-ui';
 import { Box, Button, Table } from '@scality/core-ui/dist/next';
+import { NoResult } from '@scality/core-ui/dist/components/tablev2/Tablestyle';
 import { useIntl } from 'react-intl';
 import CircleStatus from './CircleStatus';
 import { UnknownIcon, TooltipContent } from './TableRow';
 
 const VolumeListTable = (props) => {
-  const { nodeName, volumeListData, volumeName } = props;
+  const { volumeListData, volumeName } = props;
   const history = useHistory();
   const location = useLocation();
   const intl = useIntl();
@@ -158,30 +159,26 @@ const VolumeListTable = (props) => {
   // handle the row selection by updating the URL
   const onClickRow = (row) => {
     const query = new URLSearchParams(location.search);
-    const isAddNodeFilter = query.has('search');
+
     const isTabSelected =
       location.pathname.endsWith('/alerts') ||
       location.pathname.endsWith('/metrics') ||
       location.pathname.endsWith('/details');
 
-    if (isAddNodeFilter) {
-      history.push(`/volumes/${row.values.name}/overview?${query.toString()}`);
+    if (isTabSelected) {
+      const newPath = location.pathname.replace(
+        /\/volumes\/[^/]*\//,
+        `/volumes/${row.values.name}/`,
+      );
+      history.push({
+        pathname: newPath,
+        search: query.toString(),
+      });
     } else {
-      if (isTabSelected) {
-        const newPath = location.pathname.replace(
-          /\/volumes\/[^/]*\//,
-          `/volumes/${row.values.name}/`,
-        );
-        history.push({
-          pathname: newPath,
-          search: query.toString(),
-        });
-      } else {
-        history.push({
-          pathname: `/volumes/${row.values.name}/overview`,
-          search: query.toString(),
-        });
-      }
+      history.push({
+        pathname: `/volumes/${row.values.name}/overview`,
+        search: query.toString(),
+      });
     }
   };
 
@@ -210,12 +207,7 @@ const VolumeListTable = (props) => {
             label={intl.formatMessage({ id: 'create_new_volume' })}
             icon={<i className="fas fa-plus" />}
             onClick={() => {
-              // depends on if we add node filter
-              if (nodeName) {
-                history.push(`/volumes/createVolume?node=${nodeName}`);
-              } else {
-                history.push('/volumes/createVolume');
-              }
+              history.push('/volumes/createVolume');
             }}
             data-cy="create_volume_button"
           />
@@ -227,6 +219,13 @@ const VolumeListTable = (props) => {
           selectedId={volumeName}
           onRowSelected={onClickRow}
           children={(Rows) => {
+            if (volumeListData.length === 0) {
+              return (
+                <NoResult>
+                  {intl.formatMessage({ id: 'no_volume_provisioned' })}
+                </NoResult>
+              );
+            }
             return <>{Rows}</>;
           }}
         />
