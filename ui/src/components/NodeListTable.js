@@ -3,17 +3,10 @@ import { useHistory } from 'react-router';
 import { useLocation, useRouteMatch } from 'react-router-dom';
 import { useIntl } from 'react-intl';
 import styled from 'styled-components';
-import { LargeText } from '@scality/core-ui';
-import { fontSize, padding } from '@scality/core-ui/dist/style/theme';
+import { LargeText, SecondaryText } from '@scality/core-ui';
 import { Box, Button, Table } from '@scality/core-ui/dist/next';
 import { useURLQuery } from '../services/utils';
 import CircleStatus from './CircleStatus';
-
-const IPText = styled.span`
-  font-size: ${fontSize.smaller};
-  padding-right: ${padding.small};
-  color: ${(props) => props.theme.textSecondary};
-`;
 
 const StatusText = styled.div`
   color: ${(props) => {
@@ -50,9 +43,13 @@ const NodeListTable = ({ nodeTableData }) => {
             <>
               <LargeText data-cy="node_table_name_cell">{name}</LargeText>
               <Box display={'inline-flex'} flexWrap={'wrap'}>
-                {controlPlaneIP ? <IPText>CP : {controlPlaneIP}</IPText> : null}
+                {controlPlaneIP ? (
+                  <SecondaryText>CP: {controlPlaneIP}</SecondaryText>
+                ) : null}
                 {workloadPlaneIP ? (
-                  <IPText>WP: {workloadPlaneIP}</IPText>
+                  <Box pl={'0.5rem'}>
+                    <SecondaryText>WP: {workloadPlaneIP}</SecondaryText>
+                  </Box>
                 ) : null}
               </Box>
             </>
