@@ -32,9 +32,7 @@ describe('Volume list', () => {
     // The application re-renders, it's possible the element we're interacting with has become "dead"
     // cy... failed because the element has been detached from the DOM
 
-    cy.get('[data-cy="volume_table_name_cell"]')
-      .contains('worker-0-burry-1')
-      .click({ force: true });
+    cy.findByText('worker-0-burry-1').click();
 
     cy.get('@historyPush').should('be.calledWithExactly', {
       pathname: '/volumes/worker-0-burry-1/overview',
@@ -46,9 +44,7 @@ describe('Volume list', () => {
     cy.visit('/volumes/master-1-prometheus/metrics?from=now-7d');
     cy.stubHistory();
 
-    cy.get('[data-cy="volume_table_name_cell"]')
-      .contains('master-0-alertmanager')
-      .click({ force: true });
+    cy.findByText('master-0-alertmanager').click();
     cy.get('@historyPush').should('be.calledOnce').and('be.calledWithExactly', {
       pathname: '/volumes/master-0-alertmanager/metrics',
       search: 'from=now-7d',

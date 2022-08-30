@@ -18,6 +18,8 @@ describe('Node list', () => {
   it('brings me to the overview tab of master-0 Node', () => {
     cy.visit('/nodes');
     cy.stubHistory();
+    // Wait until retrieve the data from Salt to avoid the DOM detachment
+    cy.findByText(/CP: 192.168.1.36/i);
 
     cy.get('[data-cy="node_table_name_cell"]').contains('master-0').click();
     cy.get('@historyPush').should('be.calledWithExactly', {
@@ -29,6 +31,8 @@ describe('Node list', () => {
   it('brings me to another node with the same tab selected and queryString kept', () => {
     cy.visit('/nodes/master-0/metrics?from=now-7d');
     cy.stubHistory();
+
+    cy.findByText(/CP: 192.168.1.36/i);
 
     cy.get('[data-cy="node_table_name_cell"]').contains('master-1').click();
     cy.get('@historyPush').should('be.calledOnce').and('be.calledWithExactly', {
@@ -45,22 +49,22 @@ describe('Node list', () => {
     cy.get('@historyPush').and('be.calledWithExactly', '/nodes/create');
   });
 
-  it('updates url with the search ', () => {
+  it('updates url with the search', () => {
     cy.visit('/nodes');
     cy.stubHistory();
 
-    cy.get('[data-cy="node_list_search"]').type('hello');
-    cy.get('@historyPush').and('be.calledWithExactly', '?search=hello');
+    cy.findByRole('textbox').type('hello');
+    cy.url().should('include', '/nodes/test/overview?search=hello');
   });
 
-  it(`keeps warning severity for the alert while searching the node`, () => {
+  it('keeps warning severity for the alert while searching the node', () => {
     cy.visit('/nodes/master-0/alerts?severity=warning');
     cy.stubHistory();
 
-    cy.get('[data-cy="node_list_search"]').type('hello');
-    cy.get('@historyPush').should(
-      'be.calledWithExactly',
-      '?severity=warning&search=hello',
+    cy.findByRole('textbox').type('hello');
+    cy.url().should(
+      'include',
+      '/nodes/master-0/alerts?severity=warning&search=hello',
     );
   });
 });

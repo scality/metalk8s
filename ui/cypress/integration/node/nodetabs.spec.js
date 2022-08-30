@@ -136,12 +136,10 @@ describe('Node page volumes tabs', () => {
   it('brings me to the loki-vol volume page', () => {
     cy.stubHistory();
 
-    cy.get('[role="gridcell"]')
-      .contains('div', 'loki-vol')
-      .click({ force: true });
+    cy.findByText('loki-vol').click({ force: true });
     cy.get('@historyPush').should(
       'be.calledWith',
-      '/volumes/loki-vol/overview?node=master-0',
+      '/volumes/loki-vol/overview',
     );
   });
 
