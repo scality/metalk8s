@@ -148,11 +148,6 @@ func (in *VirtualIPPoolSpec) DeepCopyInto(out *VirtualIPPoolSpec) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
-	if in.SpreadConstraints != nil {
-		in, out := &in.SpreadConstraints, &out.SpreadConstraints
-		*out = make([]SpreadConstraintSpec, len(*in))
-		copy(*out, *in)
-	}
 	if in.Addresses != nil {
 		in, out := &in.Addresses, &out.Addresses
 		*out = make([]IPAddress, len(*in))

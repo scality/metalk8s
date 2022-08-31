@@ -48,17 +48,6 @@ spec:
                             type: string
                           description: Node Selector to deploy the Virtual IPs manager
                           type: object
-                        spreadConstraints:
-                          description: Spread constraints for the Virtual IPs
-                          items:
-                            properties:
-                              topologyKey:
-                                description: Topology label to use to spread the Virtual IPs
-                                type: string
-                            required:
-                            - topologyKey
-                            type: object
-                          type: array
                         tolerations:
                           description: Tolerations to deploy the Virtual IPs manager
                           items:

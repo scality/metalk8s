@@ -40,8 +40,9 @@ type VirtualIPPoolSpec struct {
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 	// Spread constraints for the Virtual IPs
-	// +optional
-	SpreadConstraints []SpreadConstraintSpec `json:"spreadConstraints,omitempty"`
+	// NOTE: Not supported yet
+	// // +optional
+	// SpreadConstraints []SpreadConstraintSpec `json:"spreadConstraints,omitempty"`
 
 	// Virtual IP addresses to use
 	// +kubebuilder:validation:MinItems=1
