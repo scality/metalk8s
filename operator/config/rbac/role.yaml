@@ -30,6 +30,14 @@ rules:
   - update
   - watch
 - apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - metalk8s.scality.com
   resources:
   - clusterconfigs
