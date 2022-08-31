@@ -59,6 +59,7 @@ var log = logf.Log.WithName("clusterconfig-controller")
 //+kubebuilder:rbac:groups=metalk8s.scality.com,resources=clusterconfigs/finalizers,verbs=update
 
 //+kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -141,5 +142,6 @@ func (r *ClusterConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&metalk8sscalitycomv1alpha1.ClusterConfig{}).
 		Owns(&corev1.Namespace{}).
+		Owns(&corev1.ConfigMap{}).
 		Complete(r)
 }
