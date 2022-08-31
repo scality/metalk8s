@@ -13,6 +13,7 @@ import {
 import { initialize as initializeProm } from '../services/prometheus/api';
 import { initialize as initializeAM } from '../services/alertmanager/api';
 import { initialize as initializeLoki } from '../services/loki/api';
+import { mockOffsetSize } from '../tests/mocks/util';
 
 jest.mock('../containers/AlertProvider', () => ({
   __esModule: true, // this property makes it work
@@ -334,7 +335,8 @@ const server = setupServer(
 
 describe('the system partition table', () => {
   beforeAll(() => {
-    server.listen({onUnhandledRequest: 'warn'});
+    server.listen({ onUnhandledRequest: 'warn' });
+    mockOffsetSize(200, 100);
   });
   beforeEach(() => {
     // use fake timers to let react query retry immediately after promise failure
