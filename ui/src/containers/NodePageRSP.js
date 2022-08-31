@@ -127,6 +127,10 @@ const NodePageRSP = (props) => {
       alert.labels.node === name,
   );
 
+  const criticalAlerts = alertsNode.filter(
+    (alert) => alert.severity === 'critical',
+  );
+
   return name && currentNode ? (
     <Tabs>
       <Tabs.Tab
@@ -147,7 +151,12 @@ const NodePageRSP = (props) => {
         label={intl.formatMessage({ id: 'alerts' })}
         textBadge={
           alertsNode && alertsNode.length ? (
-            <TextBadge variant={'infoPrimary'} text={alertsNode.length} />
+            <TextBadge
+              variant={
+                criticalAlerts.length > 0 ? 'statusCritical' : 'statusWarning'
+              }
+              text={alertsNode.length}
+            />
           ) : null
         }
         data-cy="alerts_tab_node_page"

@@ -99,7 +99,9 @@ const VolumePageContent = (props) => {
 
   const alertsVolume = useAlerts({ persistentvolumeclaim: PVCName });
   const alertlist = alertsVolume && alertsVolume.alerts;
-
+  const criticalAlerts = alertlist.filter(
+    (alert) => alert.severity === 'critical',
+  );
   // prepare the data for <PerformanceGraphCard>
   const deviceName = volume?.status?.deviceName;
 
@@ -203,7 +205,11 @@ const VolumePageContent = (props) => {
                   textBadge={
                     alertlist && alertlist.length ? (
                       <TextBadge
-                        variant={'infoPrimary'}
+                        variant={
+                          criticalAlerts.length > 0
+                            ? 'statusCritical'
+                            : 'statusWarning'
+                        }
                         text={alertlist.length}
                       />
                     ) : null
