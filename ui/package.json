@@ -134,7 +134,7 @@
   },
   "optionalDependencies": {
     "@testing-library/cypress": "^7.0.3",
-    "cypress": "^5.6.0",
+    "cypress": "^6.1.0",
     "cypress-cucumber-preprocessor": "^4.0.0",
     "cypress-wait-until": "^1.7.1"
   },
