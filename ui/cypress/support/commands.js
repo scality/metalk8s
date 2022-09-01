@@ -50,26 +50,26 @@ Cypress.Commands.add(
       typeof uiDiscovery === 'string' ? { fixture: uiDiscovery } : uiDiscovery;
 
     if (stubShellConfig) {
-      cy.route2('GET', '/shell/config.json', stubShellConfig);
+      cy.intercept('GET', '/shell/config.json', stubShellConfig);
     }
     if (stubConfig) {
-      cy.route2('GET', '/config.json', stubConfig);
+      cy.intercept('GET', '/config.json', stubConfig);
     }
     if (stubUIDiscovery) {
-      cy.route2('GET', '/shell/deployed-ui-apps.json', stubUIDiscovery);
+      cy.intercept('GET', '/shell/deployed-ui-apps.json', stubUIDiscovery);
     }
 
-    cy.route2('GET', '/.well-known/runtime-app-configuration', {
+    cy.intercept('GET', '/.well-known/runtime-app-configuration', {
       fixture: 'runtime-app-configuration',
     });
 
-    cy.route2('GET', '/oidc/.well-known/openid-configuration', {
+    cy.intercept('GET', '/oidc/.well-known/openid-configuration', {
       fixture: 'openid-config.json',
     });
 
     // SaltAPI
-    cy.route2({ method: 'POST', pathname: /^\/api\/salt\/$/ }, (req) => {
-      const saltArgs = JSON.parse(req.body);
+    cy.intercept({ method: 'POST', pathname: /^\/api\/salt\/$/ }, (req) => {
+      const saltArgs = req.body;
       if (
         saltArgs.fun === 'grains.item' &&
         saltArgs.arg.includes('ip_interfaces')
@@ -81,10 +81,10 @@ Cypress.Commands.add(
           statusCode: 500,
         });
     });
-    cy.route2('POST', '/api/salt/login', { fixture: 'salt-api/login.json' });
+    cy.intercept('POST', '/api/salt/login', { fixture: 'salt-api/login.json' });
 
     // Kubernetes
-    cy.route2(
+    cy.intercept(
       {
         method: 'GET',
         pathname: '/api/kubernetes/api/v1/namespaces',
@@ -93,9 +93,9 @@ Cypress.Commands.add(
       { fixture: 'kubernetes/namespace-kube-system.json' },
     );
     cy.fixture('kubernetes/nodes.json').then((nodes) => {
-      cy.route2('GET', '/api/kubernetes/api/v1/nodes', { body: nodes });
+      cy.intercept('GET', '/api/kubernetes/api/v1/nodes', { body: nodes });
 
-      cy.route2(
+      cy.intercept(
         'GET',
         /^\/api\/kubernetes\/api\/v1\/nodes\/[a-z0-9_\-]+$/,
         (req) => {
@@ -105,29 +105,33 @@ Cypress.Commands.add(
       );
     });
 
-    cy.route2('GET', '/api/kubernetes/api/v1/pods', {
+    cy.intercept('GET', '/api/kubernetes/api/v1/pods', {
       fixture: 'kubernetes/pods.json',
     });
-    cy.route2('GET', '/api/kubernetes/api/v1/persistentvolumes', {
+    cy.intercept('GET', '/api/kubernetes/api/v1/persistentvolumes', {
       fixture: 'kubernetes/persistentvolumes.json',
     });
 
-    cy.route2(
+    cy.intercept(
       'GET',
       '/api/kubernetes/apis/storage.metalk8s.scality.com/v1alpha1/volumes',
       { fixture: 'kubernetes/volumes.json' },
     );
 
-    cy.route2('GET', '/api/kubernetes/api/v1/persistentvolumeclaims', {
+    cy.intercept('GET', '/api/kubernetes/api/v1/persistentvolumeclaims', {
       fixture: 'kubernetes/persistentvolumeclaims.json',
     });
 
-    cy.route2('GET', 'api/kubernetes/apis/storage.k8s.io/v1/storageclasses', {
-      fixture: 'kubernetes/storageclasses.json',
-    });
+    cy.intercept(
+      'GET',
+      'api/kubernetes/apis/storage.k8s.io/v1/storageclasses',
+      {
+        fixture: 'kubernetes/storageclasses.json',
+      },
+    );
 
     // Prometheus
-    cy.route2(
+    cy.intercept(
       {
         method: 'GET',
         pathname: /^\/api\/prometheus\/api\/v1\/query$/,
@@ -152,7 +156,7 @@ Cypress.Commands.add(
         else req.reply({ body: { error: 'Not yet mocked!' } });
       },
     );
-    cy.route2(
+    cy.intercept(
       {
         method: 'GET',
         pathname: /^\/api\/prometheus\/api\/v1\/query_range$/,
@@ -177,12 +181,12 @@ Cypress.Commands.add(
         } else req.reply({ body: EMPTY_QUERY_RANGE_RESULT });
       },
     );
-    cy.route2('GET', '/api/prometheus/api/v1/alerts', {
+    cy.intercept('GET', '/api/prometheus/api/v1/alerts', {
       fixture: 'prometheus/empty-alerts.json',
     });
 
     // Alertmanager
-    cy.route2('GET', '/api/alertmanager/api/v2/alerts', {
+    cy.intercept('GET', '/api/alertmanager/api/v2/alerts', {
       fixture: 'alertmanager/alerts.json',
     });
   },

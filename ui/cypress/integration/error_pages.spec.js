@@ -37,7 +37,7 @@ describe('Error Pages Navbar failure', () => {
   it('redirects to 500 error page in case of navbar fail to load', () => {
     cy.fixture('shell-config.json').then((config) => {
       config.navbar = null;
-      cy.route2('GET', '/shell/config.json', config);
+      cy.intercept('GET', '/shell/config.json', config);
     });
 
     // internal navbar will throw an error if the shell-ui navbar has failed

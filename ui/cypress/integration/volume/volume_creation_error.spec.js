@@ -9,7 +9,7 @@ beforeEach(() => {
 
 describe('volume creation fails', () => {
   it('should display a failed banner if the K8s API is not available', () => {
-    cy.route2(
+    cy.intercept(
       'POST',
       '/api/kubernetes/apis/storage.metalk8s.scality.com/v1alpha1/volumes',
       {
@@ -27,7 +27,7 @@ describe('volume creation fails', () => {
   });
 
   it('should display failed status', () => {
-    cy.route2(
+    cy.intercept(
       'POST',
       '/api/kubernetes/apis/storage.metalk8s.scality.com/v1alpha1/volumes',
       {
@@ -35,7 +35,7 @@ describe('volume creation fails', () => {
       },
     );
 
-    cy.route2(
+    cy.intercept(
       'GET',
       /^\/api\/kubernetes\/apis\/storage.metalk8s.scality.com\/v1alpha1\/volumes\/[a-z0-9_\-]+$/,
       { fixture: '/kubernetes/volumecreation.json' },
