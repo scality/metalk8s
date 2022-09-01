@@ -2,6 +2,8 @@ package virtualip
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"math"
 
@@ -24,6 +26,8 @@ type VirtualIPReconciler struct {
 	// Some cache to ensure we don't reuse Virtual Router IDs, even for different pools
 	usedVRID map[int]bool
 	nodeList corev1.NodeList
+
+	configChecksum map[string]string
 }
 
 const (
@@ -35,6 +39,9 @@ const (
 
 	// Label key to store the pool name
 	labelPoolName = "metalk8s.scality.com/pool.name"
+
+	// Annotation key to store Config checksum
+	annotationChecksumName = "checksum/config"
 
 	// ConfigMap key for HL config
 	hlConfigMapKey = "hl-config.yaml"
@@ -49,7 +56,8 @@ func NewReconciler(instance *metalk8sv1alpha1.ClusterConfig, client client.Clien
 			logger.WithName("virtualip-controller"),
 			componentName,
 		),
-		usedVRID: make(map[int]bool, 255),
+		usedVRID:       make(map[int]bool, 255),
+		configChecksum: make(map[string]string),
 	}
 }
 
@@ -308,6 +316,10 @@ func (r *VirtualIPReconciler) mutateConfigMap(obj *corev1.ConfigMap) error {
 	}
 	obj.Data[hlConfigMapKey] = content
 
+	// Store Config checksum
+	checksum := sha256.Sum256([]byte(content))
+	r.configChecksum[poolName] = hex.EncodeToString(checksum[:])
+
 	return nil
 }
 
@@ -324,6 +336,11 @@ func (r *VirtualIPReconciler) mutateDaemonSet(obj *appsv1.DaemonSet) error {
 	utils.UpdateLabels(&obj.Spec.Template.ObjectMeta, selector)
 
 	obj.Spec.Template.Spec.NodeSelector = poolInfo.NodeSelector
+
+	utils.UpdateAnnotations(
+		&obj.Spec.Template.ObjectMeta,
+		map[string]string{annotationChecksumName: r.configChecksum[poolName]},
+	)
 
 	obj.Spec.Template.Spec.HostNetwork = true
 
