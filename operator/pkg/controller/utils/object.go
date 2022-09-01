@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/go-logr/logr"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -132,7 +133,16 @@ func (h ObjectHandler) CreateOrUpdateOrDelete(ctx context.Context, objsToUpdate 
 func (h ObjectHandler) stdMutate(object metav1.Object) error {
 	UpdateLabels(object, h.labels)
 
+	switch object.(type) {
+	case *appsv1.DaemonSet:
+		h.stdMutateDaemonSet(object.(*appsv1.DaemonSet))
+	}
+
 	return controllerutil.SetControllerReference(h.Instance, object, h.Scheme)
+}
+
+func (h ObjectHandler) stdMutateDaemonSet(object *appsv1.DaemonSet) {
+	UpdateLabels(&object.Spec.Template.ObjectMeta, h.labels)
 }
 
 // Get Standard Labels matcher that can be used to list objects
