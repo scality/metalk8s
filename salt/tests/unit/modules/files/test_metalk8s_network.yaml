@@ -147,6 +147,31 @@ get_portmap_ips:
     result:
       - 10.10.10.0/16
       - 127.0.0.1/32
+  # 1. + some pools
+  - vip_pools: &vip_pools
+      my-first-pool:
+        addresses:
+          - 20.20.20.20
+          - 20.20.20.21
+      my-second-pool:
+        addresses:
+          - 30.30.30.30
+    result:
+      - 10.10.10.10
+      - 127.0.0.1
+      - 20.20.20.20
+      - 20.20.20.21
+      - 30.30.30.30
+  - wp_cidrs:
+      - 10.10.10.0/16
+    vip_pools: *vip_pools
+    as_cidr: True
+    result:
+      - 10.10.10.0/16
+      - 127.0.0.1/32
+      - 20.20.20.20/32
+      - 20.20.20.21/32
+      - 30.30.30.30/32
 
   # 2. Define CIDR in config
   - portmap_cidrs: 10.20.0.0/16
@@ -161,6 +186,27 @@ get_portmap_ips:
     result:
       - 10.20.0.0/16
       - 127.0.0.1/32
+  # 2. + some pools
+  - portmap_cidrs: 10.20.0.0/16
+    ip_addrs:
+      10.20.0.0/16:
+        - 10.20.0.20
+    vip_pools: *vip_pools
+    result:
+      - 10.20.0.20
+      - 127.0.0.1
+      - 20.20.20.20
+      - 20.20.20.21
+      - 30.30.30.30
+  - portmap_cidrs: 10.20.0.0/16
+    vip_pools: *vip_pools
+    as_cidr: True
+    result:
+      - 10.20.0.0/16
+      - 127.0.0.1/32
+      - 20.20.20.20/32
+      - 20.20.20.21/32
+      - 30.30.30.30/32
 
   # 3. Multiple IPs in a single CIDR
   - portmap_cidrs:

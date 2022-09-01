@@ -64,6 +64,20 @@ def get_cluster_version(kubeconfig=None):
     return annotations[annotation_key]
 
 
+def get_cluster_config(kubeconfig=None):
+    try:
+        return __salt__["metalk8s_kubernetes.get_object"](
+            name="main",
+            kind="ClusterConfig",
+            apiVersion="metalk8s.scality.com/v1alpha1",
+            kubeconfig=kubeconfig,
+        )
+    except CommandExecutionError as exc:
+        return __utils__["pillar_utils.errors_to_dict"](
+            f"Unable to read ClusterConfig information {exc}"
+        )
+
+
 def get_storage_classes(kubeconfig=None):
     storage_classes = {}
     storageclass_list = __salt__["metalk8s_kubernetes.list_objects"](
@@ -117,6 +131,7 @@ def ext_pillar(minion_id, pillar, kubeconfig):
             [error_tplt.format(__virtualname__, kubeconfig)]
         )
         cluster_version = pillar_nodes
+        cluster_config = pillar_nodes
         volume_information = pillar_nodes
 
     else:
@@ -142,12 +157,14 @@ def ext_pillar(minion_id, pillar, kubeconfig):
             )
 
         cluster_version = get_cluster_version(kubeconfig=kubeconfig)
+        cluster_config = get_cluster_config(kubeconfig=kubeconfig)
         volume_information = list_volumes(minion_id, kubeconfig=kubeconfig)
 
     result = {
         "metalk8s": {
             "nodes": pillar_nodes,
             "cluster_version": cluster_version,
+            "cluster_config": cluster_config,
             "volumes": volume_information,
         },
     }

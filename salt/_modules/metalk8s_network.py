@@ -277,6 +277,17 @@ def get_portmap_ips(as_cidr=False):
         else:
             result = {__grains__["metalk8s"]["workload_plane_ip"]}
 
+    # Add potentials VIPs configured by the MetalK8s Operator
+    vip_pools = __salt__["pillar.get"](
+        "metalk8s:cluster_config:spec:workloadPlane:virtualIPPools"
+    )
+    if vip_pools:
+        for _, pool in vip_pools.items():
+            if as_cidr:
+                result.update(f"{ip}/32" for ip in pool["addresses"])
+            else:
+                result.update(pool["addresses"])
+
     if as_cidr:
         result.add("127.0.0.1/32")
     else:
