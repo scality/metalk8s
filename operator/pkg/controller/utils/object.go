@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/go-logr/logr"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -29,16 +30,26 @@ const (
 	labelMetalVersionName = "metalk8s.scality.com/version"
 )
 
-var stdLabels = map[string]string{
-	labelManagedByName:    labelManagedByValue,
-	labelPartOfName:       labelPartOfValue,
-	labelMetalVersionName: version.Version,
+var (
+	stdLabels = map[string]string{
+		labelManagedByName:    labelManagedByValue,
+		labelPartOfName:       labelPartOfValue,
+		labelMetalVersionName: version.Version,
 
-	// NOTE: This Version label should be the component version,
-	// we default it to MetalK8s version but it can be updated using
-	// SetVersionLabel function
-	labelVersionName: version.Version,
-}
+		// NOTE: This Version label should be the component version,
+		// we default it to MetalK8s version but it can be updated using
+		// SetVersionLabel function
+		labelVersionName: version.Version,
+	}
+
+	// List of labels used as Selector for DaemonSet pods
+	// NOTE: It's the default set by the ObjectHandler but those labels can be changed
+	// by the `mutate` function
+	selectorLabels = []string{
+		labelAppName,
+		labelInstanceName,
+	}
+)
 
 // Struct used to manage Kubernetes objects creation, update and deletion
 // that allow to use a single entry point to manage various objects and properly
@@ -135,7 +146,30 @@ func (h ObjectHandler) CreateOrUpdateOrDelete(ctx context.Context, objsToUpdate 
 func (h ObjectHandler) stdMutate(object metav1.Object) error {
 	UpdateLabels(object, h.labels)
 
+	switch object.(type) {
+	case *appsv1.DaemonSet:
+		h.stdMutateDaemonSet(object.(*appsv1.DaemonSet))
+	}
+
 	return controllerutil.SetControllerReference(h.Instance, object, h.Scheme)
+}
+
+func (h ObjectHandler) stdMutateDaemonSet(object *appsv1.DaemonSet) {
+	UpdateLabels(&object.Spec.Template.ObjectMeta, h.labels)
+
+	selector := h.getSelectorLabels()
+
+	object.Spec.Selector = &metav1.LabelSelector{MatchLabels: selector}
+	UpdateLabels(&object.Spec.Template.ObjectMeta, selector)
+}
+
+func (h ObjectHandler) getSelectorLabels() client.MatchingLabels {
+	selector := make(client.MatchingLabels)
+	for _, label := range selectorLabels {
+		selector[label] = h.labels[label]
+	}
+
+	return selector
 }
 
 // Get Standard Labels matcher that can be used to list objects

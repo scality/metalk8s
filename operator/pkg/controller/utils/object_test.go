@@ -9,6 +9,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -110,6 +111,44 @@ var _ = Describe("ObjectHandler", func() {
 			// NOTE: We still expect the Standard mutate to happen also
 			Expect(cm.GetLabels()).To(ContainElements([]string{componentName, appName, version.Version, "abcdef"}))
 			Expect(cm.OwnerReferences).ToNot(BeEmpty())
+
+			// Ensure it does not report change if we re-call the function
+			changed, err = h.CreateOrUpdateOrDelete(ctx, []client.Object{obj}, nil, customMutate)
+
+			Expect(err).ToNot(HaveOccurred())
+			Expect(changed).To(BeFalse())
+		})
+
+		It("add standard metadata - DaemonSet specific", func() {
+			// NOTE: We need a really simple mutate function since the container spec cannot
+			// be empty on a DaemonSet
+			customMutate := func(o client.Object) error {
+				ds := o.(*appsv1.DaemonSet)
+				if len(ds.Spec.Template.Spec.Containers) == 0 {
+					ds.Spec.Template.Spec.Containers = []corev1.Container{{}}
+				}
+				container := &ds.Spec.Template.Spec.Containers[0]
+				container.Name = "test"
+				container.Image = "test-img:1.2.3"
+				return nil
+			}
+			obj := &appsv1.DaemonSet{ObjectMeta: metav1.ObjectMeta{Name: "my-ds", Namespace: "default"}}
+
+			changed, err := h.CreateOrUpdateOrDelete(ctx, []client.Object{obj}, nil, customMutate)
+
+			Expect(err).ToNot(HaveOccurred())
+			Expect(changed).To(BeTrue())
+
+			ds := &appsv1.DaemonSet{}
+			Expect(c.Get(ctx, client.ObjectKeyFromObject(obj), ds)).To(Succeed())
+
+			// NOTE: We still expect the Standard mutate to happen also
+			Expect(ds.GetLabels()).To(ContainElements([]string{componentName, appName, version.Version}))
+			Expect(ds.OwnerReferences).ToNot(BeEmpty())
+
+			// DaemonSet specific mutates
+			Expect(ds.Spec.Template.GetLabels()).To(ContainElements([]string{componentName, appName, version.Version}))
+			Expect(ds.Spec.Selector.MatchLabels).To(ContainElement(appName))
 
 			// Ensure it does not report change if we re-call the function
 			changed, err = h.CreateOrUpdateOrDelete(ctx, []client.Object{obj}, nil, customMutate)
