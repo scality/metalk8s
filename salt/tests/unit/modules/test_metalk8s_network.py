@@ -366,7 +366,13 @@ class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["get_portmap_ips"])
     def test_get_portmap_ips(
-        self, result, portmap_cidrs=None, wp_cidrs=None, ip_addrs=None, **kwargs
+        self,
+        result,
+        portmap_cidrs=None,
+        wp_cidrs=None,
+        vip_pools=None,
+        ip_addrs=None,
+        **kwargs
     ):
         """
         Tests the return of `get_portmap_ips` function
@@ -378,6 +384,8 @@ class Metalk8sNetworkTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 return portmap_cidrs
             if "workload_plane" in key:
                 return wp_cidrs
+            if "cluster_config" in key:
+                return vip_pools
             raise Exception("Should not happen !!")
 
         def _get_ip_addrs(cidr):
