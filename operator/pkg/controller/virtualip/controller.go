@@ -6,6 +6,7 @@ import (
 	"math"
 
 	"github.com/go-logr/logr"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -98,13 +99,15 @@ func (r *VirtualIPReconciler) Reconcile(ctx context.Context) utils.ReconcilerRes
 		// We consider all pool has "to be updated" then the `CreateOrUpdate` function
 		// will see (using the mutate function) if those object actually needed updates or not
 		objMeta := metav1.ObjectMeta{
-			Name:      fmt.Sprintf("metalk8s-vips-wp-%s", pName),
+			Name:      r.getObjName(pName),
 			Namespace: namespaceName,
 			Labels: map[string]string{
 				labelPoolName: pName,
 			},
 		}
 		objsToUpdate = append(objsToUpdate, &corev1.ConfigMap{ObjectMeta: objMeta})
+		objsToUpdate = append(objsToUpdate, &appsv1.DaemonSet{ObjectMeta: objMeta})
+
 		r.retrieveVRID(ctx, client.ObjectKey{Name: objMeta.Name, Namespace: objMeta.Namespace})
 
 		poolsNames = append(poolsNames, pName)
@@ -137,8 +140,13 @@ func (r *VirtualIPReconciler) Reconcile(ctx context.Context) utils.ReconcilerRes
 	for _, obj := range configMapList.Items {
 		objsToDelete = append(objsToDelete, &obj)
 	}
-
-	// TODO !
+	daemonSetList := appsv1.DaemonSetList{}
+	if err := r.Client.List(ctx, &daemonSetList, &listOpt); err != nil {
+		return utils.Requeue(err)
+	}
+	for _, obj := range daemonSetList.Items {
+		objsToDelete = append(objsToDelete, &obj)
+	}
 
 	changed, err = r.CreateOrUpdateOrDelete(ctx, objsToUpdate, objsToDelete, r.mutate)
 	if err != nil {
@@ -148,11 +156,17 @@ func (r *VirtualIPReconciler) Reconcile(ctx context.Context) utils.ReconcilerRes
 		return utils.EndReconciliation()
 	}
 
+	// TODO: Reconfigure CNI + re-generate the Ingress server certificate
+
 	return utils.NothingToDo()
 }
 
 func (r *VirtualIPReconciler) getPools() map[string]metalk8sv1alpha1.VirtualIPPoolSpec {
 	return r.Instance.Spec.WorkloadPlane.VirtualIPPools
+}
+
+func (r *VirtualIPReconciler) getObjName(poolName string) string {
+	return fmt.Sprintf("metalk8s-vips-wp-%s", poolName)
 }
 
 func (r *VirtualIPReconciler) retrieveVRID(ctx context.Context, key client.ObjectKey) error {
@@ -225,6 +239,8 @@ func (r *VirtualIPReconciler) mutate(obj client.Object) error {
 	switch obj.(type) {
 	case *corev1.ConfigMap:
 		return r.mutateConfigMap(obj.(*corev1.ConfigMap))
+	case *appsv1.DaemonSet:
+		return r.mutateDaemonSet(obj.(*appsv1.DaemonSet))
 	default:
 		return nil
 	}
@@ -291,6 +307,83 @@ func (r *VirtualIPReconciler) mutateConfigMap(obj *corev1.ConfigMap) error {
 		obj.Data = make(map[string]string)
 	}
 	obj.Data[hlConfigMapKey] = content
+
+	return nil
+}
+
+func (r *VirtualIPReconciler) mutateDaemonSet(obj *appsv1.DaemonSet) error {
+	poolName := obj.GetLabels()[labelPoolName]
+	poolInfo := r.getPools()[poolName]
+
+	selector := make(client.MatchingLabels)
+	selector[labelPoolName] = poolName
+
+	obj.Spec.Selector = &metav1.LabelSelector{
+		MatchLabels: selector,
+	}
+	utils.UpdateLabels(&obj.Spec.Template.ObjectMeta, selector)
+
+	obj.Spec.Template.Spec.NodeSelector = poolInfo.NodeSelector
+
+	obj.Spec.Template.Spec.HostNetwork = true
+
+	volumeName := "hl-config"
+	defaultMode := int32(420)
+	obj.Spec.Template.Spec.Volumes = []corev1.Volume{
+		{
+			Name: volumeName,
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: r.getObjName(poolName),
+					},
+					DefaultMode: &defaultMode,
+				},
+			},
+		},
+	}
+
+	// If we have more than 1 container we clean up the containers list
+	if len(obj.Spec.Template.Spec.Containers) != 1 {
+		obj.Spec.Template.Spec.Containers = []corev1.Container{{}}
+	}
+	container := &obj.Spec.Template.Spec.Containers[0]
+
+	container.Name = "keepalived"
+	container.Image = utils.GetImageName("metalk8s-keepalived")
+	container.Env = []corev1.EnvVar{
+		{
+			Name: "NODE_NAME",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{
+					APIVersion: "v1",
+					FieldPath:  "spec.nodeName",
+				},
+			},
+		},
+	}
+	container.VolumeMounts = []corev1.VolumeMount{
+		{
+			Name:      volumeName,
+			MountPath: "/etc/keepalived/keepalived-input.yaml",
+			SubPath:   hlConfigMapKey,
+		},
+	}
+	container.SecurityContext = &corev1.SecurityContext{
+		Capabilities: &corev1.Capabilities{
+			Drop: []corev1.Capability{
+				"ALL",
+			},
+			Add: []corev1.Capability{
+				"NET_ADMIN",
+				"NET_BIND_SERVICE",
+				"NET_RAW",
+				"SETUID",
+				"SETGID",
+				"NET_BROADCAST",
+			},
+		},
+	}
 
 	return nil
 }
