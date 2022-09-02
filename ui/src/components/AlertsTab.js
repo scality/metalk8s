@@ -46,7 +46,12 @@ const AlertsTab = ({
       accessor: 'severity',
       cellStyle: { width: '4.5rem' },
       Cell: ({ value }) => {
-        return <Chips text={value} variant={value} />;
+        return (
+          <Chips
+            text={value}
+            variant={value === 'warning' ? 'statusWarning' : 'statusCritical'}
+          />
+        );
       },
     },
     {
