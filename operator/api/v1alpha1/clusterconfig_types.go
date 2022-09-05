@@ -69,6 +69,9 @@ type ClusterConfigSpec struct {
 type ClusterConfigStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
+	// List of conditions for the ClusterConfig
+	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
 }
 
 //+kubebuilder:object:root=true
@@ -82,6 +85,57 @@ type ClusterConfig struct {
 
 	Spec   ClusterConfigSpec   `json:"spec,omitempty"`
 	Status ClusterConfigStatus `json:"status,omitempty"`
+}
+
+// Set a condition for the ClusterConfig.
+//
+// If a condition of this type already exists it is updated, otherwise a new
+// condition is added.
+//
+// Arguments
+//
+//	kind:      type of condition
+//	status:    status of the condition
+//	reason:    one-word, CamelCase reason for the transition
+//	message:   details about the transition
+func (c *ClusterConfig) SetCondition(
+	kind string,
+	status metav1.ConditionStatus,
+	reason string,
+	message string,
+) {
+	condition := metav1.Condition{
+		Type:               kind,
+		Status:             status,
+		ObservedGeneration: c.Generation,
+		LastTransitionTime: metav1.Now(),
+		Reason:             reason,
+		Message:            message,
+	}
+
+	for idx, cond := range c.Status.Conditions {
+		if cond.Type == kind {
+			// Don't update timestamps if status hasn't changed.
+			if cond.Status == condition.Status {
+				condition.LastTransitionTime = cond.LastTransitionTime
+			}
+			c.Status.Conditions[idx] = condition
+			return
+		}
+	}
+	c.Status.Conditions = append(c.Status.Conditions, condition)
+}
+
+// Get the condition identified by `kind` for the ClusterConfig.
+//
+// Return `nil` if no such condition exists.
+func (c *ClusterConfig) GetCondition(kind string) *metav1.Condition {
+	for _, cond := range c.Status.Conditions {
+		if cond.Type == kind {
+			return &cond
+		}
+	}
+	return nil
 }
 
 //+kubebuilder:object:root=true
