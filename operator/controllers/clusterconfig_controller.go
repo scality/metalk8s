@@ -49,9 +49,14 @@ func NewClusterConfigReconciler(mgr ctrl.Manager) *ClusterConfigReconciler {
 	}
 }
 
-// ClusterConfig name to manage, since we only support one ClusterConfig
-// the object is created by the operator and it's the only one that will be managed
-const InstanceName = "main"
+const (
+	// ClusterConfig name to manage, since we only support one ClusterConfig
+	// the object is created by the operator and it's the only one that will be managed
+	InstanceName = "main"
+
+	// Name of the global conditions we set in the object status
+	configuredConditionName = "Configured"
+)
 
 var log = logf.Log.WithName("clusterconfig-controller")
 
@@ -116,12 +121,30 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	for _, rec := range reconcilers {
 		if result := rec.Reconcile(ctx); result.ShouldReturn() {
+			instance.SetCondition(
+				configuredConditionName,
+				metav1.ConditionFalse,
+				"Reconciling",
+				"Reconciliation in progress",
+			)
+			if err := r.client.Status().Update(ctx, instance); err != nil {
+				return utils.Requeue(err).GetResult()
+			}
 			return result.GetResult()
 		}
 	}
 
 	// TODO(user): your logic here
 
+	instance.SetCondition(
+		configuredConditionName,
+		metav1.ConditionTrue,
+		"Configured",
+		"Everything reconciled",
+	)
+	if err := r.client.Status().Update(ctx, instance); err != nil {
+		return utils.Requeue(err).GetResult()
+	}
 	return utils.EndReconciliation().GetResult()
 }
 
