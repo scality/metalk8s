@@ -45,6 +45,9 @@ const (
 
 	// ConfigMap key for HL config
 	hlConfigMapKey = "hl-config.yaml"
+
+	// Name of the conditions we set in the object status
+	configuredConditionName = "VirtualIPsConfigured"
 )
 
 func NewReconciler(instance *metalk8sv1alpha1.ClusterConfig, client client.Client, scheme *runtime.Scheme, logger logr.Logger) *VirtualIPReconciler {
@@ -74,11 +77,23 @@ func (r *VirtualIPReconciler) Reconcile(ctx context.Context) utils.ReconcilerRes
 		// The namespace shouldn't exists
 		changed, err := r.CreateOrUpdateOrDelete(ctx, nil, []client.Object{namespaceInstance}, nil)
 		if err != nil {
+			r.updateCondition(
+				metav1.ConditionFalse,
+				"NamespaceDeletionError",
+				err.Error(),
+			)
 			return utils.Requeue(err)
 		}
 		if changed {
+			r.updateCondition(
+				metav1.ConditionFalse,
+				"NamespaceDeletionInProgress",
+				fmt.Sprintf("No pools defined, deletion of the '%s' namespace in progress", namespaceName),
+			)
 			return utils.EndReconciliation()
 		}
+
+		r.updateCondition(metav1.ConditionTrue, "NoPools", "Nothing to do, no pools defined")
 		return utils.NothingToDo()
 	}
 
@@ -87,14 +102,29 @@ func (r *VirtualIPReconciler) Reconcile(ctx context.Context) utils.ReconcilerRes
 	// do not exists
 	changed, err := r.CreateOrUpdateOrDelete(ctx, []client.Object{namespaceInstance}, nil, nil)
 	if err != nil {
+		r.updateCondition(
+			metav1.ConditionUnknown,
+			"NamespaceUpdateError",
+			err.Error(),
+		)
 		return utils.Requeue(err)
 	}
 	if changed {
+		r.updateCondition(
+			metav1.ConditionFalse,
+			"NamespaceUpdateInProgress",
+			fmt.Sprintf("Creation/Update of the '%s' namespace in progress", namespaceName),
+		)
 		return utils.EndReconciliation()
 	}
 
 	// Retrieve all nodes
 	if err := r.Client.List(ctx, &r.nodeList); err != nil {
+		r.updateCondition(
+			metav1.ConditionUnknown,
+			"NodeRetrievingError",
+			err.Error(),
+		)
 		return utils.Requeue(err)
 	}
 
@@ -134,6 +164,11 @@ func (r *VirtualIPReconciler) Reconcile(ctx context.Context) utils.ReconcilerRes
 	})
 
 	if err != nil {
+		r.updateCondition(
+			metav1.ConditionUnknown,
+			"NodeLabelSelectorCreationError",
+			err.Error(),
+		)
 		return utils.Requeue(err)
 	}
 	listOpt := client.ListOptions{
@@ -143,6 +178,11 @@ func (r *VirtualIPReconciler) Reconcile(ctx context.Context) utils.ReconcilerRes
 
 	configMapList := corev1.ConfigMapList{}
 	if err := r.Client.List(ctx, &configMapList, &listOpt); err != nil {
+		r.updateCondition(
+			metav1.ConditionUnknown,
+			"ConfigMapRetrievingError",
+			err.Error(),
+		)
 		return utils.Requeue(err)
 	}
 	for _, obj := range configMapList.Items {
@@ -150,6 +190,11 @@ func (r *VirtualIPReconciler) Reconcile(ctx context.Context) utils.ReconcilerRes
 	}
 	daemonSetList := appsv1.DaemonSetList{}
 	if err := r.Client.List(ctx, &daemonSetList, &listOpt); err != nil {
+		r.updateCondition(
+			metav1.ConditionUnknown,
+			"DaemonSetRetrievingError",
+			err.Error(),
+		)
 		return utils.Requeue(err)
 	}
 	for _, obj := range daemonSetList.Items {
@@ -158,15 +203,30 @@ func (r *VirtualIPReconciler) Reconcile(ctx context.Context) utils.ReconcilerRes
 
 	changed, err = r.CreateOrUpdateOrDelete(ctx, objsToUpdate, objsToDelete, r.mutate)
 	if err != nil {
+		r.updateCondition(
+			metav1.ConditionUnknown,
+			"ObjectUpdateError",
+			err.Error(),
+		)
 		return utils.Requeue(err)
 	}
 	if changed {
+		r.updateCondition(
+			metav1.ConditionFalse,
+			"ObjectUpdateInProgress",
+			"Creation/Update of various objects in progress",
+		)
 		return utils.EndReconciliation()
 	}
 
 	// TODO: Reconfigure CNI + re-generate the Ingress server certificate
 
+	r.updateCondition(metav1.ConditionTrue, "Configured", "All objects properly configured")
 	return utils.NothingToDo()
+}
+
+func (r *VirtualIPReconciler) updateCondition(status metav1.ConditionStatus, reason string, message string) {
+	r.Instance.SetCondition(configuredConditionName, status, reason, message)
 }
 
 func (r *VirtualIPReconciler) getPools() map[string]metalk8sv1alpha1.VirtualIPPoolSpec {
