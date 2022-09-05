@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -37,15 +38,17 @@ import (
 
 // ClusterConfigReconciler reconciles a ClusterConfig object
 type ClusterConfigReconciler struct {
-	client client.Client
-	scheme *runtime.Scheme
+	client   client.Client
+	scheme   *runtime.Scheme
+	recorder record.EventRecorder
 }
 
 // Create a new ClusterConfigReconciler
 func NewClusterConfigReconciler(mgr ctrl.Manager) *ClusterConfigReconciler {
 	return &ClusterConfigReconciler{
-		client: mgr.GetClient(),
-		scheme: mgr.GetScheme(),
+		client:   mgr.GetClient(),
+		scheme:   mgr.GetScheme(),
+		recorder: mgr.GetEventRecorderFor("clusterconfig-controller"),
 	}
 }
 
@@ -118,7 +121,7 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	reconcilers := []interface {
 		Reconcile(context.Context) utils.ReconcilerResult
 	}{
-		virtualip.NewReconciler(instance, r.client, r.scheme, reqLogger),
+		virtualip.NewReconciler(instance, r.client, r.scheme, r.recorder, reqLogger),
 	}
 
 	for _, rec := range reconcilers {

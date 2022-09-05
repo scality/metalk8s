@@ -14,6 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	metalk8sv1alpha1 "github.com/scality/metalk8s/operator/api/v1alpha1"
@@ -22,6 +23,8 @@ import (
 
 type VirtualIPReconciler struct {
 	utils.ObjectHandler
+
+	recorder record.EventRecorder
 
 	// Some cache to ensure we don't reuse Virtual Router IDs, even for different pools
 	usedVRID map[int]bool
@@ -50,7 +53,7 @@ const (
 	configuredConditionName = "VirtualIPsConfigured"
 )
 
-func NewReconciler(instance *metalk8sv1alpha1.ClusterConfig, client client.Client, scheme *runtime.Scheme, logger logr.Logger) *VirtualIPReconciler {
+func NewReconciler(instance *metalk8sv1alpha1.ClusterConfig, client client.Client, scheme *runtime.Scheme, recorder record.EventRecorder, logger logr.Logger) *VirtualIPReconciler {
 	return &VirtualIPReconciler{
 		ObjectHandler: *utils.NewObjectHandler(
 			instance,
@@ -59,6 +62,7 @@ func NewReconciler(instance *metalk8sv1alpha1.ClusterConfig, client client.Clien
 			logger.WithName("virtualip-controller"),
 			componentName,
 		),
+		recorder:       recorder,
 		usedVRID:       make(map[int]bool, 255),
 		configChecksum: make(map[string]string),
 	}
@@ -226,6 +230,11 @@ func (r *VirtualIPReconciler) Reconcile(ctx context.Context) utils.ReconcilerRes
 }
 
 func (r *VirtualIPReconciler) updateCondition(status metav1.ConditionStatus, reason string, message string) {
+	eventType := corev1.EventTypeNormal
+	if status == metav1.ConditionUnknown {
+		eventType = corev1.EventTypeWarning
+	}
+	r.recorder.Event(r.Instance, eventType, fmt.Sprintf("MetalK8sVIPs%s", reason), message)
 	r.Instance.SetCondition(configuredConditionName, status, reason, message)
 }
 
