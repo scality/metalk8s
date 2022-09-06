@@ -17,19 +17,40 @@ limitations under the License.
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+type SpreadConstraintSpec struct {
+	// Topology label to use to spread the Virtual IPs
+	TopologyKey string `json:"topologyKey"`
+}
+
+// +kubebuilder:validation:Format=ipv4
+type IPAddress string
+
 // VirtualIPPoolSpec defines the desired state of VirtualIPPool
 type VirtualIPPoolSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of VirtualIPPool. Edit virtualippool_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// Node Selector to deploy the Virtual IPs manager
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+	// Tolerations to deploy the Virtual IPs manager
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+	// Spread constraints for the Virtual IPs
+	// NOTE: Not supported yet
+	// // +optional
+	// SpreadConstraints []SpreadConstraintSpec `json:"spreadConstraints,omitempty"`
+
+	// Virtual IP addresses to use
+	// +kubebuilder:validation:MinItems=1
+	Addresses []IPAddress `json:"addresses"`
 }
 
 // VirtualIPPoolStatus defines the observed state of VirtualIPPool
