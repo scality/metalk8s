@@ -1325,6 +1325,7 @@ stages:
           context: "."
           dockerfile: eve/workers/pod-unit-tests-ui/worker.Dockerfile
     steps:
+      - ShellCommand: *wait_for_docker
       - Git: *git_pull
       - ShellCommand:
           <<: *add_final_status_artifact_failed
@@ -1380,6 +1381,7 @@ stages:
           context: "."
           dockerfile: eve/workers/pod-unit-tests-ui/worker.Dockerfile
     steps:
+      - ShellCommand: *wait_for_docker
       - Git: *git_pull
       - ShellCommand:
           <<: *add_final_status_artifact_failed
