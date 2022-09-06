@@ -3,6 +3,7 @@ package virtualippool
 import (
 	"context"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -34,6 +35,7 @@ func Add(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&metalk8sscalitycomv1alpha1.VirtualIPPool{}).
+		Owns(&corev1.ConfigMap{}).
 		Complete(reconciler)
 }
 
