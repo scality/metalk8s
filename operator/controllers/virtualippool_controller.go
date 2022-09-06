@@ -17,14 +17,10 @@ limitations under the License.
 package controllers
 
 import (
-	"context"
-
+	"github.com/scality/metalk8s/operator/pkg/controller/virtualippool"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	metalk8sscalitycomv1alpha1 "github.com/scality/metalk8s/operator/api/v1alpha1"
 )
 
 // VirtualIPPoolReconciler reconciles a VirtualIPPool object
@@ -46,17 +42,17 @@ type VirtualIPPoolReconciler struct {
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.2/pkg/reconcile
-func (r *VirtualIPPoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
-
-	// TODO(user): your logic here
-
-	return ctrl.Result{}, nil
-}
+//func (r *VirtualIPPoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+//	_ = log.FromContext(ctx)
+//
+// 	return ctrl.Result{}, nil
+//}
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *VirtualIPPoolReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&metalk8sscalitycomv1alpha1.VirtualIPPool{}).
-		Complete(r)
+	return virtualippool.Add(mgr)
+
+	//return ctrl.NewControllerManagedBy(mgr).
+	//	For(&metalk8sscalitycomv1alpha1.VirtualIPPool{}).
+	//	Complete(r)
 }
