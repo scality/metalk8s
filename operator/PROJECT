@@ -14,4 +14,12 @@ resources:
   kind: ClusterConfig
   path: github.com/scality/metalk8s/operator/api/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: metalk8s.scality.com
+  kind: VirtualIPPool
+  path: github.com/scality/metalk8s/operator/api/v1alpha1
+  version: v1alpha1
 version: "3"

@@ -1,0 +1,6 @@
+apiVersion: metalk8s.scality.com/v1alpha1
+kind: VirtualIPPool
+metadata:
+  name: virtualippool-sample
+spec:
+  # TODO(user): Add fields here

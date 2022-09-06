@@ -31,3 +31,29 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - virtualippools
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - virtualippools/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - metalk8s.scality.com
+  resources:
+  - virtualippools/status
+  verbs:
+  - get
+  - patch
+  - update
