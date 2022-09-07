@@ -73,10 +73,61 @@ func (r *ClusterConfigReconciler) reconcileVirtualIPPools(ctx context.Context, r
 		return utils.NeedEndReconciliation()
 	}
 
+	// Retrieve all objects that should be created/updated
+	objsToUpdate := []client.Object{}
+	for name := range pools {
+		objsToUpdate = append(objsToUpdate, &metalk8sscalitycomv1alpha1.VirtualIPPool{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      name,
+				Namespace: vipNamespaceName,
+			},
+		})
+	}
+
+	// Retrieve all objects that should be deleted
+	objsToDelete := []client.Object{}
+	poolList := metalk8sscalitycomv1alpha1.VirtualIPPoolList{}
+	if err := r.client.List(ctx, &poolList, handler.GetMatchingLabels(false), client.InNamespace(vipNamespaceName)); err != nil {
+		return utils.NeedRequeue(err)
+	}
+	for _, obj := range poolList.Items {
+		if _, known := pools[obj.GetName()]; !known {
+			objsToDelete = append(objsToDelete, &obj)
+		}
+	}
+
+	changed, err = handler.CreateOrUpdateOrDelete(ctx, objsToUpdate, objsToDelete, r.mutateVIP)
+	if err != nil {
+		r.setVIPConfiguredCondition(
+			metav1.ConditionUnknown,
+			"ObjectUpdateError",
+			err.Error(),
+		)
+		return utils.NeedRequeue(err)
+	}
+	if changed {
+		r.setVIPConfiguredCondition(
+			metav1.ConditionFalse,
+			"ObjectUpdateInProgress",
+			"Creation/Update of various objects in progress",
+		)
+		return utils.NeedEndReconciliation()
+	}
+
+	r.setVIPConfiguredCondition(metav1.ConditionTrue, "Configured", "All objects properly configured")
+
 	return utils.NothingToDo()
 }
 
 func (r *ClusterConfigReconciler) setVIPConfiguredCondition(status metav1.ConditionStatus, reason string, message string) {
 	r.sendEvent(status, fmt.Sprintf("VirtualIPPool%s", reason), message)
 	r.instance.SetVIPConfiguredCondition(status, reason, message)
+}
+
+func (r *ClusterConfigReconciler) mutateVIP(obj client.Object) error {
+	pool := obj.(*metalk8sscalitycomv1alpha1.VirtualIPPool)
+
+	pool.Spec = r.instance.Spec.WorkloadPlane.VirtualIPPools[pool.GetName()]
+
+	return nil
 }
