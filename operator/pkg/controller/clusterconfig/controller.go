@@ -9,30 +9,47 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
+	"github.com/go-logr/logr"
 	metalk8sscalitycomv1alpha1 "github.com/scality/metalk8s/operator/api/v1alpha1"
 	"github.com/scality/metalk8s/operator/pkg/controller/utils"
 )
 
 type ClusterConfigReconciler struct {
-	client client.Client
-	scheme *runtime.Scheme
+	client   client.Client
+	scheme   *runtime.Scheme
+	recorder record.EventRecorder
+
+	instance metalk8sscalitycomv1alpha1.ClusterConfig
 }
 
-// ClusterConfig name to manage, since we only support one ClusterConfig
-// the object is created by the operator and it's the only one that will be managed
-const instanceName = "main"
+const (
+	// ClusterConfig name to manage, since we only support one ClusterConfig
+	// the object is created by the operator and it's the only one that will be managed
+	instanceName = "main"
 
-var log = logf.Log.WithName("clusterconfig-controller")
+	// Name of the controller
+	controllerName = "clusterconfig-controller"
+
+	// Name of the component
+	componentName = "metalk8s-clusterconfig"
+
+	// Name of the application
+	appName = "clusterconfig"
+)
+
+var log = logf.Log.WithName(controllerName)
 
 // Create a new ClusterConfigReconciler
 func newClusterConfigReconciler(mgr ctrl.Manager) *ClusterConfigReconciler {
 	return &ClusterConfigReconciler{
-		client: mgr.GetClient(),
-		scheme: mgr.GetScheme(),
+		client:   mgr.GetClient(),
+		scheme:   mgr.GetScheme(),
+		recorder: mgr.GetEventRecorderFor(controllerName),
 	}
 }
 
@@ -66,8 +83,7 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	reqLogger.Info("reconciling ClusterConfig: START")
 	defer reqLogger.Info("reconciling ClusterConfig: STOP")
 
-	instance := &metalk8sscalitycomv1alpha1.ClusterConfig{}
-	err := r.client.Get(ctx, req.NamespacedName, instance)
+	err := r.client.Get(ctx, req.NamespacedName, &r.instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			if req.Name == instanceName {
@@ -85,8 +101,8 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return utils.Requeue(err)
 	}
 
-	if instance.Name != instanceName {
-		if err := r.client.Delete(ctx, instance); err != nil {
+	if r.instance.Name != instanceName {
+		if err := r.client.Delete(ctx, &r.instance); err != nil {
 			reqLogger.Error(
 				err, "cannot delete extra ClusterConfig: requeue",
 			)
@@ -96,7 +112,27 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return utils.EndReconciliation()
 	}
 
-	// TODO(user): your logic here
+	// Starting here some change might be done on the cluster, so make sure to publish status update
+	defer r.client.Status().Update(ctx, &r.instance)
+
+	for _, rec := range []func(context.Context, logr.Logger) utils.SubReconcilerResult{
+		r.reconcileVirtualIPPools,
+	} {
+		if result := rec(ctx, reqLogger); result.ShouldReturn() {
+			r.instance.SetReadyCondition(metav1.ConditionFalse, "Reconciling", "Reconciliation in progress")
+			return result.GetResult()
+		}
+	}
+
+	r.instance.SetReadyCondition(metav1.ConditionTrue, "Ready", "Everything good")
 
 	return utils.EndReconciliation()
+}
+
+func (r *ClusterConfigReconciler) sendEvent(status metav1.ConditionStatus, reason string, message string) {
+	eventType := corev1.EventTypeNormal
+	if status == metav1.ConditionUnknown {
+		eventType = corev1.EventTypeWarning
+	}
+	r.recorder.Event(&r.instance, eventType, reason, message)
 }
