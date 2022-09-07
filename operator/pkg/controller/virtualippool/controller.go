@@ -2,6 +2,8 @@ package virtualippool
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -23,8 +25,9 @@ type VirtualIPPoolReconciler struct {
 
 	instance metalk8sscalitycomv1alpha1.VirtualIPPool
 	// Some cache to ensure we don't reuse Virtual Router IDs, even for different pools
-	usedVRID map[int]bool
-	nodeList corev1.NodeList
+	usedVRID       map[int]bool
+	nodeList       corev1.NodeList
+	configChecksum string
 }
 
 const (
@@ -33,6 +36,9 @@ const (
 
 	// Name of the application
 	appName = "virtualippool"
+
+	// Annotation key to store Config checksum
+	annotationChecksumName = "checksum/config"
 
 	// ConfigMap key for HL config
 	hlConfigMapKey = "hl-config.yaml"
@@ -97,6 +103,7 @@ func (r *VirtualIPPoolReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	// will see (using the mutate function) if those object actually need updates or not
 	objsToUpdate := []client.Object{
 		r.instance.GetConfigMap(),
+		r.instance.GetDaemonSet(),
 	}
 
 	handler := utils.NewObjectHandler(&r.instance, r.client, r.scheme, reqLogger, componentName, appName)
@@ -187,6 +194,8 @@ func (r *VirtualIPPoolReconciler) mutate(obj client.Object) error {
 	switch obj.(type) {
 	case *corev1.ConfigMap:
 		return r.mutateConfigMap(obj.(*corev1.ConfigMap))
+	case *appsv1.DaemonSet:
+		return r.mutateDaemonSet(obj.(*appsv1.DaemonSet))
 	default:
 		return nil
 	}
@@ -265,6 +274,82 @@ func (r *VirtualIPPoolReconciler) mutateConfigMap(obj *corev1.ConfigMap) error {
 		obj.Data = make(map[string]string)
 	}
 	obj.Data[hlConfigMapKey] = content
+
+	// Store Config checksum
+	checksum := sha256.Sum256([]byte(content))
+	r.configChecksum = hex.EncodeToString(checksum[:])
+
+	return nil
+}
+
+func (r *VirtualIPPoolReconciler) mutateDaemonSet(obj *appsv1.DaemonSet) error {
+	obj.Spec.Template.Spec.NodeSelector = r.instance.Spec.NodeSelector
+	obj.Spec.Template.Spec.Tolerations = r.instance.Spec.Tolerations
+
+	utils.UpdateAnnotations(
+		&obj.Spec.Template.ObjectMeta,
+		map[string]string{annotationChecksumName: r.configChecksum},
+	)
+
+	obj.Spec.Template.Spec.HostNetwork = true
+
+	volumeName := "hl-config"
+	defaultMode := int32(420)
+	obj.Spec.Template.Spec.Volumes = []corev1.Volume{
+		{
+			Name: volumeName,
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: r.instance.GetConfigMap().GetName(),
+					},
+					DefaultMode: &defaultMode,
+				},
+			},
+		},
+	}
+
+	// If we have more than 1 container we clean up the containers list
+	if len(obj.Spec.Template.Spec.Containers) != 1 {
+		obj.Spec.Template.Spec.Containers = []corev1.Container{{}}
+	}
+	container := &obj.Spec.Template.Spec.Containers[0]
+
+	container.Name = "keepalived"
+	container.Image = utils.GetImageName("metalk8s-keepalived")
+	container.Env = []corev1.EnvVar{
+		{
+			Name: "NODE_NAME",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{
+					APIVersion: "v1",
+					FieldPath:  "spec.nodeName",
+				},
+			},
+		},
+	}
+	container.VolumeMounts = []corev1.VolumeMount{
+		{
+			Name:      volumeName,
+			MountPath: "/etc/keepalived/keepalived-input.yaml",
+			SubPath:   hlConfigMapKey,
+		},
+	}
+	container.SecurityContext = &corev1.SecurityContext{
+		Capabilities: &corev1.Capabilities{
+			Drop: []corev1.Capability{
+				"ALL",
+			},
+			Add: []corev1.Capability{
+				"NET_ADMIN",
+				"NET_BIND_SERVICE",
+				"NET_RAW",
+				"SETUID",
+				"SETGID",
+				"NET_BROADCAST",
+			},
+		},
+	}
 
 	return nil
 }

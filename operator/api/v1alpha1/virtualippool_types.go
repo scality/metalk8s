@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -74,6 +75,16 @@ type VirtualIPPool struct {
 // Compute the ConfigMap name for a pool
 func (v *VirtualIPPool) GetConfigMap() *corev1.ConfigMap {
 	return &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      v.GetName(),
+			Namespace: v.GetNamespace(),
+		},
+	}
+}
+
+// Compute the DaemonSet name for a pool
+func (v *VirtualIPPool) GetDaemonSet() *appsv1.DaemonSet {
+	return &appsv1.DaemonSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      v.GetName(),
 			Namespace: v.GetNamespace(),

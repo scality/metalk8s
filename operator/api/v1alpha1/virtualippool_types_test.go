@@ -22,4 +22,20 @@ var _ = Describe("VirtualIPPool", func() {
 			Expect(cm.Namespace).To(Equal("my-ns"))
 		})
 	})
+
+	Describe("GetDaemonSet", func() {
+		It("can get DaemonSet", func() {
+			v := VirtualIPPool{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "my-vip-pool",
+					Namespace: "my-ns",
+				},
+			}
+
+			ds := v.GetDaemonSet()
+
+			Expect(ds.Name).To(Equal("my-vip-pool"))
+			Expect(ds.Namespace).To(Equal("my-ns"))
+		})
+	})
 })
