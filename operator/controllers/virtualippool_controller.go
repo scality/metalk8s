@@ -33,6 +33,8 @@ type VirtualIPPoolReconciler struct {
 //+kubebuilder:rbac:groups=metalk8s.scality.com,resources=virtualippools/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=metalk8s.scality.com,resources=virtualippools/finalizers,verbs=update
 
+//+kubebuilder:rbac:groups="",resources=events,verbs=create;patch
+
 //+kubebuilder:rbac:groups="",resources=nodes,verbs=get;list;watch
 //+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="apps",resources=daemonsets,verbs=get;list;watch;create;update;patch;delete
