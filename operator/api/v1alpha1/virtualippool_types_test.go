@@ -76,4 +76,42 @@ var _ = Describe("VirtualIPPool", func() {
 			Expect(c.Message).To(Equal("Bar"))
 		})
 	})
+
+	Describe("AvailableCondition", func() {
+		It("can set Available condition", func() {
+			now := metav1.Now()
+			v := VirtualIPPool{
+				ObjectMeta: metav1.ObjectMeta{Generation: 12},
+			}
+
+			v.SetAvailableCondition(metav1.ConditionTrue, "Foo", "Bar")
+
+			c := v.GetCondition(availableConditionName)
+			Expect(c.Type).To(Equal(availableConditionName))
+			Expect(c.Status).To(Equal(metav1.ConditionTrue))
+			Expect(c.ObservedGeneration).To(BeEquivalentTo(12))
+			Expect(c.LastTransitionTime.Time).To(BeTemporally(">", now.Time))
+			Expect(c.Reason).To(Equal("Foo"))
+			Expect(c.Message).To(Equal("Bar"))
+		})
+	})
+
+	Describe("ReadyCondition", func() {
+		It("can set Ready condition", func() {
+			now := metav1.Now()
+			v := VirtualIPPool{
+				ObjectMeta: metav1.ObjectMeta{Generation: 12},
+			}
+
+			v.SetReadyCondition(metav1.ConditionTrue, "Foo", "Bar")
+
+			c := v.GetCondition(readyConditionName)
+			Expect(c.Type).To(Equal(readyConditionName))
+			Expect(c.Status).To(Equal(metav1.ConditionTrue))
+			Expect(c.ObservedGeneration).To(BeEquivalentTo(12))
+			Expect(c.LastTransitionTime.Time).To(BeTemporally(">", now.Time))
+			Expect(c.Reason).To(Equal("Foo"))
+			Expect(c.Message).To(Equal("Bar"))
+		})
+	})
 })

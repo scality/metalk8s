@@ -137,18 +137,78 @@ func (r *VirtualIPPoolReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	r.setConfiguredCondition(metav1.ConditionTrue, "Configured", "All objects properly configured")
-	// TODO(user): your logic here
 
-	return utils.EndReconciliation()
+	// Wait for DaemonSet replicas to be Ready
+	ds := r.instance.GetDaemonSet()
+	if err := r.client.Get(ctx, client.ObjectKeyFromObject(ds), ds); err != nil {
+		status := metav1.ConditionUnknown
+		reason := "DaemonSetRetrievingError"
+		message := err.Error()
+		if errors.IsNotFound(err) {
+			status = metav1.ConditionFalse
+			reason = "DaemonSetNotCreated"
+			message = "The DaemonSet does not exist yet"
+			err = nil
+		}
+		r.setAvailableCondition(status, reason, message)
+		r.setReadyCondition(status, reason, message)
+		return utils.Requeue(err)
+	}
+
+	// If ObservedGeneration do not match the Generation then we still need to wait
+	if ds.Status.ObservedGeneration != ds.Generation {
+		reason := "DaemonSetNotUpToDate"
+		message := "The latest changes on the DaemonSet are not yet applied"
+		r.setAvailableCondition(metav1.ConditionFalse, reason, message)
+		r.setReadyCondition(metav1.ConditionFalse, reason, message)
+		return utils.DelayedRequeue()
+	}
+
+	desired := ds.Status.DesiredNumberScheduled
+	available := ds.Status.NumberAvailable
+
+	// If all Pods are Available then the VirtualIPPool is Ready and Available
+	if desired == available {
+		message := fmt.Sprintf("All %d replicas are Available", available)
+		r.setAvailableCondition(metav1.ConditionTrue, "Available", message)
+		r.setReadyCondition(metav1.ConditionTrue, "Ready", message)
+		return utils.EndReconciliation()
+	}
+
+	// If we have at least one Pod ready we consider the VirtualIPPool as Available
+	if ds.Status.NumberReady > 0 {
+		r.setAvailableCondition(metav1.ConditionTrue, "Available", fmt.Sprintf("%d replicas are Available", available))
+		r.setReadyCondition(metav1.ConditionFalse, "NotReady", fmt.Sprintf("All the replicas are not yet Available, %d/%d Available", available, desired))
+	} else {
+		reason := "No replicas Available yet"
+		r.setAvailableCondition(metav1.ConditionFalse, "NotAvailable", reason)
+		r.setAvailableCondition(metav1.ConditionFalse, "NotReady", reason)
+	}
+
+	return utils.DelayedRequeue()
 }
 
-func (r *VirtualIPPoolReconciler) setConfiguredCondition(status metav1.ConditionStatus, reason string, message string) {
+func (r *VirtualIPPoolReconciler) sendEvent(status metav1.ConditionStatus, reason string, message string) {
 	eventType := corev1.EventTypeNormal
 	if status == metav1.ConditionUnknown {
 		eventType = corev1.EventTypeWarning
 	}
 	r.recorder.Event(&r.instance, eventType, reason, message)
+}
+
+func (r *VirtualIPPoolReconciler) setConfiguredCondition(status metav1.ConditionStatus, reason string, message string) {
+	r.sendEvent(status, reason, message)
 	r.instance.SetConfiguredCondition(status, reason, message)
+}
+
+func (r *VirtualIPPoolReconciler) setAvailableCondition(status metav1.ConditionStatus, reason string, message string) {
+	r.sendEvent(status, reason, message)
+	r.instance.SetAvailableCondition(status, reason, message)
+}
+
+func (r *VirtualIPPoolReconciler) setReadyCondition(status metav1.ConditionStatus, reason string, message string) {
+	r.sendEvent(status, reason, message)
+	r.instance.SetReadyCondition(status, reason, message)
 }
 
 // Retrieve the currently configured VRIDs and cache them to `usedVRID` in order to
