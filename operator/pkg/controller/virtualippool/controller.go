@@ -12,6 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -21,8 +22,9 @@ import (
 )
 
 type VirtualIPPoolReconciler struct {
-	client client.Client
-	scheme *runtime.Scheme
+	client   client.Client
+	scheme   *runtime.Scheme
+	recorder record.EventRecorder
 
 	instance metalk8sscalitycomv1alpha1.VirtualIPPool
 	// Some cache to ensure we don't reuse Virtual Router IDs, even for different pools
@@ -32,6 +34,9 @@ type VirtualIPPoolReconciler struct {
 }
 
 const (
+	// Name of the controller
+	controllerName = "virtualippool-controller"
+
 	// Name of the component
 	componentName = "metalk8s-vips"
 
@@ -45,13 +50,14 @@ const (
 	hlConfigMapKey = "hl-config.yaml"
 )
 
-var log = logf.Log.WithName("virtualippool-controller")
+var log = logf.Log.WithName(controllerName)
 
 // Create a new VirtualIPPoolReconciler
 func newVirtualIPPoolReconciler(mgr ctrl.Manager) *VirtualIPPoolReconciler {
 	return &VirtualIPPoolReconciler{
-		client: mgr.GetClient(),
-		scheme: mgr.GetScheme(),
+		client:   mgr.GetClient(),
+		scheme:   mgr.GetScheme(),
+		recorder: mgr.GetEventRecorderFor(controllerName),
 	}
 }
 
@@ -114,7 +120,7 @@ func (r *VirtualIPPoolReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	changed, err := handler.CreateOrUpdateOrDelete(ctx, objsToUpdate, nil, r.mutate)
 	if err != nil {
-		r.instance.SetConfiguredCondition(
+		r.setConfiguredCondition(
 			metav1.ConditionUnknown,
 			"ObjectUpdateError",
 			err.Error(),
@@ -122,7 +128,7 @@ func (r *VirtualIPPoolReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return utils.Requeue(err)
 	}
 	if changed {
-		r.instance.SetConfiguredCondition(
+		r.setConfiguredCondition(
 			metav1.ConditionFalse,
 			"ObjectUpdateInProgress",
 			"Creation/Update of various objects in progress",
@@ -130,10 +136,19 @@ func (r *VirtualIPPoolReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return utils.EndReconciliation()
 	}
 
-	r.instance.SetConfiguredCondition(metav1.ConditionTrue, "Configured", "All objects properly configured")
+	r.setConfiguredCondition(metav1.ConditionTrue, "Configured", "All objects properly configured")
 	// TODO(user): your logic here
 
 	return utils.EndReconciliation()
+}
+
+func (r *VirtualIPPoolReconciler) setConfiguredCondition(status metav1.ConditionStatus, reason string, message string) {
+	eventType := corev1.EventTypeNormal
+	if status == metav1.ConditionUnknown {
+		eventType = corev1.EventTypeWarning
+	}
+	r.recorder.Event(&r.instance, eventType, reason, message)
+	r.instance.SetConfiguredCondition(status, reason, message)
 }
 
 // Retrieve the currently configured VRIDs and cache them to `usedVRID` in order to
