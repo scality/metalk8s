@@ -124,6 +124,11 @@ func (v *VirtualIPPool) SetReadyCondition(status metav1.ConditionStatus, reason 
 	v.SetCondition(readyConditionName, status, reason, message)
 }
 
+// Get Ready Condition
+func (v *VirtualIPPool) GetReadyCondition() *Condition {
+	return v.GetCondition(readyConditionName)
+}
+
 //+kubebuilder:object:root=true
 
 // VirtualIPPoolList contains a list of VirtualIPPool

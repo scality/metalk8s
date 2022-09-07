@@ -20,7 +20,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const vIPConfiguredConditionName = "VirtualIPPool" + configuredConditionName
+const (
+	vIPConfiguredConditionName = "VirtualIPPool" + configuredConditionName
+	vIPReadyConditionName      = "VirtualIPPool" + readyConditionName
+)
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
@@ -85,6 +88,11 @@ func (v *ClusterConfig) SetReadyCondition(status metav1.ConditionStatus, reason 
 // Set VirtualIPPool Configured Condition
 func (v *ClusterConfig) SetVIPConfiguredCondition(status metav1.ConditionStatus, reason string, message string) {
 	v.SetCondition(vIPConfiguredConditionName, status, reason, message)
+}
+
+// Set VirtualIPPool Ready Condition
+func (v *ClusterConfig) SetVIPReadyCondition(status metav1.ConditionStatus, reason string, message string) {
+	v.SetCondition(vIPReadyConditionName, status, reason, message)
 }
 
 //+kubebuilder:object:root=true

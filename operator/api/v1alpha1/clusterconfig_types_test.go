@@ -63,4 +63,23 @@ var _ = Describe("ClusterConfig", func() {
 			Expect(cond.Message).To(Equal("Bar"))
 		})
 	})
+
+	Describe("VIPReadyCondition", func() {
+		It("can set VIP Ready condition", func() {
+			now := metav1.Now()
+			c := ClusterConfig{
+				ObjectMeta: metav1.ObjectMeta{Generation: 12},
+			}
+
+			c.SetVIPReadyCondition(metav1.ConditionTrue, "Foo", "Bar")
+
+			cond := c.GetCondition(vIPReadyConditionName)
+			Expect(cond.Type).To(Equal(vIPReadyConditionName))
+			Expect(cond.Status).To(Equal(metav1.ConditionTrue))
+			Expect(cond.ObservedGeneration).To(BeEquivalentTo(12))
+			Expect(cond.LastTransitionTime.Time).To(BeTemporally(">", now.Time))
+			Expect(cond.Reason).To(Equal("Foo"))
+			Expect(cond.Message).To(Equal("Bar"))
+		})
+	})
 })

@@ -97,7 +97,7 @@ var _ = Describe("VirtualIPPool", func() {
 	})
 
 	Describe("ReadyCondition", func() {
-		It("can set Ready condition", func() {
+		It("can set and get Ready condition", func() {
 			now := metav1.Now()
 			v := VirtualIPPool{
 				ObjectMeta: metav1.ObjectMeta{Generation: 12},
@@ -105,7 +105,7 @@ var _ = Describe("VirtualIPPool", func() {
 
 			v.SetReadyCondition(metav1.ConditionTrue, "Foo", "Bar")
 
-			c := v.GetCondition(readyConditionName)
+			c := v.GetReadyCondition()
 			Expect(c.Type).To(Equal(readyConditionName))
 			Expect(c.Status).To(Equal(metav1.ConditionTrue))
 			Expect(c.ObservedGeneration).To(BeEquivalentTo(12))

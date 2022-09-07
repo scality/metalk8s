@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -77,10 +78,7 @@ func (r *ClusterConfigReconciler) reconcileVirtualIPPools(ctx context.Context, r
 	objsToUpdate := []client.Object{}
 	for name := range pools {
 		objsToUpdate = append(objsToUpdate, &metalk8sscalitycomv1alpha1.VirtualIPPool{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: vipNamespaceName,
-			},
+			ObjectMeta: r.getPoolMeta(name),
 		})
 	}
 
@@ -116,12 +114,78 @@ func (r *ClusterConfigReconciler) reconcileVirtualIPPools(ctx context.Context, r
 
 	r.setVIPConfiguredCondition(metav1.ConditionTrue, "Configured", "All objects properly configured")
 
+	// Wait for all VirtualIPPools to be Ready
+	// NOTE: We only have one global status for the whole ClusterConfig
+	// so we return on the first not ready pool
+	for name := range pools {
+		pool := &metalk8sscalitycomv1alpha1.VirtualIPPool{
+			ObjectMeta: r.getPoolMeta(name),
+		}
+		if err := r.client.Get(ctx, client.ObjectKeyFromObject(pool), pool); err != nil {
+			status := metav1.ConditionUnknown
+			reason := "PoolRetrievingError"
+			message := err.Error()
+			if errors.IsNotFound(err) {
+				status = metav1.ConditionFalse
+				reason = "PoolNotCreated"
+				message = fmt.Sprintf("The VirtualIPPool %s does not exist yet", pool.GetName())
+				err = nil
+			}
+			r.setVIPReadyCondition(status, reason, message)
+			return utils.NeedRequeue(err)
+		}
+
+		poolReady := pool.GetReadyCondition()
+
+		// If ObservedGeneration do not match the Generation then we still need to wait
+		if poolReady != nil && poolReady.ObservedGeneration != pool.Generation {
+			r.setVIPReadyCondition(
+				metav1.ConditionFalse,
+				"PoolNotUpToDate",
+				fmt.Sprintf("The latest changes on the VirtualIPPool %s are not yet applied", pool.GetName()),
+			)
+			return utils.NeedDelayedRequeue()
+		}
+
+		if poolReady != nil && poolReady.Status == metav1.ConditionTrue {
+			// This pool is ready go next
+			continue
+		}
+
+		status := metav1.ConditionUnknown
+		reason := "PoolNotReady"
+		message := fmt.Sprintf("The VirtualIPPool %s is not yet Ready", pool.GetName())
+		if poolReady != nil {
+			status = poolReady.Status
+			message += fmt.Sprintf(
+				": Reason: %s, Message: %s",
+				poolReady.Reason, poolReady.Message,
+			)
+		}
+		r.setVIPReadyCondition(status, reason, message)
+		return utils.NeedDelayedRequeue()
+	}
+
+	r.setVIPReadyCondition(metav1.ConditionTrue, "Ready", "All Pools are Ready")
+
 	return utils.NothingToDo()
 }
 
 func (r *ClusterConfigReconciler) setVIPConfiguredCondition(status metav1.ConditionStatus, reason string, message string) {
 	r.sendEvent(status, fmt.Sprintf("VirtualIPPool%s", reason), message)
 	r.instance.SetVIPConfiguredCondition(status, reason, message)
+}
+
+func (r *ClusterConfigReconciler) setVIPReadyCondition(status metav1.ConditionStatus, reason string, message string) {
+	r.sendEvent(status, fmt.Sprintf("VirtualIPPool%s", reason), message)
+	r.instance.SetVIPReadyCondition(status, reason, message)
+}
+
+func (r *ClusterConfigReconciler) getPoolMeta(name string) metav1.ObjectMeta {
+	return metav1.ObjectMeta{
+		Name:      name,
+		Namespace: vipNamespaceName,
+	}
 }
 
 func (r *ClusterConfigReconciler) mutateVIP(obj client.Object) error {
