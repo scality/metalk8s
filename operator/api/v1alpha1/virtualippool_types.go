@@ -22,6 +22,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const configuredConditionName = "Configured"
+
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
@@ -107,6 +109,11 @@ func (v *VirtualIPPool) SetCondition(kind string, status metav1.ConditionStatus,
 // Get a condition from VirtualIPPool
 func (v *VirtualIPPool) GetCondition(kind string) *Condition {
 	return getCondition(v.Status.Conditions, kind)
+}
+
+// Set Configured Condition
+func (v *VirtualIPPool) SetConfiguredCondition(status metav1.ConditionStatus, reason string, message string) {
+	v.SetCondition(configuredConditionName, status, reason, message)
 }
 
 //+kubebuilder:object:root=true

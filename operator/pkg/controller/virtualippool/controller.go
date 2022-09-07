@@ -9,6 +9,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -108,14 +109,28 @@ func (r *VirtualIPPoolReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	handler := utils.NewObjectHandler(&r.instance, r.client, r.scheme, reqLogger, componentName, appName)
 
+	// Starting here some change might be done on the cluster, so make sure to publish status update
+	defer r.client.Status().Update(ctx, &r.instance)
+
 	changed, err := handler.CreateOrUpdateOrDelete(ctx, objsToUpdate, nil, r.mutate)
 	if err != nil {
+		r.instance.SetConfiguredCondition(
+			metav1.ConditionUnknown,
+			"ObjectUpdateError",
+			err.Error(),
+		)
 		return utils.Requeue(err)
 	}
 	if changed {
+		r.instance.SetConfiguredCondition(
+			metav1.ConditionFalse,
+			"ObjectUpdateInProgress",
+			"Creation/Update of various objects in progress",
+		)
 		return utils.EndReconciliation()
 	}
 
+	r.instance.SetConfiguredCondition(metav1.ConditionTrue, "Configured", "All objects properly configured")
 	// TODO(user): your logic here
 
 	return utils.EndReconciliation()
