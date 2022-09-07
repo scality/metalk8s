@@ -4,6 +4,17 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	// Configured mean that all the Objects has been updated has expected
+	configuredConditionName = "Configured"
+	// Available mean that the service is available and can be used
+	// but maybe not yet highly avaiable (e.g.: at least one replicas is ready)
+	availableConditionName = "Available"
+	// Ready mean that the service is fully ready and available
+	// (e.g.: all the replicas are ready)
+	readyConditionName = "Ready"
+)
+
 // Condition contains details for one aspect of the current state of this object
 type Condition metav1.Condition
 

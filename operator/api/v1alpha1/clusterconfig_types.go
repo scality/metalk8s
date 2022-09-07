@@ -43,6 +43,13 @@ type ClusterConfigSpec struct {
 type ClusterConfigStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
+	// List of conditions for the ClusterConfig
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	// +listType=map
+	// +listMapKey=type
+	Conditions []Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
 }
 
 //+kubebuilder:object:root=true
@@ -56,6 +63,16 @@ type ClusterConfig struct {
 
 	Spec   ClusterConfigSpec   `json:"spec,omitempty"`
 	Status ClusterConfigStatus `json:"status,omitempty"`
+}
+
+// Set a condition on ClusterConfig
+func (v *ClusterConfig) SetCondition(kind string, status metav1.ConditionStatus, reason string, message string) {
+	setCondition(v.Generation, &v.Status.Conditions, kind, status, reason, message)
+}
+
+// Get a condition from ClusterConfig
+func (v *ClusterConfig) GetCondition(kind string) *Condition {
+	return getCondition(v.Status.Conditions, kind)
 }
 
 //+kubebuilder:object:root=true
