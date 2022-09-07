@@ -72,6 +72,7 @@ func Add(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&metalk8sscalitycomv1alpha1.ClusterConfig{}).
+		Owns(&metalk8sscalitycomv1alpha1.VirtualIPPool{}).
 		Owns(&corev1.Namespace{}).
 		Complete(reconciler)
 }
