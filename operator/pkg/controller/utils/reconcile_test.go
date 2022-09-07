@@ -6,47 +6,112 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	ctrl "sigs.k8s.io/controller-runtime"
+
 	"github.com/scality/metalk8s/operator/pkg/controller/utils"
 )
 
 var _ = Describe("Reconcile output test", func() {
 	Describe("DelayedRequeue", func() {
 		It("return a delayed requeue result", func() {
-			result, err := utils.DelayedRequeue()
-
-			Expect(err).ToNot(HaveOccurred())
-			Expect(result.Requeue).To(BeTrue())
-			Expect(result.RequeueAfter).To(BeNumerically(">", 0))
+			assertDelayedRequeue(utils.DelayedRequeue())
 		})
 	})
 
 	Describe("Requeue", func() {
 		It("return a requeue result", func() {
-			result, err := utils.Requeue(nil)
-
-			Expect(err).ToNot(HaveOccurred())
-			Expect(result.Requeue).To(BeTrue())
-			Expect(result.RequeueAfter).To(BeZero())
+			assertRequeue(utils.Requeue(nil))
 		})
 
 		It("report error", func() {
 			myErr := fmt.Errorf("An ErRoR !")
 			result, err := utils.Requeue(myErr)
 
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("An ErRoR !"))
-			Expect(result.Requeue).To(BeFalse())
-			Expect(result.RequeueAfter).To(BeZero())
+			assertRequeueError(myErr, result, err)
 		})
 	})
 
 	Describe("EndReconciliation", func() {
 		It("return a end reconciliation result", func() {
-			result, err := utils.EndReconciliation()
-
-			Expect(err).ToNot(HaveOccurred())
-			Expect(result.Requeue).To(BeFalse())
-			Expect(result.RequeueAfter).To(BeZero())
+			assertEndReconciliation(utils.EndReconciliation())
 		})
 	})
 })
+
+var _ = Describe("SubReconciler tests", func() {
+	Describe("NothingToDo", func() {
+		It("return that there is nothing to do", func() {
+			r := utils.NothingToDo()
+
+			Expect(r.ShouldReturn()).To(BeFalse())
+
+			_, err := r.GetResult()
+			Expect(err).To(HaveOccurred())
+		})
+	})
+
+	Describe("NeedRequeue", func() {
+		It("return a requeue", func() {
+			r := utils.NeedRequeue(nil)
+
+			Expect(r.ShouldReturn()).To(BeTrue())
+
+			assertRequeue(r.GetResult())
+		})
+
+		It("report error", func() {
+			myErr := fmt.Errorf("An ErRoR !")
+			r := utils.NeedRequeue(myErr)
+
+			Expect(r.ShouldReturn()).To(BeTrue())
+
+			result, err := r.GetResult()
+			assertRequeueError(myErr, result, err)
+		})
+	})
+
+	Describe("NeedDelayedRequeue", func() {
+		It("return a delayed requeue", func() {
+			r := utils.NeedDelayedRequeue()
+
+			Expect(r.ShouldReturn()).To(BeTrue())
+
+			assertDelayedRequeue(r.GetResult())
+		})
+	})
+
+	Describe("NeedEndReconciliation", func() {
+		It("return an end reconciliation", func() {
+			r := utils.NeedEndReconciliation()
+
+			Expect(r.ShouldReturn()).To(BeTrue())
+
+			assertEndReconciliation(r.GetResult())
+		})
+	})
+})
+
+func assertDelayedRequeue(result ctrl.Result, err error) {
+	Expect(err).ToNot(HaveOccurred())
+	Expect(result.Requeue).To(BeTrue())
+	Expect(result.RequeueAfter).To(BeNumerically(">", 0))
+}
+
+func assertRequeue(result ctrl.Result, err error) {
+	Expect(err).ToNot(HaveOccurred())
+	Expect(result.Requeue).To(BeTrue())
+	Expect(result.RequeueAfter).To(BeZero())
+}
+
+func assertRequeueError(myErr error, result ctrl.Result, err error) {
+	Expect(err).To(HaveOccurred())
+	Expect(err).To(BeEquivalentTo(myErr))
+	Expect(result.Requeue).To(BeFalse())
+	Expect(result.RequeueAfter).To(BeZero())
+}
+
+func assertEndReconciliation(result ctrl.Result, err error) {
+	Expect(err).ToNot(HaveOccurred())
+	Expect(result.Requeue).To(BeFalse())
+	Expect(result.RequeueAfter).To(BeZero())
+}
