@@ -2,9 +2,11 @@ package virtualippool
 
 import (
 	"context"
+	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -17,7 +19,23 @@ import (
 type VirtualIPPoolReconciler struct {
 	client client.Client
 	scheme *runtime.Scheme
+
+	instance metalk8sscalitycomv1alpha1.VirtualIPPool
+	// Some cache to ensure we don't reuse Virtual Router IDs, even for different pools
+	usedVRID map[int]bool
+	nodeList corev1.NodeList
 }
+
+const (
+	// Name of the component
+	componentName = "metalk8s-vips"
+
+	// Name of the application
+	appName = "virtualippool"
+
+	// ConfigMap key for HL config
+	hlConfigMapKey = "hl-config.yaml"
+)
 
 var log = logf.Log.WithName("virtualippool-controller")
 
@@ -46,8 +64,7 @@ func (r *VirtualIPPoolReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	reqLogger.Info("reconciling VirtualIPPool: START")
 	defer reqLogger.Info("reconciling VirtualIPPool: STOP")
 
-	instance := &metalk8sscalitycomv1alpha1.VirtualIPPool{}
-	err := r.client.Get(ctx, req.NamespacedName, instance)
+	err := r.client.Get(ctx, req.NamespacedName, &r.instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Nothing to do, all objects that should be deleted are
@@ -57,7 +74,195 @@ func (r *VirtualIPPoolReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return utils.Requeue(err)
 	}
 
+	// Retrieve all nodes
+	if err := r.client.List(ctx, &r.nodeList); err != nil {
+		return utils.Requeue(err)
+	}
+
+	// Retrieve all configured Virtual Router IDs
+	r.usedVRID = make(map[int]bool, 255)
+	pools := metalk8sscalitycomv1alpha1.VirtualIPPoolList{}
+	if err := r.client.List(ctx, &pools); err != nil {
+		return utils.Requeue(err)
+	}
+	for _, pool := range pools.Items {
+		if err := r.cacheUsedVRIDs(ctx, pool); err != nil {
+			return utils.Requeue(err)
+		}
+	}
+
+	// We consider all objects has "to be updated" then the `CreateOrUpdate` function
+	// will see (using the mutate function) if those object actually need updates or not
+	objsToUpdate := []client.Object{
+		r.instance.GetConfigMap(),
+	}
+
+	handler := utils.NewObjectHandler(&r.instance, r.client, r.scheme, reqLogger, componentName, appName)
+
+	changed, err := handler.CreateOrUpdateOrDelete(ctx, objsToUpdate, nil, r.mutate)
+	if err != nil {
+		return utils.Requeue(err)
+	}
+	if changed {
+		return utils.EndReconciliation()
+	}
+
 	// TODO(user): your logic here
 
 	return utils.EndReconciliation()
+}
+
+// Retrieve the currently configured VRIDs and cache them to `usedVRID` in order to
+// not set the same Virtual Router ID for 2 different Virtual IP
+func (r *VirtualIPPoolReconciler) cacheUsedVRIDs(ctx context.Context, pool metalk8sscalitycomv1alpha1.VirtualIPPool) error {
+	configMap := pool.GetConfigMap()
+	if err := r.client.Get(ctx, client.ObjectKeyFromObject(configMap), configMap); err != nil {
+		if errors.IsNotFound(err) {
+			return nil
+		}
+		return err
+	}
+	config := &HLConfig{}
+	if content, ok := configMap.Data[hlConfigMapKey]; ok {
+		if err := config.Load(content); err != nil {
+			return err
+		}
+	}
+
+	for _, addr := range config.Addresses {
+		// Mark the Virtual Router ID as Used
+		r.usedVRID[addr.VrId] = true
+	}
+
+	return nil
+}
+
+// Return a not used Virtual Router ID and mark it as used
+func (r *VirtualIPPoolReconciler) getFreeVRID() int {
+	for i := 1; i <= 255; i++ {
+		if !r.usedVRID[i] {
+			r.usedVRID[i] = true
+			return i
+		}
+	}
+	// There is no more Virtual Router ID free
+	return -1
+}
+
+// Return the list of Nodes where a pool should be deployed and
+// number of time the node should be used
+// We return a map of node name and number of IPs minimum per node
+// And the number of extra IPs that can be defined (can not have more than one per node)
+func (r *VirtualIPPoolReconciler) getNodeList() (map[string]int, int) {
+	nodes := map[string]int{}
+
+	selector := labels.SelectorFromSet(r.instance.Spec.NodeSelector)
+	for _, node := range r.nodeList.Items {
+		if selector.Matches(labels.Set(node.GetLabels())) {
+			nodes[node.GetName()] = 0
+		}
+	}
+
+	// TODO: Handle Spread constraints
+
+	if len(nodes) == 0 {
+		return nodes, 0
+	}
+
+	// Spread the IPs on every nodes
+	// Set the number of IPs that should sit on every nodes
+	// The last IPs may sit on any of those nodes
+	min_number := len(r.instance.Spec.Addresses) / len(nodes)
+	extra := len(r.instance.Spec.Addresses) % len(nodes)
+	for node := range nodes {
+		nodes[node] = min_number
+	}
+
+	return nodes, extra
+}
+
+func (r *VirtualIPPoolReconciler) mutate(obj client.Object) error {
+	switch obj.(type) {
+	case *corev1.ConfigMap:
+		return r.mutateConfigMap(obj.(*corev1.ConfigMap))
+	default:
+		return nil
+	}
+}
+
+func (r *VirtualIPPoolReconciler) mutateConfigMap(obj *corev1.ConfigMap) error {
+	nodes, extra := r.getNodeList()
+
+	current := &HLConfig{}
+	if content, ok := obj.Data[hlConfigMapKey]; ok {
+		if err := current.Load(content); err != nil {
+			return err
+		}
+	}
+
+	desired := &HLConfig{}
+	desired.Init()
+	for _, ip := range r.instance.Spec.Addresses {
+		addr := current.GetAddr(string(ip))
+		if addr == nil {
+			addr = &VIPAddress{
+				IP:   string(ip),
+				VrId: r.getFreeVRID(),
+			}
+			if addr.VrId == -1 {
+				return fmt.Errorf(
+					"unable to find any free Virtual Router ID for '%s' in pool '%s' in namespace '%s'",
+					ip, r.instance.GetName(), r.instance.GetNamespace(),
+				)
+			}
+		}
+		if addr.Node != "" {
+			// The node is already defined
+			if nodes[addr.Node] == 0 && extra > 0 {
+				// Add one of the "extra" IPs on this node
+				nodes[addr.Node]--
+				extra--
+			} else if nodes[addr.Node] < 0 {
+				// This node already have the max number of IPs define
+				addr.Node = ""
+			} else {
+				nodes[addr.Node]--
+			}
+		}
+
+		desired.Addresses = append(desired.Addresses, *addr)
+	}
+
+	// Spread the remaining nodes
+	for index := range desired.Addresses {
+		if desired.Addresses[index].Node == "" {
+			for node := range nodes {
+				if nodes[node] > 0 {
+					// There is some IPs on this node that need to be set
+					desired.Addresses[index].Node = node
+					nodes[node]--
+					break
+				} else if nodes[node] == 0 && extra > 0 {
+					// Some extra IPs remaining and this node do not have any "extra"
+					// IPs yet so add one
+					desired.Addresses[index].Node = node
+					nodes[node]--
+					extra--
+					break
+				}
+				// This node already have the max number of IPs define
+			}
+		}
+	}
+
+	content, err := desired.ToYaml()
+	if err != nil {
+		return err
+	}
+	if obj.Data == nil {
+		obj.Data = make(map[string]string)
+	}
+	obj.Data[hlConfigMapKey] = content
+
+	return nil
 }

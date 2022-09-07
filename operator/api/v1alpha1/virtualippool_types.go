@@ -71,6 +71,16 @@ type VirtualIPPool struct {
 	Status VirtualIPPoolStatus `json:"status,omitempty"`
 }
 
+// Compute the ConfigMap name for a pool
+func (v *VirtualIPPool) GetConfigMap() *corev1.ConfigMap {
+	return &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      v.GetName(),
+			Namespace: v.GetNamespace(),
+		},
+	}
+}
+
 //+kubebuilder:object:root=true
 
 // VirtualIPPoolList contains a list of VirtualIPPool
