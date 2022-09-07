@@ -24,6 +24,9 @@ import (
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
 type WorkloadPlaneSpec struct {
+	// Information about Virtual IP Pools
+	// +optional
+	VirtualIPPools map[string]VirtualIPPoolSpec `json:"virtualIPPools,omitempty"`
 }
 
 // ClusterConfigSpec defines the desired state of ClusterConfig
