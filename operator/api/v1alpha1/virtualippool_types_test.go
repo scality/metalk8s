@@ -38,4 +38,23 @@ var _ = Describe("VirtualIPPool", func() {
 			Expect(ds.Namespace).To(Equal("my-ns"))
 		})
 	})
+
+	Describe("GetSetCondition", func() {
+		It("can add and get a condition", func() {
+			now := metav1.Now()
+			v := VirtualIPPool{
+				ObjectMeta: metav1.ObjectMeta{Generation: 12},
+			}
+
+			v.SetCondition("MyCondition", metav1.ConditionTrue, "Foo", "Bar")
+
+			c := v.GetCondition("MyCondition")
+			Expect(c.Type).To(Equal("MyCondition"))
+			Expect(c.Status).To(Equal(metav1.ConditionTrue))
+			Expect(c.ObservedGeneration).To(BeEquivalentTo(12))
+			Expect(c.LastTransitionTime.Time).To(BeTemporally(">", now.Time))
+			Expect(c.Reason).To(Equal("Foo"))
+			Expect(c.Message).To(Equal("Bar"))
+		})
+	})
 })

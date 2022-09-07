@@ -58,6 +58,13 @@ type VirtualIPPoolSpec struct {
 type VirtualIPPoolStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
+	// List of conditions for the VirtualIPPool
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	// +listType=map
+	// +listMapKey=type
+	Conditions []Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
 }
 
 //+kubebuilder:object:root=true
@@ -90,6 +97,16 @@ func (v *VirtualIPPool) GetDaemonSet() *appsv1.DaemonSet {
 			Namespace: v.GetNamespace(),
 		},
 	}
+}
+
+// Set a condition on VirtualIPPool
+func (v *VirtualIPPool) SetCondition(kind string, status metav1.ConditionStatus, reason string, message string) {
+	setCondition(v.Generation, &v.Status.Conditions, kind, status, reason, message)
+}
+
+// Get a condition from VirtualIPPool
+func (v *VirtualIPPool) GetCondition(kind string) *Condition {
+	return getCondition(v.Status.Conditions, kind)
 }
 
 //+kubebuilder:object:root=true
