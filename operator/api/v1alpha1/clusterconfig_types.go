@@ -59,7 +59,7 @@ type ClusterConfigStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-//+kubebuilder:resource:scope=Cluster
+//+kubebuilder:resource:scope=Cluster,shortName=cc
 
 // ClusterConfig is the Schema for the clusterconfigs API
 type ClusterConfig struct {

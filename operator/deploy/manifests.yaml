@@ -11,6 +11,8 @@ spec:
     kind: ClusterConfig
     listKind: ClusterConfigList
     plural: clusterconfigs
+    shortNames:
+    - cc
     singular: clusterconfig
   scope: Cluster
   versions:
