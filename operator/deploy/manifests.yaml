@@ -149,6 +149,8 @@ spec:
     kind: VirtualIPPool
     listKind: VirtualIPPoolList
     plural: virtualippools
+    shortNames:
+    - vipp
     singular: virtualippool
   scope: Namespaced
   versions:

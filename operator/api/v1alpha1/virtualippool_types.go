@@ -69,6 +69,7 @@ type VirtualIPPoolStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:resource:shortName=vipp
 
 // VirtualIPPool is the Schema for the virtualippools API
 type VirtualIPPool struct {
