@@ -33,6 +33,7 @@ type ClusterConfigReconciler struct {
 //+kubebuilder:rbac:groups=metalk8s.scality.com,resources=clusterconfigs/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=metalk8s.scality.com,resources=clusterconfigs/finalizers,verbs=update
 
+//+kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=events,verbs=create;patch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
