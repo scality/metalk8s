@@ -461,6 +461,7 @@ models:
         PYTEST_FILTERS: "post and ci"
         BOOTSTRAP_BACKUP_ARCHIVE: ""
         CONTROL_PLANE_INGRESS_VIP: "192.168.1.253"
+        WORKLOAD_PLANE_INGRESS_VIPS: "192.168.2.200,192.168.2.201,192.168.2.202,192.168.2.203,192.168.2.204"
       command: >
         ssh -F ssh_config bastion --
         "cd metalk8s &&
@@ -469,6 +470,7 @@ models:
         export TEST_HOSTS_LIST=\"${TEST_HOSTS_LIST}\" &&
         export BOOTSTRAP_BACKUP_ARCHIVE=\"${BOOTSTRAP_BACKUP_ARCHIVE}\" &&
         export CONTROL_PLANE_INGRESS_VIP=\"${CONTROL_PLANE_INGRESS_VIP}\" &&
+        export WORKLOAD_PLANE_INGRESS_VIPS=\"${WORKLOAD_PLANE_INGRESS_VIPS}\" &&
         tox -e tests -- ${PYTEST_ARGS:-""} -m \"${PYTEST_FILTERS}\""
       workdir: *terraform_workdir
       haltOnFailure: true

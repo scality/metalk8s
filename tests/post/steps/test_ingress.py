@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import requests
@@ -48,6 +49,26 @@ def test_expose_wp_ingress_on_control_plane_ip(host, teardown):
     pass
 
 
+@scenario("../features/ingress.feature", "Expose Workload Plane Ingress on some VIPs")
+def test_expose_wp_ingress_on_vips(host, teardown):
+    pass
+
+
+@scenario("../features/ingress.feature", "Workload Plane Ingress VIPs reconfiguration")
+def test_wp_ingress_vips_reconfig(host, teardown):
+    pass
+
+
+@scenario("../features/ingress.feature", "Workload Plane Ingress VIPs multiple pools")
+def test_wp_ingress_vips_multi_pool(host, teardown):
+    pass
+
+
+@scenario("../features/ingress.feature", "Failover of Workload Plane Ingress VIPs")
+def test_failover_wp_ingress_vips(host, teardown):
+    pass
+
+
 @scenario(
     "../features/ingress.feature", "Failover of Control Plane Ingress VIP using MetalLB"
 )
@@ -93,6 +114,13 @@ def teardown(context, host, ssh_config, version, k8s_client):
             name=context["node_to_uncordon"], body={"spec": {"unschedulable": False}}
         )
 
+    if "node_to_untaint" in context:
+        with host.sudo():
+            host.check_output(
+                "kubectl --kubeconfig=/etc/kubernetes/admin.conf taint nodes "
+                f"{context['node_to_untaint']} test-taint-no-ingress:NoSchedule-"
+            )
+
     if "bootstrap_to_restore" in context:
         with host.sudo():
             host.check_output(
@@ -100,6 +128,18 @@ def teardown(context, host, ssh_config, version, k8s_client):
                     context["bootstrap_to_restore"]
                 )
             )
+
+    if "cluster_config_to_restore" in context:
+        cc_content = context["cluster_config_to_restore"].to_dict()
+        client = k8s_client.resources.get(
+            api_version="metalk8s.scality.com/v1alpha1", kind="ClusterConfig"
+        )
+
+        # We need to retrieve current ressourceVersion
+        tmp_obj = client.get(name=cc_content["metadata"]["name"])
+        cc_content["metadata"]["resourceVersion"] = tmp_obj.metadata.resourceVersion
+
+        client.replace(body=cc_content)
 
     if context.get("reconfigure_cp_ingress"):
         re_configure_cp_ingress(host, version, ssh_config)
@@ -116,6 +156,22 @@ def we_have_a_vip(context):
         pytest.skip("No Control Plane Ingress VIP to switch to")
 
     context["new_cp_ingress_vip"] = cp_ingress_vip
+
+
+@given("a list of VIPs for Workload Plane Ingress is available")
+def we_have_a_vip_list(context):
+    wp_ingress_vips = os.environ.get("WORKLOAD_PLANE_INGRESS_VIPS")
+
+    if not wp_ingress_vips:
+        pytest.skip("No Workload Plane Ingress list of VIPs to use")
+
+    ips = wp_ingress_vips.split(",")
+
+    # We set different variable that will be used in tests
+    context["wp_ingress_vips"] = wp_ingress_vips
+
+    context["wp_ingress_first_pool"] = ",".join(ips[:2])
+    context["wp_ingress_second_pool"] = ",".join(ips[2:])
 
 
 @given("MetalLB is already enabled")
@@ -137,6 +193,29 @@ def disable_metallb(host, context, ssh_config, version):
 
         utils.patch_bootstrap_config(context, host, bootstrap_patch)
         re_configure_cp_ingress(host, version, ssh_config, context=context)
+
+
+@given(
+    parsers.parse(
+        "'{ips}' Workload Plane VIPs are configured in the '{cc_name}' ClusterConfig '{pool_name}' pool"
+    )
+)
+def wp_ingress_vip_setup(
+    host, context, ssh_config, version, k8s_client, cc_name, pool_name, ips
+):
+    update_cc_pool(
+        host, context, ssh_config, version, k8s_client, cc_name, pool_name, ips
+    )
+    wait_cc_status(k8s_client, cc_name, "Ready")
+    rollout_restart(host, "daemonset/ingress-nginx-controller", "metalk8s-ingress")
+
+
+_SPREAD_IPS_PARSER = parsers.parse("the '{ips}' IPs are spread on nodes")
+
+
+@given(_SPREAD_IPS_PARSER)
+def given_check_vips_spreading(host, ssh_config, context, ips):
+    check_vips_spreading(host, ssh_config, context, ips)
 
 
 @when(
@@ -240,6 +319,43 @@ def stop_cp_ingress_vip_node(context, k8s_client):
         pod_k8s_client.delete(name=pod.metadata.name, namespace=pod.metadata.namespace)
 
 
+@when(parsers.parse("we stop the node '{node_name}' Workload Plane Ingress"))
+def stop_wp_ingress_node(host, context, k8s_client, node_name):
+    context["node_to_untaint"] = node_name
+
+    # Add a custom taint to ensure the Workload Plane Ingress pod do not
+    # get reschedule
+    with host.sudo():
+        host.check_output(
+            "kubectl --kubeconfig=/etc/kubernetes/admin.conf taint nodes "
+            f"{node_name} test-taint-no-ingress:NoSchedule"
+        )
+
+    client = k8s_client.resources.get(api_version="v1", kind="Pod")
+    # Delete the Workload Plane Ingress controller actually running on this node
+    wp_ingress_pods = client.get(
+        namespace="metalk8s-ingress",
+        label_selector="app.kubernetes.io/instance=ingress-nginx",
+        field_selector=f"spec.nodeName={node_name}",
+    )
+    for pod in wp_ingress_pods.items:
+        client.delete(name=pod.metadata.name, namespace=pod.metadata.namespace)
+
+    def _wait_for_deletion():
+        assert not client.get(
+            namespace="metalk8s-ingress",
+            label_selector="app.kubernetes.io/instance=ingress-nginx",
+            field_selector=f"spec.nodeName={node_name}",
+        ).items
+
+    utils.retry(
+        _wait_for_deletion,
+        times=24,
+        wait=5,
+        name=f"waiting for Workload Plane Ingress pods from '{node_name}' to be deleted",
+    )
+
+
 @when(parsers.parse("we set control plane ingress IP to node '{node_name}' IP"))
 def update_cp_ingress_ip(host, context, ssh_config, version, node_name):
     node = testinfra.get_host(node_name, ssh_config=ssh_config)
@@ -295,6 +411,83 @@ def rollout_restart(host, resource, namespace):
         )
 
 
+@when(
+    parsers.parse(
+        "we update the '{cc_name}' ClusterConfig to add '{pool_name}' Workload Plane pool with IPs '{ips}'"
+    )
+)
+def update_cc_pool(
+    host, context, ssh_config, version, k8s_client, cc_name, pool_name, ips
+):
+    ips = ips.format(**context).split(",")
+    client = k8s_client.resources.get(
+        api_version="metalk8s.scality.com/v1alpha1", kind="ClusterConfig"
+    )
+
+    if not context.get("cluster_config_to_restore"):
+        context["cluster_config_to_restore"] = client.get(name=cc_name)
+
+    # Patch the ClusterConfig object
+    client.patch(
+        name=cc_name,
+        body={
+            "spec": {
+                "workloadPlane": {
+                    "virtualIPPools": {
+                        pool_name: {
+                            "addresses": ips,
+                            "tolerations": [
+                                {
+                                    "key": "node-role.kubernetes.io/bootstrap",
+                                    "operator": "Equal",
+                                    "effect": "NoSchedule",
+                                },
+                                {
+                                    "key": "node-role.kubernetes.io/infra",
+                                    "operator": "Equal",
+                                    "effect": "NoSchedule",
+                                },
+                            ],
+                        }
+                    }
+                }
+            }
+        },
+        content_type="application/merge-patch+json",
+    )
+
+    # Reconfigure portmap so that those VIPs can be used to reach the Ingress
+    # NOTE: It should be part of the operator in the future
+    re_configure_portmap(host, version, ssh_config, context=context)
+
+
+@when(parsers.parse("we wait for the '{cc_name}' ClusterConfig to be '{status}'"))
+def wait_cc_status(k8s_client, cc_name, status):
+    client = k8s_client.resources.get(
+        api_version="metalk8s.scality.com/v1alpha1", kind="ClusterConfig"
+    )
+
+    def _wait_for_status():
+        obj = client.get(name=cc_name)
+
+        for cond in obj.status.conditions or []:
+            if cond.type == status:
+                assert obj.generation == cond.observed_generation
+                assert cond.status == "True"
+                return
+
+        raise AssertionError(
+            f"ClusterConfig '{cc_name}' has no condition '{status}' yet"
+        )
+
+    utils.retry(
+        _wait_for_status,
+        times=24,
+        wait=5,
+        name=f"waiting for ClusterConfig '{cc_name}' to be '{status}'",
+    )
+
+
 @then(
     parsers.re(r"the server returns (?P<status_code>\d+) '(?P<reason>.+)'"),
     converters=dict(status_code=int),
@@ -340,6 +533,104 @@ def server_request_does_not_return(host, context, protocol, port, plane, path):
         host=host, context=context, protocol=protocol, port=port, plane=plane, path=path
     )
     server_does_not_respond(host=host, context=context)
+
+
+@then(
+    parsers.re(
+        r"an (?P<protocol>HTTPS?) request (?:on path '(?P<path>[^']+)' )?"
+        r"on port (?P<port>\d+) on '(?P<ips>.*)' IPs returns "
+        r"(?P<status_code>\d+) '(?P<reason>.+)'"
+    ),
+    converters=dict(status_code=int),
+)
+def server_request_returns_multiple_ips(
+    context, protocol, port, ips, path, status_code, reason
+):
+    ips = ips.format(**context).split(",")
+
+    assert ips, "Error IPs list cannot be empty"
+
+    for ip in ips:
+        endpoint = "{proto}://{ip}:{port}/{path}".format(
+            proto=protocol.lower(), ip=ip, port=port, path=path or ""
+        )
+        try:
+            response = requests.get(endpoint, verify=False)
+        except Exception as exc:
+            raise AssertionError(f"Unable to reach ingress on '{endpoint}': {exc}")
+
+        assert response is not None
+        assert response.status_code == status_code
+        assert response.reason == reason
+
+
+@then(
+    parsers.re(
+        r"an (?P<protocol>HTTPS?) request (?:on path '(?P<path>[^']+)' )?"
+        r"on port (?P<port>\d+) on '(?P<ips>.*)' IPs should not return"
+    ),
+)
+def server_request_not_returns_multiple_ips(context, protocol, port, ips, path):
+    ips = ips.format(**context).split(",")
+
+    assert ips, "Error IPs list cannot be empty"
+
+    for ip in ips:
+        endpoint = "{proto}://{ip}:{port}/{path}".format(
+            proto=protocol.lower(), ip=ip, port=port, path=path or ""
+        )
+        try:
+            response = requests.get(endpoint, verify=False)
+        except requests.exceptions.ConnectionError as exc:
+            return
+        except Exception as exc:
+            raise AssertionError(
+                f"Error when trying to reach ingress on '{endpoint}': {exc}"
+            )
+
+        raise AssertionError(f"The server shouldn't answer but got '{response}'")
+
+
+@then(_SPREAD_IPS_PARSER)
+def then_check_vips_spreading(host, ssh_config, context, ips):
+    check_vips_spreading(host, ssh_config, context, ips)
+
+
+@then(parsers.parse("the '{ips}' IPs should no longer sit on the node '{node_name}'"))
+def check_ip_not_on_node(ssh_config, context, ips, node_name):
+    ips = ips.format(**context).split(",")
+    node = testinfra.get_host(node_name, ssh_config=ssh_config)
+
+    def _ip_not_on_node():
+        with node.sudo():
+            node_ips = json.loads(
+                node.check_output("salt-call --local --out=json network.ip_addrs")
+            )["local"]
+
+        assert not (set(node_ips) & set(ips))
+
+    utils.retry(
+        _ip_not_on_node,
+        times=12,
+        wait=5,
+        name=f"waiting for '{node_name}' to no longer host VIPs",
+    )
+
+
+@then(parsers.parse("the '{ips}' IPs are no longer available on nodes"))
+def check_ip_not_available(host, ssh_config, context, ips):
+    ips = ips.format(**context).split(",")
+
+    node_ips = json.loads(
+        utils.run_salt_command(
+            host,
+            ["salt", "--static", "--out=json", "'*'", "network.ip_addrs"],
+            ssh_config,
+        ).stdout
+    )
+
+    for current_ips in node_ips.values():
+        assert not (set(ips) & set(current_ips))
 
 
 @then("the node hosting the Control Plane Ingress VIP changed")
@@ -434,3 +725,25 @@ def re_configure_portmap(host, version, ssh_config, context=None):
 
     if context is not None:
         context["reconfigure_portmap"] = True
+
+
+def check_vips_spreading(host, ssh_config, context, ips):
+    ips = ips.format(**context).split(",")
+
+    node_ips = json.loads(
+        utils.run_salt_command(
+            host,
+            ["salt", "--static", "--out=json", "'*'", "network.ip_addrs"],
+            ssh_config,
+        ).stdout
+    )
+    node_vip_count = {name: 0 for name in node_ips}
+
+    for ip in ips:
+        node_vip_count[
+            next(name for name, ip_list in node_ips.items() if ip in ip_list)
+        ] += 1
+
+    # The node is with less IPs should at most host 1 VIP less than the one with the most IPs
+    # Otherwise the IPs are not properly spread
+    assert min(node_vip_count.values()) + 1 >= max(node_vip_count.values())

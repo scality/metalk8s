@@ -50,6 +50,58 @@ Feature: Ingress
         Then an HTTP request on port 80 on a workload-plane IP should not return
         And an HTTP request on port 80 on a control-plane IP returns 404 'Not Found'
 
+    Scenario: Expose Workload Plane Ingress on some VIPs
+        Given the Kubernetes API is available
+        And a list of VIPs for Workload Plane Ingress is available
+        And pods with label 'app.kubernetes.io/name=metalk8s-operator' are 'Ready'
+        When we update the 'main' ClusterConfig to add 'test-vip-1' Workload Plane pool with IPs '{wp_ingress_vips}'
+        And we wait for the 'main' ClusterConfig to be 'Ready'
+        And we trigger a rollout restart of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress'
+        And we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
+        Then the '{wp_ingress_vips}' IPs are spread on nodes
+        And an HTTP request on port 80 on '{wp_ingress_vips}' IPs returns 404 'Not Found'
+
+    Scenario: Workload Plane Ingress VIPs reconfiguration
+        Given the Kubernetes API is available
+        And a list of VIPs for Workload Plane Ingress is available
+        And pods with label 'app.kubernetes.io/name=metalk8s-operator' are 'Ready'
+        And '{wp_ingress_first_pool}' Workload Plane VIPs are configured in the 'main' ClusterConfig 'test-vip-2' pool
+        And the '{wp_ingress_first_pool}' IPs are spread on nodes
+        When we update the 'main' ClusterConfig to add 'test-vip-2' Workload Plane pool with IPs '{wp_ingress_second_pool}'
+        And we wait for the 'main' ClusterConfig to be 'Ready'
+        And we trigger a rollout restart of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress'
+        And we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
+        Then the '{wp_ingress_second_pool}' IPs are spread on nodes
+        And an HTTP request on port 80 on '{wp_ingress_second_pool}' IPs returns 404 'Not Found'
+        And the '{wp_ingress_first_pool}' IPs are no longer available on nodes
+        And an HTTP request on port 80 on '{wp_ingress_first_pool}' IPs should not return
+
+    Scenario: Workload Plane Ingress VIPs multiple pools
+        Given the Kubernetes API is available
+        And a list of VIPs for Workload Plane Ingress is available
+        And pods with label 'app.kubernetes.io/name=metalk8s-operator' are 'Ready'
+        And '{wp_ingress_first_pool}' Workload Plane VIPs are configured in the 'main' ClusterConfig 'test-vip-3-pool-1' pool
+        And the '{wp_ingress_first_pool}' IPs are spread on nodes
+        When we update the 'main' ClusterConfig to add 'test-vip-3-pool-2' Workload Plane pool with IPs '{wp_ingress_second_pool}'
+        And we wait for the 'main' ClusterConfig to be 'Ready'
+        And we trigger a rollout restart of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress'
+        And we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
+        Then the '{wp_ingress_first_pool}' IPs are spread on nodes
+        And an HTTP request on port 80 on '{wp_ingress_first_pool}' IPs returns 404 'Not Found'
+        And the '{wp_ingress_second_pool}' IPs are spread on nodes
+        And an HTTP request on port 80 on '{wp_ingress_second_pool}' IPs returns 404 'Not Found'
+
+    Scenario: Failover of Workload Plane Ingress VIPs
+        Given the Kubernetes API is available
+        And we are on a multi node cluster
+        And a list of VIPs for Workload Plane Ingress is available
+        And pods with label 'app.kubernetes.io/name=metalk8s-operator' are 'Ready'
+        And '{wp_ingress_vips}' Workload Plane VIPs are configured in the 'main' ClusterConfig 'test-vip-4' pool
+        When we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
+        And we stop the node 'node-1' Workload Plane Ingress
+        Then the '{wp_ingress_vips}' IPs should no longer sit on the node 'node-1'
+        And an HTTP request on port 80 on '{wp_ingress_vips}' IPs returns 404 'Not Found'
+
     @authentication
     Scenario: Failover of Control Plane Ingress VIP using MetalLB
         Given the Kubernetes API is available
