@@ -125,12 +125,73 @@ def codegen_chart_fluent_bit() -> types.TaskDict:
     }
 
 
+def codegen_chart_ingress_nginx() -> types.TaskDict:
+    """Generate the SLS file for NGINX Ingress using the chart render script."""
+    chart_dir = constants.CHART_ROOT / "ingress-nginx"
+    actions = []
+    file_dep = list(utils.git_ls(chart_dir))
+    file_dep.append(constants.CHART_RENDER_SCRIPT)
+
+    # Workload Plane Ingress
+    target_sls = (
+        constants.ROOT / "salt/metalk8s/addons/nginx-ingress/deployed/chart.sls"
+    )
+    value_file = constants.CHART_ROOT / "ingress-nginx.yaml"
+    actions.append(
+        doit.action.CmdAction(
+            f"{constants.CHART_RENDER_CMD} ingress-nginx {value_file} "
+            f"{chart_dir} --namespace metalk8s-ingress --output {target_sls}"
+        )
+    )
+    file_dep.append(value_file)
+
+    # Control Plane Ingress Deployment
+    target_sls = (
+        constants.ROOT
+        / "salt/metalk8s/addons/nginx-ingress-control-plane"
+        / "deployed/chart-deployment.sls"
+    )
+    value_file = constants.CHART_ROOT / "ingress-nginx-control-plane-deployment.yaml"
+    actions.append(
+        doit.action.CmdAction(
+            f"{constants.CHART_RENDER_CMD} ingress-nginx-control-plane {value_file} "
+            f"{chart_dir} --namespace metalk8s-ingress --output {target_sls}"
+        )
+    )
+    file_dep.append(value_file)
+
+    # Control Plane Ingress DaemonSet
+    target_sls = (
+        constants.ROOT
+        / "salt/metalk8s/addons/nginx-ingress-control-plane"
+        / "deployed/chart-daemonset.sls"
+    )
+    value_file = constants.CHART_ROOT / "ingress-nginx-control-plane-daemonset.yaml"
+    actions.append(
+        doit.action.CmdAction(
+            f"{constants.CHART_RENDER_CMD} ingress-nginx-control-plane {value_file} "
+            f"{chart_dir} --namespace metalk8s-ingress --output {target_sls}"
+        )
+    )
+    file_dep.append(value_file)
+
+    return {
+        "name": "chart_ingress-nginx",
+        "title": utils.title_with_subtask_name("CODEGEN"),
+        "doc": codegen_chart_ingress_nginx.__doc__,
+        "actions": actions,
+        "file_dep": file_dep,
+        "task_dep": ["check_for:tox", "check_for:helm"],
+    }
+
+
 # List of available code generation tasks.
 CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_storage_operator,
     codegen_metalk8s_operator,
     codegen_chart_dex,
     codegen_chart_fluent_bit,
+    codegen_chart_ingress_nginx,
 )
 
 
