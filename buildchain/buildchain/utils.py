@@ -8,7 +8,7 @@ import inspect
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Callable, Iterator, List, Optional
+from typing import Any, Callable, Iterator, List, Optional, Union
 
 from docker.types import Mount  # type: ignore
 
@@ -114,7 +114,7 @@ def bind_ro_mount(source: Path, target: Path) -> Mount:
     return bind_mount(source=source, target=target, read_only=True)
 
 
-def git_ls(directory: Optional[str] = None) -> Iterator[Path]:
+def git_ls(directory: Optional[Union[str, Path]] = None) -> Iterator[Path]:
     """Return the list of files tracked by Git under `root` (recursively).
 
     Arguments:
@@ -123,7 +123,13 @@ def git_ls(directory: Optional[str] = None) -> Iterator[Path]:
     Returns:
         A list of files tracked by Git.
     """
-    root = constants.ROOT if directory is None else constants.ROOT / directory
+    if directory is None:
+        root = constants.ROOT
+    elif isinstance(directory, Path):
+        root = directory
+    else:
+        root = constants.ROOT / directory
+
     assert root.is_dir()
     return map(
         Path,

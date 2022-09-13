@@ -9,7 +9,7 @@ import subprocess
 from typing import List, Optional, FrozenSet
 
 from buildchain import ROOT  # Re-export ROOT through this module.
-from buildchain import config
+from buildchain import config, versions
 
 
 # Max length of a "command".
@@ -71,6 +71,10 @@ REDHAT_ENTRYPOINT: Path = ROOT / "packages/redhat/common/entrypoint.sh"
 UI_PUBLIC: Path = ROOT / "ui/public"
 UI_BRANDING: Path = UI_PUBLIC / "brand"
 UI_ASSETS: Path = UI_BRANDING / "assets"
+
+# Path to the chart files
+CHART_ROOT: Path = ROOT / "charts"
+CHART_RENDER_SCRIPT: Path = CHART_ROOT / "render.py"
 
 # }}}
 # Vagrant parameters {{{
@@ -139,6 +143,8 @@ METALK8S_OPERATOR_SDK_GENERATE_CMDS: List[List[str]] = [
     [config.ExtCommand.MAKE.value, "manifests"],
     [config.ExtCommand.MAKE.value, "metalk8s"],
 ]
+
+CHART_RENDER_CMD: str = f"tox -e chart-render -- --kube-version {versions.K8S_VERSION}"
 
 # For mypy, see `--no-implicit-reexport` documentation.
 __all__ = ["ROOT"]

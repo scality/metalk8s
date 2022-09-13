@@ -58,6 +58,7 @@ class ExtCommand(enum.Enum):
     GIT = os.getenv("GIT_BIN", "git")
     GOFMT = os.getenv("GOFMT_BIN", "gofmt")
     HARDLINK = os.getenv("HARDLINK_BIN", "hardlink")
+    HELM = os.getenv("HELM_BIN", "helm")
     IMPLANTISOMD5 = os.getenv("IMPLANTISOMD5_BIN", "implantisomd5")
     MAKE = os.getenv("MAKE_BIN", "make")
     MKISOFS = os.getenv("MKISOFS_BIN", "mkisofs")
