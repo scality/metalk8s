@@ -291,6 +291,33 @@ def codegen_chart_metallb() -> types.TaskDict:
     }
 
 
+def codegen_chart_prometheus_adapter() -> types.TaskDict:
+    """Generate the SLS file for Prometheus Adapter using the chart render script."""
+    target_sls = (
+        constants.ROOT / "salt/metalk8s/addons/prometheus-adapter/deployed/chart.sls"
+    )
+    chart_dir = constants.CHART_ROOT / "prometheus-adapter"
+    value_file = constants.CHART_ROOT / "prometheus-adapter.yaml"
+    cmd = (
+        f"{constants.CHART_RENDER_CMD} prometheus-adapter {value_file} {chart_dir} "
+        "--namespace metalk8s-monitoring "
+        f"--output {target_sls}"
+    )
+
+    file_dep = list(utils.git_ls(chart_dir))
+    file_dep.append(value_file)
+    file_dep.append(constants.CHART_RENDER_SCRIPT)
+
+    return {
+        "name": "chart_prometheus-adapter",
+        "title": utils.title_with_subtask_name("CODEGEN"),
+        "doc": codegen_chart_prometheus_adapter.__doc__,
+        "actions": [doit.action.CmdAction(cmd)],
+        "file_dep": file_dep,
+        "task_dep": ["check_for:tox", "check_for:helm"],
+    }
+
+
 # List of available code generation tasks.
 CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_storage_operator,
@@ -301,6 +328,7 @@ CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_chart_kube_prometheus_stack,
     codegen_chart_loki,
     codegen_chart_metallb,
+    codegen_chart_prometheus_adapter,
 )
 
 
