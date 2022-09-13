@@ -228,6 +228,36 @@ def codegen_chart_kube_prometheus_stack() -> types.TaskDict:
     }
 
 
+def codegen_chart_loki() -> types.TaskDict:
+    """Generate the SLS file for Loki using the chart render script."""
+    target_sls = constants.ROOT / "salt/metalk8s/addons/logging/loki/deployed/chart.sls"
+    chart_dir = constants.CHART_ROOT / "loki"
+    value_file = constants.CHART_ROOT / "loki.yaml"
+    cmd = (
+        f"{constants.CHART_RENDER_CMD} loki {value_file} {chart_dir} "
+        "--namespace metalk8s-logging "
+        "--service-config loki metalk8s-loki-config "
+        "metalk8s/addons/logging/loki/config/loki.yaml metalk8s-logging "
+        "--patch 'StatefulSet,metalk8s-logging,loki,"
+        "spec:template:spec:containers:0:ports:1,"
+        '\\{"name": "memberlist", "containerPort": 7946, "protocol": "TCP"\\}\' '
+        f"--output {target_sls}"
+    )
+
+    file_dep = list(utils.git_ls(chart_dir))
+    file_dep.append(value_file)
+    file_dep.append(constants.CHART_RENDER_SCRIPT)
+
+    return {
+        "name": "chart_loki",
+        "title": utils.title_with_subtask_name("CODEGEN"),
+        "doc": codegen_chart_loki.__doc__,
+        "actions": [doit.action.CmdAction(cmd)],
+        "file_dep": file_dep,
+        "task_dep": ["check_for:tox", "check_for:helm"],
+    }
+
+
 # List of available code generation tasks.
 CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_storage_operator,
@@ -236,6 +266,7 @@ CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_chart_fluent_bit,
     codegen_chart_ingress_nginx,
     codegen_chart_kube_prometheus_stack,
+    codegen_chart_loki,
 )
 
 
