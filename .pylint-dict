@@ -36,6 +36,7 @@ getattr
 getitem
 globals
 gofmt
+Kube
 html
 init
 io

@@ -185,6 +185,49 @@ def codegen_chart_ingress_nginx() -> types.TaskDict:
     }
 
 
+def codegen_chart_kube_prometheus_stack() -> types.TaskDict:
+    """Generate the SLS file for Kube Prometheus Stack using the chart render script."""
+    target_sls = (
+        constants.ROOT / "salt/metalk8s/addons/prometheus-operator/deployed/chart.sls"
+    )
+    chart_dir = constants.CHART_ROOT / "kube-prometheus-stack"
+    value_file = constants.CHART_ROOT / "kube-prometheus-stack.yaml"
+    drop_rule_file = constants.CHART_ROOT / "drop-prometheus-rules.yaml"
+    cmd = (
+        f"{constants.CHART_RENDER_CMD} prometheus-operator {value_file} {chart_dir} "
+        "--namespace metalk8s-monitoring "
+        "--service-config grafana metalk8s-grafana-config "
+        "metalk8s/addons/prometheus-operator/config/grafana.yaml.j2 "
+        "metalk8s-monitoring "
+        "--service-config prometheus  metalk8s-prometheus-config "
+        "metalk8s/addons/prometheus-operator/config/prometheus.yaml "
+        "metalk8s-monitoring "
+        "--service-config alertmanager metalk8s-alertmanager-config "
+        "metalk8s/addons/prometheus-operator/config/alertmanager.yaml "
+        "metalk8s-monitoring "
+        "--patch 'PrometheusRule,metalk8s-monitoring,"
+        "prometheus-operator-kubernetes-system-kubelet,"
+        'spec:groups:0:rules:1:for,"5m"\' '
+        "--remove-manifest ConfigMap prometheus-operator-grafana "
+        f"--drop-prometheus-rules {drop_rule_file} "
+        f"--output {target_sls}"
+    )
+
+    file_dep = list(utils.git_ls(chart_dir))
+    file_dep.append(value_file)
+    file_dep.append(constants.CHART_RENDER_SCRIPT)
+    file_dep.append(drop_rule_file)
+
+    return {
+        "name": "chart_kube-prometheus-stack",
+        "title": utils.title_with_subtask_name("CODEGEN"),
+        "doc": codegen_chart_kube_prometheus_stack.__doc__,
+        "actions": [doit.action.CmdAction(cmd)],
+        "file_dep": file_dep,
+        "task_dep": ["check_for:tox", "check_for:helm"],
+    }
+
+
 # List of available code generation tasks.
 CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_storage_operator,
@@ -192,6 +235,7 @@ CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_chart_dex,
     codegen_chart_fluent_bit,
     codegen_chart_ingress_nginx,
+    codegen_chart_kube_prometheus_stack,
 )
 
 
