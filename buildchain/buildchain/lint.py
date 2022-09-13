@@ -41,6 +41,7 @@ from buildchain import config
 from buildchain import constants
 from buildchain import types
 from buildchain import utils
+from buildchain import codegen
 
 
 def task_lint() -> Iterator[types.TaskDict]:
@@ -156,34 +157,51 @@ def check_go_fmt() -> Optional[doit.exceptions.TaskError]:
     return None
 
 
-def check_go_codegen() -> Optional[doit.exceptions.TaskError]:
-    """Check if the generated files are up to date."""
-    git_diff = [config.ExtCommand.GIT.value, "diff"]
-    base = subprocess.check_output(git_diff)
-    for cmd in constants.METALK8S_OPERATOR_SDK_GENERATE_CMDS:
-        subprocess.check_call(cmd, cwd=constants.METALK8S_OPERATOR_ROOT)
-    for cmd in constants.STORAGE_OPERATOR_SDK_GENERATE_CMDS:
-        subprocess.check_call(cmd, cwd=constants.STORAGE_OPERATOR_ROOT)
-    current = subprocess.check_output(git_diff)
-    # If the diff changed after running the code generation that means that
-    # the generated files are not in sync with the "source" files.
-    if current != base:
-        return doit.exceptions.TaskError(
-            msg="outdated generated Go files, did you run `doit.sh codegen`?"
-        )
-    return None
-
-
 def lint_go() -> types.TaskDict:
     """Run Go linting."""
     return {
         "name": "go",
         "title": utils.title_with_subtask_name("LINT"),
         "doc": lint_go.__doc__,
-        "actions": [check_go_fmt, check_go_codegen],
-        "task_dep": ["check_for:gofmt", "check_for:make", "check_for:git"],
+        "actions": [check_go_fmt],
+        "task_dep": ["check_for:gofmt"],
         "file_dep": list(constants.GO_SOURCES),
     }
+
+
+# }}}
+# Codegen {{{
+
+
+def check_diff_codegen(base: bytes) -> Optional[doit.exceptions.TaskError]:
+    """Check if the generated files are up to date."""
+    git_diff = [config.ExtCommand.GIT.value, "diff"]
+
+    current = subprocess.check_output(git_diff)
+    # If the diff changed after running the code generation that means that
+    # the generated files are not in sync with the "source" files.
+    if current != base:
+        return doit.exceptions.TaskError(
+            msg="outdated generated files, did you run `doit.sh codegen`?"
+        )
+    return None
+
+
+def lint_codegen() -> types.TaskDict:
+    """Check that all codegen files properly get generated"""
+    git_diff = [config.ExtCommand.GIT.value, "diff"]
+    base = subprocess.check_output(git_diff)
+
+    task = codegen.get_task_information()
+    task["actions"].append(lambda: check_diff_codegen(base))
+    task.update(
+        {
+            "name": "codegen",
+            "title": utils.title_with_subtask_name("LINT"),
+            "doc": lint_codegen.__doc__,
+        }
+    )
+    return task
 
 
 # }}}
@@ -195,6 +213,7 @@ LINTERS: Tuple[Callable[[], types.TaskDict], ...] = (
     lint_yaml,
     lint_sls,
     lint_go,
+    lint_codegen,
 )
 
 

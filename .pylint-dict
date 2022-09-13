@@ -13,6 +13,7 @@ cli
 cni
 cmd
 cmp
+codegen
 config
 cp
 checksum

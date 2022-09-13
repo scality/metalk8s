@@ -14,6 +14,21 @@ from buildchain import types
 from buildchain import utils
 
 
+def get_task_information() -> types.TaskDict:
+    """Retrieve all the task information from codegen"""
+    result: types.TaskDict = {
+        "actions": [],
+        "task_dep": [],
+        "file_dep": [],
+    }
+    for task_fun in CODEGEN:
+        task = task_fun()
+        for key, value in result.items():
+            value.extend(task.get(key, []))
+
+    return result
+
+
 def task_codegen() -> Iterator[types.TaskDict]:
     """Run the code generation tools."""
     for create_codegen_task in CODEGEN:
