@@ -333,6 +333,9 @@ def main():
         "-n", "--namespace", default="default", help="Namespace to deploy this chart in"
     )
     parser.add_argument("values", help="Our custom chart values")
+    parser.add_argument(
+        "-o", "--output", default="", help="Output file for SLS, default to stdout"
+    )
 
     class ActionServiceConfigArgs(argparse.Action):
         def __call__(self, parser, args, values, option_string=None):
@@ -493,12 +496,10 @@ def main():
             )
         )
 
-    sys.stdout.write(
-        START_BLOCK.format(
-            csc_defaults="\n".join(import_csc_yaml), configlines="\n".join(config)
-        ).lstrip()
-    )
-    sys.stdout.write("\n")
+    out = START_BLOCK.format(
+        csc_defaults="\n".join(import_csc_yaml), configlines="\n".join(config)
+    ).lstrip()
+    out += "\n"
 
     manifests = []
     for doc in yaml.safe_load_all(template):
@@ -515,9 +516,15 @@ def main():
     )
     stream.seek(0)
 
-    sys.stdout.write(replace_magic_strings(stream.read()))
+    out += replace_magic_strings(stream.read())
 
-    sys.stdout.write(END_BLOCK)
+    out += END_BLOCK
+
+    if args.output:
+        with open(args.output, "w") as fd:
+            fd.write(out)
+    else:
+        sys.stdout.write(out)
 
 
 if __name__ == "__main__":
