@@ -96,11 +96,41 @@ def codegen_chart_dex() -> types.TaskDict:
     }
 
 
+def codegen_chart_fluent_bit() -> types.TaskDict:
+    """Generate the SLS file for fluent-bit using the chart render script."""
+    target_sls = (
+        constants.ROOT / "salt/metalk8s/addons/logging/fluent-bit/deployed/chart.sls"
+    )
+    chart_dir = constants.CHART_ROOT / "fluent-bit"
+    value_file = constants.CHART_ROOT / "fluent-bit.yaml"
+    cmd = (
+        f"{constants.CHART_RENDER_CMD} fluent-bit {value_file} {chart_dir} "
+        "--namespace metalk8s-logging "
+        "--service-config fluent_bit metalk8s-fluent-bit-config "
+        "metalk8s/addons/logging/fluent-bit/config/fluent-bit.yaml metalk8s-logging "
+        f"--output {target_sls}"
+    )
+
+    file_dep = list(utils.git_ls(chart_dir))
+    file_dep.append(value_file)
+    file_dep.append(constants.CHART_RENDER_SCRIPT)
+
+    return {
+        "name": "chart_fluent-bit",
+        "title": utils.title_with_subtask_name("CODEGEN"),
+        "doc": codegen_chart_fluent_bit.__doc__,
+        "actions": [doit.action.CmdAction(cmd)],
+        "file_dep": file_dep,
+        "task_dep": ["check_for:tox", "check_for:helm"],
+    }
+
+
 # List of available code generation tasks.
 CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_storage_operator,
     codegen_metalk8s_operator,
     codegen_chart_dex,
+    codegen_chart_fluent_bit,
 )
 
 
