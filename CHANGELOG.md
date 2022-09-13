@@ -3,9 +3,8 @@
 
 ### Additions
 
-- Add `metalk8s-operator` to manage NOTHING (TODO: To be updated
-  once the operator will do something)
-  (PR[#3822](https://github.com/scality/metalk8s/pull/3822))
+- Add `metalk8s-operator` to manage Workload Plane Ingress virtual IPs
+  (PR[#3864](https://github.com/scality/metalk8s/pull/3864))
 
 ### Removals
 
