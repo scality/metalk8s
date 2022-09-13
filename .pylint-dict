@@ -75,6 +75,7 @@ sdk
 skopeo
 sls
 srv
+Thanos
 timestamp
 tmp
 tmpfs
