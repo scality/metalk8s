@@ -18,6 +18,7 @@ do not have a working MetalK8s_ setup.
    downgrade
    disaster_recovery/index
    solutions
+   workload_plane_ingress_vips
    changing_node_hostname
    changing_control_plane_ingress_ip
    metalk8s-utils
