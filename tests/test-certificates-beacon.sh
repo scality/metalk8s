@@ -23,7 +23,7 @@ WAIT_RENEWAL=${WAIT_RENEWAL:-120}
 
 # shellcheck disable=SC1090
 . "$ARCHIVE_PRODUCT_INFO"
-# shellcheck disable=SC1090
+# shellcheck disable=SC1090,SC1091
 . "$ARCHIVE_MOUNTPOINT/common.sh"
 
 override_pillar_conf() {

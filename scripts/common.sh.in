@@ -238,7 +238,7 @@ pre_minion_checks() {
         die "OS $OS not supported"
     fi
 
-    test "x$(whoami)" = "xroot" || die "Script must run as root"
+    test "$(whoami)" = "root" || die "Script must run as root"
     test -n "$SYSTEMCTL" || die "systemctl not found"
     test -x "$SYSTEMCTL" || die "systemctl at '$SYSTEMCTL' is not executable"
 }
@@ -337,7 +337,7 @@ retry() {
     until stdout=$("$@"); do
         exit_code=$?
         (( ++try ))
-        if [ $try -gt "$retries" ]; then
+        if [ "$try" -gt "$retries" ]; then
             echo "Failed to run '$*' after $retries retries." >&2
             return $exit_code
         fi

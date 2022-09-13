@@ -21,7 +21,7 @@ TEST_SKOPEO=${TEST_SKOPEO:-1}
 
 if [ "$TEST_DOCKER" -eq 1 ]; then
 test_docker() {
-        for image in ${AVAILABLE_IMAGES[*]}; do
+        for image in "${AVAILABLE_IMAGES[@]}"; do
                 assert "$DOCKER pull '$REGISTRY/$image'"
         done
 }
@@ -29,7 +29,7 @@ fi
 
 if [ "$TEST_CONTAINERD" -eq 1 ]; then
 test_containerd() {
-        for image in ${AVAILABLE_IMAGES[*]}; do
+        for image in "${AVAILABLE_IMAGES[@]}"; do
                 assert "sudo ${CRICTL} --image-endpoint unix:///run/containerd/containerd.sock pull '$REGISTRY/$image'"
         done
 }
@@ -37,7 +37,7 @@ fi
 
 if [ "$TEST_CRIO" -eq 1 ]; then
 test_crio() {
-        for image in ${AVAILABLE_IMAGES[*]}; do
+        for image in "${AVAILABLE_IMAGES[@]}"; do
                 assert "sudo ${CRICTL} --image-endpoint unix:///run/crio/crio.sock pull '$REGISTRY/$image'"
         done
 }
@@ -45,7 +45,7 @@ fi
 
 if [ "$TEST_SKOPEO" -eq 1 ]; then
 test_skopeo() {
-        for image in ${AVAILABLE_IMAGES[*]}; do
+        for image in "${AVAILABLE_IMAGES[@]}"; do
                 assert "$SKOPEO --debug inspect --tls-verify=false 'docker://$REGISTRY/$image'"
         done
 }
@@ -83,7 +83,7 @@ setup() {
         while [ $i -gt 0 ]; do
                 local ok
                 ok=$($CURL --silent "http://$REGISTRY/v2/" 2>/dev/null)
-                if [ "x$ok" = 'xok' ]; then
+                if [ "$ok" = 'ok' ]; then
                         i=0
                 else
                         sleep 0.1

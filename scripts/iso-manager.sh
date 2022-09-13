@@ -72,7 +72,7 @@ trap cleanup EXIT
 
 BASE_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
 
-# shellcheck disable=SC1090
+# shellcheck disable=SC1090,SC1091
 . "$BASE_DIR"/common.sh
 
 # helper function to set the current saltenv

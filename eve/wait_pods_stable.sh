@@ -57,7 +57,7 @@ check_pods_stabilization() {
 check_kubeconfig() {
     if [ ! -r "$KUBECONFIG" ]; then
         if [ -f "$KUBECONFIG" ]; then
-            echo "Unable to read $KUBECONFIG, check you have sufficient"
+            echo "Unable to read $KUBECONFIG, check you have sufficient" \
                  "rights or try to launch this script using sudo." 2>&1
         else
             echo "No such file: $KUBECONFIG" 2>&1

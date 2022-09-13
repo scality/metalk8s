@@ -206,7 +206,7 @@ cleanup() {
 trap cleanup EXIT
 
 BASE_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
-# shellcheck disable=SC1090
+# shellcheck disable=SC1090,SC1091
 . "$BASE_DIR"/common.sh
 
 check_command_mandatory_options() {
@@ -321,8 +321,7 @@ check_namespace() {
     fi
 
     if ! namespace_is_in_environment "$NAMESPACE" "$NAME" &> /dev/null; then
-        echo 1>&2 "Namespace '$NAMESPACE' is not linked to the"
-            "Environment '$NAME'"
+        echo 1>&2 "Namespace '$NAMESPACE' is not linked to the Environment '$NAME'"
         return 1
     fi
 }
