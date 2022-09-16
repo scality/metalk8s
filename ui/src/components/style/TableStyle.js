@@ -6,10 +6,3 @@ export const TooltipContent = styled.div`
   font-weight: ${fontWeight.bold};
   min-width: 60px;
 `;
-
-export const UnknownIcon = styled.i`
-  color: ${(props) => props.theme.textSecondary};
-  // Increase the height so that the users don't need to hover precisely on the hyphen.
-  height: 30px;
-  padding-top: ${padding.base};
-`;

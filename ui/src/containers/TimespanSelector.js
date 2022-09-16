@@ -9,7 +9,7 @@ import {
   LAST_TWENTY_FOUR_HOURS,
 } from '../constants';
 import { useURLQuery } from '../services/utils';
-import { Dropdown } from '@scality/core-ui';
+import { Dropdown, Icon } from '@scality/core-ui';
 
 const TimespanSelector = () => {
   const history = useHistory();
@@ -45,7 +45,7 @@ const TimespanSelector = () => {
 
   return (
     <Dropdown
-      icon={<i className="fas fa-calendar-minus" />}
+      icon={<Icon name="Calendar-minus" />}
       items={metricsTimeSpanDropdownItems}
       text={label}
       size="small"

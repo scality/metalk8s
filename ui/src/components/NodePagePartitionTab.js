@@ -7,6 +7,7 @@ import { padding } from '@scality/core-ui/dist/style/theme';
 import NodePartitionTable from './NodePartitionTable';
 import { GRAFANA_DASHBOARDS, PORT_NODE_EXPORTER } from '../constants';
 import { useTypedSelector } from '../hooks';
+import { Icon } from '@scality/core-ui';
 
 const TitleContainer = styled.div`
   display: flex;
@@ -44,7 +45,7 @@ const NodePagePartitionTab = (props: Object) => {
             <Button
               label={intl.formatMessage({ id: 'advanced_metrics' })}
               variant={'secondary'}
-              icon={<i className="fas fa-external-link-alt" />}
+              icon={<Icon name="External-link" />}
               data-cy="advanced_metrics_node_detailed_file_node_free"
             />
           </a>

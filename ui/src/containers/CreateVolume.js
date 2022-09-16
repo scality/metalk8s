@@ -11,7 +11,14 @@ import {
 } from 'formik';
 import * as yup from 'yup';
 import styled from 'styled-components';
-import { Input, Banner, Tooltip, Checkbox, Loader } from '@scality/core-ui';
+import {
+  Input,
+  Banner,
+  Tooltip,
+  Checkbox,
+  Loader,
+  Icon,
+} from '@scality/core-ui';
 import { Button } from '@scality/core-ui/dist/next';
 import isEmpty from 'lodash.isempty';
 import {
@@ -203,11 +210,6 @@ const SingleVolumeForm = styled.div`
   padding-left: ${padding.smaller};
 `;
 
-const InputQuestionMark = styled.i`
-  padding-left: ${padding.small};
-  color: ${(props) => props.theme.infoPrimary};
-`;
-
 const RequiredText = styled.div`
   color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
@@ -319,11 +321,14 @@ const CreateVolume = (props) => {
     );
   };
 
-  const volumeNameRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
+  const volumeNameRegex =
+    /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
   /* Valid label keys have two segments: an optional prefix and name, separated by a slash (/).
     https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set  */
-  const labelFullNameRegex = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*\/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$/;
-  const labelNamePrefixRegex = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
+  const labelFullNameRegex =
+    /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*\/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$/;
+  const labelNamePrefixRegex =
+    /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
   const labelValueRegex = /^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$/;
   const positiveIntegerRegex = /^[1-9][0-9]*$/;
 
@@ -495,9 +500,8 @@ const CreateVolume = (props) => {
 
                   if (hasLabelPrefix) {
                     const prefix = value.split('/')[0];
-                    const isLabelPrefixMatched = labelNamePrefixRegex.test(
-                      prefix,
-                    );
+                    const isLabelPrefixMatched =
+                      labelNamePrefixRegex.test(prefix);
                     error = intl.formatMessage(
                       isLabelPrefixMatched
                         ? { id: 'label_name_error' }
@@ -527,30 +531,29 @@ const CreateVolume = (props) => {
               };
 
               // Update the number of the volumes to create base on the input number
-              const setVolumeNumber = (field, arrayHelpers) => (
-                selectedObj,
-              ) => {
-                const inputVolNum = selectedObj.target.value;
-                const preVolNum = values.numberOfVolumes;
+              const setVolumeNumber =
+                (field, arrayHelpers) => (selectedObj) => {
+                  const inputVolNum = selectedObj.target.value;
+                  const preVolNum = values.numberOfVolumes;
 
-                setFieldValue(field, inputVolNum);
-                const diff = preVolNum - inputVolNum;
-                if (diff > 0) {
-                  // REMOVE volume object from `values.volumes` base on the index
-                  for (let i = preVolNum - 1; i >= inputVolNum; i--) {
-                    arrayHelpers.remove(i);
+                  setFieldValue(field, inputVolNum);
+                  const diff = preVolNum - inputVolNum;
+                  if (diff > 0) {
+                    // REMOVE volume object from `values.volumes` base on the index
+                    for (let i = preVolNum - 1; i >= inputVolNum; i--) {
+                      arrayHelpers.remove(i);
+                    }
+                  } else if (diff < 0) {
+                    // PUSH new volume object to `values.volumes`
+                    let absDiff = Math.abs(diff);
+                    while (absDiff--) {
+                      arrayHelpers.push({
+                        name: '',
+                        path: '',
+                      });
+                    }
                   }
-                } else if (diff < 0) {
-                  // PUSH new volume object to `values.volumes`
-                  let absDiff = Math.abs(diff);
-                  while (absDiff--) {
-                    arrayHelpers.push({
-                      name: '',
-                      path: '',
-                    });
-                  }
-                }
-              };
+                };
 
               const optionsStorageClasses = storageClassesName.map((SCName) => {
                 return {
@@ -650,7 +653,11 @@ const CreateVolume = (props) => {
                                 </div>
                               }
                             >
-                              <InputQuestionMark className="fas fa-question-circle"></InputQuestionMark>
+                              <Icon
+                                name="Info"
+                                color="infoPrimary"
+                                style={{ paddingLeft: padding.small }}
+                              />
                             </Tooltip>
                           </>
                         }

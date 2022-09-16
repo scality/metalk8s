@@ -23,6 +23,7 @@ import CircleStatus from './CircleStatus';
 import StatusIcon from './StatusIcon';
 import { getClusterAlertSegmentQuery } from '../services/platformlibrary/metrics';
 import { GlobalHealthBar } from '@scality/core-ui/dist/components/globalhealthbar/GlobalHealthBar.component';
+import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
 import { useQuery } from 'react-query';
 
 const GlobalHealthContainer = styled.div`
@@ -83,7 +84,7 @@ const DashboardGlobalHealth = () => {
         <SpacedBox ml={12} mr={12}>
           <PlatformStatusIcon>
             <StatusWrapper status={platformStatus}>
-              <StatusIcon status={platformStatus} className="fa fa-warehouse" />
+              <StatusIcon status={platformStatus} name="Datacenter" />
             </StatusWrapper>
           </PlatformStatusIcon>
         </SpacedBox>
@@ -120,10 +121,7 @@ const DashboardGlobalHealth = () => {
                   </SmallerText>
                 }
               >
-                <i
-                  className="fas fa-question-circle"
-                  style={{ color: theme.buttonSecondary }}
-                ></i>
+                <Icon name="Info" color="buttonSecondary" />
               </Tooltip>
             </SpacedBox>
             <EmphaseText>

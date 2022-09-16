@@ -3,7 +3,7 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
-import { Toggle, BasicText } from '@scality/core-ui';
+import { Toggle, BasicText, Icon } from '@scality/core-ui';
 import { Button } from '@scality/core-ui/dist/next';
 import { spacing } from '@scality/core-ui/dist/style/theme';
 import { useIntl } from 'react-intl';
@@ -42,6 +42,7 @@ import {
 import MetricChart from '../components/MetricChart';
 import MetricSymmetricalChart from '../components/MetricSymmetricalChart';
 import TimespanSelector from './TimespanSelector';
+import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
 
 const GraphGrid = styled.div`
   display: grid;
@@ -99,10 +100,10 @@ export const RenderNoDataAvailable = () => {
   return (
     <NoDataAvailable>
       <BasicText>
-        <i
-          className="fas fa-exclamation-triangle"
+        <Icon
+          name="Exclamation-triangle"
           style={{ paddingRight: `${spacing.sp4}` }}
-        ></i>
+        />
         {intl.formatMessage({ id: 'no_data_available_for_metrics' })}
       </BasicText>
     </NoDataAvailable>
@@ -178,7 +179,7 @@ const NodePageMetricsTab = ({
             <Button
               label={intl.formatMessage({ id: 'advanced_metrics' })}
               variant={'secondary'}
-              icon={<i className="fas fa-external-link-alt" />}
+              icon={<Icon name="External-link" />}
               disabled={instanceIP === ''}
             />
           </a>

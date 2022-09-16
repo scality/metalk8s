@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Tooltip, ConstrainedText } from '@scality/core-ui';
+import { Tooltip, ConstrainedText, Icon } from '@scality/core-ui';
 import { fontWeight, padding } from '@scality/core-ui/dist/style/theme';
 import { useIntl } from 'react-intl';
 
@@ -23,9 +23,7 @@ const TableRowStyle = styled.div`
         : props.theme.backgroundLevel2};
 
   background-color: ${(props) =>
-    props.isSelected
-      ? props.theme.highlight
-      : props.theme.backgroundLevel2};
+    props.isSelected ? props.theme.highlight : props.theme.backgroundLevel2};
 `;
 
 export const TooltipContent = styled.div`
@@ -34,12 +32,16 @@ export const TooltipContent = styled.div`
   min-width: 60px;
 `;
 
-export const UnknownIcon = styled.i`
-  color: ${(props) => props.theme.textSecondary};
+export const UnknownIcon = ({ name }) => {
   // Increase the height so that the users don't need to hover precisely on the hyphen.
-  height: 30px;
-  padding-top: ${padding.base};
-`;
+  return (
+    <Icon
+      name={name}
+      color="textSecondary"
+      style={{ height: 30, paddingTop: padding.base }}
+    />
+  );
+};
 
 const TableRow = (props) => {
   const { row, style, onClickRow, isSelected } = props;
@@ -87,7 +89,7 @@ const TableRow = (props) => {
                   </TooltipContent>
                 }
               >
-                <UnknownIcon className="fas fa-minus"></UnknownIcon>
+                <UnknownIcon name="Minus" />
               </Tooltip>
             </div>
           );

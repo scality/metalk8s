@@ -15,6 +15,7 @@ import {
   VOLUME_CONDITION_UNLINK,
   VOLUME_CONDITION_EXCLAMATION,
 } from '../constants';
+import { Icon } from '@scality/core-ui';
 
 const VolumeListContainer = styled.div`
   color: ${(props) => props.theme.textPrimary};
@@ -146,7 +147,7 @@ const VolumeListTable = React.memo((props) => {
                     <TooltipContent>{volume?.errorReason}</TooltipContent>
                   }
                 >
-                  <i className="fas fa-exclamation"></i>
+                  <Icon name="Exclamation" />
                 </Tooltip>
               );
             case 'link':
@@ -155,7 +156,7 @@ const VolumeListTable = React.memo((props) => {
                   placement={cellProps.row.index === 0 ? 'bottom' : 'top'}
                   overlay={<TooltipContent>In use</TooltipContent>}
                 >
-                  <i className="fas fa-link"></i>
+                  <Icon name="Link" />
                 </Tooltip>
               );
             case 'unlink':
@@ -164,7 +165,7 @@ const VolumeListTable = React.memo((props) => {
                   placement={cellProps.row.index === 0 ? 'bottom' : 'top'}
                   overlay={<TooltipContent>Unused</TooltipContent>}
                 >
-                  <i className="fas fa-unlink"></i>
+                  <Icon name="Unlink" />
                 </Tooltip>
               );
             default:
@@ -177,10 +178,7 @@ const VolumeListTable = React.memo((props) => {
                     </TooltipContent>
                   }
                 >
-                  <UnknownIcon
-                    className="fas fa-minus"
-                    theme={theme}
-                  ></UnknownIcon>
+                  <UnknownIcon name="Minus" />
                 </Tooltip>
               );
           }
@@ -215,7 +213,7 @@ const VolumeListTable = React.memo((props) => {
         <CreateVolumeButton
           variant={'secondary'}
           label={intl.formatMessage({ id: 'create_new_volume' })}
-          icon={<i className="fas fa-plus" />}
+          icon={<Icon name="Create-add" />}
           onClick={() => {
             // depends on if we add node filter
             if (nodeName) {

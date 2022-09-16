@@ -15,9 +15,7 @@ import DashboardChartSystemLoad from './DashboardChartSystemLoad';
 import DashboardChartMemory from './DashboardChartMemory';
 import { useShowQuantileChart, useTypedSelector } from '../hooks';
 import { DashboardScrollableArea } from '../containers/DashboardPage';
-import { Tooltip } from '@scality/core-ui';
-import { SmallerText } from '@scality/core-ui';
-import { SpacedBox } from '@scality/core-ui';
+import { Tooltip, Icon, SmallerText, SpacedBox } from '@scality/core-ui';
 
 const MetricsContainer = styled.div`
   padding: 2px ${padding.smaller};
@@ -70,10 +68,7 @@ const DashboardMetrics = () => {
                 </SmallerText>
               }
             >
-              <i
-                className="fas fa-question-circle"
-                style={{ color: theme.buttonSecondary }}
-              ></i>
+              <Icon name="Info" color="buttonSecondary" />
             </Tooltip>
           )}
         </PageSubtitle>
@@ -88,7 +83,7 @@ const DashboardMetrics = () => {
             <Button
               label={intl.formatMessage({ id: 'advanced_metrics' })}
               variant={'secondary'}
-              icon={<i className="fas fa-external-link-alt" />}
+              icon={<Icon name="External-link" />}
             />
           </a>
         )}

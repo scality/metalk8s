@@ -2,7 +2,7 @@ import React from 'react';
 import { useHistory } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import { useTheme } from 'styled-components';
-import { ProgressBar, Tooltip } from '@scality/core-ui';
+import { Icon, ProgressBar, Tooltip } from '@scality/core-ui';
 import { Box, Button, Table } from '@scality/core-ui/dist/next';
 import { NoResult } from '@scality/core-ui/dist/components/tablev2/Tablestyle';
 import { useIntl } from 'react-intl';
@@ -26,9 +26,7 @@ const VolumeListTable = (props) => {
           width: '5rem',
         },
         Cell: (cellProps) => {
-          return (
-            <CircleStatus className="fas fa-circle" status={cellProps.value} />
-          );
+          return <CircleStatus name="Circle-health" status={cellProps.value} />;
         },
       },
       {
@@ -100,7 +98,7 @@ const VolumeListTable = (props) => {
                     <TooltipContent>{volume?.errorReason}</TooltipContent>
                   }
                 >
-                  <i className="fas fa-exclamation"></i>
+                  <Icon name="Exclamation" />
                 </Tooltip>
               );
             case 'link':
@@ -109,7 +107,7 @@ const VolumeListTable = (props) => {
                   placement={cellProps.row.index === 0 ? 'bottom' : 'top'}
                   overlay={<TooltipContent>In use</TooltipContent>}
                 >
-                  <i className="fas fa-link"></i>
+                  <Icon name="Link" />
                 </Tooltip>
               );
             case 'unlink':
@@ -118,7 +116,7 @@ const VolumeListTable = (props) => {
                   placement={cellProps.row.index === 0 ? 'bottom' : 'top'}
                   overlay={<TooltipContent>Unused</TooltipContent>}
                 >
-                  <i className="fas fa-unlink"></i>
+                  <Icon name="Unlink" />
                 </Tooltip>
               );
             default:
@@ -131,10 +129,7 @@ const VolumeListTable = (props) => {
                     </TooltipContent>
                   }
                 >
-                  <UnknownIcon
-                    className="fas fa-minus"
-                    theme={theme}
-                  ></UnknownIcon>
+                  <UnknownIcon name="Minus" />
                 </Tooltip>
               );
           }
@@ -205,7 +200,7 @@ const VolumeListTable = (props) => {
           <Button
             variant={'primary'}
             label={intl.formatMessage({ id: 'create_new_volume' })}
-            icon={<i className="fas fa-plus" />}
+            icon={<Icon name="Create-add" />}
             onClick={() => {
               history.push('/volumes/createVolume');
             }}
