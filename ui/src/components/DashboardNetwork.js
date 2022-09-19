@@ -1,5 +1,5 @@
 import React from 'react';
-import styled, { useTheme } from 'styled-components';
+import styled from 'styled-components';
 import { useIntl } from 'react-intl';
 import { spacing } from '@scality/core-ui/dist/style/theme';
 import {
@@ -30,7 +30,6 @@ export const PanelActions = styled.div`
 
 const DashboardNetwork = () => {
   const intl = useIntl();
-  const theme = useTheme();
   const { isShowQuantileChart } = useShowQuantileChart();
 
   return (

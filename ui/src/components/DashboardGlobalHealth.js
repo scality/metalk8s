@@ -1,5 +1,5 @@
 import React from 'react';
-import styled, { useTheme } from 'styled-components';
+import styled from 'styled-components';
 import { spacing } from '@scality/core-ui/dist/style/theme';
 import DashboardAlerts from './DashboardAlerts';
 import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
@@ -65,7 +65,6 @@ const PlatformStatusIcon = styled.div`
 
 const DashboardGlobalHealth = () => {
   const intl = useIntl();
-  const theme = useTheme();
   const { startingTimeISO, currentTimeISO } = useStartingTimeStamp();
   const alertsLibrary = useAlertLibrary();
 

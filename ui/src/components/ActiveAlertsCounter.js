@@ -1,5 +1,5 @@
 import React from 'react';
-import styled, { useTheme } from 'styled-components';
+import styled from 'styled-components';
 import { useHistory, useLocation, useRouteMatch } from 'react-router';
 import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
@@ -33,7 +33,6 @@ export const CounterValue = styled.div`
 `;
 
 const CounterIcon = ({ name, status }) => {
-  const theme = useTheme();
   const color = (() => {
     switch (status) {
       case STATUS_WARNING:

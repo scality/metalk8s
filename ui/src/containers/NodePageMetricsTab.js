@@ -42,7 +42,6 @@ import {
 import MetricChart from '../components/MetricChart';
 import MetricSymmetricalChart from '../components/MetricSymmetricalChart';
 import TimespanSelector from './TimespanSelector';
-import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
 
 const GraphGrid = styled.div`
   display: grid;

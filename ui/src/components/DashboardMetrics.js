@@ -1,6 +1,6 @@
 //@flow
 import React from 'react';
-import styled, { useTheme } from 'styled-components';
+import styled from 'styled-components';
 import { Button } from '@scality/core-ui/dist/next';
 import { padding } from '@scality/core-ui/dist/style/theme';
 import { useIntl } from 'react-intl';
@@ -34,7 +34,6 @@ const PanelActions = styled.div`
 
 const DashboardMetrics = () => {
   const intl = useIntl();
-  const theme = useTheme();
   // App config, used to generated Advanced metrics button link
   const { url_grafana } = useTypedSelector((state) => state.config.api);
   const { isShowQuantileChart } = useShowQuantileChart();
