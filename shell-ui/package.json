@@ -65,7 +65,7 @@
     "react-intl": "^5.15.3",
     "react-query": "^3.34.0",
     "react-router": "^5.2.0",
-    "react-router-dom": "^5.2.0",
+    "react-router-dom": "5.2.0",
     "react-select": "^3.1.1",
     "react-to-webcomponent": "^1.5.1",
     "react-virtualized": "^9.22.3",
