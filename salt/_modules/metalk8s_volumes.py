@@ -484,9 +484,17 @@ class LVMLogicalVolume(RawBlockDevice):
         return bool(lv_info and lv_info.get(self.path))
 
     def create(self):
+        force_annotation = (
+            self.get("metadata")
+            .get("annotations", {})
+            .get("metalk8s.scality.com/force-lvcreate")
+        )
         try:
             ret = __salt__["lvm.lvcreate"](
-                lvname=self.lv_name, vgname=self.vg_name, size="{}b".format(self.size)
+                lvname=self.lv_name,
+                vgname=self.vg_name,
+                size="{}b".format(self.size),
+                force=force_annotation is not None,
             )
         except Exception as exc:
             raise CommandExecutionError(

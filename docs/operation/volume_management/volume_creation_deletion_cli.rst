@@ -38,6 +38,8 @@ Creating a Volume
        {% for key, info in volume_info["fields"].items() %}
        - **{{ key }}**: {{ info }}.
        {% endfor %}
+
+       {{ volume_info.get("notes", "") }}
        {% endfor %}
 
 #. Create the Volume.

@@ -84,7 +84,13 @@ class Metalk8sVolumesTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["create"])
     def test_create(
-        self, name, raise_msg=None, pillar_volumes=None, ftruncate=True, lvcreate=None
+        self,
+        name,
+        raise_msg=None,
+        pillar_volumes=None,
+        ftruncate=True,
+        lvcreate=None,
+        lvcreate_forced=None,
     ):
         """
         Tests the return of `create` function
@@ -122,6 +128,12 @@ class Metalk8sVolumesTestCase(TestCase, mixins.LoaderModuleMockMixin):
             else:
                 # This function does not return anything
                 metalk8s_volumes.create(name)
+
+        if lvcreate_forced is not None:
+            lvcreate_mock.assert_called_once()
+            call_kwargs = lvcreate_mock.call_args[1]
+            self.assertIn("force", call_kwargs)
+            self.assertEqual(call_kwargs["force"], lvcreate_forced)
 
     @utils.parameterized_from_cases(YAML_TESTS_CASES["is_prepared"])
     def test_is_prepared(

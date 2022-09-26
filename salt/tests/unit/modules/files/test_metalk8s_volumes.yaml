@@ -137,7 +137,7 @@ _volumes_details: &volumes_details
         lastUpdateTime: '2020-07-11T13:55:26Z'
         status: 'True'
         type: Ready
-  my-lvm-lv-volume:
+  my-lvm-lv-volume: &_lv_volume
     apiVersion: storage.metalk8s.scality.com/v1alpha1
     kind: Volume
     metadata:
@@ -542,18 +542,37 @@ create:
         of: informations
       "Output from lvcreate": All good
     pillar_volumes: *volumes_details
+    lvcreate_forced: false
 
   # unable to create the LVM LV (raise when calling `lvcreate`)
   - name: my-lvm-lv-volume
     pillar_volumes: *volumes_details
     lvcreate: null
     raise_msg: "cannot create LVM LogicalVolume my-lvm-lv-volume in VG my_vg"
+    lvcreate_forced: false
 
   # unable to create the LVM LV (usual "vg does not exist")
   - name: my-lvm-lv-volume
     pillar_volumes: *volumes_details
     lvcreate: 'Volume group "my_vg" not found Penguin'
     raise_msg: 'cannot create LVM LogicalVolume my-lvm-lv-volume in VG my_vg: Volume group "my_vg" not found Penguin'
+    lvcreate_forced: false
+
+  # annotation to force the call to lvcreate
+  - name: example
+    pillar_volumes:
+      example:
+        <<: *_lv_volume
+        metadata:
+          name: example
+          uid: 6474cda7-0dbe-40fc-9842-3cb0404a725a
+          annotations:
+            metalk8s.scality.com/force-lvcreate: ""
+    lvcreate:
+      /dev/my_vg/example:
+        all: good
+      Output from lvcreate: All good
+    lvcreate_forced: true
 
   ## LVM LogicalVolume block volume
   # create a simple LVM LV volume
@@ -564,18 +583,21 @@ create:
         of: informations
       "Output from lvcreate": All good
     pillar_volumes: *volumes_details
+    lvcreate_forced: false
 
   # unable to create the LVM LV (raise when calling `lvcreate`)
   - name: my-lvm-lv-block-volume
     pillar_volumes: *volumes_details
     lvcreate: null
     raise_msg: "cannot create LVM LogicalVolume my-lvm-lv-block-volume in VG my_vg"
+    lvcreate_forced: false
 
   # unable to create the LVM LV (usual "vg does not exist")
   - name: my-lvm-lv-block-volume
     pillar_volumes: *volumes_details
     lvcreate: 'Volume group "my_vg" not found Penguin'
     raise_msg: 'cannot create LVM LogicalVolume my-lvm-lv-block-volume in VG my_vg: Volume group "my_vg" not found Penguin'
+    lvcreate_forced: false
 
   ## Invalid volumes
   # specified volume is not in the pillar

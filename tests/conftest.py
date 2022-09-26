@@ -323,6 +323,17 @@ def given_count_running_pods(request, k8s_client, pods_count, label, namespace, 
     return count_running_pods(request, k8s_client, pods_count, label, namespace, node)
 
 
+@given(parsers.parse("the grain '{grain}' is not {value}"))
+def skip_on_grain(host, grain, value):
+    with host.sudo():
+        ret = host.check_output(f"salt-call --out json --local grains.get {grain}")
+
+    result = json.loads(ret)["local"]
+    value = json.loads(value)
+    if result == value:
+        pytest.skip(f"Grain '{grain}' is equal to '{value}'")
+
+
 # }}}
 # When {{{
 

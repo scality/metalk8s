@@ -55,3 +55,11 @@ volume_types:
         lvmLogicalVolume:
           vgName: <vg_name>
           size: 10Gi
+    notes: |
+      .. tip::
+
+         You can add the ``metalk8s.scality.com/force-lvcreate`` annotation
+         (value does not matter) to LVMLogicalVolume objects to force the LV
+         creation. This will wipe any existing FS signature on the created LV,
+         so use with caution.
+         If the LV already exists however, it will just attempt to use it as is.

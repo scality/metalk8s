@@ -269,3 +269,38 @@ Feature: Volume management
         Then the Volume 'test-volume12-lvmlv' is 'Available'
         And the PersistentVolume 'test-volume12-lvmlv' has size '10Gi'
         And the device '/dev/test-vg-12/test-volume12-lvmlv' exists
+
+    Scenario: Test volume re-creation (lvmLogicalVolume force-lvcreate)
+        # Skip test on CentOS/RHEL 7, because lvm still creates when signatures are found
+        Given the grain 'osmajorrelease' is not 7
+        And the Kubernetes API is available
+        And a LVM VG 'test-vg-13' exists
+        And a LVM LV 'test-lv-13' in VG 'test-vg-13' was created, formatted, then removed
+        When I create the following Volume:
+            apiVersion: storage.metalk8s.scality.com/v1alpha1
+            kind: Volume
+            metadata:
+              name: test-lv-13
+            spec:
+              nodeName: bootstrap
+              storageClassName: metalk8s
+              lvmLogicalVolume:
+                vgName: test-vg-13
+                size: 1Gi
+        Then the Volume 'test-lv-13' is 'Failed' with code 'CreationError' and message matches 'signature detected on /dev/test-vg-13/test-lv-13'
+        When I delete the Volume 'test-lv-13'
+        Then the Volume 'test-lv-13' does not exist
+        When I create the following Volume:
+            apiVersion: storage.metalk8s.scality.com/v1alpha1
+            kind: Volume
+            metadata:
+              name: test-lv-13
+              annotations:
+                metalk8s.scality.com/force-lvcreate: ""
+            spec:
+              nodeName: bootstrap
+              storageClassName: metalk8s
+              lvmLogicalVolume:
+                vgName: test-vg-13
+                size: 1Gi
+        Then the Volume 'test-lv-13' is 'Available'

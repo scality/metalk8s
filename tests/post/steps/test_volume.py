@@ -125,6 +125,14 @@ def test_volume_creation_lvmlv_block(host, teardown):
     pass
 
 
+@scenario(
+    "../features/volume.feature",
+    "Test volume re-creation (lvmLogicalVolume force-lvcreate)",
+)
+def test_volume_recreation_lvm_force(host, teardown):
+    pass
+
+
 # }}}
 # Given {{{
 
@@ -204,6 +212,29 @@ def storage_class_does_not_exist(name, sc_client):
 def storage_class_exist(name, sc_client):
     if sc_client.get(name) is None:
         sc_client.create_from_yaml(kube_utils.DEFAULT_SC.format(name=name))
+
+
+@given(
+    parsers.parse(
+        "a LVM LV '{name}' in VG '{vg_name}' was created, formatted, then removed"
+    )
+)
+def lvm_lv_was_used(host, name, vg_name):
+    with host.sudo():
+        host.run_test(f"vgdisplay {vg_name}")
+        host.run_test(f"lvcreate -L 1G -n {name} {vg_name}")
+        host.run_test(f"mkfs.ext4 /dev/{vg_name}/{name}")
+        host.run_test(f"lvremove -y /dev/{vg_name}/{name}")
+
+    yield
+
+    with host.sudo():
+        lv_exists = host.run(f"lvdisplay /dev/{vg_name}/{name}")
+        if lv_exists.rc != 0:
+            # LV does not exist, attempt to recreate for wiping the signature
+            host.run_test(f"lvcreate -L 1G -n {name} -y {vg_name}")
+        host.run_test(f"wipefs -a /dev/{vg_name}/{name}")
+        host.run_test(f"lvremove -y /dev/{vg_name}/{name}")
 
 
 # }}}

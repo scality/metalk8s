@@ -10,6 +10,13 @@
   topology labels on nodes
   (PR[#3889](https://github.com/scality/metalk8s/pull/3889))
 
+- Add support for a `metalk8s.scality.com/force-lvcreate` annotation on `Volume`
+  objects of type `LVMLogicalVolume` to force the creation of their LV (use with
+  caution) (PR[#3877](https://github.com/scality/metalk8s/pull/3877))
+
+  _Note: this is only needed for RHEL 8 or Rocky Linux 8, LVM versions provided
+  on CentOS 7 and RHEL 7 ignore previous signatures on LV creation._
+
 ### Removals
 
 - The deprecated long name `--archive` for the "add" option to the `iso-manager.sh`
