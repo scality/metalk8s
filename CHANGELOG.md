@@ -27,6 +27,12 @@
 - Bump Node.js version to 16.14.0 and improve UI initial load time
   (PR[#3745](https://github.com/scality/metalk8s/pull/3745))
 
+- Bump Prometheus Adapter chart version to
+  [3.4.0](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-adapter-3.4.0)
+  The prometheus-adapter image has been bumped accordingly to
+  [v0.10.0](https://github.com/kubernetes-sigs/prometheus-adapter/releases/tag/v0.10.0)
+  (PR[#3878](https://github.com/scality/metalk8s/pull/3878))
+
 ## Release 123.0.5 (in development)
 
 ## Release 123.0.4
