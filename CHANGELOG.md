@@ -33,6 +33,12 @@
   [v0.10.0](https://github.com/kubernetes-sigs/prometheus-adapter/releases/tag/v0.10.0)
   (PR[#3878](https://github.com/scality/metalk8s/pull/3878))
 
+- Bump ingress-nginx chart version to
+  [4.2.5](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.2.5)
+  The controller image has been bumped accordingly to
+  [v1.3.1](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.3.1)
+  (PR[#3879](https://github.com/scality/metalk8s/pull/3879))
+
 ## Release 123.0.5 (in development)
 
 ## Release 123.0.4
