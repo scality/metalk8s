@@ -27,6 +27,10 @@
 - Bump Node.js version to 16.14.0 and improve UI initial load time
   (PR[#3745](https://github.com/scality/metalk8s/pull/3745))
 
+- Bump containerd to [1.6.8](https://github.com/containerd/containerd/releases/tag/v1.6.8)
+  The pause image has been bump to 3.8
+  (PR[#3881](https://github.com/scality/metalk8s/pull/3881))
+
 - Bump Prometheus Adapter chart version to
   [3.4.0](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-adapter-3.4.0)
   The prometheus-adapter image has been bumped accordingly to
