@@ -62,6 +62,16 @@ const Layout = () => {
     strict: true,
   });
 
+  const isCreateNodePage = doesRouteMatch({
+    path: '/nodes/create',
+    exact: true,
+  });
+
+  const isCreateVolumePage = doesRouteMatch({
+    path: '/volumes/createVolume',
+    exact: true,
+  });
+
   const sidebarConfig = {
     onToggleClick: toggleSidebar,
     hoverable: true,
@@ -112,7 +122,14 @@ const Layout = () => {
 
   return (
     <CoreUILayout
-      sidebar={isUserLoaded && !isAlertsPage ? sidebarConfig : undefined}
+      sidebar={
+        isUserLoaded &&
+        !isAlertsPage &&
+        !isCreateNodePage &&
+        !isCreateVolumePage
+          ? sidebarConfig
+          : undefined
+      }
     >
       <Notifications
         notifications={notifications}
