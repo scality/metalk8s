@@ -1,8 +1,5 @@
 image:
   repository: '__image__(dex)'
-  # NOTE: we explicitly select a tag because the latest chart doesn't include
-  # this version yet, which we still want for some security fixes
-  tag: "v2.31.2"
 
 nodeSelector:
   node-role.kubernetes.io/infra: ''

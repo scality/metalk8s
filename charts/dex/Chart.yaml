@@ -1,12 +1,12 @@
 annotations:
   artifacthub.io/changes: |
-    - kind: changed
-      description: "Restore `ClusterRoleBinding` when using cluster scoped permissions"
+    - kind: added
+      description: "`networkPolicy` value to enable network policy and define optional custom Egress rules"
   artifacthub.io/images: |
     - name: dex
-      image: ghcr.io/dexidp/dex:v2.31.1
+      image: ghcr.io/dexidp/dex:v2.34.0
 apiVersion: v2
-appVersion: 2.31.1
+appVersion: 2.34.0
 description: OpenID Connect (OIDC) identity and OAuth 2.0 provider with pluggable
   connectors.
 home: https://dexidp.io/
@@ -26,4 +26,4 @@ sources:
 - https://github.com/dexidp/dex
 - https://github.com/dexidp/helm-charts/tree/master/charts/dex
 type: application
-version: 0.8.2
+version: 0.11.1

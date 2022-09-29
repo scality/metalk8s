@@ -256,3 +256,22 @@ strategy: {}
   # rollingUpdate:
   #   maxUnavailable: 1
   # type: RollingUpdate
+
+networkPolicy:
+  # -- Create [Network Policies](https://kubernetes.io/docs/concepts/services-networking/network-policies/)
+  enabled: false
+  # -- A list of network policy egress rules
+  egressRules: []
+  # Allow DNS egress traffic
+  # - ports:
+  #     - port: 53
+  #       protocol: UDP
+  #     - port: 53
+  #       protocol: TCP
+  # Example to allow LDAP connector to reach LDAPs port on 1.2.3.4 server
+  #  - to:
+  #      - ipBlock
+  #          cidr: 1.2.3.4/32
+  #    ports:
+  #      - port: 636
+  #        protocol: TCP

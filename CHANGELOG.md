@@ -43,6 +43,11 @@
   [v1.3.1](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.3.1)
   (PR[#3879](https://github.com/scality/metalk8s/pull/3879))
 
+- Bump Dex chart version to [0.11.1](https://github.com/dexidp/helm-charts/releases/tag/dex-0.11.1),
+  Dex image has been bumped accordingly to
+  [v2.34.0](https://github.com/dexidp/dex/releases/tag/v2.34.0)
+  (PR[#3882](https://github.com/scality/metalk8s/pull/3882))
+
 ## Release 123.0.5 (in development)
 
 ## Release 123.0.4

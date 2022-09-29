@@ -9,7 +9,7 @@ metadata:
   labels:
     {{- include "dex.labels" . | nindent 4 }}
     {{- with .Values.serviceMonitor.labels }}
-      {{ toYaml . | indent 4}}
+    {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
   endpoints:
