@@ -9,7 +9,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.3",
     "@fortawesome/react-fontawesome": "^0.1.14",
     "@kubernetes/client-node": "github:scality/kubernetes-client-javascript.git#browser-0.10.4-64-ge7c6721",
-    "@scality/core-ui": "github:scality/core-ui.git#v0.42.0",
+    "@scality/core-ui": "github:scality/core-ui.git#v0.52.0",
     "@scality/module-federation": "github:scality/module-federation.git#1.1.0",
     "axios": "^0.21.1",
     "canvas": "^2.9.3",
