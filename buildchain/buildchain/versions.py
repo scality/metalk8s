@@ -21,10 +21,10 @@ Image = namedtuple("Image", ("name", "version", "digest"))
 CALICO_VERSION: str = "3.23.1"
 K8S_VERSION: str = "1.24.6"
 SALT_VERSION: str = "3002.9"
-CONTAINERD_VERSION: str = "1.6.4"
+CONTAINERD_VERSION: str = "1.6.8"
 
 CALICO_RELEASE: str = "1"
-CONTAINERD_RELEASE: str = "2"
+CONTAINERD_RELEASE: str = "1"
 SOSREPORT_RELEASE: str = "2"
 
 
@@ -202,8 +202,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="pause",
-        version="3.7",
-        digest="sha256:221177c6082a88ea4f6240ab2450d540955ac6f4d5454f0e15751b653ebda165",
+        version="3.8",
+        digest="sha256:4873874c08efc72e9729683a83ffbb7502ee729e9a5ac097723806ea7fa13517",
     ),
     Image(
         name="prometheus",

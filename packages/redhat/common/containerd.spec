@@ -1,5 +1,5 @@
 %global goipath github.com/containerd/containerd
-Version:        1.6.4
+Version:        1.6.8
 
 %if %{defined fedora}
 %gometa
@@ -32,7 +32,7 @@ go build -compiler gc -tags="rpm_crashtraceback ${BUILDTAGS:-seccomp %{!?el7:no_
 
 
 Name:           containerd
-Release:        2%{?dist}
+Release:        1%{?dist}
 Summary:        An industry-standard container runtime
 License:        ASL 2.0
 URL:            https://containerd.io
@@ -87,7 +87,7 @@ Provides:       bundled(golang(github.com/Azure/go-autorest/tracing)) = v0.6.0
 Provides:       bundled(golang(github.com/BurntSushi/toml)) = v0.3.1
 Provides:       bundled(golang(github.com/BurntSushi/xgb)) = 27f122750802
 Provides:       bundled(golang(github.com/Microsoft/go-winio)) = v0.5.1
-Provides:       bundled(golang(github.com/Microsoft/hcsshim)) = v0.9.2
+Provides:       bundled(golang(github.com/Microsoft/hcsshim)) = v0.9.4
 Provides:       bundled(golang(github.com/Microsoft/hcsshim/test)) = 43a75bb4edd3
 Provides:       bundled(golang(github.com/NYTimes/gziphandler)) = v1.1.1
 Provides:       bundled(golang(github.com/OneOfOne/xxhash)) = v1.2.2
@@ -140,7 +140,7 @@ Provides:       bundled(golang(github.com/containerd/cgroups)) = v1.0.3
 Provides:       bundled(golang(github.com/containerd/console)) = v1.0.3
 Provides:       bundled(golang(github.com/containerd/continuity)) = v0.2.2
 Provides:       bundled(golang(github.com/containerd/fifo)) = v1.0.0
-Provides:       bundled(golang(github.com/containerd/go-cni)) = v1.1.5
+Provides:       bundled(golang(github.com/containerd/go-cni)) = v1.1.6
 Provides:       bundled(golang(github.com/containerd/go-runc)) = v1.0.0
 Provides:       bundled(golang(github.com/containerd/imgcrypt)) = v1.1.4
 Provides:       bundled(golang(github.com/containerd/nri)) = v0.1.0
@@ -148,7 +148,7 @@ Provides:       bundled(golang(github.com/containerd/stargz-snapshotter/estargz)
 Provides:       bundled(golang(github.com/containerd/ttrpc)) = v1.1.0
 Provides:       bundled(golang(github.com/containerd/typeurl)) = v1.0.2
 Provides:       bundled(golang(github.com/containerd/zfs)) = v1.0.0
-Provides:       bundled(golang(github.com/containernetworking/cni)) = v1.1.0
+Provides:       bundled(golang(github.com/containernetworking/cni)) = v1.1.1
 Provides:       bundled(golang(github.com/containernetworking/plugins)) = v1.1.1
 Provides:       bundled(golang(github.com/containers/ocicrypt)) = v1.1.3
 Provides:       bundled(golang(github.com/coreos/bbolt)) = v1.3.2
@@ -323,7 +323,7 @@ Provides:       bundled(golang(github.com/onsi/ginkgo/v2)) = v2.1.3
 Provides:       bundled(golang(github.com/onsi/gomega)) = v1.17.0
 Provides:       bundled(golang(github.com/opencontainers/go-digest)) = v1.0.0
 Provides:       bundled(golang(github.com/opencontainers/image-spec)) = c5a74bcca799
-Provides:       bundled(golang(github.com/opencontainers/runc)) = v1.1.1
+Provides:       bundled(golang(github.com/opencontainers/runc)) = v1.1.2
 Provides:       bundled(golang(github.com/opencontainers/runtime-spec)) = 1c3f411f0417
 Provides:       bundled(golang(github.com/opencontainers/runtime-tools)) = 1d69bd0f9c39
 Provides:       bundled(golang(github.com/opencontainers/selinux)) = v1.10.1
@@ -425,7 +425,7 @@ Provides:       bundled(golang(golang.org/x/mod)) = v0.4.2
 Provides:       bundled(golang(golang.org/x/net)) = fe4d6282115f
 Provides:       bundled(golang(golang.org/x/oauth2)) = 2bc19b11175f
 Provides:       bundled(golang(golang.org/x/sync)) = 036812b2e83c
-Provides:       bundled(golang(golang.org/x/sys)) = 1d35b9e2eb4e
+Provides:       bundled(golang(golang.org/x/sys)) = 33da011f77ad
 Provides:       bundled(golang(golang.org/x/term)) = 6886f2dfbf5b
 Provides:       bundled(golang(golang.org/x/text)) = v0.3.7
 Provides:       bundled(golang(golang.org/x/time)) = 1f47c861a9ac
@@ -555,6 +555,9 @@ install -D -p -m 0644 %{S:3} %{buildroot}%{_sysctldir}/60-containerd.conf
 
 
 %changelog
+* Tue Sep 27 2022 Teddy Andrieux <teddy.andrieux@scality.com> - 1.6.8-1
+- Latest upstream
+
 * Fri Aug 5 2022 Guillaume Demonet <guillaume.demonet@scality.com> - 1.6.4-2
 - Constrain runc version to avoid issue with "exec"
 
