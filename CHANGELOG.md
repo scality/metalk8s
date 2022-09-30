@@ -6,6 +6,10 @@
 - Add `metalk8s-operator` to manage Workload Plane Ingress virtual IPs
   (PR[#3864](https://github.com/scality/metalk8s/pull/3864))
 
+- Add default `topology.kubernetes.io/region` and `topology.kubernetes.io/zone`
+  topology labels on nodes
+  (PR[#3889](https://github.com/scality/metalk8s/pull/3889))
+
 ### Removals
 
 - The deprecated long name `--archive` for the "add" option to the `iso-manager.sh`

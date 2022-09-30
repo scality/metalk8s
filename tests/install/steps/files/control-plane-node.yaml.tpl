@@ -7,6 +7,8 @@ metadata:
     node-role.kubernetes.io/master: ''
     node-role.kubernetes.io/etcd: ''
     node-role.kubernetes.io/infra: ''
+    topology.kubernetes.io/region: 'default'
+    topology.kubernetes.io/zone: 'default'
   annotations:
     metalk8s.scality.com/ssh-user: centos
     metalk8s.scality.com/ssh-port: "22"

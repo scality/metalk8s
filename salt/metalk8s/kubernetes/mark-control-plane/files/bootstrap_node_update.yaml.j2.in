@@ -31,6 +31,8 @@
   {%- endfor %}
 {%- endif %}
 
+{%- set topology_labels = ["topology.kubernetes.io/region", "topology.kubernetes.io/zone"] %}
+
 kind: Node
 apiVersion: v1
 metadata:
@@ -41,6 +43,11 @@ metadata:
     node-role.kubernetes.io/etcd: ""
     node-role.kubernetes.io/bootstrap: ""
     node-role.kubernetes.io/infra: ""
+    {%- for label in topology_labels %}
+      {%- if label not in node_obj["metadata"].get("labels", {}) %}
+    {{ label }}: default
+      {%- endif %}
+    {%- endfor %}
   annotations:
     kubeadm.alpha.kubernetes.io/cri-socket: {{ cri_socket }}
 {%- if update_taints %}

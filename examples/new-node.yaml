@@ -15,6 +15,8 @@ metadata:
     metalk8s.scality.com/version: '2.0'
     node-role.kubernetes.io/master: ''
     node-role.kubernetes.io/etcd: ''
+    topology.kubernetes.io/region: 'default'
+    topology.kubernetes.io/zone: 'default'
 spec:
   taints:
   - effect: NoSchedule
