@@ -58,6 +58,10 @@
   images to `rockylinux:8.6.20227707`
   (PR[#3887](https://github.com/scality/metalk8s/pull/3887))
 
+- Bump the alpine base image used by `metalk8s-alert-logger`
+  image to `alpine:3.16.2`
+  (PR[#3888](https://github.com/scality/metalk8s/pull/3888))
+
 ## Release 123.0.5 (in development)
 
 ## Release 123.0.4
