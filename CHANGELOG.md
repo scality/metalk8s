@@ -51,6 +51,10 @@
 - Bump nginx image to [1.23.1-alpine](https://github.com/nginx/nginx/releases/tag/release-1.23.1)
   (PR[#3886](https://github.com/scality/metalk8s/pull/3886))
 
+- Bump the rocky base image used by `salt-master` and `metalk8s-utils`
+  images to `rockylinux:8.6.20227707`
+  (PR[#3887](https://github.com/scality/metalk8s/pull/3887))
+
 ## Release 123.0.5 (in development)
 
 ## Release 123.0.4
