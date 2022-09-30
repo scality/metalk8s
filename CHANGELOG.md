@@ -48,6 +48,9 @@
   [v2.34.0](https://github.com/dexidp/dex/releases/tag/v2.34.0)
   (PR[#3882](https://github.com/scality/metalk8s/pull/3882))
 
+- Bump nginx image to [1.23.1-alpine](https://github.com/nginx/nginx/releases/tag/release-1.23.1)
+  (PR[#3886](https://github.com/scality/metalk8s/pull/3886))
+
 ## Release 123.0.5 (in development)
 
 ## Release 123.0.4
