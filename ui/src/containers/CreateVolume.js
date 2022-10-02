@@ -1,25 +1,21 @@
-import React, { useEffect } from 'react';
+import React, { Fragment, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import {
-  Formik,
-  Form,
-  FieldArray,
-  useFormikContext,
-  useField,
-  Field,
-} from 'formik';
+import { Formik, FieldArray, useFormikContext, useField, Field } from 'formik';
 import * as yup from 'yup';
 import styled from 'styled-components';
 import {
-  Input,
   Banner,
-  Tooltip,
   Checkbox,
   Loader,
-  Icon,
+  Form,
+  FormSection,
+  FormGroup,
+  Stack,
+  Toggle,
+  Text,
 } from '@scality/core-ui';
-import { Button } from '@scality/core-ui/dist/next';
+import { Button, Input as InputV2, Select } from '@scality/core-ui/dist/next';
 import isEmpty from 'lodash.isempty';
 import {
   fetchStorageClassAction,
@@ -46,110 +42,9 @@ import {
   formatBatchName,
 } from '../services/NodeVolumesUtils';
 import { useIntl } from 'react-intl';
-import {
-  TitlePage,
-  CenteredPageContainer,
-} from '../components/style/CommonLayoutStyle';
+import { convertRemToPixels } from '@scality/core-ui/dist/components/tablev2/TableUtils';
 
 const MAX_VOLUME_BATCH_CREATION = 70;
-
-const PageContainer = styled(CenteredPageContainer)`
-  height: calc(100vh - 48px);
-  overflow: auto;
-`;
-
-// We might want to do a factorization later for
-// form styled components
-const CreateVolumeFormContainer = styled.div`
-  display: inline-block;
-  padding: ${padding.small} ${padding.large};
-`;
-
-const FormSection = styled.div`
-  display: flex;
-  padding: 0 ${padding.larger};
-  flex-direction: column;
-  .sc-input-wrapper {
-    width: 200px;
-  }
-`;
-
-const ActionContainer = styled.div`
-  display: flex;
-  margin: ${padding.large} 0;
-  justify-content: flex-end;
-  button {
-    margin-right: ${padding.large};
-  }
-`;
-
-const CreateVolumeLayout = styled.div`
-  display: inline-block;
-  margin-top: ${padding.base};
-  form {
-    .sc-input {
-      display: inline-flex;
-      margin-bottom: ${padding.large};
-      .sc-input-label {
-        width: 150px;
-        color: ${(props) => props.theme.textPrimary};
-      }
-
-      // Avoid double margins for nested sc-inputs
-      .sc-input {
-        margin-bottom: 0px;
-      }
-    }
-  }
-  .sc-select-option-label,
-  .sc-select__placeholder {
-    font-size: ${fontSize.base};
-  }
-`;
-
-const SizeFieldContainer = styled.div`
-  display: inline-flex;
-  align-items: flex-start;
-  .sc-input-wrapper,
-  .sc-input-type {
-    width: 100px;
-    box-sizing: border-box;
-    height: 38px;
-  }
-`;
-
-const SizeUnitFieldSelectContainer = styled.div`
-  .sc-select {
-    width: 100px;
-    padding-left: 5px;
-  }
-`;
-
-const InputContainer = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const InputLabel = styled.label`
-  padding: ${padding.small};
-  font-size: ${fontSize.base};
-  color: ${(props) => props.theme.textPrimary};
-  .sc-input-label {
-    color: ${(props) => props.theme.textPrimary};
-  }
-`;
-
-const LabelsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const LabelsForm = styled.div`
-  display: inline-block;
-  .sc-input-wrapper {
-    margin-right: ${padding.small};
-  }
-`;
 
 const LabelsList = styled.div`
   margin: ${padding.small} 0;
@@ -167,11 +62,6 @@ const LabelsValue = styled.div`
   margin-right: 12px;
   color: ${(props) => props.theme.textPrimary};
   word-wrap: break-word;
-`;
-
-const TitleWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
 `;
 
 const LabelsName = styled(LabelsValue)`
@@ -196,24 +86,6 @@ const MultiCreationFormContainer = styled.div`
   flex-direction: column;
   color: ${(props) => props.theme.textPrimary};
   font-size: ${fontSize.base};
-`;
-
-const SingleVolumeContainer = styled.div`
-  display: flex;
-  align-items: flex-start;
-  padding: ${padding.base} 0 0 ${padding.larger};
-`;
-
-const SingleVolumeForm = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding-left: ${padding.smaller};
-`;
-
-const RequiredText = styled.div`
-  color: ${(props) => props.theme.textPrimary};
-  font-size: ${fontSize.base};
-  margin: ${padding.base} 0 ${padding.large} ${padding.small};
 `;
 
 const CreateVolume = (props) => {
@@ -266,6 +138,7 @@ const CreateVolume = (props) => {
     selectedUnit: sizeUnits[3].value,
     sizeInput: '',
     vgName: '',
+    forceLVCreate: false,
     labels: {},
     labelName: '',
     labelValue: '',
@@ -277,7 +150,7 @@ const CreateVolume = (props) => {
 
   // Factorized field for the recommended device path and name
   const RecommendField = (props) => {
-    const { fieldname, name, index } = props;
+    const { fieldname, name, index, label, id } = props;
     const { values, touched, setFieldValue } = useFormikContext();
     const [field, meta] = useField(props);
 
@@ -314,10 +187,12 @@ const CreateVolume = (props) => {
     ]);
 
     return (
-      <>
-        <Input {...props} {...field} />
-        {!!meta.touched && !!meta.error && <div>{meta.error}</div>}
-      </>
+      <FormGroup
+        label={label}
+        id={id}
+        error={!!meta.touched && !!meta.error ? meta.error : ''}
+        content={<InputV2 {...props} {...field} />}
+      />
     );
   };
 
@@ -396,6 +271,7 @@ const CreateVolume = (props) => {
           ),
         ),
     }),
+    forceLVCreate: yup.boolean(),
     labels: yup.object(),
     labelValue: yup
       .string()
@@ -420,522 +296,581 @@ const CreateVolume = (props) => {
   return isStorageClassLoading ? (
     <Loader size="massive" centered={true} />
   ) : (
-    <PageContainer>
-      <CreateVolumeFormContainer>
-        <TitleWrapper>
-          <TitlePage>Create New Volume</TitlePage>
-        </TitleWrapper>
-        {isStorageClassExist ? null : (
-          <Banner
-            variant="warning"
-            icon={<i className="fas fa-exclamation-triangle" />}
-            title={intl.formatMessage({ id: 'no_storage_class_found' })}
-          >
-            {intl.formatMessage({ id: 'storage_class_is_required' })}
-            <a
-              rel="noopener noreferrer"
-              target="_blank"
-              href={`${api.url_doc}/operation/volume_management/storageclass_creation.html`}
-            >
-              {intl.formatMessage({ id: 'learn_more' })}
-            </a>
-          </Banner>
-        )}
-        <CreateVolumeLayout>
-          <Formik
-            initialValues={initialValues}
-            validationSchema={validationSchema}
-            onSubmit={(values) => {
-              const newVolumes = { ...values };
-              newVolumes.size = `${values.sizeInput}${values.selectedUnit}`;
-              newVolumes.vgName = `${values.vgName}`;
+    <Formik
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={(values) => {
+        const newVolumes = { ...values };
+        newVolumes.size = `${values.sizeInput}${values.selectedUnit}`;
+        newVolumes.vgName = `${values.vgName}`;
 
-              const formattedVolumes = formatVolumeCreationData(newVolumes);
-              createVolumes(formattedVolumes);
-            }}
-          >
-            {(formikProps) => {
-              const {
-                values,
-                handleChange,
-                errors,
-                touched,
-                setFieldTouched,
-                dirty,
-                setFieldValue,
-              } = formikProps;
+        const formattedVolumes = formatVolumeCreationData(newVolumes);
+        createVolumes(formattedVolumes);
+      }}
+    >
+      {(formikProps) => {
+        const {
+          values,
+          handleChange,
+          errors,
+          touched,
+          setFieldTouched,
+          dirty,
+          setFieldValue,
+          handleSubmit,
+        } = formikProps;
 
-              //touched is not "always" correctly set
-              const handleOnBlur = (e) => setFieldTouched(e.target.name, true);
-              const handleSelectChange = (field) => (selectedObj) => {
-                setFieldValue(field, selectedObj ? selectedObj.value : '');
-              };
-              //get the select item from the object array
-              const getSelectedObjectItem = (items, selectedValue) => {
-                return items.find((item) => item.value === selectedValue);
-              };
+        //touched is not "always" correctly set
+        const handleOnBlur = (e) => setFieldTouched(e.target.name, true);
+        const handleSelectChange = (field) => (selectedObj) => {
+          setFieldValue(field, selectedObj ? selectedObj : '');
+        };
 
-              //if re-check the box again, we should only update/pre-fill the defaults for unchanged field.
-              // to make sure to keep the user customization.
-              const handleCheckboxChange = (field) => (selectedObj) => {
-                setFieldValue(field, selectedObj.target.checked);
-                // Clear the untouched field to get the update from the global value
-                for (let i = 0; i < values.numberOfVolumes; i++) {
-                  if (!touched?.volumes?.[i]?.name) {
-                    setFieldValue(`volumes[${i}]name`, '');
-                  }
-                  if (!touched?.volumes?.[i]?.path) {
-                    setFieldValue(`volumes[${i}]path`, '');
-                  }
-                }
-              };
+        //if re-check the box again, we should only update/pre-fill the defaults for unchanged field.
+        // to make sure to keep the user customization.
+        const handleCheckboxChange = (field) => (selectedObj) => {
+          setFieldValue(field, selectedObj.target.checked);
+          // Clear the untouched field to get the update from the global value
+          for (let i = 0; i < values.numberOfVolumes; i++) {
+            if (!touched?.volumes?.[i]?.name) {
+              setFieldValue(`volumes[${i}]name`, '');
+            }
+            if (!touched?.volumes?.[i]?.path) {
+              setFieldValue(`volumes[${i}]path`, '');
+            }
+          }
+        };
 
-              const validataLabelName = (value) => {
-                if (!value) return false;
+        const validataLabelName = (value) => {
+          if (!value) return false;
 
-                let error;
-                const isLabelNameMatched = labelFullNameRegex.test(value);
-                if (!isLabelNameMatched) {
-                  const hasLabelPrefix = value.includes('/');
+          let error;
+          const isLabelNameMatched = labelFullNameRegex.test(value);
+          if (!isLabelNameMatched) {
+            const hasLabelPrefix = value.includes('/');
 
-                  if (hasLabelPrefix) {
-                    const prefix = value.split('/')[0];
-                    const isLabelPrefixMatched =
-                      labelNamePrefixRegex.test(prefix);
-                    error = intl.formatMessage(
-                      isLabelPrefixMatched
-                        ? { id: 'label_name_error' }
-                        : { id: 'label_prefix_name_error' },
-                    );
-                  } else {
-                    error = intl.formatMessage({ id: 'label_name_error' });
-                  }
-                }
-                return error;
-              };
+            if (hasLabelPrefix) {
+              const prefix = value.split('/')[0];
+              const isLabelPrefixMatched = labelNamePrefixRegex.test(prefix);
+              error = intl.formatMessage(
+                isLabelPrefixMatched
+                  ? { id: 'label_name_error' }
+                  : { id: 'label_prefix_name_error' },
+              );
+            } else {
+              error = intl.formatMessage({ id: 'label_name_error' });
+            }
+          }
+          return error;
+        };
 
-              const addLabel = () => {
-                const labels = values.labels;
+        const addLabel = () => {
+          const labels = values.labels;
 
-                labels[values.labelName] = values.labelValue;
-                setFieldValue('labels', labels);
+          labels[values.labelName] = values.labelValue;
+          setFieldValue('labels', labels);
 
-                setFieldValue('labelName', '');
-                setFieldValue('labelValue', '');
-              };
+          setFieldValue('labelName', '');
+          setFieldValue('labelValue', '');
+        };
 
-              const removeLabel = (key) => {
-                const labels = values.labels;
-                delete labels[key];
-                setFieldValue('labels', labels);
-              };
+        const removeLabel = (key) => {
+          const labels = values.labels;
+          delete labels[key];
+          setFieldValue('labels', labels);
+        };
 
-              // Update the number of the volumes to create base on the input number
-              const setVolumeNumber =
-                (field, arrayHelpers) => (selectedObj) => {
-                  const inputVolNum = selectedObj.target.value;
-                  const preVolNum = values.numberOfVolumes;
+        // Update the number of the volumes to create base on the input number
+        const setVolumeNumber = (field, arrayHelpers) => (selectedObj) => {
+          const inputVolNum = selectedObj.target.value;
+          const preVolNum = values.numberOfVolumes;
 
-                  setFieldValue(field, inputVolNum);
-                  const diff = preVolNum - inputVolNum;
-                  if (diff > 0) {
-                    // REMOVE volume object from `values.volumes` base on the index
-                    for (let i = preVolNum - 1; i >= inputVolNum; i--) {
-                      arrayHelpers.remove(i);
-                    }
-                  } else if (diff < 0) {
-                    // PUSH new volume object to `values.volumes`
-                    let absDiff = Math.abs(diff);
-                    while (absDiff--) {
-                      arrayHelpers.push({
-                        name: '',
-                        path: '',
-                      });
-                    }
-                  }
-                };
-
-              const optionsStorageClasses = storageClassesName.map((SCName) => {
-                return {
-                  label: SCName,
-                  value: SCName,
-                  'data-cy': `storageClass-${SCName}`,
-                };
+          setFieldValue(field, inputVolNum);
+          const diff = preVolNum - inputVolNum;
+          if (diff > 0) {
+            // REMOVE volume object from `values.volumes` base on the index
+            for (let i = preVolNum - 1; i >= inputVolNum; i--) {
+              arrayHelpers.remove(i);
+            }
+          } else if (diff < 0) {
+            // PUSH new volume object to `values.volumes`
+            let absDiff = Math.abs(diff);
+            while (absDiff--) {
+              arrayHelpers.push({
+                name: '',
+                path: '',
               });
-              const optionsTypes = types.map(({ label, value }) => {
-                return {
-                  label,
-                  value,
-                  'data-cy': `type-${value}`,
-                };
-              });
+            }
+          }
+        };
 
-              const optionsSizeUnits = sizeUnits
-                /**
-                 * `sizeUnits` have a base 2 and base 10 units
-                 * (ie. KiB and KB).
-                 * We chose to only display base 2 units
-                 * to improve the UX.
-                 */
-                .filter((size, idx) => idx < 6)
-                .map(({ label, value }) => {
-                  return {
-                    label,
-                    value,
-                    'data-cy': `size-${label}`,
-                  };
-                });
+        const optionsStorageClasses = storageClassesName.map((SCName) => {
+          return {
+            label: SCName,
+            value: SCName,
+            'data-cy': `storageClass-${SCName}`,
+          };
+        });
+        const optionsTypes = types.map(({ label, value }) => {
+          return {
+            label,
+            value,
+            'data-cy': `type-${value}`,
+          };
+        });
 
-              const optionsNodes = nodes?.map((node) => {
-                return {
-                  label: node.name,
-                  value: node.name,
-                  'data-cy': `node-${node.name}`,
-                };
-              });
+        const optionsSizeUnits = sizeUnits
+          /**
+           * `sizeUnits` have a base 2 and base 10 units
+           * (ie. KiB and KB).
+           * We chose to only display base 2 units
+           * to improve the UX.
+           */
+          .filter((size, idx) => idx < 6)
+          .map(({ label, value }) => {
+            return {
+              label,
+              value,
+              'data-cy': `size-${label}`,
+            };
+          });
 
-              const sizeInputCombinedField = () => {
-                return (
-                  <SizeFieldContainer>
-                    <Input
-                      name="sizeInput"
-                      type="number"
-                      min="1"
-                      value={values.sizeInput}
-                      onChange={handleChange('sizeInput')}
-                      label={`${intl.formatMessage({ id: 'volume_size' })}*`}
-                      error={touched.sizeInput && errors.sizeInput}
-                      onBlur={handleOnBlur}
-                    />
-                    <SizeUnitFieldSelectContainer>
-                      <Input
-                        clearable={false}
-                        type="select"
-                        options={optionsSizeUnits}
-                        noOptionsMessage={() =>
-                          intl.formatMessage({ id: 'no_results' })
-                        }
-                        name="selectedUnit"
-                        onChange={handleSelectChange('selectedUnit')}
-                        value={getSelectedObjectItem(
-                          optionsSizeUnits,
-                          values?.selectedUnit,
-                        )}
-                        error={touched.selectedUnit && errors.selectedUnit}
-                        onBlur={handleOnBlur}
-                      />
-                    </SizeUnitFieldSelectContainer>
-                  </SizeFieldContainer>
-                );
-              };
+        const optionsNodes = nodes?.map((node) => {
+          return {
+            label: node.name,
+            value: node.name,
+            'data-cy': `node-${node.name}`,
+          };
+        });
 
-              // render the fields specifically for different volume types
-              const renderVolumeTypeSpecificFields = (volumeType) => {
-                switch (volumeType) {
-                  case SPARSE_LOOP_DEVICE:
-                    return sizeInputCombinedField();
-                  case RAW_BLOCK_DEVICE:
-                    return (
-                      <Input
-                        name="path"
-                        value={values.path}
-                        onChange={handleChange('path')}
-                        label={
-                          <>
-                            {`${intl.formatMessage({ id: 'device_path' })}*`}
-                            <Tooltip
-                              placement="right"
-                              overlay={
-                                <div style={{ minWidth: '200px' }}>
-                                  {intl.formatMessage({
-                                    id: 'device_path_explanation',
-                                  })}
-                                </div>
-                              }
-                            >
-                              <Icon
-                                name="Info"
-                                color="infoPrimary"
-                                style={{ paddingLeft: padding.small }}
-                              />
-                            </Tooltip>
-                          </>
-                        }
-                        error={touched.path && errors.path}
-                        onBlur={handleOnBlur}
-                      />
-                    );
-                  case LVM_LOGICAL_VOLUME:
-                    return (
-                      <>
-                        {sizeInputCombinedField()}
-                        <Input
-                          name="vgName"
-                          value={values.vgName}
-                          onChange={handleChange('vgName')}
-                          label={`Volume Group Name*`}
-                          error={touched.vgName && errors.vgName}
-                          onBlur={handleOnBlur}
-                        />
-                      </>
-                    );
-                  default:
-                    return;
-                }
-              };
+        const sizeInputCombinedField = () => {
+          return (
+            <FormGroup
+              label={intl.formatMessage({ id: 'volume_size' })}
+              required
+              helpErrorPosition="bottom"
+              error={
+                (touched.sizeInput && errors.sizeInput) ||
+                (touched.selectedUnit && errors.selectedUnit)
+              }
+              id="sizeInput"
+              content={
+                <Stack>
+                  <InputV2
+                    name="sizeInput"
+                    id="sizeInput"
+                    type="number"
+                    size="2/3"
+                    min="1"
+                    value={values.sizeInput}
+                    onChange={handleChange('sizeInput')}
+                    onBlur={handleOnBlur}
+                  />
 
+                  <Select
+                    id="selectedUnit"
+                    name="selectedUnit"
+                    size="1/3"
+                    placeholder={intl.formatMessage({ id: 'select_a_node' })}
+                    onChange={handleSelectChange('selectedUnit')}
+                    value={values?.selectedUnit}
+                    onBlur={handleOnBlur}
+                  >
+                    {optionsSizeUnits.map((size, i) => (
+                      <Select.Option key={i} value={size.value}>
+                        {size.label}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Stack>
+              }
+            />
+          );
+        };
+
+        // render the fields specifically for different volume types
+        const renderVolumeTypeSpecificFields = (volumeType) => {
+          switch (volumeType) {
+            case SPARSE_LOOP_DEVICE:
+              return sizeInputCombinedField();
+            case RAW_BLOCK_DEVICE:
               return (
-                <Form>
-                  <FormSection>
-                    <RequiredText>
-                      {intl.formatMessage({ id: 'required_fields' })}
-                    </RequiredText>
-                  </FormSection>
-
-                  <FormSection>
-                    <Input
-                      name="name"
-                      value={values.name}
-                      onChange={handleChange('name')}
-                      label={`${intl.formatMessage({ id: 'name' })}*`}
-                      error={touched.name && errors.name}
+                <FormGroup
+                  label={intl.formatMessage({ id: 'device_path' })}
+                  required
+                  labelHelpTooltip={intl.formatMessage({
+                    id: 'device_path_explanation',
+                  })}
+                  helpErrorPosition="bottom"
+                  error={touched.path && errors.path}
+                  id="path"
+                  content={
+                    <InputV2
+                      name="path"
+                      id="path"
+                      value={values.path}
+                      onChange={handleChange('path')}
                       onBlur={handleOnBlur}
                     />
-                    {/* The node input will be prefilled if we create volume from node*/}
-                    <Input
-                      id="node_input"
-                      label={`${intl.formatMessage({ id: 'node' })}*`}
-                      clearable={false}
-                      type="select"
-                      options={optionsNodes}
-                      placeholder={intl.formatMessage({ id: 'select_a_node' })}
-                      noOptionsMessage={() =>
-                        intl.formatMessage({ id: 'no_results' })
-                      }
-                      name="node"
-                      onChange={handleSelectChange('node')}
-                      value={getSelectedObjectItem(optionsNodes, values?.node)}
-                      error={touched.node && errors.node}
-                      onBlur={handleOnBlur}
-                    />
-                    <InputContainer className="sc-input">
-                      <InputLabel className="sc-input-label">
-                        {intl.formatMessage({ id: 'labels' })}
-                      </InputLabel>
-                      <LabelsContainer>
-                        <LabelsForm>
-                          <Field
-                            as={Input}
-                            name="labelName"
-                            placeholder={intl.formatMessage({
-                              id: 'enter_label_name',
-                            })}
-                            value={values.labelName}
-                            error={touched.labelName && errors.labelName}
-                            onBlur={handleOnBlur}
-                            onChange={handleChange('labelName')}
-                            validate={validataLabelName}
-                          />
-                          <Input
-                            name="labelValue"
-                            placeholder={intl.formatMessage({
-                              id: 'enter_label_value',
-                            })}
-                            value={values.labelValue}
-                            error={touched.labelValue && errors.labelValue}
-                            onBlur={handleOnBlur}
-                            onChange={handleChange('labelValue')}
-                          />
-                          <Button
-                            label={intl.formatMessage({ id: 'add' })}
-                            type="button"
-                            onClick={addLabel}
-                            data-cy="add-volume-labels-button"
-                            variant={'secondary'}
-                            disabled={
-                              errors.labelValue ||
-                              errors.labelName ||
-                              !values.labelName // disable the Add button if no label key specified
-                            }
-                          />
-                        </LabelsForm>
-                        {!!Object.keys(values.labels).length && (
-                          <LabelsList>
-                            {Object.keys(values.labels).map((key, index) => (
-                              <LabelsKeyValue key={`labelKeyValue_${index}`}>
-                                <LabelsName>{key}</LabelsName>
-                                <LabelsValue>{values.labels[key]}</LabelsValue>
-                                <Button
-                                  icon={<i className="fas fa-lg fa-trash" />}
-                                  type="button"
-                                  onClick={() => removeLabel(key)}
-                                />
-                              </LabelsKeyValue>
-                            ))}
-                          </LabelsList>
-                        )}
-                      </LabelsContainer>
-                    </InputContainer>
-
-                    <Input
-                      id="storageClass_input"
-                      label={`${intl.formatMessage({ id: 'storageClass' })}*`}
-                      clearable={false}
-                      type="select"
-                      options={optionsStorageClasses}
-                      placeholder={intl.formatMessage({
-                        id: 'select_a_storageClass',
-                      })}
-                      noOptionsMessage={() =>
-                        intl.formatMessage({ id: 'no_results' })
-                      }
-                      name="storageClass"
-                      onChange={handleSelectChange('storageClass')}
-                      value={getSelectedObjectItem(
-                        optionsStorageClasses,
-                        values?.storageClass,
-                      )}
-                      error={touched.storageClass && errors.storageClass}
-                      onBlur={handleOnBlur}
-                    />
-                    <Input
-                      id="type_input"
-                      label={`${intl.formatMessage({ id: 'volume_type' })}*`}
-                      clearable={false}
-                      type="select"
-                      options={optionsTypes}
-                      placeholder={intl.formatMessage({ id: 'select_a_type' })}
-                      noOptionsMessage={() =>
-                        intl.formatMessage({ id: 'no_results' })
-                      }
-                      name="type"
-                      onChange={handleSelectChange('type')}
-                      value={getSelectedObjectItem(optionsTypes, values?.type)}
-                      error={touched.type && errors.type}
-                      onBlur={handleOnBlur}
-                    />
-                    {renderVolumeTypeSpecificFields(values.type)}
-                    <CheckboxContainer>
-                      <Checkbox
-                        name="multiVolumeCreation"
-                        label={intl.formatMessage({
-                          id: 'create_multiple_volumes',
-                        })}
-                        checked={values.multiVolumeCreation}
-                        value={values.multiVolumeCreation}
-                        onChange={handleCheckboxChange('multiVolumeCreation')}
+                  }
+                />
+              );
+            case LVM_LOGICAL_VOLUME:
+              return (
+                <>
+                  {sizeInputCombinedField()}
+                  <FormGroup
+                    label={intl.formatMessage({ id: 'vg_name' })}
+                    required
+                    helpErrorPosition="bottom"
+                    error={touched.vgName && errors.vgName}
+                    id="vgName"
+                    content={
+                      <InputV2
+                        name="vgName"
+                        id="vgName"
+                        value={values.vgName}
+                        onChange={handleChange('vgName')}
                         onBlur={handleOnBlur}
                       />
-                    </CheckboxContainer>
-                  </FormSection>
+                    }
+                  />
 
-                  {values.multiVolumeCreation && (
-                    <MultiCreationFormContainer>
-                      <FieldArray
-                        name="volumes"
-                        render={(arrayHelpers) => (
+                  <FormGroup
+                    label={intl.formatMessage({ id: 'force_lvcreate' })}
+                    helpErrorPosition="bottom"
+                    labelHelpTooltip={intl.formatMessage({
+                      id: 'force_lvcreate_explanation',
+                    })}
+                    error={touched.forceLVCreate && errors.forceLVCreate}
+                    id="forceLVCreate"
+                    content={
+                      <Toggle
+                        id="forceLVCreate"
+                        name="forceLVCreate"
+                        toggle={values.forceLVCreate}
+                        label={values.forceLVCreate ? 'Yes' : 'No'}
+                        onChange={() => {
+                          setFieldValue('forceLVCreate', !values.forceLVCreate);
+                        }}
+                      />
+                    }
+                  />
+                </>
+              );
+            default:
+              return;
+          }
+        };
+
+        return (
+          <Form
+            onSubmit={handleSubmit}
+            rightActions={
+              <Stack>
+                <Button
+                  label={intl.formatMessage({ id: 'cancel' })}
+                  type="button"
+                  variant="outline"
+                  onClick={() => history.goBack()}
+                />
+                <Button
+                  label={intl.formatMessage({ id: 'create' })}
+                  type="submit"
+                  variant={'primary'}
+                  disabled={!dirty || !isEmpty(errors) || values.labelName}
+                  data-cy="submit-create-volume"
+                />
+              </Stack>
+            }
+            layout={{
+              kind: 'page',
+              title: intl.formatMessage({ id: 'create_volume' }),
+            }}
+            banner={
+              isStorageClassExist ? null : (
+                <Banner
+                  variant="warning"
+                  icon={<i className="fas fa-exclamation-triangle" />}
+                  title={intl.formatMessage({ id: 'no_storage_class_found' })}
+                >
+                  {intl.formatMessage({ id: 'storage_class_is_required' })}
+                  <a
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    href={`${api.url_doc}/operation/volume_management/storageclass_creation.html`}
+                  >
+                    {intl.formatMessage({ id: 'learn_more' })}
+                  </a>
+                </Banner>
+              )
+            }
+          >
+            <FormSection forceLabelWidth={convertRemToPixels(10)}>
+              <FormGroup
+                label={intl.formatMessage({ id: 'name' })}
+                required
+                helpErrorPosition="bottom"
+                error={touched.name && errors.name}
+                id="name"
+                content={
+                  <InputV2
+                    name="name"
+                    value={values.name}
+                    onChange={handleChange('name')}
+                    onBlur={handleOnBlur}
+                  />
+                }
+              />
+
+              {/* The node input will be prefilled if we create volume from node*/}
+              <FormGroup
+                label={intl.formatMessage({ id: 'node' })}
+                required
+                helpErrorPosition="bottom"
+                error={touched.node && errors.node}
+                id="node_input"
+                content={
+                  <Select
+                    id="node_input"
+                    name="node"
+                    placeholder={intl.formatMessage({ id: 'select_a_node' })}
+                    onChange={handleSelectChange('node')}
+                    value={values?.node}
+                    onBlur={handleOnBlur}
+                  >
+                    {optionsNodes.map((node, i) => (
+                      <Select.Option key={i} value={node.value}>
+                        {node.label}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                }
+              />
+
+              <FormGroup
+                label={intl.formatMessage({ id: 'labels' })}
+                helpErrorPosition="bottom"
+                error={
+                  (touched.labelName && errors.labelName) ||
+                  (touched.labelValue && errors.labelValue)
+                }
+                id="labelName"
+                content={
+                  <Stack direction="vertical">
+                    <Stack>
+                      <Field
+                        as={InputV2}
+                        name="labelName"
+                        size="1/2"
+                        id="labelName"
+                        placeholder={intl.formatMessage({
+                          id: 'enter_label_name',
+                        })}
+                        value={values.labelName}
+                        onBlur={handleOnBlur}
+                        onChange={handleChange('labelName')}
+                        validate={validataLabelName}
+                      />
+                      <InputV2
+                        name="labelValue"
+                        size="1/2"
+                        placeholder={intl.formatMessage({
+                          id: 'enter_label_value',
+                        })}
+                        value={values.labelValue}
+                        onBlur={handleOnBlur}
+                        onChange={handleChange('labelValue')}
+                      />
+                      <Button
+                        label={intl.formatMessage({ id: 'add' })}
+                        type="button"
+                        onClick={addLabel}
+                        data-cy="add-volume-labels-button"
+                        variant={'secondary'}
+                        disabled={
+                          errors.labelValue ||
+                          errors.labelName ||
+                          !values.labelName // disable the Add button if no label key specified
+                        }
+                      />
+                    </Stack>
+                    {!!Object.keys(values.labels).length && (
+                      <LabelsList>
+                        {Object.keys(values.labels).map((key, index) => (
+                          <LabelsKeyValue key={`labelKeyValue_${index}`}>
+                            <LabelsName>{key}</LabelsName>
+                            <LabelsValue>{values.labels[key]}</LabelsValue>
+                            <Button
+                              icon={<i className="fas fa-lg fa-trash" />}
+                              type="button"
+                              onClick={() => removeLabel(key)}
+                            />
+                          </LabelsKeyValue>
+                        ))}
+                      </LabelsList>
+                    )}
+                  </Stack>
+                }
+              />
+
+              <FormGroup
+                label={intl.formatMessage({ id: 'storageClass' })}
+                required
+                helpErrorPosition="bottom"
+                error={touched.storageClass && errors.storageClass}
+                id="storageClass_input"
+                content={
+                  <Select
+                    id="storageClass_input"
+                    name="storageClass"
+                    placeholder={intl.formatMessage({
+                      id: 'select_a_storageClass',
+                    })}
+                    onChange={handleSelectChange('storageClass')}
+                    value={values?.storageClass}
+                    onBlur={handleOnBlur}
+                  >
+                    {optionsStorageClasses.map((sc, i) => (
+                      <Select.Option key={i} value={sc.value}>
+                        {sc.label}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                }
+              />
+
+              <FormGroup
+                label={intl.formatMessage({ id: 'volume_type' })}
+                required
+                helpErrorPosition="bottom"
+                error={touched.type && errors.type}
+                id="type_input"
+                content={
+                  <Select
+                    id="type_input"
+                    name="type"
+                    placeholder={intl.formatMessage({
+                      id: 'select_a_type',
+                    })}
+                    onChange={handleSelectChange('type')}
+                    value={values?.type}
+                    onBlur={handleOnBlur}
+                  >
+                    {optionsTypes.map((opt, i) => (
+                      <Select.Option key={i} value={opt.value}>
+                        {opt.label}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                }
+              />
+              {renderVolumeTypeSpecificFields(values.type)}
+              <CheckboxContainer>
+                <Checkbox
+                  name="multiVolumeCreation"
+                  label={intl.formatMessage({
+                    id: 'create_multiple_volumes',
+                  })}
+                  checked={values.multiVolumeCreation}
+                  value={values.multiVolumeCreation}
+                  onChange={handleCheckboxChange('multiVolumeCreation')}
+                  onBlur={handleOnBlur}
+                />
+              </CheckboxContainer>
+            </FormSection>
+            <FormSection>
+              {values.multiVolumeCreation && (
+                <MultiCreationFormContainer>
+                  <FieldArray
+                    name="volumes"
+                    render={(arrayHelpers) => (
+                      <Stack direction="vertical" gap="f24">
+                        <FormGroup
+                          label={intl.formatMessage({
+                            id: 'number_volume_create',
+                          })}
+                          id="numberOfVolumes"
+                          content={
+                            <InputV2
+                              type="number"
+                              name="numberOfVolumes"
+                              id="numberOfVolumes"
+                              size="1/3"
+                              value={values.numberOfVolumes}
+                              min="1"
+                              // Max number of the batch volume creation is 70.
+                              max={`${MAX_VOLUME_BATCH_CREATION}`}
+                              onChange={setVolumeNumber(
+                                'numberOfVolumes',
+                                arrayHelpers,
+                              )}
+                              onBlur={handleOnBlur}
+                              error={
+                                touched.numberOfVolumes &&
+                                errors.numberOfVolumes
+                              }
+                            />
+                          }
+                        />
+
+                        <Stack direction="vertical" gap='f16'>
                           <div>
-                            <div
-                              style={{
-                                paddingLeft: '60px',
-                                paddingTop: `${padding.large}`,
-                              }}
-                            >
-                              <span
-                                style={{
-                                  paddingRight: `${padding.base}`,
-                                }}
-                              >
-                                {intl.formatMessage({
-                                  id: 'number_volume_create',
-                                })}
-                              </span>
-                              <Input
-                                type="number"
-                                name="numberOfVolumes"
-                                value={values.numberOfVolumes}
-                                min="1"
-                                // Max number of the batch volume creation is 70.
-                                max={`${MAX_VOLUME_BATCH_CREATION}`}
-                                onChange={setVolumeNumber(
-                                  'numberOfVolumes',
-                                  arrayHelpers,
-                                )}
-                                onBlur={handleOnBlur}
-                                error={
-                                  touched.numberOfVolumes &&
-                                  errors.numberOfVolumes
-                                }
-                              />
-                            </div>
-                            <div
-                              style={{
-                                paddingLeft: '60px',
-                                paddingTop: `${padding.large}`,
-                              }}
-                            >
+                            <Text isGentleEmphazed>
                               {intl.formatMessage({
                                 id: 'default_batch_volume_values_explanation',
                               })}
-                            </div>
-                            {values.numberOfVolumes <=
-                              MAX_VOLUME_BATCH_CREATION &&
-                              values.volumes.map((volume, index) => (
-                                <SingleVolumeContainer key={`volume${index}`}>
-                                  <div
-                                    style={{ paddingTop: `${padding.small}` }}
-                                  >
-                                    {index + 1}-
-                                  </div>
-                                  <SingleVolumeForm>
+                            </Text>
+                            <br />
+                            <Text color="textSecondary" isGentleEmphazed>
+                              {intl.formatMessage({
+                                id: 'you_may_use_defaults',
+                              })}
+                            </Text>
+                          </div>
+
+                          {values.numberOfVolumes <=
+                            MAX_VOLUME_BATCH_CREATION &&
+                            values.volumes.map((volume, index) => (
+                              <Stack key={`volume${index}`}>
+                                <Text>{index + 1}- </Text>
+                                <Stack direction='vertical'>
+                                  <RecommendField
+                                    name={`volumes[${index}]name`}
+                                    label={`${intl.formatMessage({
+                                      id: 'name',
+                                    })}`}
+                                    onBlur={handleOnBlur}
+                                    id={'name' + `volume${index}`}
+                                    index={index}
+                                    fieldname="name"
+                                  />
+                                  {values.type === RAW_BLOCK_DEVICE ? (
                                     <RecommendField
-                                      name={`volumes[${index}]name`}
-                                      label={intl.formatMessage({ id: 'name' })}
+                                      name={`volumes.${index}.path`}
+                                      label={`${intl.formatMessage({
+                                        id: 'device_path',
+                                      })}`}
+                                      id={'path' + `volume${index}`}
                                       onBlur={handleOnBlur}
                                       index={index}
-                                      fieldname="name"
+                                      fieldname="path"
                                     />
-                                    {values.type === RAW_BLOCK_DEVICE ? (
-                                      <RecommendField
-                                        name={`volumes.${index}.path`}
-                                        label={intl.formatMessage({
-                                          id: 'device_path',
-                                        })}
-                                        onBlur={handleOnBlur}
-                                        index={index}
-                                        fieldname="path"
-                                      />
-                                    ) : null}
-                                  </SingleVolumeForm>
-                                </SingleVolumeContainer>
-                              ))}
-                          </div>
-                        )}
-                      ></FieldArray>
-                    </MultiCreationFormContainer>
-                  )}
-                  <ActionContainer>
-                    <Button
-                      label={intl.formatMessage({ id: 'cancel' })}
-                      type="button"
-                      variant="outline"
-                      onClick={() => history.goBack()}
-                    />
-                    <Button
-                      label={intl.formatMessage({ id: 'create' })}
-                      type="submit"
-                      variant={'primary'}
-                      disabled={!dirty || !isEmpty(errors) || values.labelName}
-                      data-cy="submit-create-volume"
-                    />
-                  </ActionContainer>
-                </Form>
-              );
-            }}
-          </Formik>
-        </CreateVolumeLayout>
-      </CreateVolumeFormContainer>
-    </PageContainer>
+                                  ) : null}
+                                </Stack>
+                              </Stack>
+                            ))}
+                        </Stack>
+                      </Stack>
+                    )}
+                  ></FieldArray>
+                </MultiCreationFormContainer>
+              )}
+            </FormSection>
+          </Form>
+        );
+      }}
+    </Formik>
   );
 };
 
