@@ -31,6 +31,9 @@
   The pause image has been bump to 3.8
   (PR[#3881](https://github.com/scality/metalk8s/pull/3881))
 
+- Bump Calico version to [3.24.1](https://github.com/projectcalico/calico/releases/tag/v3.24.1)
+  (PR[#3884](https://github.com/scality/metalk8s/pull/3884))
+
 - Bump Prometheus Adapter chart version to
   [3.4.0](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-adapter-3.4.0)
   The prometheus-adapter image has been bumped accordingly to
