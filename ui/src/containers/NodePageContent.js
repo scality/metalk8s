@@ -48,7 +48,7 @@ const NodePageContent = (props) => {
         <EmptyState
           label={'Node'}
           link="/nodes/create"
-          icon="fa-server"
+          icon="Node-backend"
           history={history}
         />
       ) : (

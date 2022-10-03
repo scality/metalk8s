@@ -17,6 +17,7 @@ import { setIntlAction } from '../ducks/config';
 import CreateVolume from './CreateVolume';
 import { useTypedSelector } from '../hooks';
 import { Suspense } from 'react';
+import styled from 'styled-components';
 
 const NodeCreateForm = React.lazy(() => import('./NodeCreateForm'));
 const NodePage = React.lazy(() => import('./NodePage'));
@@ -25,6 +26,13 @@ const PrivateRoute = React.lazy(() => import('./PrivateRoute'));
 const VolumePage = React.lazy(() => import('./VolumePage'));
 const DashboardPage = React.lazy(() => import('./DashboardPage'));
 const AlertPage = React.lazy(() => import('./AlertPage'));
+
+//Temporay patch waiting for the new layout component
+const PatchedCoreUiLayout = styled(CoreUILayout)`
+  .main {
+    height: calc(100vh - 3.5rem);
+  }
+`
 
 const Layout = () => {
   const sidebar = useTypedSelector((state) => state.app.layout.sidebar);
@@ -121,7 +129,7 @@ const Layout = () => {
   };
 
   return (
-    <CoreUILayout
+    <PatchedCoreUiLayout
       sidebar={
         isUserLoaded &&
         !isAlertsPage &&
@@ -164,7 +172,7 @@ const Layout = () => {
           />
         </Switch>
       </Suspense>
-    </CoreUILayout>
+    </PatchedCoreUiLayout>
   );
 };
 
