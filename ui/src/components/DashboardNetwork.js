@@ -1,5 +1,5 @@
 import React from 'react';
-import styled, { useTheme } from 'styled-components';
+import styled from 'styled-components';
 import { useIntl } from 'react-intl';
 import { spacing } from '@scality/core-ui/dist/style/theme';
 import {
@@ -11,8 +11,7 @@ import DashboardBandwidthChart from './DashboardBandwidthChart';
 import { DashboardScrollableArea } from '../containers/DashboardPage';
 import { SpacedBox } from '@scality/core-ui';
 import { useShowQuantileChart } from '../hooks';
-import { Tooltip } from '@scality/core-ui';
-import { SmallerText } from '@scality/core-ui';
+import { Tooltip, Icon, SmallerText } from '@scality/core-ui';
 
 export const NetworkContainer = styled.div`
   padding: ${spacing.sp2} ${spacing.sp4};
@@ -31,7 +30,6 @@ export const PanelActions = styled.div`
 
 const DashboardNetwork = () => {
   const intl = useIntl();
-  const theme = useTheme();
   const { isShowQuantileChart } = useShowQuantileChart();
 
   return (
@@ -63,10 +61,7 @@ const DashboardNetwork = () => {
                 </SmallerText>
               }
             >
-              <i
-                className="fas fa-question-circle"
-                style={{ color: theme.buttonSecondary }}
-              ></i>
+              <Icon name="Question-circle" color="buttonSecondary" />
             </Tooltip>
           )}
         </PageSubtitle>
@@ -78,11 +73,11 @@ const DashboardNetwork = () => {
           <DashboardBandwidthChart
             title="ControlPlane Bandwidth"
             plane="controlPlane"
-          ></DashboardBandwidthChart>
+          />
           <DashboardBandwidthChart
             title="WorkloadPlane Bandwidth"
             plane="workloadPlane"
-          ></DashboardBandwidthChart>
+          />
         </GraphsWrapper>
       </DashboardScrollableArea>
     </NetworkContainer>

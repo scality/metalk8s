@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useHistory, useLocation, useRouteMatch } from 'react-router';
+import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
 import { padding, fontSize } from '@scality/core-ui/dist/style/theme';
 import { STATUS_WARNING, STATUS_CRITICAL } from '../constants.js';
 
@@ -31,24 +32,19 @@ export const CounterValue = styled.div`
   padding-left: ${padding.smaller};
 `;
 
-export const CounterIcon = styled.i`
-  color: ${(props) => {
-    const theme = props.theme;
-    let color = theme.textPrimary;
-
-    switch (props.status) {
+const CounterIcon = ({ name, status }) => {
+  const color = (() => {
+    switch (status) {
       case STATUS_WARNING:
-        color = theme.statusWarning;
-        break;
+        return 'statusWarning';
       case STATUS_CRITICAL:
-        color = theme.statusCritical;
-        break;
+        return 'statusCritical';
       default:
-        color = theme.textPrimary;
+        return 'textPrimary';
     }
-    return color;
-  }};
-`;
+  })();
+  return <Icon color={color} name={name} />;
+};
 
 const ActiveAlertsCounter = (props) => {
   const { criticalCounter, warningCounter } = props;
@@ -73,10 +69,7 @@ const ActiveAlertsCounter = (props) => {
       >
         <CounterTitle>Critical</CounterTitle>
         <CounterValueWrapper>
-          <CounterIcon
-            className="fas fa-times-circle"
-            status={STATUS_CRITICAL}
-          />
+          <CounterIcon name="Times-circle" status={STATUS_CRITICAL} />
           <CounterValue>{criticalCounter}</CounterValue>
         </CounterValueWrapper>
       </CounterWrapper>
@@ -86,10 +79,7 @@ const ActiveAlertsCounter = (props) => {
       >
         <CounterTitle>Warning</CounterTitle>
         <CounterValueWrapper>
-          <CounterIcon
-            className="fas fa-exclamation-triangle"
-            status={STATUS_WARNING}
-          />
+          <CounterIcon name="Exclamation-triangle" status={STATUS_WARNING} />
           <CounterValue>{warningCounter}</CounterValue>
         </CounterValueWrapper>
       </CounterWrapper>

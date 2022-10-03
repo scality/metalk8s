@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import isEqual from 'lodash.isequal';
-import { Tooltip } from '@scality/core-ui';
+import { Tooltip, Icon } from '@scality/core-ui';
 import { Table } from '@scality/core-ui/dist/next';
 
 import { padding, spacing } from '@scality/core-ui/dist/style/theme';
@@ -140,7 +140,7 @@ const NodePagePodsTab = React.memo((props) => {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <i className="fas fa-chart-line" />
+                <Icon name="Metrics" />
               </ExternalLink>
             </Tooltip>
           );

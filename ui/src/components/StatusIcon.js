@@ -1,5 +1,4 @@
-import styled from 'styled-components';
-
+import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
 import {
   STATUS_WARNING,
   STATUS_CRITICAL,
@@ -8,32 +7,24 @@ import {
   STATUS_HEALTH,
 } from '../constants.js';
 
-const StatusIcon = styled.i`
-  color: ${(props) => {
-    const theme = props.theme;
-    let color;
-
-    switch (props.status) {
+const StatusIcon = ({ name, status }) => {
+  const color = (() => {
+    switch (status) {
       case STATUS_SUCCESS:
-        color = theme.statusHealthy;
-        break;
+        return 'statusHealthy';
       case STATUS_WARNING:
-        color = theme.statusWarning;
-        break;
+        return 'statusWarning';
       case STATUS_CRITICAL:
-        color = theme.statusCritical;
-        break;
+        return 'statusCritical';
       case STATUS_NONE:
-        color = theme.textTertiary;
-        break;
+        return 'textTertiary';
       case STATUS_HEALTH:
-        color = theme.statusHealthy;
-        break;
+        return 'statusHealthy';
       default:
-        color = theme.textTertiary;
+        return 'textTertiary';
     }
-    return color;
-  }};
-`;
+  })();
+  return <Icon color={color} name={name} />;
+};
 
 export default StatusIcon;

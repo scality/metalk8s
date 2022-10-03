@@ -3,7 +3,7 @@ import { useHistory } from 'react-router';
 import { useLocation, useRouteMatch } from 'react-router-dom';
 import { useIntl } from 'react-intl';
 import styled from 'styled-components';
-import { LargeText, SecondaryText } from '@scality/core-ui';
+import { Icon, LargeText, SecondaryText } from '@scality/core-ui';
 import { Box, Button, Table } from '@scality/core-ui/dist/next';
 import { useURLQuery } from '../services/utils';
 import CircleStatus from './CircleStatus';
@@ -136,7 +136,7 @@ const NodeListTable = ({ nodeTableData }) => {
           <Button
             variant="primary"
             label={intl.formatMessage({ id: 'create_new_node' })}
-            icon={<i className="fas fa-plus" />}
+            icon={<Icon name="Create-add" />}
             onClick={() => {
               history.push('/nodes/create');
             }}

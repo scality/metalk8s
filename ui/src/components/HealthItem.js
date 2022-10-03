@@ -3,7 +3,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { useIntl } from 'react-intl';
 import { Tooltip } from '@scality/core-ui';
-import { StatusText } from '@scality/core-ui';
+import { StatusText, Icon } from '@scality/core-ui';
 import {
   spacing,
   fontSize,
@@ -85,10 +85,6 @@ const NonHealthyPopUpItem = styled.div`
   align-items: center;
 `;
 
-const ClickableIcon = styled.i`
-  self-align: flex-end;
-`;
-
 const HealthItem = ({
   label,
   status,
@@ -157,7 +153,9 @@ const HealthItem = ({
                 <CircleStatus status={status} />
                 <ServiceItemLabel>{label}</ServiceItemLabel>
               </ServiceItemLabelWrapper>
-              {showArrow && <ClickableIcon className="fas fa-angle-right" />}
+              {showArrow && (
+                <Icon name="Angle-right" style={{ selfAlign: 'flex-end' }} />
+              )}
             </ClickableServiceItemElement>
           </div>
         </Tooltip>

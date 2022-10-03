@@ -34,6 +34,7 @@ import {
 } from './style/CommonLayoutStyle';
 import { formatSizeForDisplay } from '../services/utils';
 import { RenderNoDataAvailable } from '../containers/NodePageMetricsTab';
+import { Icon } from '@scality/core-ui';
 
 const VolumeDetailCardContainer = styled.div`
   display: flex;
@@ -183,7 +184,7 @@ const VolumeDetailCard = (props) => {
         </div>
         <Button
           variant="danger"
-          icon={<i className="fas fa-sm fa-trash" />}
+          icon={<Icon size="sm" name="Delete" />}
           label={intl.formatMessage({ id: 'delete_volume' })}
           onClick={(e) => {
             e.stopPropagation();
@@ -198,7 +199,7 @@ const VolumeDetailCard = (props) => {
         <div style={{ width: '48rem', padding: '0 0 2rem 20px' }}>
           <Banner
             variant="warning"
-            icon={<i className="fas fa-exclamation-triangle" />}
+            icon={<Icon name="Exclamation-triangle" />}
             title={intl.formatMessage({
               id: 'monitoring_information_unavailable',
             })}

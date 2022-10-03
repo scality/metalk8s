@@ -116,7 +116,7 @@ function AlertPageHeader({
       <Title>
         <AlertStatusIcon>
           <StatusWrapper status={alertStatus}>
-            <StatusIcon status={alertStatus} className="fa fa-bell" />
+            <StatusIcon status={alertStatus} name="Alert" />
           </StatusWrapper>
         </AlertStatusIcon>
         <>{intl.formatMessage({ id: 'alerts' })}</>

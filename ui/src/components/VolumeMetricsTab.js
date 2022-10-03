@@ -19,6 +19,7 @@ import {
 } from './VolumeCharts';
 import { SyncedCursorCharts } from '@scality/core-ui/dist/components/vegachartv2/SyncedCursorCharts';
 import TimespanSelector from '../containers/TimespanSelector';
+import { Icon } from '@scality/core-ui';
 
 const MetricGraphCardContainer = styled.div`
   min-height: 270px;
@@ -86,7 +87,7 @@ const MetricsTab = (props) => {
               <Button
                 label={intl.formatMessage({ id: 'advanced_metrics' })}
                 variant={'secondary'}
-                icon={<i className="fas fa-external-link-alt" />}
+                icon={<Icon name="External-link" />}
               />
             </a>
           )}

@@ -8,6 +8,7 @@ import {
   Notifications,
   Loader,
   ErrorPage404,
+  Icon,
 } from '@scality/core-ui';
 import { useIntl } from 'react-intl';
 import { toggleSideBarAction } from '../ducks/app/layout';
@@ -69,7 +70,7 @@ const Layout = () => {
     actions: [
       {
         label: intl.formatMessage({ id: 'dashboard' }),
-        icon: <i className="fas fa-desktop" />,
+        icon: <Icon name="Dashboard" />,
         onClick: () => {
           history.push('/dashboard');
         },
@@ -82,7 +83,7 @@ const Layout = () => {
       },
       {
         label: intl.formatMessage({ id: 'nodes' }),
-        icon: <i className="fas fa-server" />,
+        icon: <Icon name="Node-backend" />,
         onClick: () => {
           history.push('/nodes');
         },
@@ -95,7 +96,7 @@ const Layout = () => {
       },
       {
         label: intl.formatMessage({ id: 'volumes' }),
-        icon: <i className="fas fa-database" />,
+        icon: <Icon name="Node-pdf" />,
         onClick: () => {
           history.push('/volumes');
         },

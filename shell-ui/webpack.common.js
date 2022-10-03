@@ -80,6 +80,14 @@ module.exports = {
         ...Object.fromEntries(
           Object.entries(deps).map(([key, version]) => [key, {}]),
         ),
+        '@fortawesome/react-fontawesome': {
+          eager: true,
+          singleton: true,
+        },
+        '@fortawesome/fontawesome-svg-core': {
+          eager: true,
+          singleton: true,
+        },
         '@scality/core-ui': {
           singleton: true,
         },

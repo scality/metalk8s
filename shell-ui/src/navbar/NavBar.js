@@ -1,5 +1,6 @@
 //@flow
 import { Navbar as CoreUINavbar } from '@scality/core-ui/dist/components/navbar/Navbar.component';
+import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
 import { useEffect, useCallback } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import type { Node } from 'react';
@@ -52,7 +53,7 @@ const NavbarDropDownItemLabel = styled.div`
 
 const NavbarDropDownItemExternal = styled.div`
   padding-left: 10px;
-  color: ${(props) => props.theme.secondary};
+  color: ${(props) => props.theme.selectedActive};
 `;
 
 const Item = ({
@@ -75,7 +76,7 @@ const Item = ({
       <NavbarDropDownItemLabel>{label}</NavbarDropDownItemLabel>
       {isExternal && (
         <NavbarDropDownItemExternal>
-          <i className="fas fa-external-link-alt" />
+          <Icon name="External-link" />
         </NavbarDropDownItemExternal>
       )}
     </NavbarDropDownItem>
@@ -241,7 +242,7 @@ export const Navbar = ({
       text: userData?.username || '',
       icon: (
         <span style={{ color: brand.textTertiary }}>
-          <i className="fas fa-user-cog"></i>
+          <Icon name="User" />
         </span>
       ),
       items: [

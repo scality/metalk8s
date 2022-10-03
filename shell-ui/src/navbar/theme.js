@@ -1,10 +1,9 @@
 //@flow
 import React, { useContext, useState, type Node, useLayoutEffect } from 'react';
 import { defaultTheme } from '@scality/core-ui/dist/style/theme';
-import { THEME_CHANGED_EVENT } from "./events";
+import { THEME_CHANGED_EVENT } from './events';
 
-
-type ThemeName = 'darkRebrand' | 'light' | 'custom';
+type ThemeName = 'darkRebrand';
 type ThemeContextValues = {
   themeName: ThemeName,
   theme: Theme,
@@ -13,7 +12,7 @@ type ThemeContextValues = {
 };
 const ThemeContext = React.createContext<ThemeContextValues | null>(null);
 
-const themes = ['darkRebrand', 'light'];
+const themes = ['darkRebrand'];
 
 export type Theme = { brand: typeof defaultTheme.darkRebrand };
 
