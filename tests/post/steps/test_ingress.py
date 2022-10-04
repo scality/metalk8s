@@ -730,20 +730,28 @@ def re_configure_portmap(host, version, ssh_config, context=None):
 def check_vips_spreading(host, ssh_config, context, ips):
     ips = ips.format(**context).split(",")
 
-    node_ips = json.loads(
-        utils.run_salt_command(
-            host,
-            ["salt", "--static", "--out=json", "'*'", "network.ip_addrs"],
-            ssh_config,
-        ).stdout
+    def _check_spreading():
+        node_ips = json.loads(
+            utils.run_salt_command(
+                host,
+                ["salt", "--static", "--out=json", "'*'", "network.ip_addrs"],
+                ssh_config,
+            ).stdout
+        )
+        node_vip_count = {name: 0 for name in node_ips}
+
+        for ip in ips:
+            node_vip_count[
+                next(name for name, ip_list in node_ips.items() if ip in ip_list)
+            ] += 1
+
+        # The node is with less IPs should at most host 1 VIP less than the one with the most IPs
+        # Otherwise the IPs are not properly spread
+        skew = max(node_vip_count.values()) - min(node_vip_count.values())
+        assert skew <= 1, f"Skew is too high ({skew}):\n" + "\n".join(
+            f"  - '{node}' has {count}" for node, count in node_vip_count.items()
+        )
+
+    utils.retry(
+        _check_spreading, times=5, wait=5, name="check WP VIPs are equally spread"
     )
-    node_vip_count = {name: 0 for name in node_ips}
-
-    for ip in ips:
-        node_vip_count[
-            next(name for name, ip_list in node_ips.items() if ip in ip_list)
-        ] += 1
-
-    # The node is with less IPs should at most host 1 VIP less than the one with the most IPs
-    # Otherwise the IPs are not properly spread
-    assert min(node_vip_count.values()) + 1 >= max(node_vip_count.values())
