@@ -1,4 +1,5 @@
 import { And, Then, When } from 'cypress-cucumber-preprocessor/steps';
+import '@testing-library/cypress/add-commands';
 
 And('I am on the volume creation page', () => {
   cy.visit('/volumes');
