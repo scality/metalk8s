@@ -302,7 +302,6 @@ const CreateVolume = (props) => {
       onSubmit={(values) => {
         const newVolumes = { ...values };
         newVolumes.size = `${values.sizeInput}${values.selectedUnit}`;
-        newVolumes.vgName = `${values.vgName}`;
 
         const formattedVolumes = formatVolumeCreationData(newVolumes);
         createVolumes(formattedVolumes);

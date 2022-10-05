@@ -275,6 +275,8 @@ export const formatVolumeCreationData = (newVolumes) => {
     type,
     size,
     storageClass,
+    vgName,
+    forceLVCreate,
   } = newVolumes;
   if (multiVolumeCreation) {
     // multi-volume creation mode
@@ -285,6 +287,8 @@ export const formatVolumeCreationData = (newVolumes) => {
         volume.type = type;
         volume.size = size;
         volume.storageClass = storageClass;
+        volume.vgName = vgName;
+        volume.forceLVCreate = forceLVCreate;
         return volume;
       }) ?? []
     );
