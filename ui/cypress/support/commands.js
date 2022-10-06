@@ -262,22 +262,27 @@ const VOLUME_SIZE = '1 GiB';
 Cypress.Commands.add('fillVolumeCreationForm', (volume_type) => {
   // The following steps are to fill the required fields of create volume form
   cy.get('input[name=name]').type(VOLUME_NAME);
-  cy.findByText(/node\*/i)
-    .next('.sc-input-wrapper')
-    .click();
 
-  cy.get('.sc-select__menu').find(`[data-cy=node-${NODE_NAME}]`).click();
-  cy.findByText(/storage class\*/i)
-    .next('.sc-input-wrapper')
-    .click();
-  /* we use `data-cy` is because the name of storageClass may display in both the select list and selected item, 
-     so we must use unique selector to make sure to choose the item in the list. */
-  cy.get('.sc-select__menu')
-    .find(`[data-cy=storageClass-${STORAGECLASS}]`)
-    .click();
-  cy.findByText(/type\*/i)
-    .next('.sc-input-wrapper')
-    .click();
-  cy.get('.sc-select__menu').find(`[data-cy="type-${volume_type}"]`).click();
+  cy.findByText(/node \*/i)
+    .closest('label')
+    .invoke('attr', 'for')
+    .then((htmlFor) => cy.get(`#${htmlFor}`).click());
+
+  cy.findByRole('option', {name: new RegExp(`${NODE_NAME}`, 'i')}).click();
+
+  cy.findByText(/storage class \*/i)
+    .closest('label')
+    .invoke('attr', 'for')
+    .then((htmlFor) => cy.get(`#${htmlFor}`).click());
+  
+  cy.findByRole('option', {name: new RegExp(`${STORAGECLASS}`, 'i')}).click();
+     
+  cy.findByText(/type \*/i)
+    .closest('label')
+    .invoke('attr', 'for')
+    .then((htmlFor) => cy.get(`#${htmlFor}`).click());
+  
+  cy.findByRole('option', {name: new RegExp(`${volume_type}`, 'i')}).click();
+  
   cy.get('input[name=sizeInput]').type(VOLUME_SIZE);
 });

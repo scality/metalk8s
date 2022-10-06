@@ -1,4 +1,5 @@
 import { And, Then, When } from 'cypress-cucumber-preprocessor/steps';
+import '@testing-library/cypress/add-commands';
 
 And('I am on the volume creation page', () => {
   cy.visit('/volumes');
@@ -21,14 +22,23 @@ When('I fill out the volume creation form using:', (dataTable) => {
   cy.get('[data-cy=add-volume-labels-button]').click();
 
   // node name
-  cy.get('.sc-select').eq(0).click();
-  cy.get('.sc-select__menu').eq(0).click();
+  cy.findByText(/node \*/i)
+    .closest('label')
+    .invoke('attr', 'for')
+    .then((htmlFor) => cy.get(`#${htmlFor}`).click());
+  cy.findAllByRole('option').then(options => options[0].click());
 
-  cy.get('.sc-select').eq(1).click();
-  cy.get('.sc-select__menu').find('[data-cy=storageClass-metalk8s]').click();
+  cy.findByText(/storage class \*/i)
+    .closest('label')
+    .invoke('attr', 'for')
+    .then((htmlFor) => cy.get(`#${htmlFor}`).click());
+  cy.findByRole('option', { name: new RegExp(`metalk8s`, 'i') }).click();
 
-  cy.get('.sc-select').eq(2).click();
-  cy.get('.sc-select__menu').find(`[data-cy="type-${volumeType}"]`).click();
+  cy.findByText(/type \*/i)
+    .closest('label')
+    .invoke('attr', 'for')
+    .then((htmlFor) => cy.get(`#${htmlFor}`).click());
+  cy.findByRole('option', { name: new RegExp(`${volumeType}`, 'i') }).click();
 
   cy.get('input[name=sizeInput]').type(volumeSize);
 });

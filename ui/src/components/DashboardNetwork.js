@@ -61,7 +61,7 @@ const DashboardNetwork = () => {
                 </SmallerText>
               }
             >
-              <Icon name="Question-circle" color="buttonSecondary" />
+              <Icon name="Info" color="buttonSecondary" />
             </Tooltip>
           )}
         </PageSubtitle>

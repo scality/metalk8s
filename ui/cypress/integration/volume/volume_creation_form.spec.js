@@ -18,16 +18,16 @@ describe('the create button when creating sparseloop volume', () => {
   });
 
   it('should be disabled before adding the valid label', () => {
-    cy.findByPlaceholderText(/Enter label name/i).type(VOLUME_LABEL_NAME);
-    cy.findByPlaceholderText(/Enter label value/i).type(VOLUME_LABEL_VALUE);
+    cy.findByPlaceholderText(/Example: name/i).type(VOLUME_LABEL_NAME);
+    cy.findByPlaceholderText(/Example: value/i).type(VOLUME_LABEL_VALUE);
 
     cy.findByRole('button', { name: /create/i }).should('be.disabled');
     cy.findByRole('button', { name: /add/i }).should('be.enabled');
   });
 
   it('should be disabled as well as the Add button if labelName is not valid', () => {
-    cy.findByPlaceholderText(/Enter label name/i).type(VOLUME_LABEL_INVALID);
-    cy.findByPlaceholderText(/Enter label value/i).type(VOLUME_LABEL_VALUE);
+    cy.findByPlaceholderText(/Example: name/i).type(VOLUME_LABEL_INVALID);
+    cy.findByPlaceholderText(/Example: value/i).type(VOLUME_LABEL_VALUE);
 
     cy.findByRole('button', { name: /create/i }).should('be.disabled');
     cy.findByRole('button', { name: /add/i }).should('be.disabled');

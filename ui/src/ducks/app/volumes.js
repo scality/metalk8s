@@ -382,6 +382,11 @@ export function* createVolumes({
             vgName: newVolumes[i].vgName,
           },
         };
+        if (newVolumes[i].forceLVCreate) {
+          body.metadata.annotations = {
+            "metalk8s.scality.com/force-lvcreate": ""
+          };
+        }
       }
 
       const result = yield call(
