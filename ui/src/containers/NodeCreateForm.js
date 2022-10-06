@@ -117,7 +117,7 @@ const NodeCreateForm = () => {
               )
             }
             rightActions={
-              <Stack>
+              <Stack gap="r16">
                 <Button
                   label={intl.formatMessage({ id: 'cancel' })}
                   type="button"

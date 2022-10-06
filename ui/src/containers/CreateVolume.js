@@ -14,6 +14,7 @@ import {
   Stack,
   Toggle,
   Text,
+  Icon,
 } from '@scality/core-ui';
 import { Button, Input as InputV2, Select } from '@scality/core-ui/dist/next';
 import isEmpty from 'lodash.isempty';
@@ -566,7 +567,7 @@ const CreateVolume = (props) => {
           <Form
             onSubmit={handleSubmit}
             rightActions={
-              <Stack>
+              <Stack gap="r16">
                 <Button
                   label={intl.formatMessage({ id: 'cancel' })}
                   type="button"
@@ -590,7 +591,7 @@ const CreateVolume = (props) => {
               isStorageClassExist ? null : (
                 <Banner
                   variant="warning"
-                  icon={<i className="fas fa-exclamation-triangle" />}
+                  icon={<Icon name="Exclamation-triangle" />}
                   title={intl.formatMessage({ id: 'no_storage_class_found' })}
                 >
                   {intl.formatMessage({ id: 'storage_class_is_required' })}
@@ -701,7 +702,7 @@ const CreateVolume = (props) => {
                             <LabelsName>{key}</LabelsName>
                             <LabelsValue>{values.labels[key]}</LabelsValue>
                             <Button
-                              icon={<i className="fas fa-lg fa-trash" />}
+                              icon={<Icon name="Delete" />}
                               type="button"
                               onClick={() => removeLabel(key)}
                             />
