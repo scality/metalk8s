@@ -26,7 +26,7 @@ When('I fill out the volume creation form using:', (dataTable) => {
     .closest('label')
     .invoke('attr', 'for')
     .then((htmlFor) => cy.get(`#${htmlFor}`).click());
-  cy.findAllByRole('option')[0].click();
+  cy.findAllByRole('option').then(options => options[0].click());
 
   cy.findByText(/storage class \*/i)
     .closest('label')
