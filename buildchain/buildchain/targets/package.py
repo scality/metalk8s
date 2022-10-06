@@ -31,7 +31,7 @@ import shutil
 import urllib.parse
 import urllib.request
 from pathlib import Path
-from typing import Any, Dict, List, Sequence
+from typing import Any, Dict, FrozenSet, List, Sequence
 
 from buildchain import constants
 from buildchain import types
@@ -152,6 +152,16 @@ class RPMPackage(Package):
         return self.rootdir / "{}.meta".format(self.name)
 
     @property
+    def requires_file(self) -> Path:
+        """requires list file path."""
+        return self.rootdir / "requires.txt"
+
+    @property
+    def requires(self) -> FrozenSet[str]:
+        """requires list frozen set"""
+        return frozenset(self.requires_file.read_text().splitlines())
+
+    @property
     def srpm(self) -> Path:
         """SRPM path."""
         fmt = "{pkg.name}-{pkg.version}-{pkg.build_id}.el{pkg._releasever}.src.rpm"
@@ -206,7 +216,7 @@ class RPMPackage(Package):
                 "actions": [buildmeta_callable],
                 "doc": "Generate {}.meta".format(self.name),
                 "title": utils.title_with_target1("RPMSPEC"),
-                "targets": [self.meta],
+                "targets": [self.meta, self.requires_file],
             }
         )
         task["file_dep"].extend([self.spec])

@@ -207,25 +207,36 @@ def _download_rpm_packages(releasever: str) -> types.TaskDict:
             target=Path("/repositories"),
         ),
     ]
-    dl_packages_callable = docker_command.DockerRun(
-        command=[
-            "/entrypoint.sh",
-            "download_packages",
-            *REDHAT_PACKAGES_TO_DOWNLOAD[releasever],
-        ],
-        builder=builder.RPM_BUILDER[releasever],
-        mounts=mounts,
-        environment={"RELEASEVER": releasever},
-        run_config=docker_command.default_run_config(constants.REDHAT_ENTRYPOINT),
-    )
+
+    def _dl_packages_callable() -> None:
+        # Compute list of all packages, using defined packages + requisites of
+        # packages we build
+        pkg_to_download = set(REDHAT_PACKAGES_TO_DOWNLOAD[releasever])
+        for pkg_versions in RPM_TO_BUILD.values():
+            for package in pkg_versions[releasever]:
+                pkg_to_download |= package.requires
+
+        docker_command.DockerRun(
+            command=[
+                "/entrypoint.sh",
+                "download_packages",
+                *pkg_to_download,
+            ],
+            builder=builder.RPM_BUILDER[releasever],
+            mounts=mounts,
+            environment={"RELEASEVER": releasever},
+            run_config=docker_command.default_run_config(constants.REDHAT_ENTRYPOINT),
+        )()
+
     return {
         "title": utils.title_with_target1("GET RPM PKGS"),
-        "actions": [dl_packages_callable],
+        "actions": [_dl_packages_callable],
         "targets": [constants.PKG_REDHAT_ROOT / releasever / "var"],
         "task_dep": [
-            "_package_mkdir_redhat_{0}_root".format(releasever),
-            "_package_mkdir_redhat_{0}_iso_root".format(releasever),
-            "_build_builder:{}".format(builder.RPM_BUILDER[releasever].name),
+            f"_package_mkdir_redhat_{releasever}_root",
+            f"_package_mkdir_redhat_{releasever}_iso_root",
+            f"_build_builder:{builder.RPM_BUILDER[releasever].name}",
+            f"_build_redhat_{releasever}_packages",
         ],
         "clean": [clean],
         "uptodate": [doit.tools.config_changed(_TO_DOWNLOAD_RPM_CONFIG[releasever])],

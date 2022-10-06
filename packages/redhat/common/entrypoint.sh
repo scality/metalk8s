@@ -19,6 +19,10 @@ buildmeta() {
        "rpmspec -P \"/home/build/rpmbuild/SPECS/${SPEC}\" \
 > \"/home/build/rpmbuild/${META}\""
     cp "/home/build/rpmbuild/${META}" "/rpmbuild/META/${META}"
+    su -l build -c \
+        "rpmspec -q --requires \"/home/build/rpmbuild/SPECS/${SPEC}\" \
+        > \"/home/build/rpmbuild/requires.txt\""
+    cp "/home/build/rpmbuild/requires.txt" "/rpmbuild/META/"
 }
 
 buildsrpm() {
