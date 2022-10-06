@@ -70,6 +70,7 @@
     "react-to-webcomponent": "^1.5.1",
     "react-virtualized": "^9.22.3",
     "styled-components": "^5.2.1",
+    "styled-system": "^5.1.5",
     "vega": "^5.17.3",
     "vega-embed": "^6.0.0",
     "vega-lite": "^5.0.0",
