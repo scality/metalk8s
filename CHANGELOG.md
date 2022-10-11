@@ -6,6 +6,10 @@
 - Add `metalk8s-operator` to manage Workload Plane Ingress virtual IPs
   (PR[#3864](https://github.com/scality/metalk8s/pull/3864))
 
+- Add default `topology.kubernetes.io/region` and `topology.kubernetes.io/zone`
+  topology labels on nodes
+  (PR[#3897](https://github.com/scality/metalk8s/pull/3897))
+
 - Add support for a `metalk8s.scality.com/force-lvcreate` annotation on `Volume`
   objects of type `LVMLogicalVolume` to force the creation of their LV (use with
   caution) (PR[#3877](https://github.com/scality/metalk8s/pull/3877))

@@ -1,4 +1,5 @@
 {%- from "metalk8s/map.jinja" import defaults with context %}
+{%- from "metalk8s/map.jinja" import kubernetes with context %}
 {%- from "metalk8s/map.jinja" import networks with context %}
 {%- from "metalk8s/map.jinja" import repo with context %}
 
@@ -119,6 +120,13 @@ Refresh the mine:
   salt.function:
     - name: mine.update
     - tgt: '*'
+
+Ensure node default labels exist:
+  metalk8s_kubernetes.labels_exist:
+    - name: {{ node_name }}
+    - apiVersion: v1
+    - kind: Node
+    - labels: {{ kubernetes.nodes.default_labels | tojson }}
 
 Cordon the node:
   metalk8s_cordon.node_cordoned:

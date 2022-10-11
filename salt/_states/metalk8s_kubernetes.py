@@ -219,3 +219,53 @@ def object_updated(name, manifest=None, **kwargs):
     ret["comment"] = "The object was updated"
 
     return ret
+
+
+def labels_exist(name, labels, **kwargs):
+    """Ensure that labels exist.
+
+    NOTE: This function do not update the labels if they
+    already exist
+
+    Arguments:
+        name (str): Name of the object
+        labels (dict): Labels that should exist
+    """
+    ret = {"name": name, "changes": {}, "result": True, "comment": ""}
+
+    obj = __salt__["metalk8s_kubernetes.get_object"](
+        name=name, saltenv=__env__, **kwargs
+    )
+
+    if not obj:
+        ret["result"] = False
+        ret["comment"] = f"The object {name} does not exist"
+        return ret
+
+    labels_to_add = {
+        key: value
+        for key, value in labels.items()
+        if key not in obj["metadata"]["labels"]
+    }
+
+    if not labels_to_add:
+        ret["comment"] = f"All labels already exist on object {name}"
+        return ret
+
+    if __opts__["test"]:
+        ret["result"] = None
+        ret[
+            "comment"
+        ] = f"Labels {', '.join(labels_to_add)} will be added to object {name}"
+        return ret
+
+    __salt__["metalk8s_kubernetes.update_object"](
+        name=name,
+        saltenv=__env__,
+        patch={"metadata": {"labels": labels_to_add}},
+        **kwargs,
+    )
+
+    ret["comment"] = f"Object {name} labels has been added"
+    ret["changes"] = {"labels added": labels_to_add}
+    return ret

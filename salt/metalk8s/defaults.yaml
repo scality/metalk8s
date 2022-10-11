@@ -12,6 +12,11 @@ metalk8s:
 kubernetes:
   cluster: kubernetes
 
+  nodes:
+    default_labels:
+      topology.kubernetes.io/region: default
+      topology.kubernetes.io/zone: default
+
 kubeadm_preflight:
   mandatory:
     packages:

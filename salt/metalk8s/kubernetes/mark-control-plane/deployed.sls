@@ -1,4 +1,5 @@
 {%- from "metalk8s/map.jinja" import kubelet with context %}
+{%- from "metalk8s/map.jinja" import kubernetes with context %}
 
 {%- set node_name = pillar.bootstrap_id %}
 {%- set cri_socket = kubelet.service.options['container-runtime-endpoint'] %}
@@ -18,5 +19,14 @@ Mark node {{ node_name }} as bootstrap:
     - defaults:
         node_name: {{ node_name }}
         cri_socket: {{ cri_socket }}
+    - require:
+      - test: Ensure node {{ node_name }} exists
+
+Ensure node {{ node_name }} default labels exist:
+  metalk8s_kubernetes.labels_exist:
+    - name: {{ node_name }}
+    - apiVersion: v1
+    - kind: Node
+    - labels: {{ kubernetes.nodes.default_labels | tojson }}
     - require:
       - test: Ensure node {{ node_name }} exists
