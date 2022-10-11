@@ -73,6 +73,12 @@
   image to `alpine:3.16.2`
   (PR[#3888](https://github.com/scality/metalk8s/pull/3888))
 
+### Bug fixes
+
+- Fix an issue in the package availability check from bootstrap script
+  that make it not checking anything
+  (PR[#3898](https://github.com/scality/metalk8s/pull/3898))
+
 ## Release 123.0.5 (in development)
 
 ## Release 123.0.4
