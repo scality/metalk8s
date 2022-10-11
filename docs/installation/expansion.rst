@@ -135,8 +135,6 @@ following the template below:
        metalk8s.scality.com/ssh-user: 'root'
      labels:
        metalk8s.scality.com/version: '|version|'
-       topology.kubernetes.io/region: 'default'
-       topology.kubernetes.io/zone: 'default'
        <role labels>
    spec:
      taints: <taints>

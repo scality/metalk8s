@@ -356,8 +356,6 @@ export function* createNode({ payload }) {
       name: payload.name,
       labels: {
         'metalk8s.scality.com/version': clusterVersion,
-        'topology.kubernetes.io/region': 'default',
-        'topology.kubernetes.io/zone': 'default',
       },
       annotations: {
         'metalk8s.scality.com/ssh-user': payload.ssh_user,
