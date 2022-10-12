@@ -120,6 +120,11 @@ export function useAuth(): {
     return { userData: undefined };
   }
 
+  //Force logout when token is expired or we are missing expires_at claims
+  if(auth.userData.expired || !auth.userData.expires_at) {
+    auth.userManager.revokeAccessToken();
+  }
+
   return {
     userData: {
       token: auth.userData.id_token,
