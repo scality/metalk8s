@@ -397,7 +397,6 @@ PACKAGES: Dict[str, Any] = {
                 release="{0}.el7".format(CONTAINERD_RELEASE),
             ),
             PackageVersion(name="container-selinux"),  # TODO #1710
-            PackageVersion(name="sos", version="< 4.0"),
             PackageVersion(
                 name="metalk8s-sosreport",
                 version=SHORT_VERSION,
@@ -413,7 +412,6 @@ PACKAGES: Dict[str, Any] = {
             ),
             PackageVersion(name="container-selinux"),
             PackageVersion(name="iptables-ebtables", override="ebtables"),
-            PackageVersion(name="sos", version=">= 4.0"),
             PackageVersion(
                 name="metalk8s-sosreport",
                 version=SHORT_VERSION,
