@@ -79,6 +79,10 @@
   that make it not checking anything
   (PR[#3898](https://github.com/scality/metalk8s/pull/3898))
 
+- No longer include unnecessary packages in the MetalK8s internal
+  repositories
+  (PR[#3898](https://github.com/scality/metalk8s/pull/3898))
+
 ## Release 123.0.5 (in development)
 
 ## Release 123.0.4

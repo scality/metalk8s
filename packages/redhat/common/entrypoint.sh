@@ -103,36 +103,9 @@ in_dependencies() {
     shift
 
     for element; do
-        [[ $element =~ ^"$search"(-[0-9]+(\.[0-9]+)+)?$ ]] && break
+        [[ $element =~ ^"$search"-[0-9]+(\.[0-9]+)+$ ]] && return 0
     done
-}
-
-join_array() {
-    IFS=$1
-    shift
-    echo "$*"
-}
-
-resolve_dependencies() {
-    local -ra packages=("$@")
-    local -a dependencies=("$@")
-
-    for package in "${packages[@]}"; do
-        while read -r dependency repo relpath; do
-            if [[ $repo =~ $ENABLED_REPOS_RE ]] && \
-               # We exclude all package from "base" directory of Saltstack since those
-               # packages are available in "base" CentOS/RHEL 7 repositories
-               { [[ $repo != "saltstack" ]] || [[ $relpath != base/* ]]; } && \
-               ! in_dependencies "$dependency" "${dependencies[@]}"; then
-                dependencies+=("$dependency")
-            fi
-        done < <(
-            repoquery --requires --resolve --recursive \
-                      --queryformat='%{name} %{repoid} %{relativepath}' "$package"
-        )
-    done
-
-    echo "${dependencies[@]}"
+    return 1
 }
 
 download_repository_gpg_keys() {
@@ -149,41 +122,92 @@ download_repository_gpg_keys() {
     fi
 }
 
+add_dependencies(){
+    while read -r name dependency repo relpath; do
+        case $repo in
+            epel)
+                if [ ${#EPEL_DEPS[@]} -eq 0 ] || ! in_dependencies "$name" "${EPEL_DEPS[@]}"; then
+                    EPEL_DEPS+=("$dependency")
+                fi
+                ;;
+            kubernetes)
+                if [ ${#KUBERNETES_DEPS[@]} -eq 0 ] || ! in_dependencies "$name" "${KUBERNETES_DEPS[@]}"; then
+                    KUBERNETES_DEPS+=("$dependency")
+                fi
+                ;;
+            saltstack)
+                # We exclude all package from "base" directory of Saltstack since those
+                # packages are available in "base" CentOS/RHEL 7 repositories
+                if [[ $relpath != base/* ]] && \
+                   ([ ${#SALT_DEPS[@]} -eq 0 ] || ! in_dependencies "$name" "${SALT_DEPS[@]}"); then
+                    SALT_DEPS+=("$dependency")
+                fi
+                ;;
+            *)
+                # Not a package we want to take care of
+                ;;
+        esac
+    done
+}
+
 download_packages() {
     set -x
-    declare -g ENABLED_REPOS_RE
-    local enabled_repos_yum
+    declare -ga EPEL_DEPS=() KUBERNETES_DEPS=() SALT_DEPS=()
     local -r releasever=${RELEASEVER:-7}
     local -a packages=("$@")
-    local -a packages_to_download
+    local query_format query_opts repo_dir
+    local -a dependencies=()
 
-    ENABLED_REPOS_RE="^($(join_array '|' "${ENABLED_REPOS[@]}"))$"
-    enabled_repos_yum=$(join_array ',' "${ENABLED_REPOS[@]}")
+    query_format='%{name} %{name}-%{version} %{repoid} %{relativepath}'
+    query_opts=""
+    if [[ "$releasever" == "8" ]]; then
+        # On new repoquery version, if we do not specify the `latest-limit`
+        # it will return all packages that match the query
+        # We only want to download the latest one
+        query_opts="--latest-limit=1"
+    fi
+
+    for package in "${packages[@]}"; do
+        # Check from which repo the package come from
+        # NOTE: We keep the original "package" name here so that we do not enforce
+        # version if not needed
+        # (a package may require another version of this one)
+        add_dependencies < <(
+            repoquery  $query_opts --queryformat="%{name} $package %{repoid} %{relativepath}" "$package"
+        )
+    done
+    add_dependencies < <(
+        repoquery --requires --resolve --recursive $query_opts \
+            --queryformat="$query_format" "${packages[@]}"
+    )
 
     get_rpm_gpg_keys
 
-    read -ra packages_to_download < <(resolve_dependencies "${packages[@]}")
+    for repo in "${ENABLED_REPOS[@]}"; do
+        repo_dir=/repositories/metalk8s-$repo-el$releasever
+        mkdir -p "$repo_dir"
+        pushd "$repo_dir" > /dev/null
+        download_repository_gpg_keys "$repo"
 
-    local current_repo repo_dir gpg_key query_format
+        case $repo in
+            epel)
+                dependencies=("${EPEL_DEPS[@]}")
+                ;;
+            kubernetes)
+                dependencies=("${KUBERNETES_DEPS[@]}")
+                ;;
+            saltstack)
+                dependencies=("${SALT_DEPS[@]}")
+                ;;
+            *)
+                echo "Error got an unknown repo $repo" >&2
+                exit 1
+                ;;
+        esac
 
-    query_format='%{repoid} %{name}-%{epoch}:%{version}-%{release}.%{arch}'
-
-    while read -r repo_name package; do
-        if [[ $repo_name != "${current_repo:-}" ]]; then
-            current_repo=$repo_name
-            repo_dir=/repositories/metalk8s-$repo_name-el$releasever
-            mkdir -p "$repo_dir"
-            pushd "$repo_dir" > /dev/null
-            download_repository_gpg_keys "$repo_name"
-        fi
         yumdownloader --disablerepo="*" \
-                      --enablerepo="$repo_name" "$package"
-    done < <(
-        repoquery --queryformat="$query_format" \
-                  --disablerepo="*" \
-                  --enablerepo="$enabled_repos_yum" \
-                  "${packages_to_download[@]}" | grep -vE '\.src$' | sort
-    )
+                      --enablerepo="$repo" "${dependencies[@]}"
+    done
 
     chown -R "$TARGET_UID:$TARGET_GID" "/repositories"
 }
