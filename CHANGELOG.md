@@ -1,5 +1,5 @@
 # CHANGELOG
-## Release 124.0.0 (in development)
+## Release 124.0.0
 
 ### Additions
 
