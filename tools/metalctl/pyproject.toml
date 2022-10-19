@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "metalctl"
+version = "124.0.0"
+description = "MetalK8s command line tool"
+authors = ["MetalK8s <squad-metalk8s@scality.com>"]
+license = "Apache-2.0"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+click = "~7"
+packaging = "^21.3"
+coloredlogs = "^15.0.1"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

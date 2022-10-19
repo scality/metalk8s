@@ -1,0 +1,5 @@
+click @ file:///home/naas/.cache/pypoetry/artifacts/f6/9e/81/c319b417053621afaecb63253ae721cd637b4b8c3cd68c634b71426041/click-7.1.2-py2.py3-none-any.whl
+coloredlogs @ file:///home/naas/.cache/pypoetry/artifacts/67/9f/36/48c8087371d05645e6c78750f4db2ad1f489f4235c7e5de1fbc23815da/coloredlogs-15.0.1-py2.py3-none-any.whl
+humanfriendly @ file:///home/naas/.cache/pypoetry/artifacts/cf/a8/b3/050c2a069223996dc8de0ffb425ed438bf3a57e2ae6801bb7e1437535b/humanfriendly-10.0-py2.py3-none-any.whl
+packaging @ file:///home/naas/.cache/pypoetry/artifacts/47/4b/31/35b2c536129e952a0e1ad0b4192021852fe6c09caf2ec4b8e72bdfa8a4/packaging-21.3-py3-none-any.whl
+pyparsing @ file:///home/naas/.cache/pypoetry/artifacts/f8/5b/8a/21b0c4379d5e6d2b0b88468a442eeeb03d080388def343224a8a0528ba/pyparsing-3.0.7-py3-none-any.whl
