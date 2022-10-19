@@ -4,6 +4,7 @@ import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
 import { useEffect, useCallback } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import type { Node } from 'react';
+import { Layout2 } from '@scality/core-ui';
 import { normalizePath } from './auth/permissionUtils';
 import { useTheme } from 'styled-components';
 import { useLanguage } from './lang';
@@ -316,13 +317,18 @@ export const Navbar = ({
   return (
     <>
       <GlobalStyle />
-      <CoreUINavbar
-        logo={<Logo src={logo} alt="logo" />}
-        rightActions={rightActions}
-        tabs={tabs}
-        role="navigation"
-      />
-      {children}
+      <Layout2
+        headerNavigation={
+          <CoreUINavbar
+            logo={<Logo src={logo} alt="logo" />}
+            rightActions={rightActions}
+            tabs={tabs}
+            role="navigation"
+          />
+        }
+      >
+        {children}
+      </Layout2>
     </>
   );
 };
