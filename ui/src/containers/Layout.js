@@ -4,11 +4,12 @@ import { useDispatch } from 'react-redux';
 import { matchPath, RouteProps, Route, Redirect } from 'react-router';
 import { useHistory, useLocation, Switch } from 'react-router-dom';
 import {
-  Layout as CoreUILayout,
   Notifications,
   Loader,
   ErrorPage404,
   Icon,
+  AppContainer,
+  Sidebar,
 } from '@scality/core-ui';
 import { useIntl } from 'react-intl';
 import { toggleSideBarAction } from '../ducks/app/layout';
@@ -17,7 +18,6 @@ import { setIntlAction } from '../ducks/config';
 import CreateVolume from './CreateVolume';
 import { useTypedSelector } from '../hooks';
 import { Suspense } from 'react';
-import styled from 'styled-components';
 
 const NodeCreateForm = React.lazy(() => import('./NodeCreateForm'));
 const NodePage = React.lazy(() => import('./NodePage'));
@@ -26,13 +26,6 @@ const PrivateRoute = React.lazy(() => import('./PrivateRoute'));
 const VolumePage = React.lazy(() => import('./VolumePage'));
 const DashboardPage = React.lazy(() => import('./DashboardPage'));
 const AlertPage = React.lazy(() => import('./AlertPage'));
-
-//Temporay patch waiting for the new layout component
-const PatchedCoreUiLayout = styled(CoreUILayout)`
-  .main {
-    height: calc(100vh - 3.5rem);
-  }
-`
 
 const Layout = () => {
   const sidebar = useTypedSelector((state) => state.app.layout.sidebar);
@@ -129,14 +122,14 @@ const Layout = () => {
   };
 
   return (
-    <PatchedCoreUiLayout
-      sidebar={
+    <AppContainer
+      sidebarNavigation={
         isUserLoaded &&
         !isAlertsPage &&
         !isCreateNodePage &&
-        !isCreateVolumePage
-          ? sidebarConfig
-          : undefined
+        !isCreateVolumePage ? (
+          <Sidebar {...sidebarConfig} />
+        ) : undefined
       }
     >
       <Notifications
@@ -172,7 +165,7 @@ const Layout = () => {
           />
         </Switch>
       </Suspense>
-    </PatchedCoreUiLayout>
+    </AppContainer>
   );
 };
 

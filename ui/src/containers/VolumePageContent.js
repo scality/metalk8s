@@ -1,9 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { Fragment, useState, useEffect } from 'react';
-import styled from 'styled-components';
 import { useHistory, useLocation, useRouteMatch } from 'react-router';
 import { NoResult } from '@scality/core-ui/dist/components/tablev2/Tablestyle';
-import { EmptyState, TextBadge } from '@scality/core-ui';
+import { EmptyState, TextBadge, TwoPanelLayout } from '@scality/core-ui';
 import VolumeListTable from '../components/VolumeListTable';
 import VolumeOverviewTab from '../components/VolumeOverviewTab';
 import AlertsTab from '../components/AlertsTab';
@@ -25,13 +24,6 @@ import {
 import { useIntl } from 'react-intl';
 import { usePrevious } from '../services/utils';
 import { Tabs } from '@scality/core-ui/dist/next';
-
-const VolumePageContentContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  height: 100%;
-  width: 100%;
-`;
 
 // <VolumePageContent> component extracts volume name from URL and holds the volume-specific data.
 // The three components in RightSidePanel (<VolumeOverviewTab> / <AlertsTab> / <MetricGraphCard>) are dumb components,
@@ -118,162 +110,164 @@ const VolumePageContent = (props) => {
       setIsFirstLoadingDone(true);
   }, [previousLoading, loading, isFirstLoadingDone]);
 
-  return (
-    <VolumePageContentContainer>
-      {!volumeListData.length && isFirstLoadingDone ? (
-        <EmptyState
-          label={'Volume'}
-          link="/volumes/createVolume"
-          icon="Node-ptf"
-          history={history}
-        />
+  if (!volumeListData.length && isFirstLoadingDone) {
+    return (
+      <EmptyState
+        label={'Volume'}
+        link="/volumes/createVolume"
+        icon="Node-ptf"
+        history={history}
+      />
+    );
+  }
+
+  const rightSidePanel = (
+    <RightSidePanel>
+      {currentVolumeName && volume ? (
+        <Tabs>
+          <Tabs.Tab
+            path={`${match.url}/overview`}
+            label={intl.formatMessage({ id: 'overview' })}
+            data-cy="overview_tab_volume_page"
+          >
+            <VolumeOverviewTab
+              name={currentVolumeName}
+              nodeName={volume?.spec?.nodeName}
+              status={volumeStatus ?? intl.formatMessage({ id: 'unknown' })}
+              storageClassName={volume?.spec?.storageClassName}
+              creationTimestamp={volume?.metadata?.creationTimestamp}
+              volumeType={
+                volume.spec &&
+                Object.prototype.hasOwnProperty.call(
+                  volume.spec,
+                  'rawBlockDevice',
+                )
+                  ? RAW_BLOCK_DEVICE
+                  : volume.spec &&
+                    Object.prototype.hasOwnProperty.call(
+                      volume.spec,
+                      'lvmLogicalVolume',
+                    )
+                  ? LVM_LOGICAL_VOLUME
+                  : SPARSE_LOOP_DEVICE
+              }
+              usedPodName={
+                UsedPod ? UsedPod?.name : intl.formatMessage({ id: 'not_used' })
+              }
+              devicePath={
+                volume?.spec?.rawBlockDevice?.devicePath ??
+                intl.formatMessage({ id: 'not_applicable' })
+              }
+              vgName={
+                volume?.spec?.lvmLogicalVolume?.vgName ??
+                intl.formatMessage({ id: 'not_applicable' })
+              }
+              volumeUsagePercentage={currentVolume?.usage}
+              volumeUsageBytes={currentVolume?.usageRawData ?? 0}
+              storageCapacity={
+                volumeListData?.find((vol) => vol.name === currentVolumeName)
+                  ?.storageCapacity
+              }
+              health={
+                volumeListData?.find((vol) => vol.name === currentVolumeName)
+                  ?.health
+              }
+              condition={currentVolume?.status}
+              // the delete button inside the volume detail card should know that which volume is the first one
+              volumeListData={volumeListData}
+              pVList={pVList}
+              alertlist={alertlist}
+            />
+          </Tabs.Tab>
+          <Tabs.Tab
+            path={`${match.url}/alerts`}
+            label={intl.formatMessage({ id: 'alerts' })}
+            textBadge={
+              alertlist && alertlist.length ? (
+                <TextBadge
+                  variant={
+                    criticalAlerts.length > 0
+                      ? 'statusCritical'
+                      : 'statusWarning'
+                  }
+                  text={alertlist.length}
+                />
+              ) : null
+            }
+            data-cy="alerts_tab_volume_page"
+          >
+            <AlertsTab
+              alerts={alertlist}
+              children={(Rows) => {
+                if (!PVCName) {
+                  return (
+                    <NoResult>
+                      {intl.formatMessage({ id: 'volume_is_not_bound' })}
+                    </NoResult>
+                  );
+                } else if (PVCName && alertlist?.length === 0) {
+                  return (
+                    <NoResult>
+                      {intl.formatMessage({ id: 'no_active_alerts' })}
+                    </NoResult>
+                  );
+                }
+                return <>{Rows}</>;
+              }}
+            />
+          </Tabs.Tab>
+          <Tabs.Tab
+            path={`${match.url}/metrics`}
+            label={intl.formatMessage({ id: 'metrics' })}
+            data-cy="metrics_tab_volume_page"
+          >
+            <VolumeMetricsTab
+              volumeName={currentVolumeName}
+              deviceName={deviceName}
+              instanceIp={instanceIp}
+              // the volume condition compute base on the `status` and `bound/unbound`
+              volumeCondition={currentVolume?.status}
+              volumePVCName={PVCName}
+              volumeNamespace={PVCNamespace}
+            />
+          </Tabs.Tab>
+          <Tabs.Tab
+            label={intl.formatMessage({ id: 'details' })}
+            path={`${match.url}/details`}
+            data-cy="details_tab_volume_page"
+          >
+            <VolumeDetailsTab currentVolumeObject={currentVolumeObject} />
+          </Tabs.Tab>
+        </Tabs>
       ) : (
-        <Fragment>
+        <NoInstanceSelectedContainer>
+          <NoInstanceSelected>
+            {currentVolumeName
+              ? `Volume ${currentVolumeName} ${intl.formatMessage({
+                  id: 'not_found',
+                })}`
+              : intl.formatMessage({ id: 'no_volume_selected' })}
+          </NoInstanceSelected>
+        </NoInstanceSelectedContainer>
+      )}
+    </RightSidePanel>
+  );
+
+  return (
+    <TwoPanelLayout
+      panelsRatio="50-50"
+      leftPanel={{
+        children: (
           <LeftSideInstanceList>
             <VolumeListTable
               volumeListData={volumeListData}
               volumeName={currentVolumeName}
             ></VolumeListTable>
           </LeftSideInstanceList>
-
-          {currentVolumeName && volume ? (
-            <RightSidePanel>
-              <Tabs>
-                <Tabs.Tab
-                  path={`${match.url}/overview`}
-                  label={intl.formatMessage({ id: 'overview' })}
-                  data-cy="overview_tab_volume_page"
-                >
-                  <VolumeOverviewTab
-                    name={currentVolumeName}
-                    nodeName={volume?.spec?.nodeName}
-                    status={
-                      volumeStatus ?? intl.formatMessage({ id: 'unknown' })
-                    }
-                    storageClassName={volume?.spec?.storageClassName}
-                    creationTimestamp={volume?.metadata?.creationTimestamp}
-                    volumeType={
-                      volume.spec &&
-                      Object.prototype.hasOwnProperty.call(
-                        volume.spec,
-                        'rawBlockDevice',
-                      )
-                        ? RAW_BLOCK_DEVICE
-                        : volume.spec &&
-                          Object.prototype.hasOwnProperty.call(
-                            volume.spec,
-                            'lvmLogicalVolume',
-                          )
-                        ? LVM_LOGICAL_VOLUME
-                        : SPARSE_LOOP_DEVICE
-                    }
-                    usedPodName={
-                      UsedPod
-                        ? UsedPod?.name
-                        : intl.formatMessage({ id: 'not_used' })
-                    }
-                    devicePath={
-                      volume?.spec?.rawBlockDevice?.devicePath ??
-                      intl.formatMessage({ id: 'not_applicable' })
-                    }
-                    vgName={
-                      volume?.spec?.lvmLogicalVolume?.vgName ??
-                      intl.formatMessage({ id: 'not_applicable' })
-                    }
-                    volumeUsagePercentage={currentVolume?.usage}
-                    volumeUsageBytes={currentVolume?.usageRawData ?? 0}
-                    storageCapacity={
-                      volumeListData?.find(
-                        (vol) => vol.name === currentVolumeName,
-                      )?.storageCapacity
-                    }
-                    health={
-                      volumeListData?.find(
-                        (vol) => vol.name === currentVolumeName,
-                      )?.health
-                    }
-                    condition={currentVolume?.status}
-                    // the delete button inside the volume detail card should know that which volume is the first one
-                    volumeListData={volumeListData}
-                    pVList={pVList}
-                    alertlist={alertlist}
-                  />
-                </Tabs.Tab>
-                <Tabs.Tab
-                  path={`${match.url}/alerts`}
-                  label={intl.formatMessage({ id: 'alerts' })}
-                  textBadge={
-                    alertlist && alertlist.length ? (
-                      <TextBadge
-                        variant={
-                          criticalAlerts.length > 0
-                            ? 'statusCritical'
-                            : 'statusWarning'
-                        }
-                        text={alertlist.length}
-                      />
-                    ) : null
-                  }
-                  data-cy="alerts_tab_volume_page"
-                >
-                  <AlertsTab
-                    alerts={alertlist}
-                    children={(Rows) => {
-                      if (!PVCName) {
-                        return (
-                          <NoResult>
-                            {intl.formatMessage({ id: 'volume_is_not_bound' })}
-                          </NoResult>
-                        );
-                      } else if (PVCName && alertlist?.length === 0) {
-                        return (
-                          <NoResult>
-                            {intl.formatMessage({ id: 'no_active_alerts' })}
-                          </NoResult>
-                        );
-                      }
-                      return <>{Rows}</>;
-                    }}
-                  />
-                </Tabs.Tab>
-                <Tabs.Tab
-                  path={`${match.url}/metrics`}
-                  label={intl.formatMessage({ id: 'metrics' })}
-                  data-cy="metrics_tab_volume_page"
-                >
-                  <VolumeMetricsTab
-                    volumeName={currentVolumeName}
-                    deviceName={deviceName}
-                    instanceIp={instanceIp}
-                    // the volume condition compute base on the `status` and `bound/unbound`
-                    volumeCondition={currentVolume?.status}
-                    volumePVCName={PVCName}
-                    volumeNamespace={PVCNamespace}
-                  />
-                </Tabs.Tab>
-                <Tabs.Tab
-                  label={intl.formatMessage({ id: 'details' })}
-                  path={`${match.url}/details`}
-                  data-cy="details_tab_volume_page"
-                >
-                  <VolumeDetailsTab currentVolumeObject={currentVolumeObject} />
-                </Tabs.Tab>
-              </Tabs>
-            </RightSidePanel>
-          ) : (
-            <NoInstanceSelectedContainer>
-              <NoInstanceSelected>
-                {currentVolumeName
-                  ? `Volume ${currentVolumeName} ${intl.formatMessage({
-                      id: 'not_found',
-                    })}`
-                  : intl.formatMessage({ id: 'no_volume_selected' })}
-              </NoInstanceSelected>
-            </NoInstanceSelectedContainer>
-          )}
-        </Fragment>
-      )}
-    </VolumePageContentContainer>
+        ),
+      }}
+      rightPanel={{ children: rightSidePanel }}
+    />
   );
 };
 

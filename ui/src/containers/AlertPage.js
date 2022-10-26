@@ -1,7 +1,12 @@
 //@flow
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
-import { StatusWrapper, ConstrainedText, TextBadge } from '@scality/core-ui';
+import {
+  StatusWrapper,
+  ConstrainedText,
+  TextBadge,
+  AppContainer,
+} from '@scality/core-ui';
 import { Table } from '@scality/core-ui/dist/next';
 import { padding, fontSize, spacing } from '@scality/core-ui/dist/style/theme';
 import { useAlerts } from './AlertProvider';
@@ -25,8 +30,6 @@ const AlertPageHeaderContainer = styled.div`
   display: flex;
   align-items: center;
   background: ${(props) => props.theme.backgroundLevel2};
-  margin: 36px 0 ${padding.small};
-  padding: ${padding.base} 0 ${padding.base} ${padding.larger};
 `;
 
 const Title = styled.div`
@@ -163,7 +166,6 @@ export const TableHeader = styled.th`
 
 const AlertContent = styled.div`
   color: ${(props) => props.theme.textPrimary};
-  padding: 1rem;
   font-family: 'Lato';
   font-size: ${fontSize.base};
   background-color: ${(props) => props.theme.backgroundLevel3};
@@ -282,14 +284,18 @@ export default function AlertPage() {
 
   return (
     <AlertPageContainer>
-      <AlertPageHeader
-        activeAlerts={leafAlerts.length}
-        critical={criticalAlerts.length}
-        warning={wariningAlerts.length}
-      />
-      <AlertContent>
-        <ActiveAlertTab data={leafAlerts} columns={columns} />
-      </AlertContent>
+      <AppContainer.OverallSummary>
+        <AlertPageHeader
+          activeAlerts={leafAlerts.length}
+          critical={criticalAlerts.length}
+          warning={wariningAlerts.length}
+        />
+      </AppContainer.OverallSummary>
+      <AppContainer.MainContent hasPadding style={{ marginTop: spacing.sp4 }}>
+        <AlertContent>
+          <ActiveAlertTab data={leafAlerts} columns={columns} />
+        </AlertContent>
+      </AppContainer.MainContent>
     </AlertPageContainer>
   );
 }

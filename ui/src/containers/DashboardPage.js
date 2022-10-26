@@ -9,13 +9,14 @@ import { padding, spacing } from '@scality/core-ui/dist/style/theme';
 import { SyncedCursorCharts } from '@scality/core-ui/dist/components/vegachartv2/SyncedCursorCharts';
 import TimespanSelector from './TimespanSelector';
 import DashboardNetwork from '../components/DashboardNetwork';
+import { AppContainer } from '@scality/core-ui';
 
 const DashboardGrid = styled.div`
   display: grid;
   gap: 8px;
   grid-template:
-    'header header header header header' 40px
-    'health     health  health  health  health' 100px
+    'header header header header header' 3rem
+    'health     health  health  health  health' 6rem
     'inventory  network network metrics metrics' auto
     / 1fr 1fr 1fr 1fr 1fr;
 
@@ -35,6 +36,7 @@ const DashboardGrid = styled.div`
   .health {
     grid-area: health;
     background-color: ${(props) => props.theme.backgroundLevel2};
+    padding: 0;
   }
   .inventory {
     grid-area: inventory;
@@ -88,7 +90,9 @@ const DashboardPage = () => {
   return (
     <DashboardGrid>
       <div className="header">
-        <TimespanSelector />
+        <AppContainer.ContextContainer>
+          <TimespanSelector />
+        </AppContainer.ContextContainer>
       </div>
       <SyncedCursorCharts>
         <div className="health">

@@ -21,19 +21,13 @@ export const CenteredPageContainer = styled.div`
 `;
 
 export const LeftSideInstanceList = styled.div`
-  flex-direction: column;
-  min-height: 696px;
-  width: 49%;
-  margin-bottom: 20px;
-  min-width: 49%;
+  flex: 1;
   background-color: ${(props) => props.theme.backgroundLevel2};
 `;
 
 export const RightSidePanel = styled.div`
-  flex-direction: column;
-  width: 51%;
-  margin: 0 ${padding.small} ${padding.small} 1px;
-  min-width: 51%;
+  flex: 1;
+  min-width: 0;
 `;
 
 export const NoInstanceSelectedContainer = styled.div`

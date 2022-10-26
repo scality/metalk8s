@@ -15,7 +15,7 @@ import {
   RightSidePanel,
 } from '../components/style/CommonLayoutStyle';
 import { usePrevious } from '../services/utils';
-import { EmptyState } from '@scality/core-ui';
+import { EmptyState, TwoPanelLayout } from '@scality/core-ui';
 
 // <NodePageContent> get the current selected node and pass it to <NodeListTable> and <NodePageRSP>
 const NodePageContent = (props) => {
@@ -42,20 +42,29 @@ const NodePageContent = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(nodeTableData), defaultSelectNodeName]);
 
+  if (!nodeTableData.length && isFirstLoadingDone) {
+    return (
+      <EmptyState
+        label={'Node'}
+        link="/nodes/create"
+        icon="Node-backend"
+        history={history}
+      />
+    );
+  }
+
   return (
-    <PageContentContainer>
-      {!nodeTableData.length && isFirstLoadingDone ? (
-        <EmptyState
-          label={'Node'}
-          link="/nodes/create"
-          icon="Node-backend"
-          history={history}
-        />
-      ) : (
-        <Fragment>
+    <TwoPanelLayout
+      panelsRatio="50-50"
+      leftPanel={{
+        children: (
           <LeftSideInstanceList>
             <NodeListTable nodeTableData={nodeTableData} />
           </LeftSideInstanceList>
+        ),
+      }}
+      rightPanel={{
+        children: (
           <RightSidePanel>
             <Switch>
               {/* Auto select the first node in the list */}
@@ -78,9 +87,9 @@ const NodePageContent = (props) => {
               ></Route>
             </Switch>
           </RightSidePanel>
-        </Fragment>
-      )}
-    </PageContentContainer>
+        ),
+      }}
+    />
   );
 };
 
