@@ -22,7 +22,7 @@ const alertsWarning = [
   },
 ];
 const noAlerts = [];
-jest.mock('../services/platformlibrary/k8s.js', () => ({
+jest.mock('../services/platformlibrary/k8s.ts', () => ({
   __esModule: true,
   // Allows for the "default" import to work in the Mock injection
   default: ({ children }) => <>{children}</>,
@@ -38,9 +38,7 @@ jest.mock('../containers/AlertProvider', () => ({
     getVolumesAlertSelectors: () => {},
   }),
   highestAlertToStatus: (alerts?: Alert[]): string => {
-    return (
-      (alerts?.[0] && ((alerts[0].severity as any) as string)) || 'healthy'
-    );
+    return (alerts?.[0] && (alerts[0].severity as any as string)) || 'healthy';
   },
 }));
 describe('the dashboard inventory panel', () => {

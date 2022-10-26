@@ -1,4 +1,3 @@
-import { $PropertyType } from 'utility-types';
 import { createSelector } from 'reselect';
 import {
   NODE_ALERTS_GROUP,
@@ -19,16 +18,19 @@ import type { NodesState } from '../ducks/app/nodes';
 import type { Brand } from '../services/api';
 import type { Alert } from '../services/alertUtils';
 import { getHealthStatus, filterAlerts } from '../services/alertUtils';
+
 const METALK8S_CONTROL_PLANE_IP = 'metalk8s:control_plane_ip';
 const METALK8S_WORKLOAD_PLANE_IP = 'metalk8s:workload_plane_ip';
 const IP_INTERFACES = 'ip_interfaces';
+
 // Note that: Reverse the selectors and result in order to type unknown number of selectors.
 export const createTypedSelector: <T>(
   selectorsResult: (...result: any) => T,
   ...selectors: ((state: RootState) => any)[]
 ) => T = (selectorsResult, ...selectors) =>
   createSelector(...selectors, selectorsResult);
-type NodetableList = {
+
+type NodeTable = {
   name: {
     name: string;
     controlPlaneIP: string;
@@ -53,7 +55,9 @@ type NodetableList = {
     warningAlertsCounter: number;
   };
   roles: string;
-}[];
+};
+
+type NodetableList = NodeTable[];
 
 const IPsInfoSelector = (state) => state.app.nodes.IPsInfo;
 
@@ -62,12 +66,13 @@ const nodesSelector = (state) => state.app.nodes.list;
 // Return the data used by the Node list table
 export const getNodeListData = (alerts: Array<Alert>, brand: Brand) =>
   createTypedSelector<NodetableList>(
-    (nodes: $PropertyType<NodesState, 'list'>, nodeIPsInfo: NodesState) => {
+    (nodes: Pick<NodesState, 'list'>, nodeIPsInfo: NodesState) => {
       const mapped =
         nodes.map((node) => {
           const conditions = node.conditions;
           const IPsInfo = nodeIPsInfo[node.name];
           let statusTextColor, health;
+
           const alertsNode = filterAlerts(alerts, {
             alertname: NODE_ALERTS_GROUP,
           }).filter(
@@ -76,6 +81,7 @@ export const getNodeListData = (alerts: Array<Alert>, brand: Brand) =>
                 `${node.internalIP}:${PORT_NODE_EXPORTER}` ||
               alert.labels.node === node.name,
           );
+
           const totalAlertsCounter = alertsNode.length;
           const criticalAlertsCounter = alertsNode.filter(
             (alert) => alert.labels.severity === STATUS_CRITICAL,

@@ -22,9 +22,7 @@ export const useAlertLibrary = () => {
   return alertGlobal.hooks;
 };
 export const highestAlertToStatus = (alerts?: Alert[]): Status => {
-  return (
-    (alerts?.[0] && ((alerts[0].severity as any) as Status)) || STATUS_HEALTH
-  );
+  return (alerts?.[0] && alerts[0].severity) || STATUS_HEALTH;
 };
 
 const InternalAlertProvider = ({

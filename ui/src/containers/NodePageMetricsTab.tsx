@@ -1,4 +1,3 @@
-import { $PropertyType } from 'utility-types';
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
@@ -119,7 +118,7 @@ const NodePageMetricsTab = ({
   instanceIP: string;
   controlPlaneInterface: string;
   workloadPlaneInterface: string;
-  nodesIPsInfo: $PropertyType<NodesState, 'IPsInfo'>;
+  nodesIPsInfo: Pick<NodesState, 'IPsInfo'>;
 }) => {
   const dispatch = useDispatch();
   const history = useHistory();

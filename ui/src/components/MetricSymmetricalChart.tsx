@@ -1,7 +1,5 @@
-import { $PropertyType } from 'utility-types';
 import React, { useCallback } from 'react';
 import type { UseQueryOptions } from 'react-query';
-import 'react-query';
 import { LineTemporalChart } from '@scality/core-ui/dist/next';
 import { getSeriesForSymmetricalChart } from '../services/graphUtils';
 import { HEIGHT_SYMMETRICAL_CHART } from '../constants';
@@ -23,14 +21,13 @@ const MetricSymmetricalChart = ({
   metricPrefixBelow,
   unitRange,
   planeInterface,
-  isPlaneInterfaceRequired,
 }: {
   title: string;
   yAxisTitle: string;
   nodeName: string;
   instanceIP: string;
   showAvg: boolean;
-  nodesIPsInfo: $PropertyType<NodesState, 'IPsInfo'>;
+  nodesIPsInfo: Pick<NodesState, 'IPsInfo'>;
   getMetricAboveQuery: UseQueryOptions;
   getMetricBelowQuery: UseQueryOptions;
   getMetricAboveAvgQuery: UseQueryOptions;
@@ -42,7 +39,6 @@ const MetricSymmetricalChart = ({
     label: string;
   }[];
   planeInterface?: string;
-  isPlaneInterfaceRequired?: boolean;
 }) => {
   const { isLoading, series, startingTimeStamp } = useSymetricalChartSeries({
     getAboveQueries: useCallback(

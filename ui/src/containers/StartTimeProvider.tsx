@@ -1,13 +1,21 @@
-import type { Node } from 'react';
-import React, { createContext, useContext, useCallback, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useCallback,
+  useState,
+  useEffect,
+  useMemo,
+  ReactElement,
+} from 'react';
 import { useMetricsTimeSpan } from '@scality/core-ui/dist/next';
 import { REFRESH_METRICS_GRAPH } from '../constants';
-import { useEffect } from 'react';
-import { useMemo } from 'react';
-const StartTimeContext = createContext<{
+
+type StartTime = {
   startingTimeISO: string;
   currentTimeISO: string;
-} | null>(null);
+};
+
+const StartTimeContext = createContext<StartTime | null>(null);
 export const useStartingTimeStamp = (): {
   startingTimeISO: string;
   currentTimeISO: string;
@@ -23,7 +31,7 @@ export const useStartingTimeStamp = (): {
   return startTimeContext;
 };
 
-const StartTimeProvider = ({ children }: { children: Node }) => {
+const StartTimeProvider = ({ children }: { children: ReactElement }) => {
   const { duration, frequency } = useMetricsTimeSpan();
   const [currentTime, setCurrentTime] = useState(() => {
     const newCurrentDate = new Date().getTime();

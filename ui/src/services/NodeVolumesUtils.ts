@@ -1,4 +1,3 @@
-import { $PropertyType } from 'utility-types';
 import { createSelector } from 'reselect';
 import {
   getNodeNameFromUrl,
@@ -92,7 +91,7 @@ export const isVolumeDeletable = (
 //     The computed global status of the volume.
 export const computeVolumeGlobalStatus = (
   name: string,
-  status: $PropertyType<Metalk8sV1alpha1Volume, 'status'>,
+  status: Pick<Metalk8sV1alpha1Volume, 'status'>,
 ): VolumeStatus => {
   if (status && status.conditions) {
     if (!Array.isArray(status.conditions)) {

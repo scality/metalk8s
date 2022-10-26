@@ -1,4 +1,3 @@
-import { $PropertyType } from 'utility-types';
 import {
   PORT_NODE_EXPORTER,
   STATUS_CRITICAL,
@@ -404,7 +403,7 @@ export const getControlPlaneBandWidthAvgInQuery = (
   timespanProps: TimeSpanProps,
   showAvg: boolean,
   instanceIP: string,
-  nodesIPsInfo: $PropertyType<NodesState, 'IPsInfo'>,
+  nodesIPsInfo: Pick<NodesState, 'IPsInfo'>,
 ) => {
   const { startingTimeISO, currentTimeISO, frequency } = timespanProps;
   const nodesCPBandwidthInPrometheusQuery = [];

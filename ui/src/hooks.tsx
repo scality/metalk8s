@@ -78,7 +78,8 @@ export type MetricsTimeSpanContextValue = {
   metricsTimeSpan: MetricsTimeSpan;
   setMetricsTimeSpan: MetricsTimeSpanSetter;
 };
-export const MetricsTimeSpanContext = createContext<MetricsTimeSpanContextValue>();
+export const MetricsTimeSpanContext =
+  createContext<MetricsTimeSpanContextValue | null>(null);
 export const MetricsTimeSpanProvider = ({ children }: { children: Node }) => {
   const [metricsTimeSpan, setMetricsTimeSpan] = useState(
     SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
