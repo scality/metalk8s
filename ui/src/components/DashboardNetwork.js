@@ -33,7 +33,7 @@ const DashboardNetwork = () => {
   const { isShowQuantileChart } = useShowQuantileChart();
 
   return (
-    <NetworkContainer>
+    <NetworkContainer style={{ height: 'fit-content' }}>
       <PanelActions>
         <PageSubtitle>
           <SpacedBox mr={8}> {intl.formatMessage({ id: 'network' })}</SpacedBox>

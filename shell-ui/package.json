@@ -50,7 +50,7 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
     "@fortawesome/react-fontawesome": "^0.2.0",
-    "@scality/core-ui": "github:scality/core-ui#ea901cd5c4754020e8d4cc95875ffacd80e32f83",
+    "@scality/core-ui": "github:scality/core-ui#a9aae0c51b542ba8712ead6e809de4f223e08e2e",
     "@scality/module-federation": "github:scality/module-federation.git#1.1.0",
     "canvas": "^2.9.3",
     "oidc-client": "^1.11.3",

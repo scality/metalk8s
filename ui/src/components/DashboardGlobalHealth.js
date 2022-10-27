@@ -34,8 +34,6 @@ const GlobalHealthContainer = styled.div`
 const Separator = styled.div`
   border-right: 2px solid black;
   height: 100%;
-  align-self: center;
-  margin: 0 ${spacing.sp2};
 `;
 
 const HealthBarContainer = styled.div`
@@ -45,6 +43,7 @@ const HealthBarContainer = styled.div`
 `;
 
 const PlatformStatusIcon = styled.div`
+  margin: 0 1rem;
   font-size: 2rem;
 `;
 
@@ -63,22 +62,20 @@ const DashboardGlobalHealth = () => {
   const platformStatus = highestAlertToStatus(platformHighestSeverityAlert);
 
   return (
-    <AppContainer.OverallSummary>
+    <AppContainer.OverallSummary noPadding>
       <GlobalHealthContainer>
         <Box display="flex" flex="1" alignItems="center">
-          <Box flex="0.2" display="flex">
-            <SpacedBox ml={12} mr={12}>
-              <PlatformStatusIcon>
-                <StatusWrapper status={platformStatus}>
-                  <StatusIcon status={platformStatus} name="Datacenter" />
-                </StatusWrapper>
-              </PlatformStatusIcon>
-            </SpacedBox>
+          <Box flex="1" display="flex">
+            <PlatformStatusIcon>
+              <StatusWrapper status={platformStatus}>
+                <StatusIcon status={platformStatus} name="Datacenter" />
+              </StatusWrapper>
+            </PlatformStatusIcon>
 
             <LargerText>{intl.formatMessage({ id: 'platform' })}</LargerText>
           </Box>
           <Separator />
-          <Box flex="0.4">
+          <Box flex="2">
             <HealthBarContainer>
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <SpacedBox
@@ -147,9 +144,9 @@ const DashboardGlobalHealth = () => {
               </SpacedBox>
             </HealthBarContainer>
           </Box>
-
           <Separator />
-          <Box flex="0.4">
+
+          <Box flex="2">
             <SpacedBox ml={24}>
               <DashboardAlerts />
             </SpacedBox>

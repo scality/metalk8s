@@ -17,15 +17,6 @@ import CircleStatus from '../components/CircleStatus';
 import { useIntl } from 'react-intl';
 import isEqual from 'lodash.isequal';
 
-const AlertPageContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin: ${padding.base};
-  background-color: ${(props) => props.theme.backgroundLevel1};
-  height: 100%;
-  width: 100%;
-`;
-
 const AlertPageHeaderContainer = styled.div`
   display: flex;
   align-items: center;
@@ -283,7 +274,7 @@ export default function AlertPage() {
   );
 
   return (
-    <AlertPageContainer>
+    <AppContainer hasPadding>
       <AppContainer.OverallSummary>
         <AlertPageHeader
           activeAlerts={leafAlerts.length}
@@ -296,6 +287,6 @@ export default function AlertPage() {
           <ActiveAlertTab data={leafAlerts} columns={columns} />
         </AlertContent>
       </AppContainer.MainContent>
-    </AlertPageContainer>
+    </AppContainer>
   );
 }
