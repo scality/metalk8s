@@ -282,7 +282,7 @@ export default function AlertPage() {
           warning={wariningAlerts.length}
         />
       </AppContainer.OverallSummary>
-      <AppContainer.MainContent hasPadding style={{ marginTop: spacing.sp4 }}>
+      <AppContainer.MainContent hasPadding>
         <AlertContent>
           <ActiveAlertTab data={leafAlerts} columns={columns} />
         </AlertContent>

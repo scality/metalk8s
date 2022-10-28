@@ -9,11 +9,11 @@ import { padding, spacing } from '@scality/core-ui/dist/style/theme';
 import { SyncedCursorCharts } from '@scality/core-ui/dist/components/vegachartv2/SyncedCursorCharts';
 import TimespanSelector from './TimespanSelector';
 import DashboardNetwork from '../components/DashboardNetwork';
-import { AppContainer, spacing as spacing2 } from '@scality/core-ui';
+import { AppContainer } from '@scality/core-ui';
 
 const DashboardGrid = styled.div`
   display: grid;
-  gap: ${spacing2.r2};
+  gap: ${AppContainer.sectionDistance};
   grid-template:
     'header header header header header' 2.7rem
     'health     health  health  health  health' 6rem
