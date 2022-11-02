@@ -15,11 +15,12 @@ const DashboardGrid = styled.div`
   display: grid;
   gap: ${AppContainer.sectionDistance};
   grid-template:
-    'header header header header header' 2.7rem
-    'health     health  health  health  health' 6rem
+    'header header header header header' 2.5rem
+    'health     health  health  health  health' 6.2rem
     'inventory  network network metrics metrics' auto
     / 1fr 1fr 1fr 1fr 1fr;
   overflow: hidden;
+  flex: 1;
   > div {
     background-color: ${(props) => {
       return props.theme.backgroundLevel3;
@@ -84,30 +85,32 @@ export const DashboardScrollableArea = styled.div`
 
 const DashboardPage = () => {
   return (
-    <DashboardGrid>
-      <div className="header">
-        <AppContainer.ContextContainer>
-          <TimespanSelector />
-        </AppContainer.ContextContainer>
-      </div>
-      <SyncedCursorCharts>
-        <DashboardScrollableArea className="health">
-          <DashboardGlobalHealth />
-        </DashboardScrollableArea>
-        <DashboardScrollableArea className="inventory">
-          <DashboardInventory />
-          <DashboardServices />
-        </DashboardScrollableArea>
+    <AppContainer.MainContent background="backgroundLevel1">
+      <DashboardGrid>
+        <div className="header">
+          <AppContainer.ContextContainer>
+            <TimespanSelector />
+          </AppContainer.ContextContainer>
+        </div>
+        <SyncedCursorCharts>
+          <DashboardScrollableArea className="health">
+            <DashboardGlobalHealth />
+          </DashboardScrollableArea>
+          <DashboardScrollableArea className="inventory">
+            <DashboardInventory />
+            <DashboardServices />
+          </DashboardScrollableArea>
 
-        <DashboardScrollableArea className="network">
-          <DashboardNetwork />
-        </DashboardScrollableArea>
+          <DashboardScrollableArea className="network">
+            <DashboardNetwork />
+          </DashboardScrollableArea>
 
-        <DashboardScrollableArea className="metrics">
-          <DashboardMetrics />
-        </DashboardScrollableArea>
-      </SyncedCursorCharts>
-    </DashboardGrid>
+          <div className="metrics">
+            <DashboardMetrics />
+          </div>
+        </SyncedCursorCharts>
+      </DashboardGrid>
+    </AppContainer.MainContent>
   );
 };
 export default DashboardPage;
