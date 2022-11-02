@@ -12,6 +12,7 @@ import {
   Loader,
   SpacedBox,
   AppContainer,
+  Stack,
 } from '@scality/core-ui';
 import {
   highestAlertToStatus,
@@ -26,15 +27,6 @@ import { getClusterAlertSegmentQuery } from '../services/platformlibrary/metrics
 import { GlobalHealthBar } from '@scality/core-ui/dist/components/globalhealthbar/GlobalHealthBar.component';
 import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
 import { useQuery } from 'react-query';
-
-const GlobalHealthContainer = styled.div`
-  display: flex;
-`;
-
-const Separator = styled.div`
-  border-right: 2px solid black;
-  height: 100%;
-`;
 
 const HealthBarContainer = styled.div`
   flex-direction: column;
@@ -62,97 +54,92 @@ const DashboardGlobalHealth = () => {
   const platformStatus = highestAlertToStatus(platformHighestSeverityAlert);
 
   return (
-    <AppContainer.OverallSummary noPadding>
-      <GlobalHealthContainer>
-        <Box display="flex" flex="1" alignItems="center">
-          <Box flex="1" display="flex">
-            <PlatformStatusIcon>
-              <StatusWrapper status={platformStatus}>
-                <StatusIcon status={platformStatus} name="Datacenter" />
-              </StatusWrapper>
-            </PlatformStatusIcon>
+    <AppContainer.OverallSummary>
+      <Stack alignItems="center">
+        <Box flex="1" display="flex">
+          <PlatformStatusIcon>
+            <StatusWrapper status={platformStatus}>
+              <StatusIcon status={platformStatus} name="Datacenter" />
+            </StatusWrapper>
+          </PlatformStatusIcon>
 
-            <LargerText>{intl.formatMessage({ id: 'platform' })}</LargerText>
-          </Box>
-          <Separator />
-          <Box flex="2">
-            <HealthBarContainer>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <SpacedBox
-                  style={{ display: 'flex', alignItems: 'center' }}
-                  mr={20}
-                >
-                  <SpacedBox mr={8}>
-                    <EmphaseText style={{ letterSpacing: spacing.sp2 }}>
-                      Global Health
-                    </EmphaseText>
-                  </SpacedBox>
-
-                  <Tooltip
-                    placement="bottom"
-                    overlay={
-                      <SmallerText
-                        style={{ minWidth: '30rem', display: 'block' }}
-                      >
-                        {intl
-                          .formatMessage({
-                            id: 'global_health_explanation',
-                          })
-                          .split('\n')
-                          .map((line, key) => (
-                            <SpacedBox
-                              key={`globalheathexplanation-${key}`}
-                              mb={8}
-                            >
-                              {line}
-                            </SpacedBox>
-                          ))}
-                      </SmallerText>
-                    }
-                  >
-                    <Icon name="Info" color="buttonSecondary" />
-                  </Tooltip>
-                </SpacedBox>
-                <EmphaseText>
-                  <CircleStatus status={platformStatus} />
-                </EmphaseText>
-                {historyAlertStatus === 'loading' && (
-                  <SpacedBox ml={8}>
-                    <Loader size={'larger'} />
-                  </SpacedBox>
-                )}
-              </div>
-              <SpacedBox mr={20}>
-                <GlobalHealthBar
-                  id={'platform_globalhealth'}
-                  alerts={
-                    historyAlertStatus === 'error'
-                      ? [
-                          {
-                            startsAt: startingTimeISO,
-                            endsAt: currentTimeISO,
-                            severity: 'unavailable',
-                            description:
-                              'Failed to load alert history for the selected period',
-                          },
-                        ]
-                      : alertSegments || []
-                  }
-                  start={startingTimeISO}
-                  end={currentTimeISO}
-                />
-              </SpacedBox>
-            </HealthBarContainer>
-          </Box>
-          <Separator />
-
-          <Box flex="2">
-            <SpacedBox ml={24}>
-              <DashboardAlerts />
-            </SpacedBox>
-          </Box>
+          <LargerText>{intl.formatMessage({ id: 'platform' })}</LargerText>
         </Box>
-      </GlobalHealthContainer>
+        <Box flex="2">
+          <HealthBarContainer>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <SpacedBox
+                style={{ display: 'flex', alignItems: 'center' }}
+                mr={20}
+              >
+                <SpacedBox mr={8}>
+                  <EmphaseText style={{ letterSpacing: spacing.sp2 }}>
+                    Global Health
+                  </EmphaseText>
+                </SpacedBox>
+
+                <Tooltip
+                  placement="bottom"
+                  overlay={
+                    <SmallerText
+                      style={{ minWidth: '30rem', display: 'block' }}
+                    >
+                      {intl
+                        .formatMessage({
+                          id: 'global_health_explanation',
+                        })
+                        .split('\n')
+                        .map((line, key) => (
+                          <SpacedBox
+                            key={`globalheathexplanation-${key}`}
+                            mb={8}
+                          >
+                            {line}
+                          </SpacedBox>
+                        ))}
+                    </SmallerText>
+                  }
+                >
+                  <Icon name="Info" color="buttonSecondary" />
+                </Tooltip>
+              </SpacedBox>
+              <EmphaseText>
+                <CircleStatus status={platformStatus} />
+              </EmphaseText>
+              {historyAlertStatus === 'loading' && (
+                <SpacedBox ml={8}>
+                  <Loader size={'larger'} />
+                </SpacedBox>
+              )}
+            </div>
+            <SpacedBox mr={20}>
+              <GlobalHealthBar
+                id={'platform_globalhealth'}
+                alerts={
+                  historyAlertStatus === 'error'
+                    ? [
+                        {
+                          startsAt: startingTimeISO,
+                          endsAt: currentTimeISO,
+                          severity: 'unavailable',
+                          description:
+                            'Failed to load alert history for the selected period',
+                        },
+                      ]
+                    : alertSegments || []
+                }
+                start={startingTimeISO}
+                end={currentTimeISO}
+              />
+            </SpacedBox>
+          </HealthBarContainer>
+        </Box>
+        <Box flex="2">
+          <SpacedBox ml={24}>
+            <DashboardAlerts />
+          </SpacedBox>
+        </Box>
+      </Stack>
     </AppContainer.OverallSummary>
   );
 };
