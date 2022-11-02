@@ -31,16 +31,14 @@ export const RightSidePanel = styled.div`
 `;
 
 export const NoInstanceSelectedContainer = styled.div`
-  width: 51%;
-  min-height: 700px;
+  flex: 1;
   background-color: ${(props) => props.theme.backgroundLevel4};
-  margin: ${padding.small};
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 export const NoInstanceSelected = styled.div`
-  position: relative;
-  top: 50%;
-  transform: translateY(-50%);
   color: ${(props) => props.theme.textPrimary};
   text-align: center;
 `;

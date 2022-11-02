@@ -121,9 +121,9 @@ const VolumePageContent = (props) => {
     );
   }
 
-  const rightSidePanel = (
-    <RightSidePanel>
-      {currentVolumeName && volume ? (
+  const rightSidePanel =
+    currentVolumeName && volume ? (
+      <RightSidePanel>
         <Tabs>
           <Tabs.Tab
             path={`${match.url}/overview`}
@@ -239,19 +239,18 @@ const VolumePageContent = (props) => {
             <VolumeDetailsTab currentVolumeObject={currentVolumeObject} />
           </Tabs.Tab>
         </Tabs>
-      ) : (
-        <NoInstanceSelectedContainer>
-          <NoInstanceSelected>
-            {currentVolumeName
-              ? `Volume ${currentVolumeName} ${intl.formatMessage({
-                  id: 'not_found',
-                })}`
-              : intl.formatMessage({ id: 'no_volume_selected' })}
-          </NoInstanceSelected>
-        </NoInstanceSelectedContainer>
-      )}
-    </RightSidePanel>
-  );
+      </RightSidePanel>
+    ) : (
+      <NoInstanceSelectedContainer>
+        <NoInstanceSelected>
+          {currentVolumeName
+            ? `Volume ${currentVolumeName} ${intl.formatMessage({
+                id: 'not_found',
+              })}`
+            : intl.formatMessage({ id: 'no_volume_selected' })}
+        </NoInstanceSelected>
+      </NoInstanceSelectedContainer>
+    );
 
   return (
     <TwoPanelLayout
