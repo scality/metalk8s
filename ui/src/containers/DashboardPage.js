@@ -19,7 +19,7 @@ const DashboardGrid = styled.div`
     'health     health  health  health  health' 6rem
     'inventory  network network metrics metrics' auto
     / 1fr 1fr 1fr 1fr 1fr;
-
+  overflow: hidden;
   > div {
     background-color: ${(props) => {
       return props.theme.backgroundLevel3;
@@ -91,21 +91,21 @@ const DashboardPage = () => {
         </AppContainer.ContextContainer>
       </div>
       <SyncedCursorCharts>
-        <div className="health">
+        <DashboardScrollableArea className="health">
           <DashboardGlobalHealth />
-        </div>
+        </DashboardScrollableArea>
         <DashboardScrollableArea className="inventory">
           <DashboardInventory />
           <DashboardServices />
         </DashboardScrollableArea>
 
-        <div className="network">
+        <DashboardScrollableArea className="network">
           <DashboardNetwork />
-        </div>
+        </DashboardScrollableArea>
 
-        <div className="metrics">
+        <DashboardScrollableArea className="metrics">
           <DashboardMetrics />
-        </div>
+        </DashboardScrollableArea>
       </SyncedCursorCharts>
     </DashboardGrid>
   );

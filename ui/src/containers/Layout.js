@@ -131,7 +131,6 @@ const Layout = () => {
           <Sidebar {...sidebarConfig} />
         ) : undefined
       }
-      style={{ overflow: 'auto' }}
     >
       <Notifications
         notifications={notifications}
