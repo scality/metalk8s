@@ -11,7 +11,6 @@ import NodeListTable from '../components/NodeListTable';
 import NodePageRSP from './NodePageRSP';
 import {
   LeftSideInstanceList,
-  PageContentContainer,
   RightSidePanel,
 } from '../components/style/CommonLayoutStyle';
 import { usePrevious } from '../services/utils';
@@ -65,28 +64,24 @@ const NodePageContent = (props) => {
       }}
       rightPanel={{
         children: (
-          <RightSidePanel>
-            <Switch>
-              {/* Auto select the first node in the list */}
-              <Route
-                exact
-                path={`${path}`}
-                render={() =>
-                  defaultSelectNodeName && (
-                    <Redirect
-                      to={`${path}/${defaultSelectNodeName}/overview`}
-                    />
-                  )
-                }
-              ></Route>
-              <Route
-                path={`${path}/:name`}
-                render={() => {
-                  return <NodePageRSP nodeTableData={nodeTableData} />;
-                }}
-              ></Route>
-            </Switch>
-          </RightSidePanel>
+          <Switch>
+            {/* Auto select the first node in the list */}
+            <Route
+              exact
+              path={`${path}`}
+              render={() =>
+                defaultSelectNodeName && (
+                  <Redirect to={`${path}/${defaultSelectNodeName}/overview`} />
+                )
+              }
+            ></Route>
+            <Route
+              path={`${path}/:name`}
+              render={() => {
+                return <NodePageRSP nodeTableData={nodeTableData} />;
+              }}
+            ></Route>
+          </Switch>
         ),
       }}
     />

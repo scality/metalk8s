@@ -24,7 +24,10 @@ import NodePageVolumesTab from '../components/NodePageVolumesTab';
 import NodePagePodsTab from '../components/NodePagePodsTab';
 import NodePagePartitionTabs from '../components/NodePagePartitionTab';
 import NodePageDetailsTab from '../components/NodeDetailsTab';
-import { NoInstanceSelected } from '../components/style/CommonLayoutStyle';
+import {
+  NoInstanceSelected,
+  RightSidePanel,
+} from '../components/style/CommonLayoutStyle';
 import { NODE_ALERTS_GROUP, PORT_NODE_EXPORTER } from '../constants';
 import { useAlerts } from './AlertProvider';
 import { useIntl } from 'react-intl';
@@ -132,91 +135,93 @@ const NodePageRSP = (props) => {
   );
 
   return name && currentNode ? (
-    <Tabs>
-      <Tabs.Tab
-        path={`${url}/overview`}
-        label={intl.formatMessage({ id: 'overview' })}
-        data-cy="overview_tab_node_page"
-      >
-        <NodePageOverviewTab
-          nodeName={name}
-          pods={pods}
-          nodeTableData={nodeTableData}
-          volumes={volumes}
-          nodes={nodes}
-        />
-      </Tabs.Tab>
-      <Tabs.Tab
-        path={`${url}/alerts`}
-        label={intl.formatMessage({ id: 'alerts' })}
-        textBadge={
-          alertsNode && alertsNode.length ? (
-            <TextBadge
-              variant={
-                criticalAlerts.length > 0 ? 'statusCritical' : 'statusWarning'
+    <RightSidePanel>
+      <Tabs>
+        <Tabs.Tab
+          path={`${url}/overview`}
+          label={intl.formatMessage({ id: 'overview' })}
+          data-cy="overview_tab_node_page"
+        >
+          <NodePageOverviewTab
+            nodeName={name}
+            pods={pods}
+            nodeTableData={nodeTableData}
+            volumes={volumes}
+            nodes={nodes}
+          />
+        </Tabs.Tab>
+        <Tabs.Tab
+          path={`${url}/alerts`}
+          label={intl.formatMessage({ id: 'alerts' })}
+          textBadge={
+            alertsNode && alertsNode.length ? (
+              <TextBadge
+                variant={
+                  criticalAlerts.length > 0 ? 'statusCritical' : 'statusWarning'
+                }
+                text={alertsNode.length}
+              />
+            ) : null
+          }
+          data-cy="alerts_tab_node_page"
+        >
+          <AlertsTab
+            alerts={alertsNode}
+            children={(Rows) => {
+              if (alertsNode?.length === 0) {
+                return (
+                  <NoResult>
+                    {intl.formatMessage({ id: 'no_active_alerts' })}
+                  </NoResult>
+                );
               }
-              text={alertsNode.length}
-            />
-          ) : null
-        }
-        data-cy="alerts_tab_node_page"
-      >
-        <AlertsTab
-          alerts={alertsNode}
-          children={(Rows) => {
-            if (alertsNode?.length === 0) {
-              return (
-                <NoResult>
-                  {intl.formatMessage({ id: 'no_active_alerts' })}
-                </NoResult>
-              );
-            }
-            return <>{Rows}</>;
-          }}
-        />
-      </Tabs.Tab>
-      <Tabs.Tab
-        path={`${url}/metrics`}
-        label={intl.formatMessage({ id: 'metrics' })}
-        data-cy={'metrics_tab_node_page'}
-      >
-        <NodePageMetricsTab
-          nodeName={name}
-          instanceIP={instanceIP}
-          controlPlaneInterface={controlPlaneInterface}
-          workloadPlaneInterface={workloadPlaneInterface}
-          nodesIPsInfo={nodesIPsInfo}
-        />
-      </Tabs.Tab>
-      <Tabs.Tab
-        data-cy="volumes_tab_node_page"
-        path={`${url}/volumes`}
-        label={intl.formatMessage({ id: 'volumes' })}
-      >
-        <NodePageVolumesTab nodeName={name} />
-      </Tabs.Tab>
-      <Tabs.Tab
-        path={`${url}/pods`}
-        data-cy="pods_tab_node_page"
-        label={intl.formatMessage({ id: 'pods' })}
-      >
-        <NodePagePodsTab pods={podsListData} />
-      </Tabs.Tab>
-      <Tabs.Tab
-        data-cy="partition_tab_node_page"
-        path={`${url}/partitions`}
-        label="Partitions"
-      >
-        <NodePagePartitionTabs instanceIP={instanceIP} />
-      </Tabs.Tab>
-      <Tabs.Tab
-        data-cy="details_tab_node_page"
-        label={intl.formatMessage({ id: 'details' })}
-        path={`${url}/details`}
-      >
-        <NodePageDetailsTab />
-      </Tabs.Tab>
-    </Tabs>
+              return <>{Rows}</>;
+            }}
+          />
+        </Tabs.Tab>
+        <Tabs.Tab
+          path={`${url}/metrics`}
+          label={intl.formatMessage({ id: 'metrics' })}
+          data-cy={'metrics_tab_node_page'}
+        >
+          <NodePageMetricsTab
+            nodeName={name}
+            instanceIP={instanceIP}
+            controlPlaneInterface={controlPlaneInterface}
+            workloadPlaneInterface={workloadPlaneInterface}
+            nodesIPsInfo={nodesIPsInfo}
+          />
+        </Tabs.Tab>
+        <Tabs.Tab
+          data-cy="volumes_tab_node_page"
+          path={`${url}/volumes`}
+          label={intl.formatMessage({ id: 'volumes' })}
+        >
+          <NodePageVolumesTab nodeName={name} />
+        </Tabs.Tab>
+        <Tabs.Tab
+          path={`${url}/pods`}
+          data-cy="pods_tab_node_page"
+          label={intl.formatMessage({ id: 'pods' })}
+        >
+          <NodePagePodsTab pods={podsListData} />
+        </Tabs.Tab>
+        <Tabs.Tab
+          data-cy="partition_tab_node_page"
+          path={`${url}/partitions`}
+          label="Partitions"
+        >
+          <NodePagePartitionTabs instanceIP={instanceIP} />
+        </Tabs.Tab>
+        <Tabs.Tab
+          data-cy="details_tab_node_page"
+          label={intl.formatMessage({ id: 'details' })}
+          path={`${url}/details`}
+        >
+          <NodePageDetailsTab />
+        </Tabs.Tab>
+      </Tabs>
+    </RightSidePanel>
   ) : (
     <NoInstanceSelected>
       {name

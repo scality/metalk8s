@@ -41,6 +41,10 @@ export const NoInstanceSelectedContainer = styled.div`
 export const NoInstanceSelected = styled.div`
   color: ${(props) => props.theme.textPrimary};
   text-align: center;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
 `;
 
 export const PageContentContainer = styled.div`
