@@ -15,8 +15,8 @@ const DashboardGrid = styled.div`
   display: grid;
   gap: ${AppContainer.sectionDistance};
   grid-template:
-    'header header header header header' 2.5rem
-    'health     health  health  health  health' 6.2rem
+    'header header header header header' 3rem
+    'health     health  health  health  health' 6.1rem
     'inventory  network network metrics metrics' auto
     / 1fr 1fr 1fr 1fr 1fr;
   overflow: hidden;
