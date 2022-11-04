@@ -274,8 +274,8 @@ export default function AlertPage() {
   );
 
   return (
-    <AppContainer hasPadding>
-      <AppContainer.OverallSummary>
+    <AppContainer>
+      <AppContainer.OverallSummary hasTopMargin>
         <AlertPageHeader
           activeAlerts={leafAlerts.length}
           critical={criticalAlerts.length}
