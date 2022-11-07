@@ -2,7 +2,12 @@
 import React, { Fragment, useState, useEffect } from 'react';
 import { useHistory, useLocation, useRouteMatch } from 'react-router';
 import { NoResult } from '@scality/core-ui/dist/components/tablev2/Tablestyle';
-import { EmptyState, TextBadge, TwoPanelLayout } from '@scality/core-ui';
+import {
+  AppContainer,
+  EmptyState,
+  TextBadge,
+  TwoPanelLayout,
+} from '@scality/core-ui';
 import VolumeListTable from '../components/VolumeListTable';
 import VolumeOverviewTab from '../components/VolumeOverviewTab';
 import AlertsTab from '../components/AlertsTab';
@@ -253,20 +258,22 @@ const VolumePageContent = (props) => {
     );
 
   return (
-    <TwoPanelLayout
-      panelsRatio="50-50"
-      leftPanel={{
-        children: (
-          <LeftSideInstanceList>
-            <VolumeListTable
-              volumeListData={volumeListData}
-              volumeName={currentVolumeName}
-            ></VolumeListTable>
-          </LeftSideInstanceList>
-        ),
-      }}
-      rightPanel={{ children: rightSidePanel }}
-    />
+    <AppContainer.MainContent hasTopMargin>
+      <TwoPanelLayout
+        panelsRatio="50-50"
+        leftPanel={{
+          children: (
+            <LeftSideInstanceList>
+              <VolumeListTable
+                volumeListData={volumeListData}
+                volumeName={currentVolumeName}
+              ></VolumeListTable>
+            </LeftSideInstanceList>
+          ),
+        }}
+        rightPanel={{ children: rightSidePanel }}
+      />
+    </AppContainer.MainContent>
   );
 };
 

@@ -14,7 +14,7 @@ import {
   RightSidePanel,
 } from '../components/style/CommonLayoutStyle';
 import { usePrevious } from '../services/utils';
-import { EmptyState, TwoPanelLayout } from '@scality/core-ui';
+import { AppContainer, EmptyState, TwoPanelLayout } from '@scality/core-ui';
 
 // <NodePageContent> get the current selected node and pass it to <NodeListTable> and <NodePageRSP>
 const NodePageContent = (props) => {
@@ -53,38 +53,42 @@ const NodePageContent = (props) => {
   }
 
   return (
-    <TwoPanelLayout
-      panelsRatio="50-50"
-      leftPanel={{
-        children: (
-          <LeftSideInstanceList>
-            <NodeListTable nodeTableData={nodeTableData} />
-          </LeftSideInstanceList>
-        ),
-      }}
-      rightPanel={{
-        children: (
-          <Switch>
-            {/* Auto select the first node in the list */}
-            <Route
-              exact
-              path={`${path}`}
-              render={() =>
-                defaultSelectNodeName && (
-                  <Redirect to={`${path}/${defaultSelectNodeName}/overview`} />
-                )
-              }
-            ></Route>
-            <Route
-              path={`${path}/:name`}
-              render={() => {
-                return <NodePageRSP nodeTableData={nodeTableData} />;
-              }}
-            ></Route>
-          </Switch>
-        ),
-      }}
-    />
+    <AppContainer.MainContent hasTopMargin>
+      <TwoPanelLayout
+        panelsRatio="50-50"
+        leftPanel={{
+          children: (
+            <LeftSideInstanceList>
+              <NodeListTable nodeTableData={nodeTableData} />
+            </LeftSideInstanceList>
+          ),
+        }}
+        rightPanel={{
+          children: (
+            <Switch>
+              {/* Auto select the first node in the list */}
+              <Route
+                exact
+                path={`${path}`}
+                render={() =>
+                  defaultSelectNodeName && (
+                    <Redirect
+                      to={`${path}/${defaultSelectNodeName}/overview`}
+                    />
+                  )
+                }
+              ></Route>
+              <Route
+                path={`${path}/:name`}
+                render={() => {
+                  return <NodePageRSP nodeTableData={nodeTableData} />;
+                }}
+              ></Route>
+            </Switch>
+          ),
+        }}
+      />
+    </AppContainer.MainContent>
   );
 };
 

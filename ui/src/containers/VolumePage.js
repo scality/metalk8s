@@ -13,7 +13,6 @@ import {
 import { useFetchCurrentVolumeStats } from '../hooks/monitoring';
 import { fetchPersistentVolumeClaimAction } from '../ducks/app/volumes';
 import { fetchVolumeStatsAction } from '../ducks/app/monitoring';
-import { PageContainer } from '../components/style/CommonLayoutStyle';
 import { useRefreshNodes } from '../hooks/nodes';
 import { useTypedSelector, useVolumesWithAlerts } from '../hooks';
 
@@ -64,19 +63,17 @@ const VolumePage = (props) => {
   const volumeListData = useVolumesWithAlerts();
 
   return (
-    <PageContainer>
-      <VolumeContent
-        volumes={volumes}
-        volumeListData={volumeListData}
-        nodes={nodes}
-        pVList={pVList}
-        pVCList={pVCList}
-        pods={pods}
-        volumeStats={volumeStats}
-        currentVolumeObject={currentVolumeObject}
-        loading={volumesLoading}
-      ></VolumeContent>
-    </PageContainer>
+    <VolumeContent
+      volumes={volumes}
+      volumeListData={volumeListData}
+      nodes={nodes}
+      pVList={pVList}
+      pVCList={pVCList}
+      pods={pods}
+      volumeStats={volumeStats}
+      currentVolumeObject={currentVolumeObject}
+      loading={volumesLoading}
+    ></VolumeContent>
   );
 };
 

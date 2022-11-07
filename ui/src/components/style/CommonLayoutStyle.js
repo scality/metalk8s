@@ -6,14 +6,6 @@ import {
   spacing,
 } from '@scality/core-ui/dist/style/theme';
 
-export const PageContainer = styled.div`
-  display: flex;
-  box-sizing: border-box;
-  height: 100%;
-  flex-wrap: wrap;
-  padding: 0;
-`;
-
 export const CenteredPageContainer = styled.div`
   display: flex;
   justify-content: space-around;

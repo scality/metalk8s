@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux';
 import { refreshNodesAction, stopRefreshNodesAction } from '../ducks/app/nodes';
 import { useRefreshEffect } from '../services/utils';
 import NodePageContent from './NodePageContent';
-import { PageContainer } from '../components/style/CommonLayoutStyle';
 import { getNodeListData } from '../services/NodeUtils';
 import { useAlerts } from './AlertProvider';
 import { useTheme } from 'styled-components';
@@ -23,9 +22,9 @@ const NodePage = (props) => {
   const nodesLoading = useTypedSelector((state) => state.app.nodes.isLoading);
 
   return (
-    <PageContainer>
+    <>
       <NodePageContent nodeTableData={nodeTableData} loading={nodesLoading} />
-    </PageContainer>
+    </>
   );
 };
 
