@@ -7,7 +7,7 @@ import {
   useDiscoveredViews,
 } from '../containers/ConfigProvider';
 import { useHistory } from 'react-router';
-import { EmphaseText, SecondaryText, TextBadge } from '@scality/core-ui';
+import { Text, TextBadge } from '@scality/core-ui';
 import { useAlertLibrary, useAlerts } from '../containers/AlertProvider';
 import { getChildrenAlerts } from '../services/alertUtils';
 import { Box } from '@scality/core-ui/dist/next';
@@ -66,9 +66,9 @@ const DashboardAlerts = () => {
   return (
     <AlertsContainer>
       <div>
-        <EmphaseText>
+        <Text isEmphazed>
           {intl.formatMessage({ id: 'platform_active_alerts' })}
-        </EmphaseText>
+        </Text>
         <TextBadge
           variant="infoPrimary"
           data-testid="all-alert-badge"
@@ -76,14 +76,14 @@ const DashboardAlerts = () => {
         />
       </div>
       {totalAlerts === 0 ? (
-        <SecondaryText>
+        <Text variant="Smaller" color="textSecondary">
           {intl.formatMessage({ id: 'no_active_alerts' })}
-        </SecondaryText>
+        </Text>
       ) : (
         <Box pr={24}>
           <BadgesContainer>
             <div>
-              Critical
+              <Text>Critical</Text>
               <TextBadge
                 variant="statusCritical"
                 data-testid="critical-alert-badge"
@@ -91,7 +91,7 @@ const DashboardAlerts = () => {
               />
             </div>
             <div>
-              Warning
+              <Text>Warning</Text>
               <TextBadge
                 variant="statusWarning"
                 data-testid="warning-alert-badge"
@@ -106,7 +106,7 @@ const DashboardAlerts = () => {
             }}
             data-testid="view-all-link"
           >
-            {intl.formatMessage({ id: 'view_all' })} >
+            {intl.formatMessage({ id: 'view_all' })}
           </Link>
         </Box>
       )}
