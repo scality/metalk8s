@@ -8,7 +8,7 @@ import {
   AppContainer,
 } from '@scality/core-ui';
 import { Table } from '@scality/core-ui/dist/next';
-import { padding, fontSize, spacing } from '@scality/core-ui/dist/style/theme';
+import { fontSize, spacing } from '@scality/core-ui/dist/style/theme';
 import { useAlerts } from './AlertProvider';
 import StatusIcon from '../components/StatusIcon';
 import { STATUS_WARNING, STATUS_CRITICAL, STATUS_HEALTH } from '../constants';
@@ -137,37 +137,6 @@ function AlertPageHeader({
   );
 }
 
-export const SortCaretWrapper = styled.span`
-  padding-left: ${padding.smaller};
-  position: absolute;
-`;
-
-export const SortIncentive = styled.span`
-  position: absolute;
-  display: none;
-`;
-
-export const TableHeader = styled.th`
-  &:hover {
-    ${SortIncentive} {
-      display: block;
-    }
-  }
-`;
-
-const AlertContent = styled.div`
-  color: ${(props) => props.theme.textPrimary};
-  font-family: 'Lato';
-  font-size: ${fontSize.base};
-  background-color: ${(props) => props.theme.backgroundLevel3};
-  display: flex;
-  width: 100%;
-  height: 100%;
-
-  .table {
-    width: calc(100% - 2rem);
-  }
-`;
 const ActiveAlertTab = React.memo(
   ({ columns, data }) => {
     const sortTypes = React.useMemo(() => {
@@ -195,26 +164,28 @@ const ActiveAlertTab = React.memo(
     const DEFAULT_SORTING_KEY = 'severity';
 
     return (
-      <Table
-        columns={columns}
-        data={data}
-        defaultSortingKey={DEFAULT_SORTING_KEY}
-        sortTypes={sortTypes}
-      >
-        <div style={{ margin: `${spacing.sp16} 0` }}>
-          <Table.SearchWithQueryParams
-            displayedName={{ singular: 'alert', plural: 'alerts' }}
+      <div style={{ width: '100%' }}>
+        <Table
+          columns={columns}
+          data={data}
+          defaultSortingKey={DEFAULT_SORTING_KEY}
+          sortTypes={sortTypes}
+        >
+          <div style={{ margin: `${spacing.sp16} 0` }}>
+            <Table.SearchWithQueryParams
+              displayedName={{ singular: 'alert', plural: 'alerts' }}
+            />
+          </div>
+          <Table.SingleSelectableContent
+            rowHeight="h48"
+            separationLineVariant="backgroundLevel1"
+            backgroundVariant="backgroundLevel3"
+            customItemKey={(index, data) => {
+              return data[index].id;
+            }}
           />
-        </div>
-        <Table.SingleSelectableContent
-          rowHeight="h48"
-          separationLineVariant="backgroundLevel1"
-          backgroundVariant="backgroundLevel3"
-          customItemKey={(index, data) => {
-            return data[index].id;
-          }}
-        />
-      </Table>
+        </Table>
+      </div>
     );
   },
   (a, b) => {
@@ -265,7 +236,7 @@ export default function AlertPage() {
         cellStyle: {
           flexGrow: '1',
           textAlign: 'right',
-          marginRight: spacing.sp8,
+          marginRight: spacing.sp12,
         },
         Cell: (cell) => <span>{formatDateToMid1(cell.value)}</span>,
       },
@@ -283,9 +254,7 @@ export default function AlertPage() {
         />
       </AppContainer.OverallSummary>
       <AppContainer.MainContent hasPadding>
-        <AlertContent>
-          <ActiveAlertTab data={leafAlerts} columns={columns} />
-        </AlertContent>
+        <ActiveAlertTab data={leafAlerts} columns={columns} />
       </AppContainer.MainContent>
     </AppContainer>
   );
