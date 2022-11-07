@@ -123,6 +123,7 @@ const Layout = () => {
 
   return (
     <AppContainer
+      hasPadding
       sidebarNavigation={
         isUserLoaded &&
         !isAlertsPage &&
