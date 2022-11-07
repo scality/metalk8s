@@ -209,7 +209,7 @@ const ActiveAlertTab = React.memo(
         <Table.SingleSelectableContent
           rowHeight="h48"
           separationLineVariant="backgroundLevel1"
-          backgroundVariant="backgroundLevel2"
+          backgroundVariant="backgroundLevel3"
           customItemKey={(index, data) => {
             return data[index].id;
           }}
