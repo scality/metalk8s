@@ -239,6 +239,10 @@ for repo, images in IMGS_PER_REPOSITORY.items():
 TO_BUILD: Tuple[targets.LocalImage, ...] = (
     _local_image(
         name="metalk8s-alert-logger",
+        build_args={
+            "BASE_IMAGE": versions.ALPINE_BASE_IMAGE,
+            "BASE_IMAGE_SHA256": versions.ALPINE_BASE_IMAGE_SHA256,
+        },
     ),
     _local_image(
         name="metalk8s-keepalived",
