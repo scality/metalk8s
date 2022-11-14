@@ -139,8 +139,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="k8s-sidecar",
-        version="1.15.6",
-        digest="sha256:1f025ae37b7b20d63bffd179e5e6f972039dd53d9646388c0a8c456229c7bbcb",
+        version="1.21.0",
+        digest="sha256:710e23b489c5cad305fdcffd6ee3b5578f6a5a1bb73b7c181a05b5be068a0d6b",
     ),
     Image(
         name="kube-apiserver",
