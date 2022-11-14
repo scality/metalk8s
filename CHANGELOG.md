@@ -1,6 +1,14 @@
 # CHANGELOG
 ## Release 124.0.1 (in development)
 
+### Bug fixes 
+
+- Actually bump the alpine base image used by `metalk8s-alert-logger`
+  image to `alpine:3.16.2` (this one was wrongly marked as upgraded
+  in [124.0.0](https://github.com/scality/metalk8s/releases/124.0.0)
+  changelog)
+  (PR[#3909](https://github.com/scality/metalk8s/pull/3909))
+
 ## Release 124.0.0
 
 ### Additions
