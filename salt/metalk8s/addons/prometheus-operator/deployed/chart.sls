@@ -64445,7 +64445,7 @@ spec:
           value: ALL
         - name: FOLDER_ANNOTATION
           value: metalk8s.scality.com/grafana-folder-name
-        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.15.6
+        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.21.0
         imagePullPolicy: IfNotPresent
         name: grafana-sc-dashboard
         resources: {}
@@ -64477,7 +64477,7 @@ spec:
           value: http://localhost:3000/api/admin/provisioning/datasources/reload
         - name: REQ_METHOD
           value: POST
-        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.15.6
+        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.21.0
         imagePullPolicy: IfNotPresent
         name: grafana-sc-datasources
         resources: {}

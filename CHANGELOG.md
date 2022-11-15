@@ -1,6 +1,12 @@
 # CHANGELOG
 ## Release 124.1.0 (in development)
 
+### Enhancements
+
+- Bump k8s-sidecar version to
+  [1.21.0](https://github.com/kiwigrid/k8s-sidecar/releases/tag/1.21.0)
+  (PR[#3910](https://github.com/scality/metalk8s/pull/3910))
+
 ## Release 124.0.1 (in development)
 
 ### Bug fixes 
