@@ -74,9 +74,16 @@
   'default': {}
 }, merge=defaults.get('kubernetes')) %}
 
-{% set kubeadm_preflight = salt['grains.filter_by']({
-  'default': {}
-}, merge=defaults.get('kubeadm_preflight')) %}
+{% set kubeadm_preflight = salt['grains.filter_by'](
+  salt['grains.filter_by']({
+    'RedHat': {
+      7: {
+        'kubeadm_preflight': {'mandatory': {'sysctl_values': {'net.ipv4.tcp_tw_recycle': 0}}}
+      }
+    }
+  }, grain='os_family'),
+  grain='osmajorrelease',
+  merge=defaults.get('kubeadm_preflight')) %}
 
 {% set repo = salt['grains.filter_by'](
   salt['grains.filter_by']({
