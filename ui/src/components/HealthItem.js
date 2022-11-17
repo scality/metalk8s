@@ -74,8 +74,8 @@ const NonHealthyPopUp = styled.div`
 `;
 
 const NonHealthyPopUpTitle = styled.div`
-  font-weight: ${fontWeight.bold}
-  text-align: center;
+  font-weight: ${fontWeight.bold};
+  align-self: center;
 `;
 
 const NonHealthyPopUpItem = styled.div`
@@ -104,7 +104,7 @@ const HealthItem = ({
     (view) => view.view.path === '/alerts',
   );
 
-  if (!alerts.length && status === STATUS_HEALTH)
+  if (!alerts.length && status === STATUS_HEALTH) {
     return (
       <ServiceItemElement aria-label={label}>
         <ServiceItemLabelWrapper>
@@ -113,7 +113,7 @@ const HealthItem = ({
         </ServiceItemLabelWrapper>
       </ServiceItemElement>
     );
-  else
+  } else {
     return (
       <NonHealthyServiceItemElement>
         <Tooltip
@@ -121,7 +121,6 @@ const HealthItem = ({
           placement="top"
           overlayStyle={{
             width: '20rem',
-            height: '100%',
           }}
           overlay={
             <NonHealthyPopUp>
@@ -161,6 +160,7 @@ const HealthItem = ({
         </Tooltip>
       </NonHealthyServiceItemElement>
     );
+  }
 };
 
 export default HealthItem;
