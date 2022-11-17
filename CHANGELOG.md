@@ -16,6 +16,9 @@
   in [124.0.0](https://github.com/scality/metalk8s/releases/124.0.0)
   changelog)
   (PR[#3909](https://github.com/scality/metalk8s/pull/3909))
+- Do not attempt to provision Volumes in highstate (this avoids breaking when
+  device paths have changed between reboots)
+  (PR[#3913](https://github.com/scality/metalk8s/pull/3913))
 
 ## Release 124.0.0
 
