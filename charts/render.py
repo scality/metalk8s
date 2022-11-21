@@ -420,6 +420,7 @@ def main():
         "networking.k8s.io/v1/Ingress",
         # Used by ServiceMonitor and other monitoring objects
         "monitoring.coreos.com/v1",
+        "monitoring.coreos.com/v1/ServiceMonitor",
     ]
 
     command = [
