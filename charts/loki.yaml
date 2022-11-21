@@ -1,40 +1,56 @@
-image:
-  repository: '__image__(loki)'
+loki:
+  commonConfig:
+    replication_factor: 1
+  storage:
+    type: 'filesystem'
 
-config:
-  existingSecret: loki
+  image:
+    registry: ""
+    repository: '__image__(loki)'
+    # Explicitly bump the version to 2.7.0 (should be removed when bumping to a new helm chart version)
+    tag: "2.7.0"
 
-persistence:
-  enabled: true
-  size: 10Gi
-  storageClassName: metalk8s
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: loki
+  existingSecretForConfig: loki
 
-podAnnotations:
-  # Override default checksum as we want to manage it with salt
-  checksum/config: '__slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret", apiVersion="v1", namespace="metalk8s-logging", name="loki", path="data:loki.yaml")'
+  podAnnotations:
+    # Override default checksum as we want to manage it with salt
+    checksum/config: '__slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret", apiVersion="v1", namespace="metalk8s-logging", name="loki", path="data:config.yaml")'
 
-replicas: '__var__(loki.spec.deployment.replicas)'
+singleBinary:
+  replicas: '__var__(loki.spec.deployment.replicas)'
 
-resources: '__var__(loki.spec.deployment.resources)'
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: metalk8s
+    selector:
+      matchLabels:
+        app.kubernetes.io/name: loki
 
-tolerations:
-  - key: "node-role.kubernetes.io/bootstrap"
-    operator: "Exists"
-    effect: "NoSchedule"
-  - key: "node-role.kubernetes.io/infra"
-    operator: "Exists"
-    effect: "NoSchedule"
+  resources: '__var__(loki.spec.deployment.resources)'
 
-serviceMonitor:
-  enabled: true
-  additionalLabels:
-    metalk8s.scality.com/monitor: ''
+  tolerations:
+    - key: "node-role.kubernetes.io/bootstrap"
+      operator: "Exists"
+      effect: "NoSchedule"
+    - key: "node-role.kubernetes.io/infra"
+      operator: "Exists"
+      effect: "NoSchedule"
 
-extraPorts:
-  - port: 7946
-    protocol: TCP
-    name: memberlist
-    targetPort: memberlist
+monitoring:
+  serviceMonitor:
+    enabled: true
+    labels:
+      metalk8s.scality.com/monitor: ''
+
+  selfMonitoring:
+    enabled: false
+
+    grafanaAgent:
+      installOperator: false
+
+    lokiCanary:
+      enabled: false
+
+test:
+  enabled: false

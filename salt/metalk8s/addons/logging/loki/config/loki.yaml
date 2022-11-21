@@ -16,7 +16,7 @@ spec:
     memberlist:
       abort_if_cluster_join_fails: false
       join_members:
-        - loki-headless:7946
+        - loki-memberlist
       dead_node_reclaim_time: 30s
       gossip_to_dead_nodes_time: 15s
       left_ingesters_timeout: 30s
@@ -27,7 +27,7 @@ spec:
       chunk_idle_period: 3m
       chunk_retain_period: 1m
       wal:
-        dir: /data/loki/wal
+        dir: /var/loki/wal
       lifecycler:
         ring:
           kvstore:
@@ -50,9 +50,9 @@ spec:
       http_listen_port: 3100
     storage_config:
       boltdb:
-        directory: /data/loki/index
+        directory: /var/loki/index
       filesystem:
-        directory: /data/loki/chunks
+        directory: /var/loki/chunks
     table_manager:
       retention_deletes_enabled: true
       retention_period: 336h

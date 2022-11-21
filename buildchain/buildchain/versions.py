@@ -274,8 +274,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="loki",
-        version="2.5.0",
-        digest="sha256:f9ef133793af0b8dc9091fb9694edebb2392a17558639b8a17767afddcca7a0f",
+        version="2.7.0",
+        digest="sha256:aff07ff548294b4ab8f82641646dbbec1b9cd80199b45331d3f7cf8e704b6197",
     ),
     Image(
         name="fluent-bit",

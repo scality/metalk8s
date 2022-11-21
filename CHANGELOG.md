@@ -7,6 +7,12 @@
   [1.21.0](https://github.com/kiwigrid/k8s-sidecar/releases/tag/1.21.0)
   (PR[#3910](https://github.com/scality/metalk8s/pull/3910))
 
+- Bump Loki chart version to
+  [3.4.2](https://github.com/grafana/loki/releases/tag/helm-loki-3.4.2)
+  The Loki image has been bumped accordingly to
+  [2.7.0](https://github.com/grafana/loki/releases/tag/v2.7.0)
+  (PR[#3921](https://github.com/scality/metalk8s/pull/3921))
+
 ## Release 124.0.2 (in development)
 
 ### Bug fixes

@@ -31,5 +31,5 @@ Create Loki Configuration Secret:
           name: loki
           namespace: metalk8s-logging
         stringData:
-          loki.yaml: |-
+          config.yaml: |-
             {{ loki.spec.config | tojson }}
