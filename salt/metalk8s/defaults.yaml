@@ -20,6 +20,7 @@ kubernetes:
 kubeadm_preflight:
   mandatory:
     packages:
+      - tar
       - util-linux            # provides nsenter, mount
       - iproute               # provides ip
       - iptables              # provides iptables

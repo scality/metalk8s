@@ -9,6 +9,11 @@
 
 ## Release 124.0.2 (in development)
 
+### Bug fixes
+
+- Ensure that tar is installed before using it
+  (PR[#3919](https://github.com/scality/metalk8s/pull/3919))
+
 ## Release 124.0.1
 
 ### Bug fixes 
