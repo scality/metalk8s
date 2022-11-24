@@ -6,6 +6,9 @@
 - Ensure that tar is installed before using it
   (PR[#3919](https://github.com/scality/metalk8s/pull/3919))
 
+- Make MetalK8s sos report plugins compatible with sos 4.3
+  (PR[#3922](https://github.com/scality/metalk8s/pull/3922))
+
 ## Release 124.0.1
 
 ### Bug fixes 
