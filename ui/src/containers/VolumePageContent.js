@@ -124,7 +124,7 @@ const VolumePageContent = (props) => {
         <EmptyState
           label={'Volume'}
           link="/volumes/createVolume"
-          icon="Node-ptf"
+          icon="Node-pdf"
           history={history}
         />
       ) : (
