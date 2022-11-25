@@ -1,8 +1,19 @@
 #! /bin/env python3
 
+HAS_PLUGIN_OPT = False
+
 # sos plugin layout changed in sos 4.0
 try:
     from sos.report.plugins import Plugin, RedHatPlugin
+
+    # PluginOpt get added in sos 4.3 and must be used instead of
+    # simple tuple starting from there
+    try:
+        from sos.report.plugins import PluginOpt
+
+        HAS_PLUGIN_OPT = True
+    except ImportError:
+        pass
 except ImportError:
     from sos.plugins import Plugin, RedHatPlugin
 
@@ -15,16 +26,25 @@ class containerd(Plugin, RedHatPlugin):
     profiles = ("container",)
     packages = "cri-tools"
 
-    option_list = [
-        (
-            "all",
-            "enable capture for all containers, even containers "
-            "that have terminated",
-            "fast",
-            False,
-        ),
-        ("logs", "capture logs for running containers", "fast", False),
+    _plugin_options = [
+        {
+            "name": "all",
+            "default": False,
+            "desc": "enable capture for all containers, even containers that have terminated",
+        },
+        {
+            "name": "logs",
+            "default": False,
+            "desc": "capture logs for running containers",
+        },
     ]
+    if HAS_PLUGIN_OPT:
+        option_list = [PluginOpt(**opt) for opt in _plugin_options]
+    else:
+        option_list = [
+            (opt["name"], opt["desc"], "fast", opt["default"])
+            for opt in _plugin_options
+        ]
 
     def setup(self):
         self.add_copy_spec(["/etc/containerd", "/etc/crictl.yaml"])

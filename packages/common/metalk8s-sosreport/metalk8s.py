@@ -4,9 +4,20 @@ from os import path
 
 import requests
 
+HAS_PLUGIN_OPT = False
+
 # sos plugin layout changed in sos 4.0
 try:
     from sos.report.plugins import Plugin, RedHatPlugin
+
+    # PluginOpt get added in sos 4.3 and must be used instead of
+    # simple tuple starting from there
+    try:
+        from sos.report.plugins import PluginOpt
+
+        HAS_PLUGIN_OPT = True
+    except ImportError:
+        pass
 except ImportError:
     from sos.plugins import Plugin, RedHatPlugin
 
@@ -20,12 +31,31 @@ class metalk8s(Plugin, RedHatPlugin):
     profiles = ("container",)
     files = ("/etc/kubernetes/admin.conf",)
 
-    option_list = [
-        ("all", "also collect all namespaces output separately", "slow", False),
-        ("describe", "capture descriptions of all kube resources", "fast", False),
-        ("podlogs", "capture logs for pods", "slow", False),
-        ("prometheus-snapshot", "generate a Prometheus snapshot", "slow", False),
+    _plugin_options = [
+        {
+            "name": "all",
+            "default": False,
+            "desc": "also collect all namespaces output separately",
+        },
+        {
+            "name": "describe",
+            "default": False,
+            "desc": "capture descriptions of all kube resources",
+        },
+        {"name": "podlogs", "default": False, "desc": "capture logs for pods"},
+        {
+            "name": "prometheus-snapshot",
+            "default": False,
+            "desc": "generate a Prometheus snapshot",
+        },
     ]
+    if HAS_PLUGIN_OPT:
+        option_list = [PluginOpt(**opt) for opt in _plugin_options]
+    else:
+        option_list = [
+            (opt["name"], opt["desc"], "fast", opt["default"])
+            for opt in _plugin_options
+        ]
 
     def check_is_master(self):
         return any([path.exists("/etc/kubernetes/admin.conf")])
