@@ -238,9 +238,6 @@ def codegen_chart_loki() -> types.TaskDict:
         "--namespace metalk8s-logging "
         "--service-config loki metalk8s-loki-config "
         "metalk8s/addons/logging/loki/config/loki.yaml metalk8s-logging "
-        "--patch 'StatefulSet,metalk8s-logging,loki,"
-        "spec:template:spec:containers:0:ports:1,"
-        '\\{"name": "memberlist", "containerPort": 7946, "protocol": "TCP"\\}\' '
         f"--output {target_sls}"
     )
 

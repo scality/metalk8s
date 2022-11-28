@@ -28,8 +28,8 @@ Deploy loki-{{ index }} service object:
               protocol: TCP
               targetPort: http-metrics
           selector:
-            app: loki
-            release: loki
+            app.kubernetes.io/instance: loki
+            app.kubernetes.io/name: loki
             statefulset.kubernetes.io/pod-name: loki-{{ index }}
           type: ClusterIP
 {%- endfor %}

@@ -420,6 +420,7 @@ def main():
         "networking.k8s.io/v1/Ingress",
         # Used by ServiceMonitor and other monitoring objects
         "monitoring.coreos.com/v1",
+        "monitoring.coreos.com/v1/ServiceMonitor",
     ]
 
     command = [
@@ -454,7 +455,8 @@ def main():
             return doc and all(
                 [
                     doc.get("metadata", {}).get("name") == conditions["name"],
-                    doc.get("metadata", {}).get("namespace") == conditions["namespace"],
+                    doc.get("metadata", {}).get("namespace", args.namespace)
+                    == conditions["namespace"],
                     doc["kind"] == conditions["kind"],
                 ]
             )

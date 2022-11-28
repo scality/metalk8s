@@ -6,121 +6,59 @@
 
 {% raw %}
 
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  labels:
-    app: loki
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: loki
-    app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.11.1
-    heritage: metalk8s
-    release: loki
-  name: loki
-  namespace: metalk8s-logging
-spec:
-  allowPrivilegeEscalation: false
-  fsGroup:
-    ranges:
-    - max: 65535
-      min: 1
-    rule: MustRunAs
-  hostIPC: false
-  hostNetwork: false
-  hostPID: false
-  privileged: false
-  readOnlyRootFilesystem: true
-  requiredDropCapabilities:
-  - ALL
-  runAsUser:
-    rule: MustRunAsNonRoot
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    ranges:
-    - max: 65535
-      min: 1
-    rule: MustRunAs
-  volumes:
-  - configMap
-  - emptyDir
-  - persistentVolumeClaim
-  - secret
-  - projected
-  - downwardAPI
----
 apiVersion: v1
 automountServiceAccountToken: true
 kind: ServiceAccount
 metadata:
-  annotations: {}
   labels:
-    app: loki
+    app.kubernetes.io/instance: loki
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.11.1
+    app.kubernetes.io/version: 2.6.1
+    helm.sh/chart: loki-3.4.2
     heritage: metalk8s
-    release: loki
   name: loki
   namespace: metalk8s-logging
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  labels:
-    app: loki
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: loki
-    app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.11.1
-    heritage: metalk8s
-    release: loki
-  name: loki
-  namespace: metalk8s-logging
-rules:
-- apiGroups:
-  - extensions
-  resourceNames:
-  - loki
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  labels:
-    app: loki
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: loki
-    app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.11.1
-    heritage: metalk8s
-    release: loki
-  name: loki
-  namespace: metalk8s-logging
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: loki
-subjects:
-- kind: ServiceAccount
-  name: loki
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: loki
+    app.kubernetes.io/instance: loki
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.11.1
+    app.kubernetes.io/version: 2.6.1
+    helm.sh/chart: loki-3.4.2
     heritage: metalk8s
-    release: loki
+  name: loki-memberlist
+  namespace: metalk8s-logging
+spec:
+  clusterIP: None
+  ports:
+  - name: tcp
+    port: 7946
+    protocol: TCP
+    targetPort: http-memberlist
+  selector:
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/part-of: memberlist
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 2.6.1
+    helm.sh/chart: loki-3.4.2
+    heritage: metalk8s
+    prometheus.io/service-monitor: 'false'
     variant: headless
   name: loki-headless
   namespace: metalk8s-logging
@@ -131,26 +69,21 @@ spec:
     port: 3100
     protocol: TCP
     targetPort: http-metrics
-  - name: memberlist
-    port: 7946
-    protocol: TCP
-    targetPort: memberlist
   selector:
-    app: loki
-    release: loki
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/name: loki
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  annotations: {}
   labels:
-    app: loki
+    app.kubernetes.io/instance: loki
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.11.1
+    app.kubernetes.io/version: 2.6.1
+    helm.sh/chart: loki-3.4.2
     heritage: metalk8s
-    release: loki
   name: loki
   namespace: metalk8s-logging
 spec:
@@ -159,94 +92,105 @@ spec:
     port: 3100
     protocol: TCP
     targetPort: http-metrics
-  - name: memberlist
-    port: 7946
+  - name: grpc
+    port: 9095
     protocol: TCP
-    targetPort: memberlist
+    targetPort: grpc
   selector:
-    app: loki
-    release: loki
+    app.kubernetes.io/component: single-binary
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/name: loki
   type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  annotations: {}
   labels:
-    app: loki
+    app.kubernetes.io/component: single-binary
+    app.kubernetes.io/instance: loki
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.11.1
+    app.kubernetes.io/version: 2.6.1
+    helm.sh/chart: loki-3.4.2
     heritage: metalk8s
-    release: loki
   name: loki
   namespace: metalk8s-logging
 spec:
-  podManagementPolicy: OrderedReady
+  podManagementPolicy: Parallel
   replicas: {% endraw -%}{{ loki.spec.deployment.replicas }}{%- raw %}
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: loki
-      release: loki
+      app.kubernetes.io/component: single-binary
+      app.kubernetes.io/instance: loki
+      app.kubernetes.io/name: loki
   serviceName: loki-headless
   template:
     metadata:
       annotations:
         checksum/config: __slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret",
-          apiVersion="v1", namespace="metalk8s-logging", name="loki", path="data:loki.yaml")
-        prometheus.io/port: http-metrics
-        prometheus.io/scrape: 'true'
+          apiVersion="v1", namespace="metalk8s-logging", name="loki", path="data:config.yaml")
       labels:
-        app: loki
-        name: loki
-        release: loki
+        app.kubernetes.io/component: single-binary
+        app.kubernetes.io/instance: loki
+        app.kubernetes.io/name: loki
+        app.kubernetes.io/part-of: memberlist
     spec:
-      affinity: {}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: single-binary
+                app.kubernetes.io/instance: loki
+                app.kubernetes.io/name: loki
+            topologyKey: kubernetes.io/hostname
+      automountServiceAccountToken: true
       containers:
       - args:
-        - -config.file=/etc/loki/loki.yaml
-        env: null
-        image: {% endraw -%}{{ build_image_name("loki", False) }}{%- raw %}:2.5.0
+        - -config.file=/etc/loki/config/config.yaml
+        - -target=all
+        image: {% endraw -%}{{ build_image_name("loki", False) }}{%- raw %}:2.7.0
         imagePullPolicy: IfNotPresent
-        livenessProbe:
-          httpGet:
-            path: /ready
-            port: http-metrics
-          initialDelaySeconds: 45
-        name: loki
+        name: single-binary
         ports:
         - containerPort: 3100
           name: http-metrics
           protocol: TCP
+        - containerPort: 9095
+          name: grpc
+          protocol: TCP
         - containerPort: 7946
-          name: memberlist
+          name: http-memberlist
           protocol: TCP
         readinessProbe:
           httpGet:
             path: /ready
             port: http-metrics
-          initialDelaySeconds: 45
+          initialDelaySeconds: 30
+          timeoutSeconds: 1
         resources: {% endraw -%}{{ loki.spec.deployment.resources }}{%- raw %}
         securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
           readOnlyRootFilesystem: true
         volumeMounts:
         - mountPath: /tmp
           name: tmp
-        - mountPath: /etc/loki
+        - mountPath: /etc/loki/config
           name: config
-        - mountPath: /data
+        - mountPath: /var/loki
           name: storage
-          subPath: null
-      initContainers: []
-      nodeSelector: {}
       securityContext:
         fsGroup: 10001
         runAsGroup: 10001
         runAsNonRoot: true
         runAsUser: 10001
       serviceAccountName: loki
-      terminationGracePeriodSeconds: 4800
+      terminationGracePeriodSeconds: 30
       tolerations:
       - effect: NoSchedule
         key: node-role.kubernetes.io/bootstrap
@@ -261,10 +205,10 @@ spec:
         secret:
           secretName: loki
   updateStrategy:
-    type: RollingUpdate
+    rollingUpdate:
+      partition: 0
   volumeClaimTemplates:
   - metadata:
-      annotations: {}
       name: storage
     spec:
       accessModes:
@@ -281,26 +225,36 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   labels:
-    app: loki
+    app.kubernetes.io/instance: loki
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
-    chart: loki-2.11.1
+    app.kubernetes.io/version: 2.6.1
+    helm.sh/chart: loki-3.4.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
-    release: loki
   name: loki
   namespace: metalk8s-logging
 spec:
   endpoints:
-  - port: http-metrics
-  namespaceSelector:
-    matchNames:
-    - metalk8s-logging
+  - path: /metrics
+    port: http-metrics
+    relabelings:
+    - replacement: metalk8s-logging/$1
+      sourceLabels:
+      - job
+      targetLabel: job
+    - replacement: loki
+      targetLabel: cluster
+    scheme: http
   selector:
+    matchExpressions:
+    - key: prometheus.io/service-monitor
+      operator: NotIn
+      values:
+      - 'false'
     matchLabels:
-      app: loki
-      release: loki
-      variant: headless
+      app.kubernetes.io/instance: loki
+      app.kubernetes.io/name: loki
 
 {% endraw %}
