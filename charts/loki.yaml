@@ -17,6 +17,8 @@ loki:
     checksum/config: '__slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret", apiVersion="v1", namespace="metalk8s-logging", name="loki", path="data:config.yaml")'
 
 singleBinary:
+  targetModule: "all,table-manager"
+
   replicas: '__var__(loki.spec.deployment.replicas)'
 
   persistence:

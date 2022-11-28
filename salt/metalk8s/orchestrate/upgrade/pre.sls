@@ -2,6 +2,9 @@
 # NOTE: This state should be called by salt-master using the saltenv of
 # the destination version (salt-master should have been upgraded)
 
+include:
+  - metalk8s.addons.logging.loki.deployed.pre-upgrade
+
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') %}
 {%- if cp_nodes|length == 1 %}
 

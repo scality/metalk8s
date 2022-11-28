@@ -342,10 +342,13 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/logging/loki/deployed/datasource.sls"),
     Path("salt/metalk8s/addons/logging/loki/deployed/init.sls"),
     Path("salt/metalk8s/addons/logging/loki/deployed/loki-configuration-secret.sls"),
+    Path("salt/metalk8s/addons/logging/loki/deployed/macro.j2"),
     Path("salt/metalk8s/addons/logging/loki/deployed/post-downgrade.sls"),
     Path("salt/metalk8s/addons/logging/loki/deployed/post-upgrade.sls"),
+    Path("salt/metalk8s/addons/logging/loki/deployed/pre-upgrade.sls"),
     Path("salt/metalk8s/addons/logging/loki/deployed/service.sls"),
     Path("salt/metalk8s/addons/logging/loki/deployed/service-configuration.sls"),
+    Path("salt/metalk8s/addons/logging/loki/deployed/workaround-job-dep.sls"),
     targets.TemplateFile(
         task_name="metalk8s-operator.sls",
         source=constants.ROOT.joinpath(

@@ -1,0 +1,61 @@
+{%- macro workaround_job_spec(data_dir) -%}
+{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
+{%- set loki_defaults = salt.slsutil.renderer('salt://metalk8s/addons/logging/loki/config/loki.yaml', saltenv=saltenv) %}
+{%- set loki = salt.metalk8s_service_configuration.get_service_conf('metalk8s-logging', 'metalk8s-loki-config', loki_defaults) %}
+
+{%- set retention_period = loki.spec.config.table_manager.retention_period %}
+{#- NOTE: Consider the last index using `boltdb` is the one currently used #}
+{%- set index_period = (loki.spec.config.schema_config.configs | selectattr("store", "==", "boltdb") | list | last).index.period %}
+
+{#- Let's consider we only support period in hours for the moment #}
+{%- if retention_period[-1] != "h" %}
+  {{ raise("Invalid Loki table manager retention_period, should be in hours") }}
+{%- elif index_period[-1] != "h" %}
+  {{ raise("Invalid Loki index period, should be in hours") }}
+{%- else %}
+  {#- Let's remove file older than retention time + index time + 3 days #}
+  {%- set max_age = ((
+            (retention_period[:-1] | int) / 24
+            + (index_period[:-1] | int) / 24
+          )| int) + 3 %}
+{%- endif %}
+
+template:
+  spec:
+    restartPolicy: OnFailure
+    serviceAccountName: loki-cleaner-wa
+    tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/bootstrap
+        operator: Exists
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/infra
+        operator: Exists
+    containers:
+      - name: loki-cleaner-wa-container
+        image: {{ build_image_name("metalk8s-utils") }}
+        env:
+          - name: MAX_AGE
+            value: "{{ max_age }}"
+          - name: LOKI_DIR
+            value: "{{ data_dir }}"
+        command:
+          - bash
+          - "-c"
+        args:
+          - |-
+              set -e
+              for i in $(seq 0 $(("$(kubectl get sts loki -o jsonpath='{.spec.replicas}')" - 1))); do
+                if ! kubectl wait pod loki-$i --for condition=Ready --timeout=0; then
+                  echo "Pod loki-$i is not running restart it"
+                  kubectl delete pod loki-$i
+                  echo "Waiting for loki-$i to restart"
+                  kubectl wait pod loki-$i --for condition=Ready --timeout=300s
+                  echo "Pod loki-$i is now running"
+                fi
+                echo "Cleaning loki-$i chunks older than $MAX_AGE days"
+                kubectl exec -t loki-$i -- find "$LOKI_DIR/chunks/" -type f -mtime +"$MAX_AGE" ! -name '*.json' -delete
+                echo "Cleaning of loki-$i done"
+              done
+
+{%- endmacro -%}

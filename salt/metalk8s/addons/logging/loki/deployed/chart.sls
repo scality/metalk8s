@@ -16,7 +16,7 @@ metadata:
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.6.1
-    helm.sh/chart: loki-3.4.2
+    helm.sh/chart: loki-3.4.3
     heritage: metalk8s
   name: loki
   namespace: metalk8s-logging
@@ -30,7 +30,7 @@ metadata:
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.6.1
-    helm.sh/chart: loki-3.4.2
+    helm.sh/chart: loki-3.4.3
     heritage: metalk8s
   name: loki-memberlist
   namespace: metalk8s-logging
@@ -56,7 +56,7 @@ metadata:
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.6.1
-    helm.sh/chart: loki-3.4.2
+    helm.sh/chart: loki-3.4.3
     heritage: metalk8s
     prometheus.io/service-monitor: 'false'
     variant: headless
@@ -82,7 +82,7 @@ metadata:
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.6.1
-    helm.sh/chart: loki-3.4.2
+    helm.sh/chart: loki-3.4.3
     heritage: metalk8s
   name: loki
   namespace: metalk8s-logging
@@ -112,7 +112,7 @@ metadata:
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.6.1
-    helm.sh/chart: loki-3.4.2
+    helm.sh/chart: loki-3.4.3
     heritage: metalk8s
   name: loki
   namespace: metalk8s-logging
@@ -150,7 +150,7 @@ spec:
       containers:
       - args:
         - -config.file=/etc/loki/config/config.yaml
-        - -target=all
+        - -target=all,table-manager
         image: {% endraw -%}{{ build_image_name("loki", False) }}{%- raw %}:2.7.0
         imagePullPolicy: IfNotPresent
         name: single-binary
@@ -230,7 +230,7 @@ metadata:
     app.kubernetes.io/name: loki
     app.kubernetes.io/part-of: metalk8s
     app.kubernetes.io/version: 2.6.1
-    helm.sh/chart: loki-3.4.2
+    helm.sh/chart: loki-3.4.3
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
   name: loki
