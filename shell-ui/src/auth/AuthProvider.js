@@ -72,8 +72,8 @@ function OAuth2AuthProvider({ children }: { children: Node }) {
 
   //Force logout on silent renewal error
   useEffect(() => {
-    const onSilentRenewError = (err) => { 
-      console.log("log out following to silent renewal error", err)
+    const onSilentRenewError = (err) => {
+      console.log('log out following to silent renewal error', err);
       logOut();
     };
     userManager.events.addSilentRenewError(onSilentRenewError);
@@ -121,13 +121,13 @@ export function useAuth(): {
   }
 
   //Force logout when token is expired or we are missing expires_at claims
-  if(auth.userData.expired || !auth.userData.expires_at) {
+  if (auth.userData.expired || !auth.userData.expires_at) {
     auth.userManager.revokeAccessToken();
   }
 
   return {
     userData: {
-      token: auth.userData.id_token,
+      token: auth.userData.access_token,
       username: auth.userData.profile?.name,
       email: auth.userData.profile?.email,
       groups: getUserGroups(auth.userData, config.userGroupsMapping),
