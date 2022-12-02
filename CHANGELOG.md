@@ -1,5 +1,7 @@
 # CHANGELOG
-## Release 124.1.0 (in development)
+## Release 124.1.1 (in development)
+
+## Release 124.1.0
 
 ### Enhancements
 
