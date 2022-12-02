@@ -65,7 +65,7 @@ Create Loki Cleaner Workaround CronJob:
           concurrencyPolicy: Replace
           jobTemplate:
             spec:
-              {{ workaround_job_spec("/var/loki") | indent(14) }}
+              {{ workaround_job_spec("/var/loki/loki") | indent(14) }}
     - require:
       - sls: metalk8s.addons.logging.loki.deployed.workaround-job-dep
       - sls: metalk8s.addons.logging.loki.deployed.chart
