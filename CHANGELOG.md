@@ -1,6 +1,11 @@
 # CHANGELOG
 ## Release 124.1.1 (in development)
 
+### Bug fixes
+
+- Fix Salt issue duplicate SLS id during pre-upgrade
+  (PR[#3930](https://github.com/scality/metalk8s/pull/3930))
+
 ## Release 124.1.0
 
 ### Enhancements

@@ -42,7 +42,7 @@ Create Loki Cleaner Workaround Job:
 
 {%- else %}
 
-Nothing to do before upgrading:
+Nothing to do before upgrading for Loki:
   test.nop: []
 
 {%- endif %}
