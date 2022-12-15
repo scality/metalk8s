@@ -1,12 +1,10 @@
-const path = require('path');
-const { version } = require('./package.json');
 const { DefinePlugin } = require('webpack');
 const common = require('./webpack.common');
 
 const controlPlaneIP = '{{IP}}';
 const controlPlaneBaseUrl = `https://${controlPlaneIP}:8443`;
 
-module.exports = (env) => ({
+module.exports = () => ({
   ...common,
   mode: 'development',
   devtool: 'source-map',
