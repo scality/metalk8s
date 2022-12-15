@@ -71,7 +71,7 @@ def lint_python() -> types.TaskDict:
         *constants.ROOT.glob("salt/_renderers/*.py"),
         *constants.ROOT.glob("salt/_roster/*.py"),
     ]
-    cmd = " ".join(map(shlex.quote, ["tox", "-e", "lint", "pylint"]))
+    cmd = " ".join(map(shlex.quote, ["tox", "-e", "lint", "--", "pylint"]))
     env = {"PATH": os.environ["PATH"], "OSTYPE": os.uname().sysname}
     return {
         "name": "python",
@@ -111,7 +111,7 @@ def lint_yaml() -> types.TaskDict:
         "name": "yaml",
         "title": utils.title_with_subtask_name("LINT"),
         "doc": lint_yaml.__doc__,
-        "actions": [["tox", "-e", "lint", "yamllint"]],
+        "actions": [["tox", "-e", "lint", "--", "yamllint"]],
         "file_dep": [
             constants.ROOT / "eve/main.yml",
             constants.ROOT / "salt/metalk8s/defaults.yaml",
@@ -131,7 +131,7 @@ def lint_sls() -> types.TaskDict:
         "name": "sls",
         "title": utils.title_with_subtask_name("LINT"),
         "doc": lint_sls.__doc__,
-        "actions": [["tox", "-e", "lint", "salt-lint"]],
+        "actions": [["tox", "-e", "lint", "--", "salt-lint"]],
         "file_dep": sls_files,
         "task_dep": ["check_for:tox"],
     }

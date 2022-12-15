@@ -90,7 +90,7 @@ def codegen_chart_dex() -> types.TaskDict:
         "name": "chart_dex",
         "title": utils.title_with_subtask_name("CODEGEN"),
         "doc": codegen_chart_dex.__doc__,
-        "actions": [doit.action.CmdAction(cmd)],
+        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
         "task_dep": ["check_for:tox", "check_for:helm"],
     }
@@ -119,7 +119,7 @@ def codegen_chart_fluent_bit() -> types.TaskDict:
         "name": "chart_fluent-bit",
         "title": utils.title_with_subtask_name("CODEGEN"),
         "doc": codegen_chart_fluent_bit.__doc__,
-        "actions": [doit.action.CmdAction(cmd)],
+        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
         "task_dep": ["check_for:tox", "check_for:helm"],
     }
@@ -140,7 +140,8 @@ def codegen_chart_ingress_nginx() -> types.TaskDict:
     actions.append(
         doit.action.CmdAction(
             f"{constants.CHART_RENDER_CMD} ingress-nginx {value_file} "
-            f"{chart_dir} --namespace metalk8s-ingress --output {target_sls}"
+            f"{chart_dir} --namespace metalk8s-ingress --output {target_sls}",
+            cwd=constants.ROOT,
         )
     )
     file_dep.append(value_file)
@@ -155,7 +156,8 @@ def codegen_chart_ingress_nginx() -> types.TaskDict:
     actions.append(
         doit.action.CmdAction(
             f"{constants.CHART_RENDER_CMD} ingress-nginx-control-plane {value_file} "
-            f"{chart_dir} --namespace metalk8s-ingress --output {target_sls}"
+            f"{chart_dir} --namespace metalk8s-ingress --output {target_sls}",
+            cwd=constants.ROOT,
         )
     )
     file_dep.append(value_file)
@@ -170,7 +172,8 @@ def codegen_chart_ingress_nginx() -> types.TaskDict:
     actions.append(
         doit.action.CmdAction(
             f"{constants.CHART_RENDER_CMD} ingress-nginx-control-plane {value_file} "
-            f"{chart_dir} --namespace metalk8s-ingress --output {target_sls}"
+            f"{chart_dir} --namespace metalk8s-ingress --output {target_sls}",
+            cwd=constants.ROOT,
         )
     )
     file_dep.append(value_file)
@@ -222,7 +225,7 @@ def codegen_chart_kube_prometheus_stack() -> types.TaskDict:
         "name": "chart_kube-prometheus-stack",
         "title": utils.title_with_subtask_name("CODEGEN"),
         "doc": codegen_chart_kube_prometheus_stack.__doc__,
-        "actions": [doit.action.CmdAction(cmd)],
+        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
         "task_dep": ["check_for:tox", "check_for:helm"],
     }
@@ -252,7 +255,7 @@ def codegen_chart_loki() -> types.TaskDict:
         "name": "chart_loki",
         "title": utils.title_with_subtask_name("CODEGEN"),
         "doc": codegen_chart_loki.__doc__,
-        "actions": [doit.action.CmdAction(cmd)],
+        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
         "task_dep": ["check_for:tox", "check_for:helm"],
     }
@@ -285,7 +288,7 @@ def codegen_chart_metallb() -> types.TaskDict:
         "name": "chart_metallb",
         "title": utils.title_with_subtask_name("CODEGEN"),
         "doc": codegen_chart_metallb.__doc__,
-        "actions": [doit.action.CmdAction(cmd)],
+        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
         "task_dep": ["check_for:tox", "check_for:helm"],
     }
@@ -312,7 +315,7 @@ def codegen_chart_prometheus_adapter() -> types.TaskDict:
         "name": "chart_prometheus-adapter",
         "title": utils.title_with_subtask_name("CODEGEN"),
         "doc": codegen_chart_prometheus_adapter.__doc__,
-        "actions": [doit.action.CmdAction(cmd)],
+        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
         "task_dep": ["check_for:tox", "check_for:helm"],
     }
@@ -340,7 +343,7 @@ def codegen_chart_thanos() -> types.TaskDict:
         "name": "chart_thanos",
         "title": utils.title_with_subtask_name("CODEGEN"),
         "doc": codegen_chart_thanos.__doc__,
-        "actions": [doit.action.CmdAction(cmd)],
+        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
         "file_dep": file_dep,
         "task_dep": ["check_for:tox", "check_for:helm"],
     }
