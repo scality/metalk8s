@@ -1,0 +1,21 @@
+name: Pre merge
+
+on:
+  push:
+    branches:
+      - "release/**"
+      - "feature/**"
+      - "improvement/**"
+      - "hotfix/**"
+      - "bugfix/**"
+      - "documentation/**"
+      - "user/**"
+      - "dependabot/**"
+      - "w/**"
+      - 'q/*/**'
+      - 'q/*'
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yaml
+    secrets: inherit
