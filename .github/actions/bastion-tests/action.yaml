@@ -1,0 +1,41 @@
+name: "Bastion tests"
+description: "Run tests from the Bastion"
+
+inputs:
+  PYTEST_FILTERS:
+    description: "The pytest filter to use"
+    required: false
+    default: "post and ci and not multinode and not slow and not registry_ha"
+  CONTROL_PLANE_INGRESS_VIP:
+    description: "Virtual IP to use to test to reconfigure the Control Plane Ingress"
+    required: false
+    default: "192.168.1.253"
+  WORKLOAD_PLANE_INGRESS_VIPS:
+    description: "Virtual IPs to use to test to reconfigure the Workload Plane Ingress"
+    required: false
+    default: "192.168.2.200,192.168.2.201,192.168.2.202,192.168.2.203,192.168.2.204"
+  MOUNTPOINT:
+    description: "Path to the MetalK8s ISO mountpoint on bootstrap node"
+    required: false
+    default: "/var/tmp/metalk8s"
+  BOOTSTRAP_BACKUP_ARCHIVE:
+    description: "Path to the bootstrap backup archive"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run tests from Bastion
+      uses: ./.github/actions/run-command-ssh
+      with:
+        NODE: bastion
+        SSH_OPTIONS: "-o ServerAliveInterval=15"
+        COMMAND: |
+          cd metalk8s
+          export SSH_CONFIG_FILE=\"/home/centos/ssh_config\"
+          export ISO_MOUNTPOINT=\"${{ inputs.MOUNTPOINT }}\"
+          export BOOTSTRAP_BACKUP_ARCHIVE=\"${{ inputs.BOOTSTRAP_BACKUP_ARCHIVE }}\"
+          export CONTROL_PLANE_INGRESS_VIP=\"${{ inputs.CONTROL_PLANE_INGRESS_VIP }}\"
+          export WORKLOAD_PLANE_INGRESS_VIPS=\"${{ inputs.WORKLOAD_PLANE_INGRESS_VIPS }}\"
+          tox -e tests -- -m \"${{ inputs.PYTEST_FILTERS }}\"

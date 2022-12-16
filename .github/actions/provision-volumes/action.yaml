@@ -1,0 +1,30 @@
+name: "Provision volumes"
+description: "Provision all volumes needed by MetalK8s"
+
+inputs:
+  NODE:
+    description: "The node to generate the volume on"
+    required: false
+    default: "bootstrap"
+  MOUNTPOINT:
+    description: "Path to the MetalK8s ISO mountpoint on bootstrap node"
+    required: false
+    default: "/var/tmp/metalk8s"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Copy create volume script to bootstrap
+      uses: ./.github/actions/copy-file-ssh
+      with:
+        SOURCE_FILE: ".github/scripts/create-volumes.sh"
+        DESTINATION_FILE: //tmp/create-volumes.sh
+    - name: Run the create volume script on bootstrap
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >
+          sudo env
+          PRODUCT_MOUNT=\"${{ inputs.MOUNTPOINT }}\"
+          PRODUCT_TXT=\"${{ inputs.MOUNTPOINT }}/product.txt\"
+          NODE_NAME=\"${{ inputs.NODE }}\"
+          /tmp/create-volumes.sh

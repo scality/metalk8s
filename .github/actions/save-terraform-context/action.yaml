@@ -1,0 +1,45 @@
+name: Save Terraform context
+description: Upload the Terraform context (state and plugins) to Artifacts
+
+inputs:
+  ARTIFACTS_USER:
+    description: Artifact user
+    required: true
+  ARTIFACTS_PASSWORD:
+    description: Artifact password
+    required: true
+  NAME:
+    description: Name of the deployment
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Prepare artifacts for upload
+      working-directory: terraform-snapshot/terraform/
+      if: always()
+      shell: bash
+      run: |
+        mkdir -p artifacts/terraform-context/${{ inputs.NAME }}/
+        tar cvf ${{ inputs.NAME }}-context.tar.gz \
+          .terraform \
+          .terraform.lock.hcl \
+          terraform.tfstate
+        mv ${{ inputs.NAME }}-context.tar.gz artifacts/terraform-context/${{ inputs.NAME }}/
+        # ssh_config might not be generated
+        if [[ -e ssh_config ]]; then cp ssh_config artifacts/terraform-context/${{ inputs.NAME }}/; fi
+    - name: Upload Terraform context
+      id: upload-context
+      if: always()
+      uses: scality/action-artifacts@v3
+      with:
+        method: upload
+        url: https://artifacts.scality.net
+        user: ${{ inputs.ARTIFACTS_USER }}
+        password: ${{ inputs.ARTIFACTS_PASSWORD }}
+        source: terraform-snapshot/terraform/artifacts/
+
+outputs:
+  url:
+    description: The full URL to the uploaded Terraform context
+    value: ${{ steps.upload-context.outputs.link }}/terraform-context/${{ inputs.NAME }}

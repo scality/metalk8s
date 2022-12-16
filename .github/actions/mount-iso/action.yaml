@@ -1,0 +1,24 @@
+name: "Mount ISO"
+description: "Mount MetalK8s ISO on bootstrap node"
+
+inputs:
+  ARCHIVE:
+    description: "Path to the MetalK8s ISO on bootstrap node"
+    required: false
+    default: "metalk8s.iso"
+  MOUNTPOINT:
+    description: "Path to the MetalK8s ISO mountpoint on bootstrap node"
+    required: false
+    default: "/var/tmp/metalk8s"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Create mountpoint directory
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: sudo mkdir -p "${{ inputs.MOUNTPOINT }}"
+    - name: Mount MetalK8s ISO
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: sudo mount \"${{ inputs.ARCHIVE }}\" \"${{ inputs.MOUNTPOINT }}\"

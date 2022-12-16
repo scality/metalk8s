@@ -1,0 +1,30 @@
+name: "Prepare expansion"
+description: "Prepare the node for expansion"
+
+inputs:
+  NODE_COUNT:
+    description: "The number of extra nodes"
+    required: false
+    default: "1"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Retrieve the Bastion private key
+      uses: ./.github/actions/copy-file-ssh
+      with:
+        NODE_FROM: bastion
+        NODE_TO: ""
+        SOURCE_FILE: ".ssh/bastion"
+        DESTINATION_FILE: "./"
+    - name: Copy the private key to the Bootstrap node
+      uses: ./.github/actions/copy-file-ssh
+      with:
+        NODE_TO: bootstrap
+        SOURCE_FILE: bastion
+    - name: Move the private key to the MetalK8s PKI directory on Bootstrap node
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: |
+          sudo mkdir -p /etc/metalk8s/pki
+          sudo mv bastion /etc/metalk8s/pki/

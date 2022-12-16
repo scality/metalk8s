@@ -1,0 +1,16 @@
+name: "Run Bootstrap"
+description: "Run the bootstrap script on bootstrap node"
+
+inputs:
+  MOUNTPOINT:
+    description: "Path to the MetalK8s ISO mountpoint on bootstrap node"
+    required: false
+    default: "/var/tmp/metalk8s"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Bootstrap script
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: sudo ${{ inputs.MOUNTPOINT }}/bootstrap.sh --verbose

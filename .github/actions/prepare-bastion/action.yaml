@@ -1,0 +1,30 @@
+name: "Prepare bastion"
+description: "Prepare the bastion so to be ready to run tests"
+
+inputs:
+  BRANCH:
+    description: "The git revision to checkout"
+    required: false
+    default: ${{ github.ref_name }}
+  UI_DEPS:
+    description: "Whether or not the bastion should be prepared to run UI tests"
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Clone MetalK8s repository on Bastion
+      uses: ./.github/actions/run-command-ssh
+      with:
+        NODE: bastion
+        COMMAND: >
+          git clone --depth 1
+          --branch ${{ inputs.BRANCH }}
+          ${{ github.server_url }}/${{ github.repository }}
+    - name: Install UI tests deps on Bastion
+      if: inputs.UI_DEPS != 'false'
+      uses: ./.github/actions/run-command-ssh
+      with:
+        NODE: bastion
+        COMMAND: cd metalk8s && bash ui/cypress/requirements.sh
