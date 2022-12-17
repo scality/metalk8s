@@ -1,5 +1,15 @@
 name: Pre merge
 
+concurrency:
+  # This stops any build on a branch if a new commit is pushed on that branch
+  # the second check is here to run each build when pushing on the branch `q/*`
+  # in order for bert-e to merge any branch that passes the queue before waiting
+  # for the entire queue to passe the build.
+  # if the branch is 'q/*' then we append the commit sha to the concurrency group to make it unique.
+  # this works because the '||' or condition will only evaluate the right side if the left side is false ;-)
+  group: "tests-${{ github.ref_name }}-${{ ( !startsWith(github.ref_name, 'q/') || github.sha) }}"
+  cancel-in-progress: true
+
 on:
   push:
     branches:
