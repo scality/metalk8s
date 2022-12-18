@@ -29,7 +29,14 @@ def test_cluster_expansion_2_nodes(host):
 def declare_node(host, ssh_config, version, k8s_client, node_type, node_name):
     """Declare the given node in Kubernetes."""
     node_ip = get_node_ip(host, node_name, ssh_config)
-    node_manifest = get_node_manifest(node_type, version, node_ip, node_name)
+    node_user = get_node_user(node_name, ssh_config)
+    node_manifest = get_node_manifest(
+        node_type,
+        metalk8s_version=version,
+        node_ip=node_ip,
+        node_user=node_user,
+        node_name=node_name,
+    )
     k8s_client.resources.get(api_version="v1", kind="Node").create(
         body=node_from_manifest(node_manifest)
     )
@@ -125,14 +132,17 @@ def get_node_ip(host, node_name, ssh_config):
     return utils.get_ip_from_cidr(infra_node, control_plane_cidrs[0])
 
 
-def get_node_manifest(node_type, metalk8s_version, node_ip, node_name):
+def get_node_user(node_name, ssh_config):
+    """Return the ssh user of the node `node_name`."""
+    return testinfra.get_host(node_name, ssh_config=ssh_config).user().name
+
+
+def get_node_manifest(node_type, **kwargs):
     """Return the YAML to declare a node with the specified IP."""
     filename = "{}-node.yaml.tpl".format(node_type)
     filepath = (pathlib.Path(__file__) / ".." / "files" / filename).resolve()
     manifest = filepath.read_text(encoding="utf-8")
-    return string.Template(manifest).substitute(
-        metalk8s_version=metalk8s_version, node_ip=node_ip, node_name=node_name
-    )
+    return string.Template(manifest).substitute(**kwargs)
 
 
 def node_from_manifest(manifest):
