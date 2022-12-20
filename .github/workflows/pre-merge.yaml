@@ -22,8 +22,8 @@ on:
       - "user/**"
       - "dependabot/**"
       - "w/**"
-      - 'q/*/**'
-      - 'q/*'
+      - "q/*/**"
+      - "q/*"
 
 env:
   CLOUD: "ovh"
@@ -472,7 +472,7 @@ jobs:
 
   write-final-success-status:
     runs-on: ubuntu-20.04
-    needs: 
+    needs:
       - destroy-single-node-cluster
       - destroy-multi-node-cluster
     if: success()
