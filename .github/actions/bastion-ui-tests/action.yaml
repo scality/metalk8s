@@ -34,6 +34,6 @@ runs:
       env:
         DEST_DIR: "${{ inputs.DEST_DIR }}"
       run: |
-        scp -r -F ssh_config "bastion":metalk8s/ui/cypress/screenshots "$DEST_DIR/cypress/"
-        scp -r -F ssh_config "bastion":metalk8s/ui/cypress/videos "$DEST_DIR/cypress/"
-        scp -r -F ssh_config "bastion":metalk8s/ui/junit "$DEST_DIR"
+        scp -r -F ssh_config "bastion":metalk8s/ui/cypress/screenshots "$DEST_DIR/cypress/" || true
+        scp -r -F ssh_config "bastion":metalk8s/ui/cypress/videos "$DEST_DIR/cypress/" || true
+        scp -r -F ssh_config "bastion":metalk8s/ui/junit "$DEST_DIR" || true
