@@ -3,7 +3,7 @@ ARG BASE_IMAGE_SHA256
 ARG BASE_IMAGE=docker.io/alpine
 
 ARG BUILD_IMAGE_NAME=golang
-ARG BUILD_IMAGE_TAG=1.16.0-alpine
+ARG BUILD_IMAGE_TAG=1.17.0-alpine
 FROM ${BUILD_IMAGE_NAME}:${BUILD_IMAGE_TAG} AS builder
 
 ENV CGO_ENABLED=0
@@ -18,7 +18,7 @@ COPY main.go go.mod "$PKG_PATH"
 WORKDIR "$PKG_PATH"
 
 RUN sed -i "s/@@ALERTMANAGER_VERSION@@/$ALERTMANAGER_VERSION/g" go.mod \
-  && go mod tidy \
+  && go mod tidy -go=1.16 && go mod tidy -go=1.17 \
   && go install
 
 FROM ${BASE_IMAGE}@sha256:${BASE_IMAGE_SHA256}
