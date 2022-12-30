@@ -1,0 +1,72 @@
+name: "Generate Bootstrap config"
+description: "Generate a new bootstrap configuration file on bootstrap node"
+
+inputs:
+  ARCHIVE:
+    description: "Path to the MetalK8s ISO on bootstrap node"
+    required: false
+    default: "metalk8s.iso"
+  HARD_ANTIAFINITY:
+    description: "Whether or not hard podAntiAffinity on hostname should be set"
+    default: "false"
+  DEX_ENABLED:
+    description: "Whether or not Dex should be enabled"
+    required: false
+    default: "true"
+  DEBUG:
+    description: "Whether or not debug mode should be enabled"
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Enforce Bootstrap node name
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: |
+          sudo mkdir -p /etc/salt
+          echo 'bootstrap' | sudo tee /etc/salt/minion_id
+    - name: Create MetalK8s directory
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: sudo mkdir -p /etc/metalk8s
+    - name: Set no hard anti affinity
+      shell: bash
+      if: inputs.HARD_ANTIAFINITY == 'false'
+      run: echo "AFFINITY={}" >> $GITHUB_ENV
+    - name: Set hard anti affinity
+      shell: bash
+      if: inputs.HARD_ANTIAFINITY != 'false'
+      run: |
+        echo "AFFINITY={"podAntiAffinity": {"hard": [{"topologyKey": "kubernetes.io/hostname"}]}}" >> $GITHUB_ENV
+    - name: Create bootstrap configuration file
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: |
+          sudo tee /etc/metalk8s/bootstrap.yaml << EOF
+          apiVersion: metalk8s.scality.com/v1alpha3
+          kind: BootstrapConfiguration
+          networks:
+            controlPlane:
+              cidr: 192.168.1.0/24
+              metalLB:
+                enabled: true
+              ingress:
+                controller:
+                  affinity: ${{ env.AFFINITY }}
+                ip: 192.168.1.254
+            workloadPlane:
+              cidr: 192.168.2.0/24
+          ca:
+            minion: \"bootstrap\"
+          archives:
+            - \"\$(readlink -f \"${{ inputs.ARCHIVE }}\")\"
+          debug: ${{ inputs.DEBUG }}
+          addons:
+            dex:
+              enabled: ${{ inputs.DEX_ENABLED }}
+          kubernetes:
+            coreDNS:
+              affinity: ${{ env.AFFINITY }}
+          EOF

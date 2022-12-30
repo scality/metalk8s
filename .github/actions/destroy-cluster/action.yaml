@@ -1,0 +1,86 @@
+name: "destroy-cluster"
+description: "Destroy cluster using Terraform"
+
+inputs:
+  # Access credentials
+  GIT_ACCESS_TOKEN:
+    description: "A Github PAT"
+    required: true
+  ARTIFACTS_USER:
+    description: "Scality Artifacts username"
+    required: true
+  ARTIFACTS_PASSWORD:
+    description: "Scality Artifacts password"
+    required: true
+
+  # Tooling configuration
+  TERRAFORM_VERSION:
+    description: "Terraform version to use"
+    required: true
+  TERRAFORM_SNAPSHOT_TAG:
+    description: "Terraform snapshot tag to checkout"
+    required: true
+
+  # Cloud configuration
+  CLOUD:
+    description: "Name of the remote cloud to use (available: ovh)"
+    required: true
+
+  # Spawn configuration
+  ARTIFACTS_CONTEXT_URL:
+    description: Full URL to the saved Terraform context
+    required: true
+  NAME:
+    description: "Name of the deployment (used in artifacts and the VM names prefix)"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout terraform-snapshot
+      uses: actions/checkout@v3
+      with:
+        repository: scality/terraform-snapshot
+        path: terraform-snapshot
+        token: ${{ inputs.GIT_ACCESS_TOKEN }}
+        ref: "${{ inputs.TERRAFORM_SNAPSHOT_TAG }}"
+    - name: Install tools
+      shell: bash
+      run: sudo yum install -y unzip
+    - name: Install node
+      uses: actions/setup-node@v3
+      with:
+        node-version: "14"
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: ${{ inputs.TERRAFORM_VERSION }}
+    - name: Retrieve Terraform context and SSH keys
+      working-directory: terraform-snapshot/terraform/
+      shell: bash
+      run: |
+        curl --fail -LO -u ${{ inputs.ARTIFACTS_USER }}:${{ inputs.ARTIFACTS_PASSWORD }} \
+          ${{ inputs.ARTIFACTS_CONTEXT_URL }}/${{ inputs.NAME }}-context.tar.gz
+        curl --fail -LO -u ${{ inputs.ARTIFACTS_USER }}:${{ inputs.ARTIFACTS_PASSWORD }} \
+          ${{ inputs.ARTIFACTS_CONTEXT_URL }}/terraform
+        curl --fail -LO -u ${{ inputs.ARTIFACTS_USER }}:${{ inputs.ARTIFACTS_PASSWORD }} \
+          ${{ inputs.ARTIFACTS_CONTEXT_URL }}/terraform.pub
+        curl -LO -u ${{ inputs.ARTIFACTS_USER }}:${{ inputs.ARTIFACTS_PASSWORD }} \
+          ${{ inputs.ARTIFACTS_CONTEXT_URL }}/ssh_config
+    - name: Unpack Terraform context and move SSH keys
+      working-directory: terraform-snapshot/terraform/
+      shell: bash
+      run: |
+        tar -xvf ${{ inputs.NAME }}-context.tar.gz
+        mkdir -p ~/.ssh
+        mv terraform terraform.pub ~/.ssh/
+    - name: Validate Terraform context
+      working-directory: terraform-snapshot/terraform/
+      shell: bash
+      run: terraform validate
+    - name: Destroy cluster with Terraform
+      working-directory: terraform-snapshot/terraform/
+      shell: bash
+      run: terraform destroy -auto-approve
+      env:
+        TF_VAR_cloud: ${{ inputs.CLOUD }}

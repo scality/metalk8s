@@ -1,0 +1,39 @@
+name: "Bastion UI tests"
+description: "Run UI tests from the Bastion"
+
+inputs:
+  TEST_FILTERS:
+    description: "The test filter to use"
+    required: false
+    default: "e2e"
+  TARGET_URL:
+    description: "The URL to reach the UI"
+    required: false
+    default: "https://192.168.1.254:8443"
+  DEST_DIR:
+    description: "The target directory on worker to store tests results"
+    required: false
+    default: "artifacts/cypress/${{ github.job }}"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run UI tests from Bastion
+      uses: ./.github/actions/run-command-ssh
+      with:
+        NODE: bastion
+        COMMAND: |
+          cd metalk8s/ui
+          rm -rf babel.config.js
+          CYPRESS_BASE_URL=\"${{ inputs.TARGET_URL }}\" npm run \"test:${{ inputs.TEST_FILTERS }}\"
+    - name: Create dest directory
+      shell: bash
+      run: mkdir -p "${{ inputs.DEST_DIR }}"
+    - name: Collect cypress screenshots from Bastion
+      shell: bash
+      env:
+        DEST_DIR: "${{ inputs.DEST_DIR }}"
+      run: |
+        scp -r -F ssh_config "bastion":metalk8s/ui/cypress/screenshots "$DEST_DIR/cypress/"
+        scp -r -F ssh_config "bastion":metalk8s/ui/cypress/videos "$DEST_DIR/cypress/"
+        scp -r -F ssh_config "bastion":metalk8s/ui/junit "$DEST_DIR"

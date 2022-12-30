@@ -1,0 +1,124 @@
+name: "spawn-cluster"
+description: "Spawn a cluster using Terraform"
+
+inputs:
+  # Access credentials
+  GIT_ACCESS_TOKEN:
+    description: "A Github PAT"
+    required: true
+  ARTIFACTS_USER:
+    description: "Scality Artifacts username"
+    required: true
+  ARTIFACTS_PASSWORD:
+    description: "Scality Artifacts password"
+    required: true
+
+  # Tooling configuration
+  TERRAFORM_VERSION:
+    description: "Terraform version to use"
+    required: true
+  TERRAFORM_SNAPSHOT_TAG:
+    description: "Tag to checkout for the scality/terraform-snapshot repository"
+    required: true
+
+  # Cloud configuration
+  CLOUD:
+    description: "Name of the remote cloud to use (available: ovh)"
+    required: true
+
+  # Spawn configuration
+  NAME:
+    description: "Name of the deployment (used in artifacts and the VM names prefix)"
+    required: true
+
+  OS:
+    description: "Name of the OS to spawn"
+    required: false
+    default: rocky-8
+  NODES_COUNT:
+    description: "Number of nodes to spawn in addition to bootstrap and bastion"
+    required: false
+    default: "0"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Prepare SSH keypair
+      shell: bash
+      run: |
+        mkdir -p ~/.ssh
+        rm -rf ~/.ssh/terraform*
+        ssh-keygen -t rsa -b 4096 -N '' -f ~/.ssh/terraform
+        # copy ssh keys now in order to allow us to connect to the machine if needed
+        mkdir -p artifacts/terraform-context/${{ inputs.NAME }}/
+        cp ~/.ssh/terraform* artifacts/terraform-context/${{ inputs.NAME }}/
+    - name: Upload SSH keypair
+      uses: scality/action-artifacts@v3
+      with:
+        method: upload
+        url: https://artifacts.scality.net
+        user: ${{inputs.ARTIFACTS_USER}}
+        password: ${{inputs.ARTIFACTS_PASSWORD}}
+        source: artifacts/
+    - name: Checkout scality/terraform-snapshot
+      uses: actions/checkout@v3
+      with:
+        repository: scality/terraform-snapshot
+        path: terraform-snapshot
+        token: ${{ inputs.GIT_ACCESS_TOKEN }}
+        ref: ${{ inputs.TERRAFORM_SNAPSHOT_TAG }}
+    - name: Install tools
+      shell: bash
+      run: sudo yum install -y unzip tar
+    - name: Install node
+      uses: actions/setup-node@v3
+      with:
+        node-version: "14"
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: ${{ inputs.TERRAFORM_VERSION }}
+    - name: Initialize Terraform
+      working-directory: terraform-snapshot/terraform/
+      shell: bash
+      run: terraform init
+    - name: Validate terraform
+      working-directory: terraform-snapshot/terraform/
+      shell: bash
+      run: terraform validate
+    - name: Spawn cluster with Terraform
+      working-directory: terraform-snapshot/terraform/
+      shell: bash
+      env:
+        TF_VAR_prefix: gh-${{ github.run_number }}-${{ inputs.NAME }}
+        TF_VAR_os: "${{ inputs.OS }}"
+        TF_VAR_nodes_count: "${{ inputs.NODES_COUNT }}"
+        MAX_RETRIES: "3"
+        TFVARS_DIR: "${{ github.workspace }}/.github/spawn/tfvars"
+      run: |
+        declare -a TF_OPTS=(
+          "-auto-approve"
+          "-var-file $TFVARS_DIR/common.tfvars"
+          "-var-file $TFVARS_DIR/${{ inputs.CLOUD }}.tfvars"
+        )
+        for try in $(seq 1 ${MAX_RETRIES}); do
+          if terraform apply ${TF_OPTS[@]}; then
+            break
+          elif [ $try -lt $MAX_RETRIES ]; then
+            sleep 150
+          else
+            echo "Error: unable to spawn openstack virtual infra after" \
+                 "$MAX_RETRIES tries" >&2
+            exit 1
+          fi
+        done
+    - name: Save node IPs in output
+      id: output_ips
+      working-directory: terraform-snapshot/terraform
+      shell: bash
+      run: terraform output -json ips
+
+outputs:
+  ips:
+    description: JSON string representing all access IPs for the spawned machines
+    value: ${{ steps.output_ips.outputs.stdout }}

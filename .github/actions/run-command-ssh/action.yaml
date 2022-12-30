@@ -1,0 +1,50 @@
+name: "run command ssh"
+description: "Run a command over ssh"
+
+inputs:
+  COMMAND:
+    description: "the command to run"
+    required: true
+  NODE:
+    description: "the node where to run the command"
+    required: false
+    default: "bootstrap"
+  CAPTURE_RESULT:
+    description: "whether or not to capture command output, if defined will set a RESULT step output"
+    required: false
+    default: "false"
+  SSH_OPTIONS:
+    description: "Additional args passed to ssh"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: "check ssh_config file"
+      shell: bash
+      run: test -f ssh_config
+    - name: "run command"
+      shell: bash
+      if: inputs.CAPTURE_RESULT != 'false'
+      run: |
+        echo "RESULT<<EOF" >> $GITHUB_ENV
+        ssh -F ssh_config ${{ inputs.SSH_OPTIONS }} ${{ inputs.NODE }} "${{ inputs.COMMAND }}" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+    - name: Set command output
+      uses: actions/github-script@v6
+      if: inputs.CAPTURE_RESULT != 'false'
+      id: command
+      with:
+        script: |
+          core.setOutput("commandoutput", `${{ env.RESULT }}`);
+    - name: "run command"
+      shell: bash
+      if: inputs.CAPTURE_RESULT == 'false'
+      run: |
+        ssh -F ssh_config ${{ inputs.SSH_OPTIONS }} ${{ inputs.NODE }} "${{ inputs.COMMAND }}"
+
+outputs:
+  RESULT:
+    description: "the command result"
+    value: ${{ steps.command.outputs.commandoutput }}

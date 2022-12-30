@@ -1,0 +1,36 @@
+name: "export-cloud-env"
+description: "Write environment variables for accessing a remote cloud"
+
+inputs:
+  # The only parameter to this action
+  CLOUD:
+    description: "Short name defining the chosen remote cloud (available: ovh)"
+    required: true
+
+  # All following should map to repository secrets
+  OVH_AUTH_URL:
+    description: "Auth URL for OVH"
+    required: true
+  OVH_USERNAME:
+    description: "User for OVH"
+    required: true
+  OVH_PASSWORD:
+    description: "Password for OVH"
+    required: true
+  OVH_REGION:
+    description: "Region for OVH"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Read OpenStack configuration
+      if: inputs.CLOUD == 'ovh'
+      shell: bash
+      working-directory: .github/spawn/config
+      run: ./export-openstack.sh
+      env:
+        AUTH_URL: ${{ inputs.OVH_AUTH_URL }}
+        PASSWORD: ${{ inputs.OVH_PASSWORD }}
+        REGION: ${{ inputs.OVH_REGION }}
+        USERNAME: ${{ inputs.OVH_USERNAME }}

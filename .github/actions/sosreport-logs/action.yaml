@@ -1,0 +1,41 @@
+name: "Sosreport logs"
+description: "Generate and retrieve sosreport logs"
+
+inputs:
+  NODES_COUNT:
+    description: number of nodes
+    required: false
+    default: "0"
+
+runs:
+  using: composite
+  steps:
+    ## Here we cannot use the ssh-command action as we need to run this in a loop
+    ## that is generated at the runtime.
+    - shell: bash
+      run: test -f ssh_config
+    - name: build hosts list
+      shell: bash
+      run: |
+        export HOSTS_LIST=""
+        echo "HOSTS_LIST=bootstrap$(seq -s '' --format ' node-%g' 1 ${{ inputs.NODES_COUNT }})" >> $GITHUB_ENV
+    - name: generate sosreport on each node
+      shell: bash
+      run: |
+        for host in ${HOSTS_LIST}; do
+          ssh -F ssh_config ${host} \
+          "sudo sosreport --all-logs -o metalk8s -kmetalk8s.podlogs=True\
+          -o containerd -kcontainerd.all=True -kcontainerd.logs=True\
+          --batch --tmp-dir /var/tmp && \
+          sudo chown -R 1000:1000 /var/tmp/sosreport*"
+        done
+    - name: collect sosreport on each node
+      shell: bash
+      run: |
+        export DEST_DIR="artifacts/sosreport/${{ github.job }}"
+        mkdir -p ${DEST_DIR}
+        for host in ${HOSTS_LIST}; do
+          scp -F ssh_config \
+          "${host}:/var/tmp/sosreport-*" \
+          "${DEST_DIR}/"
+        done

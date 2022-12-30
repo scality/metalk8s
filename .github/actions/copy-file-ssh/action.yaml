@@ -1,0 +1,46 @@
+name: "copy file over ssh"
+description: "copy a file over ssh"
+
+inputs:
+  SOURCE_FILE:
+    description: "file to be copied"
+    required: true
+  DESTINATION_FILE:
+    description: "destination where to copy the file"
+    required: false
+    default: ""
+  NODE_TO:
+    description: "remote node name to copy to"
+    required: false
+    default: "bootstrap"
+  NODE_FROM:
+    description: "remote node name to copy from"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+   - name: "check ssh_config file"
+     shell: bash
+     run: test -f ssh_config
+   - name: prepare node_to and node_from
+     id: prepare_nodes
+     shell: bash
+     run: |
+      if [[ '${{ inputs.NODE_FROM }}' == '' ]]
+      then
+          echo "nodefrom=" >> $GITHUB_OUTPUT
+      else
+          echo "nodefrom=${{ inputs.NODE_FROM }}:" >> $GITHUB_OUTPUT
+      fi
+      if [[ '${{ inputs.NODE_TO }}' == '' ]]
+      then
+          echo "nodeto=" >> $GITHUB_OUTPUT
+      else
+          echo "nodeto=${{ inputs.NODE_TO }}:" >> $GITHUB_OUTPUT
+      fi
+   - name: "copy file"
+     shell: bash
+     run: |
+       scp -prF ssh_config ${{ steps.prepare_nodes.outputs.nodefrom }}${{ inputs.SOURCE_FILE }} ${{ steps.prepare_nodes.outputs.nodeto }}'${{ inputs.DESTINATION_FILE}}'

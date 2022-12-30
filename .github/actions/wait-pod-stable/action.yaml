@@ -1,0 +1,33 @@
+name: "Wait pod stable"
+description: "Wait for all pods to stabilize"
+
+inputs:
+  SLEEP_TIME:
+    description: "The sleep time between retries (in seconds)"
+    required: false
+    default: "5"
+  STABILIZATION_TIME:
+    description: "The stabilization time (in seconds)"
+    required: false
+    default: "30"
+  RETRY:
+    description: "The number of retries"
+    required: false
+    default: "60"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Copy wait pod stabilize script to bootstrap
+      uses: ./.github/actions/copy-file-ssh
+      with:
+        SOURCE_FILE: ".github/scripts/wait_pods_stable.sh"
+        DESTINATION_FILE: /tmp/wait_pods_stable.sh
+    - name: Run wait pod stabilize script on bootstrap
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >
+          sudo /tmp/wait_pods_stable.sh
+          --sleep-time \"${{ inputs.SLEEP_TIME }}\"
+          --stabilization-time \"${{ inputs.STABILIZATION_TIME }}\"
+          --retry \"${{ inputs.RETRY }}\"
