@@ -11,10 +11,10 @@ on:
     outputs:
       artifact-name:
         description: "artifacts name"
-        value: ${{jobs.build-docs.outputs.artifact-name}}
+        value: ${{ jobs.build.outputs.artifact-name }}
       artifact-link:
         description: "artifacts link"
-        value: ${{jobs.build-docs.outputs.artifact-link}}
+        value: ${{ jobs.build.outputs.artifact-link }}
     secrets:
       ARTIFACTS_USER:
         required: true
@@ -26,6 +26,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-20.04
+    outputs:
+      artifact-name: ${{ steps.upload.outputs.name }}
+      artifact-link: ${{ steps.upload.outputs.link }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -72,6 +75,7 @@ jobs:
             cp -r "$artifact" "$DEST_DIR"
           done
       - name: Upload artifacts
+        id: upload
         uses: scality/action-artifacts@v3
         with:
           method: upload
