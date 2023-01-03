@@ -77,9 +77,18 @@ function OAuth2AuthProvider({ children }: { children: Node }) {
       console.log('log out following to silent renewal error', err);
       logOut();
     };
+    const reloadWhenUserStorageIsEmpty = () => {
+      userManager.getUser().then((user) => {
+        if (!user) {
+          location.reload();
+        }
+      });
+    };
+    window.addEventListener('storage', reloadWhenUserStorageIsEmpty);
     userManager.events.addSilentRenewError(onSilentRenewError);
     return () => {
       userManager.events.removeSilentRenewError(onSilentRenewError);
+      window.removeEventListener('storage', reloadWhenUserStorageIsEmpty);
     };
   }, [logOut]);
 
