@@ -7,3 +7,7 @@ updates:
     allow:
       - dependency-name: "@scality/core-ui"
 
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
