@@ -15,6 +15,7 @@ import type {
   OIDCConfig,
   OAuth2ProxyConfig,
 } from '../initFederation/ConfigurationProviders';
+import { useQuery } from 'react-query';
 
 export function AuthProvider({ children }: { children: Node }) {
   const { authConfig } = useAuthConfig();
@@ -76,9 +77,18 @@ function OAuth2AuthProvider({ children }: { children: Node }) {
       console.log('log out following to silent renewal error', err);
       logOut();
     };
+    const reloadWhenUserStorageIsEmpty = () => {
+      userManager.getUser().then((user) => {
+        if (!user) {
+          location.reload();
+        }
+      });
+    };
+    window.addEventListener('storage', reloadWhenUserStorageIsEmpty);
     userManager.events.addSilentRenewError(onSilentRenewError);
     return () => {
       userManager.events.removeSilentRenewError(onSilentRenewError);
+      window.removeEventListener('storage', reloadWhenUserStorageIsEmpty);
     };
   }, [logOut]);
 
@@ -116,15 +126,23 @@ export function useAuth(): {
 } {
   const auth = useOauth2Auth(); // todo add support for OAuth2Proxy
   const { config } = useShellConfig();
+  //Force logout when token is expired or we are missing expires_at claims
+  useQuery({
+    queryKey: ['removeUser'],
+    queryFn: () =>
+      auth.userManager.removeUser().then(() => {
+        location.reload();
+      }),
+    enabled: !!(
+      auth &&
+      auth.userManager &&
+      auth.userData &&
+      (auth.userData.expired || !auth.userData.expires_at)
+    ),
+  });
   if (!auth || !auth.userData) {
     return { userData: undefined };
   }
-
-  //Force logout when token is expired or we are missing expires_at claims
-  if (auth.userData.expired || !auth.userData.expires_at) {
-    auth.userManager.revokeAccessToken();
-  }
-
   return {
     userData: {
       token: auth.userData.access_token,
@@ -168,12 +186,11 @@ function useInternalLogout(
           } else {
             console.error(e);
           }
-          userManager.removeUser();
-          location.reload();
         });
       } else {
-        userManager.removeUser();
-        location.reload();
+        userManager.removeUser().then(() => {
+          location.reload();
+        });
       }
     }, [JSON.stringify(authConfig), userManager]),
   };
