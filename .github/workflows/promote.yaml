@@ -1,0 +1,40 @@
+name: Promote
+
+on:
+  push:
+    tags:
+      - '**'
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yaml
+    secrets: inherit
+
+  promote-artifacts:
+    needs:
+      - build
+    runs-on: ubuntu-20.04
+    outputs:
+      artifact-link: ${{ steps.promote.outputs.link }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Promote artifacts
+        id: promote
+        uses: scality/action-artifacts@v3
+        with:
+          method: promote
+          url: https://artifacts.scality.net
+          name: ${{ needs.build.outputs.artifact-name }}
+          tag: ${{ github.ref_name }}
+          user: ${{ secrets.ARTIFACTS_USER }}
+          password: ${{ secrets.ARTIFACTS_PASSWORD }}
+
+  publish:
+    needs:
+      - promote-artifacts
+    uses: ./.github/workflows/publish.yaml
+    secrets: inherit
+    with:
+      artifact-url: ${{ needs.promote-artifacts.outputs.artifact-link }}
+      is_production: true
