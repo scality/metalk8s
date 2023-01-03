@@ -1,0 +1,137 @@
+name: Publish
+
+on:
+  workflow_call:
+    inputs:
+      artifact-url:
+        description: "Artifacts URL"
+        required: false
+        type: string
+        default: ""
+      is_production:
+        description: "Whether or not it's a released image"
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      ARTIFACTS_USER:
+        required: true
+      ARTIFACTS_PASSWORD:
+        required: true
+      HARBOR_PROD_PROJECT:
+        required: true
+      HARBOR_DEV_PROJECT:
+        required: true
+
+  # Push on development branch = PR merge
+  push:
+    branches:
+      - "development/**"
+
+  workflow_dispatch:
+
+env:
+  REGISTRY_HOST: registry.scality.com
+
+jobs:
+  publish-shell-ui:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # "Compute" the harbor project to use
+      - name: Set registry project to Prod
+        if: inputs.is_production
+        run: echo "REGISTRY_PROJECT=${{ secrets.HARBOR_PROD_PROJECT }}" >> $GITHUB_ENV
+      - name: Set registry project to Dev
+        if: "! inputs.is_production"
+        run: echo "REGISTRY_PROJECT=${{ secrets.HARBOR_DEV_PROJECT }}" >> $GITHUB_ENV
+
+      # Retrieve Shell UI image from the build, load it and compute version
+      - name: Retrieve artifacts url
+        if: $inputs.artifact-url == ''
+        uses: scality/action-artifacts@v3
+        id: artifacts
+        with:
+          method: get
+          workflow-name: build
+          url: https://artifacts.scality.net
+          user: ${{ secrets.ARTIFACTS_USER }}
+          password: ${{ secrets.ARTIFACTS_PASSWORD }}
+      - name: Retrieve shell-ui image from artifacts
+        run: >
+          curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
+          ${{ inputs.artifact-url || steps.artifacts.outputs.link }}/images/shell-ui.tar.gz
+      - name: Load shell-ui image
+        run: docker load < shell-ui.tar.gz
+      - name: Retrieve product.txt from artifacts
+        run: >
+          curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
+          ${{ inputs.artifact-url || steps.artifacts.outputs.link }}/product.txt
+      - name: Compute shell-ui image version and GIT revision
+        run: |
+          source product.txt
+          echo "SHELL_UI_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "SHELL_UI_SHORT_VERSION=$SHORT_VERSION" >> $GITHUB_ENV
+          echo "SHELL_UI_REF=$GIT" >> $GITHUB_ENV
+
+      # "Compute" if it's the latest version and if it's a stable one
+      - name: Set is_latest environment variable
+        run: |
+          LATEST_DEV_VERSION=$(
+            git ls-remote | \
+            awk -F/ '$3 == "development" { print $4 }' | sort -V | tail -n 1
+          )
+          if [ "${{ env.SHELL_UI_SHORT_VERSION }}" = "$LATEST_DEV_VERSION" ]; then
+            echo "IS_LATEST=true" >> $GITHUB_ENV
+          else
+            echo "IS_LATEST=false" >> $GITHUB_ENV
+          fi
+      - name: Set is_stable environment variable
+        # NOTE: It cannot be stable if it's not on production
+        # We consider stable version, tags with no suffix and we also consider that
+        # current version we try to publish is already tagged
+        if: inputs.is_production
+        run: |
+          LATEST_STABLE_RELEASE=$(
+            git ls-remote --tags | \
+            awk -F/ '$3 ~ /^[0-9]+\.[0-9]+\.[0-9]+$/ { print $3 }' | sort -V | tail -n 1
+          )
+          if [ "${{ env.SHELL_UI_VERSION }}" = "$LATEST_STABLE_RELEASE" ]; then
+            echo "IS_STABLE=true" >> $GITHUB_ENV
+          else
+            echo "IS_STABLE=false" >> $GITHUB_ENV
+          fi
+
+      # Tag shell-ui image before upload to registry
+      # (depending whether or not it's for production)
+      - name: Tag shell-ui image with current version
+        run: |
+          docker tag "shell-ui:v${{ env.SHELL_UI_VERSION }}" 
+          "${{ env.REGISTRY_HOST }}/${{ env.REGISTRY_PROJECT }}/shell-ui:v${{ env.SHELL_UI_VERSION }}"
+      - name: Tag shell-ui image with commit short revision
+        # Only tag with commit short version when pushing on dev
+        if: "! inputs.is_production"
+        run: |
+          docker tag "shell-ui:v${{ env.SHELL_UI_VERSION }}" 
+          "${{ env.REGISTRY_HOST }}/${{ env.REGISTRY_PROJECT }}/shell-ui:v${{ env.SHELL_UI_VERSION }}-${{ env.SHELL_UI_REF }}"
+      - name: Tag shell-ui image as latest
+        if: fromJSON(env.IS_LATEST)
+        run: |
+          docker tag "shell-ui:v${{ env.SHELL_UI_VERSION }}" 
+          "${{ env.REGISTRY_HOST }}/${{ env.REGISTRY_PROJECT }}/shell-ui:latest"
+      - name: Tag shell-ui image as stable
+        if: fromJSON(env.IS_STABLE)
+        run: |
+          docker tag "shell-ui:v${{ env.SHELL_UI_VERSION }}" 
+          "${{ env.REGISTRY_HOST }}/${{ env.REGISTRY_PROJECT }}/shell-ui:stable"
+
+      # Push image to the registry
+      - name: Login to the registry
+        run: >
+          docker login "${{ env.REGISTRY_HOST }}"
+          --username "${{ secrets.REGISTRY_LOGIN }}" --password "${{ secrets.REGISTRY_PASSWORD }}"
+      - name: Push shell-ui images to the registry
+        run: docker push "${{ env.REGISTRY_HOST }}/${{ env.REGISTRY_PROJECT }}/shell-ui"
+
