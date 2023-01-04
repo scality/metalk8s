@@ -258,7 +258,7 @@ jobs:
       - multi-node-spawn
     runs-on: [self-hosted, centos7, large]
     env:
-      NAME: multi-node
+      NAME: multi-nodes
       SSH_PRIVATE_KEY: "~/.ssh/terraform"
       NODES_COUNT: "1"
     steps:
