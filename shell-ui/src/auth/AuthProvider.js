@@ -122,6 +122,7 @@ export function useAuth(): {
     username: string,
     groups: string[],
     email: string,
+    id: string,
   },
 } {
   const auth = useOauth2Auth(); // todo add support for OAuth2Proxy
@@ -149,6 +150,7 @@ export function useAuth(): {
       username: auth.userData.profile?.name,
       email: auth.userData.profile?.email,
       groups: getUserGroups(auth.userData, config.userGroupsMapping),
+      id: auth.userData.profile?.sub,
     },
   };
 }
