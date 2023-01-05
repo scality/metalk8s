@@ -399,6 +399,7 @@ jobs:
 
   build_integration_container_nginx:
     runs-on: ubuntu-20.04
+    permissions: write-all
     steps:
       - name: Checkout
         uses: actions/checkout@v3

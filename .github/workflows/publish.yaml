@@ -55,7 +55,7 @@ jobs:
         id: artifacts
         with:
           method: get
-          workflow-name: build
+          workflow-name: Pre-merge
           url: https://artifacts.scality.net
           user: ${{ secrets.ARTIFACTS_USER }}
           password: ${{ secrets.ARTIFACTS_PASSWORD }}
