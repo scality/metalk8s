@@ -455,7 +455,7 @@ jobs:
           ADD service /usr/share/nginx/html
           EOF
       - name: Login to Registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
