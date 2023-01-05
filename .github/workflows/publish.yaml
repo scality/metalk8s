@@ -30,6 +30,8 @@ on:
 
 env:
   REGISTRY_HOST: registry.scality.com
+  IS_STABLE: "false"
+  IS_LATEST: "false"
 
 jobs:
   publish-shell-ui:
