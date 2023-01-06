@@ -198,7 +198,7 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
       - name: Install node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: "16"
       - name: Cache node modules
@@ -241,7 +241,7 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
       - name: Install node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: "16"
       - name: Cache node modules
