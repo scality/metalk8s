@@ -1,6 +1,6 @@
 pytest
 pytest-cov
-salt == 3002.9
+salt == 3003.5
 mock == 3.0.5
 parameterized == 0.7.4
 etcd3 != 0.11.0
