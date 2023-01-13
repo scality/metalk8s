@@ -3,6 +3,10 @@
 
 ### Enhancements
 
+- Bump Kubernetes version to
+  [1.24.9](https://github.com/kubernetes/kubernetes/releases/tag/v1.24.9)
+  (PR[#3969](https://github.com/scality/metalk8s/pull/3969))
+
 - Bump the alpine base image used by `metalk8s-alert-logger`
   and `metalk8s-keepalived`
   image to `alpine:3.17.1`
