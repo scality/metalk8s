@@ -65,8 +65,8 @@ SHELL_UI_VERSION: str = json.loads(shell_ui_package_contents)["version"]
 
 ALPINE_BASE_IMAGE: str = "docker.io/alpine"
 ALPINE_BASE_IMAGE_SHA256: str = (
-    # alpine:3.16.2
-    "bc41182d7ef5ffc53a40b044e725193bc10142a1243f395ee852a8d9730fc2ad"
+    # alpine:3.17.1
+    "93d5a28ff72d288d69b5997b8ba47396d2cbb62a72b5d87cd3351094b5d578a0"
 )
 
 ROCKY_BASE_IMAGE: str = "docker.io/rockylinux"
