@@ -1,11 +1,17 @@
 # CHANGELOG
-## Release 124.1.2 (in development)
+## Release 124.1.3 (in development)
 
 ### Bug fixes
 
 - Fix a flaky during expansions because of the Salt minion
   key that has not been accepted
   (PR[#3968](https://github.com/scality/metalk8s/pull/3968))
+
+## Release 124.1.2
+
+### Bug fixes
+
+- Various fixes on UI side
 
 ## Release 124.1.1
 
