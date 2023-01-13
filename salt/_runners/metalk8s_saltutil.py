@@ -19,6 +19,29 @@ def sync_auth(saltenv="base", extmod_whitelist=None, extmod_blacklist=None):
     )[0]
 
 
+def accept_minion(minion):
+    """Salt state that accept a minion key
+
+    Using `key.accept` from wheel alone does not report if the minion actually get accepted"""
+    if minion in __salt__["manage.up"]():
+        # Minion key already accepted
+        return True
+
+    ret = __salt__["salt.cmd"]("saltutil.wheel", "key.accept", minion)
+    if not isinstance(ret, dict) or not ret.get("success"):
+        raise CommandExecutionError(f"Accept of minion '{minion}' key failed: {ret}")
+
+    # NOTE: `key.accept` report success even if this is not accepted at the end
+    # See: https://github.com/saltstack/salt/issues/63477
+    # So instead check that there is our minion in the return
+    if minion not in ret.get("return", {}).get("minions", []):
+        raise CommandExecutionError(
+            f"Minion '{minion}' key has not been accepted: {ret}"
+        )
+
+    return True
+
+
 def wait_minions(tgt="*", retry=10):
     client = salt.client.get_local_client(__opts__["conf_file"])
 

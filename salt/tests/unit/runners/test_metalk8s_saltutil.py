@@ -41,6 +41,40 @@ class Metalk8sSaltutilTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 {"saltenv": "my-salt-env"}, sync_mock.call_args[1]
             )
 
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["accept_minion"])
+    def test_accept_minion(self, result, up_ret=None, wheel_ret=None, raises=False):
+        """
+        Tests the return of `accept_minion` function
+        """
+        minion_id = "my-minion"
+
+        def cmd_mock(fun, *_args, **_kwargs):
+            if fun == "saltutil.wheel":
+                return wheel_ret
+            return None
+
+        cmd_mock = MagicMock(side_effect=cmd_mock)
+        up_mock = MagicMock(return_value=up_ret or [])
+
+        salt_dict = {"salt.cmd": cmd_mock, "manage.up": up_mock}
+
+        with patch.dict(metalk8s_saltutil.__salt__, salt_dict):
+            if raises:
+                self.assertRaisesRegex(
+                    CommandExecutionError,
+                    result,
+                    metalk8s_saltutil.accept_minion,
+                    minion_id,
+                )
+            else:
+                self.assertEqual(metalk8s_saltutil.accept_minion(minion_id), result)
+
+            up_mock.assert_called_once()
+            if wheel_ret:
+                cmd_mock.assert_called_once()
+            else:
+                cmd_mock.assert_not_called()
+
     @utils.parameterized_from_cases(YAML_TESTS_CASES["wait_minions"])
     def test_wait_minions(
         self, result, ping_ret=True, is_running_ret=False, raises=False

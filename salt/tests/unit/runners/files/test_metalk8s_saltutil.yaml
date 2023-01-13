@@ -1,3 +1,38 @@
+accept_minion:
+  # 1. Success: nominal
+  - wheel_ret:
+      success: True
+      return:
+        minions:
+          - my-minion
+    result: True
+
+  # 2. Success: already accepted
+  - up_ret:
+      - my-minion
+    result: True
+
+  # 3. Error: Invalid result
+  - wheel_ret: "An erRor Oo"
+    raises: True
+    result: >-
+      Accept of minion 'my-minion' key failed: An erRor Oo
+
+  # 4. Error: success false
+  - wheel_ret:
+      success: False
+    raises: True
+    result: >-
+      Accept of minion 'my-minion' key failed: .*
+
+  # 5. Error: not accepted
+  - wheel_ret:
+      success: True
+      return: {}
+    raises: True
+    result: >-
+      Minion 'my-minion' key has not been accepted
+
 wait_minions:
   # 1. Success: nominal
   - result: >-

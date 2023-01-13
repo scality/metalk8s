@@ -81,10 +81,11 @@ Deploy salt-minion on a new node:
       - metalk8s: Check node
 
 Accept key:
-  module.run:
-    - saltutil.wheel:
-      - key.accept
-      - {{ node_name }}
+  salt.runner:
+    - name: metalk8s_saltutil.accept_minion
+    - minion: {{ node_name }}
+    - retry:
+        attempts: 5
     - require:
       - salt: Deploy salt-minion on a new node
 
@@ -93,7 +94,7 @@ Wait minion available ssh:
     - name: metalk8s_saltutil.wait_minions
     - tgt: {{ node_name }}
     - require:
-      - module: Accept key
+      - salt: Accept key
     - require_in:
       - salt: Set grains
       - salt: Refresh the mine
