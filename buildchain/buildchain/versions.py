@@ -71,8 +71,8 @@ ALPINE_BASE_IMAGE_SHA256: str = (
 
 ROCKY_BASE_IMAGE: str = "docker.io/rockylinux"
 ROCKY_BASE_IMAGE_SHA256: str = (
-    # rockylinux:8.6.20227707
-    "afd392a691df0475390df77cb5486f226bc2b4cbaf87c41785115b9237f3203f"
+    # rockylinux:8.7.20221219
+    "89de851bce1aaf33989634402daf4314b14d2b005c9d3baaecb915b1bf0968c0"
 )
 
 ETCD_VERSION: str = "3.5.3"

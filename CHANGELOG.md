@@ -8,6 +8,10 @@
   image to `alpine:3.17.1`
   (PR[#3967](https://github.com/scality/metalk8s/pull/3967))
 
+- Bump the rocky base image used by `salt-master` and `metalk8s-utils`
+  images to `rockylinux:8.7.20221219`
+  (PR[#3967](https://github.com/scality/metalk8s/pull/3967))
+
 ### Bug fixes
 
 - Fix a flaky during expansions because of the Salt minion
