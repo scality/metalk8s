@@ -6,12 +6,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: kube-dns
-    app: "CoreDNS"
-    heritage: metalk8s
-    app.kubernetes.io/name: "CoreDNS"
-    app.kubernetes.io/component: kube-dns
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/managed-by: salt
 spec:
   replicas: {{ replicas }}
   strategy:
@@ -75,14 +69,14 @@ spec:
             - all
           readOnlyRootFilesystem: true
         livenessProbe:
+          failureThreshold: 5
           httpGet:
             path: /health
             port: 8080
             scheme: HTTP
           initialDelaySeconds: 60
-          timeoutSeconds: 5
           successThreshold: 1
-          failureThreshold: 5
+          timeoutSeconds: 5
         readinessProbe:
           httpGet:
             path: /ready

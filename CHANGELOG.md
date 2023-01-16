@@ -10,6 +10,9 @@
 - Bump etcd version to [3.5.6](https://github.com/etcd-io/etcd/releases/tag/v3.5.6)
   (PR[#3973](https://github.com/scality/metalk8s/pull/3973))
 
+- Bump CoreDNS version to [v1.9.3](https://github.com/coredns/coredns/releases/tag/v1.9.3)
+  (PR[#3973](https://github.com/scality/metalk8s/pull/3973))
+
 - Use an `initContainer` to build the `kube-proxy` configuration file
   (PR[#3973](https://github.com/scality/metalk8s/pull/3973))
 
