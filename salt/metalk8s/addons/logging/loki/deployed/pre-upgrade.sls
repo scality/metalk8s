@@ -27,6 +27,13 @@ include:
 
   {%- from "metalk8s/addons/logging/loki/deployed/macro.j2" import workaround_job_spec with context %}
 
+Delete old Loki PodSecurityPolicy:
+    metalk8s_kubernetes.object_absent:
+        - apiVersion: policy/v1beta1
+        - kind: PodSecurityPolicy
+        - name: loki
+        - namespace: metalk8s-logging
+
 Create Loki Cleaner Workaround Job:
   metalk8s_kubernetes.object_present:
     - manifest:
