@@ -181,10 +181,6 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     ],
     constants.GOOGLE_REPOSITORY: [
         "etcd",
-        "kube-apiserver",
-        "kube-controller-manager",
-        "kube-proxy",
-        "kube-scheduler",
         "nginx-ingress-defaultbackend-amd64",
         "pause",
     ],
@@ -194,6 +190,12 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     ],
     constants.INGRESS_REPOSITORY: [
         "nginx-ingress-controller",
+    ],
+    constants.K8S_REPOSITORY: [
+        "kube-apiserver",
+        "kube-controller-manager",
+        "kube-proxy",
+        "kube-scheduler",
     ],
     constants.KIWIGRID_REPOSITORY: [
         "k8s-sidecar",

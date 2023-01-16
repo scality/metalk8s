@@ -1,8 +1,8 @@
+{%- set liveness_path = liveness_path | d("/healthz") %}
 apiVersion: v1
 kind: Pod
 metadata:
   annotations:
-    scheduler.alpha.kubernetes.io/critical-pod: ""
     metalk8s.scality.com/config-digest: "{{ config_digest }}"
   creationTimestamp: null
   name: {{ name }}
@@ -24,14 +24,21 @@ spec:
         failureThreshold: 8
         httpGet:
           host: {{ host }}
-        {%- if liveness_path is defined and liveness_path %}
           path: {{ liveness_path }}
-        {%- else %}
-          path: /healthz
-        {%- endif %}
           port: {{ port }}
           scheme: {{ scheme }}
         initialDelaySeconds: 15
+        periodSeconds: 10
+        timeoutSeconds: 15
+      startupProbe:
+        failureThreshold: 24
+        httpGet:
+          host: {{ host }}
+          path: {{ liveness_path }}
+          port: {{ port }}
+          scheme: {{ scheme }}
+        initialDelaySeconds: 10
+        periodSeconds: 10
         timeoutSeconds: 15
     {%- if readiness_path is defined and readiness_path %}
       readinessProbe:
@@ -41,6 +48,8 @@ spec:
           path: {{ readiness_path }}
           port: {{ port }}
           scheme: {{ scheme }}
+        periodSeconds: 1
+        timeoutSeconds: 15
     {%- endif %}
 {%- if ports is defined and ports %}
       ports:
@@ -58,7 +67,10 @@ spec:
 {%- if sidecars is defined and sidecars %}
     {{ sidecars | yaml(False) | indent(4, False) }}
 {%- endif %}
-  priorityClassName: "system-cluster-critical"
+  priorityClassName: "system-node-critical"
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
   hostNetwork: true
   volumes:
     {%- for volume in volumes %}

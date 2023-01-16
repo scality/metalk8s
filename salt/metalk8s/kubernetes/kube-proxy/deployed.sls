@@ -61,6 +61,9 @@ Deploy kube-proxy (ConfigMap):
               min: null
               tcpCloseWaitTimeout: null
               tcpEstablishedTimeout: null
+            detectLocal:
+              bridgeInterface: ""
+              interfaceNamePrefix: ""
             detectLocalMode: ""
             enableProfiling: false
             healthzBindAddress: @HOST_IP@:10256
@@ -89,6 +92,7 @@ Deploy kube-proxy (ConfigMap):
             udpIdleTimeout: 0s
             winkernel:
               enableDSR: false
+              forwardHealthCheckVip: false
               networkName: ""
               sourceVip: ""
           kubeconfig.conf: |-
@@ -129,7 +133,6 @@ Deploy kube-proxy (DaemonSet):
           template:
             metadata:
               annotations:
-                scheduler.alpha.kubernetes.io/critical-pod: ""
                 # NOTE: Add annotation for config checksum, so that Pod get restarted on
                 # ConfigMap change
                 checksum/config: __slot__:salt:metalk8s_kubernetes.get_object_digest(kind="ConfigMap",
