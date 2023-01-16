@@ -7,6 +7,9 @@
   [1.25.5](https://github.com/kubernetes/kubernetes/releases/tag/v1.25.5)
   (PR[#3973](https://github.com/scality/metalk8s/pull/3973))
 
+- Bump etcd version to [3.5.6](https://github.com/etcd-io/etcd/releases/tag/v3.5.6)
+  (PR[#3973](https://github.com/scality/metalk8s/pull/3973))
+
 - Use an `initContainer` to build the `kube-proxy` configuration file
   (PR[#3973](https://github.com/scality/metalk8s/pull/3973))
 
