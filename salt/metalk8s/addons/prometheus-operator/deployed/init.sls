@@ -1,7 +1,6 @@
 include:
   - ...storageclass.deployed
   - .namespace
-  - .cleanup
   - .alertmanager-configuration-secret
   - .grafana-ini-configmap
   - .dashboards
