@@ -1,5 +1,3 @@
-# SHA256 digest of the base image
-ARG BASE_IMAGE_SHA256
 ARG BASE_IMAGE=docker.io/alpine
 
 ARG BUILD_IMAGE_NAME=golang
@@ -21,7 +19,7 @@ RUN sed -i "s/@@ALERTMANAGER_VERSION@@/$ALERTMANAGER_VERSION/g" go.mod \
   && go mod tidy -go=1.16 && go mod tidy -go=1.17 \
   && go install
 
-FROM ${BASE_IMAGE}@sha256:${BASE_IMAGE_SHA256}
+FROM ${BASE_IMAGE}
 
 MAINTAINER moonshot-platform <moonshot-platform@scality.com>
 

@@ -1,11 +1,9 @@
-# SHA256 digest of the base image
-ARG BASE_IMAGE_SHA256
 ARG BASE_IMAGE=docker.io/alpine
 
 # NOTE: We need to build keepalived ourself to enable JSON, so that we can
 # use the JSON signal to get the current keepalived status in JSON format
 # The keepalived binary from the package is not build with JSON enabled
-FROM ${BASE_IMAGE}@sha256:${BASE_IMAGE_SHA256} AS build-step
+FROM ${BASE_IMAGE} AS build-step
 
 # Keepalived version to use
 ARG KEEPALIVED_VERSION
@@ -20,7 +18,7 @@ RUN apk add --no-cache make gcc curl autoconf automake musl-dev libnl3-dev libnf
   && make && cp bin/keepalived /keepalived
 
 
-FROM ${BASE_IMAGE}@sha256:${BASE_IMAGE_SHA256}
+FROM ${BASE_IMAGE}
 
 # Timestamp of the build, formatted as RFC3339
 ARG BUILD_DATE

@@ -66,7 +66,12 @@ class RemoteImage(image.ContainerImage):
     @property
     def remote_fullname(self) -> str:
         """Complete image name retrieved from the remote repository."""
-        return ("{img.repository}/{img._remote_name}:{img.version}").format(img=self)
+        return ("{img.repository}/{img.remote_name}:{img.version}").format(img=self)
+
+    @property
+    def remote_fullname_digest(self) -> str:
+        """Complete image name retrieved from the remote repository using digest."""
+        return ("{img.repository}/{img.remote_name}@{img.digest}").format(img=self)
 
     @property
     def fullname(self) -> str:

@@ -63,12 +63,6 @@ SHELL_UI_VERSION: str = json.loads(shell_ui_package_contents)["version"]
 # }}}
 # Container images {{{
 
-ALPINE_BASE_IMAGE: str = "docker.io/alpine"
-ALPINE_BASE_IMAGE_SHA256: str = (
-    # alpine:3.17.1
-    "93d5a28ff72d288d69b5997b8ba47396d2cbb62a72b5d87cd3351094b5d578a0"
-)
-
 ROCKY_BASE_IMAGE: str = "docker.io/rockylinux"
 ROCKY_BASE_IMAGE_SHA256: str = (
     # rockylinux:8.7.20221219
@@ -97,6 +91,11 @@ def _version_prefix(version: str, prefix: str = "v") -> str:
 # pylint:disable=line-too-long
 CONTAINER_IMAGES: Tuple[Image, ...] = (
     # Remote images
+    Image(
+        name="alpine",
+        version="3.17.1",
+        digest="sha256:93d5a28ff72d288d69b5997b8ba47396d2cbb62a72b5d87cd3351094b5d578a0",
+    ),
     Image(
         name="alertmanager",
         version="v0.24.0",

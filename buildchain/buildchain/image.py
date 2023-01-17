@@ -63,7 +63,7 @@ def task__image_mkdir_root() -> types.TaskDict:
 
 def task__image_pull() -> Iterator[types.TaskDict]:
     """Download the container images."""
-    for image in TO_PULL:
+    for image in TO_PULL.values():
         yield image.task
 
 
@@ -157,7 +157,7 @@ def _local_image(name: str, **kwargs: Any) -> targets.LocalImage:
 
 # }}}
 # Container images to pull {{{
-TO_PULL: List[targets.RemoteImage] = []
+TO_PULL: Dict[str, targets.RemoteImage] = {}
 
 IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
     constants.BITNAMI_REPOSITORY: ["metallb-controller", "metallb-speaker"],
@@ -173,6 +173,7 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "dex",
     ],
     constants.DOCKER_REPOSITORY: [
+        "alpine",
         "nginx",
     ],
     constants.FLUENT_REPOSITORY: [
@@ -232,7 +233,7 @@ SAVE_AS: Dict[str, List[targets.ImageSaveFormat]] = {
 
 for repo, images in IMGS_PER_REPOSITORY.items():
     for image_name in images:
-        TO_PULL.append(_remote_image(image_name, repo))
+        TO_PULL[image_name] = _remote_image(image_name, repo)
 
 # }}}
 # Container images to build {{{
@@ -240,15 +241,13 @@ TO_BUILD: Tuple[targets.LocalImage, ...] = (
     _local_image(
         name="metalk8s-alert-logger",
         build_args={
-            "BASE_IMAGE": versions.ALPINE_BASE_IMAGE,
-            "BASE_IMAGE_SHA256": versions.ALPINE_BASE_IMAGE_SHA256,
+            "BASE_IMAGE": TO_PULL["alpine"].remote_fullname_digest,
         },
     ),
     _local_image(
         name="metalk8s-keepalived",
         build_args={
-            "BASE_IMAGE": versions.ALPINE_BASE_IMAGE,
-            "BASE_IMAGE_SHA256": versions.ALPINE_BASE_IMAGE_SHA256,
+            "BASE_IMAGE": TO_PULL["alpine"].remote_fullname_digest,
             "BUILD_DATE": datetime.datetime.now(datetime.timezone.utc)
             .astimezone()
             .isoformat(),
