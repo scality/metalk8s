@@ -138,8 +138,9 @@ Deploy kube-proxy (DaemonSet):
               labels:
                 k8s-app: kube-proxy
             spec:
-              containers:
-              - command:
+              initContainers:
+              - name: generate-kube-proxy-config
+                command:
                 # NOTE: We need to use a sed here since overriding the bind addresses
                 # from CLI is not supported
                 # See: https://github.com/kubernetes/kubernetes/issues/108737
@@ -147,11 +148,25 @@ Deploy kube-proxy (DaemonSet):
                 - -c
                 - >-
                   sed "s/@HOST_IP@/$HOST_IP/g"
-                  /var/lib/kube-proxy/config.conf > /etc/kube-proxy.conf &&
-                  /usr/local/bin/kube-proxy
-                  --config=/etc/kube-proxy.conf
-                  --hostname-override=$(NODE_NAME)
-                  --v={{ 2 if metalk8s.debug else 0 }}
+                  /var/lib/kube-proxy/config.conf > /etc/kube-proxy/config.conf
+                image: {{ build_image_name("metalk8s-utils") }}
+                env:
+                - name: HOST_IP
+                  valueFrom:
+                    fieldRef:
+                      apiVersion: v1
+                      fieldPath: status.hostIP
+                volumeMounts:
+                - mountPath: /etc/kube-proxy
+                  name: config
+                - mountPath: /var/lib/kube-proxy
+                  name: kube-proxy
+              containers:
+              - command:
+                - /usr/local/bin/kube-proxy
+                - --config=/etc/kube-proxy/config.conf
+                - --hostname-override=$(NODE_NAME)
+                - --v={{ 2 if metalk8s.debug else 0 }}
                 env:
                 - name: NODE_NAME
                   valueFrom:
@@ -177,6 +192,8 @@ Deploy kube-proxy (DaemonSet):
                 - mountPath: /lib/modules
                   name: lib-modules
                   readOnly: true
+                - mountPath: /etc/kube-proxy
+                  name: config
               hostNetwork: true
               priorityClassName: system-node-critical
               serviceAccountName: kube-proxy
@@ -195,6 +212,8 @@ Deploy kube-proxy (DaemonSet):
               - hostPath:
                   path: /lib/modules
                 name: lib-modules
+              - emptyDir: {}
+                name: config
           updateStrategy:
             type: RollingUpdate
     - require:

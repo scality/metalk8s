@@ -1,6 +1,11 @@
 # CHANGELOG
 ## Release 125.0.0 (in development)
 
+### Enhancements
+
+- Use an `initContainer` to build the `kube-proxy` configuration file
+  (PR[#3973](https://github.com/scality/metalk8s/pull/3973))
+
 ## Release 124.1.4 (in development)
 
 ## Release 124.1.3
