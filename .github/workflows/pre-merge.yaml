@@ -36,7 +36,7 @@ jobs:
     uses: ./.github/workflows/e2e-tests.yaml
     secrets: inherit
     with:
-      artifact-url: ${{ needs.build.outputs.artifact-link }}
+      artifacts-url: ${{ needs.build.outputs.artifact-link }}
 
   write-final-failed-status:
     runs-on: ubuntu-20.04

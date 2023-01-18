@@ -36,5 +36,15 @@ jobs:
     uses: ./.github/workflows/publish.yaml
     secrets: inherit
     with:
-      artifact-url: ${{ needs.promote-artifacts.outputs.artifact-link }}
+      artifacts-url: ${{ needs.promote-artifacts.outputs.artifact-link }}
       is_production: true
+
+  generate-snapshots:
+    needs:
+      - promote-artifacts
+    uses: ./.github/workflows/e2e-tests.yaml
+    secrets: inherit
+    with:
+      artifacts-url: ${{ needs.promote-artifacts.outputs.artifact-link }}
+      nodes-count: 2
+      generate-snapshots: true

@@ -3,7 +3,7 @@ name: Publish
 on:
   workflow_call:
     inputs:
-      artifact-url:
+      artifacts-url:
         description: "Artifacts URL"
         required: false
         type: string
@@ -52,7 +52,7 @@ jobs:
 
       # Retrieve Shell UI image from the build, load it and compute version
       - name: Retrieve artifacts url
-        if: inputs.artifact-url == ''
+        if: inputs.artifacts-url == ''
         uses: scality/action-artifacts@v3
         id: artifacts
         with:
@@ -64,13 +64,13 @@ jobs:
       - name: Retrieve shell-ui image from artifacts
         run: >
           curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
-          ${{ inputs.artifact-url || steps.artifacts.outputs.link }}/images/shell-ui.tar.gz
+          ${{ inputs.artifacts-url || steps.artifacts.outputs.link }}/images/shell-ui.tar.gz
       - name: Load shell-ui image
         run: docker load < shell-ui.tar.gz
       - name: Retrieve product.txt from artifacts
         run: >
           curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
-          ${{ inputs.artifact-url || steps.artifacts.outputs.link }}/product.txt
+          ${{ inputs.artifacts-url || steps.artifacts.outputs.link }}/product.txt
       - name: Compute shell-ui image version and GIT revision
         run: |
           source product.txt
