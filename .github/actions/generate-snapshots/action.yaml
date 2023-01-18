@@ -1,0 +1,41 @@
+name: "Generate snapshots"
+description: "Generate VM images in a cloud provider"
+
+inputs:
+  snapshot-name:
+    description: "Prefix to add to all VM images generated"
+    required: true
+  cloud:
+    description: "Name of the remote cloud to use (available: ovh)"
+    required: true
+
+  nodes-count:
+    description: "The number of nodes (in addition to bootstrap) to snapshot"
+    required: false
+    default: "0"
+  max-retries:
+    description: "Number of retries when creating an image"
+    required: false
+    default: "10"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install dependencies for Openstack
+      if: contains('ovh', inputs.cloud)
+      run: ./terraform-snapshot/requirements.sh
+      shell: bash
+      env:
+        CLOUD: openstack
+    - name: Generate '${{ inputs.snapshot-name }}' snapshots
+      # NOTE: we're adding ~/.local/bin since that's where pip will install the openstack
+      # client executable
+      run: |
+        export PATH="$PATH:$HOME/.local/bin"
+        bash -x ../generate_snapshot.sh
+      working-directory: terraform-snapshot/terraform
+      shell: bash
+      env:
+        MAX_RETRIES: "${{ inputs.max-retries }}"
+        SNAPSHOT_NAME: "${{ inputs.snapshot-name }}"
+        TF_VAR_nodes_count: "${{ inputs.nodes-count }}"

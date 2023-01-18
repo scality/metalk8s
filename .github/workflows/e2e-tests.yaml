@@ -7,6 +7,16 @@ on:
         description: "Artifacts URL"
         required: true
         type: string
+      nodes-count:
+        description: "Number of extra node to spawn for multi-node"
+        required: false
+        type: number
+        default: 1
+      generate-snapshots:
+        description: "Whether or not snapshots should be generated at the end"
+        required: false
+        type: boolean
+        default: false
     secrets:
       ARTIFACTS_USER:
         required: true
@@ -92,7 +102,7 @@ jobs:
         uses: ./.github/actions/provision-volumes
       # }}}
 
-      # Tests {{
+      # Tests {{{
       - name: Untaint bootstrap node
         uses: ./.github/actions/untaint
       - name: Wait for pods to stabilize
@@ -105,6 +115,26 @@ jobs:
         uses: ./.github/actions/bastion-tests
       - name: Run UI tests from Bastion
         uses: ./.github/actions/bastion-ui-tests
+      # }}}
+
+      # Generate snapshots (if enabled) {{{
+      - name: Retrieve product.txt from artifacts
+        if: inputs.generate-snapshots
+        run: >
+          curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
+          ${{ inputs.artifact-url }}/product.txt
+      - name: Get full MetalK8s version
+        if: inputs.generate-snapshots
+        run: |
+          source product.txt
+          echo "METALK8S_VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Generate snapshot
+        if: inputs.generate-snapshots
+        uses: ./.github/actions/generate-snapshots
+        with:
+          snapshot-name: "metalk8s-${{ env.METALK8S_VERSION }}-rocky-8-${{ env.NAME }}-simple environment"
+          cloud: ${{ env.CLOUD }}
+          nodes-count: 0
       # }}}
 
       - name: Generate and Collect sosreport
@@ -128,7 +158,7 @@ jobs:
     env:
       NAME: multi-nodes
       SSH_PRIVATE_KEY: "~/.ssh/terraform"
-      NODES_COUNT: "1"
+      NODES_COUNT: ${{ inputs.nodes-count }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -203,7 +233,7 @@ jobs:
           NODE: "node-1"
       # }}}
 
-      # Tests {{
+      # Tests {{{
       - name: Copy MetalK8s ISO to the node-1
         uses: ./.github/actions/copy-file-ssh
         with:
@@ -215,6 +245,26 @@ jobs:
         uses: ./.github/actions/bastion-tests
         with:
           PYTEST_FILTERS: "post and ci and not slow"
+      # }}}
+
+      # Generate snapshots (if enabled) {{{
+      - name: Retrieve product.txt from artifacts
+        if: inputs.generate-snapshots
+        run: >
+          curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
+          ${{ inputs.artifact-url }}/product.txt
+      - name: Get full MetalK8s version
+        if: inputs.generate-snapshots
+        run: |
+          source product.txt
+          echo "METALK8S_VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Generate snapshot
+        if: inputs.generate-snapshots
+        uses: ./.github/actions/generate-snapshots
+        with:
+          snapshot-name: "metalk8s-${{ env.METALK8S_VERSION }}-rocky-8-${{ env.NAME }}-${{ env.NODES_COUNT }} nodes"
+          cloud: ${{ env.CLOUD }}
+          nodes-count: "${{ env.NODES_COUNT }}"
       # }}}
 
       - name: Generate and Collect sosreport
