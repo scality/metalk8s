@@ -1,0 +1,318 @@
+name: E2E Tests
+
+on:
+  workflow_call:
+    inputs:
+      artifact-url:
+        description: "Artifacts URL"
+        required: true
+        type: string
+    secrets:
+      ARTIFACTS_USER:
+        required: true
+      ARTIFACTS_PASSWORD:
+        required: true
+      OVH_AUTH_URL:
+        required: true
+      OVH_USERNAME:
+        required: true
+      OVH_PASSWORD:
+        required: true
+      OVH_REGION:
+        required: true
+
+env:
+  CLOUD: "ovh"
+  TERRAFORM_VERSION: "1.3.6"
+  TERRAFORM_SNAPSHOT_TAG: "0.9.0"
+
+jobs:
+  single-node-install:
+    runs-on: [self-hosted, centos7, large]
+    env:
+      NAME: single-node
+      SSH_PRIVATE_KEY: "~/.ssh/terraform"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install deps
+        run: sudo yum install -y isomd5sum
+
+     ## Spawn {{{
+      - name: Export environment variables for accessing ${{ env.CLOUD }}
+        uses: ./.github/actions/export-cloud-env
+        with:
+          CLOUD: ${{ env.CLOUD }}
+          # Pass all "cloud access" secrets, the action will know which ones to export
+          OVH_AUTH_URL: ${{ secrets.OVH_AUTH_URL }}
+          OVH_USERNAME: ${{secrets.OVH_USERNAME }}
+          OVH_PASSWORD: ${{ secrets.OVH_PASSWORD }}
+          OVH_REGION: ${{ secrets.OVH_REGION }}
+      - name: Spawn cluster with Terraform
+        uses: ./.github/actions/spawn-cluster
+        with:
+          # Parameters
+          CLOUD: ${{ env.CLOUD }}
+          NAME: ${{ env.NAME }}
+          NODES_COUNT: 0
+          TERRAFORM_VERSION: ${{ env.TERRAFORM_VERSION }}
+          TERRAFORM_SNAPSHOT_TAG: ${{ env.TERRAFORM_SNAPSHOT_TAG }}
+          # Secrets
+          GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+      - name: Save Terraform context
+        if: always()
+        uses: ./.github/actions/save-terraform-context
+        with:
+          NAME: ${{ env.NAME }}
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+      - name: Copy SSH config to current directory
+        run: cp terraform-snapshot/terraform/ssh_config ./
+      ## }}}
+
+      # Install {{{
+      - name: Get MetalK8s ISO
+        uses: ./.github/actions/retrieve-iso
+        with:
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+      - name: Copy MetalK8s ISO to the Bootstrap node
+        uses: ./.github/actions/copy-file-ssh
+        with:
+          SOURCE_FILE: "metalk8s.iso"
+      - name: Generate Bootstrap config
+        uses: ./.github/actions/generate-bootstrap
+      - name: Mount MetalK8s ISO
+        uses: ./.github/actions/mount-iso
+      - name: Run Bootstrap
+        uses: ./.github/actions/run-bootstrap
+      - name: Provision volumes
+        uses: ./.github/actions/provision-volumes
+      # }}}
+
+      # Tests {{
+      - name: Untaint bootstrap node
+        uses: ./.github/actions/untaint
+      - name: Wait for pods to stabilize
+        uses: ./.github/actions/wait-pod-stable
+      - name: Prepare bastion to run tests
+        uses: ./.github/actions/prepare-bastion
+        with:
+          UI_DEPS: "true"
+      - name: Run tests from Bastion
+        uses: ./.github/actions/bastion-tests
+      - name: Run UI tests from Bastion
+        uses: ./.github/actions/bastion-ui-tests
+      # }}}
+
+      - name: Generate and Collect sosreport
+        if: always()
+        uses: ./.github/actions/sosreport-logs
+      - name: Upload artifacts
+        if: always()
+        uses: scality/action-artifacts@v3
+        with:
+          method: upload
+          url: https://artifacts.scality.net
+          user: ${{ secrets.ARTIFACTS_USER }}
+          password: ${{ secrets.ARTIFACTS_PASSWORD }}
+          source: artifacts
+      - name: debug
+        if: failure()
+        run: sleep 3600
+
+  multi-node-install:
+    runs-on: [self-hosted, centos7, large]
+    env:
+      NAME: multi-nodes
+      SSH_PRIVATE_KEY: "~/.ssh/terraform"
+      NODES_COUNT: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install deps
+        run: sudo yum install -y isomd5sum
+
+     ## Spawn {{{
+      - name: Export environment variables for accessing ${{ env.CLOUD }}
+        uses: ./.github/actions/export-cloud-env
+        with:
+          CLOUD: ${{ env.CLOUD }}
+          # Pass all "cloud access" secrets, the action will know which ones to export
+          OVH_AUTH_URL: ${{ secrets.OVH_AUTH_URL }}
+          OVH_USERNAME: ${{secrets.OVH_USERNAME }}
+          OVH_PASSWORD: ${{ secrets.OVH_PASSWORD }}
+          OVH_REGION: ${{ secrets.OVH_REGION }}
+      - name: Spawn cluster with Terraform
+        uses: ./.github/actions/spawn-cluster
+        with:
+          # Parameters
+          CLOUD: ${{ env.CLOUD }}
+          NAME: ${{ env.NAME }}
+          NODES_COUNT: ${{ env.NODES_COUNT }}
+          TERRAFORM_VERSION: ${{ env.TERRAFORM_VERSION }}
+          TERRAFORM_SNAPSHOT_TAG: ${{ env.TERRAFORM_SNAPSHOT_TAG }}
+          # Secrets
+          GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+      - name: Save Terraform context
+        if: always()
+        uses: ./.github/actions/save-terraform-context
+        with:
+          NAME: ${{ env.NAME }}
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+      - name: Copy SSH config to current directory
+        run: cp terraform-snapshot/terraform/ssh_config ./
+      ## }}}
+
+      # Install {{{
+      - name: Get MetalK8s ISO
+        uses: ./.github/actions/retrieve-iso
+        with:
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+      - name: Copy MetalK8s ISO to the Bootstrap node
+        uses: ./.github/actions/copy-file-ssh
+        with:
+          SOURCE_FILE: "metalk8s.iso"
+      - name: Generate Bootstrap config
+        uses: ./.github/actions/generate-bootstrap
+        with:
+          HARD_ANTIAFINITY: "true"
+      - name: Mount MetalK8s ISO
+        uses: ./.github/actions/mount-iso
+      - name: Run Bootstrap
+        uses: ./.github/actions/run-bootstrap
+      - name: Prepare bastion to run tests
+        uses: ./.github/actions/prepare-bastion
+      - name: Prepare expansion
+        uses: ./.github/actions/prepare-expansion
+      - name: Wait for pods to stabilize before expansion
+        uses: ./.github/actions/wait-pod-stable
+      - name: Run expansion tests from Bastion
+        uses: ./.github/actions/bastion-tests
+        with:
+          PYTEST_FILTERS: "install and ci and multinodes and not node$((${{ env.NODES_COUNT }} + 1))"
+      - name: Provision volumes
+        uses: ./.github/actions/provision-volumes
+        with:
+          NODE: "node-1"
+      # }}}
+
+      # Tests {{
+      - name: Copy MetalK8s ISO to the node-1
+        uses: ./.github/actions/copy-file-ssh
+        with:
+          SOURCE_FILE: "metalk8s.iso"
+          NODE_TO: "node-1"
+      - name: Wait for pods to stabilize
+        uses: ./.github/actions/wait-pod-stable
+      - name: Run tests from Bastion
+        uses: ./.github/actions/bastion-tests
+        with:
+          PYTEST_FILTERS: "post and ci and not slow"
+      # }}}
+
+      - name: Generate and Collect sosreport
+        if: always()
+        uses: ./.github/actions/sosreport-logs
+        with:
+          NODES_COUNT: "${{ env.NODES_COUNT }}"
+      - name: Upload artifacts
+        if: always()
+        uses: scality/action-artifacts@v3
+        with:
+          method: upload
+          url: https://artifacts.scality.net
+          user: ${{ secrets.ARTIFACTS_USER }}
+          password: ${{ secrets.ARTIFACTS_PASSWORD }}
+          source: artifacts
+      - name: debug
+        if: failure()
+        run: sleep 3600
+
+  destroy-single-node-cluster:
+    needs:
+      - single-node-install
+    runs-on: [self-hosted, centos7, large]
+    if: always()
+    env:
+      NAME: single-node
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Get artifacts URL
+        uses: scality/action-artifacts@v3
+        id: artifacts
+        with:
+          method: setup
+          url: https://artifacts.scality.net
+          user: ${{ secrets.ARTIFACTS_USER }}
+          password: ${{ secrets.ARTIFACTS_PASSWORD }}
+      - name: Export environment variables for accessing ${{ env.CLOUD }}
+        uses: ./.github/actions/export-cloud-env
+        with:
+          CLOUD: ${{ env.CLOUD }}
+          # Pass all "cloud access" secrets, the action will know which ones to export
+          OVH_AUTH_URL: ${{ secrets.OVH_AUTH_URL }}
+          OVH_USERNAME: ${{secrets.OVH_USERNAME }}
+          OVH_PASSWORD: ${{ secrets.OVH_PASSWORD }}
+          OVH_REGION: ${{ secrets.OVH_REGION }}
+      - name: Destroy cluster with Terraform
+        uses: ./.github/actions/destroy-cluster
+        with:
+          # Parameters
+          CLOUD: ${{ env.CLOUD }}
+          TERRAFORM_SNAPSHOT_TAG: ${{ env.TERRAFORM_SNAPSHOT_TAG }}
+          TERRAFORM_VERSION: ${{ env.TERRAFORM_VERSION }}
+          ARTIFACTS_URL: ${{ steps.artifacts.outputs.link }}
+          NAME: ${{ env.NAME }}
+          # Secrets
+          GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+
+  destroy-multi-node-cluster:
+    needs:
+      - multi-node-install
+    runs-on: [self-hosted, centos7, large]
+    if: always()
+    env:
+      NAME: multi-nodes
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Get artifacts URL
+        uses: scality/action-artifacts@v3
+        id: artifacts
+        with:
+          method: setup
+          url: https://artifacts.scality.net
+          user: ${{ secrets.ARTIFACTS_USER }}
+          password: ${{ secrets.ARTIFACTS_PASSWORD }}
+      - name: Export environment variables for accessing ${{ env.CLOUD }}
+        uses: ./.github/actions/export-cloud-env
+        with:
+          CLOUD: ${{ env.CLOUD }}
+          # Pass all "cloud access" secrets, the action will know which ones to export
+          OVH_AUTH_URL: ${{ secrets.OVH_AUTH_URL }}
+          OVH_USERNAME: ${{secrets.OVH_USERNAME }}
+          OVH_PASSWORD: ${{ secrets.OVH_PASSWORD }}
+          OVH_REGION: ${{ secrets.OVH_REGION }}
+      - name: Destroy cluster with Terraform
+        uses: ./.github/actions/destroy-cluster
+        with:
+          # Parameters
+          CLOUD: ${{ env.CLOUD }}
+          TERRAFORM_SNAPSHOT_TAG: ${{ env.TERRAFORM_SNAPSHOT_TAG }}
+          TERRAFORM_VERSION: ${{ env.TERRAFORM_VERSION }}
+          ARTIFACTS_URL: ${{ steps.artifacts.outputs.link }}
+          NAME: ${{ env.NAME }}
+          # Secrets
+          GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
