@@ -1,0 +1,32 @@
+name: "Retrieve solution ISO"
+description: "Retrieve the solution ISO"
+
+inputs:
+  base-url:
+    description: "The base URL to retrieve the solution ISO"
+    required: true
+  name:
+    description: "The solution name"
+    required: true
+  version:
+    description: "The solution version"
+    required: true
+
+outputs:
+  filename:
+    description: The name of the downloaded ISO
+    value: ${{ steps.output_info.outputs.filename }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Retrieve the solution ISO"
+      shell: bash
+      run: >
+        curl --fail -LO
+        ${{ inputs.base-url }}/${{ inputs.version }}/${{ inputs.name }}-${{ inputs.version }}.iso
+    - name: Save filename as output
+      shell: bash
+      id: output_info
+      run: |
+        echo "filename=${{ inputs.name }}-${{ inputs.version }}.iso" >> $GITHUB_OUTPUT

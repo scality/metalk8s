@@ -47,4 +47,5 @@ jobs:
     with:
       artifacts-url: ${{ needs.promote-artifacts.outputs.artifact-link }}
       nodes-count: 2
+      install-solution: true
       generate-snapshots: true

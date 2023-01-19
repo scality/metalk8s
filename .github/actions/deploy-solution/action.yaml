@@ -1,0 +1,62 @@
+name: "Install the solution"
+description: "Import and deploy the solution"
+
+inputs:
+  path:
+    description: "The path to the solution ISO on bootstrap node"
+    required: true
+  name:
+    description: "The solution name"
+    required: true
+  version:
+    description: "The solution version"
+    required: true
+  env-name:
+    description: "The solution environment name"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Retrieve MetalK8s mountpoint"
+      id: metalk8s_mountpoint
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >-
+          sudo salt-call slsutil.renderer --out txt
+          string=\"{{ salt.metalk8s.get_archives()[salt.config.get('saltenv')]['path'] }}\" |
+          cut -c 8-
+        CAPTURE_RESULT: "true"
+    - name: "Import the Solution ISO"
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >-
+          sudo ${{ steps.metalk8s_mountpoint.outputs.RESULT }}/solutions.sh
+          import --archive \"\$(readlink -f \"${{ inputs.path }}\")\"
+    - name: "Activate the Solution"
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >-
+          sudo ${{ steps.metalk8s_mountpoint.outputs.RESULT }}/solutions.sh
+          activate --name '${{ inputs.name }}' --version '${{ inputs.version }}'
+    - name: "Create the Solution environment"
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >-
+          sudo ${{ steps.metalk8s_mountpoint.outputs.RESULT }}/solutions.sh
+          create-env --name '${{ inputs.env-name }}'
+    - name: "Deploy the Solution"
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >-
+          sudo ${{ steps.metalk8s_mountpoint.outputs.RESULT }}/solutions.sh
+          add-solution --name '${{ inputs.env-name }}'
+          --solution '${{ inputs.name }}' --version '${{ inputs.version }}'
+    - name: "Wait for the Solution operator to become Ready"
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >-
+          sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf
+          wait pods --namespace '${{ inputs.env-name }}'
+          --selector 'app.kubernetes.io/name=${{ inputs.name }}-operator'
+          --for condition=Ready

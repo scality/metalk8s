@@ -12,6 +12,11 @@ on:
         required: false
         type: number
         default: 1
+      install-solution:
+        description: "Whether or not the tests solution should be installed"
+        required: false
+        type: boolean
+        default: false
       generate-snapshots:
         description: "Whether or not snapshots should be generated at the end"
         required: false
@@ -35,6 +40,10 @@ env:
   CLOUD: "ovh"
   TERRAFORM_VERSION: "1.3.6"
   TERRAFORM_SNAPSHOT_TAG: "0.9.0"
+  SOLUTION_ENV_NAME: "example-environment"
+  SOLUTION_NAME: "example-solution"
+  SOLUTION_VERSION: "1.0.2"
+  SOLUTION_BASE_URL: "https://github.com/scality/metalk8s-solution-example/releases/download"
 
 jobs:
   single-node-install:
@@ -101,11 +110,35 @@ jobs:
         uses: ./.github/actions/run-bootstrap
       - name: Provision volumes
         uses: ./.github/actions/provision-volumes
+      - name: Untaint bootstrap node
+        uses: ./.github/actions/untaint
+      # }}}
+
+      # Install solutions (if enabled) {{{
+      - name: Get Solution ISO
+        if: inputs.install-solution
+        id: solution
+        uses: ./.github/actions/retrieve-solution-iso
+        with:
+          base-url: ${{ env.SOLUTION_BASE_URL }}
+          name: ${{ env.SOLUTION_NAME }}
+          version: ${{ env.SOLUTION_VERSION }}
+      - name: Copy Solution ISO to the Bootstrap node
+        if: inputs.install-solution
+        uses: ./.github/actions/copy-file-ssh
+        with:
+          SOURCE_FILE: "${{ steps.solution.outputs.filename }}"
+      - name: Deploy the Solution
+        if: inputs.install-solution
+        uses: ./.github/actions/deploy-solution
+        with:
+          path: ${{ steps.solution.outputs.filename }}
+          name: ${{ env.SOLUTION_NAME }}
+          version: ${{ env.SOLUTION_VERSION }}
+          env-name: ${{ env.SOLUTION_ENV_NAME }}
       # }}}
 
       # Tests {{{
-      - name: Untaint bootstrap node
-        uses: ./.github/actions/untaint
       - name: Wait for pods to stabilize
         uses: ./.github/actions/wait-pod-stable
       - name: Prepare bastion to run tests
@@ -236,11 +269,44 @@ jobs:
           NODE: "node-1"
       # }}}
 
+      # Install solutions (if enabled) {{{
+      - name: Untaint bootstrap node
+        if: inputs.install-solution
+        uses: ./.github/actions/untaint
+      - name: Get Solution ISO
+        if: inputs.install-solution
+        id: solution
+        uses: ./.github/actions/retrieve-solution-iso
+        with:
+          base-url: ${{ env.SOLUTION_BASE_URL }}
+          name: ${{ env.SOLUTION_NAME }}
+          version: ${{ env.SOLUTION_VERSION }}
+      - name: Copy Solution ISO to the Bootstrap node
+        if: inputs.install-solution
+        uses: ./.github/actions/copy-file-ssh
+        with:
+          SOURCE_FILE: "${{ steps.solution.outputs.filename }}"
+      - name: Deploy the Solution
+        if: inputs.install-solution
+        uses: ./.github/actions/deploy-solution
+        with:
+          path: ${{ steps.solution.outputs.filename }}
+          name: ${{ env.SOLUTION_NAME }}
+          version: ${{ env.SOLUTION_VERSION }}
+          env-name: ${{ env.SOLUTION_ENV_NAME }}
+      # }}}
+
       # Tests {{{
       - name: Copy MetalK8s ISO to the node-1
         uses: ./.github/actions/copy-file-ssh
         with:
           SOURCE_FILE: "metalk8s.iso"
+          NODE_TO: "node-1"
+      - name: Copy Solution ISO to the node-1
+        if: inputs.install-solution
+        uses: ./.github/actions/copy-file-ssh
+        with:
+          SOURCE_FILE: "${{ steps.solution.outputs.filename }}"
           NODE_TO: "node-1"
       - name: Wait for pods to stabilize
         uses: ./.github/actions/wait-pod-stable
