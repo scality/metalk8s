@@ -36,6 +36,28 @@ on:
       OVH_REGION:
         required: true
 
+  workflow_dispatch:
+    inputs:
+      artifacts-url:
+        description: "Artifacts URL"
+        required: true
+        type: string
+      nodes-count:
+        description: "Number of extra node to spawn for multi-node"
+        required: false
+        type: string
+        default: "1"
+      install-solution:
+        description: "Whether or not the tests solution should be installed"
+        required: false
+        type: boolean
+        default: false
+      generate-snapshots:
+        description: "Whether or not snapshots should be generated at the end"
+        required: false
+        type: boolean
+        default: false
+
 env:
   CLOUD: "ovh"
   TERRAFORM_VERSION: "1.3.6"
