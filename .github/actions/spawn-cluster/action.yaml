@@ -78,6 +78,7 @@ runs:
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: ${{ inputs.TERRAFORM_VERSION }}
+        terraform_wrapper: false
     - name: Initialize Terraform
       working-directory: terraform-snapshot/terraform/
       shell: bash

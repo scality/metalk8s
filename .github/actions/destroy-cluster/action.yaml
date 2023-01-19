@@ -55,6 +55,7 @@ runs:
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: ${{ inputs.TERRAFORM_VERSION }}
+        terraform_wrapper: false
     - name: Retrieve Terraform context and SSH keys
       working-directory: terraform-snapshot/terraform/
       shell: bash
