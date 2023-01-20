@@ -20,14 +20,14 @@ runs:
       if: always()
       shell: bash
       run: |
-        mkdir -p artifacts/terraform-context/${{ inputs.NAME }}/
-        tar cvf ${{ inputs.NAME }}-context.tar.gz \
+        mkdir -p "artifacts/terraform-context/${{ inputs.NAME }}/"
+        tar cvf context.tar.gz \
           .terraform \
           .terraform.lock.hcl \
           terraform.tfstate
-        mv ${{ inputs.NAME }}-context.tar.gz artifacts/terraform-context/${{ inputs.NAME }}/
+        mv context.tar.gz "artifacts/terraform-context/${{ inputs.NAME }}/"
         # ssh_config might not be generated
-        if [[ -e ssh_config ]]; then cp ssh_config artifacts/terraform-context/${{ inputs.NAME }}/; fi
+        if [[ -e ssh_config ]]; then cp ssh_config "artifacts/terraform-context/${{ inputs.NAME }}/"; fi
     - name: Upload Terraform context
       id: upload-context
       if: always()

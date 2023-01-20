@@ -50,8 +50,8 @@ runs:
         rm -rf ~/.ssh/terraform*
         ssh-keygen -t rsa -b 4096 -N '' -f ~/.ssh/terraform
         # copy ssh keys now in order to allow us to connect to the machine if needed
-        mkdir -p artifacts/terraform-context/${{ inputs.NAME }}/
-        cp ~/.ssh/terraform* artifacts/terraform-context/${{ inputs.NAME }}/
+        mkdir -p "artifacts/terraform-context/${{ inputs.NAME }}/"
+        cp ~/.ssh/terraform* "artifacts/terraform-context/${{ inputs.NAME }}/"
     - name: Upload SSH keypair
       uses: scality/action-artifacts@v3
       with:
