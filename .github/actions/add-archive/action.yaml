@@ -1,0 +1,20 @@
+name: "Add archive"
+description: "Add a MetalK8s ISO archive to the cluster"
+
+inputs:
+  archive:
+    description: "Path to the MetalK8s ISO on bootstrap node"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Retrieve MetalK8s mountpoint"
+      id: metalk8s_mountpoint
+      uses: ./.github/actions/retrieve-mountpoint
+    - name: Add ISO to the cluster
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >-
+          sudo ${{ steps.metalk8s_mountpoint.outputs.mountpoint }}/iso-manager.sh
+          --add-archive \"\$(readlink -f \"${{ inputs.archive }}\")\" --verbose

@@ -39,6 +39,10 @@ inputs:
     description: "Number of nodes to spawn in addition to bootstrap and bastion"
     required: false
     default: "0"
+  RESTORE_ENV:
+    description: "The name of the snapshoted environment that will be use to spawn"
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -94,6 +98,7 @@ runs:
         TF_VAR_prefix: ${{ github.workflow }}-${{ github.run_number }}-${{ inputs.NAME }}
         TF_VAR_os: "${{ inputs.OS }}"
         TF_VAR_nodes_count: "${{ inputs.NODES_COUNT }}"
+        TF_VAR_restore_env: "${{ inputs.RESTORE_ENV }}"
         MAX_RETRIES: "3"
         TFVARS_DIR: "${{ github.workspace }}/.github/spawn/tfvars"
       run: |

@@ -1,0 +1,50 @@
+name: "Generate job result"
+description: "Generate a JUnit file containing the result of a Job"
+
+inputs:
+  name:
+    description: "The MetalK8s version to upgrade to"
+    required: true
+  ARTIFACTS_USER:
+    description: "Username to get artifacts"
+    required: true
+  ARTIFACTS_PASSWORD:
+    description: "Password to get artifacts"
+    required: true
+  GIT_ACCESS_TOKEN:
+    description: "A Github PAT"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get artifacts URL
+      uses: scality/action-artifacts@v3
+      id: artifacts
+      with:
+        method: setup
+        url: https://artifacts.scality.net
+        user: ${{ inputs.ARTIFACTS_USER }}
+        password: ${{ inputs.ARTIFACTS_PASSWORD }}
+    - name: Create destination directory
+      shell: bash
+      run: mkdir -p "artifacts/build_status/${{ inputs.name }}"
+    - name: Generate JUnit
+      shell: bash
+      env:
+        TEST_SUITE: ${{ github.workflow }}
+        CLASS_NAME: ${{ github.job }}
+        TEST_NAME: ${{ inputs.name }}
+        FINAL_STATUS: ${{ job.status }}
+        # NOTE: Today the Job ID is not available in the github context
+        # And there is no easy way to retrieve it, especially when running in a `matrix`
+        # So let's only have the full build URL for the moment
+        # See: https://github.com/community/community/discussions/8945
+        TEXT: |-
+          Build Url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          Artifact Url: ${{ steps.artifacts.outputs.link }}
+          Branch: ${{ github.ref_name }}
+          Commit: ${{ github.sha }}
+      run: >
+        .github/scripts/generate_junit_result.sh
+        > "artifacts/build_status/${{ inputs.name }}/junit_status.xml"

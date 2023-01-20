@@ -1,0 +1,15 @@
+name: "Run Upgrade"
+description: "Run the upgrade script on bootstrap node"
+
+inputs:
+  version:
+    description: "The MetalK8s version to upgrade to"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Bootstrap script
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: sudo /srv/scality/metalk8s-${{ inputs.version }}/upgrade.sh --verbose

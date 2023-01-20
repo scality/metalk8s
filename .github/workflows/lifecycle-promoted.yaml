@@ -1,0 +1,218 @@
+name: Lifecycle promoted
+
+on:
+  workflow_call:
+    inputs:
+      artifacts-url:
+        description: "Artifacts URL"
+        required: true
+        type: string
+      promoted-version:
+        description: "The promoted version to use (as source for upgrade and destination for downgrade)"
+        required: true
+        type: string
+      type:
+        description: "The type of upgrade ran"
+        required: false
+        type: string
+        default: "unknown"
+
+env:
+  CLOUD: "ovh"
+  OS: "rocky-8"
+  TERRAFORM_VERSION: "1.3.6"
+  TERRAFORM_SNAPSHOT_TAG: "0.9.0"
+
+jobs:
+  snapshot-upgrade:
+    runs-on: [self-hosted, centos7, large]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "single node"
+            nodes-count: 0
+          - name: "3 nodes"
+            nodes-count: 2
+    env:
+      NAME: snapshot-upgrade-${{ inputs.type }}-${{ matrix.name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install deps
+        run: sudo yum install -y isomd5sum
+
+     ## Spawn {{{
+      - name: Export environment variables for accessing ${{ env.CLOUD }}
+        uses: ./.github/actions/export-cloud-env
+        with:
+          CLOUD: ${{ env.CLOUD }}
+          # Pass all "cloud access" secrets, the action will know which ones to export
+          OVH_AUTH_URL: ${{ secrets.OVH_AUTH_URL }}
+          OVH_USERNAME: ${{ secrets.OVH_USERNAME }}
+          OVH_PASSWORD: ${{ secrets.OVH_PASSWORD }}
+          OVH_REGION: ${{ secrets.OVH_REGION }}
+      - name: Spawn cluster with Terraform
+        uses: ./.github/actions/spawn-cluster
+        with:
+          # Parameters
+          CLOUD: ${{ env.CLOUD }}
+          OS: ${{ env.OS }}
+          NAME: ${{ env.NAME }}
+          NODES_COUNT: ${{ matrix.nodes-count }}
+          RESTORE_ENV: ${{ inputs.promoted-version }}-${{ env.OS }}-${{ matrix.name }}
+          TERRAFORM_VERSION: ${{ env.TERRAFORM_VERSION }}
+          TERRAFORM_SNAPSHOT_TAG: ${{ env.TERRAFORM_SNAPSHOT_TAG }}
+          # Secrets
+          GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+      - name: Save Terraform context
+        if: always()
+        id: artifacts
+        uses: ./.github/actions/save-terraform-context
+        with:
+          NAME: ${{ env.NAME }}
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+      - name: Copy SSH config to current directory
+        run: cp terraform-snapshot/terraform/ssh_config ./
+      ## }}}
+
+      ## Retrieve new version ISO {{{
+      - name: Get MetalK8s ISO
+        uses: ./.github/actions/retrieve-iso
+        with:
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+          ARTIFACTS_URL: ${{ inputs.artifacts-url }}
+      - name: Retrieve product.txt from artifacts
+        run: >
+          curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
+          ${{ inputs.artifacts-url }}/product.txt
+      - name: Save current version in environment
+        run: |
+          source product.txt
+          echo "METALK8S_VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Copy MetalK8s ISO to the Bootstrap node
+        uses: ./.github/actions/copy-file-ssh
+        with:
+          SOURCE_FILE: "metalk8s.iso"
+          DESTINATION_FILE: "metalk8s-${{ env.METALK8S_VERSION }}.iso"
+      ## }}}
+
+      # Wait for everything to be Ready {{{
+      - name: Ensure all Salt minion are running
+        uses: ./.github/actions/run-command-ssh
+        with:
+          COMMAND: |
+            for _ in \$(seq 10); do
+                sudo crictl exec \$(sudo crictl ps --label='io.kubernetes.container.name=salt-master' -q) salt '*' test.ping && exit 0
+                sleep 5
+            done
+      - name: Wait for pods to stabilize after restoration
+        uses: ./.github/actions/wait-pod-stable
+        with:
+          # NOTE: We increase stabilization time after restoration it may take some
+          # time to stabilize
+          STABILIZATION_TIME: "240"
+      - name: Ensure all pods are running
+        uses: ./.github/actions/run-command-ssh
+        with:
+          # NOTE: we ignore Jobs as they can't be Ready (either Succeeded or Failed)
+          COMMAND: >
+            sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf
+            wait pods --for=condition=Ready --all --all-namespaces
+            --selector='!job-name' --timeout=5s
+      ## }}}
+
+      ## Run upgrade {{{
+      - name: Add new ISO to the cluster
+        uses: ./.github/actions/add-archive
+        with:
+          archive: "metalk8s-${{ env.METALK8S_VERSION }}.iso"
+      - name: Run the upgrade
+        uses: ./.github/actions/run-upgrade
+        with:
+          version: ${{ env.METALK8S_VERSION }}
+      - name: Wait for pods to stabilize after upgrade
+        uses: ./.github/actions/wait-pod-stable
+        with:
+          # NOTE: We increase stabilization time after upgrade it may take some
+          # time to stabilize (e.g.: Rolling update of some DaemonSet that may take
+          # some times, especially in multi node context)
+          STABILIZATION_TIME: "240"
+      ## }}}
+
+      ## Remove previous ISO {{{
+      - name: Remove previous ISO from the cluster
+        uses: ./.github/actions/remove-archive
+        with:
+          version: ${{ inputs.promoted-version }}
+      ## }}}
+
+      ## Tests {{{
+      - name: Prepare bastion to run tests
+        uses: ./.github/actions/prepare-bastion
+      - name: Wait for pods to stabilize before tests
+        uses: ./.github/actions/wait-pod-stable
+      - name: Run tests from Bastion
+        uses: ./.github/actions/bastion-tests
+      ## }}}
+
+      ## Test certificate expiration {{{
+      - name: Run certificates expiration tests
+        uses: ./.github/actions/certificates-tests
+      - name: Wait for pods to stabilize after certificates expiration tests
+        uses: ./.github/actions/wait-pod-stable
+      - name: Run tests from Bastion after certificates expiration tests
+        uses: ./.github/actions/bastion-tests
+      ## }}}
+
+      ## Collect logs {{
+      - name: Generate and Collect sosreport
+        if: always()
+        uses: ./.github/actions/sosreport-logs
+        with:
+          NODES_COUNT: "${{ matrix.nodes-count }}"
+      ## }}
+
+      ## Generate job result {{
+      - name: Generate Job result
+        if: always()
+        uses: ./.github/actions/generate-job-result
+        with:
+          name: ${{ env.NAME }}
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+          GIT_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ## }}
+
+      ## Upload artifacts {{
+      - name: Upload artifacts
+        if: always()
+        uses: scality/action-artifacts@v3
+        with:
+          method: upload
+          url: https://artifacts.scality.net
+          user: ${{ secrets.ARTIFACTS_USER }}
+          password: ${{ secrets.ARTIFACTS_PASSWORD }}
+          source: artifacts
+      ## }}
+
+      ## Destroy {{{
+      - name: Destroy cluster with Terraform
+        if: always()
+        uses: ./.github/actions/destroy-cluster
+        with:
+          # Parameters
+          CLOUD: ${{ env.CLOUD }}
+          TERRAFORM_SNAPSHOT_TAG: ${{ env.TERRAFORM_SNAPSHOT_TAG }}
+          TERRAFORM_VERSION: ${{ env.TERRAFORM_VERSION }}
+          ARTIFACTS_URL: ${{ steps.artifacts.outputs.link }}
+          NAME: ${{ env.NAME }}
+          # Secrets
+          GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+      # }}}
