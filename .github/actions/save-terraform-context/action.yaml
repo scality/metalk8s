@@ -40,6 +40,6 @@ runs:
         source: terraform-snapshot/terraform/artifacts/
 
 outputs:
-  url:
-    description: The full URL to the uploaded Terraform context
-    value: ${{ steps.upload-context.outputs.link }}/terraform-context/${{ inputs.NAME }}
+  link:
+    description: The artifacts link
+    value: ${{ steps.upload-context.outputs.link }}
