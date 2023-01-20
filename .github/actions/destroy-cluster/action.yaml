@@ -27,7 +27,7 @@ inputs:
     required: true
 
   # Spawn configuration
-  ARTIFACTS_CONTEXT_URL:
+  ARTIFACTS_URL:
     description: Full URL to the saved Terraform context
     required: true
   NAME:
@@ -55,18 +55,19 @@ runs:
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: ${{ inputs.TERRAFORM_VERSION }}
+        terraform_wrapper: false
     - name: Retrieve Terraform context and SSH keys
       working-directory: terraform-snapshot/terraform/
       shell: bash
       run: |
         curl --fail -LO -u ${{ inputs.ARTIFACTS_USER }}:${{ inputs.ARTIFACTS_PASSWORD }} \
-          ${{ inputs.ARTIFACTS_CONTEXT_URL }}/${{ inputs.NAME }}-context.tar.gz
+          ${{ inputs.ARTIFACTS_URL }}/terraform-context/${{ inputs.NAME }}/${{ inputs.NAME }}-context.tar.gz
         curl --fail -LO -u ${{ inputs.ARTIFACTS_USER }}:${{ inputs.ARTIFACTS_PASSWORD }} \
-          ${{ inputs.ARTIFACTS_CONTEXT_URL }}/terraform
+          ${{ inputs.ARTIFACTS_URL }}/terraform-context/${{ inputs.NAME }}/terraform
         curl --fail -LO -u ${{ inputs.ARTIFACTS_USER }}:${{ inputs.ARTIFACTS_PASSWORD }} \
-          ${{ inputs.ARTIFACTS_CONTEXT_URL }}/terraform.pub
+          ${{ inputs.ARTIFACTS_URL }}/terraform-context/${{ inputs.NAME }}/terraform.pub
         curl -LO -u ${{ inputs.ARTIFACTS_USER }}:${{ inputs.ARTIFACTS_PASSWORD }} \
-          ${{ inputs.ARTIFACTS_CONTEXT_URL }}/ssh_config
+          ${{ inputs.ARTIFACTS_URL }}/terraform-context/${{ inputs.NAME }}/ssh_config
     - name: Unpack Terraform context and move SSH keys
       working-directory: terraform-snapshot/terraform/
       shell: bash

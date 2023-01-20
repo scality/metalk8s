@@ -78,6 +78,7 @@ runs:
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: ${{ inputs.TERRAFORM_VERSION }}
+        terraform_wrapper: false
     - name: Initialize Terraform
       working-directory: terraform-snapshot/terraform/
       shell: bash
@@ -90,7 +91,7 @@ runs:
       working-directory: terraform-snapshot/terraform/
       shell: bash
       env:
-        TF_VAR_prefix: gh-${{ github.run_number }}-${{ inputs.NAME }}
+        TF_VAR_prefix: ${{ github.workflow }}-${{ github.run_number }}-${{ inputs.NAME }}
         TF_VAR_os: "${{ inputs.OS }}"
         TF_VAR_nodes_count: "${{ inputs.NODES_COUNT }}"
         MAX_RETRIES: "3"
