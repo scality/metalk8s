@@ -66,7 +66,7 @@ EOF
 
 run_certificates_beacon_state() {
     local salt_container
-    local -ri retries=5 sleep_time=10
+    local -ri retries=10 sleep_time=10
     local -r pillar=${1:-}
 
     readarray -t minions < <(get_salt_minion_ids)
@@ -121,7 +121,7 @@ reset_beacon_conf() {
 
 check_certificates_renewal() {
     local -i return_code=0
-    local -ri retries=5 time_sleep=10
+    local -ri retries=10 time_sleep=10
     local -a minions certificates
     local salt_container certificates_pillar
 
@@ -138,7 +138,7 @@ check_certificates_renewal() {
                 --out json --out-indent -1
         )
 
-        readarray -t certificates < <(python - <<EOF
+        readarray -t certificates < <(python3 - <<EOF
 import yaml
 
 with open('$SALT_DEFAULTS', 'r') as fd:
