@@ -14,10 +14,6 @@ inputs:
     description: "Virtual IPs to use to test to reconfigure the Workload Plane Ingress"
     required: false
     default: "192.168.2.200,192.168.2.201,192.168.2.202,192.168.2.203,192.168.2.204"
-  MOUNTPOINT:
-    description: "Path to the MetalK8s ISO mountpoint on bootstrap node"
-    required: false
-    default: "/var/tmp/metalk8s"
   BOOTSTRAP_BACKUP_ARCHIVE:
     description: "Path to the bootstrap backup archive"
     required: false
@@ -26,6 +22,9 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: "Retrieve MetalK8s mountpoint"
+      id: metalk8s_mountpoint
+      uses: ./.github/actions/retrieve-mountpoint
     - name: Run tests from Bastion
       uses: ./.github/actions/run-command-ssh
       with:
@@ -34,7 +33,7 @@ runs:
         COMMAND: |
           cd metalk8s
           export SSH_CONFIG_FILE=\"/home/centos/ssh_config\"
-          export ISO_MOUNTPOINT=\"${{ inputs.MOUNTPOINT }}\"
+          export ISO_MOUNTPOINT=\"${{ steps.metalk8s_mountpoint.outputs.mountpoint }}\"
           export BOOTSTRAP_BACKUP_ARCHIVE=\"${{ inputs.BOOTSTRAP_BACKUP_ARCHIVE }}\"
           export CONTROL_PLANE_INGRESS_VIP=\"${{ inputs.CONTROL_PLANE_INGRESS_VIP }}\"
           export WORKLOAD_PLANE_INGRESS_VIPS=\"${{ inputs.WORKLOAD_PLANE_INGRESS_VIPS }}\"
