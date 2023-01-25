@@ -1,0 +1,25 @@
+name: Start Cron jobs
+
+on:
+  # NOTE: Schedule is only run on the latest commit of the default branch,
+  # so we need to schedule Cron Jobs for all branches here
+  schedule:
+    - cron: "1 0 * * 1-5"
+
+jobs:
+  crons:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        include:
+          - name: "Nightly for 125.0"
+            branch: "development/125.0"
+            workflow: "nightly.yaml"
+          - name: "Nightly for 124.1"
+            branch: "development/124.1"
+            workflow: "nightly.yaml"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run ${{ matrix.name }}
+        run: gh workflow run ${{ matrix.workflow }} --ref=${{ matrix.branch }}
