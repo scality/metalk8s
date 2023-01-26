@@ -35,7 +35,7 @@ jobs:
           echo "version_suffix=$VERSION_SUFFIX" >> $GITHUB_OUTPUT
           echo "version_full=$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH-$VERSION_SUFFIX" >> $GITHUB_OUTPUT
 
-  compute-lifecycle-matrix:
+  compute-lifecycle-promoted-matrix:
     runs-on: ubuntu-22.04
     needs:
       - retrieve-info
@@ -67,7 +67,7 @@ jobs:
       - name: Get previous major version
         run: |
           echo "previous_major=$(git tag --sort=taggerdate --list "$((VERSION_MAJOR - 1 )).*" | grep -v '\-' | tail -1)" >> $GITHUB_ENV
-      - name: Compute lifecycle matrix
+      - name: Compute matrix
         id: get-matrix
         run: |
           matrix="["
@@ -83,24 +83,83 @@ jobs:
           matrix+="]"
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
+  compute-lifecycle-dev-matrix:
+    runs-on: ubuntu-22.04
+    needs:
+      - retrieve-info
+    env:
+      VERSION_MAJOR: ${{ needs.retrieve-info.outputs.version_major }}
+      VERSION_MINOR: ${{ needs.retrieve-info.outputs.version_minor }}
+    outputs:
+      # Every element of the matrix will have
+      # - `type` which is the type of lifecycle (major, minor)
+      # - `branch` the dev branch name
+      lifecycle-matrix: ${{ steps.get-matrix.outputs.matrix }}
+      artifacts-link: ${{ needs.retrieve-info.outputs.artifacts-link }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Get previous minor version
+        run: |
+          if [ "$VERSION_MINOR" != "0" ]; then
+            echo "previous_minor=development/$VERSION_MAJOR.$(( VERSION_MINOR - 1))" >> $GITHUB_ENV
+          else
+            echo "previous_minor=" >> $GITHUB_ENV
+          fi
+      - name: Get previous major version
+        run: |
+          echo "previous_major=$(git branch --remote --sort=creatordate --list --format="%(refname:lstrip=-2)" "origin/development/$(( VERSION_MAJOR - 1 )).*" | tail -1)" >> $GITHUB_ENV
+      - name: Compute matrix
+        id: get-matrix
+        run: |
+          matrix="["
+          for type in minor major; do
+            var_name="previous_${type}"
+            if [ -n "${!var_name}" ]; then
+              if [ "${#matrix}" -gt "1" ]; then
+                matrix+=","
+              fi
+              matrix+="{\"type\": \"$type\", \"branch\": \"${!var_name}\"}"
+            fi
+          done
+          matrix+="]"
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+
   lifecycle-promoted:
     uses: ./.github/workflows/lifecycle-promoted.yaml
     secrets: inherit
     needs:
-      - compute-lifecycle-matrix
+      - compute-lifecycle-promoted-matrix
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(needs.compute-lifecycle-matrix.outputs.lifecycle-matrix) }}
+        include: ${{ fromJSON(needs.compute-lifecycle-promoted-matrix.outputs.lifecycle-matrix) }}
     with:
-      artifacts-url: ${{ needs.compute-lifecycle-matrix.outputs.artifacts-link }}
+      artifacts-url: ${{ needs.compute-lifecycle-promoted-matrix.outputs.artifacts-link }}
       type: ${{ matrix.type }}
       promoted-version: ${{ matrix.version }}
+
+  lifecycle-dev:
+    uses: ./.github/workflows/lifecycle-dev.yaml
+    secrets: inherit
+    needs:
+      - compute-lifecycle-dev-matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.compute-lifecycle-dev-matrix.outputs.lifecycle-matrix) }}
+    with:
+      artifacts-url: ${{ needs.compute-lifecycle-dev-matrix.outputs.artifacts-link }}
+      type: ${{ matrix.type }}
+      dev-branch: ${{ matrix.branch }}
 
   write-final-failed-status:
     runs-on: ubuntu-22.04
     needs:
       - lifecycle-promoted
+      - lifecycle-dev
     if: failure()
     steps:
       - name: Checkout
@@ -124,6 +183,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs:
       - lifecycle-promoted
+      - lifecycle-dev
     if: success()
     steps:
       - name: Checkout
