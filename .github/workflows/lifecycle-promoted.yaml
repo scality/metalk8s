@@ -212,3 +212,11 @@ jobs:
           # Secrets
           GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
       # }}}
+
+  promoted-downgrade:
+    uses: ./.github/workflows/downgrade-test.yaml
+    secrets: inherit
+    with:
+      from-artifacts-url: ${{ inputs.artifacts-url }}
+      to-artifacts-url: https://artifacts.scality.net/builds/github:scality:metalk8s:promoted-${{ inputs.promoted-version }}
+      type: ${{ inputs.type }}

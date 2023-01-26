@@ -1,0 +1,190 @@
+name: Downgrade test
+
+on:
+  workflow_call:
+    inputs:
+      from-artifacts-url:
+        description: "Artifacts URL to use to install"
+        required: true
+        type: string
+      to-artifacts-url:
+        description: "Artifacts URL to downgrade to"
+        required: true
+        type: string
+      type:
+        description: "The type of downgrade ran"
+        required: false
+        type: string
+        default: "unknown"
+
+env:
+  CLOUD: "ovh"
+  OS: "rocky-8"
+  TERRAFORM_VERSION: "1.3.6"
+  TERRAFORM_SNAPSHOT_TAG: "0.9.0"
+  NODES_COUNT: "0"
+
+jobs:
+  downgrade:
+    runs-on: [self-hosted, centos7, large]
+    env:
+      NAME: downgrade-${{ inputs.type }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install deps
+        run: sudo yum install -y isomd5sum
+
+     ## Spawn {{{
+      - name: Export environment variables for accessing ${{ env.CLOUD }}
+        uses: ./.github/actions/export-cloud-env
+        with:
+          CLOUD: ${{ env.CLOUD }}
+          # Pass all "cloud access" secrets, the action will know which ones to export
+          OVH_AUTH_URL: ${{ secrets.OVH_AUTH_URL }}
+          OVH_USERNAME: ${{ secrets.OVH_USERNAME }}
+          OVH_PASSWORD: ${{ secrets.OVH_PASSWORD }}
+          OVH_REGION: ${{ secrets.OVH_REGION }}
+      - name: Spawn cluster with Terraform
+        uses: ./.github/actions/spawn-cluster
+        with:
+          # Parameters
+          CLOUD: ${{ env.CLOUD }}
+          OS: ${{ env.OS }}
+          NAME: ${{ env.NAME }}
+          NODES_COUNT: ${{ env.NODES_COUNT }}
+          TERRAFORM_VERSION: ${{ env.TERRAFORM_VERSION }}
+          TERRAFORM_SNAPSHOT_TAG: ${{ env.TERRAFORM_SNAPSHOT_TAG }}
+          # Secrets
+          GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+      - name: Save Terraform context
+        if: always()
+        uses: ./.github/actions/save-terraform-context
+        with:
+          NAME: ${{ env.NAME }}
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+      - name: Copy SSH config to current directory
+        run: cp terraform-snapshot/terraform/ssh_config ./
+      ## }}}
+
+      # Install source {{{
+      - name: Get source MetalK8s ISO
+        uses: ./.github/actions/retrieve-iso
+        with:
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+          ARTIFACTS_URL: ${{ inputs.from-artifacts-url }}
+      - name: Copy MetalK8s ISO to the Bootstrap node
+        uses: ./.github/actions/copy-file-ssh
+        with:
+          SOURCE_FILE: "metalk8s.iso"
+      - name: Generate Bootstrap config
+        uses: ./.github/actions/generate-bootstrap
+      - name: Mount MetalK8s ISO
+        uses: ./.github/actions/mount-iso
+      - name: Run Bootstrap
+        uses: ./.github/actions/run-bootstrap
+      - name: Provision volumes
+        uses: ./.github/actions/provision-volumes
+      - name: Untaint bootstrap node
+        uses: ./.github/actions/untaint
+      # }}}
+
+      # Tests source {{{
+      - name: Wait for pods to stabilize
+        uses: ./.github/actions/wait-pod-stable
+      - name: Prepare bastion to run tests
+        uses: ./.github/actions/prepare-bastion
+      - name: Run tests from Bastion
+        uses: ./.github/actions/bastion-tests
+      # }}}
+
+      # Downgrade {{{
+      - name: Get target MetalK8s ISO
+        uses: ./.github/actions/retrieve-iso
+        with:
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+          ARTIFACTS_URL: ${{ inputs.to-artifacts-url }}
+      - name: Retrieve target product.txt from artifacts
+        run: >
+          curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
+          ${{ inputs.to-artifacts-url }}/product.txt
+      - name: Save target version and git commit in environment
+        run: |
+          source product.txt
+          echo "target_version=$VERSION" >> $GITHUB_ENV
+          echo "target_git_commit=$GIT" >>$GITHUB_ENV
+      - name: Copy target MetalK8s ISO to the Bootstrap node
+        uses: ./.github/actions/copy-file-ssh
+        with:
+          SOURCE_FILE: "metalk8s.iso"
+          DESTINATION_FILE: "metalk8s-${{ env.target_version }}.iso"
+      - name: Add new ISO to the cluster
+        uses: ./.github/actions/add-archive
+        with:
+          archive: "metalk8s-${{ env.target_version }}.iso"
+      - name: Run the downgrade
+        uses: ./.github/actions/run-downgrade
+        with:
+          version: ${{ env.target_version }}
+      # }}}
+
+      # Tests target {{{
+      - name: Wait for pods to stabilize
+        uses: ./.github/actions/wait-pod-stable
+      - name: Prepare bastion to run ${{ env.target_version }} tests
+        uses: ./.github/actions/prepare-bastion
+        with:
+          BRANCH: ${{ env.target_git_commit }}
+      - name: Run ${{ env.target_version }} tests from Bastion
+        uses: ./.github/actions/bastion-tests
+      # }}}
+
+      ## Collect logs {{
+      - name: Generate and Collect sosreport
+        if: always()
+        uses: ./.github/actions/sosreport-logs
+        with:
+          NODES_COUNT: "${{ env.NODES_COUNT }}"
+      ## }}
+
+      ## Generate job result {{
+      - name: Generate Job result
+        if: always()
+        uses: ./.github/actions/generate-job-result
+        with:
+          name: ${{ env.NAME }}
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+          GIT_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ## }}
+
+      ## Upload artifacts {{
+      - name: Upload artifacts
+        if: always()
+        uses: scality/action-artifacts@v3
+        with:
+          method: upload
+          url: https://artifacts.scality.net
+          user: ${{ secrets.ARTIFACTS_USER }}
+          password: ${{ secrets.ARTIFACTS_PASSWORD }}
+          source: artifacts
+      ## }}
+
+      ## Destroy {{{
+      - name: Destroy cluster with Terraform
+        if: always()
+        uses: ./.github/actions/destroy-cluster
+        with:
+          # Parameters
+          CLOUD: ${{ env.CLOUD }}
+          TERRAFORM_SNAPSHOT_TAG: ${{ env.TERRAFORM_SNAPSHOT_TAG }}
+          TERRAFORM_VERSION: ${{ env.TERRAFORM_VERSION }}
+          NAME: ${{ env.NAME }}
+          # Secrets
+          GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
+      # }}}
