@@ -8,10 +8,10 @@ inputs:
     required: true
   ARTIFACTS_USER:
     description: "Scality Artifacts username"
-    required: true
+    required: false
   ARTIFACTS_PASSWORD:
     description: "Scality Artifacts password"
-    required: true
+    required: false
 
   # Tooling configuration
   TERRAFORM_VERSION:
@@ -28,8 +28,8 @@ inputs:
 
   # Spawn configuration
   ARTIFACTS_URL:
-    description: Full URL to the saved Terraform context
-    required: true
+    description: Full URL to the saved Terraform context (if empty consider that context already there)
+    required: false
   NAME:
     description: "Name of the deployment (used in artifacts and the VM names prefix)"
     required: true
@@ -57,6 +57,7 @@ runs:
         terraform_version: ${{ inputs.TERRAFORM_VERSION }}
         terraform_wrapper: false
     - name: Retrieve Terraform context and SSH keys
+      if: inputs.ARTIFACTS_URL
       working-directory: terraform-snapshot/terraform/
       shell: bash
       run: |
