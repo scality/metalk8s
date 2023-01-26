@@ -15,7 +15,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         make \
         plantuml \
         graphviz \
-        python3-buildbot-worker \
         python3 \
         python3-pip \
         python3-setuptools \
@@ -25,7 +24,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
 
 # NOTE: the tox package available is too old; we want tox >= 3.4, for the
 # `commands_pre` syntax
-RUN python3 -m pip install six==1.14.0 tox==3.14.3 && \
+RUN python3 -m pip install six==1.14.0 tox~=4.0.19 && \
     rm -rf ~/.cache/pip
 
 WORKDIR /usr/src/metalk8s
