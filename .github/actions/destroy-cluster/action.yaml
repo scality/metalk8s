@@ -61,18 +61,18 @@ runs:
       shell: bash
       run: |
         curl --fail -LO -u ${{ inputs.ARTIFACTS_USER }}:${{ inputs.ARTIFACTS_PASSWORD }} \
-          ${{ inputs.ARTIFACTS_URL }}/terraform-context/${{ inputs.NAME }}/${{ inputs.NAME }}-context.tar.gz
+          "${{ inputs.ARTIFACTS_URL }}/terraform-context/${{ inputs.NAME }}/context.tar.gz"
         curl --fail -LO -u ${{ inputs.ARTIFACTS_USER }}:${{ inputs.ARTIFACTS_PASSWORD }} \
-          ${{ inputs.ARTIFACTS_URL }}/terraform-context/${{ inputs.NAME }}/terraform
+          "${{ inputs.ARTIFACTS_URL }}/terraform-context/${{ inputs.NAME }}/terraform"
         curl --fail -LO -u ${{ inputs.ARTIFACTS_USER }}:${{ inputs.ARTIFACTS_PASSWORD }} \
-          ${{ inputs.ARTIFACTS_URL }}/terraform-context/${{ inputs.NAME }}/terraform.pub
+          "${{ inputs.ARTIFACTS_URL }}/terraform-context/${{ inputs.NAME }}/terraform.pub"
         curl -LO -u ${{ inputs.ARTIFACTS_USER }}:${{ inputs.ARTIFACTS_PASSWORD }} \
-          ${{ inputs.ARTIFACTS_URL }}/terraform-context/${{ inputs.NAME }}/ssh_config
+          "${{ inputs.ARTIFACTS_URL }}/terraform-context/${{ inputs.NAME }}/ssh_config"
     - name: Unpack Terraform context and move SSH keys
       working-directory: terraform-snapshot/terraform/
       shell: bash
       run: |
-        tar -xvf ${{ inputs.NAME }}-context.tar.gz
+        tar -xvf context.tar.gz
         mkdir -p ~/.ssh
         mv terraform terraform.pub ~/.ssh/
     - name: Validate Terraform context

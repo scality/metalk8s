@@ -1,0 +1,144 @@
+name: Nightly
+
+on:
+  workflow_dispatch:
+
+jobs:
+  retrieve-info:
+    runs-on: ubuntu-22.04
+    outputs:
+      artifacts-link: ${{ steps.artifacts.outputs.link }}
+      version_major: ${{ steps.get-version.outputs.version_major }}
+      version_minor: ${{ steps.get-version.outputs.version_minor }}
+      version_patch: ${{ steps.get-version.outputs.version_patch }}
+      version_suffix: ${{ steps.get-version.outputs.version_suffix }}
+      version_full: ${{ steps.get-version.outputs.version_full }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Retrieve artifacts url
+        uses: scality/action-artifacts@v3
+        id: artifacts
+        with:
+          method: get
+          workflow-name: Pre-merge
+          url: https://artifacts.scality.net
+          user: ${{ secrets.ARTIFACTS_USER }}
+          password: ${{ secrets.ARTIFACTS_PASSWORD }}
+      - name: Retrieve current version
+        id: get-version
+        run: |
+          source VERSION
+          echo "version_major=$VERSION_MAJOR" >> $GITHUB_OUTPUT
+          echo "version_minor=$VERSION_MINOR" >> $GITHUB_OUTPUT
+          echo "version_patch=$VERSION_PATCH" >> $GITHUB_OUTPUT
+          echo "version_suffix=$VERSION_SUFFIX" >> $GITHUB_OUTPUT
+          echo "version_full=$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH-$VERSION_SUFFIX" >> $GITHUB_OUTPUT
+
+  compute-lifecycle-matrix:
+    runs-on: ubuntu-22.04
+    needs:
+      - retrieve-info
+    env:
+      VERSION_MAJOR: ${{ needs.retrieve-info.outputs.version_major }}
+      VERSION_MINOR: ${{ needs.retrieve-info.outputs.version_minor }}
+      VERSION_PATCH: ${{ needs.retrieve-info.outputs.version_patch }}
+    outputs:
+      # Every element of the matrix will have
+      # - `type` which is the type of lifecycle (major, minor, patch)
+      # - `version` the promoted version
+      lifecycle-matrix: ${{ steps.get-matrix.outputs.matrix }}
+      artifacts-link: ${{ needs.retrieve-info.outputs.artifacts-link }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Fetch tags
+        run: git fetch --tags
+      - name: Get previous patch version
+        run: |
+          if [ "$VERSION_PATCH" != "0" ]; then
+            echo "previous_patch=$VERSION_MAJOR.$VERSION_MINOR.$(( VERSION_PATCH - 1))" >> $GITHUB_ENV
+          else
+            echo "previous_patch=" >> $GITHUB_ENV
+          fi
+      - name: Get previous minor version
+        run: |
+          echo "previous_minor=$(git tag --sort=taggerdate --list "$VERSION_MAJOR.$(( VERSION_MINOR - 1 )).*" | grep -v '\-' | tail -1)" >> $GITHUB_ENV
+      - name: Get previous major version
+        run: |
+          echo "previous_major=$(git tag --sort=taggerdate --list "$((VERSION_MAJOR - 1 )).*" | grep -v '\-' | tail -1)" >> $GITHUB_ENV
+      - name: Compute lifecycle matrix
+        id: get-matrix
+        run: |
+          matrix="["
+          for type in patch minor major; do
+            var_name="previous_${type}"
+            if [ -n "${!var_name}" ]; then
+              if [ "${#matrix}" -gt "1" ]; then
+                matrix+=","
+              fi
+              matrix+="{\"type\": \"$type\", \"version\": \"${!var_name}\"}"
+            fi
+          done
+          matrix+="]"
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+
+  lifecycle-promoted:
+    uses: ./.github/workflows/lifecycle-promoted.yaml
+    secrets: inherit
+    needs:
+      - compute-lifecycle-matrix
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.compute-lifecycle-matrix.outputs.lifecycle-matrix) }}
+    with:
+      artifacts-url: ${{ needs.compute-lifecycle-matrix.outputs.artifacts-link }}
+      type: ${{ matrix.type }}
+      promoted-version: ${{ matrix.version }}
+
+  write-final-failed-status:
+    runs-on: ubuntu-22.04
+    needs:
+      - lifecycle-promoted
+    if: failure()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{inputs.ref}}
+      - name: write failure status
+        run: |
+          mkdir -p artifacts
+          echo -n "FAILED" > artifacts/.final_status
+      - name: Upload artifacts
+        uses: scality/action-artifacts@v3
+        with:
+          method: upload
+          url: https://artifacts.scality.net
+          user: ${{ secrets.ARTIFACTS_USER }}
+          password: ${{ secrets.ARTIFACTS_PASSWORD }}
+          source: artifacts
+
+  write-final-success-status:
+    runs-on: ubuntu-22.04
+    needs:
+      - lifecycle-promoted
+    if: success()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{inputs.ref}}
+      - name: write failure status
+        run: |
+          mkdir -p artifacts
+          echo -n "SUCCESSFUL" > artifacts/.final_status
+      - name: Upload artifacts
+        uses: scality/action-artifacts@v3
+        with:
+          method: upload
+          url: https://artifacts.scality.net
+          user: ${{ secrets.ARTIFACTS_USER }}
+          password: ${{ secrets.ARTIFACTS_PASSWORD }}
+          source: artifacts

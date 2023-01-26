@@ -1,0 +1,29 @@
+name: "Remove archive"
+description: "Remove a MetalK8s ISO archive from the cluster"
+
+inputs:
+  version:
+    description: "The MetalK8s ISO version to remove"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Retrieve MetalK8s mountpoint"
+      id: metalk8s_mountpoint
+      uses: ./.github/actions/retrieve-mountpoint
+    - name: "Retrieve MetalK8s ISO path"
+      id: get-iso-path
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >-
+          sudo salt-call slsutil.renderer --out txt
+          string=\"{{ salt.metalk8s.get_archives()['metalk8s-${{ inputs.version }}']['iso'] }}\" |
+          cut -c 8-
+        CAPTURE_RESULT: "true"
+    - name: Add ISO to the cluster
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >-
+          sudo ${{ steps.metalk8s_mountpoint.outputs.mountpoint }}/iso-manager.sh
+          --rm-archive '${{ steps.get-iso-path.outputs.RESULT }}' --verbose

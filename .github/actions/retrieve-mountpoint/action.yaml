@@ -1,0 +1,20 @@
+name: "Retrieve mountpoint"
+description: "Retrieve the currently configured MetalK8s mountpoint"
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Retrieve MetalK8s mountpoint"
+      id: mountpoint
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >-
+          sudo salt-call slsutil.renderer --out txt
+          string=\"{{ salt.metalk8s.get_archives()[salt.config.get('saltenv')]['path'] }}\" |
+          cut -c 8-
+        CAPTURE_RESULT: "true"
+
+outputs:
+  mountpoint:
+    description: "The MetalK8s currently used mountpoint"
+    value: ${{ steps.mountpoint.outputs.RESULT }}
