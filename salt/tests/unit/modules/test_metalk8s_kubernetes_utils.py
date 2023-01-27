@@ -39,7 +39,7 @@ class Metalk8sKubernetesUtilsTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
     @parameterized.expand(
         [
-            ("kubernetes"),
+            (("kubernetes.client.rest", "kubernetes")),
             (("urllib3.exceptions", "urllib3")),
         ]
     )
@@ -109,16 +109,16 @@ class Metalk8sKubernetesUtilsTestCase(TestCase, mixins.LoaderModuleMockMixin):
         dynamic_client_mock = MagicMock()
         dynamic_client_mock.version = {"kubernetes": result}
 
-        dynamic_mock = MagicMock()
-        dynamic_mock.DynamicClient.return_value = dynamic_client_mock
+        get_client_mock = MagicMock(return_value=dynamic_client_mock)
+
+        utils_dict = {"metalk8s_kubernetes.get_client": get_client_mock}
+
         if k8s_connection_raise:
-            dynamic_mock.DynamicClient.side_effect = HTTPError("Failed to connect")
+            get_client_mock.side_effect = HTTPError("Failed to connect")
 
         with patch.object(
             metalk8s_kubernetes_utils, "get_kubeconfig", kubeconfig_mock
-        ), patch("kubernetes.dynamic", dynamic_mock), patch(
-            "kubernetes.config", MagicMock()
-        ):
+        ), patch.dict(metalk8s_kubernetes_utils.__utils__, utils_dict):
             if raises:
                 self.assertRaisesRegex(
                     CommandExecutionError,

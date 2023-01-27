@@ -12,7 +12,6 @@ import salt.utils.yaml
 
 MISSING_DEPS = []
 try:
-    import kubernetes
     from kubernetes.client.rest import ApiException
 except ImportError:
     MISSING_DEPS.append("kubernetes")
@@ -85,9 +84,7 @@ def get_version_info(**kwargs):
     kubeconfig, context = get_kubeconfig(**kwargs)
 
     try:
-        client = kubernetes.dynamic.DynamicClient(
-            kubernetes.config.new_client_from_config(kubeconfig, context)
-        )
+        client = __utils__["metalk8s_kubernetes.get_client"](kubeconfig, context)
         return client.version["kubernetes"]
     except (ApiException, HTTPError) as exc:
         raise CommandExecutionError("Failed to get version info") from exc

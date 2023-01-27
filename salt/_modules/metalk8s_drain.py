@@ -522,9 +522,7 @@ def evict_pod(name, namespace="default", grace_period=1, **kwargs):
 
     kubeconfig, context = __salt__["metalk8s_kubernetes.get_kubeconfig"](**kwargs)
 
-    client = kubernetes.dynamic.DynamicClient(
-        kubernetes.config.new_client_from_config(kubeconfig, context)
-    )
+    client = __utils__["metalk8s_kubernetes.get_client"](kubeconfig, context)
 
     # DynamicClient does not handle Pod eviction, so compute the path manually
     path = (
