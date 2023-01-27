@@ -10,6 +10,7 @@ jobs:
   crons:
     runs-on: ubuntu-22.04
     strategy:
+      fail-fast: false
       matrix:
         include:
           - name: "Nightly for 125.0"
@@ -22,4 +23,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Run ${{ matrix.name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
         run: gh workflow run ${{ matrix.workflow }} --ref=${{ matrix.branch }}
