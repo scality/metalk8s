@@ -1,5 +1,5 @@
 # CHANGELOG
-## Release 124.1.4 (in development)
+## Release 124.1.4
 
 ### Bug fixes
 
