@@ -116,11 +116,15 @@ class Metalk8sDrainTestCase(TestCase, mixins.LoaderModuleMockMixin):
         dynamic_client_mock = MagicMock()
         dynamic_client_mock.request.side_effect = create_mock
 
-        dynamic_mock = MagicMock()
-        dynamic_mock.DynamicClient.return_value = dynamic_client_mock
-        with patch("kubernetes.dynamic", dynamic_mock), patch(
-            "kubernetes.config", MagicMock()
-        ), capture_logs(metalk8s_drain.log, logging.DEBUG) as captured:
+        utils_dict = {
+            "metalk8s_kubernetes.get_client": MagicMock(
+                return_value=dynamic_client_mock
+            )
+        }
+
+        with patch.dict(metalk8s_drain.__utils__, utils_dict), capture_logs(
+            metalk8s_drain.log, logging.DEBUG
+        ) as captured:
             if raises:
                 self.assertRaisesRegex(
                     CommandExecutionError, result, metalk8s_drain.evict_pod, **kwargs

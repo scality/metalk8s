@@ -37,10 +37,9 @@ def _mock_k8s_dynamic(namespaced, action, mock):
     dynamic_client_mock = MagicMock()
     dynamic_client_mock.resources.get.side_effect = _resources_get_mock
 
-    dynamic_mock = MagicMock()
-    dynamic_mock.DynamicClient.return_value = dynamic_client_mock
+    get_client_mock = MagicMock(return_value=dynamic_client_mock)
 
-    return dynamic_mock
+    return get_client_mock
 
 
 class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
@@ -94,7 +93,7 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
     @parameterized.expand(
         [
-            "kubernetes",
+            ("kubernetes.client", "kubernetes"),
             ("urllib3.exceptions", "urllib3"),
         ]
     )
@@ -140,9 +139,12 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
             return obj
 
         create_mock = MagicMock(side_effect=_create_mock)
-        dynamic_mock = _mock_k8s_dynamic(
-            namespaced=namespaced, action="create", mock=create_mock
-        )
+
+        utils_dict = {
+            "metalk8s_kubernetes.get_client": _mock_k8s_dynamic(
+                namespaced=namespaced, action="create", mock=create_mock
+            )
+        }
 
         manifest_read_mock = MagicMock()
         # None = IOError
@@ -157,9 +159,9 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         salt_dict = {
             "metalk8s_kubernetes.read_and_render_yaml_file": manifest_read_mock
         }
-        with patch("kubernetes.dynamic", dynamic_mock), patch(
-            "kubernetes.config", MagicMock()
-        ), patch.dict(metalk8s_kubernetes.__salt__, salt_dict):
+        with patch.dict(metalk8s_kubernetes.__utils__, utils_dict), patch.dict(
+            metalk8s_kubernetes.__salt__, salt_dict
+        ):
             if raises:
                 self.assertRaisesRegex(
                     Exception, result, metalk8s_kubernetes.create_object, **kwargs
@@ -200,9 +202,12 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
             return res
 
         delete_mock = MagicMock(side_effect=_delete_mock)
-        dynamic_mock = _mock_k8s_dynamic(
-            namespaced=namespaced, action="delete", mock=delete_mock
-        )
+
+        utils_dict = {
+            "metalk8s_kubernetes.get_client": _mock_k8s_dynamic(
+                namespaced=namespaced, action="delete", mock=delete_mock
+            )
+        }
 
         manifest_read_mock = MagicMock()
         # None = IOError
@@ -217,9 +222,9 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         salt_dict = {
             "metalk8s_kubernetes.read_and_render_yaml_file": manifest_read_mock
         }
-        with patch("kubernetes.dynamic", dynamic_mock), patch(
-            "kubernetes.config", MagicMock()
-        ), patch.dict(metalk8s_kubernetes.__salt__, salt_dict):
+        with patch.dict(metalk8s_kubernetes.__utils__, utils_dict), patch.dict(
+            metalk8s_kubernetes.__salt__, salt_dict
+        ):
             if raises:
                 self.assertRaisesRegex(
                     Exception, result, metalk8s_kubernetes.delete_object, **kwargs
@@ -258,9 +263,12 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
             return obj
 
         replace_mock = MagicMock(side_effect=_replace_mock)
-        dynamic_mock = _mock_k8s_dynamic(
-            namespaced=namespaced, action="replace", mock=replace_mock
-        )
+
+        utils_dict = {
+            "metalk8s_kubernetes.get_client": _mock_k8s_dynamic(
+                namespaced=namespaced, action="replace", mock=replace_mock
+            )
+        }
 
         manifest_read_mock = MagicMock()
         # None = IOError
@@ -275,9 +283,9 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         salt_dict = {
             "metalk8s_kubernetes.read_and_render_yaml_file": manifest_read_mock
         }
-        with patch("kubernetes.dynamic", dynamic_mock), patch(
-            "kubernetes.config", MagicMock()
-        ), patch.dict(metalk8s_kubernetes.__salt__, salt_dict):
+        with patch.dict(metalk8s_kubernetes.__utils__, utils_dict), patch.dict(
+            metalk8s_kubernetes.__salt__, salt_dict
+        ):
             if raises:
                 self.assertRaisesRegex(
                     Exception, result, metalk8s_kubernetes.replace_object, **kwargs
@@ -320,9 +328,12 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
             return res
 
         get_mock = MagicMock(side_effect=_get_mock)
-        dynamic_mock = _mock_k8s_dynamic(
-            namespaced=namespaced, action="get", mock=get_mock
-        )
+
+        utils_dict = {
+            "metalk8s_kubernetes.get_client": _mock_k8s_dynamic(
+                namespaced=namespaced, action="get", mock=get_mock
+            )
+        }
 
         manifest_read_mock = MagicMock()
         # None = IOError
@@ -337,9 +348,9 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         salt_dict = {
             "metalk8s_kubernetes.read_and_render_yaml_file": manifest_read_mock
         }
-        with patch("kubernetes.dynamic", dynamic_mock), patch(
-            "kubernetes.config", MagicMock()
-        ), patch.dict(metalk8s_kubernetes.__salt__, salt_dict):
+        with patch.dict(metalk8s_kubernetes.__utils__, utils_dict), patch.dict(
+            metalk8s_kubernetes.__salt__, salt_dict
+        ):
             if raises:
                 self.assertRaisesRegex(
                     Exception, result, metalk8s_kubernetes.get_object, **kwargs
@@ -377,9 +388,12 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
             return res
 
         patch_mock = MagicMock(side_effect=_patch_mock)
-        dynamic_mock = _mock_k8s_dynamic(
-            namespaced=namespaced, action="patch", mock=patch_mock
-        )
+
+        utils_dict = {
+            "metalk8s_kubernetes.get_client": _mock_k8s_dynamic(
+                namespaced=namespaced, action="patch", mock=patch_mock
+            )
+        }
 
         manifest_read_mock = MagicMock()
         # None = IOError
@@ -394,9 +408,9 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
         salt_dict = {
             "metalk8s_kubernetes.read_and_render_yaml_file": manifest_read_mock
         }
-        with patch("kubernetes.dynamic", dynamic_mock), patch(
-            "kubernetes.config", MagicMock()
-        ), patch.dict(metalk8s_kubernetes.__salt__, salt_dict):
+        with patch.dict(metalk8s_kubernetes.__utils__, utils_dict), patch.dict(
+            metalk8s_kubernetes.__salt__, salt_dict
+        ):
             if raises:
                 self.assertRaisesRegex(
                     Exception, result, metalk8s_kubernetes.update_object, **kwargs
@@ -473,13 +487,14 @@ class Metalk8sKubernetesTestCase(TestCase, mixins.LoaderModuleMockMixin):
             return res
 
         list_mock = MagicMock(side_effect=_list_mock)
-        dynamic_mock = _mock_k8s_dynamic(
-            namespaced=namespaced, action="get", mock=list_mock
-        )
 
-        with patch("kubernetes.dynamic", dynamic_mock), patch(
-            "kubernetes.config", MagicMock()
-        ):
+        utils_dict = {
+            "metalk8s_kubernetes.get_client": _mock_k8s_dynamic(
+                namespaced=namespaced, action="get", mock=list_mock
+            )
+        }
+
+        with patch.dict(metalk8s_kubernetes.__utils__, utils_dict):
             if raises:
                 self.assertRaisesRegex(
                     Exception, result, metalk8s_kubernetes.list_objects, **kwargs

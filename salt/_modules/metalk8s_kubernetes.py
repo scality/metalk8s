@@ -22,7 +22,6 @@ MISSING_DEPS = []
 
 try:
     import kubernetes.client as k8s_client
-    import kubernetes
     from kubernetes.dynamic.exceptions import ResourceNotFoundError
     from kubernetes.client.rest import ApiException
 except ImportError:
@@ -149,9 +148,7 @@ def _object_manipulation_function(action):
 
         kubeconfig, context = __salt__["metalk8s_kubernetes.get_kubeconfig"](**kwargs)
 
-        client = kubernetes.dynamic.DynamicClient(
-            kubernetes.config.new_client_from_config(kubeconfig, context)
-        )
+        client = __utils__["metalk8s_kubernetes.get_client"](kubeconfig, context)
 
         try:
             api = client.resources.get(
@@ -379,9 +376,7 @@ def list_objects(
     """
     kubeconfig, context = __salt__["metalk8s_kubernetes.get_kubeconfig"](**kwargs)
 
-    client = kubernetes.dynamic.DynamicClient(
-        kubernetes.config.new_client_from_config(kubeconfig, context)
-    )
+    client = __utils__["metalk8s_kubernetes.get_client"](kubeconfig, context)
     try:
         api = client.resources.get(api_version=apiVersion, kind=kind)
     except ResourceNotFoundError as exc:

@@ -1,6 +1,12 @@
 # CHANGELOG
 ## Release 124.1.4 (in development)
 
+### Bug fixes
+
+- Fix flaky invalid `HTTPSConnectionPool` exception raised when loading
+  the pillar
+  (PR[#3979](https://github.com/scality/metalk8s/pull/3979))
+
 ## Release 124.1.3
 
 ### Enhancements
