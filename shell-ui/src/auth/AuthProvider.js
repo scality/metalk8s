@@ -150,6 +150,7 @@ export function useAuth(): {
       username: auth.userData.profile?.name,
       email: auth.userData.profile?.email,
       groups: getUserGroups(auth.userData, config.userGroupsMapping),
+      roles: auth.userData.profile?.roles,
       id: auth.userData.profile?.sub,
     },
   };
