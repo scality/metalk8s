@@ -21,6 +21,11 @@ on:
         required: false
         type: boolean
         default: false
+      test-solution:
+        description: "Whether or not the solutions tests should be ran"
+        required: false
+        type: boolean
+        default: false
       generate-snapshots:
         description: "Whether or not snapshots should be generated at the end"
         required: false
@@ -53,6 +58,11 @@ on:
         required: false
         type: string
         default: "example-environment"
+      solution-next-version:
+        description: "The next solution version to upgrade to (only used when `test-solution` enabled)"
+        required: false
+        type: string
+        default: "1.0.3"
 
 env:
   NAME: single-node-${{ inputs.os }}
@@ -124,9 +134,9 @@ jobs:
         uses: ./.github/actions/untaint
       # }}}
 
-      # Install solutions (if enabled) {{{
+      # Install or test solutions (if enabled) {{{
       - name: Get Solution ISO
-        if: inputs.install-solution
+        if: inputs.install-solution || inputs.test-solution
         id: solution
         uses: ./.github/actions/retrieve-solution-iso
         with:
@@ -134,10 +144,11 @@ jobs:
           name: ${{ inputs.solution-name }}
           version: ${{ inputs.solution-version }}
       - name: Copy Solution ISO to the Bootstrap node
-        if: inputs.install-solution
+        if: inputs.install-solution || inputs.test-solution
         uses: ./.github/actions/copy-file-ssh
         with:
           SOURCE_FILE: "${{ steps.solution.outputs.filename }}"
+      # Install solution specific {{{{
       - name: Deploy the Solution
         if: inputs.install-solution
         uses: ./.github/actions/deploy-solution
@@ -146,6 +157,30 @@ jobs:
           name: ${{ inputs.solution-name }}
           version: ${{ inputs.solution-version }}
           env-name: ${{ inputs.solution-env-name }}
+      # }}}}
+      # Test solutions specific {{{{
+      - name: Get next Solution ISO
+        if: inputs.test-solution
+        id: solution-next
+        uses: ./.github/actions/retrieve-solution-iso
+        with:
+          base-url: ${{ inputs.solution-base-url }}
+          name: ${{ inputs.solution-name }}
+          version: ${{ inputs.solution-next-version }}
+      - name: Move Solution ISO to the right directory on the Bootstrap node
+        # NOTE: For the solutions tests ISOs must be in the `/var/tmp` directory
+        if: inputs.test-solution
+        uses: ./.github/actions/run-command-ssh
+        with:
+          COMMAND: |
+            mv "${{ steps.solution.outputs.filename }}" /var/tmp/example-solution.iso
+      - name: Copy next Solution ISO to the Bootstrap node
+        if: inputs.test-solution
+        uses: ./.github/actions/copy-file-ssh
+        with:
+          SOURCE_FILE: "${{ steps.solution-next.outputs.filename }}"
+          DESTINATION_FILE: "/var/tmp/example-solution-next.iso"
+      # }}}}
       # }}}
 
       # Tests {{{
@@ -155,6 +190,11 @@ jobs:
         uses: ./.github/actions/prepare-bastion
         with:
           UI_DEPS: "true"
+      - name: Run Solutions CLI tests from Bastion
+        if: inputs.test-solution
+        uses: ./.github/actions/bastion-tests
+        with:
+          PYTEST_FILTERS: "solution"
       - name: Run tests from Bastion
         uses: ./.github/actions/bastion-tests
       - name: Run UI tests from Bastion
