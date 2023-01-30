@@ -47,6 +47,15 @@ inputs:
     required: false
     default: ""
 
+  rhsm-username:
+    description: "The RHSM username to use (only needed on RedHat)"
+    required: false
+    default: ""
+  rhsm-password:
+    description: "The RHSM password to use (only needed on RedHat)"
+    required: false
+    default: ""
+
 runs:
   using: "composite"
   steps:
@@ -102,6 +111,8 @@ runs:
         TF_VAR_os: "${{ inputs.OS }}"
         TF_VAR_nodes_count: "${{ inputs.NODES_COUNT }}"
         TF_VAR_restore_env: "${{ inputs.RESTORE_ENV }}"
+        TF_VAR_rhsm_username: "${{ inputs.rhsm-username }}"
+        TF_VAR_rhsm_password: "${{ inputs.rhsm-password }}"
         MAX_RETRIES: "3"
         TFVARS_DIR: "${{ github.workspace }}/.github/spawn/tfvars"
       run: |

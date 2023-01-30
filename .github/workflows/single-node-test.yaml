@@ -26,6 +26,11 @@ on:
         required: false
         type: boolean
         default: false
+      enable-debug-when-failure:
+        description: "Whether or not debug when failure should be enabled or not"
+        required: false
+        type: boolean
+        default: false
 
       # Solution information
       solution-name:
@@ -83,6 +88,8 @@ jobs:
           GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
           ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
           ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+          rhsm-username: ${{ secrets.RHSM_USERNAME }}
+          rhsm-password: ${{ secrets.RHSM_PASSWORD }}
       - name: Save Terraform context
         if: always()
         uses: ./.github/actions/save-terraform-context
@@ -158,6 +165,17 @@ jobs:
         if: always()
         uses: ./.github/actions/sosreport-logs
 
+      ## Generate job result {{
+      - name: Generate Job result
+        if: always()
+        uses: ./.github/actions/generate-job-result
+        with:
+          name: ${{ env.NAME }}
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+          GIT_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ## }}
+
       # Generate snapshots (if enabled) {{{
       - name: Retrieve product.txt from artifacts
         if: inputs.generate-snapshots
@@ -187,7 +205,7 @@ jobs:
           password: ${{ secrets.ARTIFACTS_PASSWORD }}
           source: artifacts
       - name: debug
-        if: failure()
+        if: inputs.enable-debug-when-failure && failure()
         run: sleep 3600
 
   destroy-single-node-cluster:
@@ -195,8 +213,6 @@ jobs:
       - single-node
     runs-on: [self-hosted, centos7, large]
     if: always()
-    env:
-      NAME: single-node
     steps:
       - name: Checkout
         uses: actions/checkout@v3

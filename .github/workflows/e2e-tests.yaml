@@ -66,6 +66,7 @@ jobs:
       artifacts-url: ${{ inputs.artifacts-url }}
       install-solution: ${{ inputs.install-solution }}
       generate-snapshots: ${{ inputs.generate-snapshots }}
+      enable-debug-when-failure: true
 
   multi-node-e2e:
     uses: ./.github/workflows/multi-node-test.yaml

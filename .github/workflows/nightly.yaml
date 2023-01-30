@@ -155,11 +155,27 @@ jobs:
       type: ${{ matrix.type }}
       dev-branch: ${{ matrix.branch }}
 
+  install:
+    uses: ./.github/workflows/single-node-test.yaml
+    secrets: inherit
+    needs:
+      - retrieve-info
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - centos-7
+          - rhel-8
+    with:
+      artifacts-url: ${{ needs.retrieve-info.outputs.artifacts-link }}
+      os: ${{ matrix.os }}
+
   write-final-failed-status:
     runs-on: ubuntu-22.04
     needs:
       - lifecycle-promoted
       - lifecycle-dev
+      - install
     if: failure()
     steps:
       - name: Checkout
@@ -184,6 +200,7 @@ jobs:
     needs:
       - lifecycle-promoted
       - lifecycle-dev
+      - install
     if: success()
     steps:
       - name: Checkout
