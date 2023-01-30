@@ -17,8 +17,6 @@ from tests import utils
 DEFAULT_SOLUTION_MOUNTPOINT = "/srv/scality"
 SOLUTION_PILLAR_KEY = "metalk8s:solutions:available"
 SOLUTION_CONFIGURATION_FILE = "/etc/metalk8s/solutions.yaml"
-INFRA_TAINT = "node-role.kubernetes.io/infra:NoSchedule-"
-BOOTSTRAP_TAINT = "node-role.kubernetes.io/bootstrap:NoSchedule-"
 SOLUTION_CONFIGMAP = "metalk8s-solutions"
 SOLUTION_NAMESPACE = "metalk8s-solutions"
 ENVIRONMENT_LABEL = "solutions.metalk8s.scality.com/environment"
@@ -96,28 +94,6 @@ def activate_example_solution(request, host, name, version):
 @when(parsers.parse("we create a solution environment '{environment}'"))
 def create_solution_environment(request, host, environment):
     run_solutions_command(request, host, ["create-env", "--name", environment])
-
-
-@when(parsers.parse("we remove Taints on node '{node_name}' before deployment"))
-def remove_node_taints(request, host, node_name):
-    # Remove Taints on the Bootstrap node before deploying
-    # example-solution-operator else, the operator pods will not startup
-
-    with host.sudo():
-        res = host.run(
-            (
-                "kubectl --kubeconfig=/etc/kubernetes/admin.conf " "taint nodes {} {}"
-            ).format(node_name, BOOTSTRAP_TAINT)
-        )
-        assert res.rc == 0, res.stdout
-
-    with host.sudo():
-        res = host.run(
-            (
-                "kubectl --kubeconfig=/etc/kubernetes/admin.conf " "taint nodes {} {}"
-            ).format(node_name, INFRA_TAINT)
-        )
-        assert res.rc == 0, res.stdout
 
 
 @when(

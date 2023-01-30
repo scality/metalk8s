@@ -14,8 +14,7 @@ Feature: Solutions
         And CRD 'clockservers.example-solution.metalk8s.scality.com' exists in Kubernetes API
         When we create a solution environment 'example-environment'
         Then solution environment 'example-environment' is available
-        When we remove Taints on node 'bootstrap' before deployment
-        And we deploy Solution 'example-solution' in environment 'example-environment' with version '1.0.2'
+        When we deploy Solution 'example-solution' in environment 'example-environment' with version '1.0.2'
         Then we have 1 running pod labeled 'app=example-solution-operator' in namespace 'example-environment'
         When we deactivate Solution 'example-solution'
         And we delete Solution 'example-solution' in environment 'example-environment'
