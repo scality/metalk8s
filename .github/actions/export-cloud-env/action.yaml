@@ -5,7 +5,8 @@ inputs:
   # The only parameter to this action
   CLOUD:
     description: "Short name defining the chosen remote cloud (available: ovh)"
-    required: true
+    required: false
+    default: "ovh"
 
   # All following should map to repository secrets
   OVH_AUTH_URL:

@@ -59,10 +59,7 @@ on:
         default: false
 
 env:
-  CLOUD: "ovh"
   OS: "rocky-8"
-  TERRAFORM_VERSION: "1.3.6"
-  TERRAFORM_SNAPSHOT_TAG: "0.9.0"
   SOLUTION_ENV_NAME: "example-environment"
   SOLUTION_NAME: "example-solution"
   SOLUTION_VERSION: "1.0.2"
@@ -81,10 +78,9 @@ jobs:
         run: sudo yum install -y isomd5sum
 
      ## Spawn {{{
-      - name: Export environment variables for accessing ${{ env.CLOUD }}
+      - name: Export environment variables for accessing the cloud
         uses: ./.github/actions/export-cloud-env
         with:
-          CLOUD: ${{ env.CLOUD }}
           # Pass all "cloud access" secrets, the action will know which ones to export
           OVH_AUTH_URL: ${{ secrets.OVH_AUTH_URL }}
           OVH_USERNAME: ${{secrets.OVH_USERNAME }}
@@ -94,12 +90,9 @@ jobs:
         uses: ./.github/actions/spawn-cluster
         with:
           # Parameters
-          CLOUD: ${{ env.CLOUD }}
           OS: ${{ env.OS }}
           NAME: ${{ env.NAME }}
           NODES_COUNT: 0
-          TERRAFORM_VERSION: ${{ env.TERRAFORM_VERSION }}
-          TERRAFORM_SNAPSHOT_TAG: ${{ env.TERRAFORM_SNAPSHOT_TAG }}
           # Secrets
           GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
           ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
@@ -195,7 +188,6 @@ jobs:
         uses: ./.github/actions/generate-snapshots
         with:
           snapshot-name: "metalk8s-${{ env.METALK8S_VERSION }}-${{ env.OS }}-single node"
-          cloud: ${{ env.CLOUD }}
           nodes-count: 0
       # }}}
 
@@ -225,10 +217,9 @@ jobs:
         run: sudo yum install -y isomd5sum
 
      ## Spawn {{{
-      - name: Export environment variables for accessing ${{ env.CLOUD }}
+      - name: Export environment variables for accessing the cloud
         uses: ./.github/actions/export-cloud-env
         with:
-          CLOUD: ${{ env.CLOUD }}
           # Pass all "cloud access" secrets, the action will know which ones to export
           OVH_AUTH_URL: ${{ secrets.OVH_AUTH_URL }}
           OVH_USERNAME: ${{secrets.OVH_USERNAME }}
@@ -238,12 +229,9 @@ jobs:
         uses: ./.github/actions/spawn-cluster
         with:
           # Parameters
-          CLOUD: ${{ env.CLOUD }}
           OS: ${{ env.OS }}
           NAME: ${{ env.NAME }}
           NODES_COUNT: ${{ env.NODES_COUNT }}
-          TERRAFORM_VERSION: ${{ env.TERRAFORM_VERSION }}
-          TERRAFORM_SNAPSHOT_TAG: ${{ env.TERRAFORM_SNAPSHOT_TAG }}
           # Secrets
           GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
           ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
@@ -364,7 +352,6 @@ jobs:
         uses: ./.github/actions/generate-snapshots
         with:
           snapshot-name: "metalk8s-${{ env.METALK8S_VERSION }}-${{ env.OS }}-${{ env.TOTAL_NB_NODES }} nodes"
-          cloud: ${{ env.CLOUD }}
           nodes-count: "${{ env.NODES_COUNT }}"
       # }}}
 
@@ -399,10 +386,9 @@ jobs:
           url: https://artifacts.scality.net
           user: ${{ secrets.ARTIFACTS_USER }}
           password: ${{ secrets.ARTIFACTS_PASSWORD }}
-      - name: Export environment variables for accessing ${{ env.CLOUD }}
+      - name: Export environment variables for accessing the cloud
         uses: ./.github/actions/export-cloud-env
         with:
-          CLOUD: ${{ env.CLOUD }}
           # Pass all "cloud access" secrets, the action will know which ones to export
           OVH_AUTH_URL: ${{ secrets.OVH_AUTH_URL }}
           OVH_USERNAME: ${{secrets.OVH_USERNAME }}
@@ -412,9 +398,6 @@ jobs:
         uses: ./.github/actions/destroy-cluster
         with:
           # Parameters
-          CLOUD: ${{ env.CLOUD }}
-          TERRAFORM_SNAPSHOT_TAG: ${{ env.TERRAFORM_SNAPSHOT_TAG }}
-          TERRAFORM_VERSION: ${{ env.TERRAFORM_VERSION }}
           ARTIFACTS_URL: ${{ steps.artifacts.outputs.link }}
           NAME: ${{ env.NAME }}
           # Secrets
@@ -440,10 +423,9 @@ jobs:
           url: https://artifacts.scality.net
           user: ${{ secrets.ARTIFACTS_USER }}
           password: ${{ secrets.ARTIFACTS_PASSWORD }}
-      - name: Export environment variables for accessing ${{ env.CLOUD }}
+      - name: Export environment variables for accessing the cloud
         uses: ./.github/actions/export-cloud-env
         with:
-          CLOUD: ${{ env.CLOUD }}
           # Pass all "cloud access" secrets, the action will know which ones to export
           OVH_AUTH_URL: ${{ secrets.OVH_AUTH_URL }}
           OVH_USERNAME: ${{secrets.OVH_USERNAME }}
@@ -453,9 +435,6 @@ jobs:
         uses: ./.github/actions/destroy-cluster
         with:
           # Parameters
-          CLOUD: ${{ env.CLOUD }}
-          TERRAFORM_SNAPSHOT_TAG: ${{ env.TERRAFORM_SNAPSHOT_TAG }}
-          TERRAFORM_VERSION: ${{ env.TERRAFORM_VERSION }}
           ARTIFACTS_URL: ${{ steps.artifacts.outputs.link }}
           NAME: ${{ env.NAME }}
           # Secrets

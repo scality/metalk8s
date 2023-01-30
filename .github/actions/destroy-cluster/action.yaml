@@ -16,15 +16,18 @@ inputs:
   # Tooling configuration
   TERRAFORM_VERSION:
     description: "Terraform version to use"
-    required: true
+    required: false
+    default: "1.3.6"
   TERRAFORM_SNAPSHOT_TAG:
-    description: "Terraform snapshot tag to checkout"
-    required: true
+    description: "Tag to checkout for the scality/terraform-snapshot repository"
+    required: false
+    default: "0.9.0"
 
   # Cloud configuration
   CLOUD:
     description: "Name of the remote cloud to use (available: ovh)"
-    required: true
+    required: false
+    default: "ovh"
 
   # Spawn configuration
   ARTIFACTS_URL:
