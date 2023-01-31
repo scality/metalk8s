@@ -56,6 +56,11 @@ inputs:
     required: false
     default: ""
 
+  args:
+    description: Specific arguments to add to the apply command
+    required: false
+    default: ""
+
 runs:
   using: "composite"
   steps:
@@ -122,7 +127,7 @@ runs:
           "-var-file $TFVARS_DIR/${{ inputs.CLOUD }}.tfvars"
         )
         for try in $(seq 1 ${MAX_RETRIES}); do
-          if terraform apply ${TF_OPTS[@]}; then
+          if terraform apply ${TF_OPTS[@]} ${{ inputs.args }}; then
             break
           elif [ $try -lt $MAX_RETRIES ]; then
             sleep 150
