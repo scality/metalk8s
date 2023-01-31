@@ -7,7 +7,8 @@ inputs:
     required: true
   cloud:
     description: "Name of the remote cloud to use (available: ovh)"
-    required: true
+    required: false
+    default: "ovh"
 
   nodes-count:
     description: "The number of nodes (in addition to bootstrap) to snapshot"

@@ -6,6 +6,10 @@ inputs:
     description: "The pytest filter to use"
     required: false
     default: "post and ci and not multinode and not slow and not registry_ha"
+  EXTRA_FILTER:
+    description: "Extra pytest filter to add at the end"
+    required: false
+    default: ""
   CONTROL_PLANE_INGRESS_VIP:
     description: "Virtual IP to use to test to reconfigure the Control Plane Ingress"
     required: false
@@ -37,4 +41,4 @@ runs:
           export BOOTSTRAP_BACKUP_ARCHIVE=\"${{ inputs.BOOTSTRAP_BACKUP_ARCHIVE }}\"
           export CONTROL_PLANE_INGRESS_VIP=\"${{ inputs.CONTROL_PLANE_INGRESS_VIP }}\"
           export WORKLOAD_PLANE_INGRESS_VIPS=\"${{ inputs.WORKLOAD_PLANE_INGRESS_VIPS }}\"
-          tox -e tests -- -m \"${{ inputs.PYTEST_FILTERS }}\"
+          tox -e tests -- -m \"${{ inputs.PYTEST_FILTERS }} ${{ inputs.EXTRA_FILTER }}\"

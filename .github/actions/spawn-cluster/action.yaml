@@ -16,15 +16,18 @@ inputs:
   # Tooling configuration
   TERRAFORM_VERSION:
     description: "Terraform version to use"
-    required: true
+    required: false
+    default: "1.3.6"
   TERRAFORM_SNAPSHOT_TAG:
     description: "Tag to checkout for the scality/terraform-snapshot repository"
-    required: true
+    required: false
+    default: "0.9.0"
 
   # Cloud configuration
   CLOUD:
     description: "Name of the remote cloud to use (available: ovh)"
-    required: true
+    required: false
+    default: "ovh"
 
   # Spawn configuration
   NAME:
@@ -41,6 +44,15 @@ inputs:
     default: "0"
   RESTORE_ENV:
     description: "The name of the snapshoted environment that will be use to spawn"
+    required: false
+    default: ""
+
+  rhsm-username:
+    description: "The RHSM username to use (only needed on RedHat)"
+    required: false
+    default: ""
+  rhsm-password:
+    description: "The RHSM password to use (only needed on RedHat)"
     required: false
     default: ""
 
@@ -99,6 +111,8 @@ runs:
         TF_VAR_os: "${{ inputs.OS }}"
         TF_VAR_nodes_count: "${{ inputs.NODES_COUNT }}"
         TF_VAR_restore_env: "${{ inputs.RESTORE_ENV }}"
+        TF_VAR_rhsm_username: "${{ inputs.rhsm-username }}"
+        TF_VAR_rhsm_password: "${{ inputs.rhsm-password }}"
         MAX_RETRIES: "3"
         TFVARS_DIR: "${{ github.workspace }}/.github/spawn/tfvars"
       run: |
