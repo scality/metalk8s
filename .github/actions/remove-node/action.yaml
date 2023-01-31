@@ -1,0 +1,56 @@
+name: "Remove node"
+description: "Remove a node from the cluster"
+
+inputs:
+  node-to-remove:
+    description: "The name of the node to remove"
+    required: false
+    default: "bootstrap"
+  from-node:
+    description: "The node to use to do the removal"
+    required: false
+    default: "node-1"
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Retrieve etcd container name to use"
+      id: get-container
+      uses: ./.github/actions/run-command-ssh
+      with:
+        NODE: ${{ inputs.from-node }}
+        COMMAND: >
+          sudo crictl ps -q --label io.kubernetes.pod.namespace=kube-system
+          --label io.kubernetes.container.name=etcd --state Running
+        CAPTURE_RESULT: "true"
+    - name: "Retrieve etcd member id to remove"
+      id: get-id
+      uses: ./.github/actions/run-command-ssh
+      with:
+        NODE: ${{ inputs.from-node }}
+        COMMAND: >
+          sudo crictl exec -i \"${{ steps.get-container.outputs.RESULT }}\" sh -c \"
+          ETCDCTL_API=3 etcdctl --endpoints https://127.0.0.1:2379
+          --cert /etc/kubernetes/pki/etcd/server.crt
+          --key /etc/kubernetes/pki/etcd/server.key
+          --cacert /etc/kubernetes/pki/etcd/ca.crt
+          member list\" | awk -F ', ' '\$3 ~ \"${{ inputs.node-to-remove }}\" { print \$1 }'
+        CAPTURE_RESULT: "true"
+    - name: "Remove the etcd member"
+      uses: ./.github/actions/run-command-ssh
+      with:
+        NODE: ${{ inputs.from-node }}
+        COMMAND: >
+          sudo crictl exec -i \"${{ steps.get-container.outputs.RESULT }}\" sh -c \"
+          ETCDCTL_API=3 etcdctl --endpoints https://127.0.0.1:2379
+          --cert /etc/kubernetes/pki/etcd/server.crt
+          --key /etc/kubernetes/pki/etcd/server.key
+          --cacert /etc/kubernetes/pki/etcd/ca.crt
+          member remove ${{ steps.get-id.outputs.RESULT }}\"
+    - name: "Remove the node object"
+      uses: ./.github/actions/run-command-ssh
+      with:
+        NODE: ${{ inputs.from-node }}
+        COMMAND: >
+          sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf
+          delete node ${{ inputs.node-to-remove }}

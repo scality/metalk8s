@@ -179,12 +179,24 @@ jobs:
       test-solution: true
       setup-idp: ${{ matrix.setup-idp }}
 
+  bootstrap-restore:
+    uses: ./.github/workflows/multi-node-test.yaml
+    secrets: inherit
+    needs:
+      - retrieve-info
+    with:
+      name: bootstrap-restore
+      artifacts-url: ${{ needs.retrieve-info.outputs.artifacts-link }}
+      nodes-count: 2
+      bootstrap-restore: true
+
   write-final-failed-status:
     runs-on: ubuntu-22.04
     needs:
       - lifecycle-promoted
       - lifecycle-dev
       - install
+      - bootstrap-restore
     if: failure()
     steps:
       - name: Checkout
@@ -210,6 +222,7 @@ jobs:
       - lifecycle-promoted
       - lifecycle-dev
       - install
+      - bootstrap-restore
     if: success()
     steps:
       - name: Checkout

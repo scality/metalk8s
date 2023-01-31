@@ -76,3 +76,4 @@ jobs:
       nodes-count: ${{ inputs.nodes-count }}
       install-solution: ${{ inputs.install-solution }}
       generate-snapshots: ${{ inputs.generate-snapshots }}
+      enable-debug-when-failure: true
