@@ -8,10 +8,10 @@ inputs:
     required: true
   ARTIFACTS_USER:
     description: "Scality Artifacts username"
-    required: true
+    required: false
   ARTIFACTS_PASSWORD:
     description: "Scality Artifacts password"
-    required: true
+    required: false
 
   # Tooling configuration
   TERRAFORM_VERSION:
@@ -28,8 +28,8 @@ inputs:
 
   # Spawn configuration
   ARTIFACTS_URL:
-    description: Full URL to the saved Terraform context
-    required: true
+    description: Full URL to the saved Terraform context (if empty consider that context already there)
+    required: false
   NAME:
     description: "Name of the deployment (used in artifacts and the VM names prefix)"
     required: true
@@ -38,6 +38,7 @@ runs:
   using: "composite"
   steps:
     - name: Checkout terraform-snapshot
+      if: inputs.ARTIFACTS_URL
       uses: actions/checkout@v3
       with:
         repository: scality/terraform-snapshot
@@ -45,18 +46,22 @@ runs:
         token: ${{ inputs.GIT_ACCESS_TOKEN }}
         ref: "${{ inputs.TERRAFORM_SNAPSHOT_TAG }}"
     - name: Install tools
+      if: inputs.ARTIFACTS_URL
       shell: bash
       run: sudo yum install -y unzip
     - name: Install node
+      if: inputs.ARTIFACTS_URL
       uses: actions/setup-node@v3
       with:
         node-version: "14"
     - name: Install Terraform
+      if: inputs.ARTIFACTS_URL
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: ${{ inputs.TERRAFORM_VERSION }}
         terraform_wrapper: false
     - name: Retrieve Terraform context and SSH keys
+      if: inputs.ARTIFACTS_URL
       working-directory: terraform-snapshot/terraform/
       shell: bash
       run: |
@@ -69,6 +74,7 @@ runs:
         curl -LO -u ${{ inputs.ARTIFACTS_USER }}:${{ inputs.ARTIFACTS_PASSWORD }} \
           "${{ inputs.ARTIFACTS_URL }}/terraform-context/${{ inputs.NAME }}/ssh_config"
     - name: Unpack Terraform context and move SSH keys
+      if: inputs.ARTIFACTS_URL
       working-directory: terraform-snapshot/terraform/
       shell: bash
       run: |

@@ -1,0 +1,20 @@
+name: "Run Downgrade"
+description: "Run the downgrade script on bootstrap node"
+
+inputs:
+  version:
+    description: "The MetalK8s version to downgrade to"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Retrieve MetalK8s mountpoint"
+      id: metalk8s_mountpoint
+      uses: ./.github/actions/retrieve-mountpoint
+    - name: Run Downgrade script
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >
+          sudo ${{ steps.metalk8s_mountpoint.outputs.mountpoint }}/downgrade.sh
+          --destination-version ${{ inputs.version }} --verbose

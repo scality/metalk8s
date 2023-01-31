@@ -1,0 +1,64 @@
+name: Lifecycle dev
+
+on:
+  workflow_call:
+    inputs:
+      artifacts-url:
+        description: "Artifacts URL"
+        required: true
+        type: string
+      dev-branch:
+        description: "The development branch to use (as source for upgrade and destination for downgrade)"
+        required: true
+        type: string
+      type:
+        description: "The type of lifecyle ran"
+        required: false
+        type: string
+        default: "unknown"
+
+env:
+  CLOUD: "ovh"
+  OS: "rocky-8"
+  TERRAFORM_VERSION: "1.3.6"
+  TERRAFORM_SNAPSHOT_TAG: "0.9.0"
+
+jobs:
+  get-dev-artifacts-url:
+    runs-on: ubuntu-22.04
+    outputs:
+      artifacts-url: ${{ steps.artifacts.outputs.link }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.dev-branch }}
+      - name: Retrieve artifacts url
+        uses: scality/action-artifacts@v3
+        id: artifacts
+        with:
+          method: get
+          workflow-name: Pre-merge
+          url: https://artifacts.scality.net
+          user: ${{ secrets.ARTIFACTS_USER }}
+          password: ${{ secrets.ARTIFACTS_PASSWORD }}
+
+  dev-upgrade:
+    needs:
+      - get-dev-artifacts-url
+    uses: ./.github/workflows/upgrade-test.yaml
+    secrets: inherit
+    with:
+      from-artifacts-url: ${{ needs.get-dev-artifacts-url.outputs.artifacts-url }}
+      to-artifacts-url: ${{ inputs.artifacts-url }}
+      type: ${{ inputs.type }}-dev
+
+  dev-downgrade:
+    needs:
+      - get-dev-artifacts-url
+    uses: ./.github/workflows/downgrade-test.yaml
+    secrets: inherit
+    with:
+      from-artifacts-url: ${{ inputs.artifacts-url }}
+      to-artifacts-url: ${{ needs.get-dev-artifacts-url.outputs.artifacts-url }}
+      type: ${{ inputs.type }}-dev

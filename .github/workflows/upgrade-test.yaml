@@ -1,14 +1,14 @@
-name: Lifecycle promoted
+name: Upgrade test
 
 on:
   workflow_call:
     inputs:
-      artifacts-url:
-        description: "Artifacts URL"
+      from-artifacts-url:
+        description: "Artifacts URL to use to install"
         required: true
         type: string
-      promoted-version:
-        description: "The promoted version to use (as source for upgrade and destination for downgrade)"
+      to-artifacts-url:
+        description: "Artifacts URL to upgrade to"
         required: true
         type: string
       type:
@@ -22,20 +22,13 @@ env:
   OS: "rocky-8"
   TERRAFORM_VERSION: "1.3.6"
   TERRAFORM_SNAPSHOT_TAG: "0.9.0"
+  NODES_COUNT: "0"
 
 jobs:
-  snapshot-upgrade:
+  upgrade:
     runs-on: [self-hosted, centos7, large]
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: "single node"
-            nodes-count: 0
-          - name: "3 nodes"
-            nodes-count: 2
     env:
-      NAME: snapshot-upgrade-${{ inputs.type }}-${{ matrix.name }}
+      NAME: upgrade-${{ inputs.type }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -59,8 +52,7 @@ jobs:
           CLOUD: ${{ env.CLOUD }}
           OS: ${{ env.OS }}
           NAME: ${{ env.NAME }}
-          NODES_COUNT: ${{ matrix.nodes-count }}
-          RESTORE_ENV: ${{ inputs.promoted-version }}-${{ env.OS }}-${{ matrix.name }}
+          NODES_COUNT: ${{ env.NODES_COUNT }}
           TERRAFORM_VERSION: ${{ env.TERRAFORM_VERSION }}
           TERRAFORM_SNAPSHOT_TAG: ${{ env.TERRAFORM_SNAPSHOT_TAG }}
           # Secrets
@@ -78,102 +70,94 @@ jobs:
         run: cp terraform-snapshot/terraform/ssh_config ./
       ## }}}
 
-      ## Retrieve new version ISO {{{
-      - name: Get MetalK8s ISO
+      # Install source {{{
+      - name: Get source MetalK8s ISO
         uses: ./.github/actions/retrieve-iso
         with:
           ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
           ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
-          ARTIFACTS_URL: ${{ inputs.artifacts-url }}
-      - name: Retrieve product.txt from artifacts
-        run: >
-          curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
-          ${{ inputs.artifacts-url }}/product.txt
-      - name: Save current version in environment
-        run: |
-          source product.txt
-          echo "METALK8S_VERSION=$VERSION" >> $GITHUB_ENV
+          ARTIFACTS_URL: ${{ inputs.from-artifacts-url }}
       - name: Copy MetalK8s ISO to the Bootstrap node
         uses: ./.github/actions/copy-file-ssh
         with:
           SOURCE_FILE: "metalk8s.iso"
-          DESTINATION_FILE: "metalk8s-${{ env.METALK8S_VERSION }}.iso"
-      ## }}}
+      - name: Generate Bootstrap config
+        uses: ./.github/actions/generate-bootstrap
+      - name: Mount MetalK8s ISO
+        uses: ./.github/actions/mount-iso
+      - name: Run Bootstrap
+        uses: ./.github/actions/run-bootstrap
+      - name: Provision volumes
+        uses: ./.github/actions/provision-volumes
+      - name: Untaint bootstrap node
+        uses: ./.github/actions/untaint
+      # }}}
 
-      # Wait for everything to be Ready {{{
-      - name: Ensure all Salt minion are running
-        uses: ./.github/actions/run-command-ssh
-        with:
-          COMMAND: |
-            for _ in \$(seq 10); do
-                sudo crictl exec \$(sudo crictl ps --label='io.kubernetes.container.name=salt-master' -q) salt '*' test.ping && exit 0
-                sleep 5
-            done
-      - name: Wait for pods to stabilize after restoration
+      # Tests source {{{
+      - name: Retrieve source product.txt from artifacts
+        run: >
+          curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
+          ${{ inputs.from-artifacts-url }}/product.txt
+      - name: Save source git commit in environment
+        run: |
+          source product.txt
+          echo "source_version=$VERSION" >> $GITHUB_ENV
+          echo "source_git_commit=$GIT" >>$GITHUB_ENV
+      - name: Wait for pods to stabilize
         uses: ./.github/actions/wait-pod-stable
+      - name: Prepare bastion to run ${{ env.source_version }} tests
+        uses: ./.github/actions/prepare-bastion
         with:
-          # NOTE: We increase stabilization time after restoration it may take some
-          # time to stabilize
-          STABILIZATION_TIME: "240"
-      - name: Ensure all pods are running
-        uses: ./.github/actions/run-command-ssh
-        with:
-          # NOTE: we ignore Jobs as they can't be Ready (either Succeeded or Failed)
-          COMMAND: >
-            sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf
-            wait pods --for=condition=Ready --all --all-namespaces
-            --selector='!job-name' --timeout=5s
-      ## }}}
+          BRANCH: ${{ env.source_git_commit }}
+      - name: Run ${{ env.source_version }} tests from Bastion
+        uses: ./.github/actions/bastion-tests
+      # }}}
 
-      ## Run upgrade {{{
+      # Upgrade {{{
+      - name: Get target MetalK8s ISO
+        uses: ./.github/actions/retrieve-iso
+        with:
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+          ARTIFACTS_URL: ${{ inputs.to-artifacts-url }}
+      - name: Retrieve target product.txt from artifacts
+        run: >
+          curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
+          ${{ inputs.to-artifacts-url }}/product.txt
+      - name: Save target version in environment
+        run: |
+          source product.txt
+          echo "target_version=$VERSION" >> $GITHUB_ENV
+      - name: Copy target MetalK8s ISO to the Bootstrap node
+        uses: ./.github/actions/copy-file-ssh
+        with:
+          SOURCE_FILE: "metalk8s.iso"
+          DESTINATION_FILE: "metalk8s-${{ env.target_version }}.iso"
       - name: Add new ISO to the cluster
         uses: ./.github/actions/add-archive
         with:
-          archive: "metalk8s-${{ env.METALK8S_VERSION }}.iso"
+          archive: "metalk8s-${{ env.target_version }}.iso"
       - name: Run the upgrade
         uses: ./.github/actions/run-upgrade
         with:
-          version: ${{ env.METALK8S_VERSION }}
-      - name: Wait for pods to stabilize after upgrade
+          version: ${{ env.target_version }}
+      # }}}
+
+      # Tests target {{{
+      - name: Wait for pods to stabilize
         uses: ./.github/actions/wait-pod-stable
-        with:
-          # NOTE: We increase stabilization time after upgrade it may take some
-          # time to stabilize (e.g.: Rolling update of some DaemonSet that may take
-          # some times, especially in multi node context)
-          STABILIZATION_TIME: "240"
-      ## }}}
-
-      ## Remove previous ISO {{{
-      - name: Remove previous ISO from the cluster
-        uses: ./.github/actions/remove-archive
-        with:
-          version: ${{ inputs.promoted-version }}
-      ## }}}
-
-      ## Tests {{{
-      - name: Prepare bastion to run tests
+      - name: Prepare bastion to run ${{ env.target_version }} tests
         uses: ./.github/actions/prepare-bastion
-      - name: Wait for pods to stabilize before tests
-        uses: ./.github/actions/wait-pod-stable
-      - name: Run tests from Bastion
+      - name: Run ${{ env.target_version }} tests from Bastion
         uses: ./.github/actions/bastion-tests
-      ## }}}
-
-      ## Test certificate expiration {{{
-      - name: Run certificates expiration tests
-        uses: ./.github/actions/certificates-tests
-      - name: Wait for pods to stabilize after certificates expiration tests
-        uses: ./.github/actions/wait-pod-stable
-      - name: Run tests from Bastion after certificates expiration tests
-        uses: ./.github/actions/bastion-tests
-      ## }}}
+      # }}}
 
       ## Collect logs {{
       - name: Generate and Collect sosreport
         if: always()
         uses: ./.github/actions/sosreport-logs
         with:
-          NODES_COUNT: "${{ matrix.nodes-count }}"
+          NODES_COUNT: "${{ env.NODES_COUNT }}"
       ## }}
 
       ## Generate job result {{
@@ -212,11 +196,3 @@ jobs:
           # Secrets
           GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
       # }}}
-
-  promoted-downgrade:
-    uses: ./.github/workflows/downgrade-test.yaml
-    secrets: inherit
-    with:
-      from-artifacts-url: ${{ inputs.artifacts-url }}
-      to-artifacts-url: https://artifacts.scality.net/builds/github:scality:metalk8s:promoted-${{ inputs.promoted-version }}
-      type: ${{ inputs.type }}
