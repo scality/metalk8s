@@ -113,7 +113,6 @@ def lint_yaml() -> types.TaskDict:
         "doc": lint_yaml.__doc__,
         "actions": [["tox", "-e", "lint", "--", "yamllint"]],
         "file_dep": [
-            constants.ROOT / "eve/main.yml",
             constants.ROOT / "salt/metalk8s/defaults.yaml",
         ],
         "task_dep": ["check_for:tox"],
