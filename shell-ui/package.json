@@ -30,7 +30,7 @@
     "flow-bin": "^0.143.1",
     "fs-extra": "^10.0.0",
     "handlebars": "^4.7.7",
-    "handlebars-loader": "^1.7.1",
+    "handlebars-loader": "^1.7.3",
     "html-loader": "^2.1.2",
     "html-webpack-plugin": "^4.5.1",
     "identity-obj-proxy": "^3.0.0",
