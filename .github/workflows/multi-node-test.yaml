@@ -9,6 +9,11 @@ on:
         type: string
 
       # Machine setup
+      name:
+        description: "Override the name of the environment"
+        required: false
+        type: string
+        default: ""
       os:
         description: "The OS to use"
         required: false
@@ -28,6 +33,21 @@ on:
         default: false
       generate-snapshots:
         description: "Whether or not snapshots should be generated at the end"
+        required: false
+        type: boolean
+        default: false
+      bootstrap-restore:
+        description: "Whether or not bootstrap restore should be tested"
+        required: false
+        type: boolean
+        default: false
+      k8s-conformance:
+        description: "Whether or not k8s conformance tests should be ran"
+        required: false
+        type: boolean
+        default: false
+      enable-debug-when-failure:
+        description: "Whether or not debug when failure should be enabled or not"
         required: false
         type: boolean
         default: false
@@ -55,7 +75,7 @@ on:
         default: "example-environment"
 
 env:
-  NAME: multi-nodes-${{ inputs.os }}
+  NAME: ${{ inputs.name || format('multi-nodes-{0}', inputs.os) }}
 
 jobs:
   multi-node:
@@ -67,7 +87,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install deps
-        run: sudo yum install -y isomd5sum
+        run: sudo yum install -y isomd5sum jq
 
      ## Spawn {{{
       - name: Export environment variables for accessing the cloud
@@ -117,12 +137,12 @@ jobs:
           HARD_ANTIAFINITY: "true"
       - name: Mount MetalK8s ISO
         uses: ./.github/actions/mount-iso
+      - name: Prepare expansion
+        uses: ./.github/actions/prepare-expansion
       - name: Run Bootstrap
         uses: ./.github/actions/run-bootstrap
       - name: Prepare bastion to run tests
         uses: ./.github/actions/prepare-bastion
-      - name: Prepare expansion
-        uses: ./.github/actions/prepare-expansion
       - name: Wait for pods to stabilize before expansion
         uses: ./.github/actions/wait-pod-stable
       - name: Run expansion tests from Bastion
@@ -182,23 +202,149 @@ jobs:
           PYTEST_FILTERS: "post and ci and not slow"
       # }}}
 
+      # Bootstrap restore (if enabled) {{{
+      - name: Retrieve latest Bootstrap backup
+        if: inputs.bootstrap-restore
+        id: backup
+        uses: ./.github/actions/retrieve-backup
+      - name: Destroy the Bootstrap node
+        if: inputs.bootstrap-restore
+        uses: ./.github/actions/destroy-cluster
+        with:
+          # Parameters
+          NAME: ${{ env.NAME }}
+          args: -target openstack_compute_instance_v2.bootstrap
+          # Secrets
+          GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
+      - name: Save Terraform context after Bootstrap destroy
+        if: inputs.bootstrap-restore
+        uses: ./.github/actions/save-terraform-context
+        with:
+          NAME: ${{ env.NAME }}
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+      - name: Remove the Bootstrap node from the cluster
+        if: inputs.bootstrap-restore
+        uses: ./.github/actions/remove-node
+      - name: Create a new bootstrap node
+        if: inputs.bootstrap-restore
+        uses: ./.github/actions/spawn-cluster
+        with:
+          # Parameters
+          OS: ${{ inputs.os }}
+          NAME: ${{ env.NAME }}
+          NODES_COUNT: ${{ env.NODES_COUNT }}
+          skip-prepare: "true"
+          args: >-
+            -refresh
+            -target openstack_compute_instance_v2.bootstrap
+            -target null_resource.copy_bastion_pub_to_bootstrap
+            -target null_resource.ssh_config
+          # Secrets
+          GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+      - name: Save Terraform context after Bootstrap re-creation
+        if: inputs.bootstrap-restore
+        uses: ./.github/actions/save-terraform-context
+        with:
+          NAME: ${{ env.NAME }}
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+      - name: Copy the new SSH config to current directory
+        if: inputs.bootstrap-restore
+        run: cp terraform-snapshot/terraform/ssh_config ./
+      - name: Copy the backup archive to the new Bootstrap node
+        if: inputs.bootstrap-restore
+        uses: ./.github/actions/copy-file-ssh
+        with:
+          SOURCE_FILE: "${{ steps.backup.outputs.filename }}"
+          DESTINATION_FILE: "/tmp/${{ steps.backup.outputs.filename }}"
+      - name: Copy MetalK8s ISO to the new Bootstrap node
+        if: inputs.bootstrap-restore
+        uses: ./.github/actions/copy-file-ssh
+        with:
+          SOURCE_FILE: "metalk8s.iso"
+      - name: Mount MetalK8s ISO on the new Bootstrap node
+        if: inputs.bootstrap-restore
+        id: mount-iso
+        uses: ./.github/actions/mount-iso
+      - name: Run restore tests from Bastion
+        if: inputs.bootstrap-restore
+        uses: ./.github/actions/bastion-tests
+        with:
+          PYTEST_FILTERS: "restore"
+          BOOTSTRAP_BACKUP_ARCHIVE: "/tmp/${{ steps.backup.outputs.filename }}"
+          # NOTE: We need to specify the mountpoint since it will not be
+          # able to auto-discover it because the bootstrap node is down
+          mountpoint: ${{ steps.mount-iso.outputs.mountpoint }}
+      - name: Wait for pods to stabilize after restore
+        if: inputs.bootstrap-restore
+        uses: ./.github/actions/wait-pod-stable
+      - name: Run tests from Bastion after restore
+        if: inputs.bootstrap-restore
+        uses: ./.github/actions/bastion-tests
+        with:
+          PYTEST_FILTERS: "post and ci and not slow"
+      # }}}
+
+      # Retrieve information {{{
+      - name: Retrieve product.txt from artifacts
+        run: >
+          curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
+          ${{ inputs.artifacts-url }}/product.txt
+      - name: Get full MetalK8s version
+        run: |
+          source product.txt
+          echo "METALK8S_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "METALK8S_SHORT_VERSION=$SHORT_VERSION" >> $GITHUB_ENV
+      # }}}
+
+      # Run k8s conformance tests (if enabled) {{{
+      - name: Untaint bootstrap node for conformance tests
+        if: inputs.k8s-conformance
+        uses: ./.github/actions/untaint
+      - name: Expose nodeport and portmap on every IPs
+        if: inputs.k8s-conformance
+        uses: ./.github/actions/run-command-ssh
+        with:
+          COMMAND: |
+            sudo salt-call --local --retcode-passthrough state.single file.serialize /etc/metalk8s/bootstrap.yaml dataset='{"networks": {"nodeport": {"cidr": "0.0.0.0/0"}, "portmap": {"cidr": "0.0.0.0/0"}}}' merge_if_exists=True
+            SALT_MASTER=\$(sudo crictl ps --label="io.kubernetes.container.name=salt-master" -q)
+            sudo crictl exec \$SALT_MASTER salt-run state.sls metalk8s.kubernetes.kube-proxy.deployed saltenv=metalk8s-$METALK8S_VERSION
+            sudo crictl exec \$SALT_MASTER salt-run state.sls metalk8s.kubernetes.cni.calico.deployed saltenv=metalk8s-$METALK8S_VERSION
+            sudo crictl exec \$SALT_MASTER salt '*' state.sls metalk8s.addons.nginx-ingress.certs saltenv=metalk8s-$METALK8S_VERSION
+      - name: Wait for pods to stabilize before conformance tests
+        if: inputs.k8s-conformance
+        uses: ./.github/actions/wait-pod-stable
+      - name: Run the k8s conformance tests
+        if: inputs.k8s-conformance
+        uses: ./.github/actions/run-k8s-conformance
+        with:
+          metalk8s-short-version: "${{ env.METALK8S_SHORT_VERSION }}"
+      # }}}
+
       - name: Generate and Collect sosreport
         if: always()
         uses: ./.github/actions/sosreport-logs
         with:
           NODES_COUNT: "${{ env.NODES_COUNT }}"
 
+      ## Generate job result {{
+      - name: Generate Job result
+        if: always()
+        uses: ./.github/actions/generate-job-result
+        with:
+          name: ${{ env.NAME }}
+          ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
+          ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+          GIT_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ## }}
+
       # Generate snapshots (if enabled) {{{
-      - name: Retrieve product.txt from artifacts
-        if: inputs.generate-snapshots
-        run: >
-          curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
-          ${{ inputs.artifacts-url }}/product.txt
-      - name: Get full MetalK8s version and total number of nodes
+      - name: Get total number of nodes
         if: inputs.generate-snapshots
         run: |
-          source product.txt
-          echo "METALK8S_VERSION=$VERSION" >> $GITHUB_ENV
           echo "TOTAL_NB_NODES=$((${{ env.NODES_COUNT }} + 1))" >> $GITHUB_ENV
       - name: Generate snapshot
         if: inputs.generate-snapshots
@@ -218,7 +364,7 @@ jobs:
           password: ${{ secrets.ARTIFACTS_PASSWORD }}
           source: artifacts
       - name: debug
-        if: failure()
+        if: inputs.enable-debug-when-failure && failure()
         run: sleep 3600
 
   destroy-multi-node-cluster:

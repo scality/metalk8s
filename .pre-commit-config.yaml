@@ -98,7 +98,6 @@ repos:
       - id: yamllint
         files: >
           (?x)^(
-              eve/main.yml|
               salt/metalk8s/defaults.yaml|
               salt/tests/unit/formulas/.*\.yaml
           )$

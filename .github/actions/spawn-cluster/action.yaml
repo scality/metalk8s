@@ -56,10 +56,20 @@ inputs:
     required: false
     default: ""
 
+  args:
+    description: Specific arguments to add to the apply command
+    required: false
+    default: ""
+  skip-prepare:
+    description: Skip the preparation of the worker
+    required: false
+    default: "false"
+
 runs:
   using: "composite"
   steps:
     - name: Prepare SSH keypair
+      if: inputs.skip-prepare == 'false'
       shell: bash
       run: |
         mkdir -p ~/.ssh
@@ -69,6 +79,7 @@ runs:
         mkdir -p "artifacts/terraform-context/${{ inputs.NAME }}/"
         cp ~/.ssh/terraform* "artifacts/terraform-context/${{ inputs.NAME }}/"
     - name: Upload SSH keypair
+      if: inputs.skip-prepare == 'false'
       uses: scality/action-artifacts@v3
       with:
         method: upload
@@ -77,6 +88,7 @@ runs:
         password: ${{inputs.ARTIFACTS_PASSWORD}}
         source: artifacts/
     - name: Checkout scality/terraform-snapshot
+      if: inputs.skip-prepare == 'false'
       uses: actions/checkout@v3
       with:
         repository: scality/terraform-snapshot
@@ -84,18 +96,22 @@ runs:
         token: ${{ inputs.GIT_ACCESS_TOKEN }}
         ref: ${{ inputs.TERRAFORM_SNAPSHOT_TAG }}
     - name: Install tools
+      if: inputs.skip-prepare == 'false'
       shell: bash
       run: sudo yum install -y unzip tar
     - name: Install node
+      if: inputs.skip-prepare == 'false'
       uses: actions/setup-node@v3
       with:
         node-version: "14"
     - name: Install Terraform
+      if: inputs.skip-prepare == 'false'
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: ${{ inputs.TERRAFORM_VERSION }}
         terraform_wrapper: false
     - name: Initialize Terraform
+      if: inputs.skip-prepare == 'false'
       working-directory: terraform-snapshot/terraform/
       shell: bash
       run: terraform init
@@ -122,7 +138,7 @@ runs:
           "-var-file $TFVARS_DIR/${{ inputs.CLOUD }}.tfvars"
         )
         for try in $(seq 1 ${MAX_RETRIES}); do
-          if terraform apply ${TF_OPTS[@]}; then
+          if terraform apply ${TF_OPTS[@]} ${{ inputs.args }}; then
             break
           elif [ $try -lt $MAX_RETRIES ]; then
             sleep 150

@@ -1,0 +1,77 @@
+name: "Run K8s Conformance"
+description: "Run the Kubernetes Conformance tests"
+
+inputs:
+  metalk8s-short-version:
+    description: "The MetalK8s short version to use in the PR content"
+    required: true
+  dest:
+    description: "Destination directory for results + PR content"
+    required: false
+    default: "artifacts/conformance"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Create result directory
+      shell: bash
+      run: |
+        result_dir="${{ inputs.dest }}/sonobuoy-results"
+        echo "result_dir=$result_dir" >> $GITHUB_ENV
+        mkdir -p "$result_dir"
+    - name: Retrieve the Kubernetes version
+      id: get-k8s-version
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: |
+          sudo rpm -q --queryformat '%{VERSION}' kubelet | cut -d'.' -f1,2
+        CAPTURE_RESULT: "true"
+    - name: Get sonobuoy bin
+      shell: bash
+      env:
+        SONOBUOY_VERSION: "0.56.15"
+      run: |
+        curl -Lo "sonobuoy.tar.gz" https://github.com/vmware-tanzu/sonobuoy/releases/download/v${SONOBUOY_VERSION}/sonobuoy_${SONOBUOY_VERSION}_linux_amd64.tar.gz
+        tar xvf sonobuoy.tar.gz
+    - name: Copy sonobuoy bin to Bootstrap node
+      uses: ./.github/actions/copy-file-ssh
+      with:
+        SOURCE_FILE: "sonobuoy"
+    - name: Run conformance tests from Bootstrap node
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: |
+          sudo ./sonobuoy run --kubeconfig=/etc/kubernetes/admin.conf --mode=certified-conformance --wait
+        SSH_OPTIONS: "-o ServerAliveInterval=15"
+    - name: Retrieve conformance tests result
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: |
+          sudo ./sonobuoy retrieve --kubeconfig=/etc/kubernetes/admin.conf --filename sonobuoy_result.tar.gz
+    - name: Retrieve conformance tests result from Bootstrap node
+      uses: ./.github/actions/copy-file-ssh
+      with:
+        NODE_TO:  ""
+        NODE_FROM: "bootstrap"
+        SOURCE_FILE: "sonobuoy_result.tar.gz"
+        DESTINATION_FILE: "${{ env.result_dir }}/"
+    - name: Extract conformance tests result
+      shell: bash
+      working-directory: ${{ env.result_dir }}
+      run: tar xvf sonobuoy_result.tar.gz
+    - name: Check conformance tests result
+      shell: bash
+      run: |
+        failed_tests=$(./sonobuoy results "$result_dir/sonobuoy_result.tar.gz" --mode=detailed --plugin=e2e | jq 'select(.status=="failed")')
+        [ -n "$failed_tests" ] && echo $failed_tests && exit 1 || exit 0
+    - name: Prepare conformance PR content
+      shell: bash
+      env:
+        DIRECTORY: "${{ inputs.dest }}/pr-content"
+        SONOBUOY_RES_DIR: "${{ env.result_dir }}"
+        K8S_VERSION: "${{ steps.get-k8s-version.outputs.RESULT }}"
+        METALK8S_VERSION: "${{ inputs.metalk8s-short-version }}"
+      run: |
+        .github/scripts/build-conformance-pr-content.sh
+        tar cvf "${{ inputs.dest }}/pr-content.tar.gz" -C "$DIRECTORY" "v$K8S_VERSION"
+

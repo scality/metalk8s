@@ -37,6 +37,11 @@ inputs:
     description: "Name of the deployment (used in artifacts and the VM names prefix)"
     required: true
 
+  args:
+    description: Specific arguments to add to the destroy command
+    required: false
+    default: ""
+
 runs:
   using: "composite"
   steps:
@@ -91,6 +96,6 @@ runs:
     - name: Destroy cluster with Terraform
       working-directory: terraform-snapshot/terraform/
       shell: bash
-      run: terraform destroy -auto-approve
+      run: terraform destroy -auto-approve ${{ inputs.args }}
       env:
         TF_VAR_cloud: ${{ inputs.CLOUD }}

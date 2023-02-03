@@ -19,12 +19,10 @@ runs:
       with:
         NODE: bastion
         COMMAND: |
-          if [ -d 'metalk8s' ]; then
-            cd metalk8s && git checkout ${{ inputs.BRANCH }}
-          else
-            git clone --branch ${{ inputs.BRANCH }} \
-              ${{ github.server_url }}/${{ github.repository }}
+          if [ ! -d 'metalk8s' ]; then
+            git clone ${{ github.server_url }}/${{ github.repository }}
           fi
+          cd metalk8s && git checkout ${{ inputs.BRANCH }}
     - name: Install UI tests deps on Bastion
       if: inputs.UI_DEPS != 'false'
       uses: ./.github/actions/run-command-ssh

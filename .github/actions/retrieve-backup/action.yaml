@@ -1,0 +1,28 @@
+name: "Retrieve backup"
+description: "Retrieve a MetalK8s bootstrap backup from the bootstrap"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Find latest backup file
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >
+          sudo cp \$(sudo find /var/lib/metalk8s/backups -name '*.tar.gz' | sort | tail -n1)
+          /var/tmp/my-backup.tar.gz
+    - name: Retrieve the backup file
+      uses: ./.github/actions/copy-file-ssh
+      with:
+        NODE_TO:  ""
+        NODE_FROM: "bootstrap"
+        SOURCE_FILE: "/var/tmp/my-backup.tar.gz"
+        DESTINATION_FILE: "./"
+    - name: Output filename
+      id: set-outputs
+      shell: bash
+      run: echo "filename=my-backup.tar.gz" >> $GITHUB_OUTPUT
+
+outputs:
+  filename:
+    description: "The MetalK8s backup file name"
+    value: ${{ steps.set-outputs.outputs.filename }}

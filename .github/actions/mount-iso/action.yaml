@@ -22,3 +22,8 @@ runs:
       uses: ./.github/actions/run-command-ssh
       with:
         COMMAND: sudo mount \"${{ inputs.ARCHIVE }}\" \"${{ inputs.MOUNTPOINT }}\"
+
+outputs:
+  mountpoint:
+    description: "The mountpoint path"
+    value: ${{ inputs.MOUNTPOINT }}
