@@ -2,7 +2,7 @@ pytest ~=4.3.0
 pytest-bdd ~=3.2.1
 testinfra >=2.0.0
 paramiko >=2.4.2 # testinfra backend
-cryptography ~=3.3, >=3.3.2
+cryptography ~=39.0
 kubernetes >= 8.0.0
 pytest-custom_exit_code >=0.3.0
 rsa ~=4.7
