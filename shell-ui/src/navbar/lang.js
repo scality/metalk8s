@@ -1,6 +1,12 @@
 //@flow
-import React, { useContext, useState, type Node, useLayoutEffect, createContext } from 'react';
-import * as reactIntl  from 'react-intl';
+import React, {
+  useContext,
+  useState,
+  type Node,
+  useLayoutEffect,
+  createContext,
+} from 'react';
+import * as reactIntl from 'react-intl';
 import { IntlProvider } from 'react-intl';
 import translations_en from './translations/en';
 import translations_fr from './translations/fr';
@@ -49,7 +55,7 @@ export function LanguageProvider({
   onLanguageChanged,
 }: {
   children: Node,
-  canChangeLanguage: boolean,
+  canChangeLanguage?: boolean,
   onLanguageChanged?: (evt: CustomEvent) => void,
 }): Node {
   const [language, setLang] = useState<Language>(
@@ -73,7 +79,9 @@ export function LanguageProvider({
   };
 
   return (
-    <window.shellContexts.LanguageContext.Provider value={{ language, setLanguage }}>
+    <window.shellContexts.LanguageContext.Provider
+      value={{ language, setLanguage }}
+    >
       <IntlProvider
         locale={language}
         messages={messages[language.toUpperCase()]}

@@ -1,7 +1,7 @@
 //@flow
 import { Navbar as CoreUINavbar } from '@scality/core-ui/dist/components/navbar/Navbar.component';
 import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import type { Node } from 'react';
 import { Layout2 } from '@scality/core-ui';
@@ -12,12 +12,18 @@ import { useThemeName } from './theme';
 import { useIntl } from 'react-intl';
 import { useAuth, useLogOut } from '../auth/AuthProvider';
 import {
+  type ViewDefinition,
+  type FederatedView,
+  type BuildtimeWebFinger,
+} from '../initFederation/ConfigurationProviders';
+import {
   useConfigRetriever,
   useDiscoveredViews,
   useLinkOpener,
 } from '../initFederation/ConfigurationProviders';
 import { useLocation } from 'react-router-dom';
 import { matchPath, RouteProps } from 'react-router';
+import { useNavbar, type Link as TypeLink } from './navbarHooks';
 
 const Logo = styled.img`
   height: 2.143rem;
@@ -122,29 +128,10 @@ function prefetch(url: string) {
   });
 }
 
-export const Navbar = ({
-  logo,
-  canChangeLanguage,
-  canChangeTheme,
-  children,
-}: {
-  logo: string,
-  canChangeLanguage?: boolean,
-  canChangeTheme?: boolean,
-  providerLogout: boolean,
-  children?: Node,
-}): Node => {
-  const { userData } = useAuth();
-  const brand = useTheme();
-
-  const { themeName, unSelectedThemes, setTheme } = useThemeName();
-  const { language, setLanguage, unSelectedLanguages } = useLanguage();
-  const intl = useIntl();
-
-  const discoveredViews = useDiscoveredViews();
+export const useNavbarLinksToActions = (
+  links: TypeLink[],
+): { link: TypeLink, selected: boolean }[] => {
   const location = useLocation();
-  const { openLink } = useLinkOpener();
-  const { logOut } = useLogOut();
 
   const doesRouteMatch = useCallback(
     (path: RouteProps) => {
@@ -152,6 +139,72 @@ export const Navbar = ({
     },
     [location],
   );
+
+  const selectedTab = links.find((link) =>
+    link.view.isFederated
+      ? doesRouteMatch({
+          path: link.view.app.appHistoryBasePath + link.view.view.path,
+          exact: link.view.view.exact,
+          strict: link.view.view.strict,
+          sensitive: link.view.view.sensitive,
+        })
+      : normalizePath(link.view.url) ===
+        window.location.origin + window.location.pathname,
+  );
+
+  //Preload non current route
+  const { retrieveConfiguration } = useConfigRetriever();
+  useEffect(() => {
+    links.forEach((link) => {
+      if (!link.view.isFederated) {
+        return;
+      }
+
+      //Check if it is the current route
+      if (
+        selectedTab?.view.isFederated &&
+        link.view.app.name === selectedTab.view.app.name &&
+        link.view.view.path === selectedTab.view.view.path
+      ) {
+        return;
+      }
+
+      const microAppConfiguration: BuildtimeWebFinger = retrieveConfiguration({
+        configType: 'build',
+        name: link.view.app.name,
+      }) || { spec: { remoteEntryPath: '' } };
+
+      const remoteEntryUrl = link.view.isFederated
+        ? link.view.app.url + microAppConfiguration.spec.remoteEntryPath
+        : '';
+
+      prefetch(remoteEntryUrl).catch((e) =>
+        console.error(`Failed to preload ${remoteEntryUrl}`, e),
+      );
+    });
+  }, [JSON.stringify(links)]);
+
+  return links.map((link) => {
+    return {
+      link,
+      selected:
+        selectedTab && selectedTab.view.isFederated && link.view.isFederated
+          ? selectedTab.view.app.name === link.view.app.name &&
+            selectedTab.view.view.path === link.view.view.path
+          : selectedTab &&
+            !selectedTab.view.isFederated &&
+            !link.view.isFederated
+          ? selectedTab.view.url === link.view.url
+          : false,
+    };
+  });
+};
+
+export const useFederatedNavbarEntries = (): {
+  accessibleViews: ViewDefinition[],
+} => {
+  const { userData } = useAuth();
+  const discoveredViews = useDiscoveredViews();
 
   const accessibleViews = discoveredViews.filter(
     (discoveredView) =>
@@ -162,82 +215,65 @@ export const Navbar = ({
         true),
   );
 
-  const selectedTabs = accessibleViews.filter((accessibleView) =>
-    accessibleView.isFederated
-      ? doesRouteMatch({
-          path:
-            accessibleView.app.appHistoryBasePath + accessibleView.view.path,
-          exact: accessibleView.view.exact,
-          strict: accessibleView.view.strict,
-          sensitive: accessibleView.view.sensitive,
-        })
-      : normalizePath(accessibleView.url) ===
-        window.location.origin + window.location.pathname,
+  return {
+    accessibleViews,
+  };
+};
+
+export const Navbar = ({
+  logo,
+  canChangeLanguage,
+  canChangeTheme,
+  children,
+}: {
+  logo: string,
+  canChangeLanguage?: boolean,
+  canChangeTheme?: boolean,
+  providerLogout?: boolean,
+  children?: Node,
+}): Node => {
+  const brand = useTheme();
+  const { userData } = useAuth();
+  const { themeName, unSelectedThemes, setTheme } = useThemeName();
+  const { language, setLanguage, unSelectedLanguages } = useLanguage();
+  const intl = useIntl();
+  const location = useLocation();
+  const { openLink } = useLinkOpener();
+  const { logOut } = useLogOut();
+
+  const { getLinks } = useNavbar();
+
+  const navbarLinks = useMemo(() => getLinks(), [getLinks]);
+
+  const navbarMainActions = useNavbarLinksToActions(navbarLinks.main);
+  const navbarSecondaryActions = useNavbarLinksToActions(navbarLinks.secondary);
+  const navbarSubloginActions = useNavbarLinksToActions(
+    navbarLinks.userDropdown,
   );
 
-  const selectedMainTabs = selectedTabs.filter(
-    (tab) => tab.navbarGroup === 'main',
-  );
-  const selectedMainTab = selectedMainTabs.pop();
+  const mainTabs = navbarMainActions.map((action) => ({
+    link: action.link.render ? (
+      <action.link.render selected={action.selected} />
+    ) : (
+      <Link to={action.link.view}>{action.link.view.view.label[language]}</Link>
+    ),
+    selected: action.selected,
+  }));
 
-  const selectedSubLoginTabs = selectedTabs.filter(
-    (tab) => tab.navbarGroup === 'subLogin',
-  );
-  const selectedSubLoginTab = selectedSubLoginTabs.pop();
-
-  //Preload non current route
-  const { retrieveConfiguration } = useConfigRetriever();
-  useEffect(() => {
-    accessibleViews.forEach((view) => {
-      if (!view.isFederated) {
-        return;
-      }
-
-      //Check if it is the current route
-      if (
-        (selectedMainTab?.isFederated &&
-          view.app.name === selectedMainTab.app.name &&
-          view.view.path === selectedMainTab.view.path) ||
-        (selectedSubLoginTab?.isFederated &&
-          view.app.name === selectedSubLoginTab.app.name &&
-          view.view.path === selectedSubLoginTab.view.path)
-      ) {
-        return;
-      }
-
-      const remoteEntryUrl =
-        view.app.url +
-        retrieveConfiguration({
-          configType: 'build',
-          name: view.app.name,
-        }).spec.remoteEntryPath;
-
-      prefetch(remoteEntryUrl).catch((e) =>
-        console.error(`Failed to preload ${remoteEntryUrl}`, e),
-      );
-    });
-  }, [JSON.stringify(accessibleViews)]);
-
-  const tabs = accessibleViews
-    .filter((accessibleView) => accessibleView.navbarGroup === 'main')
-    .map((accessibleView) => ({
-      link: (
-        <Link to={accessibleView}>{accessibleView.view.label[language]}</Link>
+  const secondaryTabs = navbarSecondaryActions.map((action) => ({
+    type: 'custom',
+    render: () =>
+      action.link.render ? (
+        <action.link.render selected={action.selected} />
+      ) : (
+        <Link to={action.link.view}>
+          {action.link.view.view.label[language]}
+        </Link>
       ),
-      selected:
-        selectedMainTab &&
-        selectedMainTab.isFederated &&
-        accessibleView.isFederated
-          ? selectedMainTab.app.name === accessibleView.app.name &&
-            selectedMainTab.view.path === accessibleView.view.path
-          : selectedMainTab &&
-            !selectedMainTab.isFederated &&
-            !accessibleView.isFederated
-          ? selectedMainTab.url === accessibleView.url
-          : false,
-    }));
+  }));
 
-  const rightActions = [
+  const rightTabs = [
+    ...secondaryTabs,
     {
       type: 'dropdown',
       text: userData?.username || '',
@@ -247,32 +283,23 @@ export const Navbar = ({
         </span>
       ),
       items: [
-        ...accessibleViews
-          .filter((accessibleView) => accessibleView.navbarGroup === 'subLogin')
-          .map((accessibleView) => ({
-            label: (
-              // $FlowFixMe Dropdown item typing is currently a string but can also accepts a react node
-              <Item
-                icon={accessibleView.icon}
-                isExternal={accessibleView.isExternal}
-                label={accessibleView.view.label[language]}
-              />
-            ),
-            selected:
-              selectedSubLoginTab &&
-              selectedSubLoginTab.isFederated &&
-              accessibleView.isFederated
-                ? selectedSubLoginTab.app.name === accessibleView.app.name &&
-                  selectedSubLoginTab.view.path === accessibleView.view.path
-                : selectedSubLoginTab &&
-                  !selectedSubLoginTab.isFederated &&
-                  !accessibleView.isFederated
-                ? selectedSubLoginTab.url === accessibleView.url
-                : false,
-            onClick: () => {
-              openLink(accessibleView);
-            },
-          })),
+        ...navbarSubloginActions.map((action) => ({
+          label: action.link.render ? (
+            <action.link.render selected={action.selected} />
+          ) : (
+            <Item
+              icon={action.link.view.icon}
+              isExternal={
+                !action.link.view.isFederated && action.link.view.isExternal
+              }
+              label={action.link.view.view.label[language]}
+            />
+          ),
+          selected: action.selected,
+          onClick: () => {
+            openLink(action.link.view);
+          },
+        })),
         {
           label: (
             <Item
@@ -289,7 +316,7 @@ export const Navbar = ({
   ];
 
   if (canChangeLanguage) {
-    rightActions.unshift({
+    rightTabs.unshift({
       type: 'dropdown',
       text: language,
       items: unSelectedLanguages.map((lang) => ({
@@ -302,7 +329,7 @@ export const Navbar = ({
   }
 
   if (canChangeTheme) {
-    rightActions.unshift({
+    rightTabs.unshift({
       type: 'dropdown',
       text: themeName,
       items: unSelectedThemes.map((theme) => ({
@@ -321,14 +348,15 @@ export const Navbar = ({
         headerNavigation={
           <CoreUINavbar
             logo={<Logo src={logo} alt="logo" />}
-            rightActions={rightActions}
-            tabs={tabs}
+            rightActions={rightTabs}
+            tabs={mainTabs}
             role="navigation"
           />
         }
       >
         {children}
       </Layout2>
+      {children}
     </>
   );
 };

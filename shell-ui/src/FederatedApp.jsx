@@ -1,22 +1,16 @@
 //@flow
 import '@fortawesome/fontawesome-free/css/all.css';
-import {
-  useEffect,
-  type Node,
-  useMemo,
-} from 'react';
+import { useEffect, type Node, useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import {ErrorPage500} from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
-import {ScrollbarWrapper} from '@scality/core-ui/dist/components/scrollbarwrapper/ScrollbarWrapper.component';
+import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
+import { ScrollbarWrapper } from '@scality/core-ui/dist/components/scrollbarwrapper/ScrollbarWrapper.component';
 import { SolutionsNavbar } from './navbar';
 import {
   FederatedComponent,
   type FederatedComponentProps,
   type SolutionUI,
 } from '@scality/module-federation';
-import {
-  UIListProvider,
-} from './initFederation/UIListProvider';
+import { UIListProvider } from './initFederation/UIListProvider';
 import {
   ConfigurationProvider,
   useConfigRetriever,
@@ -123,25 +117,29 @@ function InternalRouter(): Node {
       strict: view.strict,
       sensitive: view.sensitive,
       component: () => {
-        const federatedAppHistory = useMemo(() => createBrowserHistory({basename: app.appHistoryBasePath }), []);
+        const federatedAppHistory = useMemo(
+          () => createBrowserHistory({ basename: app.appHistoryBasePath }),
+          [],
+        );
 
         return (
-        <Router history={federatedAppHistory}>
-          <FederatedRoute
-            url={
-              app.url +
-              retrieveConfiguration({
-                configType: 'build',
-                name: app.name,
-              }).spec.remoteEntryPath
-            }
-            module={view.module}
-            scope={view.scope}
-            app={app}
-            groups={groups}
-          />
-        </Router>
-      )},
+          <Router history={federatedAppHistory}>
+            <FederatedRoute
+              url={
+                app.url +
+                retrieveConfiguration({
+                  configType: 'build',
+                  name: app.name,
+                }).spec.remoteEntryPath
+              }
+              module={view.module}
+              scope={view.scope}
+              app={app}
+              groups={groups}
+            />
+          </Router>
+        );
+      },
     }));
 
   return (
@@ -172,7 +170,7 @@ function InternalApp(): Node {
   );
 }
 
-function WithInitFederationProviders({ children }: { children: Node }) {
+export function WithInitFederationProviders({ children }: { children: Node }) {
   const { config: shellConfig } = useShellConfig();
   return (
     <UIListProvider discoveryURL={shellConfig.discoveryUrl}>

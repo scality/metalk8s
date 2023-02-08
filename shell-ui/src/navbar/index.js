@@ -8,6 +8,8 @@ import { ThemeProvider } from './theme';
 import { useFavicon } from './favicon';
 import './library';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
+import { NavbarConfigProvider } from './NavbarConfigProvider';
+import { NavbarUpdaterComponents } from './NavbarUpdaterComponents';
 
 export type SolutionsNavbarProps = {
   children?: Node,
@@ -23,15 +25,19 @@ export const SolutionsNavbar = ({ children }: SolutionsNavbarProps): Node => {
         {(theme, themeName) => (
           <>
             <CoreUiThemeProvider theme={theme.brand}>
-              <Navbar
-                logo={
-                  config?.themes?.[themeName].logoPath ||
-                  `/brand/assets/logo-${themeName}.svg`
-                }
-                userGroupsMapping={config.userGroupsMapping}
-              >
-                {children}
-              </Navbar>
+              <NavbarConfigProvider>
+                <>
+                  <Navbar
+                    logo={
+                      config?.themes?.[themeName].logoPath ||
+                      `/brand/assets/logo-${themeName}.svg`
+                    }
+                  >
+                    {children}
+                  </Navbar>
+                  <NavbarUpdaterComponents />
+                </>
+              </NavbarConfigProvider>
             </CoreUiThemeProvider>
           </>
         )}
