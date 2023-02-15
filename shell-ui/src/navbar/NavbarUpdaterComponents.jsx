@@ -7,13 +7,15 @@ import {
   useDynamicScripts,
   type SolutionUI,
 } from '@scality/module-federation';
-import { Suspense, useCallback, useMemo, useState } from 'react';
+import { Fragment, Suspense, useCallback, useMemo, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useEffect } from 'react';
+import { useNavbar } from './navbarHooks';
 
 export const NavbarUpdaterComponents = () => {
   const deployedApps = useDeployedApps();
   const { retrieveConfiguration } = useConfigRetriever();
+  const navbarManagementProps = useNavbar();
 
   const componentsToFederate: (FederatedModuleInfo & {
     app: SolutionUI,
@@ -28,10 +30,10 @@ export const NavbarUpdaterComponents = () => {
 
       return appBuildConfig?.spec?.navbarUpdaterComponents
         ? appBuildConfig?.spec?.navbarUpdaterComponents.map((component) => ({
-            ...component,
-            remoteEntryPath,
-            app,
-          }))
+          ...component,
+          remoteEntryPath,
+          app,
+        }))
         : [];
     })
     .filter((appBuildConfig) => !!appBuildConfig);
@@ -68,9 +70,9 @@ export const NavbarUpdaterComponents = () => {
 
   return (
     <>
-      {componentsToFederate.map((component) => {
+      {componentsToFederate.map((component, index) => {
         return (
-          <>
+          <Fragment key={index}>
             {!areMicroAppsReady ? (
               <></>
             ) : (
@@ -81,10 +83,11 @@ export const NavbarUpdaterComponents = () => {
                   module={component.module}
                   scope={component.scope}
                   app={component.app}
+                  props={{ navbarManagementProps }}
                 />
               </ErrorBoundary>
             )}{' '}
-          </>
+          </Fragment>
         );
       })}
     </>

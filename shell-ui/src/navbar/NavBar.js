@@ -356,7 +356,6 @@ export const Navbar = ({
       >
         {children}
       </Layout2>
-      {children}
     </>
   );
 };
