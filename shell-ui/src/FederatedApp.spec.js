@@ -1,13 +1,13 @@
 import { setupServer } from 'msw/node';
 import { rest } from 'msw';
-import { screen, render, waitFor } from '@testing-library/react';
+import { screen, render, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import './navbar/index';
 import { waitForLoadingToFinish } from './navbar/__TESTS__/utils';
 import { jest } from '@jest/globals';
-import App, {queryClient} from './FederatedApp';
+import App, { queryClient } from './FederatedApp';
 
-const server = setupServer(
+export const configurationHandlers = [
   rest.get(
     'http://localhost:3000/.well-known/micro-app-configuration',
     (req, res, ctx) => {
@@ -129,6 +129,12 @@ const server = setupServer(
       }),
     );
   }),
+  rest.get('http://localhost/static/js/remoteEntry.js', (req, res, ctx) => {
+    return res(
+      ctx.set('Content-Type', 'application/javascript'),
+      ctx.text('window.metalk8s = {init: () => {}};'),
+    );
+  }),
   rest.get(
     'http://localhost/oidc/.well-known/openid-configuration',
     (req, res, ctx) => {
@@ -164,7 +170,9 @@ const server = setupServer(
       return res(ctx.json(result));
     },
   ),
-);
+];
+
+const server = setupServer(...configurationHandlers);
 
 function mockOidcReact() {
   const { jest } = require('@jest/globals');
@@ -200,17 +208,23 @@ const mockOIDCProvider = () => {
 };
 
 describe('FederatedApp', () => {
-  // use fake timers to let react query retry immediately after promise failure
-  jest.useFakeTimers();
-
-  beforeAll(() => server.listen({onUnhandledRequest: 'error'}));
+  beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
   beforeEach(() => {
     jest.resetModules();
+    queryClient.setDefaultOptions({
+      queries: {
+        // ✅ turns retries off
+        retry: false,
+      },
+    });
   });
+
   afterEach(() => {
-    server.resetHandlers()
-    queryClient.clear()
+    server.resetHandlers();
+    queryClient.clear();
   });
+
+  afterAll(() => server.close());
 
   it('should display a loading state when resolving its configuration', () => {
     //E
@@ -234,5 +248,16 @@ describe('FederatedApp', () => {
     expect(screen.queryByText('Unexpected Error')).toBeInTheDocument();
   });
 
-  afterAll(() => server.close());
+  it('should display the navbar when it resolved its configuration', async () => {
+    //S
+    render(<App />);
+    //E
+    await waitForLoadingToFinish();
+
+    //V
+    const navbar = screen.getByRole('navigation');
+    expect(navbar).toBeInTheDocument();
+    expect(within(navbar).getByText(/Platform/i)).toBeInTheDocument();
+    expect(within(navbar).getByText(/Alerts/i)).toBeInTheDocument();
+  });
 });

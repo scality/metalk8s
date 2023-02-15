@@ -7,7 +7,8 @@
     "start": "webpack serve --config webpack.config.dev.js --env=entry=all",
     "start:navbar": "webpack serve --config webpack.config.dev.js --env=entry=navbar",
     "start:alerts": "webpack serve --config webpack.config.dev.js --env=entry=alerts",
-    "build": "webpack --config webpack.config.prd.js"
+    "build": "webpack --config webpack.config.prd.js",
+    "jest-preview": "jest-preview"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
@@ -36,6 +37,7 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^26.6.3",
     "jest-localstorage-mock": "^2.4.8",
+    "jest-preview": "^0.3.1",
     "msw": "0.36.8",
     "node-fetch": "^2.6.1",
     "prop-types": "^15.7.2",
@@ -51,7 +53,7 @@
     "@fortawesome/free-regular-svg-icons": "^5.15.4",
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
     "@fortawesome/react-fontawesome": "^0.2.0",
-    "@scality/core-ui": "github:scality/core-ui#v0.72.0",
+    "@scality/core-ui": "github:scality/core-ui#v0.78.0",
     "@scality/module-federation": "github:scality/module-federation.git#1.1.0",
     "canvas": "^2.9.3",
     "oidc-client": "^1.11.3",
