@@ -3,6 +3,7 @@ package clusterconfig
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -14,8 +15,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/go-logr/logr"
 	metalk8sscalitycomv1alpha1 "github.com/scality/metalk8s/operator/api/v1alpha1"
+	"github.com/scality/metalk8s/operator/pkg/controller/clusterconfig/workloadplane"
 	"github.com/scality/metalk8s/operator/pkg/controller/utils"
 )
 
@@ -23,8 +24,6 @@ type ClusterConfigReconciler struct {
 	client   client.Client
 	scheme   *runtime.Scheme
 	recorder record.EventRecorder
-
-	instance metalk8sscalitycomv1alpha1.ClusterConfig
 }
 
 const (
@@ -84,7 +83,9 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	reqLogger.Info("reconciling ClusterConfig: START")
 	defer reqLogger.Info("reconciling ClusterConfig: STOP")
 
-	err := r.client.Get(ctx, req.NamespacedName, &r.instance)
+	instance := &metalk8sscalitycomv1alpha1.ClusterConfig{}
+
+	err := r.client.Get(ctx, req.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			if req.Name == instanceName {
@@ -102,8 +103,8 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return utils.Requeue(err)
 	}
 
-	if r.instance.Name != instanceName {
-		if err := r.client.Delete(ctx, &r.instance); err != nil {
+	if instance.Name != instanceName {
+		if err := r.client.Delete(ctx, instance); err != nil {
 			reqLogger.Error(
 				err, "cannot delete extra ClusterConfig: requeue",
 			)
@@ -114,26 +115,60 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	// Starting here some change might be done on the cluster, so make sure to publish status update
-	defer r.client.Status().Update(ctx, &r.instance)
+	defer r.client.Status().Update(ctx, instance)
 
-	for _, rec := range []func(context.Context, logr.Logger) utils.SubReconcilerResult{
-		r.reconcileVirtualIPPools,
-	} {
-		if result := rec(ctx, reqLogger); result.ShouldReturn() {
-			r.instance.SetReadyCondition(metav1.ConditionFalse, "Reconciling", "Reconciliation in progress")
-			return result.GetResult()
-		}
+	subReconcilers := map[string]utils.SubReconciler{
+		"WorkloadPlaneVirtualIPPool": &workloadplane.VirtualIPPoolReconciler{},
 	}
 
-	r.instance.SetReadyCondition(metav1.ConditionTrue, "Ready", "Everything good")
+	// Load all sub reconcilers
+	for key, subrec := range subReconcilers {
+		logger := reqLogger.WithValues("SubReconciler", key)
+		handler := utils.NewObjectHandler(instance, r.client, r.scheme, r.recorder, logger, componentName, appName)
+		subrec.Load(handler, logger, instance)
+	}
+
+	result := reconcileAllSubReconcilers(ctx, subReconcilers)
+
+	if result.ShouldReturn() {
+		instance.SetReadyCondition(metav1.ConditionFalse, "Reconciling", "Reconciliation in progress")
+		return result.GetResult()
+	}
+
+	instance.SetReadyCondition(metav1.ConditionTrue, "Ready", "Everything good")
 
 	return utils.EndReconciliation()
 }
 
-func (r *ClusterConfigReconciler) sendEvent(status metav1.ConditionStatus, reason string, message string) {
-	eventType := corev1.EventTypeNormal
-	if status == metav1.ConditionUnknown {
-		eventType = corev1.EventTypeWarning
+func reconcileAllSubReconcilers(ctx context.Context, subReconcilers map[string]utils.SubReconciler) utils.SubReconcilerResult {
+	var wg sync.WaitGroup
+	var mutex sync.Mutex
+	result := utils.NothingToDo()
+
+	// Run all sub reconcilers
+	for key := range subReconcilers {
+		wg.Add(1)
+		go func(key string) {
+			defer wg.Done()
+
+			subrec := subReconcilers[key]
+
+			logger := subrec.GetLogger()
+			logger.Info("reconciling: START")
+			defer logger.Info("reconciling: STOP")
+
+			if res := subrec.Reconcile(ctx); res.ShouldReturn() {
+				mutex.Lock()
+				if res.IsSuperior(result) {
+					result = res
+				}
+				mutex.Unlock()
+			}
+		}(key)
 	}
-	r.recorder.Event(&r.instance, eventType, reason, message)
+
+	// Wait for all sub reconcilers to complete
+	wg.Wait()
+
+	return result
 }

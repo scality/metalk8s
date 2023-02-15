@@ -1,4 +1,4 @@
-package clusterconfig
+package workloadplane
 
 import (
 	"context"
@@ -14,24 +14,37 @@ import (
 	"github.com/scality/metalk8s/operator/pkg/controller/utils"
 )
 
+type VirtualIPPoolReconciler struct {
+	handler *utils.ObjectHandler
+	logger  logr.Logger
+
+	instance *metalk8sscalitycomv1alpha1.ClusterConfig
+}
+
 // Name of the namespace used for Virtual IPs
 const vipNamespaceName = "metalk8s-vips"
 
-func (r *ClusterConfigReconciler) reconcileVirtualIPPools(ctx context.Context, reqLogger logr.Logger) utils.SubReconcilerResult {
-	logger := reqLogger.WithValues("SubReconciler", "VirtualIPPool")
-	logger.Info("reconciling VIPs: START")
-	defer logger.Info("reconciling VIPs: STOP")
+// Load handler and instance in the struct
+func (r *VirtualIPPoolReconciler) Load(handler *utils.ObjectHandler, logger logr.Logger, instance *metalk8sscalitycomv1alpha1.ClusterConfig) {
+	r.handler = handler
+	r.logger = logger
+	r.instance = instance
+}
 
+func (r *VirtualIPPoolReconciler) GetLogger() logr.Logger {
+	return r.logger
+}
+
+// Reconcile the WorkloadPlane Virtual IP Pools
+func (r *VirtualIPPoolReconciler) Reconcile(ctx context.Context) utils.SubReconcilerResult {
 	pools := r.instance.Spec.WorkloadPlane.VirtualIPPools
-
-	handler := utils.NewObjectHandler(&r.instance, r.client, r.scheme, logger, componentName, appName)
 
 	// Reconcile the VIP namespace
 	namespaceInstance := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: vipNamespaceName}}
 
 	if len(pools) == 0 {
 		// The namespace shouldn't exists
-		changed, err := handler.CreateOrUpdateOrDelete(ctx, nil, []client.Object{namespaceInstance}, nil)
+		changed, err := r.handler.CreateOrUpdateOrDelete(ctx, nil, []client.Object{namespaceInstance}, nil)
 		if err != nil {
 			r.setVIPConfiguredCondition(
 				metav1.ConditionFalse,
@@ -56,7 +69,7 @@ func (r *ClusterConfigReconciler) reconcileVirtualIPPools(ctx context.Context, r
 	// Create or update the namespace if needed
 	// NOTE: We treat the namespace alone has nothing else can be created if this one
 	// do not exists
-	changed, err := handler.CreateOrUpdateOrDelete(ctx, []client.Object{namespaceInstance}, nil, nil)
+	changed, err := r.handler.CreateOrUpdateOrDelete(ctx, []client.Object{namespaceInstance}, nil, nil)
 	if err != nil {
 		r.setVIPConfiguredCondition(
 			metav1.ConditionUnknown,
@@ -85,7 +98,7 @@ func (r *ClusterConfigReconciler) reconcileVirtualIPPools(ctx context.Context, r
 	// Retrieve all objects that should be deleted
 	objsToDelete := []client.Object{}
 	poolList := metalk8sscalitycomv1alpha1.VirtualIPPoolList{}
-	if err := r.client.List(ctx, &poolList, handler.GetMatchingLabels(false), client.InNamespace(vipNamespaceName)); err != nil {
+	if err := r.handler.Client.List(ctx, &poolList, r.handler.GetMatchingLabels(false), client.InNamespace(vipNamespaceName)); err != nil {
 		return utils.NeedRequeue(err)
 	}
 	for _, obj := range poolList.Items {
@@ -94,7 +107,7 @@ func (r *ClusterConfigReconciler) reconcileVirtualIPPools(ctx context.Context, r
 		}
 	}
 
-	changed, err = handler.CreateOrUpdateOrDelete(ctx, objsToUpdate, objsToDelete, r.mutateVIP)
+	changed, err = r.handler.CreateOrUpdateOrDelete(ctx, objsToUpdate, objsToDelete, r.mutateVIP)
 	if err != nil {
 		r.setVIPConfiguredCondition(
 			metav1.ConditionUnknown,
@@ -121,7 +134,7 @@ func (r *ClusterConfigReconciler) reconcileVirtualIPPools(ctx context.Context, r
 		pool := &metalk8sscalitycomv1alpha1.VirtualIPPool{
 			ObjectMeta: r.getPoolMeta(name),
 		}
-		if err := r.client.Get(ctx, client.ObjectKeyFromObject(pool), pool); err != nil {
+		if err := r.handler.Client.Get(ctx, client.ObjectKeyFromObject(pool), pool); err != nil {
 			status := metav1.ConditionUnknown
 			reason := "PoolRetrievingError"
 			message := err.Error()
@@ -171,24 +184,24 @@ func (r *ClusterConfigReconciler) reconcileVirtualIPPools(ctx context.Context, r
 	return utils.NothingToDo()
 }
 
-func (r *ClusterConfigReconciler) setVIPConfiguredCondition(status metav1.ConditionStatus, reason string, message string) {
-	r.sendEvent(status, fmt.Sprintf("VirtualIPPool%s", reason), message)
-	r.instance.SetVIPConfiguredCondition(status, reason, message)
+func (r *VirtualIPPoolReconciler) setVIPConfiguredCondition(status metav1.ConditionStatus, reason string, message string) {
+	r.handler.SendEvent(status, fmt.Sprintf("WorkloadPlaneVirtualIPPool%s", reason), message)
+	r.instance.SetWPVIPConfiguredCondition(status, reason, message)
 }
 
-func (r *ClusterConfigReconciler) setVIPReadyCondition(status metav1.ConditionStatus, reason string, message string) {
-	r.sendEvent(status, fmt.Sprintf("VirtualIPPool%s", reason), message)
-	r.instance.SetVIPReadyCondition(status, reason, message)
+func (r *VirtualIPPoolReconciler) setVIPReadyCondition(status metav1.ConditionStatus, reason string, message string) {
+	r.handler.SendEvent(status, fmt.Sprintf("WorkloadPlaneVirtualIPPool%s", reason), message)
+	r.instance.SetWPVIPReadyCondition(status, reason, message)
 }
 
-func (r *ClusterConfigReconciler) getPoolMeta(name string) metav1.ObjectMeta {
+func (r *VirtualIPPoolReconciler) getPoolMeta(name string) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
 		Name:      name,
 		Namespace: vipNamespaceName,
 	}
 }
 
-func (r *ClusterConfigReconciler) mutateVIP(obj client.Object) error {
+func (r *VirtualIPPoolReconciler) mutateVIP(obj client.Object) error {
 	pool := obj.(*metalk8sscalitycomv1alpha1.VirtualIPPool)
 
 	pool.Spec = r.instance.Spec.WorkloadPlane.VirtualIPPools[pool.GetName()]

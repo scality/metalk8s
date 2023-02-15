@@ -17,12 +17,14 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"sync"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
-	vIPConfiguredConditionName = "VirtualIPPool" + configuredConditionName
-	vIPReadyConditionName      = "VirtualIPPool" + readyConditionName
+	wPVIPConfiguredConditionName = "WorkloadPlaneVirtualIPPool" + configuredConditionName
+	wPVIPReadyConditionName      = "WorkloadPlaneVirtualIPPool" + readyConditionName
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -70,13 +72,23 @@ type ClusterConfig struct {
 	Status ClusterConfigStatus `json:"status,omitempty"`
 }
 
+// The ClusterConfig is managed by several SubReconciler in parallel
+// that may Set and Get conditions, so ensure there is always only one
+// accessing it at once
+// NOTE: We can have only one ClusterConfig so keep the mutex has a simple variable here
+var mu sync.Mutex
+
 // Set a condition on ClusterConfig
 func (v *ClusterConfig) SetCondition(kind string, status metav1.ConditionStatus, reason string, message string) {
+	mu.Lock()
+	defer mu.Unlock()
 	setCondition(v.Generation, &v.Status.Conditions, kind, status, reason, message)
 }
 
 // Get a condition from ClusterConfig
 func (v *ClusterConfig) GetCondition(kind string) *Condition {
+	mu.Lock()
+	defer mu.Unlock()
 	return getCondition(v.Status.Conditions, kind)
 }
 
@@ -85,14 +97,14 @@ func (v *ClusterConfig) SetReadyCondition(status metav1.ConditionStatus, reason 
 	v.SetCondition(readyConditionName, status, reason, message)
 }
 
-// Set VirtualIPPool Configured Condition
-func (v *ClusterConfig) SetVIPConfiguredCondition(status metav1.ConditionStatus, reason string, message string) {
-	v.SetCondition(vIPConfiguredConditionName, status, reason, message)
+// Set WorkloadPlaneVirtualIPPool Configured Condition
+func (v *ClusterConfig) SetWPVIPConfiguredCondition(status metav1.ConditionStatus, reason string, message string) {
+	v.SetCondition(wPVIPConfiguredConditionName, status, reason, message)
 }
 
-// Set VirtualIPPool Ready Condition
-func (v *ClusterConfig) SetVIPReadyCondition(status metav1.ConditionStatus, reason string, message string) {
-	v.SetCondition(vIPReadyConditionName, status, reason, message)
+// Set WorkloadPlaneVirtualIPPool Ready Condition
+func (v *ClusterConfig) SetWPVIPReadyCondition(status metav1.ConditionStatus, reason string, message string) {
+	v.SetCondition(wPVIPReadyConditionName, status, reason, message)
 }
 
 //+kubebuilder:object:root=true

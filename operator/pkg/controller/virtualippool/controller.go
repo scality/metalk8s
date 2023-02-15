@@ -26,6 +26,7 @@ type VirtualIPPoolReconciler struct {
 	scheme   *runtime.Scheme
 	recorder record.EventRecorder
 
+	handler  *utils.ObjectHandler
 	instance metalk8sscalitycomv1alpha1.VirtualIPPool
 	// Some cache to ensure we don't reuse Virtual Router IDs, even for different pools
 	usedVRID       map[int]bool
@@ -113,12 +114,12 @@ func (r *VirtualIPPoolReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		r.instance.GetDaemonSet(),
 	}
 
-	handler := utils.NewObjectHandler(&r.instance, r.client, r.scheme, reqLogger, componentName, appName)
+	r.handler = utils.NewObjectHandler(&r.instance, r.client, r.scheme, r.recorder, reqLogger, componentName, appName)
 
 	// Starting here some change might be done on the cluster, so make sure to publish status update
 	defer r.client.Status().Update(ctx, &r.instance)
 
-	changed, err := handler.CreateOrUpdateOrDelete(ctx, objsToUpdate, nil, r.mutate)
+	changed, err := r.handler.CreateOrUpdateOrDelete(ctx, objsToUpdate, nil, r.mutate)
 	if err != nil {
 		r.setConfiguredCondition(
 			metav1.ConditionUnknown,
@@ -188,26 +189,18 @@ func (r *VirtualIPPoolReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	return utils.DelayedRequeue()
 }
 
-func (r *VirtualIPPoolReconciler) sendEvent(status metav1.ConditionStatus, reason string, message string) {
-	eventType := corev1.EventTypeNormal
-	if status == metav1.ConditionUnknown {
-		eventType = corev1.EventTypeWarning
-	}
-	r.recorder.Event(&r.instance, eventType, reason, message)
-}
-
 func (r *VirtualIPPoolReconciler) setConfiguredCondition(status metav1.ConditionStatus, reason string, message string) {
-	r.sendEvent(status, reason, message)
+	r.handler.SendEvent(status, reason, message)
 	r.instance.SetConfiguredCondition(status, reason, message)
 }
 
 func (r *VirtualIPPoolReconciler) setAvailableCondition(status metav1.ConditionStatus, reason string, message string) {
-	r.sendEvent(status, reason, message)
+	r.handler.SendEvent(status, reason, message)
 	r.instance.SetAvailableCondition(status, reason, message)
 }
 
 func (r *VirtualIPPoolReconciler) setReadyCondition(status metav1.ConditionStatus, reason string, message string) {
-	r.sendEvent(status, reason, message)
+	r.handler.SendEvent(status, reason, message)
 	r.instance.SetReadyCondition(status, reason, message)
 }
 

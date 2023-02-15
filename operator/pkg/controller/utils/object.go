@@ -6,9 +6,11 @@ import (
 
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
@@ -55,24 +57,27 @@ var (
 // that allow to use a single entry point to manage various objects and properly
 // log actions and add some standard metadata
 type ObjectHandler struct {
-	// The Instance object used as Owner reference on every objects
-	Instance client.Object
-
 	// The client used to interact with the APIServer
 	Client client.Client
+
+	// The Instance object used as Owner reference on every objects
+	instance client.Object
+
 	// The Instance Object Scheme
-	Scheme *runtime.Scheme
+	scheme *runtime.Scheme
+	// The Recorder used to send events
+	recorder record.EventRecorder
 	// The Logger that will be used by ObjectHandler functions
-	Logger logr.Logger
+	logger logr.Logger
 
 	// Component name that will be used as Label on every objects managed by this ObjectHandler
-	Component string
+	component string
 
 	labels map[string]string
 }
 
 // Initiate an ObjectHandler struct
-func NewObjectHandler(instance client.Object, client client.Client, scheme *runtime.Scheme, logger logr.Logger, component string, name string) *ObjectHandler {
+func NewObjectHandler(instance client.Object, client client.Client, scheme *runtime.Scheme, recorder record.EventRecorder, logger logr.Logger, component string, name string) *ObjectHandler {
 	labels := map[string]string{}
 	for k, v := range stdLabels {
 		labels[k] = v
@@ -82,13 +87,23 @@ func NewObjectHandler(instance client.Object, client client.Client, scheme *runt
 	labels[labelInstanceName] = instance.GetName()
 
 	return &ObjectHandler{
-		Instance:  instance,
+		instance:  instance,
 		Client:    client,
-		Scheme:    scheme,
-		Logger:    logger,
-		Component: component,
+		scheme:    scheme,
+		recorder:  recorder,
+		logger:    logger,
+		component: component,
 		labels:    labels,
 	}
+}
+
+// Send an event to the instance
+func (h ObjectHandler) SendEvent(status metav1.ConditionStatus, reason string, message string) {
+	eventType := corev1.EventTypeNormal
+	if status == metav1.ConditionUnknown {
+		eventType = corev1.EventTypeWarning
+	}
+	h.recorder.Event(h.instance, eventType, reason, message)
 }
 
 // Create, Update or delete objects so that it match desired object from args
@@ -117,7 +132,7 @@ func (h ObjectHandler) CreateOrUpdateOrDelete(ctx context.Context, objsToUpdate 
 			return changed, err
 		}
 		if result != controllerutil.OperationResultNone {
-			h.Logger.Info("object update", "Object.Type", reflect.TypeOf(obj), "Object.Key", client.ObjectKeyFromObject(obj), "Operation", result)
+			h.logger.Info("object update", "Object.Type", reflect.TypeOf(obj), "Object.Key", client.ObjectKeyFromObject(obj), "Operation", result)
 			changed = true
 		}
 	}
@@ -133,7 +148,7 @@ func (h ObjectHandler) CreateOrUpdateOrDelete(ctx context.Context, objsToUpdate 
 		if err := h.Client.Delete(ctx, obj); err != nil {
 			return changed, err
 		}
-		h.Logger.Info("object deletion", "Object.Type", reflect.TypeOf(obj), "Object.Key", client.ObjectKeyFromObject(obj), "Operation", "deleted")
+		h.logger.Info("object deletion", "Object.Type", reflect.TypeOf(obj), "Object.Key", client.ObjectKeyFromObject(obj), "Operation", "deleted")
 
 		// If there is no error, a delete always mean a change
 		changed = true
@@ -151,7 +166,7 @@ func (h ObjectHandler) stdMutate(object metav1.Object) error {
 		h.stdMutateDaemonSet(object.(*appsv1.DaemonSet))
 	}
 
-	return controllerutil.SetControllerReference(h.Instance, object, h.Scheme)
+	return controllerutil.SetControllerReference(h.instance, object, h.scheme)
 }
 
 func (h ObjectHandler) stdMutateDaemonSet(object *appsv1.DaemonSet) {

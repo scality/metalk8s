@@ -48,6 +48,34 @@ var _ = Describe("SubReconciler tests", func() {
 			_, err := r.GetResult()
 			Expect(err).To(HaveOccurred())
 		})
+
+		It("is not superior to anything", func() {
+			r := utils.NothingToDo()
+
+			Expect(r.IsSuperior(utils.NothingToDo())).To(BeFalse())
+			Expect(r.IsSuperior(utils.NeedDelayedRequeue())).To(BeFalse())
+			Expect(r.IsSuperior(utils.NeedRequeue(nil))).To(BeFalse())
+			Expect(r.IsSuperior(utils.NeedEndReconciliation())).To(BeFalse())
+		})
+	})
+
+	Describe("NeedDelayedRequeue", func() {
+		It("return a delayed requeue", func() {
+			r := utils.NeedDelayedRequeue()
+
+			Expect(r.ShouldReturn()).To(BeTrue())
+
+			assertDelayedRequeue(r.GetResult())
+		})
+
+		It("is only superior to NothingToDo", func() {
+			r := utils.NeedDelayedRequeue()
+
+			Expect(r.IsSuperior(utils.NothingToDo())).To(BeTrue())
+			Expect(r.IsSuperior(utils.NeedDelayedRequeue())).To(BeFalse())
+			Expect(r.IsSuperior(utils.NeedRequeue(nil))).To(BeFalse())
+			Expect(r.IsSuperior(utils.NeedEndReconciliation())).To(BeFalse())
+		})
 	})
 
 	Describe("NeedRequeue", func() {
@@ -68,15 +96,14 @@ var _ = Describe("SubReconciler tests", func() {
 			result, err := r.GetResult()
 			assertRequeueError(myErr, result, err)
 		})
-	})
 
-	Describe("NeedDelayedRequeue", func() {
-		It("return a delayed requeue", func() {
-			r := utils.NeedDelayedRequeue()
+		It("is only superior to NothingToDo and NeedDelayedRequeue", func() {
+			r := utils.NeedRequeue(nil)
 
-			Expect(r.ShouldReturn()).To(BeTrue())
-
-			assertDelayedRequeue(r.GetResult())
+			Expect(r.IsSuperior(utils.NothingToDo())).To(BeTrue())
+			Expect(r.IsSuperior(utils.NeedDelayedRequeue())).To(BeTrue())
+			Expect(r.IsSuperior(utils.NeedRequeue(nil))).To(BeFalse())
+			Expect(r.IsSuperior(utils.NeedEndReconciliation())).To(BeFalse())
 		})
 	})
 
@@ -87,6 +114,15 @@ var _ = Describe("SubReconciler tests", func() {
 			Expect(r.ShouldReturn()).To(BeTrue())
 
 			assertEndReconciliation(r.GetResult())
+		})
+
+		It("is superior to everything", func() {
+			r := utils.NeedEndReconciliation()
+
+			Expect(r.IsSuperior(utils.NothingToDo())).To(BeTrue())
+			Expect(r.IsSuperior(utils.NeedDelayedRequeue())).To(BeTrue())
+			Expect(r.IsSuperior(utils.NeedRequeue(nil))).To(BeTrue())
+			Expect(r.IsSuperior(utils.NeedEndReconciliation())).To(BeFalse())
 		})
 	})
 })

@@ -16,6 +16,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 
@@ -33,6 +34,7 @@ var _ = Describe("ObjectHandler", func() {
 		c             client.Client
 		ctx           context.Context
 		log           logr.Logger
+		recorder      *record.FakeRecorder
 	)
 
 	BeforeEach(func() {
@@ -45,12 +47,13 @@ var _ = Describe("ObjectHandler", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		log = logf.Log.WithName("utils-test-logger")
+		recorder = record.NewFakeRecorder(10)
 		componentName = "testcomponentname"
 		appName = "testappname"
 
 		h = *utils.NewObjectHandler(
 			&corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: "owner", Namespace: "default", UID: "owner-uid"}},
-			c, scheme.Scheme, log,
+			c, scheme.Scheme, recorder, log,
 			componentName, appName,
 		)
 		ctx = context.Background()
@@ -228,6 +231,24 @@ var _ = Describe("ObjectHandler", func() {
 
 			Expect(err).ToNot(HaveOccurred())
 			Expect(changed).To(BeFalse())
+		})
+	})
+
+	Describe("SendEvent", func() {
+		It("send normal event", func() {
+			Expect(recorder.Events).To(BeEmpty())
+			h.SendEvent(metav1.ConditionTrue, "test reason", "test message")
+			Expect(recorder.Events).To(HaveLen(1))
+
+			Expect(<-recorder.Events).To(BeEquivalentTo("Normal test reason test message"))
+		})
+
+		It("send warning event", func() {
+			Expect(recorder.Events).To(BeEmpty())
+			h.SendEvent(metav1.ConditionUnknown, "test reason", "test message")
+			Expect(recorder.Events).To(HaveLen(1))
+
+			Expect(<-recorder.Events).To(BeEquivalentTo("Warning test reason test message"))
 		})
 	})
 

@@ -1,11 +1,22 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	ctrl "sigs.k8s.io/controller-runtime"
+
+	"github.com/go-logr/logr"
+	metalk8sscalitycomv1alpha1 "github.com/scality/metalk8s/operator/api/v1alpha1"
 )
+
+// Interface for all SubReconciler
+type SubReconciler interface {
+	Load(*ObjectHandler, logr.Logger, *metalk8sscalitycomv1alpha1.ClusterConfig)
+	GetLogger() logr.Logger
+	Reconcile(context.Context) SubReconcilerResult
+}
 
 // Trigger a reschedule after a short delay.
 func DelayedRequeue() (ctrl.Result, error) {
@@ -30,9 +41,11 @@ func EndReconciliation() (ctrl.Result, error) {
 type subReconcilerStatus int
 
 const (
+	// NOTE: They are ordered by priority, if we get a `endReconcile` it means that
+	// a requeue will happens so trigger this instead of an explicit requeue
 	nothingToDo subReconcilerStatus = iota
-	requeue
 	delayRequeue
+	requeue
 	endReconcile
 )
 
@@ -53,14 +66,14 @@ func NothingToDo() SubReconcilerResult {
 	return newSubReconcilerResult(nothingToDo, nil)
 }
 
-// A requeue is needed
-func NeedRequeue(err error) SubReconcilerResult {
-	return newSubReconcilerResult(requeue, err)
-}
-
 // A delayed requeue is needed
 func NeedDelayedRequeue() SubReconcilerResult {
 	return newSubReconcilerResult(delayRequeue, nil)
+}
+
+// A requeue is needed
+func NeedRequeue(err error) SubReconcilerResult {
+	return newSubReconcilerResult(requeue, err)
 }
 
 // End the reconciliation
@@ -73,13 +86,18 @@ func (r SubReconcilerResult) ShouldReturn() bool {
 	return r.status != nothingToDo
 }
 
+// Compare if it's more important result
+func (r SubReconcilerResult) IsSuperior(r2 SubReconcilerResult) bool {
+	return r.status > r2.status
+}
+
 // Get the Return for the main Reconcile function
 func (r SubReconcilerResult) GetResult() (ctrl.Result, error) {
 	switch r.status {
-	case requeue:
-		return Requeue(r.err)
 	case delayRequeue:
 		return DelayedRequeue()
+	case requeue:
+		return Requeue(r.err)
 	case endReconcile:
 		return EndReconciliation()
 	default:
