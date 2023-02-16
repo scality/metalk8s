@@ -1,6 +1,8 @@
 package v1alpha1
 
 import (
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -10,7 +12,7 @@ import (
 var _ = Describe("Conditions manager", func() {
 	Describe("GetSetCondition", func() {
 		It("can add a new condition", func() {
-			now := metav1.Now()
+			now := metav1.Now().Add(-time.Millisecond)
 			conditions := []Condition{{}}
 
 			setCondition(12, &conditions, "MyCondition", metav1.ConditionTrue, "Foo", "Bar")
@@ -19,18 +21,18 @@ var _ = Describe("Conditions manager", func() {
 			Expect(c.Type).To(Equal("MyCondition"))
 			Expect(c.Status).To(Equal(metav1.ConditionTrue))
 			Expect(c.ObservedGeneration).To(BeEquivalentTo(12))
-			Expect(c.LastTransitionTime.Time).To(BeTemporally(">", now.Time))
+			Expect(c.LastTransitionTime.Time).To(BeTemporally(">", now))
 			Expect(c.Reason).To(Equal("Foo"))
 			Expect(c.Message).To(Equal("Bar"))
 		})
 
 		It("can update an existing condition", func() {
-			now := metav1.Now()
+			now := metav1.Now().Add(-time.Millisecond)
 			conditions := []Condition{{
 				Type:               "MyCondition",
 				Status:             metav1.ConditionTrue,
 				ObservedGeneration: 12,
-				LastTransitionTime: now,
+				LastTransitionTime: metav1.NewTime(now),
 				Reason:             "Foo",
 				Message:            "Bar",
 			}}
@@ -41,7 +43,7 @@ var _ = Describe("Conditions manager", func() {
 			Expect(c.Type).To(Equal("MyCondition"))
 			Expect(c.Status).To(Equal(metav1.ConditionFalse))
 			Expect(c.ObservedGeneration).To(BeEquivalentTo(15))
-			Expect(c.LastTransitionTime.Time).To(BeTemporally(">", now.Time))
+			Expect(c.LastTransitionTime.Time).To(BeTemporally(">", now))
 			Expect(c.Reason).To(Equal("Abc"))
 			Expect(c.Message).To(Equal("Def"))
 		})

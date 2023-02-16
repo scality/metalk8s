@@ -1,6 +1,8 @@
 package v1alpha1
 
 import (
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -41,7 +43,7 @@ var _ = Describe("VirtualIPPool", func() {
 
 	Describe("GetSetCondition", func() {
 		It("can add and get a condition", func() {
-			now := metav1.Now()
+			now := metav1.Now().Add(-time.Millisecond)
 			v := VirtualIPPool{
 				ObjectMeta: metav1.ObjectMeta{Generation: 12},
 			}
@@ -52,7 +54,7 @@ var _ = Describe("VirtualIPPool", func() {
 			Expect(c.Type).To(Equal("MyCondition"))
 			Expect(c.Status).To(Equal(metav1.ConditionTrue))
 			Expect(c.ObservedGeneration).To(BeEquivalentTo(12))
-			Expect(c.LastTransitionTime.Time).To(BeTemporally(">", now.Time))
+			Expect(c.LastTransitionTime.Time).To(BeTemporally(">", now))
 			Expect(c.Reason).To(Equal("Foo"))
 			Expect(c.Message).To(Equal("Bar"))
 		})
@@ -60,7 +62,7 @@ var _ = Describe("VirtualIPPool", func() {
 
 	Describe("ConfiguredCondition", func() {
 		It("can set Configured condition", func() {
-			now := metav1.Now()
+			now := metav1.Now().Add(-time.Millisecond)
 			v := VirtualIPPool{
 				ObjectMeta: metav1.ObjectMeta{Generation: 12},
 			}
@@ -71,7 +73,7 @@ var _ = Describe("VirtualIPPool", func() {
 			Expect(c.Type).To(Equal(configuredConditionName))
 			Expect(c.Status).To(Equal(metav1.ConditionTrue))
 			Expect(c.ObservedGeneration).To(BeEquivalentTo(12))
-			Expect(c.LastTransitionTime.Time).To(BeTemporally(">", now.Time))
+			Expect(c.LastTransitionTime.Time).To(BeTemporally(">", now))
 			Expect(c.Reason).To(Equal("Foo"))
 			Expect(c.Message).To(Equal("Bar"))
 		})
@@ -79,7 +81,7 @@ var _ = Describe("VirtualIPPool", func() {
 
 	Describe("AvailableCondition", func() {
 		It("can set Available condition", func() {
-			now := metav1.Now()
+			now := metav1.Now().Add(-time.Millisecond)
 			v := VirtualIPPool{
 				ObjectMeta: metav1.ObjectMeta{Generation: 12},
 			}
@@ -90,7 +92,7 @@ var _ = Describe("VirtualIPPool", func() {
 			Expect(c.Type).To(Equal(availableConditionName))
 			Expect(c.Status).To(Equal(metav1.ConditionTrue))
 			Expect(c.ObservedGeneration).To(BeEquivalentTo(12))
-			Expect(c.LastTransitionTime.Time).To(BeTemporally(">", now.Time))
+			Expect(c.LastTransitionTime.Time).To(BeTemporally(">", now))
 			Expect(c.Reason).To(Equal("Foo"))
 			Expect(c.Message).To(Equal("Bar"))
 		})
@@ -98,7 +100,7 @@ var _ = Describe("VirtualIPPool", func() {
 
 	Describe("ReadyCondition", func() {
 		It("can set and get Ready condition", func() {
-			now := metav1.Now()
+			now := metav1.Now().Add(-time.Millisecond)
 			v := VirtualIPPool{
 				ObjectMeta: metav1.ObjectMeta{Generation: 12},
 			}
@@ -109,7 +111,7 @@ var _ = Describe("VirtualIPPool", func() {
 			Expect(c.Type).To(Equal(readyConditionName))
 			Expect(c.Status).To(Equal(metav1.ConditionTrue))
 			Expect(c.ObservedGeneration).To(BeEquivalentTo(12))
-			Expect(c.LastTransitionTime.Time).To(BeTemporally(">", now.Time))
+			Expect(c.LastTransitionTime.Time).To(BeTemporally(">", now))
 			Expect(c.Reason).To(Equal("Foo"))
 			Expect(c.Message).To(Equal("Bar"))
 		})
