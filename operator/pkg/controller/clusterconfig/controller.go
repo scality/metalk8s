@@ -16,6 +16,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	metalk8sscalitycomv1alpha1 "github.com/scality/metalk8s/operator/api/v1alpha1"
+	"github.com/scality/metalk8s/operator/pkg/controller/clusterconfig/controlplane"
 	"github.com/scality/metalk8s/operator/pkg/controller/clusterconfig/workloadplane"
 	"github.com/scality/metalk8s/operator/pkg/controller/utils"
 )
@@ -118,6 +119,7 @@ func (r *ClusterConfigReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	defer r.client.Status().Update(ctx, instance)
 
 	subReconcilers := map[string]utils.SubReconciler{
+		"ControlPlaneIngress":        &controlplane.IngressReconciler{},
 		"WorkloadPlaneVirtualIPPool": &workloadplane.VirtualIPPoolReconciler{},
 	}
 

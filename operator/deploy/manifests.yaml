@@ -16,7 +16,12 @@ spec:
     singular: clusterconfig
   scope: Cluster
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: The URL to reach the Control Plane Ingress
+      jsonPath: .status.controlPlane.ingress.endpoint
+      name: Control-Plane-Url
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: ClusterConfig is the Schema for the clusterconfigs API
@@ -32,6 +37,32 @@ spec:
           spec:
             description: ClusterConfigSpec defines the desired state of ClusterConfig
             properties:
+              controlPlane:
+                description: Information about the Control Plane.
+                properties:
+                  ingress:
+                    description: Information about the Control Plane Ingress
+                    properties:
+                      externalIP:
+                        properties:
+                          address:
+                            description: The IP address used to reach the Ingress
+                            format: ipv4
+                            type: string
+                        required:
+                        - address
+                        type: object
+                      managedVirtualIP:
+                        properties:
+                          address:
+                            description: and will be used to reach the Ingress A Virtual IP address that will be managed by the Operator
+                            format: ipv4
+                            type: string
+                        required:
+                        - address
+                        type: object
+                    type: object
+                type: object
               workloadPlane:
                 description: Information about the Workload Plane.
                 properties:
@@ -157,6 +188,21 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              controlPlane:
+                description: Control Plane Information
+                properties:
+                  ingress:
+                    description: Information about the Control Plane Ingress
+                    properties:
+                      endpoint:
+                        description: The full endpoint URL to reach the Ingress
+                        type: string
+                      ip:
+                        description: The IP address where the Ingress is exposed
+                        format: ipv4
+                        type: string
+                    type: object
+                type: object
             type: object
         type: object
     served: true

@@ -25,10 +25,39 @@ import (
 const (
 	wPVIPConfiguredConditionName = "WorkloadPlaneVirtualIPPool" + configuredConditionName
 	wPVIPReadyConditionName      = "WorkloadPlaneVirtualIPPool" + readyConditionName
+
+	cPIngressConfiguredConditionName    = "ControlPlaneIngress" + configuredConditionName
+	cPIngressVIPConfiguredConditionName = "ControlPlaneIngressVirtualIP" + configuredConditionName
+	cPIngressVIPReadyConditionName      = "ControlPlaneIngressVirtualIP" + readyConditionName
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+
+type ManagedVirtualIPSource struct {
+	// and will be used to reach the Ingress
+	// A Virtual IP address that will be managed by the Operator
+	Address IPAddress `json:"address"`
+}
+
+type ExternalIPSource struct {
+	// The IP address used to reach the Ingress
+	Address IPAddress `json:"address"`
+}
+
+type ControlPlaneIngressSource struct {
+	ManagedVirtualIP *ManagedVirtualIPSource `json:"managedVirtualIP,omitempty"`
+	ExternalIP       *ExternalIPSource       `json:"externalIP,omitempty"`
+}
+
+type ControlPlaneIngressSpec struct {
+	ControlPlaneIngressSource `json:",inline"`
+}
+
+type ControlPlaneSpec struct {
+	// Information about the Control Plane Ingress
+	Ingress ControlPlaneIngressSpec `json:"ingress,omitempty"`
+}
 
 type WorkloadPlaneSpec struct {
 	// Information about Virtual IP Pools
@@ -41,9 +70,25 @@ type ClusterConfigSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
+	// Information about the Control Plane.
+	// +optional
+	ControlPlane ControlPlaneSpec `json:"controlPlane,omitempty"`
+
 	// Information about the Workload Plane.
 	// +optional
 	WorkloadPlane WorkloadPlaneSpec `json:"workloadPlane,omitempty"`
+}
+
+type ControlPlaneIngressStatus struct {
+	// The IP address where the Ingress is exposed
+	IP IPAddress `json:"ip,omitempty"`
+	// The full endpoint URL to reach the Ingress
+	Endpoint string `json:"endpoint,omitempty"`
+}
+
+type ControlPlaneStatus struct {
+	// Information about the Control Plane Ingress
+	Ingress ControlPlaneIngressStatus `json:"ingress,omitempty"`
 }
 
 // ClusterConfigStatus defines the observed state of ClusterConfig
@@ -57,11 +102,15 @@ type ClusterConfigStatus struct {
 	// +listType=map
 	// +listMapKey=type
 	Conditions []Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,1,rep,name=conditions"`
+
+	// Control Plane Information
+	ControlPlane ControlPlaneStatus `json:"controlPlane,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:scope=Cluster,shortName=cc
+//+kubebuilder:printcolumn:name="Control-Plane-Url",type="string",JSONPath=".status.controlPlane.ingress.endpoint",description="The URL to reach the Control Plane Ingress"
 
 // ClusterConfig is the Schema for the clusterconfigs API
 type ClusterConfig struct {
@@ -105,6 +154,21 @@ func (v *ClusterConfig) SetWPVIPConfiguredCondition(status metav1.ConditionStatu
 // Set WorkloadPlaneVirtualIPPool Ready Condition
 func (v *ClusterConfig) SetWPVIPReadyCondition(status metav1.ConditionStatus, reason string, message string) {
 	v.SetCondition(wPVIPReadyConditionName, status, reason, message)
+}
+
+// Set ControlPlaneIngressConfigured Condition
+func (v *ClusterConfig) SetCPIngressConfiguredCondition(status metav1.ConditionStatus, reason string, message string) {
+	v.SetCondition(cPIngressConfiguredConditionName, status, reason, message)
+}
+
+// Set ControlPlaneIngressVirtualIP Configured Condition
+func (v *ClusterConfig) SetCPIngressVIPConfiguredCondition(status metav1.ConditionStatus, reason string, message string) {
+	v.SetCondition(cPIngressVIPConfiguredConditionName, status, reason, message)
+}
+
+// Set ControlPlaneIngressVirtualIP Ready Condition
+func (v *ClusterConfig) SetCPIngressVIPReadyCondition(status metav1.ConditionStatus, reason string, message string) {
+	v.SetCondition(cPIngressVIPReadyConditionName, status, reason, message)
 }
 
 //+kubebuilder:object:root=true

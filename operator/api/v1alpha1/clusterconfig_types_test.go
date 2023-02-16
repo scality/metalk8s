@@ -127,4 +127,61 @@ var _ = Describe("ClusterConfig", func() {
 			Expect(cond.Message).To(Equal("Bar"))
 		})
 	})
+
+	Describe("CPIngressConfiguredCondition", func() {
+		It("can set Configured condition", func() {
+			now := metav1.Now().Add(-time.Millisecond)
+			c := ClusterConfig{
+				ObjectMeta: metav1.ObjectMeta{Generation: 12},
+			}
+
+			c.SetCPIngressConfiguredCondition(metav1.ConditionTrue, "Foo", "Bar")
+
+			cond := c.GetCondition(cPIngressConfiguredConditionName)
+			Expect(cond.Type).To(Equal(cPIngressConfiguredConditionName))
+			Expect(cond.Status).To(Equal(metav1.ConditionTrue))
+			Expect(cond.ObservedGeneration).To(BeEquivalentTo(12))
+			Expect(cond.LastTransitionTime.Time).To(BeTemporally(">", now))
+			Expect(cond.Reason).To(Equal("Foo"))
+			Expect(cond.Message).To(Equal("Bar"))
+		})
+	})
+
+	Describe("CPIngressVIPConfiguredCondition", func() {
+		It("can set VIP Configured condition", func() {
+			now := metav1.Now().Add(-time.Millisecond)
+			c := ClusterConfig{
+				ObjectMeta: metav1.ObjectMeta{Generation: 12},
+			}
+
+			c.SetCPIngressVIPConfiguredCondition(metav1.ConditionTrue, "Foo", "Bar")
+
+			cond := c.GetCondition(cPIngressVIPConfiguredConditionName)
+			Expect(cond.Type).To(Equal(cPIngressVIPConfiguredConditionName))
+			Expect(cond.Status).To(Equal(metav1.ConditionTrue))
+			Expect(cond.ObservedGeneration).To(BeEquivalentTo(12))
+			Expect(cond.LastTransitionTime.Time).To(BeTemporally(">", now))
+			Expect(cond.Reason).To(Equal("Foo"))
+			Expect(cond.Message).To(Equal("Bar"))
+		})
+	})
+
+	Describe("CPIngressVIPReadyCondition", func() {
+		It("can set VIP Ready condition", func() {
+			now := metav1.Now().Add(-time.Millisecond)
+			c := ClusterConfig{
+				ObjectMeta: metav1.ObjectMeta{Generation: 12},
+			}
+
+			c.SetCPIngressVIPReadyCondition(metav1.ConditionTrue, "Foo", "Bar")
+
+			cond := c.GetCondition(cPIngressVIPReadyConditionName)
+			Expect(cond.Type).To(Equal(cPIngressVIPReadyConditionName))
+			Expect(cond.Status).To(Equal(metav1.ConditionTrue))
+			Expect(cond.ObservedGeneration).To(BeEquivalentTo(12))
+			Expect(cond.LastTransitionTime.Time).To(BeTemporally(">", now))
+			Expect(cond.Reason).To(Equal("Foo"))
+			Expect(cond.Message).To(Equal("Bar"))
+		})
+	})
 })
