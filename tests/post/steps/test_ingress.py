@@ -12,6 +12,9 @@ import testinfra
 from tests import utils
 
 
+MAIN_CC_NAME = "main"
+
+
 @scenario("../features/ingress.feature", "Access HTTP services")
 def test_access_http_services(host):
     pass
@@ -197,16 +200,14 @@ def disable_metallb(host, context, ssh_config, version):
 
 @given(
     parsers.parse(
-        "'{ips}' Workload Plane VIPs are configured in the '{cc_name}' ClusterConfig '{pool_name}' pool"
+        "'{ips}' Workload Plane VIPs are configured in the ClusterConfig '{pool_name}' pool"
     )
 )
 def wp_ingress_vip_setup(
-    host, context, ssh_config, version, k8s_client, cc_name, pool_name, ips
+    host, context, ssh_config, version, k8s_client, pool_name, ips
 ):
-    update_cc_pool(
-        host, context, ssh_config, version, k8s_client, cc_name, pool_name, ips
-    )
-    wait_cc_status(k8s_client, cc_name, "Ready")
+    update_cc_pool(host, context, ssh_config, version, k8s_client, pool_name, ips)
+    wait_cc_status(k8s_client, "Ready")
     rollout_restart(host, "daemonset/ingress-nginx-controller", "metalk8s-ingress")
 
 
@@ -413,23 +414,21 @@ def rollout_restart(host, resource, namespace):
 
 @when(
     parsers.parse(
-        "we update the '{cc_name}' ClusterConfig to add '{pool_name}' Workload Plane pool with IPs '{ips}'"
+        "we update the ClusterConfig to add '{pool_name}' Workload Plane pool with IPs '{ips}'"
     )
 )
-def update_cc_pool(
-    host, context, ssh_config, version, k8s_client, cc_name, pool_name, ips
-):
+def update_cc_pool(host, context, ssh_config, version, k8s_client, pool_name, ips):
     ips = ips.format(**context).split(",")
     client = k8s_client.resources.get(
         api_version="metalk8s.scality.com/v1alpha1", kind="ClusterConfig"
     )
 
     if not context.get("cluster_config_to_restore"):
-        context["cluster_config_to_restore"] = client.get(name=cc_name)
+        context["cluster_config_to_restore"] = client.get(name=MAIN_CC_NAME)
 
     # Patch the ClusterConfig object
     client.patch(
-        name=cc_name,
+        name=MAIN_CC_NAME,
         body={
             "spec": {
                 "workloadPlane": {
@@ -461,14 +460,14 @@ def update_cc_pool(
     re_configure_portmap(host, version, ssh_config, context=context)
 
 
-@when(parsers.parse("we wait for the '{cc_name}' ClusterConfig to be '{status}'"))
-def wait_cc_status(k8s_client, cc_name, status):
+@when(parsers.parse("we wait for the ClusterConfig to be '{status}'"))
+def wait_cc_status(k8s_client, status):
     client = k8s_client.resources.get(
         api_version="metalk8s.scality.com/v1alpha1", kind="ClusterConfig"
     )
 
     def _wait_for_status():
-        obj = client.get(name=cc_name)
+        obj = client.get(name=MAIN_CC_NAME)
 
         for cond in obj.status.conditions or []:
             if cond.type == status:
@@ -477,14 +476,14 @@ def wait_cc_status(k8s_client, cc_name, status):
                 return
 
         raise AssertionError(
-            f"ClusterConfig '{cc_name}' has no condition '{status}' yet"
+            f"ClusterConfig '{MAIN_CC_NAME}' has no condition '{status}' yet"
         )
 
     utils.retry(
         _wait_for_status,
         times=24,
         wait=5,
-        name=f"waiting for ClusterConfig '{cc_name}' to be '{status}'",
+        name=f"waiting for ClusterConfig '{MAIN_CC_NAME}' to be '{status}'",
     )
 
 
