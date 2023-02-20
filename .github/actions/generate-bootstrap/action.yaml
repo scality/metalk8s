@@ -50,12 +50,6 @@ runs:
           networks:
             controlPlane:
               cidr: 192.168.1.0/24
-              metalLB:
-                enabled: true
-              ingress:
-                controller:
-                  affinity: ${{ env.AFFINITY }}
-                ip: 192.168.1.254
             workloadPlane:
               cidr: 192.168.2.0/24
           ca:

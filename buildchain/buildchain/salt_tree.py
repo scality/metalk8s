@@ -352,14 +352,15 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     targets.TemplateFile(
         task_name="metalk8s-operator.sls",
         source=constants.ROOT.joinpath(
-            "salt/metalk8s/addons/metalk8s-operator/deployed.sls.in"
+            "salt/metalk8s/addons/metalk8s-operator/deployed/manifests.sls.in"
         ),
         destination=constants.ISO_ROOT.joinpath(
-            "salt/metalk8s/addons/metalk8s-operator/deployed.sls"
+            "salt/metalk8s/addons/metalk8s-operator/deployed/manifests.sls"
         ),
         context={"Manifests": METALK8S_OPERATOR_MANIFESTS.read_text(encoding="utf-8")},
         file_dep=[METALK8S_OPERATOR_MANIFESTS],
     ),
+    Path("salt/metalk8s/addons/metalk8s-operator/deployed/init.sls"),
     Path("salt/metalk8s/addons/prometheus-adapter/deployed/chart.sls"),
     Path("salt/metalk8s/addons/prometheus-adapter/deployed/init.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/macros.j2"),

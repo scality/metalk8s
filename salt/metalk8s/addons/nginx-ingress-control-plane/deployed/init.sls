@@ -1,22 +1,19 @@
 include:
   - metalk8s.addons.nginx-ingress.deployed.namespace
   - .tls-secret
-{#- We use DaemonSet if MetalLB disabled, otherwise we use Deployment #}
-{%- if not pillar.networks.control_plane.metalLB.enabled %}
   - .chart-daemonset
-{%- else %}
-  - .chart-deployment
-  - metalk8s.addons.metallb.deployed
-{%- endif %}
 
-{%- if not pillar.networks.control_plane.metalLB.enabled %}
-
+{#- Make sure to remove old MetalLB related objects #}
+{#- This logic can be removed in `development/126.0` #}
 Ensure Nginx Ingress Control Plane Deployment does not exist:
   metalk8s_kubernetes.object_absent:
     - apiVersion: apps/v1
     - kind: Deployment
     - name: ingress-nginx-control-plane-controller
     - namespace: metalk8s-ingress
+    - wait:
+        attempts: 30
+        sleep: 10
     - require:
       - sls: metalk8s.addons.nginx-ingress.deployed.namespace
       - sls: metalk8s.addons.nginx-ingress-control-plane.deployed.chart-daemonset
@@ -27,6 +24,9 @@ Ensure Nginx Ingress Control Plane defaultbackend Deployment does not exist:
     - kind: Deployment
     - name: ingress-nginx-control-plane-defaultbackend
     - namespace: metalk8s-ingress
+    - wait:
+        attempts: 30
+        sleep: 10
     - require:
       - sls: metalk8s.addons.nginx-ingress.deployed.namespace
       - sls: metalk8s.addons.nginx-ingress-control-plane.deployed.chart-daemonset
@@ -37,6 +37,9 @@ Ensure Nginx Ingress Control Plane defaultbackend Service does not exist:
     - kind: Service
     - name: ingress-nginx-control-plane-defaultbackend
     - namespace: metalk8s-ingress
+    - wait:
+        attempts: 30
+        sleep: 10
     - require:
       - sls: metalk8s.addons.nginx-ingress.deployed.namespace
       - sls: metalk8s.addons.nginx-ingress-control-plane.deployed.chart-daemonset
@@ -47,20 +50,21 @@ Ensure Nginx Ingress Control Plane defaultbackend ServiceAccount does not exist:
     - kind: ServiceAccount
     - name: ingress-nginx-control-plane-defaultbackend
     - namespace: metalk8s-ingress
+    - wait:
+        attempts: 30
+        sleep: 10
     - require:
       - sls: metalk8s.addons.nginx-ingress.deployed.namespace
       - sls: metalk8s.addons.nginx-ingress-control-plane.deployed.chart-daemonset
 
-{%- else %}
-
-Ensure Nginx Ingress Control Plane DaemonSet does not exist:
+Ensure MetalLB Namespace does not exist:
   metalk8s_kubernetes.object_absent:
-    - apiVersion: apps/v1
-    - kind: DaemonSet
-    - name: ingress-nginx-control-plane-controller
-    - namespace: metalk8s-ingress
+    - apiVersion: v1
+    - kind: Namespace
+    - name: metalk8s-loadbalancing
+    - wait:
+        attempts: 30
+        sleep: 10
     - require:
       - sls: metalk8s.addons.nginx-ingress.deployed.namespace
-      - sls: metalk8s.addons.nginx-ingress-control-plane.deployed.chart-deployment
-
-{%- endif %}
+      - sls: metalk8s.addons.nginx-ingress-control-plane.deployed.chart-daemonset

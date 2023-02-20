@@ -72,9 +72,7 @@ def test_failover_wp_ingress_vips(host, teardown):
     pass
 
 
-@scenario(
-    "../features/ingress.feature", "Failover of Control Plane Ingress VIP using MetalLB"
-)
+@scenario("../features/ingress.feature", "Failover of Control Plane Ingress VIP")
 def test_failover_cp_ingress_vip(host, teardown):
     pass
 
@@ -84,15 +82,10 @@ def test_change_cp_ingress_ip(host, teardown):
     pass
 
 
-@scenario("../features/ingress.feature", "Enable MetalLB")
-def test_change_cp_ingress_mode(host, teardown):
-    pass
-
-
 @scenario(
-    "../features/ingress.feature", "Control Plane Ingress Controller pods spreading"
+    "../features/ingress.feature", "Change Control Plane IP to a managed Virtual IP"
 )
-def test_cp_ingress_controller_pod_spreading(host):
+def test_change_cp_ingress_mode_managed_vip(host, teardown):
     pass
 
 
@@ -110,11 +103,6 @@ def teardown(context, host, ssh_config, version, k8s_client):
         ).delete(
             name=context["ingress_to_delete"]["name"],
             namespace=context["ingress_to_delete"]["namespace"],
-        )
-
-    if "node_to_uncordon" in context:
-        k8s_client.resources.get(api_version="v1", kind="Node").patch(
-            name=context["node_to_uncordon"], body={"spec": {"unschedulable": False}}
         )
 
     if "node_to_untaint" in context:
@@ -143,6 +131,7 @@ def teardown(context, host, ssh_config, version, k8s_client):
         cc_content["metadata"]["resourceVersion"] = tmp_obj.metadata.resourceVersion
 
         client.replace(body=cc_content)
+        wait_cc_status(k8s_client, "Ready")
 
     if context.get("reconfigure_cp_ingress"):
         re_configure_cp_ingress(host, version, ssh_config)
@@ -177,24 +166,43 @@ def we_have_a_vip_list(context):
     context["wp_ingress_second_pool"] = ",".join(ips[2:])
 
 
-@given("MetalLB is already enabled")
-def metallb_enabled(host):
-    metallb_enabled = utils.get_pillar(host, "networks:control_plane:metalLB:enabled")
+@given("a Virtual IP is already configured for the Control Plane Ingress")
+def cp_ingress_managed_vip_enabled(k8s_client):
+    obj = k8s_client.resources.get(
+        api_version="metalk8s.scality.com/v1alpha1", kind="ClusterConfig"
+    ).get(name=MAIN_CC_NAME)
 
-    if not metallb_enabled:
-        pytest.skip("MetalLB is not enabled")
+    try:
+        managedVIP = obj.spec.controlPlane.ingress.managedVirtualIP
+    except AttributeError:
+        managedVIP = None
+
+    if not managedVIP:
+        pytest.skip("Control Plane Ingress managed Virtual IP is not enabled")
 
 
-@given("MetalLB is disabled")
-def disable_metallb(host, context, ssh_config, version):
-    metallb_enabled = utils.get_pillar(host, "networks:control_plane:metalLB:enabled")
+@given("the Control Plane Ingress is not exposed on a VIP")
+def disable_cp_ingress_managed_vip(k8s_client, host, context, ssh_config, version):
+    client = k8s_client.resources.get(
+        api_version="metalk8s.scality.com/v1alpha1", kind="ClusterConfig"
+    )
+    obj = client.get(name=MAIN_CC_NAME)
 
-    if metallb_enabled:
-        bootstrap_patch = {
-            "networks": {"controlPlane": {"metalLB": {"enabled": False}, "ingress": {}}}
-        }
+    try:
+        managedVIP = obj.spec.controlPlane.ingress.managedVirtualIP
+    except AttributeError:
+        managedVIP = None
 
-        utils.patch_bootstrap_config(context, host, bootstrap_patch)
+    if managedVIP:
+        if not context.get("cluster_config_to_restore"):
+            context["cluster_config_to_restore"] = obj
+
+        cc_content = obj.to_dict()
+        cc_content["spec"]["controlPlane"]["ingress"].pop("managedVirtualIP")
+
+        client.replace(body=cc_content)
+        wait_cc_status(k8s_client, "Ready")
+
         re_configure_cp_ingress(host, version, ssh_config, context=context)
 
 
@@ -298,26 +306,47 @@ def create_ingress(
 
 
 @when("we stop the node hosting the Control Plane Ingress VIP")
-def stop_cp_ingress_vip_node(context, k8s_client):
-    node_name = get_node_hosting_cp_ingress_vip(k8s_client)
+def stop_cp_ingress_vip_node(
+    host, ssh_config, context, k8s_client, control_plane_ingress_ip
+):
+    node_name = get_node_hosting_cp_ingress_vip(
+        host, ssh_config, control_plane_ingress_ip
+    )
 
     context["cp_ingress_vip_node"] = node_name
-    context["node_to_uncordon"] = node_name
+    context["node_to_untaint"] = node_name
 
-    # Cordon node
-    k8s_client.resources.get(api_version="v1", kind="Node").patch(
-        name=node_name, body={"spec": {"unschedulable": True}}
-    )
+    # Add a custom taint to ensure the Control Plane Ingress pod do not
+    # get reschedule
+    with host.sudo():
+        host.check_output(
+            "kubectl --kubeconfig=/etc/kubernetes/admin.conf taint nodes "
+            f"{node_name} test-taint-no-ingress:NoSchedule"
+        )
 
-    pod_k8s_client = k8s_client.resources.get(api_version="v1", kind="Pod")
-    # Delete Control Plane Ingress Controller from node
-    cp_ingress_pods = pod_k8s_client.get(
+    client = k8s_client.resources.get(api_version="v1", kind="Pod")
+    # Delete Control Plane Ingress VIP manager from node
+    cp_ingress_pods = client.get(
         namespace="metalk8s-ingress",
-        label_selector="app.kubernetes.io/instance=ingress-nginx-control-plane",
-        field_selector="spec.nodeName={}".format(node_name),
+        label_selector="app.kubernetes.io/instance=ingress-control-plane-managed-vip",
+        field_selector=f"spec.nodeName={node_name}",
     )
     for pod in cp_ingress_pods.items:
-        pod_k8s_client.delete(name=pod.metadata.name, namespace=pod.metadata.namespace)
+        client.delete(name=pod.metadata.name, namespace=pod.metadata.namespace)
+
+    def _wait_for_deletion():
+        assert not client.get(
+            namespace="metalk8s-ingress",
+            label_selector="app.kubernetes.io/instance=ingress-control-plane-managed-vip",
+            field_selector=f"spec.nodeName={node_name}",
+        ).items
+
+    utils.retry(
+        _wait_for_deletion,
+        times=24,
+        wait=5,
+        name=f"waiting for Control Plane Ingress VIP manager pod from '{node_name}' to be deleted",
+    )
 
 
 @when(parsers.parse("we stop the node '{node_name}' Workload Plane Ingress"))
@@ -357,28 +386,66 @@ def stop_wp_ingress_node(host, context, k8s_client, node_name):
     )
 
 
-@when(parsers.parse("we set control plane ingress IP to node '{node_name}' IP"))
-def update_cp_ingress_ip(host, context, ssh_config, version, node_name):
+@when(
+    parsers.parse(
+        "we update the ClusterConfig to set the Control Plane Ingress IP to node '{node_name}' IP"
+    )
+)
+def change_cp_ingress_node_ip(
+    host, context, ssh_config, version, k8s_client, node_name
+):
     node = testinfra.get_host(node_name, ssh_config=ssh_config)
     ip = utils.get_grain(node, "metalk8s:control_plane_ip")
 
-    bootstrap_patch = {"networks": {"controlPlane": {"ingress": {"ip": ip}}}}
+    client = k8s_client.resources.get(
+        api_version="metalk8s.scality.com/v1alpha1", kind="ClusterConfig"
+    )
 
-    utils.patch_bootstrap_config(context, host, bootstrap_patch)
+    obj = client.get(name=MAIN_CC_NAME)
+
+    if not context.get("cluster_config_to_restore"):
+        context["cluster_config_to_restore"] = obj
+
+    # Patch the ClusterConfig object
+    cc_content = obj.to_dict()
+    cc_content["spec"]["controlPlane"]["ingress"] = {
+        "externalIP": {
+            "address": ip,
+        }
+    }
+    client.replace(body=cc_content)
+    wait_cc_status(k8s_client, "Ready")
+
     re_configure_cp_ingress(host, version, ssh_config, context=context)
 
 
-@when(parsers.parse("we enable MetalLB and set control plane ingress IP to '{ip}'"))
-def update_control_plane_ingress_ip(host, context, ssh_config, version, ip):
-    ip = ip.format(**context)
+@when(
+    parsers.parse(
+        "we update the ClusterConfig to set the Control Plane Ingress IP to '{vip}' managed VIP"
+    )
+)
+def change_cp_ingress_managed_vip(host, context, ssh_config, version, k8s_client, vip):
+    vip = vip.format(**context)
 
-    bootstrap_patch = {
-        "networks": {
-            "controlPlane": {"metalLB": {"enabled": True}, "ingress": {"ip": ip}}
+    client = k8s_client.resources.get(
+        api_version="metalk8s.scality.com/v1alpha1", kind="ClusterConfig"
+    )
+
+    obj = client.get(name=MAIN_CC_NAME)
+
+    if not context.get("cluster_config_to_restore"):
+        context["cluster_config_to_restore"] = obj
+
+    # Patch the ClusterConfig object
+    cc_content = obj.to_dict()
+    cc_content["spec"]["controlPlane"]["ingress"] = {
+        "managedVirtualIP": {
+            "address": vip,
         }
     }
+    client.replace(body=cc_content)
+    wait_cc_status(k8s_client, "Ready")
 
-    utils.patch_bootstrap_config(context, host, bootstrap_patch)
     re_configure_cp_ingress(host, version, ssh_config, context=context)
 
 
@@ -467,7 +534,12 @@ def wait_cc_status(k8s_client, status):
     )
 
     def _wait_for_status():
-        obj = client.get(name=MAIN_CC_NAME)
+        try:
+            obj = client.get(name=MAIN_CC_NAME)
+        except Exception as exc:
+            raise AssertionError(
+                f"Unable to retrieve ClusterConfig '{MAIN_CC_NAME}'"
+            ) from exc
 
         for cond in obj.status.conditions or []:
             if cond.type == status:
@@ -633,9 +705,11 @@ def check_ip_not_available(host, ssh_config, context, ips):
 
 
 @then("the node hosting the Control Plane Ingress VIP changed")
-def check_node_hosting_vip_changed(context, k8s_client):
+def check_node_hosting_vip_changed(context, host, ssh_config, control_plane_ingress_ip):
     def _check_node_hosting():
-        new_node = get_node_hosting_cp_ingress_vip(k8s_client)
+        new_node = get_node_hosting_cp_ingress_vip(
+            host, ssh_config, control_plane_ingress_ip
+        )
         assert new_node != context["cp_ingress_vip_node"]
 
     utils.retry(_check_node_hosting, times=10, wait=3)
@@ -655,35 +729,17 @@ def check_cp_ingress_ip(context, control_plane_ingress_ip, ip):
     assert control_plane_ingress_ip == ip
 
 
-def get_node_hosting_cp_ingress_vip(k8s_client):
-    # To get the node where sit the VIP we need to look at event on the Service
-    field_selectors = [
-        "reason=nodeAssigned",
-        "involvedObject.kind=Service",
-        "involvedObject.name=ingress-nginx-control-plane-controller",
-    ]
-    events = k8s_client.resources.get(api_version="v1", kind="Event").get(
-        namespace="metalk8s-ingress",
-        field_selector=",".join(field_selectors),
-    )
+def get_node_hosting_cp_ingress_vip(host, ssh_config, vip):
+    node_ips = get_node_ips(host, ssh_config)
 
-    assert events.items, "Unable to get event for Control Plane Ingress Service"
-
-    match = None
-    for event in sorted(
-        events.items, key=lambda event: event.lastTimestamp, reverse=True
-    ):
-        match = re.search(r'announcing from node "(?P<node>.+)"', event.message)
-        if match is not None:
-            break
-
-    assert match, "Unable to get the node hosting the Control Plane Ingress VIP"
-
-    return match.group("node")
+    return next(name for name, ip_list in node_ips.items() if vip in ip_list)
 
 
 def re_configure_cp_ingress(host, version, ssh_config, context=None):
     with host.sudo():
+        host.check_output(
+            "salt-call --retcode-passthrough saltutil.refresh_pillar wait=True"
+        )
         host.check_output(
             "salt-call --retcode-passthrough state.sls "
             "metalk8s.kubernetes.apiserver saltenv=metalk8s-{}".format(version)
@@ -730,13 +786,8 @@ def check_vips_spreading(host, ssh_config, context, ips):
     ips = ips.format(**context).split(",")
 
     def _check_spreading():
-        node_ips = json.loads(
-            utils.run_salt_command(
-                host,
-                ["salt", "--static", "--out=json", "'*'", "network.ip_addrs"],
-                ssh_config,
-            ).stdout
-        )
+        node_ips = get_node_ips(host, ssh_config)
+
         node_vip_count = {name: 0 for name in node_ips}
 
         for ip in ips:
@@ -753,4 +804,14 @@ def check_vips_spreading(host, ssh_config, context, ips):
 
     utils.retry(
         _check_spreading, times=5, wait=5, name="check WP VIPs are equally spread"
+    )
+
+
+def get_node_ips(host, ssh_config):
+    return json.loads(
+        utils.run_salt_command(
+            host,
+            ["salt", "--static", "--out=json", "'*'", "network.ip_addrs"],
+            ssh_config,
+        ).stdout
     )

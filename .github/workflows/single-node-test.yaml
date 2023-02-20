@@ -84,6 +84,14 @@ jobs:
         uses: actions/checkout@v3
       - name: Install deps
         run: sudo yum install -y isomd5sum
+      - name: Retrieve product.txt from artifacts
+        run: >
+          curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
+          ${{ inputs.artifacts-url }}/product.txt
+      - name: Get full MetalK8s version
+        run: |
+          source product.txt
+          echo "METALK8S_VERSION=$VERSION" >> $GITHUB_ENV
 
      ## Spawn {{{
       - name: Export environment variables for accessing the cloud
@@ -137,6 +145,10 @@ jobs:
         uses: ./.github/actions/mount-iso
       - name: Run Bootstrap
         uses: ./.github/actions/run-bootstrap
+      - name: Enable managed VIP for Control Plane Ingress
+        uses: ./.github/actions/enable-cp-ingress-managed-vip
+        with:
+          metalk8s-version: ${{ env.METALK8S_VERSION }}
       - name: Provision volumes
         uses: ./.github/actions/provision-volumes
       - name: Untaint bootstrap node
@@ -229,16 +241,6 @@ jobs:
       ## }}
 
       # Generate snapshots (if enabled) {{{
-      - name: Retrieve product.txt from artifacts
-        if: inputs.generate-snapshots
-        run: >
-          curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
-          ${{ inputs.artifacts-url }}/product.txt
-      - name: Get full MetalK8s version
-        if: inputs.generate-snapshots
-        run: |
-          source product.txt
-          echo "METALK8S_VERSION=$VERSION" >> $GITHUB_ENV
       - name: Generate snapshot
         if: inputs.generate-snapshots
         uses: ./.github/actions/generate-snapshots

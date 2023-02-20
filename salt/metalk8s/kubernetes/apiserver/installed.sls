@@ -37,7 +37,7 @@ include:
 {%- set oidc_config = {} %}
 {%- if pillar.kubernetes.get("apiServer", {}).get("oidc") %}
   {%- do oidc_config.update(pillar.kubernetes.apiServer.oidc) %}
-{%- elif pillar.addons.dex.enabled %}
+{%- elif pillar.addons.dex.enabled and salt.metalk8s_network.get_control_plane_ingress_endpoint() %}
   {%- do oidc_config.update({
     "issuerURL": salt.metalk8s_network.get_control_plane_ingress_endpoint() ~ "/oidc",
     "clientID": "oidc-auth-client",

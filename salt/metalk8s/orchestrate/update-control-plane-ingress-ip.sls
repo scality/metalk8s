@@ -6,6 +6,7 @@ Check pillar content on {{ bootstrap_node }}:
     - kwarg:
         keys:
           - metalk8s.endpoints.repositories
+          - metalk8s.cluster_config.status.controlPlane.ingress.ip
         raise_error: False
     - retry:
         attempts: 5

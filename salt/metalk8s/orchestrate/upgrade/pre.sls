@@ -4,6 +4,7 @@
 
 include:
   - metalk8s.addons.logging.loki.deployed.pre-upgrade
+  - metalk8s.addons.metalk8s-operator.deployed
 
 {%- set cp_nodes = salt.metalk8s.minions_by_role('master') %}
 {%- if cp_nodes|length == 1 %}

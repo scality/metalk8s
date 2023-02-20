@@ -1,0 +1,42 @@
+name: Enable CP Ingress VIP managed
+description: Enable the Control Plane Ingress managed Virtual IP
+
+inputs:
+  metalk8s-version:
+    description: "The MetalK8s version"
+    required: true
+
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set Control Plane Ingress Managed VIP
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >
+          sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf
+          patch clusterconfig main --type=merge --patch '{
+            \"spec\": {\"controlPlane\": {\"ingress\": {\"managedVirtualIP\": {\"address\": \"192.168.1.254\"}}}}
+          }'
+    - name: Wait for the Control Plane Ingress Managed VIP to be Ready
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >
+          sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf
+          wait --for=condition=Ready ClusterConfig main --timeout=5m
+    - name: "Refresh the pillar"
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >
+          sudo salt-call saltutil.refresh_pillar wait=True
+    - name: Reconfigure Bootstrap APIServer
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >
+          sudo salt-call state.sls metalk8s.kubernetes.apiserver
+    - name: Reconfigure Control Plane components
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: |
+          SALT_MASTER=\$(sudo crictl ps --label="io.kubernetes.container.name=salt-master" -q)
+          sudo crictl exec \$SALT_MASTER salt-run state.sls metalk8s.orchestrate.update-control-plane-ingress-ip saltenv=metalk8s-${{ inputs.metalk8s-version }}

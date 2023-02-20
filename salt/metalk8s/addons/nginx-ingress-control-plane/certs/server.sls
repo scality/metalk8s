@@ -30,8 +30,12 @@ Create Control-Plane Ingress server private key:
     'nginx-ingress-control-plane.metalk8s-ingress',
     'nginx-ingress-control-plane.metalk8s-ingress.svc',
     'nginx-ingress-control-plane.metalk8s-ingress.svc.' ~ coredns.cluster_domain,
-    salt.metalk8s_network.get_control_plane_ingress_ip(),
 ] %}
+
+{%- set cp_ingress_ip = salt.metalk8s_network.get_control_plane_ingress_ip() %}
+{%- if cp_ingress_ip %}
+  {%- do certSANs.append(cp_ingress_ip) %}
+{%- endif %}
 
 Generate Control-Plane Ingress server certificate:
   x509.certificate_managed:

@@ -147,6 +147,16 @@ Update mine from bootstrap minion:
     - salt: Update pillar on bootstrap minion after highstate
     - salt: Configure bootstrap Node object
 
+Deploy core component objects:
+  salt.runner:
+  - name: state.orchestrate
+  - mods:
+    - metalk8s.deployed.core
+  - saltenv: {{ saltenv }}
+  - pillar: {{ pillar_data | tojson }}
+  - require:
+    - http: Wait for API server to be available
+
 Deploy Kubernetes service config objects:
   salt.runner:
   - name: state.orchestrate
@@ -167,6 +177,7 @@ Deploy Kubernetes objects:
   - require:
     - http: Wait for API server to be available
     - salt: Deploy Kubernetes service config objects
+    - salt: Deploy core component objects
 
 Store MetalK8s version in annotations:
   metalk8s_kubernetes.object_updated:
@@ -179,3 +190,12 @@ Store MetalK8s version in annotations:
             metalk8s.scality.com/cluster-version: "{{ version }}"
     - require:
       - http: Wait for API server to be available
+
+Reconfigure control plane Ingress:
+  salt.runner:
+  - name: state.orchestrate
+  - mods:
+    - metalk8s.orchestrate.update-control-plane-ingress-ip
+  - saltenv: {{ saltenv }}
+  - require:
+    - salt: Deploy Kubernetes objects

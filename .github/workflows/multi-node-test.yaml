@@ -88,6 +88,15 @@ jobs:
         uses: actions/checkout@v3
       - name: Install deps
         run: sudo yum install -y isomd5sum jq
+      - name: Retrieve product.txt from artifacts
+        run: >
+          curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
+          ${{ inputs.artifacts-url }}/product.txt
+      - name: Get full MetalK8s version
+        run: |
+          source product.txt
+          echo "METALK8S_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "METALK8S_SHORT_VERSION=$SHORT_VERSION" >> $GITHUB_ENV
 
      ## Spawn {{{
       - name: Export environment variables for accessing the cloud
@@ -141,6 +150,10 @@ jobs:
         uses: ./.github/actions/prepare-expansion
       - name: Run Bootstrap
         uses: ./.github/actions/run-bootstrap
+      - name: Enable managed VIP for Control Plane Ingress
+        uses: ./.github/actions/enable-cp-ingress-managed-vip
+        with:
+          metalk8s-version: ${{ env.METALK8S_VERSION }}
       - name: Prepare bastion to run tests
         uses: ./.github/actions/prepare-bastion
       - name: Wait for pods to stabilize before expansion
@@ -286,18 +299,6 @@ jobs:
         uses: ./.github/actions/bastion-tests
         with:
           PYTEST_FILTERS: "post and ci and not slow"
-      # }}}
-
-      # Retrieve information {{{
-      - name: Retrieve product.txt from artifacts
-        run: >
-          curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
-          ${{ inputs.artifacts-url }}/product.txt
-      - name: Get full MetalK8s version
-        run: |
-          source product.txt
-          echo "METALK8S_VERSION=$VERSION" >> $GITHUB_ENV
-          echo "METALK8S_SHORT_VERSION=$SHORT_VERSION" >> $GITHUB_ENV
       # }}}
 
       # Run k8s conformance tests (if enabled) {{{

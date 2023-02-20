@@ -690,3 +690,189 @@ get_object_digest:
     path: 'metadata:invalid:path'
     raises: True
     result: 'Unable to find key "metadata:invalid:path" in the object'
+
+check_object_ready:
+  # Simple Pod Ready
+  - obj:
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: my_pod
+        namespace: default
+      status:
+        conditions:
+        - lastProbeTime: null
+          lastTransitionTime: "2023-02-13T10:17:11Z"
+          status: "True"
+          type: Ready
+    result: True
+
+  # Simple Object with ObservedGeneration match
+  - obj:
+      apiVersion: custom/v1
+      kind: Custom
+      metadata:
+        name: my_obj
+        namespace: default
+        generation: 42
+      status:
+        conditions:
+        - lastTransitionTime: "2023-02-13T10:20:32Z"
+          message: Everything good
+          observedGeneration: 42
+          reason: Ready
+          status: "True"
+          type: Ready
+    result: True
+
+  # Simple Deployment Ready
+  - obj:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: my-deploy
+        namespace: default
+        generation: 42
+      spec:
+        replicas: 12
+      status:
+        observedGeneration: 42
+        availableReplicas: 12
+        replicas: 12
+        updatedReplicas: 12
+    result: True
+
+  # Unable to get object
+  - obj: null
+    raises: True
+    result: Unable to find the object
+
+  # Pod not Status
+  - obj:
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: my_pod
+        namespace: default
+    raises: True
+    result: Unable to find the object Ready condition
+
+  # Pod not Ready
+  - obj:
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        name: my_pod
+        namespace: default
+      status:
+        conditions:
+        - lastProbeTime: null
+          lastTransitionTime: "2023-02-13T10:17:11Z"
+          status: "False"
+          type: Ready
+    raises: True
+    result: Object is not yet Ready
+
+  # Deployment not Ready
+  - obj:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: my-deploy
+        namespace: default
+        generation: 42
+      spec:
+        replicas: 12
+      status:
+        observedGeneration: 42
+        availableReplicas: 12
+        replicas: 12
+        updatedReplicas: 11
+    raises: True
+    result: "All the Deployment replicas are not yet Ready"
+  - obj:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: my-deploy
+        namespace: default
+        generation: 42
+      spec:
+        replicas: 12
+      status:
+        observedGeneration: 42
+        availableReplicas: 13
+        replicas: 13
+        updatedReplicas: 12
+    raises: True
+    result: "All the Deployment replicas are not yet Ready"
+  - obj:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: my-deploy
+        namespace: default
+        generation: 42
+      spec:
+        replicas: 12
+      status:
+        observedGeneration: 42
+        availableReplicas: 11
+        replicas: 12
+        updatedReplicas: 12
+    raises: True
+    result: "All the Deployment replicas are not yet Ready"
+
+  # Object with ObservedGeneration no match
+  - obj:
+      apiVersion: custom/v1
+      kind: Custom
+      metadata:
+        name: my_obj
+        namespace: default
+        generation: 43
+      status:
+        conditions:
+        - lastTransitionTime: "2023-02-13T10:20:32Z"
+          message: Everything good
+          observedGeneration: 42
+          reason: Ready
+          status: "True"
+          type: Ready
+    raises: True
+    result: "Object has not been updated yet"
+  - obj:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: my-deploy
+        namespace: default
+        generation: 43
+      spec:
+        replicas: 12
+      status:
+        observedGeneration: 42
+        availableReplicas: 12
+        replicas: 12
+        updatedReplicas: 12
+    raises: True
+    result: "Object has not been updated yet"
+
+  # Object generation not Ready
+  - obj:
+      apiVersion: custom/v1
+      kind: Custom
+      metadata:
+        name: my_obj
+        namespace: default
+        generation: 43
+      status:
+        conditions:
+        - lastTransitionTime: "2023-02-13T10:20:32Z"
+          message: Everything not good
+          observedGeneration: 43
+          reason: Ready
+          status: "False"
+          type: Ready
+    raises: True
+    result: "Object is not yet Ready"

@@ -84,7 +84,7 @@ def _object_manipulation_function(action):
         template="jinja",
         defaults=None,
         saltenv="base",
-        **kwargs
+        **kwargs,
     ):
         if manifest is None:
             if (
@@ -364,7 +364,7 @@ def list_objects(
     all_namespaces=False,
     field_selector=None,
     label_selector=None,
-    **kwargs
+    **kwargs,
 ):
     """
     List all objects of a type using some object description.
@@ -439,3 +439,56 @@ def get_object_digest(path=None, checksum="sha256", *args, **kwargs):
         obj = json.dumps(obj, sort_keys=True)
 
     return __salt__.hashutil.digest(str(obj), checksum=checksum)
+
+
+def check_object_ready(*args, **kwargs):
+    """
+    Check that an Object is Ready, depending on object Kind
+
+    CLI Examples:
+
+    .. code-block:: bash
+
+        salt-call metalk8s_kubernetes.check_object_ready kind="Pod" apiVersion="v1" name="my-pod"
+        salt-call metalk8s_kubernetes.check_object_ready kind="Deployment" apiVersion="apps/v1" name="my-deploy" namespace="kube-system"
+    """
+    obj = get_object(*args, **kwargs)
+
+    if not obj:
+        raise CommandExecutionError("Unable to find the object")
+
+    if (
+        "observedGeneration" in (obj.get("status") or {})
+        and obj["metadata"]["generation"] != obj["status"]["observedGeneration"]
+    ):
+        raise CommandExecutionError("Object has not been updated yet")
+
+    # NOTE: Only have a specific case for Deployment for the moment
+    # but may evolve in the future if we need to check other specific objects
+    if obj["kind"] == "Deployment":
+        if (
+            obj["status"]["updatedReplicas"] != obj["spec"]["replicas"]
+            or obj["status"]["replicas"] != obj["spec"]["replicas"]
+            or obj["status"]["availableReplicas"] != obj["spec"]["replicas"]
+        ):
+            raise CommandExecutionError("All the Deployment replicas are not yet Ready")
+    else:
+        try:
+            condition = next(
+                cond for cond in obj["status"]["conditions"] if cond["type"] == "Ready"
+            )
+        except (KeyError, StopIteration) as exc:
+            raise CommandExecutionError(
+                "Unable to find the object Ready condition"
+            ) from exc
+
+        if (
+            "observedGeneration" in condition
+            and obj["metadata"]["generation"] != condition["observedGeneration"]
+        ):
+            raise CommandExecutionError("Object has not been updated yet")
+
+        if condition["status"] != "True":
+            raise CommandExecutionError("Object is not yet Ready")
+
+    return True

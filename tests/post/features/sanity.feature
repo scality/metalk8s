@@ -52,6 +52,7 @@ Feature: Cluster Sanity Checks
         | kube-system         | calico-node                                  |
         | kube-system         | kube-proxy                                   |
         | metalk8s-ingress    | ingress-nginx-controller                     |
+        | metalk8s-ingress    | ingress-nginx-control-plane-controller       |
         | metalk8s-monitoring | prometheus-operator-prometheus-node-exporter |
         | metalk8s-logging    | fluent-bit                                   |
 
@@ -59,18 +60,6 @@ Feature: Cluster Sanity Checks
     @authentication
     Scenario: Dex has available replicas
         Then the Deployment 'dex' in the 'metalk8s-auth' namespace has all desired replicas available
-
-    # We do a special case for Control Plane Ingress Controller and MetalLB
-    # since those ones are not deployed in every environment
-    Scenario: Control Plane Ingress Controller when MetalLB is disabled
-        Given MetalLB is disabled
-        Then the DaemonSet 'ingress-nginx-control-plane-controller' in the 'metalk8s-ingress' namespace has all desired Pods ready
-
-    Scenario: Control Plane Ingress Controller when MetalLB is enabled
-        Given MetalLB is enabled
-        Then the DaemonSet 'metallb-speaker' in the 'metalk8s-loadbalancing' namespace has all desired Pods ready
-        And the Deployment 'metallb-controller' in the 'metalk8s-loadbalancing' namespace has all desired replicas available
-        And the Deployment 'ingress-nginx-control-plane-controller' in the 'metalk8s-ingress' namespace has all desired replicas available
 
     @volumes_provisioned
     Scenario Outline: StatefulSet has available replicas

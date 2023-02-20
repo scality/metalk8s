@@ -103,10 +103,10 @@ Feature: Ingress
         And an HTTP request on port 80 on '{wp_ingress_vips}' IPs returns 404 'Not Found'
 
     @authentication
-    Scenario: Failover of Control Plane Ingress VIP using MetalLB
+    Scenario: Failover of Control Plane Ingress VIP
         Given the Kubernetes API is available
         And we are on a multi node cluster
-        And MetalLB is already enabled
+        And a Virtual IP is already configured for the Control Plane Ingress
         When we stop the node hosting the Control Plane Ingress VIP
         Then the node hosting the Control Plane Ingress VIP changed
         And we are able to login to Dex as 'admin@metalk8s.invalid' using password 'password'
@@ -115,32 +115,24 @@ Feature: Ingress
     Scenario: Change Control Plane Ingress IP to node-1 IP
         Given the Kubernetes API is available
         And we are on a multi node cluster
-        And MetalLB is disabled
+        And the Control Plane Ingress is not exposed on a VIP
         And pods with label 'app.kubernetes.io/name=ingress-nginx' are 'Ready'
-        When we set control plane ingress IP to node 'node-1' IP
+        When we update the ClusterConfig to set the Control Plane Ingress IP to node 'node-1' IP
+        And we wait for the ClusterConfig to be 'Ready'
         And we wait for the rollout of 'daemonset/ingress-nginx-control-plane-controller' in namespace 'metalk8s-ingress' to complete
         And we wait for the rollout of 'deploy/dex' in namespace 'metalk8s-auth' to complete
         Then the control plane ingress IP is equal to node 'node-1' IP
         And we are able to login to Dex as 'admin@metalk8s.invalid' using password 'password'
 
     @authentication
-    Scenario: Enable MetalLB
+    Scenario: Change Control Plane IP to a managed Virtual IP
         Given the Kubernetes API is available
         And a VIP for Control Plane Ingress is available
-        And MetalLB is disabled
+        And the Control Plane Ingress is not exposed on a VIP
         And pods with label 'app.kubernetes.io/name=ingress-nginx' are 'Ready'
-        When we enable MetalLB and set control plane ingress IP to '{new_cp_ingress_vip}'
-        And we wait for the rollout of 'deploy/metallb-controller' in namespace 'metalk8s-loadbalancing' to complete
-        And we wait for the rollout of 'daemonset/metallb-speaker' in namespace 'metalk8s-loadbalancing' to complete
-        And we wait for the rollout of 'deploy/ingress-nginx-control-plane-controller' in namespace 'metalk8s-ingress' to complete
+        When we update the ClusterConfig to set the Control Plane Ingress IP to '{new_cp_ingress_vip}' managed VIP
+        And we wait for the ClusterConfig to be 'Ready'
+        And we wait for the rollout of 'daemonset/ingress-nginx-control-plane-controller' in namespace 'metalk8s-ingress' to complete
         And we wait for the rollout of 'deploy/dex' in namespace 'metalk8s-auth' to complete
         Then the control plane ingress IP is equal to '{new_cp_ingress_vip}'
         And we are able to login to Dex as 'admin@metalk8s.invalid' using password 'password'
-
-    Scenario: Control Plane Ingress Controller pods spreading
-        Given the Kubernetes API is available
-        And we are on a multi node cluster
-        # Control Plane Ingress Controller is a deployment only when MetalLB is enabled
-        And MetalLB is already enabled
-        Then pods with label 'app.kubernetes.io/component=controller,app.kubernetes.io/instance=ingress-nginx-control-plane,app.kubernetes.io/name=ingress-nginx' are 'Ready'
-        And each pods with label 'app.kubernetes.io/component=controller,app.kubernetes.io/instance=ingress-nginx-control-plane,app.kubernetes.io/name=ingress-nginx' are on a different node
