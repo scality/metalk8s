@@ -206,5 +206,16 @@ func (r *VirtualIPPoolReconciler) mutateVIP(obj client.Object) error {
 
 	pool.Spec = r.instance.Spec.WorkloadPlane.VirtualIPPools[pool.GetName()]
 
+	if pool.Spec.Healthcheck == nil {
+		pool.Spec.Healthcheck = &metalk8sscalitycomv1alpha1.HealthcheckSpec{
+			HttpGet: metalk8sscalitycomv1alpha1.HttpGetSpec{
+				Scheme: "HTTPS",
+				IP:     "127.0.0.1",
+				Port:   443,
+				Path:   "/healthz",
+			},
+		}
+	}
+
 	return nil
 }

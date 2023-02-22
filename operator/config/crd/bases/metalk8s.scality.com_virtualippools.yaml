@@ -44,6 +44,35 @@ spec:
                   type: string
                 minItems: 1
                 type: array
+              healthcheck:
+                description: The local health check to run to ensure the Virtual IP
+                  can sit on this specific node
+                properties:
+                  httpGet:
+                    description: Simple HTTP Get check
+                    properties:
+                      host:
+                        description: The IP to do the HTTP request (default to keepalived
+                          Pod IP)
+                        format: ipv4
+                        type: string
+                      path:
+                        description: Path for the HTTP request
+                        type: string
+                      port:
+                        default: 443
+                        description: The port to do the HTTP request
+                        type: integer
+                      scheme:
+                        default: HTTPS
+                        description: The scheme to use for the HTTP request (default
+                          to HTTPS)
+                        enum:
+                        - HTTP
+                        - HTTPS
+                        type: string
+                    type: object
+                type: object
               nodeSelector:
                 additionalProperties:
                   type: string

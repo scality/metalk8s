@@ -36,7 +36,7 @@ RUN addgroup -S keepalived \
   && chown -R keepalived:keepalived /etc/keepalived
 
 COPY --chown=keepalived:keepalived keepalived.conf.j2 /etc/keepalived/
-COPY --chown=keepalived:keepalived check-ingress.sh /etc/keepalived/
+COPY --chown=keepalived:keepalived check-get.sh /etc/keepalived/
 
 COPY --chown=keepalived:keepalived generate-config.py /
 COPY --chown=keepalived:keepalived entrypoint.sh /

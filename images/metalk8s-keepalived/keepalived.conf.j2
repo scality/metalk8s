@@ -3,11 +3,16 @@ global_defs {
     script_user keepalived keepalived
 }
 
-vrrp_script check_ingress {
-    script "/etc/keepalived/check-ingress.sh"
+{%- set healthcheck = input.get("healthcheck") %}
+{%- if healthcheck %}
+
+vrrp_script check_get {
+    script "/etc/keepalived/check-get.sh {{ healthcheck.replace("__NODE_IP__", env["NODE_IP"]) }}"
     interval 5
     weight 60
 }
+
+{%- endif %}
 
 {%- for addr in input["addresses"] %}
 
@@ -21,9 +26,11 @@ vrrp_instance VI_{{ loop.index }} {
     virtual_ipaddress {
         {{ addr["ip"] }}
     }
+    {%- if healthcheck %}
     track_script {
-        check_ingress
+        check_get
     }
+    {%- endif %}
 }
 
 {%- endfor %}

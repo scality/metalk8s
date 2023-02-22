@@ -30,6 +30,31 @@ type SpreadConstraintSpec struct {
 	TopologyKey string `json:"topologyKey"`
 }
 
+type HttpGetSpec struct {
+	// The IP to do the HTTP request
+	// (default to keepalived Pod IP)
+	// +optional
+	IP IPAddress `json:"host,omitempty"`
+	// The scheme to use for the HTTP request
+	// (default to HTTPS)
+	// +optional
+	// +kubebuilder:default="HTTPS"
+	// +kubebuilder:validation:Enum={"HTTP", "HTTPS"}
+	Scheme string `json:"scheme"`
+	// The port to do the HTTP request
+	// +optional
+	// +kubebuilder:default=443
+	Port int `json:"port"`
+	// Path for the HTTP request
+	// +optional
+	Path string `json:"path"`
+}
+
+type HealthcheckSpec struct {
+	// Simple HTTP Get check
+	HttpGet HttpGetSpec `json:"httpGet,omitempty"`
+}
+
 // +kubebuilder:validation:Format=ipv4
 type IPAddress string
 
@@ -52,6 +77,10 @@ type VirtualIPPoolSpec struct {
 	// Virtual IP addresses to use
 	// +kubebuilder:validation:MinItems=1
 	Addresses []IPAddress `json:"addresses"`
+
+	// The local health check to run to ensure the Virtual IP can sit on
+	// this specific node
+	Healthcheck *HealthcheckSpec `json:"healthcheck,omitempty"`
 }
 
 // VirtualIPPoolStatus defines the observed state of VirtualIPPool

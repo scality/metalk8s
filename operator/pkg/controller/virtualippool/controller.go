@@ -5,6 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"net/url"
+	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -296,6 +298,31 @@ func (r *VirtualIPPoolReconciler) mutateConfigMap(obj *corev1.ConfigMap) error {
 
 	desired := &HLConfig{}
 	desired.Init()
+
+	if r.instance.Spec.Healthcheck != nil {
+		healthInfo := r.instance.Spec.Healthcheck.HttpGet
+		ip := healthInfo.IP
+		if ip == "" {
+			ip = "__NODE_IP__"
+		}
+		hcURL, err := url.Parse(
+			fmt.Sprintf(
+				"%s://%s:%d%s",
+				strings.ToLower(healthInfo.Scheme),
+				ip,
+				healthInfo.Port,
+				healthInfo.Path,
+			),
+		)
+		if err != nil {
+			return fmt.Errorf(
+				"invalid healthcheck info for '%s' pool in namespace '%s': %v",
+				r.instance.GetName(), r.instance.GetNamespace(), err,
+			)
+		}
+		desired.Healthcheck = hcURL.String()
+	}
+
 	for _, ip := range r.instance.Spec.Addresses {
 		addr := current.GetAddr(string(ip))
 		if addr == nil {
@@ -407,6 +434,14 @@ func (r *VirtualIPPoolReconciler) mutateDaemonSet(obj *appsv1.DaemonSet) error {
 				FieldRef: &corev1.ObjectFieldSelector{
 					APIVersion: "v1",
 					FieldPath:  "spec.nodeName",
+				},
+			},
+		}, {
+			Name: "NODE_IP",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{
+					APIVersion: "v1",
+					FieldPath:  "status.hostIP",
 				},
 			},
 		},

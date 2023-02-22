@@ -11,7 +11,8 @@ type HLConfig struct {
 	ApiVersion string `yaml:"apiVersion"`
 	Kind       string `yaml:"kind"`
 
-	Addresses []VIPAddress `yaml:"addresses"`
+	Addresses   []VIPAddress `yaml:"addresses"`
+	Healthcheck string       `yaml:"healthcheck,omitempty"`
 }
 
 type VIPAddress struct {
