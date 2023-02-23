@@ -519,6 +519,25 @@ update_object:
     called_with: *simple_node_update_called_with
     result: *simple_node_update_result
 
+  # Simple Patch with content type
+  - apiVersion: v1
+    kind: Node
+    name: my_node
+    patch:
+      metadata:
+        labels:
+          my.new.label: my-new-label
+    content_type: application/merge-patch+json
+    initial_obj:
+      apiVersion: v1
+      kind: Node
+      metadata:
+        name: my_node
+    called_with:
+      <<: *simple_node_update_called_with
+      content_type: application/merge-patch+json
+    result: *simple_node_update_result
+
   # Error patch arg missing
   - apiVersion: v1
     kind: Node

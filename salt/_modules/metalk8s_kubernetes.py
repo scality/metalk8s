@@ -173,6 +173,9 @@ def _object_manipulation_function(action):
                 propagation_policy="Foreground"
             )
         elif action == "patch":
+            if "content_type" in kwargs:
+                call_kwargs["content_type"] = kwargs["content_type"]
+
             if patch:
                 call_kwargs["body"] = patch
             else:
