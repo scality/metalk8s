@@ -6,6 +6,7 @@ import { useDeployedApps, useDeployedAppsRetriever } from './UIListProvider';
 import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
 import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 import { useShellHistory } from './ShellHistoryProvider';
+import type { SolutionUI } from '@scality/module-federation';
 
 if (!window.shellContexts) {
   window.shellContexts = {};
@@ -31,7 +32,7 @@ export type OIDCConfig = {
   defaultDexConnector?: string,
 };
 
-type RuntimeWebFinger = {
+export type RuntimeWebFinger = {
   kind: 'MicroAppRuntimeConfiguration',
   apiVersion: 'ui.scality.com/v1alpha1',
   metadata: {
@@ -45,7 +46,7 @@ type RuntimeWebFinger = {
   },
 };
 
-type FederatedModuleInfo = {
+export type FederatedModuleInfo = {
   module: string,
   scope: string,
 };
@@ -61,7 +62,7 @@ export type View = {
   },
 } & FederatedModuleInfo;
 
-type BuildtimeWebFinger = {
+export type BuildtimeWebFinger = {
   kind: 'MicroAppConfiguration',
   apiVersion: 'ui.scality.com/v1alpha1',
   metadata: {
@@ -78,6 +79,7 @@ type BuildtimeWebFinger = {
     components: {
       [componentName: string]: FederatedModuleInfo,
     },
+    navbarUpdaterComponents?: FederatedModuleInfo[],
   },
 };
 
@@ -154,30 +156,33 @@ export function useConfig({
   return retrieveConfiguration({ configType, name });
 }
 
-export function useDiscoveredViews(): (
-  | {
-      isFederated: true,
-      app: SolutionUI,
-      view: View,
-      groups?: string[],
-      icon?: string,
-      navbarGroup: 'main' | 'sublogin',
-    }
-  | {
-      isFederated: false,
-      url: string,
-      view: {
-        label: {
-          en: string,
-          fr: string,
-        },
-      },
-      isExternal: boolean,
-      groups?: string[],
-      navbarGroup: 'main' | 'sublogin',
-      icon?: string,
-    }
-)[] {
+export type FederatedView = {
+  isFederated: true,
+  app: SolutionUI,
+  view: View,
+  groups?: string[],
+  icon?: string,
+  navbarGroup: 'main' | 'subLogin',
+};
+
+export type NonFederatedView = {
+  isFederated: false,
+  url: string,
+  view: {
+    label: {
+      en: string,
+      fr: string,
+    },
+  },
+  isExternal: boolean,
+  groups?: string[],
+  navbarGroup: 'main' | 'subLogin',
+  icon?: string,
+};
+
+export type ViewDefinition = FederatedView | NonFederatedView;
+
+export function useDiscoveredViews(): ViewDefinition[] {
   const { retrieveConfiguration } = useConfigRetriever();
   const { retrieveDeployedApps } = useDeployedAppsRetriever();
   const { config: shellConfig } = useShellConfig();
