@@ -109,12 +109,19 @@ def control_plane_ingress_ep(k8s_client, control_plane_ingress_ip):
 @pytest.fixture
 def k8s_client(kubeconfig, tmp_path):
     """Return a DynamicClient to use for interaction with all K8s APIs."""
-    k8s_apiclient = kubernetes.config.new_client_from_config(
-        config_file=kubeconfig, persist_config=False
-    )
-    return kubernetes.dynamic.DynamicClient(
-        k8s_apiclient, cache_file=str(tmp_path / "k8s-client-cache")
-    )
+
+    def _get_k8s_client():
+        try:
+            k8s_apiclient = kubernetes.config.new_client_from_config(
+                config_file=kubeconfig, persist_config=False
+            )
+            return kubernetes.dynamic.DynamicClient(
+                k8s_apiclient, cache_file=str(tmp_path / "k8s-client-cache")
+            )
+        except Exception as exc:
+            raise AssertionError("Unable to initialize DynamicClient") from exc
+
+    return utils.retry(_get_k8s_client, times=5, wait=5)
 
 
 @pytest.fixture
