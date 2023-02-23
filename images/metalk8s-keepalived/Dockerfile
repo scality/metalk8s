@@ -48,7 +48,7 @@ RUN apk add --no-cache libcap \
   && setcap -v  cap_net_admin,cap_net_bind_service,cap_net_raw,cap_setuid,cap_setgid=+ep /usr/sbin/keepalived \
   && apk del libcap
 
-RUN apk add --no-cache libnl3 libnftnl bash curl py3-jinja2 py3-yaml
+RUN apk add --no-cache libnl3 libnftnl bash curl py3-jinja2 py3-yaml py3-netifaces
 
 USER keepalived
 

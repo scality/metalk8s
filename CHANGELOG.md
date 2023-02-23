@@ -16,6 +16,13 @@
 - Use an `initContainer` to build the `kube-proxy` configuration file
   (PR[#3973](https://github.com/scality/metalk8s/pull/3973))
 
+### Bug fixes
+
+- Fix a bug in Workload Plane Ingress Virtual IPs that make the DaemonSet Pod
+  goes in CrashLoopBackOff because keepalived wrongly pick the loopback
+  interface instead of the actual interface
+  (PR[#4000](https://github.com/scality/metalk8s/pull/4000))
+
 ## Release 124.1.5 (in development)
 
 ## Release 124.1.4

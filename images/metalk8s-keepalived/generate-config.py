@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import netifaces
 import os
 import re
 import subprocess
@@ -14,6 +15,12 @@ SUPPORTED_API_VERSION = ["metalk8s.scality.com/v1alpha1"]
 
 
 def get_interface_from_ip(ip):
+    # Check if the IP does not already sit on an interface (if yes then use it)
+    for interface in netifaces.interfaces():
+        for link in netifaces.ifaddresses(interface).get(netifaces.AF_INET) or []:
+            if link.get("addr") == ip:
+                return interface
+
     # NOTE: We do not have any easy way (without an external lib)
     # to retrieve the interface easily in Python
     # So let's rely on `ip route get`
