@@ -71,6 +71,7 @@ module.exports = {
         './auth/AuthProvider': './src/auth/AuthProvider.js',
         './alerts/AlertProvider': './src/alerts/AlertProvider.js',
         './alerts/alertHooks': './src/alerts/alertHooks.js',
+        './navbar/navbarHooks': './src/navbar/navbarHooks.js',
         './moduleFederation/ConfigurationProvider':
           './src/initFederation/ConfigurationProviders.js',
         './moduleFederation/UIListProvider':
