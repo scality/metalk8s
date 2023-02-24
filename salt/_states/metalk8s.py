@@ -1,5 +1,6 @@
 """Custom states for MetalK8s."""
 
+import copy
 import logging
 import time
 import traceback
@@ -208,4 +209,48 @@ def saltutil_cmd(name, **kwargs):
         else:
             ret["comment"] = "Function ran successfully"
 
+    return ret
+
+
+def bootstrap_config_updated(name):
+    """A state to update the MetalK8s bootstrap config file to the current version"""
+    ret = {
+        "name": name,
+        "changes": {},
+        "result": True,
+        "comment": "Bootstrap configuration has been updated",
+    }
+
+    try:
+        old_config = __salt__["metalk8s.get_bootstrap_config"]()
+    except CommandExecutionError as exc:
+        ret["result"] = False
+        ret["comment"] = str(exc)
+        return ret
+
+    config = copy.deepcopy(old_config)
+
+    # This logic can be removed in `development/126.0`
+    config["networks"]["controlPlane"].pop("ingress", None)
+    config["networks"]["controlPlane"].pop("metalLB", None)
+
+    diff = __utils__["dictdiffer.recursive_diff"](old_config, config, False).diffs
+
+    if not diff:
+        ret["comment"] = "Bootstrap configuration already in good state"
+        return ret
+
+    if __opts__["test"]:
+        ret["result"] = None
+        ret["comment"] = "Bootstrap configuration would have been updated"
+        return ret
+
+    try:
+        __salt__["metalk8s.write_bootstrap_config"](config)
+    except CommandExecutionError as exc:
+        ret["result"] = False
+        ret["comment"] = str(exc)
+        return ret
+
+    ret["changes"] = diff
     return ret

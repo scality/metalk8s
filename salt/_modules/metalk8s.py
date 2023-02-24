@@ -693,7 +693,8 @@ def get_from_map(value, saltenv=None):
     )
 
 
-def _read_bootstrap_config():
+def get_bootstrap_config():
+    """Return the bootstrap config file content"""
     try:
         with salt.utils.files.fopen(BOOTSTRAP_CONFIG, "r") as fd:
             config = salt.utils.yaml.safe_load(fd)
@@ -704,7 +705,8 @@ def _read_bootstrap_config():
     return config
 
 
-def _write_bootstrap_config(config):
+def write_bootstrap_config(config):
+    """Write to the bootstrap config file"""
     try:
         with salt.utils.files.fopen(BOOTSTRAP_CONFIG, "w") as fd:
             salt.utils.yaml.safe_dump(config, fd, default_flow_style=False)
@@ -719,7 +721,7 @@ def configure_archive(archive, remove=False):
         # raise if the archive does not exist or is invalid
         archive_info_from_product_txt(archive)
 
-    config = _read_bootstrap_config()
+    config = get_bootstrap_config()
 
     if remove:
         try:
@@ -734,7 +736,7 @@ def configure_archive(archive, remove=False):
             config["archives"].append(archive)
             msg = "added to bootstrap configuration"
 
-    _write_bootstrap_config(config)
+    write_bootstrap_config(config)
 
     msg = "Archive '{0}' {1}".format(archive, msg)
     log.info(msg)

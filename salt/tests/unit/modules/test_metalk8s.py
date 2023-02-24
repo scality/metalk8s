@@ -589,8 +589,8 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
 
         module_mocks = {
             "archive_info_from_product_txt": info_mock,
-            "_read_bootstrap_config": MagicMock(return_value=config),
-            "_write_bootstrap_config": MagicMock(),
+            "get_bootstrap_config": MagicMock(return_value=config),
+            "write_bootstrap_config": MagicMock(),
         }
 
         with patch.multiple(metalk8s, **module_mocks):
@@ -610,7 +610,7 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
     @parameterized.expand(
         [param(), param(True, "Failed to write bootstrap config file")]
     )
-    def test__write_bootstrap_config(self, raises=False, result=None):
+    def test_write_bootstrap_config(self, raises=False, result=None):
         open_mock = mock_open()
         if raises:
             open_mock.side_effect = Exception("A wild exception appears!")
@@ -620,19 +620,19 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
-                    metalk8s._write_bootstrap_config,
+                    metalk8s.write_bootstrap_config,
                     None,
                 )
             else:
                 self.assertEqual(
-                    metalk8s._write_bootstrap_config(None),
+                    metalk8s.write_bootstrap_config(None),
                     None,
                 )
 
     @parameterized.expand(
         [param(), param(True, "Failed to load bootstrap config file")]
     )
-    def test__read_bootstrap_config(self, raises=False, result=None):
+    def test_get_bootstrap_config(self, raises=False, result=None):
         open_mock = mock_open(read_data="config")
         if raises:
             open_mock.side_effect = IOError("Weird I/O error!")
@@ -642,11 +642,11 @@ class Metalk8sTestCase(TestCase, mixins.LoaderModuleMockMixin):
                 self.assertRaisesRegex(
                     CommandExecutionError,
                     result,
-                    metalk8s._read_bootstrap_config,
+                    metalk8s.get_bootstrap_config,
                 )
             else:
                 self.assertEqual(
-                    metalk8s._read_bootstrap_config(),
+                    metalk8s.get_bootstrap_config(),
                     "config",
                 )
 
