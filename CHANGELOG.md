@@ -16,6 +16,10 @@
 - Use an `initContainer` to build the `kube-proxy` configuration file
   (PR[#3973](https://github.com/scality/metalk8s/pull/3973))
 
+- Move Control Plane Ingress Virtual IP management to the `metalk8s-operator`
+  and no longer deploy `MetalLB`
+  (PR[#4000](https://github.com/scality/metalk8s/pull/4000))
+
 ### Bug fixes
 
 - Fix a bug in Workload Plane Ingress Virtual IPs that make the DaemonSet Pod
