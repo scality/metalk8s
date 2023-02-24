@@ -91,32 +91,6 @@ def _load_networks(config_data):
             if not isinstance(networks_data[net]["cidr"], list):
                 networks_data[net]["cidr"] = [networks_data[net]["cidr"]]
 
-    # MetalLB disabled by default
-    networks_data["controlPlane"].setdefault("metalLB", {}).setdefault("enabled", False)
-
-    if networks_data["controlPlane"]["metalLB"]["enabled"]:
-        if not networks_data["controlPlane"].get("ingress", {}).get("ip"):
-            errors.append(
-                "'ip' for 'ingress' in 'controlPlane' network is mandatory when "
-                "'metalLB' is enabled"
-            )
-        if len(networks_data["controlPlane"]["cidr"]) > 1:
-            errors.append(
-                "Enabling 'metalLB' requires a single 'cidr' in "
-                "'controlPlane' network, see "
-                "https://github.com/scality/metalk8s/issues/3502"
-            )
-
-        # Control Plane Ingress affinity default to soft podAntiAffinity on hostname
-        # NOTE: This affinity is only use when MetalLB is enabled, as if MetalLB is disabled
-        # Control Plane Ingress is deployed as DaemonSet
-        networks_data["controlPlane"].setdefault("ingress", {}).setdefault(
-            "controller", {}
-        ).setdefault("affinity", {}).setdefault("podAntiAffinity", {}).setdefault(
-            "soft", [{"topologyKey": "kubernetes.io/hostname"}]
-        )
-        networks_data["controlPlane"]["ingress"]["controller"].setdefault("replicas", 2)
-
     if errors:
         return __utils__["pillar_utils.errors_to_dict"](errors)
 

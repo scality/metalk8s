@@ -18,7 +18,6 @@ CMD_WIDTH: int = 14
 
 # URLs of the main container repositories.
 K8S_REPOSITORY: str = "registry.k8s.io"
-BITNAMI_REPOSITORY: str = "docker.io/bitnami"
 CALICO_REPOSITORY: str = "docker.io/calico"
 COREDNS_REPOSITORY: str = f"{K8S_REPOSITORY}/coredns"
 DEX_REPOSITORY: str = "ghcr.io/dexidp"

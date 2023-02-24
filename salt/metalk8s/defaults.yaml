@@ -90,14 +90,6 @@ networks:
       127.0.0.1:7443:
         expected: nginx
         description: Apiserver proxy
-      control_plane_ip:7472:
-        expected: speaker
-        description: >-
-          Control plane MetalLB speaker metrics (only if MetalLB enabled)
-      control_plane_ip:7946:
-        expected: speaker
-        description: >-
-          Control plane MetalLB speaker (only if MetalLB enabled)
       ingress_control_plane_ip:8443:
         expected: kube-proxy
         description: Control plane nginx ingress

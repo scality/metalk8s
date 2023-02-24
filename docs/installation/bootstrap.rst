@@ -47,17 +47,6 @@ Configuration
       networks:
         controlPlane:
           cidr: <CIDR-notation>
-          ingress:
-            ip: <IP-for-ingress>
-            controller:
-              replicas: 2
-              affinity:
-                podAntiAffinity:
-                  hard: []
-                  soft:
-                    - topologyKey: kubernetes.io/hostname
-          metalLB:
-            enabled: <boolean>
         workloadPlane:
           cidr: <CIDR-notation>
           mtu: <network-MTU>
@@ -113,39 +102,6 @@ notation for it's various subfields.
         Several CIDRs can be provided if all nodes do not sit in the same
         network. This is an :ref:`advanced configuration<multiple CIDR network>`
         which we do not recommend for non-experts.
-
-      For ``controlPlane`` entry, an ``ingress`` can also be provided. This
-      section allow to set the IP that will be used to connect to all the
-      control plane components, like MetalK8s-UI and the whole monitoring
-      stack. We suggest using a
-      `Virtual IP <https://en.wikipedia.org/wiki/Virtual_IP_address>`_ that
-      will sit on a working master Node. The default value for this
-      Ingress IP is the control plane IP of the Bootstrap node (which means
-      that if you lose the Bootstrap node, you no longer have access to any
-      control plane component).
-
-      If you want to override the default ``controlPlane`` ``ingress``
-      controller podAntiAffinity or number of replicas, by default MetalK8s
-      deploy 2 replicas and use soft podAntiAffinity on hostname so that if
-      it's possible those controllers pods will be spread on different
-      ``master`` nodes.
-
-      .. note::
-
-        Affinity and number of replicas for control plane ingress controller
-        will be ignored if ``MetalLB`` is disabled, as this control plane
-        ingress controller will be deployed as a DaemonSet, which means that
-        a pod will run on every ``master`` nodes by default.
-
-      This ``ip`` for ``ingress`` can be managed by MetalK8s directly if
-      it's possible in your environment, to do so we use
-      `MetalLB <https://metallb.universe.tf/>`_ that allow to manage this
-      Virtual IP directly on Layer2 using only
-      `ARP <https://en.wikipedia.org/wiki/Address_Resolution_Protocol>`_
-      requests, in order to be able to use MetalLB your network need to
-      properly broadcast ARP requests so that Control Plane node hosting
-      the Virtual IP can answer to this ARP request.
-      When MetalLB is enabled this ingress IP is mandatory.
 
       For ``workloadPlane`` entry an
       `MTU <https://en.wikipedia.org/wiki/Maximum_transmission_unit>`_ can

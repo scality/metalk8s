@@ -1,7 +1,7 @@
 include:
   - metalk8s.addons.nginx-ingress.deployed.namespace
   - .tls-secret
-  - .chart-daemonset
+  - .chart
 
 {#- Make sure to remove old MetalLB related objects #}
 {#- This logic can be removed in `development/126.0` #}
@@ -16,7 +16,7 @@ Ensure Nginx Ingress Control Plane Deployment does not exist:
         sleep: 10
     - require:
       - sls: metalk8s.addons.nginx-ingress.deployed.namespace
-      - sls: metalk8s.addons.nginx-ingress-control-plane.deployed.chart-daemonset
+      - sls: metalk8s.addons.nginx-ingress-control-plane.deployed.chart
 
 Ensure Nginx Ingress Control Plane defaultbackend Deployment does not exist:
   metalk8s_kubernetes.object_absent:
@@ -29,7 +29,7 @@ Ensure Nginx Ingress Control Plane defaultbackend Deployment does not exist:
         sleep: 10
     - require:
       - sls: metalk8s.addons.nginx-ingress.deployed.namespace
-      - sls: metalk8s.addons.nginx-ingress-control-plane.deployed.chart-daemonset
+      - sls: metalk8s.addons.nginx-ingress-control-plane.deployed.chart
 
 Ensure Nginx Ingress Control Plane defaultbackend Service does not exist:
   metalk8s_kubernetes.object_absent:
@@ -42,7 +42,7 @@ Ensure Nginx Ingress Control Plane defaultbackend Service does not exist:
         sleep: 10
     - require:
       - sls: metalk8s.addons.nginx-ingress.deployed.namespace
-      - sls: metalk8s.addons.nginx-ingress-control-plane.deployed.chart-daemonset
+      - sls: metalk8s.addons.nginx-ingress-control-plane.deployed.chart
 
 Ensure Nginx Ingress Control Plane defaultbackend ServiceAccount does not exist:
   metalk8s_kubernetes.object_absent:
@@ -55,7 +55,7 @@ Ensure Nginx Ingress Control Plane defaultbackend ServiceAccount does not exist:
         sleep: 10
     - require:
       - sls: metalk8s.addons.nginx-ingress.deployed.namespace
-      - sls: metalk8s.addons.nginx-ingress-control-plane.deployed.chart-daemonset
+      - sls: metalk8s.addons.nginx-ingress-control-plane.deployed.chart
 
 Ensure MetalLB Namespace does not exist:
   metalk8s_kubernetes.object_absent:
@@ -67,4 +67,4 @@ Ensure MetalLB Namespace does not exist:
         sleep: 10
     - require:
       - sls: metalk8s.addons.nginx-ingress.deployed.namespace
-      - sls: metalk8s.addons.nginx-ingress-control-plane.deployed.chart-daemonset
+      - sls: metalk8s.addons.nginx-ingress-control-plane.deployed.chart

@@ -146,29 +146,13 @@ def codegen_chart_ingress_nginx() -> types.TaskDict:
     )
     file_dep.append(value_file)
 
-    # Control Plane Ingress Deployment
+    # Control Plane Ingress
     target_sls = (
         constants.ROOT
         / "salt/metalk8s/addons/nginx-ingress-control-plane"
-        / "deployed/chart-deployment.sls"
+        / "deployed/chart.sls"
     )
-    value_file = constants.CHART_ROOT / "ingress-nginx-control-plane-deployment.yaml"
-    actions.append(
-        doit.action.CmdAction(
-            f"{constants.CHART_RENDER_CMD} ingress-nginx-control-plane {value_file} "
-            f"{chart_dir} --namespace metalk8s-ingress --output {target_sls}",
-            cwd=constants.ROOT,
-        )
-    )
-    file_dep.append(value_file)
-
-    # Control Plane Ingress DaemonSet
-    target_sls = (
-        constants.ROOT
-        / "salt/metalk8s/addons/nginx-ingress-control-plane"
-        / "deployed/chart-daemonset.sls"
-    )
-    value_file = constants.CHART_ROOT / "ingress-nginx-control-plane-daemonset.yaml"
+    value_file = constants.CHART_ROOT / "ingress-nginx-control-plane.yaml"
     actions.append(
         doit.action.CmdAction(
             f"{constants.CHART_RENDER_CMD} ingress-nginx-control-plane {value_file} "
@@ -258,39 +242,6 @@ def codegen_chart_loki() -> types.TaskDict:
     }
 
 
-def codegen_chart_metallb() -> types.TaskDict:
-    """Generate the SLS file for MetalLB using the chart render script."""
-    target_sls = constants.ROOT / "salt/metalk8s/addons/metallb/deployed/chart.sls"
-    chart_dir = constants.CHART_ROOT / "metallb"
-    value_file = constants.CHART_ROOT / "metallb.yaml"
-    cmd = (
-        f"{constants.CHART_RENDER_CMD} metallb {value_file} {chart_dir} "
-        "--namespace metalk8s-loadbalancing "
-        # We need to patch the secret key otherwise it will be change at every render
-        # TODO: This secret key should be computed by Salt at first secret creation
-        "--patch 'Secret,metalk8s-loadbalancing,metallb-memberlist,data:secretkey,"
-        '"V3NINmJucWdkSDFaelRHWHlvZEh1RHNjOHFtbzd0Z0dGam5DbXpKa1MxU1lkNktRcmthVDBrcjlJe'
-        "U9lOEgyZHI4QndxZm5hOGFlWndsRWhubnY0QmpFcmpOZnJPSWh0TlhpcmowRUVvYmd6VWtqMDBncE"
-        "cxelZTSGFZRTg1Mk9NcEh4c200Z3RLMkh0bzZsTFpGNUNSdDhTaWFNTzFpTXBYQUVGT0FSZVdqZEx"
-        "KdU52R0RtOVhZMVBNWWtYQlNMOEZaamM1cFpqOUdTR0dPQ3FiSUpsOWozMk1wcml2VGV2OERnN2Nn"
-        "YmhweUVtY1h2alBOczFxcTZOV3BQTWgydw==\"' "
-        f"--output {target_sls}"
-    )
-
-    file_dep = list(utils.git_ls(chart_dir))
-    file_dep.append(value_file)
-    file_dep.append(constants.CHART_RENDER_SCRIPT)
-
-    return {
-        "name": "chart_metallb",
-        "title": utils.title_with_subtask_name("CODEGEN"),
-        "doc": codegen_chart_metallb.__doc__,
-        "actions": [doit.action.CmdAction(cmd, cwd=constants.ROOT)],
-        "file_dep": file_dep,
-        "task_dep": ["check_for:tox", "check_for:helm"],
-    }
-
-
 def codegen_chart_prometheus_adapter() -> types.TaskDict:
     """Generate the SLS file for Prometheus Adapter using the chart render script."""
     target_sls = (
@@ -355,7 +306,6 @@ CODEGEN: Tuple[Callable[[], types.TaskDict], ...] = (
     codegen_chart_ingress_nginx,
     codegen_chart_kube_prometheus_stack,
     codegen_chart_loki,
-    codegen_chart_metallb,
     codegen_chart_prometheus_adapter,
     codegen_chart_thanos,
 )
