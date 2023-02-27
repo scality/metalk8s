@@ -16,6 +16,7 @@
     "@babel/preset-env": "^7.12.11",
     "@babel/preset-flow": "^7.12.1",
     "@babel/preset-react": "^7.12.10",
+    "@babel/preset-typescript": "^7.21.0",
     "@fortawesome/fontawesome-free": "^5.15.3",
     "@mdx-js/loader": "^1.6.22",
     "@testing-library/jest-dom": "^5.11.9",

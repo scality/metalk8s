@@ -2,7 +2,7 @@ if (process.env.NODE_ENV === 'test') {
   module.exports = {
     presets: [
       '@babel/preset-env',
-      '@babel/preset-flow',
+      '@babel/preset-typescript',
       [
         '@babel/preset-react',
         {
@@ -24,7 +24,7 @@ if (process.env.NODE_ENV === 'test') {
     ],
     presets: [
       '@babel/preset-env',
-      '@babel/preset-flow',
+      '@babel/preset-typescript',
       [
         '@babel/preset-react',
         {
