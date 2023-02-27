@@ -1,4 +1,5 @@
 import { call, put, delay, select } from 'redux-saga/effects';
+// TOBE REMOVE WHEN migrate to react-query
 import { cloneableGenerator } from '@redux-saga/testing-utils';
 import * as CoreApi from '../../services/k8s/core';
 import { REFRESH_TIMEOUT } from '../../constants';

@@ -1,4 +1,3 @@
-//@flow
 import ApiClient from '../ApiClient';
 export type RangeMatrixResult = {
   resultType: 'matrix';

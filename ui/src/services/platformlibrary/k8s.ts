@@ -18,7 +18,6 @@ export const getNodesCountQuery = (
     queryFn: () =>
       fetch(`${k8sUrl}/api/v1/nodes`, {
         headers: {
-          // $FlowFixMe - if token is null, the query will not perform
           authorization: `bearer ${token}`,
         },
       })
@@ -43,7 +42,6 @@ export const getVolumesCountQuery = (
     queryFn: () =>
       fetch(`${k8sUrl}/api/v1/persistentvolumes`, {
         headers: {
-          // $FlowFixMe - if token is null, the query will not perform
           authorization: `bearer ${token}`,
         },
       })
