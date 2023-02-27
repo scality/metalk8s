@@ -1,6 +1,6 @@
 // TO BE FIXED: Mock import { store } from '../index' in 'config.js'
 // Otherwise we have some issues to initialize reducers for testing
-jest.mock('../index.js', () => {
+jest.mock('../index.ts', () => {
   return {
     store: 'store',
   };

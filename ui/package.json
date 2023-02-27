@@ -56,7 +56,7 @@
     "start:ui": "webpack serve --config webpack.dev.js",
     "start": "npm run start:navbar && npm run start:ui",
     "build": "webpack --progress --config webpack.prod.js",
-    "test": "jest --watch --env=jest-environment-jsdom-sixteen",
+    "test": "jest",
     "test:nowatch": "CI=true jest --env=jsdom --reporters=default --reporters=jest-junit",
     "test:integration": "cypress run --spec 'cypress/integration/**/*.spec.js'",
     "test:e2e": "cypress run --spec 'cypress/integration/e2e/**/*.feature'"
@@ -91,6 +91,7 @@
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.3",
     "@testing-library/react-hooks": "^3.4.2",
+    "@types/jest": "^29.4.0",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^26.6.3",
     "babel-loader": "^8.2.2",
@@ -148,7 +149,7 @@
       "<rootDir>/src/**/?(*.)+(spec|test).[jt]s?(x)"
     ],
     "setupFilesAfterEnv": [
-      "<rootDir>/src/setupTests.ts"
+      "<rootDir>/src/setupTests.tsx"
     ],
     "moduleNameMapper": {
       "\\.(css|less)$": "identity-obj-proxy"
