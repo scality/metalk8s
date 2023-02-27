@@ -7,7 +7,7 @@ const deps = require('./package.json').dependencies;
 
 module.exports = (env) => ({
   entry: {
-    metalk8s_ui: './src/index.js',
+    metalk8s_ui: './src/index.ts',
   },
   output: {
     filename: 'static/js/[name].js',
@@ -16,7 +16,7 @@ module.exports = (env) => ({
   },
   resolve: {
     modules: ['node_modules'],
-    extensions: ['.js', '.jsx', '.css', '.json'],
+    extensions: ['.js', '.jsx', '.css', '.json', '.ts', '.tsx'],
     alias: {
       _: [path.resolve(__dirname, 'public')],
       'vega-lite': 'vega-lite/build/vega-lite.min.js',
@@ -39,7 +39,7 @@ module.exports = (env) => ({
   module: {
     rules: [
       {
-        test: /\.(js|jsx)$/,
+        test: /\.(js|jsx|ts|tsx)$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
@@ -93,8 +93,8 @@ module.exports = (env) => ({
       name: 'metalk8s',
       filename: 'static/js/remoteEntry.js',
       exposes: {
-        './FederableApp': './src/FederableApp.js',
-        './platformLibrary': './src/services/platformlibrary/k8s.js',
+        './FederableApp': './src/FederableApp.tsx',
+        './platformLibrary': './src/services/platformlibrary/k8s.ts',
       },
       shared: {
         ...Object.fromEntries(
