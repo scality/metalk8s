@@ -11,7 +11,6 @@ export const useGetNodesCount = (
 } => {
   const navbarElement = document.querySelector('solutions-navbar');
   const [token, setToken] = useState(null);
-  // $FlowFixMe
   useQuery('initialToken', () => navbarElement.getIdToken(), {
     onSucces: (idToken) => setToken(idToken),
   });
@@ -21,7 +20,6 @@ export const useGetNodesCount = (
     }
 
     const onAuthenticated = (evt: Event) => {
-      // $FlowFixMe
       setToken(evt.detail.id_token);
     };
 
@@ -44,7 +42,6 @@ export const useGetVolumesCount = (
 } => {
   const navbarElement = document.querySelector('solutions-navbar');
   const [token, setToken] = useState(null);
-  // $FlowFixMe
   useQuery('initialToken', () => navbarElement.getIdToken(), {
     onSucces: (idToken) => setToken(idToken),
   });
@@ -54,7 +51,6 @@ export const useGetVolumesCount = (
     }
 
     const onAuthenticated = (evt: Event) => {
-      // $FlowFixMe
       setToken(evt.detail.id_token);
     };
 
@@ -76,7 +72,6 @@ export const getNodesCountQuery = (
     queryFn: () =>
       fetch(`${k8sUrl}/api/v1/nodes`, {
         headers: {
-          // $FlowFixMe - if token is null, the query will not perform
           authorization: `bearer ${token}`,
         },
       })
@@ -101,7 +96,6 @@ export const getVolumesCountQuery = (
     queryFn: () =>
       fetch(`${k8sUrl}/api/v1/persistentvolumes`, {
         headers: {
-          // $FlowFixMe - if token is null, the query will not perform
           authorization: `bearer ${token}`,
         },
       })

@@ -12,7 +12,7 @@ export const getAccessiblePathsFromOptions = (
   options: Options,
   userGroups: string[],
 ): string[] => {
-  return [...Object.entries(options.main), ...Object.entries(options.subLogin)] //$FlowIssue - flow typing for Object.entries incorrectly typing values as [string, mixed] instead of [string, PathDescription]
+  return [...Object.entries(options.main), ...Object.entries(options.subLogin)]
     .filter((entry: [string, PathDescription]) =>
       isEntryAccessibleByTheUser(entry, userGroups),
     )

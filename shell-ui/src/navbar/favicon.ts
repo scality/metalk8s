@@ -1,4 +1,3 @@
-//@Flow
 import { useEffect } from 'react';
 export const useFavicon = (favicon: string) => {
   useEffect(() => {

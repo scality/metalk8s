@@ -109,7 +109,6 @@ const Link = ({
 }) => {
   const { openLink } = useLinkOpener();
   return (
-    //$FlowFixMe
     <a href={'#'} onClick={() => openLink(to)} {...props}>
       {children}
     </a>

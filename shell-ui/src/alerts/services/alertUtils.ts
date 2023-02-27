@@ -130,8 +130,6 @@ export const isAlertSelected = (
         if (Array.isArray(labels[key])) {
           return (
             filters[key].find((val) => {
-              // already check if !labels[key] return false
-              //$FlowFixMe
               return labels[key].includes(val);
             }) !== undefined
           );
@@ -225,6 +223,5 @@ export const formatHistoryAlerts = (streamValues: StreamValue): Alert[] => {
       },
     };
   }, {});
-  //$FlowFixMe Array<mixed> incompatible with Alert[];
   return Object.values(alerts);
 };
