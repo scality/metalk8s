@@ -21,6 +21,7 @@ module.exports = (env) => ({
       _: [path.resolve(__dirname, 'public')],
       'vega-lite': 'vega-lite/build/vega-lite.min.js',
     },
+    fallback: { querystring: require.resolve('querystring-es3') },
   },
   /*
    * https://webpack.js.org/configuration/performance/#performancehints
