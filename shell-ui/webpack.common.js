@@ -61,6 +61,16 @@ module.exports = {
     modules: ['node_modules'],
     extensions: ['.js', '.jsx', '.css', '.json', '.ts', '.tsx'],
   },
+  performance: {
+    hints: 'warning',
+    // ~1.2 MiB for production
+    maxAssetSize: process.env.NODE_ENV === 'production' ? 1_300_000 : Infinity,
+    assetFilter: (assetFilename) => {
+      return (
+        !assetFilename.endsWith('.map.gz') && assetFilename.endsWith('.gz')
+      );
+    },
+  },
   plugins: (prefix = '') => [
     new ModuleFederationPlugin({
       name: 'shell',
