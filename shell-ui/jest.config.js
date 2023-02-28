@@ -1,6 +1,6 @@
 module.exports = {
   transformIgnorePatterns: [
-    '/node_modules/(?!vega-lite|@scality|pretty-bytes|react-to-webcomponent)',
+    '/node_modules/(?!vega-lite|@scality|pretty-bytes)',
   ],
   setupFilesAfterEnv: ['./src/setupTests.ts'],
   clearMocks: true,
