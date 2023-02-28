@@ -7,7 +7,6 @@ export type Metalk8sV1alpha1Volume = {
   kind?: string;
   metadata?: {};
   spec?: {
-    lvmLogicalVolume?: { size: number | string; vgName: string };
     mode?: 'Filesystem' | 'Block';
     nodeName: string;
     rawBlockDevice?: { devicePath: string };

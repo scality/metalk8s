@@ -2,12 +2,11 @@
 import { customObjects } from './api';
 export type Result<T> = T | { error: any };
 
-export type Metalk8sV1alpha1Volume = {
+export type V1alpha1Volume = {
   apiVersion?: string;
   kind?: string;
   metadata?: {};
   spec?: {
-    lvmLogicalVolume?: { size: number | string; vgName: string };
     mode?: 'Filesystem' | 'Block';
     nodeName: string;
     rawBlockDevice?: { devicePath: string };
@@ -214,20 +213,21 @@ export type Metalk8sV1alpha1Volume = {
     job?: string;
   };
 };
-export type Metalk8sV1alpha1VolumeList = {
-  body: { items: Metalk8sV1alpha1Volume[] };
+export type V1alpha1VolumeList = {
+  body: { items: V1alpha1Volume[] };
 };
 
-export async function getMetalk8sV1alpha1VolumeList(): Promise<
-  Result<Metalk8sV1alpha1VolumeList>
-> {
+export async function getV1alpha1VolumeList(
+  namespace: string,
+): Promise<Result<V1alpha1VolumeList>> {
   if (!customObjects) {
     return { error: 'customObject has not yet been initialized' };
   }
   try {
-    return await customObjects.listClusterCustomObject(
+    return await customObjects.listNamespacedCustomObject(
       'storage.metalk8s.scality.com',
       'v1alpha1',
+      namespace,
       'volumes',
     );
   } catch (error) {
@@ -235,36 +235,40 @@ export async function getMetalk8sV1alpha1VolumeList(): Promise<
   }
 }
 
-export async function getMetalk8sV1alpha1Volume(
-  Metalk8sV1alpha1VolumeName: string,
-): Promise<Result<Metalk8sV1alpha1Volume>> {
+export async function getV1alpha1Volume(
+  namespace: string,
+  V1alpha1VolumeName: string,
+): Promise<Result<V1alpha1Volume>> {
   if (!customObjects) {
     return { error: 'customObject has not yet been initialized' };
   }
   try {
-    return await customObjects.getClusterCustomObject(
+    return await customObjects.getNamespacedCustomObject(
       'storage.metalk8s.scality.com',
       'v1alpha1',
+      namespace,
       'volumes',
-      Metalk8sV1alpha1VolumeName,
+      V1alpha1VolumeName,
     );
   } catch (error) {
     return { error };
   }
 }
 
-export async function deleteMetalk8sV1alpha1Volume(
-  Metalk8sV1alpha1VolumeName: string,
+export async function deleteV1alpha1Volume(
+  namespace: string,
+  V1alpha1VolumeName: string,
 ) {
   if (!customObjects) {
     return { error: 'customObject has not yet been initialized' };
   }
   try {
-    return await customObjects.deleteClusterCustomObject(
+    return await customObjects.deleteNamespacedCustomObject(
       'storage.metalk8s.scality.com',
       'v1alpha1',
+      namespace,
       'volumes',
-      Metalk8sV1alpha1VolumeName,
+      V1alpha1VolumeName,
       {},
     );
   } catch (error) {
@@ -272,16 +276,18 @@ export async function deleteMetalk8sV1alpha1Volume(
   }
 }
 
-export async function createMetalk8sV1alpha1Volume(
-  body: Metalk8sV1alpha1Volume,
-): Promise<Result<Metalk8sV1alpha1Volume>> {
+export async function createV1alpha1Volume(
+  namespace: string,
+  body: V1alpha1Volume,
+): Promise<Result<V1alpha1Volume>> {
   if (!customObjects) {
     return { error: 'customObject has not yet been initialized' };
   }
   try {
-    return await customObjects.createClusterCustomObject(
+    return await customObjects.createNamespacedCustomObject(
       'storage.metalk8s.scality.com',
       'v1alpha1',
+      namespace,
       'volumes',
       body,
     );
@@ -290,16 +296,18 @@ export async function createMetalk8sV1alpha1Volume(
   }
 }
 
-export async function patchMetalk8sV1alpha1Volume(
-  body: Partial<Metalk8sV1alpha1Volume>,
-): Promise<Result<Metalk8sV1alpha1Volume>> {
+export async function patchV1alpha1Volume(
+  namespace: string,
+  body: Partial<V1alpha1Volume>,
+): Promise<Result<V1alpha1Volume>> {
   if (!customObjects) {
     return { error: 'customObject has not yet been initialized' };
   }
   try {
-    return await customObjects.patchClusterCustomObject(
+    return await customObjects.patchNamespacedCustomObject(
       'storage.metalk8s.scality.com',
       'v1alpha1',
+      namespace,
       'volumes',
       body,
     );
