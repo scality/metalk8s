@@ -408,7 +408,7 @@ def change_cp_ingress_node_ip(
 
     # Patch the ClusterConfig object
     cc_content = obj.to_dict()
-    cc_content["spec"]["controlPlane"]["ingress"] = {
+    cc_content["spec"].setdefault("controlPlane", {})["ingress"] = {
         "externalIP": {
             "address": ip,
         }
@@ -438,7 +438,7 @@ def change_cp_ingress_managed_vip(host, context, ssh_config, version, k8s_client
 
     # Patch the ClusterConfig object
     cc_content = obj.to_dict()
-    cc_content["spec"]["controlPlane"]["ingress"] = {
+    cc_content["spec"].setdefault("controlPlane", {})["ingress"] = {
         "managedVirtualIP": {
             "address": vip,
         }
