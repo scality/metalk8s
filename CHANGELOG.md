@@ -20,6 +20,10 @@
   and no longer deploy `MetalLB`
   (PR[#4000](https://github.com/scality/metalk8s/pull/4000))
 
+- Bump containerd to [1.6.19](https://github.com/containerd/containerd/releases/tag/v1.6.19)
+  The pause image has been bump to 3.9
+  (PR[#4006](https://github.com/scality/metalk8s/pull/4006))
+
 ### Bug fixes
 
 - Fix a bug in Workload Plane Ingress Virtual IPs that make the DaemonSet Pod
