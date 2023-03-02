@@ -2,7 +2,7 @@
 
 [ingress-nginx](https://github.com/kubernetes/ingress-nginx) Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer
 
-![Version: 4.2.5](https://img.shields.io/badge/Version-4.2.5-informational?style=flat-square) ![AppVersion: 1.3.1](https://img.shields.io/badge/AppVersion-1.3.1-informational?style=flat-square)
+![Version: 4.5.2](https://img.shields.io/badge/Version-4.5.2-informational?style=flat-square) ![AppVersion: 1.6.4](https://img.shields.io/badge/AppVersion-1.6.4-informational?style=flat-square)
 
 To use, add `ingressClassName: nginx` spec field or the `kubernetes.io/ingress.class: nginx` annotation to your Ingress resources.
 
@@ -175,7 +175,7 @@ controller:
     internal:
       enabled: true
       annotations:
-        # Create internal LB. More informations: https://cloud.google.com/kubernetes-engine/docs/how-to/internal-load-balancing
+        # Create internal LB. More information: https://cloud.google.com/kubernetes-engine/docs/how-to/internal-load-balancing
         # For GKE versions 1.17 and later
         networking.gke.io/load-balancer-type: "Internal"
         # For earlier versions
@@ -217,6 +217,21 @@ With nginx-ingress-controller version 0.25+, the nginx ingress controller pod ex
 
 With nginx-ingress-controller in 0.25.* work only with kubernetes 1.14+, 0.26 fix [this issue](https://github.com/kubernetes/ingress-nginx/pull/4521)
 
+#### How the Chart Configures the Hooks
+A validating and configuration requires the endpoint to which the request is sent to use TLS. It is possible to set up custom certificates to do this, but in most cases, a self-signed certificate is enough. The setup of this component requires some more complex orchestration when using helm. The steps are created to be idempotent and to allow turning the feature on and off without running into helm quirks.
+
+1. A pre-install hook provisions a certificate into the same namespace using a format compatible with provisioning using end user certificates. If the certificate already exists, the hook exits.
+2. The ingress nginx controller pod is configured to use a TLS proxy container, which will load that certificate.
+3. Validating and Mutating webhook configurations are created in the cluster.
+4. A post-install hook reads the CA from the secret created by step 1 and patches the Validating and Mutating webhook configurations. This process will allow a custom CA provisioned by some other process to also be patched into the webhook configurations. The chosen failure policy is also patched into the webhook configurations
+
+#### Alternatives
+It should be possible to use [cert-manager/cert-manager](https://github.com/cert-manager/cert-manager) if a more complete solution is required.
+
+You can enable automatic self-signed TLS certificate provisioning via cert-manager by setting the `controller.admissionWebhooks.certManager.enable` value to true.
+
+Please ensure that cert-manager is correctly installed and configured.
+
 ### Helm Error When Upgrading: spec.clusterIP: Invalid value: ""
 
 If you are upgrading this chart from a version between 0.31.0 and 1.2.2 then you may get an error like this:
@@ -240,8 +255,12 @@ Kubernetes: `>=1.20.0-0`
 | commonLabels | object | `{}` |  |
 | controller.addHeaders | object | `{}` | Will add custom headers before sending response traffic to the client according to: https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#add-headers |
 | controller.admissionWebhooks.annotations | object | `{}` |  |
+| controller.admissionWebhooks.certManager.admissionCert.duration | string | `""` |  |
+| controller.admissionWebhooks.certManager.enabled | bool | `false` |  |
+| controller.admissionWebhooks.certManager.rootCert.duration | string | `""` |  |
 | controller.admissionWebhooks.certificate | string | `"/usr/local/certificates/cert"` |  |
 | controller.admissionWebhooks.createSecretJob.resources | object | `{}` |  |
+| controller.admissionWebhooks.createSecretJob.securityContext.allowPrivilegeEscalation | bool | `false` |  |
 | controller.admissionWebhooks.enabled | bool | `true` |  |
 | controller.admissionWebhooks.existingPsp | string | `""` | Use an existing PSP instead of creating one |
 | controller.admissionWebhooks.extraEnvs | list | `[]` | Additional environment variables to set |
@@ -252,11 +271,11 @@ Kubernetes: `>=1.20.0-0`
 | controller.admissionWebhooks.networkPolicyEnabled | bool | `false` |  |
 | controller.admissionWebhooks.objectSelector | object | `{}` |  |
 | controller.admissionWebhooks.patch.enabled | bool | `true` |  |
-| controller.admissionWebhooks.patch.image.digest | string | `"sha256:549e71a6ca248c5abd51cdb73dbc3083df62cf92ed5e6147c780e30f7e007a47"` |  |
+| controller.admissionWebhooks.patch.image.digest | string | `"sha256:39c5b2e3310dc4264d638ad28d9d1d96c4cbb2b2dcfb52368fe4e3c63f61e10f"` |  |
 | controller.admissionWebhooks.patch.image.image | string | `"ingress-nginx/kube-webhook-certgen"` |  |
 | controller.admissionWebhooks.patch.image.pullPolicy | string | `"IfNotPresent"` |  |
 | controller.admissionWebhooks.patch.image.registry | string | `"registry.k8s.io"` |  |
-| controller.admissionWebhooks.patch.image.tag | string | `"v1.3.0"` |  |
+| controller.admissionWebhooks.patch.image.tag | string | `"v20220916-gd32f8c343"` |  |
 | controller.admissionWebhooks.patch.labels | object | `{}` | Labels to be added to patch job resources |
 | controller.admissionWebhooks.patch.nodeSelector."kubernetes.io/os" | string | `"linux"` |  |
 | controller.admissionWebhooks.patch.podAnnotations | object | `{}` |  |
@@ -266,6 +285,7 @@ Kubernetes: `>=1.20.0-0`
 | controller.admissionWebhooks.patch.securityContext.runAsUser | int | `2000` |  |
 | controller.admissionWebhooks.patch.tolerations | list | `[]` |  |
 | controller.admissionWebhooks.patchWebhookJob.resources | object | `{}` |  |
+| controller.admissionWebhooks.patchWebhookJob.securityContext.allowPrivilegeEscalation | bool | `false` |  |
 | controller.admissionWebhooks.port | int | `8443` |  |
 | controller.admissionWebhooks.service.annotations | object | `{}` |  |
 | controller.admissionWebhooks.service.externalIPs | list | `[]` |  |
@@ -275,6 +295,8 @@ Kubernetes: `>=1.20.0-0`
 | controller.affinity | object | `{}` | Affinity and anti-affinity rules for server scheduling to nodes # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity # |
 | controller.allowSnippetAnnotations | bool | `true` | This configuration defines if Ingress Controller should allow users to set their own *-snippet annotations, otherwise this is forbidden / dropped when users add those annotations. Global snippets in ConfigMap are still respected |
 | controller.annotations | object | `{}` | Annotations to be added to the controller Deployment or DaemonSet # |
+| controller.autoscaling.annotations | object | `{}` |  |
+| controller.autoscaling.apiVersion | string | `"autoscaling/v2"` |  |
 | controller.autoscaling.behavior | object | `{}` |  |
 | controller.autoscaling.enabled | bool | `false` |  |
 | controller.autoscaling.maxReplicas | int | `11` |  |
@@ -291,14 +313,15 @@ Kubernetes: `>=1.20.0-0`
 | controller.customTemplate.configMapName | string | `""` |  |
 | controller.dnsConfig | object | `{}` | Optionally customize the pod dnsConfig. |
 | controller.dnsPolicy | string | `"ClusterFirst"` | Optionally change this to ClusterFirstWithHostNet in case you have 'hostNetwork: true'. By default, while using host network, name resolution uses the host's DNS. If you wish nginx-controller to keep resolving names inside the k8s network, use ClusterFirstWithHostNet. |
-| controller.electionID | string | `"ingress-controller-leader"` | Election ID to use for status update |
+| controller.electionID | string | `""` | Election ID to use for status update, by default it uses the controller name combined with a suffix of 'leader' |
 | controller.enableMimalloc | bool | `true` | Enable mimalloc as a drop-in replacement for malloc. # ref: https://github.com/microsoft/mimalloc # |
+| controller.enableTopologyAwareRouting | bool | `false` | This configuration enables Topology Aware Routing feature, used together with service annotation service.kubernetes.io/topology-aware-hints="auto" Defaults to false |
 | controller.existingPsp | string | `""` | Use an existing PSP instead of creating one |
 | controller.extraArgs | object | `{}` | Additional command line arguments to pass to nginx-ingress-controller E.g. to specify the default SSL certificate you can use |
 | controller.extraContainers | list | `[]` | Additional containers to be added to the controller pod. See https://github.com/lemonldap-ng-controller/lemonldap-ng-controller as example. |
 | controller.extraEnvs | list | `[]` | Additional environment variables to set |
 | controller.extraInitContainers | list | `[]` | Containers, which are run before the app containers are started. |
-| controller.extraModules | list | `[]` |  |
+| controller.extraModules | list | `[]` | Modules, which are mounted into the core nginx image. See values.yaml for a sample to add opentelemetry module |
 | controller.extraVolumeMounts | list | `[]` | Additional volumeMounts to the controller main container. |
 | controller.extraVolumes | list | `[]` | Additional volumes to the controller pod. |
 | controller.healthCheckHost | string | `""` | Address to bind the health check endpoint. It is better to set this option to the internal node address if the ingress nginx controller is running in the `hostNetwork: true` mode. |
@@ -310,13 +333,13 @@ Kubernetes: `>=1.20.0-0`
 | controller.hostname | object | `{}` | Optionally customize the pod hostname. |
 | controller.image.allowPrivilegeEscalation | bool | `true` |  |
 | controller.image.chroot | bool | `false` |  |
-| controller.image.digest | string | `"sha256:54f7fe2c6c5a9db9a0ebf1131797109bb7a4d91f56b9b362bde2abd237dd1974"` |  |
-| controller.image.digestChroot | string | `"sha256:a8466b19c621bd550b1645e27a004a5cc85009c858a9ab19490216735ac432b1"` |  |
+| controller.image.digest | string | `"sha256:15be4666c53052484dd2992efacf2f50ea77a78ae8aa21ccd91af6baaa7ea22f"` |  |
+| controller.image.digestChroot | string | `"sha256:0de01e2c316c3ca7847ca13b32d077af7910d07f21a4a82f81061839764f8f81"` |  |
 | controller.image.image | string | `"ingress-nginx/controller"` |  |
 | controller.image.pullPolicy | string | `"IfNotPresent"` |  |
 | controller.image.registry | string | `"registry.k8s.io"` |  |
 | controller.image.runAsUser | int | `101` |  |
-| controller.image.tag | string | `"v1.3.1"` |  |
+| controller.image.tag | string | `"v1.6.4"` |  |
 | controller.ingressClass | string | `"nginx"` | For backwards compatibility with ingress.class annotation, use ingressClass. Algorithm is as follows, first ingressClassName is considered, if not present, controller looks for ingress.class annotation |
 | controller.ingressClassByName | bool | `false` | Process IngressClass per name (additionally as per spec.controller). |
 | controller.ingressClassResource.controllerValue | string | `"k8s.io/ingress-nginx"` | Controller-value of the controller that is processing this ingressClass |
@@ -348,11 +371,13 @@ Kubernetes: `>=1.20.0-0`
 | controller.maxmindLicenseKey | string | `""` | Maxmind license key to download GeoLite2 Databases. # https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases |
 | controller.metrics.enabled | bool | `false` |  |
 | controller.metrics.port | int | `10254` |  |
+| controller.metrics.portName | string | `"metrics"` |  |
 | controller.metrics.prometheusRule.additionalLabels | object | `{}` |  |
 | controller.metrics.prometheusRule.enabled | bool | `false` |  |
 | controller.metrics.prometheusRule.rules | list | `[]` |  |
 | controller.metrics.service.annotations | object | `{}` |  |
 | controller.metrics.service.externalIPs | list | `[]` | List of IP addresses at which the stats-exporter service is available # Ref: https://kubernetes.io/docs/user-guide/services/#external-ips # |
+| controller.metrics.service.labels | object | `{}` | Labels to be added to the metrics service resource |
 | controller.metrics.service.loadBalancerSourceRanges | list | `[]` |  |
 | controller.metrics.service.servicePort | int | `10254` |  |
 | controller.metrics.service.type | string | `"ClusterIP"` |  |
@@ -364,10 +389,13 @@ Kubernetes: `>=1.20.0-0`
 | controller.metrics.serviceMonitor.relabelings | list | `[]` |  |
 | controller.metrics.serviceMonitor.scrapeInterval | string | `"30s"` |  |
 | controller.metrics.serviceMonitor.targetLabels | list | `[]` |  |
-| controller.minAvailable | int | `1` |  |
+| controller.minAvailable | int | `1` | Define either 'minAvailable' or 'maxUnavailable', never both. |
 | controller.minReadySeconds | int | `0` | `minReadySeconds` to avoid killing pods before we are ready # |
 | controller.name | string | `"controller"` |  |
 | controller.nodeSelector | object | `{"kubernetes.io/os":"linux"}` | Node labels for controller pod assignment # Ref: https://kubernetes.io/docs/user-guide/node-selection/ # |
+| controller.opentelemetry.containerSecurityContext.allowPrivilegeEscalation | bool | `false` |  |
+| controller.opentelemetry.enabled | bool | `false` |  |
+| controller.opentelemetry.image | string | `"registry.k8s.io/ingress-nginx/opentelemetry:v20230107-helm-chart-4.4.2-2-g96b3d2165@sha256:331b9bebd6acfcd2d3048abbdd86555f5be76b7e3d0b5af4300b04235c6056c9"` |  |
 | controller.podAnnotations | object | `{}` | Annotations to be added to controller pods # |
 | controller.podLabels | object | `{}` | Labels to add to the pod container metadata |
 | controller.podSecurityContext | object | `{}` | Security Context policies for controller pods |
@@ -455,6 +483,7 @@ Kubernetes: `>=1.20.0-0`
 | defaultBackend.livenessProbe.successThreshold | int | `1` |  |
 | defaultBackend.livenessProbe.timeoutSeconds | int | `5` |  |
 | defaultBackend.minAvailable | int | `1` |  |
+| defaultBackend.minReadySeconds | int | `0` | `minReadySeconds` to avoid killing pods before we are ready # |
 | defaultBackend.name | string | `"defaultbackend"` |  |
 | defaultBackend.nodeSelector | object | `{"kubernetes.io/os":"linux"}` | Node labels for default backend pod assignment # Ref: https://kubernetes.io/docs/user-guide/node-selection/ # |
 | defaultBackend.podAnnotations | object | `{}` | Annotations to be added to default backend pods # |
@@ -478,6 +507,7 @@ Kubernetes: `>=1.20.0-0`
 | defaultBackend.serviceAccount.create | bool | `true` |  |
 | defaultBackend.serviceAccount.name | string | `""` |  |
 | defaultBackend.tolerations | list | `[]` | Node tolerations for server scheduling to nodes with taints # Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/ # |
+| defaultBackend.updateStrategy | object | `{}` | The update strategy to apply to the Deployment or DaemonSet # |
 | dhParam | string | `nil` | A base64-encoded Diffie-Hellman parameter. This can be generated with: `openssl dhparam 4096 2> /dev/null | base64` # Ref: https://github.com/kubernetes/ingress-nginx/tree/main/docs/examples/customization/ssl-dh-param |
 | imagePullSecrets | list | `[]` | Optional array of imagePullSecrets containing private registry credentials # Ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/ |
 | podSecurityPolicy.enabled | bool | `false` |  |

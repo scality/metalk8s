@@ -24,6 +24,12 @@
   The pause image has been bump to 3.9
   (PR[#4006](https://github.com/scality/metalk8s/pull/4006))
 
+- Bump ingress-nginx chart version to
+  [4.5.2](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.5.2)
+  The controller image has been bumped accordingly to
+  [v1.6.4](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.6.4)
+  (PR[#4007](https://github.com/scality/metalk8s/pull/4007))
+
 ### Bug fixes
 
 - Fix a bug in Workload Plane Ingress Virtual IPs that make the DaemonSet Pod
