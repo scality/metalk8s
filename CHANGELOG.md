@@ -30,6 +30,9 @@
   [v1.6.4](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.6.4)
   (PR[#4007](https://github.com/scality/metalk8s/pull/4007))
 
+- Bump nginx image to [1.23.3-alpine](https://github.com/nginx/nginx/releases/tag/release-1.23.3)
+  (PR[#4011](https://github.com/scality/metalk8s/pull/4011))
+
 ### Bug fixes
 
 - Fix a bug in Workload Plane Ingress Virtual IPs that make the DaemonSet Pod
