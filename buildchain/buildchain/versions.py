@@ -65,8 +65,8 @@ SHELL_UI_VERSION: str = json.loads(shell_ui_package_contents)["version"]
 
 ROCKY_BASE_IMAGE: str = "docker.io/rockylinux"
 ROCKY_BASE_IMAGE_SHA256: str = (
-    # rockylinux:8.7.20221219
-    "89de851bce1aaf33989634402daf4314b14d2b005c9d3baaecb915b1bf0968c0"
+    # rockylinux:8.7.20230215
+    "043e499f2d3a62709f689a1a2d04c904ba2c5e0d3c50e57d9aa9a715536df2bb"
 )
 
 ETCD_VERSION: str = "3.5.6"

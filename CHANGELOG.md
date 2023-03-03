@@ -37,6 +37,10 @@
   and `metalk8s-keepalived` image to `alpine:3.17.2`
   (PR[#4011](https://github.com/scality/metalk8s/pull/4011))
 
+- Bump the rocky base image used by `salt-master` and `metalk8s-utils`
+  images to `rockylinux:8.7.20230215`
+  (PR[#4011](https://github.com/scality/metalk8s/pull/4011))
+
 ### Bug fixes
 
 - Fix a bug in Workload Plane Ingress Virtual IPs that make the DaemonSet Pod
