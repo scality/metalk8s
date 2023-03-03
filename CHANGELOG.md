@@ -41,6 +41,12 @@
   images to `rockylinux:8.7.20230215`
   (PR[#4011](https://github.com/scality/metalk8s/pull/4011))
 
+- Bump dex chart version to
+  [0.13.0](https://github.com/dexidp/helm-charts/releases/tag/dex-0.13.0)
+  Dex itself has been bumped accordingly to
+  [v2.35.3](https://github.com/dexidp/dex/releases/tag/v2.35.3)
+  (PR[#4012](https://github.com/scality/metalk8s/pull/4012))
+
 ### Bug fixes
 
 - Fix a bug in Workload Plane Ingress Virtual IPs that make the DaemonSet Pod

@@ -5,6 +5,10 @@
 # -- Number of replicas (pods) to launch.
 replicaCount: 1
 
+# -- Labels to apply to all resources and selectors.
+commonLabels: {}
+# team_name: dev
+
 image:
   # -- Name of the image repository to pull the container image from.
   repository: ghcr.io/dexidp/dex

@@ -123,8 +123,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="dex",
-        version="v2.34.0",
-        digest="sha256:72b9cd039152ed5e8c5c745ac62a131b943bec9f9fe0b995e8821a4e35c8522e",
+        version="v2.35.3",
+        digest="sha256:13964b29d63efcd1490d1a500c4332c642655fe4ca613683fa4dde9a205dd0f7",
     ),
     Image(
         name="etcd",
