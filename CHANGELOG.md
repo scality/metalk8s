@@ -30,6 +30,12 @@
   [v1.6.4](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.6.4)
   (PR[#4007](https://github.com/scality/metalk8s/pull/4007))
 
+- Bump fluent-bit chart version to
+  [0.24.0](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.24.0)
+  The fluent-bit image has been bumped accordingly to
+  [2.0.9](https://github.com/fluent/fluent-bit/releases/tag/v2.0.9)
+  (PR[#4013](https://github.com/scality/metalk8s/pull/4013))
+
 - Bump nginx image to [1.23.3-alpine](https://github.com/nginx/nginx/releases/tag/release-1.23.3)
   (PR[#4011](https://github.com/scality/metalk8s/pull/4011))
 
