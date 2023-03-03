@@ -24,6 +24,9 @@
   The pause image has been bump to 3.9
   (PR[#4006](https://github.com/scality/metalk8s/pull/4006))
 
+- Bump Calico version to [3.25.0](https://github.com/projectcalico/calico/releases/tag/v3.25.0)
+  (PR[#4014](https://github.com/scality/metalk8s/pull/4014))
+
 - Bump ingress-nginx chart version to
   [4.5.2](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.5.2)
   The controller image has been bumped accordingly to
