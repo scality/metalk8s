@@ -1,5 +1,6 @@
 #!jinja | metalk8s_kubernetes
 
+{%- from "metalk8s/map.jinja" import repo with context %}
 {%- from "metalk8s/repo/macro.sls" import build_image_name with context %}
 {%- set fluent_bit_defaults = salt.slsutil.renderer('salt://metalk8s/addons/logging/fluent-bit/config/fluent-bit.yaml', saltenv=saltenv) %}
 {%- set fluent_bit = salt.metalk8s_service_configuration.get_service_conf('metalk8s-logging', 'metalk8s-fluent-bit-config', fluent_bit_defaults) %}

@@ -24,6 +24,10 @@ It performs the following tasks:
       "{{ build_image_name("<imgname>", False) }}"
     - "__full_image__(<imgname>)", to replace with
       "{{ build_image_name("<imgname>") }}"
+    - "__image_no_reg__(<imgname>)", to replace with
+      "{{ build_image_name("<imgname>", False, False) }}"
+    - "__full_image_no_reg__(<imgname>)", to replace with
+      "{{ build_image_name("<imgname>", True, False) }}"
 """
 
 import argparse
@@ -51,6 +55,7 @@ yaml.SafeLoader.add_constructor("tag:yaml.org,2002:value", lambda _, n: n.value)
 START_BLOCK = """
 #!jinja | metalk8s_kubernetes
 
+{{%- from "metalk8s/map.jinja" import repo with context %}}
 {{%- from "metalk8s/repo/macro.sls" import build_image_name with context %}}
 {csc_defaults}
 {configlines}
@@ -198,6 +203,20 @@ def replace_magic_strings(rendered_yaml):
     result = re.sub(
         r"__full_image__\((?P<imgname>[\w\-]+)\)",
         r'{% endraw -%}{{ build_image_name("\g<imgname>") }}{%- raw %}',
+        result,
+    )
+
+    # Handle __image_no_reg__
+    result = re.sub(
+        r"__image_no_reg__\((?P<imgname>[\w\-]+)\)",
+        r'{% endraw -%}{{ build_image_name("\g<imgname>", False, False) }}{%- raw %}',
+        result,
+    )
+
+    # Handle __full_image_no_reg__ (include version tag in the rendered name)
+    result = re.sub(
+        r"__full_image_no_reg__\((?P<imgname>[\w\-]+)\)",
+        r'{% endraw -%}{{ build_image_name("\g<imgname>", True, False) }}{%- raw %}',
         result,
     )
 
