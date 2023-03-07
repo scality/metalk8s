@@ -1,6 +1,6 @@
 nameOverride: prometheus-operator
 
-kubeTargetVersionOverride: 1.21.0
+kubeTargetVersionOverride: 1.25.0
 
 commonLabels:
   # This needs to remain 'Tiller' for the render script to work properly
@@ -9,10 +9,15 @@ commonLabels:
   app.kubernetes.io/managed-by: 'metalk8s'
   metalk8s.scality.com/monitor: ''
 
+# NOTE: cannot use this at the moment because kube-state-metrics uses it incorrectly
+# global:
+#   imageRegistry: '__var__(repo.registry_endpoint)'
+
 alertmanager:
   alertmanagerSpec:
     image:
-      repository: '__image__(alertmanager)'
+      registry: '__var__(repo.registry_endpoint)'
+      repository: '__image_no_reg__(alertmanager)'
 
     nodeSelector:
       node-role.kubernetes.io/infra: ''
@@ -63,11 +68,13 @@ alertmanager:
 
 prometheusOperator:
   thanosImage:
-    repository: '__image__(thanos)'
+    registry: '__var__(repo.registry_endpoint)'
+    repository: '__image_no_reg__(thanos)'
 
   prometheusConfigReloader:
     image:
-      repository: '__image__(prometheus-config-reloader)'
+      registry: '__var__(repo.registry_endpoint)'
+      repository: '__image_no_reg__(prometheus-config-reloader)'
 
   tls:
     enabled: false
@@ -87,7 +94,8 @@ prometheusOperator:
       effect: 'NoSchedule'
 
   image:
-    repository: '__image__(prometheus-operator)'
+    registry: '__var__(repo.registry_endpoint)'
+    repository: '__image_no_reg__(prometheus-operator)'
 
 prometheus:
   thanosService:
@@ -98,7 +106,8 @@ prometheus:
       image: '__full_image__(thanos)'
 
     image:
-      repository: '__image__(prometheus)'
+      registry: '__var__(repo.registry_endpoint)'
+      repository: '__image_no_reg__(prometheus)'
 
     tolerations:
       - key: 'node-role.kubernetes.io/bootstrap'
@@ -160,12 +169,12 @@ grafana:
 
   image:
     repository: '__image__(grafana)'
-    tag: '8.5.0-ubuntu'
+    tag: '9.3.8-ubuntu'
 
   sidecar:
     image:
       repository: '__image__(k8s-sidecar)'
-      tag: 1.21.0
+      tag: '1.22.3'
 
     dashboards:
       searchNamespace: ALL
@@ -216,7 +225,7 @@ grafana:
       - 'null'
 
   # NOTE: This config is managed directly in a salt state
-  grafana.ini: {}
+  createConfigmap: false
 
   testFramework:
     enabled: false
@@ -253,7 +262,8 @@ prometheus-node-exporter:
     listenOnAllInterfaces: false
 
   image:
-    repository: '__image__(node-exporter)'
+    registry: '__var__(repo.registry_endpoint)'
+    repository: '__image_no_reg__(node-exporter)'
   extraArgs:
     - --collector.diskstats.ignored-devices=^(ram|fd)\\d+$
     - --collector.filesystem.ignored-mount-points=^/(dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+|var/lib/containerd/.+)($|/)

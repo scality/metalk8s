@@ -25,7 +25,7 @@ The default configuration values for Alertmanager are specified below:
 
 .. literalinclude:: ../../salt/metalk8s/addons/prometheus-operator/config/alertmanager.yaml
    :language: yaml
-   :lines: 3-
+   :lines: 9-
 
 See :ref:`csc-alertmanager-customization` to override these defaults.
 

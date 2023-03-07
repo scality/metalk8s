@@ -60,12 +60,54 @@
   [4.1.1](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-adapter-4.1.1)
   (PR[#4015](https://github.com/scality/metalk8s/pull/4015))
 
+- Bump kube-prometheus-stack chart version to
+  [45.5.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-45.5.0)
+  (PR[#4017](https://github.com/scality/metalk8s/pull/4017))
+
+  This change includes:
+
+  - Bump Prometheus container version to
+    [2.42.0](https://github.com/prometheus/prometheus/releases/tag/v2.42.0)
+  - Bump Thanos container version to
+    [0.30.2](https://github.com/thanos-io/thanos/releases/tag/v0.30.2)
+  - Bump grafana chart version to
+    [6.51.2](https://github.com/grafana/helm-charts/releases/tag/grafana-6.51.2),
+    Grafana container version to
+    [9.3.8](https://github.com/grafana/grafana/releases/tag/v9.3.8),
+    and kiwigrid/k8s-sidecar container version to
+    [1.22.3](https://github.com/kiwigrid/k8s-sidecar/releases/tag/1.22.3)
+  - Bump kube-state-metrics chart version to
+    [4.31.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-state-metrics-4.31.0)
+    and kube-state-metrics container version to
+    [2.8.0](https://github.com/kubernetes/kube-state-metrics/releases/tag/v2.8.0)
+  - Bump prometheus-node-exporter chart version to
+    [4.14.0](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-node-exporter-4.14.0)
+    and node-exporter container version to
+    [1.5.0](https://github.com/prometheus/node_exporter/releases/tag/v1.5.0)
+  - Bump prometheus-operator and prometheus-config-reloader containers version to
+    [0.63.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.63.0)
+
 ### Bug fixes
 
 - Fix a bug in Workload Plane Ingress Virtual IPs that make the DaemonSet Pod
   goes in CrashLoopBackOff because keepalived wrongly pick the loopback
   interface instead of the actual interface
   (PR[#4000](https://github.com/scality/metalk8s/pull/4000))
+
+### Removals
+
+- Some metrics were removed when bumping kube-prometheus-stack chart to
+  [45.5.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-45.5.0)
+  (PR[#4017](https://github.com/scality/metalk8s/pull/4017)):
+
+  - kube-apiserver metrics:
+    - `apiserver_request_duration_seconds_bucket;(0.15|0.2|0.3|0.35|0.4|0.45|0.6|0.7|0.8|0.9|1.25|1.5|1.75|2|3|3.5|4|4.5|6|7|8|9|15|25|40|50)`
+  - kubelet metrics:
+    - `container_cpu_(cfs_throttled_seconds_total|load_average_10s|system_seconds_total|user_seconds_total)`
+    - `container_fs_(io_current|io_time_seconds_total|io_time_weighted_seconds_total|reads_merged_total|sector_reads_total|sector_writes_total|writes_merged_total)`
+    - `container_memory_(mapped_file|swap)`
+    - `container_(file_descriptors|tasks_state|threads_max)`
+    - `container_spec.*`
 
 ## Release 124.1.5 (in development)
 

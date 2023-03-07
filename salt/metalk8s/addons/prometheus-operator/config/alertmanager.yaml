@@ -1,5 +1,11 @@
 #!yaml
 
+# NOTE: Maintainers should ensure that `spec.notification.config` in in sync with
+# the current kube-prometheus-stack chart, by comparing with `alertmanager.config` in
+# charts/kube-prometheus-stack/values.yaml
+# Keep in mind that we need the 'metalk8s-alert-logger' receiver at all times to
+# enable alert history through Loki!
+
 # Configuration of the Alertmanager service
 apiVersion: addons.metalk8s.scality.com
 kind: AlertmanagerConfig
@@ -11,19 +17,44 @@ spec:
     config:
       global:
         resolve_timeout: 5m
-      templates: []
+      inhibit_rules:
+        - source_matchers:
+            - 'severity = critical'
+          target_matchers:
+            - 'severity =~ warning|info'
+          equal:
+            - 'namespace'
+            - 'alertname'
+        - source_matchers:
+            - 'severity = warning'
+          target_matchers:
+            - 'severity = info'
+          equal:
+            - 'namespace'
+            - 'alertname'
+        - source_matchers:
+            - 'alertname = InfoInhibitor'
+          target_matchers:
+            - 'severity = info'
+          equal:
+            - 'namespace'
       route:
-        group_by: ['job']
+        group_by: ['namespace']
         group_wait: 30s
         group_interval: 5m
         repeat_interval: 12h
-        receiver: 'metalk8s-alert-logger'
+        receiver: 'null'
         routes:
         - receiver: 'metalk8s-alert-logger'
           continue: True
+        - receiver: 'null'
+          matchers:
+            - alertname =~ "InfoInhibitor|Watchdog"
       receivers:
+        - name: 'null'
         - name: 'metalk8s-alert-logger'
           webhook_configs:
             - send_resolved: True
               url: 'http://metalk8s-alert-logger:19094/'
-      inhibit_rules: []
+      templates:
+      - '/etc/alertmanager/config/*.tmpl'

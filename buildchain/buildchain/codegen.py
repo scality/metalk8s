@@ -195,7 +195,6 @@ def codegen_chart_kube_prometheus_stack() -> types.TaskDict:
         "--patch 'PrometheusRule,metalk8s-monitoring,"
         "prometheus-operator-kubernetes-system-kubelet,"
         'spec:groups:0:rules:1:for,"5m"\' '
-        "--remove-manifest ConfigMap prometheus-operator-grafana "
         f"--drop-prometheus-rules {drop_rule_file} "
         f"--output {target_sls}"
     )

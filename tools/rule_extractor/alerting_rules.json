@@ -20,7 +20,7 @@
     {
         "message": "The Kubernetes control plane is at risk.",
         "name": "KubernetesControlPlaneAtRisk",
-        "query": "sum(ALERTS{alertname=\"KubeAPIErrorBudgetBurn\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"etcdHighNumberOfFailedGRPCRequests\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"etcdGRPCRequestsSlow\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"etcdHighNumberOfFailedHTTPRequests\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"etcdInsufficientMembers\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"etcdNoLeader\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"KubeStateMetricsListErrors\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"KubeStateMetricsWatchErrors\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"KubeAPIDown\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"KubeClientCertificateExpiration\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"KubeControllerManagerDown\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"KubeletDown\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"KubeSchedulerDown\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
+        "query": "sum(ALERTS{alertname=\"KubeAPIErrorBudgetBurn\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"etcdHighNumberOfFailedGRPCRequests\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"etcdGRPCRequestsSlow\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"etcdInsufficientMembers\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"etcdMembersDown\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"etcdNoLeader\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"etcdDatabaseQuotaLowSpace\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"etcdHighFsyncDurations\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"KubeStateMetricsListErrors\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"KubeStateMetricsWatchErrors\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"KubeAPIDown\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"KubeClientCertificateExpiration\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"KubeControllerManagerDown\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"KubeletDown\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"KubeSchedulerDown\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
         "severity": "critical"
     },
     {
@@ -32,7 +32,7 @@
     {
         "message": "The node {{ $labels.instance }} is at risk.",
         "name": "NodeAtRisk",
-        "query": "sum by(instance) (ALERTS{alertname=\"KubeletClientCertificateExpiration\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"NodeRAIDDegraded\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"SystemPartitionAtRisk\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
+        "query": "sum by (instance) (ALERTS{alertname=\"KubeletClientCertificateExpiration\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"NodeRAIDDegraded\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"SystemPartitionAtRisk\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
         "severity": "critical"
     },
     {
@@ -50,13 +50,13 @@
     {
         "message": "The system partition {{ $labels.mountpoint }} on node {{ $labels.instance }} is at risk.",
         "name": "SystemPartitionAtRisk",
-        "query": "sum by(mountpoint, instance) (ALERTS{alertname=\"NodeFileDescriptorLimit\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"NodeFilesystemAlmostOutOfSpace\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"NodeFilesystemAlmostOutOfFiles\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"NodeFilesystemFilesFillingUp\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"NodeFilesystemSpaceFillingUp\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
+        "query": "sum by (mountpoint, instance) (ALERTS{alertname=\"NodeFileDescriptorLimit\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"NodeFilesystemAlmostOutOfSpace\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"NodeFilesystemAlmostOutOfFiles\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"NodeFilesystemFilesFillingUp\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"NodeFilesystemSpaceFillingUp\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
         "severity": "critical"
     },
     {
         "message": "The volume {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} on node {{ $labels.instance }} is at risk.",
         "name": "VolumeAtRisk",
-        "query": "sum by(persistentvolumeclaim, namespace, instance) (ALERTS{alertname=\"KubePersistentVolumeFillingUp\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"KubePersistentVolumeErrors\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
+        "query": "sum by (persistentvolumeclaim, namespace, instance) (ALERTS{alertname=\"KubePersistentVolumeFillingUp\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"KubePersistentVolumeErrors\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
         "severity": "critical"
     },
     {
@@ -110,7 +110,7 @@
     {
         "message": "The Kubernetes control plane is degraded.",
         "name": "KubernetesControlPlaneDegraded",
-        "query": "sum(ALERTS{alertname=\"KubeAPIErrorBudgetBurn\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeAPITerminatedRequests\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"etcdHighNumberOfFailedGRPCRequests\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"etcdHTTPRequestsSlow\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"etcdHighCommitDurations\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"etcdHighFsyncDurations\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"etcdHighNumberOfFailedHTTPRequests\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"etcdHighNumberOfFailedProposals\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"etcdHighNumberOfLeaderChanges\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"etcdMemberCommunicationSlow\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeCPUOvercommit\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeCPUQuotaOvercommit\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeMemoryOvercommit\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeMemoryQuotaOvercommit\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeClientCertificateExpiration\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeClientErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeVersionMismatch\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"coredns\",namespace=~\"kube-system\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"coredns\",namespace=~\"kube-system\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"prometheus-adapter\",namespace=~\"metalk8s-monitoring\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"prometheus-adapter\",namespace=~\"metalk8s-monitoring\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"prometheus-operator-kube-state-metrics\",namespace=~\"metalk8s-monitoring\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"prometheus-operator-kube-state-metrics\",namespace=~\"metalk8s-monitoring\",severity=\"warning\"}) >= 1",
+        "query": "sum(ALERTS{alertname=\"KubeAPIErrorBudgetBurn\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeAPITerminatedRequests\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"etcdHighNumberOfFailedGRPCRequests\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"etcdHighCommitDurations\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"etcdHighFsyncDurations\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"etcdHighNumberOfFailedProposals\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"etcdHighNumberOfLeaderChanges\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"etcdMemberCommunicationSlow\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"etcdDatabaseHighFragmentationRatio\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"etcdExcessiveDatabaseGrowth\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeCPUOvercommit\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeCPUQuotaOvercommit\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeMemoryOvercommit\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeMemoryQuotaOvercommit\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeClientCertificateExpiration\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeClientErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeVersionMismatch\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"coredns\",namespace=~\"kube-system\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"coredns\",namespace=~\"kube-system\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"prometheus-adapter\",namespace=~\"metalk8s-monitoring\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"prometheus-adapter\",namespace=~\"metalk8s-monitoring\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"prometheus-operator-kube-state-metrics\",namespace=~\"metalk8s-monitoring\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"prometheus-operator-kube-state-metrics\",namespace=~\"metalk8s-monitoring\",severity=\"warning\"}) >= 1",
         "severity": "warning"
     },
     {
@@ -122,7 +122,7 @@
     {
         "message": "The monitoring service is degraded.",
         "name": "MonitoringServiceDegraded",
-        "query": "sum(ALERTS{alertname=\"PrometheusLabelLimitHit\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusTargetLimitHit\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusTSDBReloadsFailing\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusTSDBCompactionsFailing\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusRemoteWriteDesiredShards\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusOutOfOrderTimestamps\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusNotificationQueueRunningFull\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusNotIngestingSamples\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusNotConnectedToAlertmanagers\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusMissingRuleEvaluations\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusErrorSendingAlertsToSomeAlertmanagers\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusDuplicateTimestamps\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusOperatorWatchErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusOperatorSyncFailed\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusOperatorRejectedResources\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusOperatorReconcileErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusOperatorNotReady\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusOperatorNodeLookupErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusOperatorListErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeStatefulSetReplicasMismatch\",alertstate=\"firing\",namespace=~\"metalk8s-monitoring\",severity=\"warning\",statefulset=~\"prometheus-prometheus-operator-prometheus\"} or ALERTS{alertname=\"KubeStatefulSetGenerationMismatch\",alertstate=\"firing\",namespace=~\"metalk8s-monitoring\",severity=\"warning\",statefulset=~\"prometheus-prometheus-operator-prometheus\"} or ALERTS{alertname=\"KubeStatefulSetUpdateNotRolledOut\",alertstate=\"firing\",namespace=~\"metalk8s-monitoring\",severity=\"warning\",statefulset=~\"prometheus-prometheus-operator-prometheus\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"prometheus-operator-operator\",namespace=~\"metalk8s-monitoring\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"prometheus-operator-operator\",namespace=~\"metalk8s-monitoring\",severity=\"warning\"} or ALERTS{alertname=\"KubeDaemonSetNotScheduled\",alertstate=\"firing\",daemonset=~\"prometheus-operator-prometheus-node-exporter\",namespace=~\"metalk8s-monitoring\",severity=\"warning\"} or ALERTS{alertname=\"KubeDaemonSetMisScheduled\",alertstate=\"firing\",daemonset=~\"prometheus-operator-prometheus-node-exporter\",namespace=~\"metalk8s-monitoring\",severity=\"warning\"} or ALERTS{alertname=\"KubeDaemonSetRolloutStuck\",alertstate=\"firing\",daemonset=~\"prometheus-operator-prometheus-node-exporter\",namespace=~\"metalk8s-monitoring\",severity=\"warning\"}) >= 1",
+        "query": "sum(ALERTS{alertname=\"PrometheusLabelLimitHit\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusTargetLimitHit\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusTSDBReloadsFailing\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusTSDBCompactionsFailing\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusRemoteWriteDesiredShards\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusOutOfOrderTimestamps\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusNotificationQueueRunningFull\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusNotIngestingSamples\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusNotConnectedToAlertmanagers\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusMissingRuleEvaluations\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusErrorSendingAlertsToSomeAlertmanagers\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusDuplicateTimestamps\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusOperatorWatchErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusOperatorSyncFailed\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusOperatorRejectedResources\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusOperatorReconcileErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusOperatorNotReady\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusOperatorNodeLookupErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusOperatorListErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PrometheusHighQueryLoad\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeStatefulSetReplicasMismatch\",alertstate=\"firing\",namespace=~\"metalk8s-monitoring\",severity=\"warning\",statefulset=~\"prometheus-prometheus-operator-prometheus\"} or ALERTS{alertname=\"KubeStatefulSetGenerationMismatch\",alertstate=\"firing\",namespace=~\"metalk8s-monitoring\",severity=\"warning\",statefulset=~\"prometheus-prometheus-operator-prometheus\"} or ALERTS{alertname=\"KubeStatefulSetUpdateNotRolledOut\",alertstate=\"firing\",namespace=~\"metalk8s-monitoring\",severity=\"warning\",statefulset=~\"prometheus-prometheus-operator-prometheus\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"prometheus-operator-operator\",namespace=~\"metalk8s-monitoring\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"prometheus-operator-operator\",namespace=~\"metalk8s-monitoring\",severity=\"warning\"} or ALERTS{alertname=\"KubeDaemonSetNotScheduled\",alertstate=\"firing\",daemonset=~\"prometheus-operator-prometheus-node-exporter\",namespace=~\"metalk8s-monitoring\",severity=\"warning\"} or ALERTS{alertname=\"KubeDaemonSetMisScheduled\",alertstate=\"firing\",daemonset=~\"prometheus-operator-prometheus-node-exporter\",namespace=~\"metalk8s-monitoring\",severity=\"warning\"} or ALERTS{alertname=\"KubeDaemonSetRolloutStuck\",alertstate=\"firing\",daemonset=~\"prometheus-operator-prometheus-node-exporter\",namespace=~\"metalk8s-monitoring\",severity=\"warning\"}) >= 1",
         "severity": "warning"
     },
     {
@@ -134,7 +134,7 @@
     {
         "message": "The node {{ $labels.instance }} is degraded.",
         "name": "NodeDegraded",
-        "query": "sum by(instance) (ALERTS{alertname=\"KubeNodeNotReady\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeNodeReadinessFlapping\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeNodeUnreachable\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletClientCertificateExpiration\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletClientCertificateRenewalErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletPlegDurationHigh\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletPodStartUpLatencyHigh\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletServerCertificateExpiration\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletServerCertificateRenewalErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeClockNotSynchronising\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeClockSkewDetected\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeRAIDDiskFailure\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeTextFileCollectorScrapeError\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"SystemPartitionDegraded\",alertstate=\"firing\",severity=\"warning\"}) >= 1",
+        "query": "sum by (instance) (ALERTS{alertname=\"KubeNodeNotReady\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeNodeReadinessFlapping\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeNodeUnreachable\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletClientCertificateExpiration\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletClientCertificateRenewalErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletPlegDurationHigh\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletPodStartUpLatencyHigh\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletServerCertificateExpiration\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"KubeletServerCertificateRenewalErrors\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeClockNotSynchronising\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeClockSkewDetected\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeRAIDDiskFailure\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeTextFileCollectorScrapeError\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"SystemPartitionDegraded\",alertstate=\"firing\",severity=\"warning\"}) >= 1",
         "severity": "warning"
     },
     {
@@ -152,43 +152,43 @@
     {
         "message": "The system partition {{ $labels.mountpoint }} on node {{ $labels.instance }} is degraded.",
         "name": "SystemPartitionDegraded",
-        "query": "sum by(mountpoint, instance) (ALERTS{alertname=\"NodeFileDescriptorLimit\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeFilesystemAlmostOutOfSpace\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeFilesystemAlmostOutOfFiles\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeFilesystemFilesFillingUp\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeFilesystemSpaceFillingUp\",alertstate=\"firing\",severity=\"warning\"}) >= 1",
+        "query": "sum by (mountpoint, instance) (ALERTS{alertname=\"NodeFileDescriptorLimit\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeFilesystemAlmostOutOfSpace\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeFilesystemAlmostOutOfFiles\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeFilesystemFilesFillingUp\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeFilesystemSpaceFillingUp\",alertstate=\"firing\",severity=\"warning\"}) >= 1",
         "severity": "warning"
     },
     {
         "message": "The volume {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} on node {{ $labels.instance }} is degraded.",
         "name": "VolumeDegraded",
-        "query": "sum by(persistentvolumeclaim, namespace, instance) (ALERTS{alertname=\"KubePersistentVolumeFillingUp\",alertstate=\"firing\",severity=\"warning\"}) >= 1",
+        "query": "sum by (persistentvolumeclaim, namespace, instance) (ALERTS{alertname=\"KubePersistentVolumeFillingUp\",alertstate=\"firing\",severity=\"warning\"}) >= 1",
         "severity": "warning"
     },
     {
         "message": "Half or more of the Alertmanager instances within the same cluster are crashlooping.",
         "name": "AlertmanagerClusterCrashlooping",
-        "query": "(count by(namespace, service) (changes(process_start_time_seconds{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[10m]) > 4) / count by(namespace, service) (up{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})) >= 0.5",
+        "query": "(count by (namespace, service) (changes(process_start_time_seconds{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[10m]) > 4) / count by (namespace, service) (up{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})) >= 0.5",
         "severity": "critical"
     },
     {
         "message": "Half or more of the Alertmanager instances within the same cluster are down.",
         "name": "AlertmanagerClusterDown",
-        "query": "(count by(namespace, service) (avg_over_time(up{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) < 0.5) / count by(namespace, service) (up{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})) >= 0.5",
+        "query": "(count by (namespace, service) (avg_over_time(up{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) < 0.5) / count by (namespace, service) (up{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})) >= 0.5",
         "severity": "critical"
     },
     {
         "message": "All Alertmanager instances in a cluster failed to send notifications to a critical integration.",
         "name": "AlertmanagerClusterFailedToSendAlerts",
-        "query": "min by(namespace, service, integration) (rate(alertmanager_notifications_failed_total{integration=~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) / rate(alertmanager_notifications_total{integration=~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m])) > 0.01",
+        "query": "min by (namespace, service, integration) (rate(alertmanager_notifications_failed_total{integration=~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) / rate(alertmanager_notifications_total{integration=~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m])) > 0.01",
         "severity": "critical"
     },
     {
         "message": "All Alertmanager instances in a cluster failed to send notifications to a non-critical integration.",
         "name": "AlertmanagerClusterFailedToSendAlerts",
-        "query": "min by(namespace, service, integration) (rate(alertmanager_notifications_failed_total{integration!~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) / rate(alertmanager_notifications_total{integration!~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m])) > 0.01",
+        "query": "min by (namespace, service, integration) (rate(alertmanager_notifications_failed_total{integration!~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) / rate(alertmanager_notifications_total{integration!~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m])) > 0.01",
         "severity": "warning"
     },
     {
         "message": "Alertmanager instances within the same cluster have different configurations.",
         "name": "AlertmanagerConfigInconsistent",
-        "query": "count by(namespace, service) (count_values by(namespace, service) (\"config_hash\", alertmanager_config_hash{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})) != 1",
+        "query": "count by (namespace, service) (count_values by (namespace, service) (\"config_hash\", alertmanager_config_hash{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})) != 1",
         "severity": "critical"
     },
     {
@@ -206,7 +206,7 @@
     {
         "message": "A member of an Alertmanager cluster has not found all other cluster members.",
         "name": "AlertmanagerMembersInconsistent",
-        "query": "max_over_time(alertmanager_cluster_members{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) < on(namespace, service) group_left() count by(namespace, service) (max_over_time(alertmanager_cluster_members{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]))",
+        "query": "max_over_time(alertmanager_cluster_members{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) < on (namespace, service) group_left () count by (namespace, service) (max_over_time(alertmanager_cluster_members{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]))",
         "severity": "critical"
     },
     {
@@ -216,79 +216,91 @@
         "severity": "warning"
     },
     {
-        "message": "etcd cluster \"{{ $labels.job }}\": gRPC requests to {{ $labels.grpc_method }} are taking {{ $value }}s on etcd instance {{ $labels.instance }}.",
-        "name": "etcdGRPCRequestsSlow",
-        "query": "histogram_quantile(0.99, sum by(job, instance, grpc_service, grpc_method, le) (rate(grpc_server_handling_seconds_bucket{grpc_type=\"unary\",job=~\".*etcd.*\"}[5m]))) > 0.15",
-        "severity": "critical"
-    },
-    {
-        "message": "etcd instance {{ $labels.instance }} HTTP requests to {{ $labels.method }} are slow.",
-        "name": "etcdHTTPRequestsSlow",
-        "query": "histogram_quantile(0.99, rate(etcd_http_successful_duration_seconds_bucket[5m])) > 0.15",
+        "message": "etcd database size in use is less than 50% of the actual allocated storage.",
+        "name": "etcdDatabaseHighFragmentationRatio",
+        "query": "(last_over_time(etcd_mvcc_db_total_size_in_use_in_bytes[5m]) / last_over_time(etcd_mvcc_db_total_size_in_bytes[5m])) < 0.5",
         "severity": "warning"
     },
     {
-        "message": "etcd cluster \"{{ $labels.job }}\": 99th percentile commit durations {{ $value }}s on etcd instance {{ $labels.instance }}.",
+        "message": "etcd cluster database is running full.",
+        "name": "etcdDatabaseQuotaLowSpace",
+        "query": "(last_over_time(etcd_mvcc_db_total_size_in_bytes[5m]) / last_over_time(etcd_server_quota_backend_bytes[5m])) * 100 > 95",
+        "severity": "critical"
+    },
+    {
+        "message": "etcd cluster database growing very fast.",
+        "name": "etcdExcessiveDatabaseGrowth",
+        "query": "predict_linear(etcd_mvcc_db_total_size_in_bytes[4h], 4 * 60 * 60) > etcd_server_quota_backend_bytes",
+        "severity": "warning"
+    },
+    {
+        "message": "etcd grpc requests are slow",
+        "name": "etcdGRPCRequestsSlow",
+        "query": "histogram_quantile(0.99, sum without (grpc_type) (rate(grpc_server_handling_seconds_bucket{grpc_method!=\"Defragment\",grpc_type=\"unary\",job=~\".*etcd.*\"}[5m]))) > 0.15",
+        "severity": "critical"
+    },
+    {
+        "message": "etcd cluster 99th percentile commit durations are too high.",
         "name": "etcdHighCommitDurations",
         "query": "histogram_quantile(0.99, rate(etcd_disk_backend_commit_duration_seconds_bucket{job=~\".*etcd.*\"}[5m])) > 0.25",
         "severity": "warning"
     },
     {
-        "message": "etcd cluster \"{{ $labels.job }}\": 99th percentile fync durations are {{ $value }}s on etcd instance {{ $labels.instance }}.",
+        "message": "etcd cluster 99th percentile fsync durations are too high.",
+        "name": "etcdHighFsyncDurations",
+        "query": "histogram_quantile(0.99, rate(etcd_disk_wal_fsync_duration_seconds_bucket{job=~\".*etcd.*\"}[5m])) > 1",
+        "severity": "critical"
+    },
+    {
+        "message": "etcd cluster 99th percentile fsync durations are too high.",
         "name": "etcdHighFsyncDurations",
         "query": "histogram_quantile(0.99, rate(etcd_disk_wal_fsync_duration_seconds_bucket{job=~\".*etcd.*\"}[5m])) > 0.5",
         "severity": "warning"
     },
     {
-        "message": "etcd cluster \"{{ $labels.job }}\": {{ $value }}% of requests for {{ $labels.grpc_method }} failed on etcd instance {{ $labels.instance }}.",
+        "message": "etcd cluster has high number of failed grpc requests.",
         "name": "etcdHighNumberOfFailedGRPCRequests",
-        "query": "100 * sum by(job, instance, grpc_service, grpc_method) (rate(grpc_server_handled_total{grpc_code!=\"OK\",job=~\".*etcd.*\"}[5m])) / sum by(job, instance, grpc_service, grpc_method) (rate(grpc_server_handled_total{job=~\".*etcd.*\"}[5m])) > 5",
+        "query": "100 * sum without (grpc_type, grpc_code) (rate(grpc_server_handled_total{grpc_code=~\"Unknown|FailedPrecondition|ResourceExhausted|Internal|Unavailable|DataLoss|DeadlineExceeded\",job=~\".*etcd.*\"}[5m])) / sum without (grpc_type, grpc_code) (rate(grpc_server_handled_total{job=~\".*etcd.*\"}[5m])) > 5",
         "severity": "critical"
     },
     {
-        "message": "etcd cluster \"{{ $labels.job }}\": {{ $value }}% of requests for {{ $labels.grpc_method }} failed on etcd instance {{ $labels.instance }}.",
+        "message": "etcd cluster has high number of failed grpc requests.",
         "name": "etcdHighNumberOfFailedGRPCRequests",
-        "query": "100 * sum by(job, instance, grpc_service, grpc_method) (rate(grpc_server_handled_total{grpc_code!=\"OK\",job=~\".*etcd.*\"}[5m])) / sum by(job, instance, grpc_service, grpc_method) (rate(grpc_server_handled_total{job=~\".*etcd.*\"}[5m])) > 1",
+        "query": "100 * sum without (grpc_type, grpc_code) (rate(grpc_server_handled_total{grpc_code=~\"Unknown|FailedPrecondition|ResourceExhausted|Internal|Unavailable|DataLoss|DeadlineExceeded\",job=~\".*etcd.*\"}[5m])) / sum without (grpc_type, grpc_code) (rate(grpc_server_handled_total{job=~\".*etcd.*\"}[5m])) > 1",
         "severity": "warning"
     },
     {
-        "message": "{{ $value }}% of requests for {{ $labels.method }} failed on etcd instance {{ $labels.instance }}.",
-        "name": "etcdHighNumberOfFailedHTTPRequests",
-        "query": "sum by(method) (rate(etcd_http_failed_total{code!=\"404\",job=~\".*etcd.*\"}[5m])) / sum by(method) (rate(etcd_http_received_total{job=~\".*etcd.*\"}[5m])) > 0.05",
-        "severity": "critical"
-    },
-    {
-        "message": "{{ $value }}% of requests for {{ $labels.method }} failed on etcd instance {{ $labels.instance }}",
-        "name": "etcdHighNumberOfFailedHTTPRequests",
-        "query": "sum by(method) (rate(etcd_http_failed_total{code!=\"404\",job=~\".*etcd.*\"}[5m])) / sum by(method) (rate(etcd_http_received_total{job=~\".*etcd.*\"}[5m])) > 0.01",
-        "severity": "warning"
-    },
-    {
-        "message": "etcd cluster \"{{ $labels.job }}\": {{ $value }} proposal failures within the last hour on etcd instance {{ $labels.instance }}.",
+        "message": "etcd cluster has high number of proposal failures.",
         "name": "etcdHighNumberOfFailedProposals",
         "query": "rate(etcd_server_proposals_failed_total{job=~\".*etcd.*\"}[15m]) > 5",
         "severity": "warning"
     },
     {
-        "message": "etcd cluster \"{{ $labels.job }}\": instance {{ $labels.instance }} has seen {{ $value }} leader changes within the last hour.",
+        "message": "etcd cluster has high number of leader changes.",
         "name": "etcdHighNumberOfLeaderChanges",
-        "query": "rate(etcd_server_leader_changes_seen_total{job=~\".*etcd.*\"}[15m]) > 3",
+        "query": "increase((max without (instance) (etcd_server_leader_changes_seen_total{job=~\".*etcd.*\"}) or 0 * absent(etcd_server_leader_changes_seen_total{job=~\".*etcd.*\"}))[15m:1m]) >= 4",
         "severity": "warning"
     },
     {
-        "message": "etcd cluster \"{{ $labels.job }}\": insufficient members ({{ $value }}).",
+        "message": "etcd cluster has insufficient number of members.",
         "name": "etcdInsufficientMembers",
-        "query": "sum by(job) (up{job=~\".*etcd.*\"} == bool 1) < ((count by(job) (up{job=~\".*etcd.*\"}) + 1) / 2)",
+        "query": "sum without (instance) (up{job=~\".*etcd.*\"} == bool 1) < ((count without (instance) (up{job=~\".*etcd.*\"}) + 1) / 2)",
         "severity": "critical"
     },
     {
-        "message": "etcd cluster \"{{ $labels.job }}\": member communication with {{ $labels.To }} is taking {{ $value }}s on etcd instance {{ $labels.instance }}.",
+        "message": "etcd cluster member communication is slow.",
         "name": "etcdMemberCommunicationSlow",
         "query": "histogram_quantile(0.99, rate(etcd_network_peer_round_trip_time_seconds_bucket{job=~\".*etcd.*\"}[5m])) > 0.15",
         "severity": "warning"
     },
     {
-        "message": "etcd cluster \"{{ $labels.job }}\": member {{ $labels.instance }} has no leader.",
+        "message": "etcd cluster members are down.",
+        "name": "etcdMembersDown",
+        "query": "max without (endpoint) (sum without (instance) (up{job=~\".*etcd.*\"} == bool 0) or count without (To) (sum without (instance) (rate(etcd_network_peer_sent_failures_total{job=~\".*etcd.*\"}[2m])) > 0.01)) > 0",
+        "severity": "critical"
+    },
+    {
+        "message": "etcd cluster has no leader.",
         "name": "etcdNoLeader",
         "query": "etcd_server_has_leader{job=~\".*etcd.*\"} == 0",
         "severity": "critical"
@@ -296,13 +308,13 @@
     {
         "message": "Info-level alert inhibition.",
         "name": "InfoInhibitor",
-        "query": "ALERTS{severity=\"info\"} == 1 unless on(namespace) ALERTS{alertname!=\"InfoInhibitor\",alertstate=\"firing\",severity=~\"warning|critical\"} == 1",
+        "query": "ALERTS{severity=\"info\"} == 1 unless on (namespace) ALERTS{alertname!=\"InfoInhibitor\",alertstate=\"firing\",severity=~\"warning|critical\"} == 1",
         "severity": "none"
     },
     {
         "message": "One or more targets are unreachable.",
         "name": "TargetDown",
-        "query": "100 * (count by(job, namespace, service) (up == 0) / count by(job, namespace, service) (up)) > 10",
+        "query": "100 * (count by (job, namespace, service) (up == 0) / count by (job, namespace, service) (up)) > 10",
         "severity": "warning"
     },
     {
@@ -350,7 +362,7 @@
     {
         "message": "kube-state-metrics shards are missing.",
         "name": "KubeStateMetricsShardsMissing",
-        "query": "2 ^ max(kube_state_metrics_total_shards{job=\"kube-state-metrics\"}) - 1 - sum(2 ^ max by(shard_ordinal) (kube_state_metrics_shard_ordinal{job=\"kube-state-metrics\"})) != 0",
+        "query": "2 ^ max(kube_state_metrics_total_shards{job=\"kube-state-metrics\"}) - 1 - sum(2 ^ max by (shard_ordinal) (kube_state_metrics_shard_ordinal{job=\"kube-state-metrics\"})) != 0",
         "severity": "critical"
     },
     {
@@ -362,7 +374,7 @@
     {
         "message": "Pod container waiting longer than 1 hour",
         "name": "KubeContainerWaiting",
-        "query": "sum by(namespace, pod, container) (kube_pod_container_status_waiting_reason{job=\"kube-state-metrics\",namespace=~\".*\"}) > 0",
+        "query": "sum by (namespace, pod, container, cluster) (kube_pod_container_status_waiting_reason{job=\"kube-state-metrics\",namespace=~\".*\"}) > 0",
         "severity": "warning"
     },
     {
@@ -402,7 +414,7 @@
         "severity": "warning"
     },
     {
-        "message": "HPA has not matched descired number of replicas.",
+        "message": "HPA has not matched desired number of replicas.",
         "name": "KubeHpaReplicasMismatch",
         "query": "(kube_horizontalpodautoscaler_status_desired_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_horizontalpodautoscaler_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}) and (kube_horizontalpodautoscaler_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} > kube_horizontalpodautoscaler_spec_min_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}) and (kube_horizontalpodautoscaler_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} < kube_horizontalpodautoscaler_spec_max_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}) and changes(kube_horizontalpodautoscaler_status_current_replicas{job=\"kube-state-metrics\",namespace=~\".*\"}[15m]) == 0",
         "severity": "warning"
@@ -416,7 +428,7 @@
     {
         "message": "Job did not complete in time",
         "name": "KubeJobNotCompleted",
-        "query": "time() - max by(namespace, job_name) (kube_job_status_start_time{job=\"kube-state-metrics\",namespace=~\".*\"} and kube_job_status_active{job=\"kube-state-metrics\",namespace=~\".*\"} > 0) > 43200",
+        "query": "time() - max by (namespace, job_name, cluster) (kube_job_status_start_time{job=\"kube-state-metrics\",namespace=~\".*\"} and kube_job_status_active{job=\"kube-state-metrics\",namespace=~\".*\"} > 0) > 43200",
         "severity": "warning"
     },
     {
@@ -428,7 +440,7 @@
     {
         "message": "Pod has been in a non-ready state for more than 15 minutes.",
         "name": "KubePodNotReady",
-        "query": "sum by(namespace, pod) (max by(namespace, pod) (kube_pod_status_phase{job=\"kube-state-metrics\",namespace=~\".*\",phase=~\"Pending|Unknown\"}) * on(namespace, pod) group_left(owner_kind) topk by(namespace, pod) (1, max by(namespace, pod, owner_kind) (kube_pod_owner{owner_kind!=\"Job\"}))) > 0",
+        "query": "sum by (namespace, pod, cluster) (max by (namespace, pod, cluster) (kube_pod_status_phase{job=\"kube-state-metrics\",namespace=~\".*\",phase=~\"Pending|Unknown|Failed\"}) * on (namespace, pod, cluster) group_left (owner_kind) topk by (namespace, pod, cluster) (1, max by (namespace, pod, owner_kind, cluster) (kube_pod_owner{owner_kind!=\"Job\"}))) > 0",
         "severity": "warning"
     },
     {
@@ -446,13 +458,13 @@
     {
         "message": "StatefulSet update has not been rolled out.",
         "name": "KubeStatefulSetUpdateNotRolledOut",
-        "query": "(max without(revision) (kube_statefulset_status_current_revision{job=\"kube-state-metrics\",namespace=~\".*\"} unless kube_statefulset_status_update_revision{job=\"kube-state-metrics\",namespace=~\".*\"}) * (kube_statefulset_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_statefulset_status_replicas_updated{job=\"kube-state-metrics\",namespace=~\".*\"})) and (changes(kube_statefulset_status_replicas_updated{job=\"kube-state-metrics\",namespace=~\".*\"}[5m]) == 0)",
+        "query": "(max without (revision) (kube_statefulset_status_current_revision{job=\"kube-state-metrics\",namespace=~\".*\"} unless kube_statefulset_status_update_revision{job=\"kube-state-metrics\",namespace=~\".*\"}) * (kube_statefulset_replicas{job=\"kube-state-metrics\",namespace=~\".*\"} != kube_statefulset_status_replicas_updated{job=\"kube-state-metrics\",namespace=~\".*\"})) and (changes(kube_statefulset_status_replicas_updated{job=\"kube-state-metrics\",namespace=~\".*\"}[5m]) == 0)",
         "severity": "warning"
     },
     {
         "message": "Processes experience elevated CPU throttling.",
         "name": "CPUThrottlingHigh",
-        "query": "sum by(container, pod, namespace) (increase(container_cpu_cfs_throttled_periods_total{container!=\"\"}[5m])) / sum by(container, pod, namespace) (increase(container_cpu_cfs_periods_total[5m])) > (25 / 100)",
+        "query": "sum by (container, pod, namespace) (increase(container_cpu_cfs_throttled_periods_total{container!=\"\"}[5m])) / sum by (container, pod, namespace) (increase(container_cpu_cfs_periods_total[5m])) > (25 / 100)",
         "severity": "info"
     },
     {
@@ -464,7 +476,7 @@
     {
         "message": "Cluster has overcommitted CPU resource requests.",
         "name": "KubeCPUQuotaOvercommit",
-        "query": "sum(min without(resource) (kube_resourcequota{job=\"kube-state-metrics\",resource=~\"(cpu|requests.cpu)\",type=\"hard\"})) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"}) > 1.5",
+        "query": "sum(min without (resource) (kube_resourcequota{job=\"kube-state-metrics\",resource=~\"(cpu|requests.cpu)\",type=\"hard\"})) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"}) > 1.5",
         "severity": "warning"
     },
     {
@@ -476,25 +488,25 @@
     {
         "message": "Cluster has overcommitted memory resource requests.",
         "name": "KubeMemoryQuotaOvercommit",
-        "query": "sum(min without(resource) (kube_resourcequota{job=\"kube-state-metrics\",resource=~\"(memory|requests.memory)\",type=\"hard\"})) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"}) > 1.5",
+        "query": "sum(min without (resource) (kube_resourcequota{job=\"kube-state-metrics\",resource=~\"(memory|requests.memory)\",type=\"hard\"})) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"}) > 1.5",
         "severity": "warning"
     },
     {
         "message": "Namespace quota is going to be full.",
         "name": "KubeQuotaAlmostFull",
-        "query": "kube_resourcequota{job=\"kube-state-metrics\",type=\"used\"} / ignoring(instance, job, type) (kube_resourcequota{job=\"kube-state-metrics\",type=\"hard\"} > 0) > 0.9 < 1",
+        "query": "kube_resourcequota{job=\"kube-state-metrics\",type=\"used\"} / ignoring (instance, job, type) (kube_resourcequota{job=\"kube-state-metrics\",type=\"hard\"} > 0) > 0.9 < 1",
         "severity": "info"
     },
     {
         "message": "Namespace quota has exceeded the limits.",
         "name": "KubeQuotaExceeded",
-        "query": "kube_resourcequota{job=\"kube-state-metrics\",type=\"used\"} / ignoring(instance, job, type) (kube_resourcequota{job=\"kube-state-metrics\",type=\"hard\"} > 0) > 1",
+        "query": "kube_resourcequota{job=\"kube-state-metrics\",type=\"used\"} / ignoring (instance, job, type) (kube_resourcequota{job=\"kube-state-metrics\",type=\"hard\"} > 0) > 1",
         "severity": "warning"
     },
     {
         "message": "Namespace quota is fully used.",
         "name": "KubeQuotaFullyUsed",
-        "query": "kube_resourcequota{job=\"kube-state-metrics\",type=\"used\"} / ignoring(instance, job, type) (kube_resourcequota{job=\"kube-state-metrics\",type=\"hard\"} > 0) == 1",
+        "query": "kube_resourcequota{job=\"kube-state-metrics\",type=\"used\"} / ignoring (instance, job, type) (kube_resourcequota{job=\"kube-state-metrics\",type=\"hard\"} > 0) == 1",
         "severity": "info"
     },
     {
@@ -506,37 +518,37 @@
     {
         "message": "PersistentVolume is filling up.",
         "name": "KubePersistentVolumeFillingUp",
-        "query": "(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.03 and kubelet_volume_stats_used_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 unless on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
+        "query": "(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.03 and kubelet_volume_stats_used_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 unless on (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
         "severity": "critical"
     },
     {
         "message": "PersistentVolume is filling up.",
         "name": "KubePersistentVolumeFillingUp",
-        "query": "(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.15 and kubelet_volume_stats_used_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 and predict_linear(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}[6h], 4 * 24 * 3600) < 0 unless on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
+        "query": "(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.15 and kubelet_volume_stats_used_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 and predict_linear(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}[6h], 4 * 24 * 3600) < 0 unless on (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
         "severity": "warning"
     },
     {
         "message": "PersistentVolumeInodes are filling up.",
         "name": "KubePersistentVolumeInodesFillingUp",
-        "query": "(kubelet_volume_stats_inodes_free{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_inodes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.03 and kubelet_volume_stats_inodes_used{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 unless on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
+        "query": "(kubelet_volume_stats_inodes_free{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_inodes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.03 and kubelet_volume_stats_inodes_used{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 unless on (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
         "severity": "critical"
     },
     {
         "message": "PersistentVolumeInodes are filling up.",
         "name": "KubePersistentVolumeInodesFillingUp",
-        "query": "(kubelet_volume_stats_inodes_free{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_inodes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.15 and kubelet_volume_stats_inodes_used{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 and predict_linear(kubelet_volume_stats_inodes_free{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}[6h], 4 * 24 * 3600) < 0 unless on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on(namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
+        "query": "(kubelet_volume_stats_inodes_free{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_inodes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.15 and kubelet_volume_stats_inodes_used{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 and predict_linear(kubelet_volume_stats_inodes_free{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}[6h], 4 * 24 * 3600) < 0 unless on (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
         "severity": "warning"
     },
     {
         "message": "Kubernetes API server client is experiencing errors.",
         "name": "KubeClientErrors",
-        "query": "(sum by(cluster, instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\"}[5m])) / sum by(cluster, instance, job, namespace) (rate(rest_client_requests_total[5m]))) > 0.01",
+        "query": "(sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\"}[5m])) / sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total[5m]))) > 0.01",
         "severity": "warning"
     },
     {
         "message": "Different semantic versions of Kubernetes components running.",
         "name": "KubeVersionMismatch",
-        "query": "count(count by(git_version) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
+        "query": "count by (cluster) (count by (git_version, cluster) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
         "severity": "warning"
     },
     {
@@ -554,25 +566,25 @@
     {
         "message": "Kubernetes aggregated API is down.",
         "name": "KubeAggregatedAPIDown",
-        "query": "(1 - max by(name, namespace) (avg_over_time(aggregator_unavailable_apiservice[10m]))) * 100 < 85",
+        "query": "(1 - max by (name, namespace, cluster) (avg_over_time(aggregator_unavailable_apiservice[10m]))) * 100 < 85",
         "severity": "warning"
     },
     {
         "message": "Kubernetes aggregated API has reported errors.",
         "name": "KubeAggregatedAPIErrors",
-        "query": "sum by(name, namespace) (increase(aggregator_unavailable_apiservice_total[10m])) > 4",
+        "query": "sum by (name, namespace, cluster) (increase(aggregator_unavailable_apiservice_total[10m])) > 4",
         "severity": "warning"
     },
     {
         "message": "Client certificate is about to expire.",
         "name": "KubeClientCertificateExpiration",
-        "query": "apiserver_client_certificate_expiration_seconds_count{job=\"apiserver\"} > 0 and on(job) histogram_quantile(0.01, sum by(job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job=\"apiserver\"}[5m]))) < 86400",
+        "query": "apiserver_client_certificate_expiration_seconds_count{job=\"apiserver\"} > 0 and on (job) histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job=\"apiserver\"}[5m]))) < 86400",
         "severity": "critical"
     },
     {
         "message": "Client certificate is about to expire.",
         "name": "KubeClientCertificateExpiration",
-        "query": "apiserver_client_certificate_expiration_seconds_count{job=\"apiserver\"} > 0 and on(job) histogram_quantile(0.01, sum by(job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job=\"apiserver\"}[5m]))) < 604800",
+        "query": "apiserver_client_certificate_expiration_seconds_count{job=\"apiserver\"} > 0 and on (job) histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job=\"apiserver\"}[5m]))) < 604800",
         "severity": "warning"
     },
     {
@@ -596,13 +608,13 @@
     {
         "message": "Node readiness status is flapping.",
         "name": "KubeNodeReadinessFlapping",
-        "query": "sum by(cluster, node) (changes(kube_node_status_condition{condition=\"Ready\",status=\"true\"}[15m])) > 2",
+        "query": "sum by (cluster, node) (changes(kube_node_status_condition{condition=\"Ready\",status=\"true\"}[15m])) > 2",
         "severity": "warning"
     },
     {
         "message": "Node is unreachable.",
         "name": "KubeNodeUnreachable",
-        "query": "(kube_node_spec_taint{effect=\"NoSchedule\",job=\"kube-state-metrics\",key=\"node.kubernetes.io/unreachable\"} unless ignoring(key, value) kube_node_spec_taint{job=\"kube-state-metrics\",key=~\"ToBeDeletedByClusterAutoscaler|cloud.google.com/impending-node-termination|aws-node-termination-handler/spot-itn\"}) == 1",
+        "query": "(kube_node_spec_taint{effect=\"NoSchedule\",job=\"kube-state-metrics\",key=\"node.kubernetes.io/unreachable\"} unless ignoring (key, value) kube_node_spec_taint{job=\"kube-state-metrics\",key=~\"ToBeDeletedByClusterAutoscaler|cloud.google.com/impending-node-termination|aws-node-termination-handler/spot-itn\"}) == 1",
         "severity": "warning"
     },
     {
@@ -638,7 +650,7 @@
     {
         "message": "Kubelet Pod startup latency is too high.",
         "name": "KubeletPodStartUpLatencyHigh",
-        "query": "histogram_quantile(0.99, sum by(cluster, instance, le) (rate(kubelet_pod_worker_duration_seconds_bucket{job=\"kubelet\",metrics_path=\"/metrics\"}[5m]))) * on(cluster, instance) group_left(node) kubelet_node_name{job=\"kubelet\",metrics_path=\"/metrics\"} > 60",
+        "query": "histogram_quantile(0.99, sum by (cluster, instance, le) (rate(kubelet_pod_worker_duration_seconds_bucket{job=\"kubelet\",metrics_path=\"/metrics\"}[5m]))) * on (cluster, instance) group_left (node) kubelet_node_name{job=\"kubelet\",metrics_path=\"/metrics\"} > 60",
         "severity": "warning"
     },
     {
@@ -662,7 +674,7 @@
     {
         "message": "Kubelet is running at capacity.",
         "name": "KubeletTooManyPods",
-        "query": "count by(cluster, node) ((kube_pod_status_phase{job=\"kube-state-metrics\",phase=\"Running\"} == 1) * on(instance, pod, namespace, cluster) group_left(node) topk by(instance, pod, namespace, cluster) (1, kube_pod_info{job=\"kube-state-metrics\"})) / max by(cluster, node) (kube_node_status_capacity{job=\"kube-state-metrics\",resource=\"pods\"} != 1) > 0.95",
+        "query": "count by (cluster, node) ((kube_pod_status_phase{job=\"kube-state-metrics\",phase=\"Running\"} == 1) * on (instance, pod, namespace, cluster) group_left (node) topk by (instance, pod, namespace, cluster) (1, kube_pod_info{job=\"kube-state-metrics\"})) / max by (cluster, node) (kube_node_status_capacity{job=\"kube-state-metrics\",resource=\"pods\"} != 1) > 0.95",
         "severity": "info"
     },
     {
@@ -764,7 +776,7 @@
     {
         "message": "RAID Array is degraded",
         "name": "NodeRAIDDegraded",
-        "query": "node_md_disks_required - ignoring(state) (node_md_disks{state=\"active\"}) >= 1",
+        "query": "node_md_disks_required - ignoring (state) (node_md_disks{state=\"active\"}) >= 1",
         "severity": "critical"
     },
     {
@@ -800,13 +812,19 @@
     {
         "message": "Prometheus encounters more than 3% errors sending alerts to any Alertmanager.",
         "name": "PrometheusErrorSendingAlertsToAnyAlertmanager",
-        "query": "min without(alertmanager) (rate(prometheus_notifications_errors_total{alertmanager!~\"\",job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) / rate(prometheus_notifications_sent_total{alertmanager!~\"\",job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m])) * 100 > 3",
+        "query": "min without (alertmanager) (rate(prometheus_notifications_errors_total{alertmanager!~\"\",job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) / rate(prometheus_notifications_sent_total{alertmanager!~\"\",job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m])) * 100 > 3",
         "severity": "critical"
     },
     {
         "message": "Prometheus has encountered more than 1% errors sending alerts to a specific Alertmanager.",
         "name": "PrometheusErrorSendingAlertsToSomeAlertmanagers",
         "query": "(rate(prometheus_notifications_errors_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) / rate(prometheus_notifications_sent_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m])) * 100 > 1",
+        "severity": "warning"
+    },
+    {
+        "message": "Prometheus is reaching its maximum capacity serving concurrent requests.",
+        "name": "PrometheusHighQueryLoad",
+        "query": "avg_over_time(prometheus_engine_queries{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) / max_over_time(prometheus_engine_queries_concurrent_max{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) > 0.8",
         "severity": "warning"
     },
     {
@@ -830,7 +848,7 @@
     {
         "message": "Prometheus is not ingesting samples.",
         "name": "PrometheusNotIngestingSamples",
-        "query": "(rate(prometheus_tsdb_head_samples_appended_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) <= 0 and (sum without(scrape_job) (prometheus_target_metadata_cache_entries{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}) > 0 or sum without(rule_group) (prometheus_rule_group_rules{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}) > 0))",
+        "query": "(rate(prometheus_tsdb_head_samples_appended_total{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) <= 0 and (sum without (scrape_job) (prometheus_target_metadata_cache_entries{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}) > 0 or sum without (rule_group) (prometheus_rule_group_rules{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}) > 0))",
         "severity": "warning"
     },
     {
@@ -854,7 +872,7 @@
     {
         "message": "Prometheus remote write is behind.",
         "name": "PrometheusRemoteWriteBehind",
-        "query": "(max_over_time(prometheus_remote_storage_highest_timestamp_in_seconds{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) - ignoring(remote_name, url) group_right() max_over_time(prometheus_remote_storage_queue_highest_sent_timestamp_seconds{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m])) > 120",
+        "query": "(max_over_time(prometheus_remote_storage_highest_timestamp_in_seconds{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m]) - ignoring (remote_name, url) group_right () max_over_time(prometheus_remote_storage_queue_highest_sent_timestamp_seconds{job=\"prometheus-operator-prometheus\",namespace=\"metalk8s-monitoring\"}[5m])) > 120",
         "severity": "critical"
     },
     {
@@ -908,7 +926,7 @@
     {
         "message": "Errors while performing list operations in controller.",
         "name": "PrometheusOperatorListErrors",
-        "query": "(sum by(controller, namespace) (rate(prometheus_operator_list_operations_failed_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[10m])) / sum by(controller, namespace) (rate(prometheus_operator_list_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[10m]))) > 0.4",
+        "query": "(sum by (controller, namespace, cluster) (rate(prometheus_operator_list_operations_failed_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[10m])) / sum by (controller, namespace, cluster) (rate(prometheus_operator_list_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[10m]))) > 0.4",
         "severity": "warning"
     },
     {
@@ -920,13 +938,13 @@
     {
         "message": "Prometheus operator not ready",
         "name": "PrometheusOperatorNotReady",
-        "query": "min by(namespace, controller) (max_over_time(prometheus_operator_ready{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]) == 0)",
+        "query": "min by (controller, namespace, cluster) (max_over_time(prometheus_operator_ready{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]) == 0)",
         "severity": "warning"
     },
     {
         "message": "Errors while reconciling controller.",
         "name": "PrometheusOperatorReconcileErrors",
-        "query": "(sum by(controller, namespace) (rate(prometheus_operator_reconcile_errors_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) / (sum by(controller, namespace) (rate(prometheus_operator_reconcile_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) > 0.1",
+        "query": "(sum by (controller, namespace, cluster) (rate(prometheus_operator_reconcile_errors_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) / (sum by (controller, namespace, cluster) (rate(prometheus_operator_reconcile_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) > 0.1",
         "severity": "warning"
     },
     {
@@ -944,7 +962,7 @@
     {
         "message": "Errors while performing watch operations in controller.",
         "name": "PrometheusOperatorWatchErrors",
-        "query": "(sum by(controller, namespace) (rate(prometheus_operator_watch_operations_failed_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m])) / sum by(controller, namespace) (rate(prometheus_operator_watch_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) > 0.4",
+        "query": "(sum by (controller, namespace, cluster) (rate(prometheus_operator_watch_operations_failed_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m])) / sum by (controller, namespace, cluster) (rate(prometheus_operator_watch_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) > 0.4",
         "severity": "warning"
     }
 ]

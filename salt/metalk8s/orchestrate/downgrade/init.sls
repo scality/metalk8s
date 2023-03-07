@@ -132,6 +132,27 @@ Delete Loki StatefulSet:
 
 {%- endif %}
 
+{#- Due to a change of node-exporter StatefulSet labelSelector in 125.0.0, which is immutable field
+    Manually delete the node-exporter StatefulSet object if dest_version < 125.0.0
+    NOTE: This logic can be removed in `development/126.0` #}
+{%- if salt.pkg.version_cmp(dest_version, '125.0.0') == -1 %}
+
+Delete node-exporter StatefulSet:
+  metalk8s_kubernetes.object_absent:
+    - apiVersion: apps/v1
+    - kind: StatefulSet
+    - name: prometheus-operator-node-exporter
+    - namespace: metalk8s-monitoring
+    - wait:
+        attempts: 30
+        sleep: 10
+    - require:
+      - salt: Deploy Kubernetes service config objects
+    - require_in:
+      - salt: Deploy Kubernetes objects
+
+{%- endif %}
+
 Deploy Kubernetes objects:
   salt.runner:
     - name: state.orchestrate

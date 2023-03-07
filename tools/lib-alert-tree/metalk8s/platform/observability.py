@@ -31,6 +31,7 @@ MONITORING_WARNING, MONITORING_CRITICAL = severity_pair(
         Existing.warning("PrometheusOperatorNotReady"),
         Existing.warning("PrometheusOperatorNodeLookupErrors"),
         Existing.warning("PrometheusOperatorListErrors"),
+        Existing.warning("PrometheusHighQueryLoad"),
         *statefulset_alerts(
             "prometheus-prometheus-operator-prometheus",
             severity="warning",
