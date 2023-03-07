@@ -21,6 +21,7 @@ website_url: https://github.com/scality/metalk8s/
 repo_url: https://github.com/scality/metalk8s.git
 product_logo_url: https://raw.githubusercontent.com/scality/metalk8s/development/${METALK8S_VERSION}/artwork/metalk8s-logo-vertical.svg
 documentation_url: ${doc_url}
+contact_email_address: squad-metalk8s@scality.com
 EOF
 
 sed "s%@@DOC_URL@@%${doc_url}%g" > "$dest/README.md" << 'ENDREADME'
