@@ -56,6 +56,10 @@
   [v2.35.3](https://github.com/dexidp/dex/releases/tag/v2.35.3)
   (PR[#4012](https://github.com/scality/metalk8s/pull/4012))
 
+- Bump Prometheus Adapter chart version to
+  [4.1.1](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-adapter-4.1.1)
+  (PR[#4015](https://github.com/scality/metalk8s/pull/4015))
+
 ### Bug fixes
 
 - Fix a bug in Workload Plane Ingress Virtual IPs that make the DaemonSet Pod
