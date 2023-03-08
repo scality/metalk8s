@@ -71434,11 +71434,6 @@ spec:
       regex: container_spec.*
       sourceLabels:
       - __name__
-    - action: drop
-      regex: .+;
-      sourceLabels:
-      - id
-      - pod
     path: /metrics/cadvisor
     port: https-metrics
     relabelings:
