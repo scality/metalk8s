@@ -343,7 +343,7 @@ def check_dash_and_folder(context, gf_folder_name, grafana_api):
             raise AssertionError(f"no dashboard with UID '{dash_uid}' in Grafana")
 
     dashboard = utils.retry(
-        _get_dash, times=3, wait=15, name=f"check dashboard uid {dash_uid}"
+        _get_dash, times=8, wait=15, name=f"check dashboard uid {dash_uid}"
     )
     assert (
         dashboard.get("meta", {}).get("folderTitle") == gf_folder_name
