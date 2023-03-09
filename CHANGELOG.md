@@ -1,6 +1,12 @@
 # CHANGELOG
 ## Release 125.0.0 (in development)
 
+### Additions
+
+- Allow to disable Kubernetes DNS host forwarding, so that
+  installation can be done on offline environment with no DNS
+  (PR[#4019](https://github.com/scality/metalk8s/pull/4019))
+
 ### Enhancements
 
 - Bump Kubernetes version to

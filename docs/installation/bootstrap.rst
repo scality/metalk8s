@@ -80,6 +80,7 @@ Configuration
           config:
             terminatedPodGCThreshold: 500
         coreDNS:
+          hostForward: True
           replicas: 2
           affinity:
             podAntiAffinity:
@@ -205,6 +206,15 @@ defaults kubernetes configuration.
             CAFile: <Certificate Authority certificate file>
             usernameClaim: <Username Claim>
             groupsClaim: <Groups Claim>
+
+  From ``coreDNS`` section you can disable the ``hostForward`` so that the DNS
+  request from the Pod inside Kubernetes are not forwarded to the configured
+  nameservers from the host.
+
+    .. note::
+
+      It means pod running in Kubernetes will not be able to resolve any name
+      that are not in Kubernetes.
 
   If you want to override the default ``coreDNS`` podAntiAffinity or number of
   replicas, by default MetalK8s deploy 2 replicas and use soft podAntiAffinity

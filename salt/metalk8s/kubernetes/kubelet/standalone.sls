@@ -8,6 +8,12 @@
 include:
   - .running
 
+Ensure resolv config file exists:
+  file.managed:
+    - name: {{ kubelet.config.resolvConf }}
+    - create: true
+    - replace: false
+
 Create kubelet service environment file:
   file.managed:
     - name: "/var/lib/kubelet/kubeadm-flags.env"
@@ -102,6 +108,7 @@ Create kubelet config file:
 {%- endfor %}
     - require:
       - metalk8s_package_manager: Install kubelet
+      - file: Ensure resolv config file exists
     - watch_in:
       - service: Ensure kubelet running
 

@@ -17,6 +17,11 @@ spec:
       {{ label_selector | yaml(False) | indent(8) }}
   template:
     metadata:
+      annotations:
+        # NOTE: Add annotation for config checksum, so that Pod get restarted on
+        # ConfigMap change
+        checksum/config: __slot__:salt:metalk8s_kubernetes.get_object_digest(kind="ConfigMap",
+          apiVersion="v1", namespace="kube-system", name="coredns", path="data")
       labels:
         {{ label_selector | yaml(False) | indent(8) }}
     spec:

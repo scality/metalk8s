@@ -175,6 +175,7 @@ kubernetes:
     config:
       terminatedPodGCThreshold: 500
   coreDNS:
+    hostForward: true
     replicas: 2
     affinity:
       podAntiAffinity:

@@ -36,9 +36,11 @@ Create coredns ConfigMap:
                   ttl 30
                 }
                 prometheus :9153
+                {%- if pillar.kubernetes.coreDNS.hostForward %}
                 forward . /etc/resolv.conf {
                   max_concurrent 1000
                 }
+                {%- endif %}
                 cache 30
                 loop
                 reload
@@ -56,7 +58,6 @@ Create coredns deployment:
         replicas: {{ replicas }}
         label_selector: {{ label_selector | tojson }}
         affinity: {{ affinity | tojson }}
-
     - require:
       - metalk8s_kubernetes: Create coredns ConfigMap
 

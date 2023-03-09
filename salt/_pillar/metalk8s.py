@@ -159,6 +159,9 @@ def _load_kubernetes(config_data):
     ).setdefault("soft", [{"topologyKey": "kubernetes.io/hostname"}])
     kubernetes_data["coreDNS"].setdefault("replicas", 2)
 
+    # Default CoreDNS host forwarding to True
+    kubernetes_data["coreDNS"].setdefault("hostForward", True)
+
     kubernetes_data.setdefault("controllerManager", {}).setdefault(
         "config", {}
     ).setdefault("terminatedPodGCThreshold", 500)
