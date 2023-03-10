@@ -9,26 +9,26 @@ include:
   - .prometheus-rules
   - .thanos-chart
 
-{#- Node-exporter statefulset now uses recommended labels, which are immutable,
+{#- Node-exporter DaemonSet now uses recommended labels, which are immutable,
     so we need to delete it first.
     Can be removed in development/126.0 #}
 
-{%- set node_exporter_sts = salt.metalk8s_kubernetes.get_object(
-    kind="StatefulSet",
+{%- set node_exporter_ds = salt.metalk8s_kubernetes.get_object(
+    kind="DaemonSet",
     apiVersion="apps/v1",
     name="prometheus-operator-prometheus-node-exporter",
     namespace="metalk8s-monitoring"
 ) %}
 
-{%- if node_exporter_sts and salt.pkg.version_cmp(
-        node_exporter_sts["metadata"]["labels"]["metalk8s.scality.com/version"],
+{%- if node_exporter_ds and salt.pkg.version_cmp(
+        node_exporter_ds["metadata"]["labels"]["metalk8s.scality.com/version"],
         "125.0.0"
     ) == -1 %}
 
-Delete old node-exporter StatefulSet:
+Delete old node-exporter DaemonSet:
     metalk8s_kubernetes.object_absent:
         - apiVersion: apps/v1
-        - kind: StatefulSet
+        - kind: DaemonSet
         - name: prometheus-operator-prometheus-node-exporter
         - namespace: metalk8s-monitoring
         - wait:

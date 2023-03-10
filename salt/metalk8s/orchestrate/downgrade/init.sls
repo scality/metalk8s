@@ -132,16 +132,16 @@ Delete Loki StatefulSet:
 
 {%- endif %}
 
-{#- Due to a change of node-exporter StatefulSet labelSelector in 125.0.0, which is immutable field
-    Manually delete the node-exporter StatefulSet object if dest_version < 125.0.0
+{#- Due to a change of node-exporter DaemonSet labelSelector in 125.0.0, which is immutable field
+    Manually delete the node-exporter DaemonSet object if dest_version < 125.0.0
     NOTE: This logic can be removed in `development/126.0` #}
 {%- if salt.pkg.version_cmp(dest_version, '125.0.0') == -1 %}
 
-Delete node-exporter StatefulSet:
+Delete node-exporter DaemonSet:
   metalk8s_kubernetes.object_absent:
     - apiVersion: apps/v1
-    - kind: StatefulSet
-    - name: prometheus-operator-node-exporter
+    - kind: DaemonSet
+    - name: prometheus-operator-prometheus-node-exporter
     - namespace: metalk8s-monitoring
     - wait:
         attempts: 30
