@@ -96,6 +96,18 @@ runs:
     - name: Destroy cluster with Terraform
       working-directory: terraform-snapshot/terraform/
       shell: bash
-      run: terraform destroy -auto-approve ${{ inputs.args }}
       env:
         TF_VAR_cloud: ${{ inputs.CLOUD }}
+        MAX_RETRIES: "20"
+      run: |
+        for try in $(seq 1 ${MAX_RETRIES}); do
+          if terraform destroy -auto-approve ${{ inputs.args }}; then
+            break
+          elif [ $try -lt $MAX_RETRIES ]; then
+            sleep 30
+          else
+            echo "Error: unable to destroy openstack virtual infra after" \
+                 "$MAX_RETRIES tries" >&2
+            exit 1
+          fi
+        done
