@@ -86,8 +86,7 @@ _save_cp() {
             _save_cp "$filename" "$dst/$(basename "$filename")"
         done
     else
-        echo "Error: '$src' does not exists" >&2
-        exit 1
+        die "Error: '$src' does not exists"
     fi
 }
 
