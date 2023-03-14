@@ -167,7 +167,8 @@ export const sizeUnits = [
   },
 ];
 export function allSizeUnitsToBytes(size) {
-  const sizeRegex = /^(?<size>[1-9]([0-9]+)?\.?([0-9]+)?)\s?(?<unit>[kKMGTPB]i?)B?$/;
+  const sizeRegex =
+    /^(?<size>[1-9]([0-9]+)?\.?([0-9]+)?)\s?(?<unit>[kKMGTPB]i?)B?$/;
 
   if (size && typeof size === 'string') {
     const match = size?.match(sizeRegex);
@@ -271,9 +272,7 @@ export function addMissingDataPoint(
 
   return newValues;
 }
-export function getNaNSegments(
-  points: [[number, number | null]],
-): {
+export function getNaNSegments(points: [[number, number | null]]): {
   startsAt: number;
   endsAt?: number;
 }[] {
@@ -463,7 +462,7 @@ export const compareHealth = (status1, status2) => {
 export const formatSizeForDisplay = (value) => {
   if (value && value.match(/^(\d+)(\D+)$/))
     return value.replace(/^(\d+)(\D+)$/, '$1 $2') + 'B';
-  else return value;
+  else return value || null;
 };
 
 /**
@@ -519,8 +518,8 @@ export const useDynamicChartSize = (
   columns: number = 2,
   rows: number = 3,
 ): [number, number] => {
-  const graphsContainerWidth = document.getElementById(container_id)
-    ?.offsetWidth;
+  const graphsContainerWidth =
+    document.getElementById(container_id)?.offsetWidth;
   const [graphWidth, setGraphWidth] = useState(0);
   useEffect(() => {
     if (graphsContainerWidth) {

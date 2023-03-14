@@ -82,6 +82,11 @@ Cypress.Commands.add(
         });
     });
     cy.intercept('POST', '/api/salt/login', { fixture: 'salt-api/login.json' });
+    cy.intercept('GET', '/api/salt/events*', (req) =>
+      req.reply(`data: ${JSON.stringify({})} \n\n`, {
+        'content-type': 'text/event-stream',
+      }),
+    ).as('salt-event');
 
     // Kubernetes
     cy.intercept(
@@ -268,21 +273,21 @@ Cypress.Commands.add('fillVolumeCreationForm', (volume_type) => {
     .invoke('attr', 'for')
     .then((htmlFor) => cy.get(`#${htmlFor}`).click());
 
-  cy.findByRole('option', {name: new RegExp(`${NODE_NAME}`, 'i')}).click();
+  cy.findByRole('option', { name: new RegExp(`${NODE_NAME}`, 'i') }).click();
 
   cy.findByText(/storage class \*/i)
     .closest('label')
     .invoke('attr', 'for')
     .then((htmlFor) => cy.get(`#${htmlFor}`).click());
-  
-  cy.findByRole('option', {name: new RegExp(`${STORAGECLASS}`, 'i')}).click();
-     
+
+  cy.findByRole('option', { name: new RegExp(`${STORAGECLASS}`, 'i') }).click();
+
   cy.findByText(/type \*/i)
     .closest('label')
     .invoke('attr', 'for')
     .then((htmlFor) => cy.get(`#${htmlFor}`).click());
-  
-  cy.findByRole('option', {name: new RegExp(`${volume_type}`, 'i')}).click();
-  
+
+  cy.findByRole('option', { name: new RegExp(`${volume_type}`, 'i') }).click();
+
   cy.get('input[name=sizeInput]').type(VOLUME_SIZE);
 });

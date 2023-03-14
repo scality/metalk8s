@@ -43,21 +43,17 @@ const getStyle = (status) => {
 const CircleStatus = (props) => {
   const { status, size } = props;
   const { name, color } = getStyle(status);
-  if (
-    size === undefined ||
-    size === CIRCLE_BASE_SIZE ||
-    size === CIRCLE_DOUBLE_SIZE
-  )
-    return (
-      <i>
-        <Icon
-          name={name}
-          color={color}
-          size={size === CIRCLE_DOUBLE_SIZE ? '2x' : '1x'}
-          ariaLabel={`status ${status}`}
-        />
-      </i>
-    );
+
+  return (
+    <i>
+      <Icon
+        name={name}
+        color={color}
+        size={size === CIRCLE_DOUBLE_SIZE ? '2x' : '1x'}
+        ariaLabel={`status ${status}`}
+      />
+    </i>
+  );
 };
 
 export default CircleStatus;
