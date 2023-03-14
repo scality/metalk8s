@@ -538,8 +538,8 @@ jobs:
         if: always()
         run: |
           mkdir -p upload/ui/cypress
-          mv cypress/screenshots upload/ui/cypress/screenshots || true
-          mv cypress/videos upload/ui/cypress/videos || true
+          mv ui/cypress/screenshots upload/ui/cypress/screenshots || true
+          mv ui/cypress/videos upload/ui/cypress/videos || true
           mv junit upload/ui || true
       - name: Upload artifacts
         if: always()
