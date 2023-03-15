@@ -100,6 +100,10 @@
   interface instead of the actual interface
   (PR[#4000](https://github.com/scality/metalk8s/pull/4000))
 
+- Fix a bug where the backup script would exit without logs when trying to back up
+  etcd
+  (PR[#4024](https://github.com/scality/metalk8s/pull/4024))
+
 ### Removals
 
 - Some metrics were removed when bumping kube-prometheus-stack chart to
