@@ -131,15 +131,21 @@ export function useAuth(): {
   //Force logout when token is expired or we are missing expires_at claims
   useQuery({
     queryKey: ['removeUser'],
-    queryFn: () =>
-      auth.userManager.removeUser().then(() => {
+    queryFn: () => {
+      // This query might be executed when useAuth is rendered simultaneously by 2 different components
+      // react-query is supposed to prevent this but in practice under certain conditions a race condition might trigger it twice
+      // We need to make sure we don't call removeUser twice in this case (which would cause a redirect loop)
+      window.loggingOut = true;
+      return auth.userManager.removeUser().then(() => {
         location.reload();
-      }),
+      });
+    },
     enabled: !!(
       auth &&
       auth.userManager &&
       auth.userData &&
-      (auth.userData.expired || !auth.userData.expires_at)
+      (auth.userData.expired || !auth.userData.expires_at) &&
+      !window.loggingOut
     ),
   });
 
