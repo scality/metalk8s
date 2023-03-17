@@ -39,6 +39,8 @@ TMPFILES=$(mktemp -d)
 
 mkdir -p "$(dirname "${LOGFILE}")"
 
+rotate_logfile
+
 cat << EOF >> "${LOGFILE}"
 --- Bootstrap started on $(date -u -R) ---
 EOF

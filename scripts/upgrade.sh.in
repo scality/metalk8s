@@ -59,6 +59,8 @@ TMPFILES=$(mktemp -d)
 
 mkdir -p "$(dirname "${LOGFILE}")"
 
+rotate_logfile
+
 cat << EOF >> "${LOGFILE}"
 --- MetalK8s Upgrade started on $(date -u -R) ---
 EOF

@@ -54,6 +54,8 @@ BACKUP_DIR=$(mktemp -d)
 
 mkdir -p "$(dirname "$LOGFILE")"
 
+rotate_logfile
+
 cat << EOF >> "${LOGFILE}"
 --- Backup started on $(date -u -R) ---
 EOF

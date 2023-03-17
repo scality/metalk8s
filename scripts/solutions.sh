@@ -197,6 +197,8 @@ TMPFILES=$(mktemp -d)
 
 mkdir -p "$(dirname "$LOGFILE")"
 
+rotate_logfile
+
 exec > >(tee -ia "$LOGFILE") 2>&1
 
 cleanup() {

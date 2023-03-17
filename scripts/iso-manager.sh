@@ -58,6 +58,8 @@ TMPFILES=$(mktemp -d)
 
 mkdir -p "$(dirname "${LOGFILE}")"
 
+rotate_logfile
+
 cat << EOF >> "${LOGFILE}"
 --- MetalK8s ISO manager started on $(date -u -R) ---
 EOF
