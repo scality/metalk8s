@@ -57,6 +57,9 @@ done
 
 TMPFILES=$(mktemp -d)
 
+# shellcheck disable=SC1090,SC1091
+. "$BASE_DIR"/common.sh
+
 mkdir -p "$(dirname "${LOGFILE}")"
 
 rotate_logfile
@@ -72,9 +75,6 @@ cleanup() {
 }
 
 trap cleanup EXIT
-
-# shellcheck disable=SC1090,SC1091
-. "$BASE_DIR"/common.sh
 
 upgrade_bootstrap () {
     "$SALT_CALL" saltutil.sync_all saltenv="$SALTENV"

@@ -56,6 +56,10 @@ done
 
 TMPFILES=$(mktemp -d)
 
+BASE_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+# shellcheck disable=SC1090,SC1091
+. "$BASE_DIR"/common.sh
+
 mkdir -p "$(dirname "${LOGFILE}")"
 
 rotate_logfile
@@ -71,11 +75,6 @@ cleanup() {
 }
 
 trap cleanup EXIT
-
-BASE_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
-
-# shellcheck disable=SC1090,SC1091
-. "$BASE_DIR"/common.sh
 
 # helper function to set the current saltenv
 _set_env() {
