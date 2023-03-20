@@ -93,6 +93,9 @@
   - Bump prometheus-operator and prometheus-config-reloader containers version to
     [0.63.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.63.0)
 
+- Add log rotation to shell scripts
+  (PR[#4030](https://github.com/scality/metalk8s/pull/4030))
+
 ### Bug fixes
 
 - Fix a bug in Workload Plane Ingress Virtual IPs that make the DaemonSet Pod
