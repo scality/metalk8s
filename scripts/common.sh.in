@@ -13,6 +13,8 @@ RPM=${RPM:-$(command -v rpm || true)}
 YUM=${YUM:-$(command -v yum || true)}
 SYSTEMCTL=${SYSTEMCTL:-$(command -v systemctl)}
 PYTHON=${PYTHON:-$(command -v python3 || command -v python || true)}
+LOGFILE_MAX_ROTATIONS=10
+
 
 determine_os() {
     # We rely on /etc/os-release to discover the OS because its present on all
@@ -369,5 +371,29 @@ check_minion_id() {
              "characters, contain only lowercase alphanumeric characters, '-'" \
              "or '.' and start and end with an alphanumeric character."
         return 1
+    fi
+}
+
+rotate_logfile() {
+    # because set -u, we pass an empty string as default value
+    _rotate_logfile ""
+}
+
+_rotate_logfile() {
+    # Rotate logfile if it exists
+    if [ -n "$1" ]; then
+        if [ "$1" -gt "$LOGFILE_MAX_ROTATIONS" ]; then
+            rm -f "$LOGFILE.$1"
+            return
+        fi
+        if [ -f "$LOGFILE.$1" ]; then
+            _rotate_logfile $(($1+1))
+            mv "$LOGFILE.$1" "$LOGFILE.$(($1+1))"
+        fi
+    else
+        if [ -f "$LOGFILE" ]; then
+            _rotate_logfile 1
+            mv "$LOGFILE" "$LOGFILE.1"
+        fi
     fi
 }

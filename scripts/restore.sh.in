@@ -50,7 +50,13 @@ done
 TMPFILES=$(mktemp -d)
 BACKUP_DIR=$(mktemp -d)
 
+BASE_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+# shellcheck disable=SC1090,SC1091
+. "$BASE_DIR"/common.sh
+
 mkdir -p "$(dirname "$LOGFILE")"
+
+rotate_logfile
 
 cat << EOF >> "${LOGFILE}"
 --- Restore started on $(date -u -R) ---
@@ -65,8 +71,6 @@ cleanup() {
 
 trap cleanup EXIT
 
-BASE_DIR=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
-
 SALT_CALL=${SALT_CALL:-salt-call}
 
 declare -a PACKAGES=(
@@ -76,9 +80,6 @@ declare -a PACKAGES=(
     python3-psutil
     genisoimage
 )
-
-# shellcheck disable=SC1090,SC1091
-. "$BASE_DIR"/common.sh
 
 _save_cp() {
     local -r src="$(readlink -f "$1")"
