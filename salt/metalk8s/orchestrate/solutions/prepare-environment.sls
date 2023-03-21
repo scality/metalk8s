@@ -1,6 +1,7 @@
 {%- from "metalk8s/map.jinja" import repo with context %}
 
 {%- set env_name = pillar.orchestrate.env_name %}
+{%- set webhook_enabled = pillar.orchestrate.webhook_enabled %}
 
 {%- macro deploy_operator(namespace, name, solution) %}
 
@@ -65,6 +66,7 @@ Apply Operator Deployment for Solution {{ solution.name }}:
         image_name: {{ solution.manifest.spec.operator.image.name }}
         image_tag: {{ solution.manifest.spec.operator.image.tag }}
         repository: {{ repo.registry_endpoint ~ '/' ~ solution.id }}
+        webhook_enabled: {{ webhook_enabled }}
     - require:
         - metalk8s_kubernetes: Apply Operator ConfigMap for Solution {{ solution.name }}
 

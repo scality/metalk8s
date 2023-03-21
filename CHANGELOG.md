@@ -1,6 +1,13 @@
 # CHANGELOG
 ## Release 124.1.7 (in development)
 
+### Additions
+
+- Add an option on solution to add a volume named `cert` to a
+  deployment. The volume is originally to enable webhook in
+  the deployment.
+  (PR[#4384](https://github.com/scality/metalk8s/pull/4384))
+
 ### Enhancements
 
 - Bump Kubernetes version to
