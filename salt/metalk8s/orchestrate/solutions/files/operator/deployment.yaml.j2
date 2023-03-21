@@ -49,7 +49,18 @@ spec:
           volumeMounts:
             - name: operator-config
               mountPath: /etc/config
+{%- if webhook_enabled is defined and webhook_enabled %}
+            - name: cert
+              mountPath: /cert
+              readOnly: true
+{%- endif %}
       volumes:
         - name: operator-config
           configMap:
             name: {{ solution }}-operator-config
+{%- if webhook_enabled is defined and webhook_enabled %}
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: {{ solution }}-cert
+{%- endif %}

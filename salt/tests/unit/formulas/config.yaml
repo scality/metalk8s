@@ -753,6 +753,15 @@ metalk8s:
                   image_name: example-operator
                   image_tag: "1.2.3"
 
+              "Example Solution v1.2.3 with webhook":
+                extra_context:
+                  <<: *base_context_solution_operator_files
+                  repository: >-
+                    metalk8s-registry-from-config.invalid/example-solution-1.2.3
+                  image_name: example-operator-webhook
+                  image_tag: "1.2.3"
+                  webhook_enabled: true
+
           role_binding.yaml.j2:
             _cases:
               "Example Solution v1.2.3 (see ../../prepare-environment.sls)":

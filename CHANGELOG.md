@@ -7,6 +7,11 @@
   installation can be done on offline environment with no DNS
   (PR[#4019](https://github.com/scality/metalk8s/pull/4019))
 
+- Add an option on solution to add a volume named `cert` to a
+  deployment. The volume is originally to enable webhook in
+  the deployment.
+  (PR[#4032](https://github.com/scality/metalk8s/pull/4032))
+
 ### Enhancements
 
 - Bump Kubernetes version to
