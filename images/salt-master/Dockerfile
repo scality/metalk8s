@@ -25,7 +25,7 @@ gpgkey=https://repo.saltproject.io/py3/redhat/\$releasever/\$basearch/archive/%s
  && dnf install -y git \
  && pip3 install "git+https://github.com/kubernetes-client/python.git@cef5e9bd10a6d5ca4d9c83da46ccfe2114cdaaf8#egg=kubernetes" \
  && dnf remove -y git \
- && dnf install -y salt-master salt-api salt-ssh openssh-clients \
+ && dnf install -y salt-master salt-api salt-ssh openssh-clients procps-ng \
  && dnf clean all
 
 # Set up locale
