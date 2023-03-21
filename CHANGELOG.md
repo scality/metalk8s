@@ -107,6 +107,10 @@
   etcd
   (PR[#4024](https://github.com/scality/metalk8s/pull/4024))
 
+- Fix a bug where the probe for salt-master failed continuously
+  because pgrep was not installed on the salt-master container
+  (PR[#4031](https://github.com/scality/metalk8s/pull/4031))
+
 ### Removals
 
 - Some metrics were removed when bumping kube-prometheus-stack chart to
