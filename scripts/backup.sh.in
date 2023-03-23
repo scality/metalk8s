@@ -13,6 +13,7 @@ TAR_OPTS=(
     "--preserve-permissions"
 )
 BACKUP_ARCHIVE="/var/lib/metalk8s/backups/$(date -u +%Y%m%d_%H%M%S).tar.gz"
+NB_BACKUPS=3
 REPLICATION=1
 
 _usage() {
@@ -178,10 +179,24 @@ replicate_archives() {
 	saltenv=metalk8s-@@VERSION
 }
 
+clean_old_archives() {
+    local -r archive_dir="$(dirname "$BACKUP_ARCHIVE")"
+
+    local -r archives=($(ls -t "$archive_dir" | grep -E ".*.tar.gz"))
+    local -r nb_archives="${#archives[@]}"
+
+    if (( nb_archives > NB_BACKUPS )); then
+        for (( i=NB_BACKUPS; i<nb_archives; i++ )); do
+            rm -f "$archive_dir/${archives[$i]}"
+        done
+    fi
+}
+
 run "Backing up MetalK8s configurations" backup_metalk8s_conf
 run "Backing up CAs certificates and keys" backup_cas
 run "Backing up etcd data" backup_etcd
 run "Creating backup archive '$BACKUP_ARCHIVE'" create_archive
+run "Cleaning old archives" clean_old_archives
 
 if (( REPLICATION )); then
     run "Replicating backup archives on master nodes" replicate_archives
