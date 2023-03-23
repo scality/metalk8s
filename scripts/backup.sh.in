@@ -182,7 +182,7 @@ replicate_archives() {
 clean_old_archives() {
     local -r archive_dir="$(dirname "$BACKUP_ARCHIVE")"
 
-    local -r archives=($(ls -t "$archive_dir" | grep -E ".*.tar.gz"))
+    mapfile -t archives < <(ls -t "$archive_dir"/*.tar.gz)
     local -r nb_archives="${#archives[@]}"
 
     if (( nb_archives > NB_BACKUPS )); then
