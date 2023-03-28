@@ -18,11 +18,11 @@ except ImportError:
     from sos.plugins import Plugin, RedHatPlugin
 
 
-class containerd(Plugin, RedHatPlugin):
+class MetalK8sContainerd(Plugin, RedHatPlugin):
 
     """containerd engine"""
 
-    plugin_name = "containerd"
+    plugin_name = "metalk8s_containerd"
     profiles = ("container",)
     packages = "cri-tools"
 

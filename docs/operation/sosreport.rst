@@ -21,7 +21,7 @@ To include logs and configuration for containerd and MetalK8s components, run:
 
    root@your-machine # sosreport --batch --all-logs \
        -o metalk8s -kmetalk8s.all=True -kmetalk8s.podlogs=True -kmetalk8s.describe=True \
-       -o containerd -kcontainerd.all=True -kcontainerd.logs=True
+       -o metalk8s_containerd -kmetalk8s_containerd.all=True -kmetalk8s_containerd.logs=True
 
 The name of the generated archive is printed in the console output.
 
