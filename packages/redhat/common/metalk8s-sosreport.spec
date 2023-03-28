@@ -22,7 +22,7 @@ ExclusiveOS:    Linux
 
 License:        ASL 2.0
 Source0:        ../../common/metalk8s-sosreport/metalk8s.py
-Source1:        ../../common/metalk8s-sosreport/containerd.py
+Source1:        ../../common/metalk8s-sosreport/metalk8s_containerd.py
 
 %description
 %{Summary}
@@ -38,7 +38,7 @@ Source1:        ../../common/metalk8s-sosreport/containerd.py
 %install
 install -m 755 -d %{buildroot}/%{report_plugins}
 install -p -m 755 %{_topdir}/SOURCES/metalk8s.py %{buildroot}/%{report_plugins}/metalk8s.py
-install -p -m 755 %{_topdir}/SOURCES/containerd.py %{buildroot}/%{report_plugins}/containerd.py
+install -p -m 755 %{_topdir}/SOURCES/metalk8s_containerd.py %{buildroot}/%{report_plugins}/metalk8s_containerd.py
 %if 0%{rhel} >= 8
 pathfix.py -pni "%{__python3} %{py3_shbang_opts}" %{buildroot}%{python_lib}
 %else
@@ -47,18 +47,18 @@ pathfix.py -pni "%{__python} %{py_shbang_opts}" %{buildroot}%{python_lib}
 
 %files
 %defattr(-,root,root)
-%{report_plugins}/containerd.py
+%{report_plugins}/metalk8s_containerd.py
 %{report_plugins}/metalk8s.py
 %if 0%{rhel} >= 8
-%{report_plugins}/__pycache__/containerd.cpython-%{python3_version_nodots}.pyc
-%{report_plugins}/__pycache__/containerd.cpython-%{python3_version_nodots}.opt-?.pyc
+%{report_plugins}/__pycache__/metalk8s_containerd.cpython-%{python3_version_nodots}.pyc
+%{report_plugins}/__pycache__/metalk8s_containerd.cpython-%{python3_version_nodots}.opt-?.pyc
 %{report_plugins}/__pycache__/metalk8s.cpython-%{python3_version_nodots}.pyc
 %{report_plugins}/__pycache__/metalk8s.cpython-%{python3_version_nodots}.opt-?.pyc
 %else
 %{report_plugins}/metalk8s.pyc
-%{report_plugins}/containerd.pyc
+%{report_plugins}/metalk8s_containerd.pyc
 %{report_plugins}/metalk8s.pyo
-%{report_plugins}/containerd.pyo
+%{report_plugins}/metalk8s_containerd.pyo
 %endif
 
 %changelog

@@ -128,6 +128,11 @@
 
 ## Release 124.1.5 (in development)
 
+### Bug fixes
+
+- Make metalk8s-sosreport packages compatible with sos version 4.5
+  (PR[#4034](https://github.com/scality/metalk8s/pull/4034))
+
 ## Release 124.1.4
 
 

@@ -366,7 +366,7 @@ def _rpm_package_metalk8s_sosreport(releasever: str) -> targets.RPMPackage:
         releasever=releasever,
         sources=[
             Path("metalk8s.py"),
-            Path("containerd.py"),
+            Path("metalk8s_containerd.py"),
         ],
     )
 

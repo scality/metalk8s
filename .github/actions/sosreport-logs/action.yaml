@@ -25,7 +25,7 @@ runs:
         for host in ${HOSTS_LIST}; do
           ssh -F ssh_config ${host} \
           "sudo sosreport --all-logs -o metalk8s -kmetalk8s.podlogs=True\
-          -o containerd -kcontainerd.all=True -kcontainerd.logs=True\
+          -o metalk8s_containerd -kmetalk8s_containerd.all=True -kmetalk8s_containerd.logs=True\
           --batch --tmp-dir /var/tmp && \
           sudo chown -R 1000:1000 /var/tmp/sosreport*"
         done
