@@ -19,6 +19,7 @@ NAMESPACE=''
 SOLUTION=''
 VERBOSE=${VERBOSE:-0}
 VERSION=''
+WEBHOOK_ENABLED=${WEBHOOK_ENABLED:-false}
 
 export KUBECONFIG
 
@@ -94,6 +95,7 @@ usage() {
     echo "                        name)"
     echo "    -s, --solution      Name of the Solution to add"
     echo "    -V, --version       Version of the Solution to add"
+    echo "    -w, --webhook       Enable webhook validation"
     echo
     echo "  delete-solution     Delete a Solution from an Environment"
     echo "    -n, --name          Name of the Environment to delete the"
@@ -122,9 +124,10 @@ LONG_OPTS='
     namespace:,
     solution:,
     verbose,
-    version:
+    version:,
+    webhook,
 '
-SHORT_OPTS='a:d:hl:n:N:s:vV:'
+SHORT_OPTS='a:d:hl:n:N:s:vV:w'
 
 if ! options=$(getopt --options "$SHORT_OPTS" --long "$LONG_OPTS" -- "$@"); then
     echo 1>&2 "Incorrect arguments provided"
@@ -180,6 +183,9 @@ while :; do
         -V|--version)
             shift
             VERSION=$1
+            ;;
+        -w|--webhook)
+            WEBHOOK_ENABLED=true
             ;;
         --)
             shift
@@ -439,7 +445,8 @@ add_solution() {
     local -ra pillar=(
         "{"
         "  'orchestrate': {"
-        "    'env_name': '$NAME'"
+        "    'env_name': '$NAME',"
+        "    'webhook_enabled': $WEBHOOK_ENABLED"
         "  }"
         "}"
     )
