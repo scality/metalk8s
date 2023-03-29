@@ -37,6 +37,7 @@ class Metalk8sKubeconfigTestCase(TestCase, mixins.LoaderModuleMockMixin):
         self,
         kubeconfig,
         file_mode=0o600,
+        ca_b64_data=None,
         client_certificate_content=None,
         verify_signature_result=True,
         verify_private_key_result=True,
@@ -75,7 +76,7 @@ class Metalk8sKubeconfigTestCase(TestCase, mixins.LoaderModuleMockMixin):
             self.assertEqual(
                 metalk8s_kubeconfig.validate(
                     "/etc/kubernetes/admin.conf",
-                    cluster_info["certificate-authority-data"],
+                    ca_b64_data or cluster_info["certificate-authority-data"],
                     cluster_info["server"],
                     KUBECONFIG["users"][0]["name"],
                 ),

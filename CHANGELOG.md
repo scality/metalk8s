@@ -138,6 +138,11 @@
 - Make metalk8s-sosreport packages compatible with sos version 4.5
   (PR[#4034](https://github.com/scality/metalk8s/pull/4034))
 
+- Fix a bug that makes the kubeconfig regeneration salt state to
+  be triggered everyday no matter if this one actually need to be
+  regenerated
+  (PR[#4035](https://github.com/scality/metalk8s/pull/4035))
+
 ## Release 124.1.4
 
 

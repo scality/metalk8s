@@ -51,11 +51,14 @@ def validate(
     # and the API Server on the existing file match with the expected
     try:
         cluster_info = kubeconfig["clusters"][0]["cluster"]
-        current_ca_data = cluster_info["certificate-authority-data"]
+        current_ca_data = (
+            cluster_info["certificate-authority-data"].strip().replace("\n", "")
+        )
         current_api_server = cluster_info["server"]
     except (KeyError, IndexError):
         return False
 
+    expected_ca_data = expected_ca_data.strip().replace("\n", "")
     if expected_ca_data and current_ca_data != expected_ca_data:
         return False
 
