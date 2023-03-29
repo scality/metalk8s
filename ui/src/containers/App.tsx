@@ -1,4 +1,3 @@
-import React from 'react';
 import { MetricsTimeSpanProvider } from '@scality/core-ui/dist/next';
 import Layout from './Layout';
 import AlertProvider from './AlertProvider';

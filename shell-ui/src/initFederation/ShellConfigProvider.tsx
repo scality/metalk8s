@@ -58,6 +58,7 @@ export type ShellConfig = {
   };
   discoveryUrl: string;
   userGroupsMapping: Record<string, string[]>;
+  productName: string;
 };
 export const useShellConfig = (): {
   config: ShellConfig;

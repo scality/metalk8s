@@ -1,5 +1,4 @@
 import type { Node } from 'react';
-import React, { useEffect } from 'react';
 import { IntlProvider } from 'react-intl';
 import { ErrorPage500 } from '@scality/core-ui';
 import { ComponentWithFederatedImports } from '@scality/module-federation';
@@ -18,9 +17,6 @@ const InternalIntlProvider = ({
   children: Node;
 }): Node => {
   const { language } = moduleExports['./lang'].useLanguage();
-  useEffect(() => {
-    document.title = messages[language.toUpperCase()].product_name; // eslint-disable-next-line
-  }, [language]);
   return (
     <IntlProvider locale={language} messages={messages[language.toUpperCase()]}>
       {children}

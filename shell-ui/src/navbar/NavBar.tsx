@@ -25,6 +25,7 @@ import { useLocation } from 'react-router-dom';
 import { matchPath, RouteProps } from 'react-router';
 import type { Link as TypeLink } from './navbarHooks';
 import { useNavbar } from './navbarHooks';
+import { useShellConfig } from '../initFederation/ShellConfigProvider';
 const Logo = styled.img`
   height: 2.143rem;
 `;
@@ -240,7 +241,6 @@ export const Navbar = ({
   const { themeName, unSelectedThemes, setTheme } = useThemeName();
   const { language, setLanguage, unSelectedLanguages } = useLanguage();
   const intl = useIntl();
-  const location = useLocation();
   const { openLink } = useLinkOpener();
   const { logOut } = useLogOut();
   const { getLinks } = useNavbar();
@@ -250,6 +250,21 @@ export const Navbar = ({
   const navbarSubloginActions = useNavbarLinksToActions(
     navbarLinks.userDropdown,
   );
+  const navbarEntrySelected =
+    navbarMainActions.find((act) => act.selected) ||
+    navbarSecondaryActions.find((act) => act.selected) ||
+    navbarSubloginActions.find((act) => act.selected);
+  const { config } = useShellConfig();
+  const title =
+    config.productName +
+    ' ' +
+    (navbarEntrySelected?.link.view.view.label.en || '');
+  useEffect(() => {
+    if (title) {
+      document.title = title;
+    }
+  }, [title]);
+
   const mainTabs = navbarMainActions.map((action) => ({
     link: action.link.render ? (
       <action.link.render selected={action.selected} />
