@@ -13,7 +13,7 @@ TAR_OPTS=(
     "--preserve-permissions"
 )
 BACKUP_ARCHIVE="/var/lib/metalk8s/backups/$(date -u +%Y%m%d_%H%M%S).tar.gz"
-NB_BACKUPS=3
+NB_BACKUPS=5
 REPLICATION=1
 
 _usage() {

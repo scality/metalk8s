@@ -4,7 +4,7 @@
 ### Enhancements
 
 - Add cleanup functionality to the backup script to only keep the
-  3 latest backups
+  5 latest backups
   (PR[#4033](https://github.com/scality/metalk8s/pull/4033))
 
 ### Bug fixes
