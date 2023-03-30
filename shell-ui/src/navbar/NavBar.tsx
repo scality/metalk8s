@@ -12,7 +12,6 @@ import { useIntl } from 'react-intl';
 import { useAuth, useLogOut } from '../auth/AuthProvider';
 import type {
   ViewDefinition,
-  FederatedView,
   BuildtimeWebFinger,
 } from '../initFederation/ConfigurationProviders';
 import '../initFederation/ConfigurationProviders';
@@ -151,7 +150,13 @@ export const useNavbarLinksToActions = (
   const selectedTab = links.find((link) =>
     link.view.isFederated
       ? doesRouteMatch({
-          path: link.view.app.appHistoryBasePath + link.view.view.path,
+          path: link.view.view.activeIfMatches
+            ? new RegExp(
+                link.view.app.appHistoryBasePath +
+                  link.view.view.activeIfMatches,
+                'i',
+              )
+            : link.view.app.appHistoryBasePath + link.view.view.path,
           exact: link.view.view.exact,
           strict: link.view.view.strict,
           sensitive: link.view.view.sensitive,

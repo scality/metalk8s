@@ -9,6 +9,7 @@
         "views": {
             "platform": {
                 "path": "/",
+                "activeIfMatches": "(?!\\/alerts|\\/docs)",
                 "label": {
                     "en": "Platform",
                     "fr": "Plateforme"
