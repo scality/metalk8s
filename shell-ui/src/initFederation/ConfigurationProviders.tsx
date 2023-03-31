@@ -48,6 +48,7 @@ export type FederatedModuleInfo = {
 };
 export type View = {
   path: string;
+  activeIfMatches?: string;
   exact?: boolean;
   strict?: boolean;
   sensitive?: boolean;

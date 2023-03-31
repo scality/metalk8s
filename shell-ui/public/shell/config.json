@@ -12,5 +12,6 @@
     ],
     "subLogin": []
   },
-  "discoveryUrl": "/shell/deployed-ui-apps.json"
+  "discoveryUrl": "/shell/deployed-ui-apps.json",
+  "productName": "MetalK8s"
 }

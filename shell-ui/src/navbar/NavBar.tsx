@@ -12,7 +12,6 @@ import { useIntl } from 'react-intl';
 import { useAuth, useLogOut } from '../auth/AuthProvider';
 import type {
   ViewDefinition,
-  FederatedView,
   BuildtimeWebFinger,
 } from '../initFederation/ConfigurationProviders';
 import '../initFederation/ConfigurationProviders';
@@ -25,6 +24,7 @@ import { useLocation } from 'react-router-dom';
 import { matchPath, RouteProps } from 'react-router';
 import type { Link as TypeLink } from './navbarHooks';
 import { useNavbar } from './navbarHooks';
+import { useShellConfig } from '../initFederation/ShellConfigProvider';
 const Logo = styled.img`
   height: 2.143rem;
 `;
@@ -150,7 +150,13 @@ export const useNavbarLinksToActions = (
   const selectedTab = links.find((link) =>
     link.view.isFederated
       ? doesRouteMatch({
-          path: link.view.app.appHistoryBasePath + link.view.view.path,
+          path: link.view.view.activeIfMatches
+            ? new RegExp(
+                link.view.app.appHistoryBasePath +
+                  link.view.view.activeIfMatches,
+                'i',
+              )
+            : link.view.app.appHistoryBasePath + link.view.view.path,
           exact: link.view.view.exact,
           strict: link.view.view.strict,
           sensitive: link.view.view.sensitive,
@@ -240,7 +246,6 @@ export const Navbar = ({
   const { themeName, unSelectedThemes, setTheme } = useThemeName();
   const { language, setLanguage, unSelectedLanguages } = useLanguage();
   const intl = useIntl();
-  const location = useLocation();
   const { openLink } = useLinkOpener();
   const { logOut } = useLogOut();
   const { getLinks } = useNavbar();
@@ -250,6 +255,21 @@ export const Navbar = ({
   const navbarSubloginActions = useNavbarLinksToActions(
     navbarLinks.userDropdown,
   );
+  const navbarEntrySelected =
+    navbarMainActions.find((act) => act.selected) ||
+    navbarSecondaryActions.find((act) => act.selected) ||
+    navbarSubloginActions.find((act) => act.selected);
+  const { config } = useShellConfig();
+  const title =
+    config.productName +
+    ' ' +
+    (navbarEntrySelected?.link.view.view.label.en || '');
+  useEffect(() => {
+    if (title) {
+      document.title = title;
+    }
+  }, [title]);
+
   const mainTabs = navbarMainActions.map((action) => ({
     link: action.link.render ? (
       <action.link.render selected={action.selected} />
