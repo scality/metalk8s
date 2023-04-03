@@ -10,7 +10,7 @@ def __virtual__():
 def get_backups_to_delete(backup_folder, retention_count):
     """Return a list of backups to delete."""
     backups = []
-    ret = __salt__["cmd.run"](f'ls -t "{backup_folder}"/*.tar.gz')
+    ret = __salt__["cmd.run_all"](f'ls -t "{backup_folder}"/*.tar.gz')
     if ret["retcode"] == 0:
         backups = ret["stdout"].split("\n")
     return " ".join(backups[int(retention_count) :])
