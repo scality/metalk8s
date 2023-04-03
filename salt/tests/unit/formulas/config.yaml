@@ -443,6 +443,14 @@ metalk8s:
                 node: master-1
                 image: registry/some-image-name:tag
 
+        cleanup_job.yaml.j2:
+          _cases:
+            "Create job manifest for a node":
+              extra_context:
+                node: master-1
+                image: registry/some-image-name:tag
+                files: "some-file-1 some-file-2"
+
     register_etcd.sls:
       _cases:
         "Target a new master node": &orch_target_master_node

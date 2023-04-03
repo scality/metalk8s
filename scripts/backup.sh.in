@@ -13,7 +13,6 @@ TAR_OPTS=(
     "--preserve-permissions"
 )
 BACKUP_ARCHIVE="/var/lib/metalk8s/backups/$(date -u +%Y%m%d_%H%M%S).tar.gz"
-NB_BACKUPS=5
 REPLICATION=1
 
 _usage() {
@@ -180,16 +179,11 @@ replicate_archives() {
 }
 
 clean_old_archives() {
-    local -r archive_dir="$(dirname "$BACKUP_ARCHIVE")"
+    salt_master_exec=(crictl exec -i "$(get_salt_container)")
 
-    mapfile -t archives < <(ls -t "$archive_dir"/*.tar.gz)
-    local -r nb_archives="${#archives[@]}"
-
-    if (( nb_archives > NB_BACKUPS )); then
-        for (( i=NB_BACKUPS; i<nb_archives; i++ )); do
-            rm -f "$archive_dir/${archives[$i]}"
-        done
-    fi
+    "${salt_master_exec[@]}" salt-run --state-output=mixed state.orchestrate \
+	metalk8s.orchestrate.backup.cleanup \
+	saltenv=metalk8s-@@VERSION
 }
 
 run "Backing up MetalK8s configurations" backup_metalk8s_conf
