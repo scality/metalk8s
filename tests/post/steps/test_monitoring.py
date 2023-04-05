@@ -1,6 +1,7 @@
 import json
 import operator
 import pathlib
+import requests
 import uuid
 import yaml
 
@@ -293,13 +294,7 @@ def push_datasource_cm(context, k8s_client, name, namespace):
     context.setdefault("config_map_to_delete", []).append((name, namespace))
 
 
-# }}}
-# Then {{{
-
-
-@then(
-    parsers.parse("on deletion of the dashboard's ConfigMap from namespace '{ns_name}'")
-)
+@when(parsers.parse("we delete the dashboard's ConfigMap from namespace '{ns_name}'"))
 def delete_config_map(k8s_client, context, ns_name):
     client = kube_utils.Client(k8s_client, "ConfigMap", namespace=ns_name)
     cm_manifest = context["grafana-cm-manifest"]
@@ -310,25 +305,31 @@ def delete_config_map(k8s_client, context, ns_name):
         raise AssertionError(f"failed to delete dashboard '{cm_name}': {err}")
 
 
-@then(
-    parsers.parse("the dashboard is no longer in folder '{gf_folder_name}' in Grafana")
-)
-def check_no_dash_in_folder(context, gf_folder_name, grafana_api):
+# }}}
+# Then {{{
 
+
+@then(parsers.parse("the dashboard no longer exists in Grafana"))
+def check_no_dash(context, grafana_api):
     dash_uid = context["grafana-cm-uid"]
 
-    def _get_dash():
+    def _no_dash():
+        dash = None
         try:
-            return grafana_api.get_dashboard(dash_uid)
-        except utils.GrafanaAPIError:
-            raise AssertionError(f"no dashboard with UID '{dash_uid}' in Grafana")
+            dash = grafana_api.get_dashboard(dash_uid)
+        except utils.GrafanaAPIError as exc:
+            assert len(exc.args)
+            assert isinstance(exc.args[0], requests.exceptions.HTTPError)
+            assert exc.args[0].response.status_code == 404
 
-    dashboard = utils.retry(
-        _get_dash, times=3, wait=15, name=f"check dashboard uid {dash_uid}"
+        assert not dash, f"Dashboard {dash_uid} still exists"
+
+    utils.retry(
+        _no_dash,
+        times=8,
+        wait=15,
+        name=f"check dashboard uid {dash_uid} no longer exists",
     )
-    assert (
-        dashboard.get("meta", {}).get("folderTitle") == gf_folder_name
-    ), f"dashboard not in folder '{gf_folder_name}'"
 
 
 @then(parsers.parse("we have the dashboard in folder '{gf_folder_name}' in Grafana"))
