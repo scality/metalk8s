@@ -179,10 +179,19 @@ replicate_archives() {
 	saltenv=metalk8s-@@VERSION
 }
 
+clean_old_archives() {
+    salt_master_exec=(crictl exec -i "$(get_salt_container)")
+
+    "${salt_master_exec[@]}" salt-run --state-output=mixed state.orchestrate \
+	metalk8s.orchestrate.backup.cleanup \
+	saltenv=metalk8s-@@VERSION
+}
+
 run "Backing up MetalK8s configurations" backup_metalk8s_conf
 run "Backing up CAs certificates and keys" backup_cas
 run "Backing up etcd data" backup_etcd
 run "Creating backup archive '$BACKUP_ARCHIVE'" create_archive
+run "Cleaning old archives" clean_old_archives
 
 if (( REPLICATION )); then
     run "Replicating backup archives on master nodes" replicate_archives

@@ -1,0 +1,35 @@
+get_backups_to_delete:
+  # Nothing to clean
+  - backup_archives:
+      - backup1.tar.gz
+      - backup2.tar.gz
+    retention_count: 5
+    expected: ''
+    retcode: 0
+
+  # 1 archive to clean
+  - backup_archives:
+      - backup1.tar.gz
+      - backup2.tar.gz
+      - backup3.tar.gz
+      - backup4.tar.gz
+    retention_count: 3
+    expected: 'backup4.tar.gz'
+    retcode: 0
+
+  # 2 archives to clean
+  - backup_archives:
+      - backup1.tar.gz
+      - backup2.tar.gz
+      - backup3.tar.gz
+      - backup4.tar.gz
+      - backup5.tar.gz
+    retention_count: 3
+    expected: 'backup4.tar.gz backup5.tar.gz'
+    retcode: 0
+
+  # Bad path
+  - backup_archives: []
+    retention_count: 5
+    expected: ''
+    retcode: 2
