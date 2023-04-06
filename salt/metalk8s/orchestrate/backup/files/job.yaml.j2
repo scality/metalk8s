@@ -22,7 +22,10 @@ spec:
       containers:
       - name: backup-replication
         image: {{ image }}
-        command:
+        command: ["/bin/sh", "-c"]
+        args:
+          - ls -t -1 /backups/*.tar.gz | tail -n+6 | xargs rm -f
+          - ;
           - wget
           - --accept="*.tar.gz"
           - --no-host-directories
