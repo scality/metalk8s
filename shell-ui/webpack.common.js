@@ -13,7 +13,7 @@ module.exports = {
     rules: [
       {
         test: /\.(js|jsx|ts|tsx)$/,
-        exclude: /node_modules/,
+        exclude: /node_modules\/(?!react-error-boundary)/,
         use: {
           loader: 'babel-loader',
         },
