@@ -17,6 +17,9 @@
   regenerated
   (PR[#4035](https://github.com/scality/metalk8s/pull/4035))
 
+- Fix a bug that skips backup archive replication
+  (PR[#4038](https://github.com/scality/metalk8s/pull/4038))
+
 ## Release 124.1.4
 
 ### Bug fixes
