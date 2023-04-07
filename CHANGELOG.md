@@ -1,6 +1,12 @@
 # CHANGELOG
 ## Release 124.1.5 (in development)
 
+### Enhancements
+
+- Add cleanup functionality to the backup replication job to
+  only keep the latest 5 backup archives
+  (PR[#4038](https://github.com/scality/metalk8s/pull/4038))
+
 ### Bug fixes
 
 - Make metalk8s-sosreport packages compatible with sos version 4.5
