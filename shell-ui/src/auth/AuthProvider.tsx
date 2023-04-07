@@ -1,4 +1,4 @@
-import type { Node } from 'react';
+import React from 'react';
 import { useCallback, useEffect } from 'react';
 import { useAuthConfig } from './AuthConfigProvider';
 import {
@@ -9,12 +9,13 @@ import {
 } from 'oidc-react';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
 import { getUserGroups } from '../navbar/auth/permissionUtils';
-import { Log, MetadataService, WebStorageStateStore } from 'oidc-client';
+import { MetadataService, WebStorageStateStore } from 'oidc-client';
 import type {
   OIDCConfig,
   OAuth2ProxyConfig,
 } from '../initFederation/ConfigurationProviders';
 import { useQuery } from 'react-query';
+import { useErrorBoundary } from 'react-error-boundary';
 export function AuthProvider({ children }: { children: Node }) {
   const { authConfig } = useAuthConfig();
 
@@ -26,7 +27,11 @@ export function AuthProvider({ children }: { children: Node }) {
     throw new Error('OAuth2Proxy authentication kind is not yet supported');
   }
 
-  return <OAuth2AuthProvider>{children}</OAuth2AuthProvider>;
+  return (
+    <>
+      <OAuth2AuthProvider>{children}</OAuth2AuthProvider>
+    </>
+  );
 }
 
 function defaultDexConnectorMetadataService(connectorId: string) {
@@ -69,6 +74,16 @@ function OAuth2AuthProvider({ children }: { children: Node }) {
       store: localStorage,
     }),
   });
+  const originalSigninCallBack = userManager.signinCallback.bind(userManager);
+  const { showBoundary } = useErrorBoundary();
+  userManager.signinCallback = function (url) {
+    return originalSigninCallBack(url).catch((e) => {
+      showBoundary(
+        'We failed to log you in, this might be due to time synchronization between the browser and the server.',
+      );
+      throw e;
+    });
+  };
   const { logOut } = useInternalLogout(userManager, authConfig);
   //Force logout on silent renewal error
   useEffect(() => {

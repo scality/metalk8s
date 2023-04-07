@@ -28,6 +28,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { useLanguage } from './navbar/lang';
 import './index.css';
 import { ShellHistoryProvider } from './initFederation/ShellHistoryProvider';
+
 export const queryClient: typeof QueryClient = new QueryClient();
 
 function FederatedRoute({
@@ -192,9 +193,21 @@ export default function App(): Node {
       >
         <QueryClientProvider client={queryClient} contextSharing={true}>
           <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
-            <WithInitFederationProviders>
-              <InternalApp />
-            </WithInitFederationProviders>
+            <ErrorBoundary
+              FallbackComponent={({ error }) => {
+                if (typeof error === 'string') {
+                  return <>{error}</>;
+                }
+                if (error instanceof Error) {
+                  return <>{error.message}</>;
+                }
+                return <ErrorPage500 locale={'en'} />;
+              }}
+            >
+              <WithInitFederationProviders>
+                <InternalApp />
+              </WithInitFederationProviders>
+            </ErrorBoundary>
           </ShellConfigProvider>
         </QueryClientProvider>
       </div>
