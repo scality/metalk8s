@@ -79,8 +79,8 @@ function OAuth2AuthProvider({ children }: { children: Node }) {
   userManager.signinCallback = function (url) {
     return originalSigninCallBack(url).catch((e) => {
       showBoundary({
-        en: 'We failed to log you in, this might be due to time synchronization between the browser and the server.',
-        fr: `Nous n'avons pas réussi à vous connecter, cela peut être dû à la synchronisation de l'heure entre le navigateur et le serveur.`,
+        en: 'We failed to log you in, this might be due to a time synchronization issue between the browser and the server.',
+        fr: `Nous n'avons pas réussi à vous connecter, cela peut être dû à une dé-synchronisation de l'heure entre le navigateur et le serveur`,
       });
       throw e;
     });
