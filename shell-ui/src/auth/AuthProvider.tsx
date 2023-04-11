@@ -78,9 +78,10 @@ function OAuth2AuthProvider({ children }: { children: Node }) {
   const { showBoundary } = useErrorBoundary();
   userManager.signinCallback = function (url) {
     return originalSigninCallBack(url).catch((e) => {
-      showBoundary(
-        'We failed to log you in, this might be due to time synchronization between the browser and the server.',
-      );
+      showBoundary({
+        en: 'We failed to log you in, this might be due to time synchronization between the browser and the server.',
+        fr: `Nous n'avons pas réussi à vous connecter, cela peut être dû à la synchronisation de l'heure entre le navigateur et le serveur.`,
+      });
       throw e;
     });
   };
