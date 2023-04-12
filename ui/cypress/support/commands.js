@@ -268,24 +268,22 @@ Cypress.Commands.add('fillVolumeCreationForm', (volume_type) => {
   // The following steps are to fill the required fields of create volume form
   cy.get('input[name=name]').type(VOLUME_NAME);
 
-  cy.findByText(/node \*/i)
-    .closest('label')
-    .invoke('attr', 'for')
-    .then((htmlFor) => cy.get(`#${htmlFor}`).click());
+  // Force click is because the input element is not visiable
+  cy.findByLabelText(/node \*/i)
+    .focus()
+    .click({ force: true });
 
   cy.findByRole('option', { name: new RegExp(`${NODE_NAME}`, 'i') }).click();
 
-  cy.findByText(/storage class \*/i)
-    .closest('label')
-    .invoke('attr', 'for')
-    .then((htmlFor) => cy.get(`#${htmlFor}`).click());
+  cy.findByLabelText(/storage class \*/i)
+    .focus()
+    .click({ force: true });
 
   cy.findByRole('option', { name: new RegExp(`${STORAGECLASS}`, 'i') }).click();
 
-  cy.findByText(/type \*/i)
-    .closest('label')
-    .invoke('attr', 'for')
-    .then((htmlFor) => cy.get(`#${htmlFor}`).click());
+  cy.findByLabelText(/type \*/i)
+    .focus()
+    .click({ force: true });
 
   cy.findByRole('option', { name: new RegExp(`${volume_type}`, 'i') }).click();
 

@@ -21,6 +21,7 @@ if (process.env.NODE_ENV === 'test') {
           namespace: 'shell-ui',
         },
       ],
+      '@babel/plugin-proposal-class-properties',
     ],
     presets: [
       '@babel/preset-env',

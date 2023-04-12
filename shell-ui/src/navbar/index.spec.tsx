@@ -7,9 +7,9 @@ import { WithInitFederationProviders } from '../FederatedApp';
 import { configurationHandlers } from '../FederatedApp.spec';
 import { ShellConfigProvider } from '../initFederation/ShellConfigProvider';
 import { useNavbar } from './navbarHooks';
-import { debug } from 'jest-preview';
 import { ShellHistoryProvider } from '../initFederation/ShellHistoryProvider';
 import { act } from 'react-test-renderer';
+import { LanguageProvider } from './lang';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -41,17 +41,19 @@ function mockOidcReact() {
 jest.mock('oidc-react', () => mockOidcReact());
 
 const wrapper = ({ children }) => (
-  <QueryClientProvider client={queryClient}>
-    <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
-      <WithInitFederationProviders>
-        <MemoryRouter>
-          <ShellHistoryProvider>
-            <SolutionsNavbar>{children}</SolutionsNavbar>
-          </ShellHistoryProvider>
-        </MemoryRouter>
-      </WithInitFederationProviders>
-    </ShellConfigProvider>
-  </QueryClientProvider>
+  <LanguageProvider>
+    <QueryClientProvider client={queryClient}>
+      <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
+        <WithInitFederationProviders>
+          <MemoryRouter>
+            <ShellHistoryProvider>
+              <SolutionsNavbar>{children}</SolutionsNavbar>
+            </ShellHistoryProvider>
+          </MemoryRouter>
+        </WithInitFederationProviders>
+      </ShellConfigProvider>
+    </QueryClientProvider>
+  </LanguageProvider>
 );
 
 describe('useNavbar', () => {

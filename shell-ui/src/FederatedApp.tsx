@@ -25,9 +25,10 @@ import { AuthConfigProvider, useAuthConfig } from './auth/AuthConfigProvider';
 import { AuthProvider, useAuth } from './auth/AuthProvider';
 import { createBrowserHistory } from 'history';
 import { ErrorBoundary } from 'react-error-boundary';
-import { useLanguage } from './navbar/lang';
+import { LanguageProvider, useLanguage } from './navbar/lang';
 import './index.css';
 import { ShellHistoryProvider } from './initFederation/ShellHistoryProvider';
+
 export const queryClient: typeof QueryClient = new QueryClient();
 
 function FederatedRoute({
@@ -180,6 +181,42 @@ export function WithInitFederationProviders({ children }: { children: Node }) {
     </UIListProvider>
   );
 }
+
+const AppProviderWrapper = () => {
+  const { language } = useLanguage();
+  return (
+    <QueryClientProvider client={queryClient} contextSharing={true}>
+      <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
+        <ErrorBoundary
+          FallbackComponent={({ error }) => {
+            if ('en' in error && 'fr' in error) {
+              return (
+                <ErrorPage500
+                  locale={language}
+                  errorMessage={{ en: error.en, fr: error.fr }}
+                />
+              );
+            }
+            if (error instanceof Error) {
+              return (
+                <ErrorPage500
+                  locale={language}
+                  errorMessage={{ en: error.message, fr: error.message }}
+                />
+              );
+            }
+            return <ErrorPage500 locale={language} />;
+          }}
+        >
+          <WithInitFederationProviders>
+            <InternalApp />
+          </WithInitFederationProviders>
+        </ErrorBoundary>
+      </ShellConfigProvider>
+    </QueryClientProvider>
+  );
+};
+
 export default function App(): Node {
   return (
     <ScrollbarWrapper>
@@ -190,13 +227,9 @@ export default function App(): Node {
           flexDirection: 'column',
         }}
       >
-        <QueryClientProvider client={queryClient} contextSharing={true}>
-          <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
-            <WithInitFederationProviders>
-              <InternalApp />
-            </WithInitFederationProviders>
-          </ShellConfigProvider>
-        </QueryClientProvider>
+        <LanguageProvider>
+          <AppProviderWrapper />
+        </LanguageProvider>
       </div>
     </ScrollbarWrapper>
   );

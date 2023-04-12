@@ -25,19 +25,19 @@ When('I fill out the volume creation form using:', (dataTable) => {
   cy.findByText(/node \*/i)
     .closest('label')
     .invoke('attr', 'for')
-    .then((htmlFor) => cy.get(`#${htmlFor}`).click());
-  cy.findAllByRole('option').then(options => options[0].click());
+    .then((htmlFor) => cy.get(`#${htmlFor}`).click({ force: true }));
+  cy.findAllByRole('option').then((options) => options[0].click());
 
   cy.findByText(/storage class \*/i)
     .closest('label')
     .invoke('attr', 'for')
-    .then((htmlFor) => cy.get(`#${htmlFor}`).click());
+    .then((htmlFor) => cy.get(`#${htmlFor}`).click({ force: true }));
   cy.findByRole('option', { name: new RegExp(`metalk8s`, 'i') }).click();
 
   cy.findByText(/type \*/i)
     .closest('label')
     .invoke('attr', 'for')
-    .then((htmlFor) => cy.get(`#${htmlFor}`).click());
+    .then((htmlFor) => cy.get(`#${htmlFor}`).click({ force: true }));
   cy.findByRole('option', { name: new RegExp(`${volumeType}`, 'i') }).click();
 
   cy.get('input[name=sizeInput]').type(volumeSize);
