@@ -1,4 +1,4 @@
-import json
+import yaml
 
 from pytest_bdd import scenario, when, then, parsers
 
@@ -22,22 +22,41 @@ def run_backup(request, host, times):
 
 
 # Then
-@then(parsers.parse("we have at most {most_unt} backups on each node"))
-def check_backup_archive_count(host, version, ssh_config, most_count):
+@then(parsers.parse("we have {count} backups on each node"))
+def check_backup_archive_count(host, version, ssh_config, count):
+    # using yaml becasue json output is not always correctly formatted
+    get_master_nodes_command = [
+        "salt-run",
+        "--out yaml",
+        "salt.cmd",
+        "metalk8s.minions_by_role",
+        "master",
+        "with_pillar=True",
+    ]
+    master_nodes = yaml.load(
+        utils.run_salt_command(host, get_master_nodes_command, ssh_config).stdout,
+        Loader=yaml.Loader,
+    )
+    assert len(master_nodes) > 0, "No master node found"
+
+    if len(master_nodes) == 1:
+        master_nodes = master_nodes[0]
+    else:
+        master_nodes = f"-L {','.join(master_nodes)}"
+
     command = [
         "salt",
-        "--static",
-        "--out=json",
-        "'*'",
-        "cmd.run",
-        "ls -1 /var/lib/metalk8s/backups/*.tar.gz | wc -l",
-        f"saltenv=metalk8s-{version}",
+        "--out yaml",
+        master_nodes,
+        "cmd.run_all",
+        '"find /var/lib/metalk8s/backups -name "*.tar.gz" | wc -l"',
     ]
+    backup_counts = yaml.load(
+        utils.run_salt_command(host, command, ssh_config).stdout, Loader=yaml.Loader
+    )
 
-    backup_counts = json.loads(utils.run_salt_command(host, command, ssh_config))
-
-    for name, count in backup_counts.items():
-        assert int(count) <= int(most_count), (
-            f"Expected at most {most_count} backup archives on "
-            f"node {name}, got {count}"
+    for name, ret in backup_counts.items():
+        assert ret["retcode"] == 0, ret["stderr"]
+        assert int(ret["stdout"]) == int(count), (
+            f"Expected {count} backup archives on " f'node {name}, got {ret["stdout"]}'
         )

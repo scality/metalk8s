@@ -24,16 +24,13 @@ spec:
         image: {{ image }}
         command: ["/bin/sh", "-c"]
         args:
-          - ls -t -1 /backups/*.tar.gz | tail -n+6 | xargs rm -f
-          - ;
-          - wget
-          - --accept="*.tar.gz"
-          - --no-host-directories
-          - --mirror
-          - --ca-certificate=/certificate/ca.crt
-          - --user=$(BACKUP_USERNAME)
-          - --password=$(BACKUP_PASSWORD)
-          - https://backup/
+          - >-
+            wget --accept="*.tar.gz"
+            --no-host-directories --mirror
+            --ca-certificate=/certificate/ca.crt
+            --user=$(BACKUP_USERNAME)
+            --password=$(BACKUP_PASSWORD)
+            https://backup/; ls -t -1 /backups/*.tar.gz | tail -n+6 | xargs -t rm -f
         env:
           - name: BACKUP_USERNAME
             valueFrom:
