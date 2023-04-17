@@ -260,6 +260,29 @@ applied with Salt.
                       metalk8s.addons.prometheus-operator.deployed \\
                       saltenv=metalk8s-|version|
 
+Testing Receivers
+"""""""""""""""""
+
+After applying the receivers configuration, you can test it by sending
+a dummy alert.
+
+.. code-block:: shell
+
+   root\@bootstrap $ kubectl port-forward --kubeconfig /etc/kubernetes/admin.conf \\
+                      statefulset/alertmanager-prometheus-operator-alertmanager \\
+                      -n metalk8s-monitoring 9093
+
+In another terminal, run:
+
+.. code-block:: shell
+
+   root\@bootstrap $ curl -H 'Content-Type: application/json' \\
+                      -d '[{"labels":{"alertname":"dummy_alert", "severity":"critical"}}]' \\
+                      http://127.0.0.1:9093/api/v1/alerts
+
+The alert remains for 5 minutes before it is automatically
+resolved by Alertmanager
+
 .. _csc-grafana-customization:
 
 Grafana Configuration Customization
