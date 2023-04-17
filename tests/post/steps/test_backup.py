@@ -1,4 +1,4 @@
-import yaml
+import json
 
 from pytest_bdd import scenario, when, then, parsers
 
@@ -22,41 +22,32 @@ def run_backup(request, host, times):
 
 
 # Then
-@then(parsers.parse("we have {count} backups on each node"))
-def check_backup_archive_count(host, version, ssh_config, count):
-    # using yaml becasue json output is not always correctly formatted
-    get_master_nodes_command = [
-        "salt-run",
-        "--out yaml",
-        "salt.cmd",
-        "metalk8s.minions_by_role",
-        "master",
-        "with_pillar=True",
+@then(parsers.parse("we have {count} backups on each node"), converters=dict(count=int))
+def check_backup_archive_count(host, ssh_config, k8s_client, count):
+    master_nodes = [
+        node.metadata.name
+        for node in k8s_client.resources.get(api_version="v1", kind="Node")
+        .get(label_selector=f"node-role.kubernetes.io/master")
+        .items
     ]
-    master_nodes = yaml.load(
-        utils.run_salt_command(host, get_master_nodes_command, ssh_config).stdout,
-        Loader=yaml.Loader,
-    )
     assert len(master_nodes) > 0, "No master node found"
-
-    if len(master_nodes) == 1:
-        master_nodes = master_nodes[0]
-    else:
-        master_nodes = f"-L {','.join(master_nodes)}"
 
     command = [
         "salt",
-        "--out yaml",
-        master_nodes,
-        "cmd.run_all",
-        '"find /var/lib/metalk8s/backups -name "*.tar.gz" | wc -l"',
+        "--static",
+        "--out json",
+        "-L",
+        f"{','.join(master_nodes)}",
+        "file.find",
+        "/var/lib/metalk8s/backups",
+        "type=f",
+        "name=*.tar.gz",
+        "maxdepth=1",
     ]
-    backup_counts = yaml.load(
-        utils.run_salt_command(host, command, ssh_config).stdout, Loader=yaml.Loader
-    )
+    ret = json.loads(utils.run_salt_command(host, command, ssh_config).stdout)
 
-    for name, ret in backup_counts.items():
-        assert ret["retcode"] == 0, ret["stderr"]
-        assert int(ret["stdout"]) == int(count), (
-            f"Expected {count} backup archives on " f'node {name}, got {ret["stdout"]}'
+    for name, backups in ret.items():
+        assert len(backups) == count, (
+            f"Expected {count} backup archives on "
+            f"node {name}, got {len(backups)}: {backups}"
         )
