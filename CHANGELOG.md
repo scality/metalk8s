@@ -11,6 +11,11 @@
   regenerated
   (PR[#4035](https://github.com/scality/metalk8s/pull/4035))
 
+### Documentation
+
+- Documentation for testing Alertmanager receiver configuration
+  (PR[#041](https://github.com/scality/metalk8s/pull/4041))
+
 ## Release 124.1.4
 
 ### Bug fixes
