@@ -361,6 +361,17 @@ def wait_rollout_status(host, resource, namespace):
     )
 
 
+@when(parsers.parse("we wait {seconds} seconds for the {job} job to complete"))
+def wait_for_job(host, seconds, job):
+    with host.sudo():
+        res = host.run(
+            "kubectl --kubeconfig=/etc/kubernetes/admin.conf "
+            f"wait --for=condition=complete --timeout={seconds}s "
+            f"job -l app.kubernetes.io/name={job} -A"
+        )
+        assert res.rc == 0, res.stdout
+
+
 # }}}
 # Then {{{
 
