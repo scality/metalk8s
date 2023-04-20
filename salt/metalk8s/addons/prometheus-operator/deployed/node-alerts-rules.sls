@@ -17,14 +17,9 @@ apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   labels:
-    app: prometheus-operator
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    chart: prometheus-operator-8.1.2
     metalk8s.scality.com/monitor: ''
-    heritage: metalk8s
-  name: prometheus-operator-node-exporter
+  name: metalk8s-nodes.rules
   namespace: metalk8s-monitoring
 spec:
   groups:

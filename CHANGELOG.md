@@ -9,6 +9,11 @@
   Changes metalk8s-sosreport package version to add the `patch` digit
   (PR[#4056](https://github.com/scality/metalk8s/pull/4056))
 
+### Enhancements
+
+- Add Out Of Memory alerts for containers
+  (PR[#4042](https://github.com/scality/metalk8s/pull/4042))
+
 ## Release 124.1.5
 
 ### Enhancements
