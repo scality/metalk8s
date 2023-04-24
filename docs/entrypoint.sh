@@ -13,4 +13,4 @@ if ! grep -q "$TARGET_UID" /etc/passwd; then
 fi
 
 sudo chown -R "$TARGET_UID:$TARGET_GID" /tmp/tox
-sudo -u "$(id -u -n "$TARGET_UID")" -E TOX_CONFIG_FILE=tox.ini tox --workdir /tmp/tox -e docs -- "$@"
+sudo -u "$(id -u -n "$TARGET_UID")" -E TOX_USER_CONFIG_FILE=tox.ini TOX_CONFIG_FILE=tox.ini tox --workdir /tmp/tox -e docs -- "$@" >&2

@@ -373,9 +373,7 @@ jobs:
           python-version: "3.6"
       - name: Install deps
         run: |
-          export DEBIAN_FRONTEND=noninteractive
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y tox
+          pip install tox
       - name: Run all salt unit tests
         run: tox -e unit-tests
 
