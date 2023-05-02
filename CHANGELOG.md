@@ -135,6 +135,10 @@
 
 ### Enhancements
 
+- Bump Kubernetes version to
+  [1.24.13](https://github.com/kubernetes/kubernetes/releases/tag/v1.24.13)
+  (PR[#4046](https://github.com/scality/metalk8s/pull/4046))
+
 - Add cleanup functionality to the backup replication job to
   only keep the latest 5 backup archives
   (PR[#4038](https://github.com/scality/metalk8s/pull/4038))
