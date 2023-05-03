@@ -19,7 +19,7 @@ Image = namedtuple("Image", ("name", "version", "digest"))
 # Project-wide versions {{{
 
 CALICO_VERSION: str = "3.25.0"
-K8S_VERSION: str = "1.25.5"
+K8S_VERSION: str = "1.25.9"
 SALT_VERSION: str = "3002.9"
 CONTAINERD_VERSION: str = "1.6.19"
 
