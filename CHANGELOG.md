@@ -131,7 +131,9 @@
     - `container_(file_descriptors|tasks_state|threads_max)`
     - `container_spec.*`
 
-## Release 124.1.5 (in development)
+## Release 124.1.6 (in development)
+
+## Release 124.1.5
 
 ### Enhancements
 
