@@ -12,6 +12,7 @@
     label_selector,
     "kube-system"
 ) %}
+{%- set host_forward = pillar.kubernetes.coreDNS.hostForward %}
 
 Create coredns ConfigMap:
   metalk8s_kubernetes.object_present:
@@ -30,13 +31,13 @@ Create coredns ConfigMap:
                 }
                 ready
                 rewrite name {{ repo.registry_endpoint }} repositories-internal.kube-system.svc.{{ coredns.cluster_domain }}
-                kubernetes {{ coredns.cluster_domain }} {{ coredns.reverse_cidrs }} {
+                kubernetes {{ coredns.cluster_domain }} {{ coredns.reverse_cidrs }} {%- if not host_forward %} . {%- endif %} {
                   pods insecure
                   fallthrough in-addr.arpa ip6.arpa
                   ttl 30
                 }
                 prometheus :9153
-                {%- if pillar.kubernetes.coreDNS.hostForward %}
+                {%- if host_forward %}
                 forward . /etc/resolv.conf {
                   max_concurrent 1000
                 }

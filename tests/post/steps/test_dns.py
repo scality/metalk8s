@@ -67,6 +67,7 @@ def resolve_hostname_fail(utils_pod, host, hostname):
     result = exec_nslookup(utils_pod, host, hostname)
 
     assert result.rc == 1, f"Shouldn't be able to resolve {hostname}: {result.stdout}"
+    assert "NXDOMAIN" in result.stdout
 
 
 def exec_nslookup(utils_pod, host, hostname):
