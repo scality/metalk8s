@@ -80,7 +80,7 @@
     {
         "message": "The MetalK8s Bootstrap services are degraded.",
         "name": "BootstrapServicesDegraded",
-        "query": "sum(ALERTS{alertname=\"KubePodNotReady\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"repositories-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubePodCrashLooping\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"repositories-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubePodNotReady\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"salt-master-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubePodCrashLooping\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"salt-master-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"storage-operator\",namespace=~\"kube-system\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"storage-operator\",namespace=~\"kube-system\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"metalk8s-ui\",namespace=~\"metalk8s-ui\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"metalk8s-ui\",namespace=~\"metalk8s-ui\",severity=\"warning\"}) >= 1",
+        "query": "sum(ALERTS{alertname=\"KubePodNotReady\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"repositories-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubePodCrashLooping\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"repositories-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubeContainerOOMKilled\",alertstate=\"firing\",container=~\".*\",namespace=~\"kube-system\",pod=~\"repositories-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubeContainerOOMKillSurge\",alertstate=\"firing\",container=~\".*\",namespace=~\"kube-system\",pod=~\"repositories-.*\",severity=\"critical\"} or ALERTS{alertname=\"KubePodNotReady\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"salt-master-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubePodCrashLooping\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"salt-master-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubeContainerOOMKilled\",alertstate=\"firing\",container=~\".*\",namespace=~\"kube-system\",pod=~\"salt-master-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubeContainerOOMKillSurge\",alertstate=\"firing\",container=~\".*\",namespace=~\"kube-system\",pod=~\"salt-master-.*\",severity=\"critical\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"storage-operator\",namespace=~\"kube-system\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"storage-operator\",namespace=~\"kube-system\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"metalk8s-ui\",namespace=~\"metalk8s-ui\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"metalk8s-ui\",namespace=~\"metalk8s-ui\",severity=\"warning\"}) >= 1",
         "severity": "warning"
     },
     {
@@ -648,18 +648,6 @@
         "severity": "warning"
     },
     {
-        "message": "Kubernetes API server client is experiencing errors.",
-        "name": "KubeClientErrors",
-        "query": "(sum by(cluster, instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\"}[5m])) / sum by(cluster, instance, job, namespace) (rate(rest_client_requests_total[5m]))) > 0.01",
-        "severity": "warning"
-    },
-    {
-        "message": "Different semantic versions of Kubernetes components running.",
-        "name": "KubeVersionMismatch",
-        "query": "count(count by(git_version) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
-        "severity": "warning"
-    },
-    {
         "message": "Target disappeared from Prometheus target discovery.",
         "name": "KubeAPIDown",
         "query": "absent(up{job=\"apiserver\"} == 1)",
@@ -693,6 +681,18 @@
         "message": "Client certificate is about to expire.",
         "name": "KubeClientCertificateExpiration",
         "query": "apiserver_client_certificate_expiration_seconds_count{job=\"apiserver\"} > 0 and on(job) histogram_quantile(0.01, sum by(job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job=\"apiserver\"}[5m]))) < 604800",
+        "severity": "warning"
+    },
+    {
+        "message": "Kubernetes API server client is experiencing errors.",
+        "name": "KubeClientErrors",
+        "query": "(sum by(cluster, instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\"}[5m])) / sum by(cluster, instance, job, namespace) (rate(rest_client_requests_total[5m]))) > 0.01",
+        "severity": "warning"
+    },
+    {
+        "message": "Different semantic versions of Kubernetes components running.",
+        "name": "KubeVersionMismatch",
+        "query": "count(count by(git_version) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
         "severity": "warning"
     },
     {

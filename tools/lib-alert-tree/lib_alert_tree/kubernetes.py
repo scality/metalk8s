@@ -3,6 +3,26 @@
 from . import models
 
 
+def container_alerts(name=".*", pod=".*", namespace="default"):
+    """Common alerts for Containers."""
+    return [
+        models.ExistingAlert(
+            "KubeContainerOOMKilled",
+            severity="warning",
+            namespace=namespace,
+            pod=pod,
+            container=name,
+        ),
+        models.ExistingAlert(
+            "KubeContainerOOMKillSurge",
+            severity="critical",
+            namespace=namespace,
+            pod=pod,
+            container=name,
+        ),
+    ]
+
+
 def pod_alerts(name, severity="warning", namespace="default"):
     """Common alerts for Pods."""
     return [
@@ -10,7 +30,7 @@ def pod_alerts(name, severity="warning", namespace="default"):
             alertname, severity=severity, namespace=namespace, pod=name
         )
         for alertname in ["KubePodNotReady", "KubePodCrashLooping"]
-    ]
+    ] + container_alerts(".*", pod=name, namespace=namespace)
 
 
 def deployment_alerts(name, severity="warning", namespace="default"):
