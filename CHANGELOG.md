@@ -1,6 +1,11 @@
 # CHANGELOG
 ## Release 125.0.1 (in development)
 
+### Bug fixes
+
+- Disable etcd alert that fires after fresh install
+(PR[#4054](https://github.com/scality/metalk8s/pull/4054))
+
 ## Release 125.0.0
 
 ### Additions
