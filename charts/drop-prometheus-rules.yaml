@@ -14,3 +14,7 @@ node-exporter:
   - NodeRAIDDiskFailure
   - NodeTextFileCollectorScrapeError
   - NodeFileDescriptorLimit
+# workaround: this fires upon install
+# revert the entire commit after the fix is merged
+etcd:
+  - etcdDatabaseHighFragmentationRatio

@@ -16,7 +16,6 @@ K8S_CONTROL_WARNING, K8S_CONTROL_CRITICAL = severity_pair(
         Existing.warning("etcdHighNumberOfFailedProposals"),
         Existing.warning("etcdHighNumberOfLeaderChanges"),
         Existing.warning("etcdMemberCommunicationSlow"),
-        Existing.warning("etcdDatabaseHighFragmentationRatio"),
         Existing.warning("etcdExcessiveDatabaseGrowth"),
         Existing.warning("KubeCPUOvercommit"),
         Existing.warning("KubeCPUQuotaOvercommit"),
