@@ -164,13 +164,13 @@
     {
         "message": "OOMKill Surge: Container killed by exceeding memory allocation limits (OOMKilled) in last hour.",
         "name": "KubeContainerOOMKillSurge",
-        "query": "round(delta((kube_pod_container_status_last_terminated_reason{job=\"kube-state-metrics\",namespace=~\".*\",reason=\"OOMKilled\"} * on(namespace, pod, container) kube_pod_container_status_restarts_total * on(namespace, pod) group_left(node) kube_pod_info)[1h1m:]), 1) > 0",
+        "query": "round(delta((kube_pod_container_status_last_terminated_reason{job=\"kube-state-metrics\",namespace=~\".*\",reason=\"OOMKilled\"} * on (namespace, pod, container) kube_pod_container_status_restarts_total * on (namespace, pod) group_left (node) kube_pod_info)[1h1m:]), 1) > 0",
         "severity": "critical"
     },
     {
         "message": "Container killed by exceeding memory allocation limits (OOMKilled).",
         "name": "KubeContainerOOMKilled",
-        "query": "max_over_time((kube_pod_container_status_last_terminated_reason{job=\"kube-state-metrics\",namespace=~\".*\",reason=\"OOMKilled\"} * on(namespace, pod, container) kube_pod_container_status_restarts_total * on(namespace, pod) group_left(node) kube_pod_info)[3d:]) > 0",
+        "query": "max_over_time((kube_pod_container_status_last_terminated_reason{job=\"kube-state-metrics\",namespace=~\".*\",reason=\"OOMKilled\"} * on (namespace, pod, container) kube_pod_container_status_restarts_total * on (namespace, pod) group_left (node) kube_pod_info)[3d:]) > 0",
         "severity": "warning"
     },
     {
@@ -266,7 +266,7 @@
     {
         "message": "RAID Array is degraded",
         "name": "NodeRAIDDegraded",
-        "query": "node_md_disks_required - ignoring(state) (node_md_disks{state=\"active\"}) >= 1",
+        "query": "node_md_disks_required - ignoring (state) (node_md_disks{state=\"active\"}) >= 1",
         "severity": "critical"
     },
     {
