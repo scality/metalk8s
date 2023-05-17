@@ -51,8 +51,9 @@ VERSION_SUFFIX: str
 
 load_version_information()
 
-SHORT_VERSION: str = "{}.{}".format(VERSION_MAJOR, VERSION_MINOR)
-VERSION: str = "{}.{}{}".format(SHORT_VERSION, VERSION_PATCH, VERSION_SUFFIX)
+SHORT_VERSION: str = f"{VERSION_MAJOR}.{VERSION_MINOR}"
+NONSUFFIXED_VERSION: str = f"{SHORT_VERSION}.{VERSION_PATCH}"
+VERSION: str = f"{NONSUFFIXED_VERSION}{VERSION_SUFFIX}"
 
 # Get shell ui version from package.json
 shell_ui_package_contents = (REPO_ROOT / "shell-ui/package.json").read_text(
@@ -389,7 +390,7 @@ PACKAGES: Dict[str, Any] = {
             PackageVersion(name="container-selinux"),  # TODO #1710
             PackageVersion(
                 name="metalk8s-sosreport",
-                version=SHORT_VERSION,
+                version=NONSUFFIXED_VERSION,
                 release="{0}.el7".format(SOSREPORT_RELEASE),
             ),
             PackageVersion(name="yum-plugin-versionlock"),
@@ -404,7 +405,7 @@ PACKAGES: Dict[str, Any] = {
             PackageVersion(name="iptables-ebtables", override="ebtables"),
             PackageVersion(
                 name="metalk8s-sosreport",
-                version=SHORT_VERSION,
+                version=NONSUFFIXED_VERSION,
                 release="{0}.el8".format(SOSREPORT_RELEASE),
             ),
             PackageVersion(name="python3-m2crypto", override="m2crypto"),
