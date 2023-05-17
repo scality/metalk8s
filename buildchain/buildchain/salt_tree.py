@@ -383,7 +383,14 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/prometheus-operator/deployed/grafana-ini-configmap.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/init.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/namespace.sls"),
-    Path("salt/metalk8s/addons/prometheus-operator/deployed/prometheus-rules.sls"),
+    Path(
+        "salt/metalk8s/addons/prometheus-operator/deployed/",
+        "node-alerts-rules.sls",
+    ),
+    Path(
+        "salt/metalk8s/addons/prometheus-operator/deployed/",
+        "container-alerts-rules.sls",
+    ),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/service-configuration.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/thanos-chart.sls"),
     Path("salt/metalk8s/addons/ui/deployed/dependencies.sls"),

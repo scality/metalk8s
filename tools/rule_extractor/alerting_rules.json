@@ -162,6 +162,126 @@
         "severity": "warning"
     },
     {
+        "message": "OOMKill Surge: Container killed by exceeding memory allocation limits (OOMKilled) in last hour.",
+        "name": "KubeContainerOOMKillSurge",
+        "query": "round(delta((kube_pod_container_status_last_terminated_reason{job=\"kube-state-metrics\",namespace=~\".*\",reason=\"OOMKilled\"} * on(namespace, pod, container) kube_pod_container_status_restarts_total * on(namespace, pod) group_left(node) kube_pod_info)[1h1m:]), 1) > 0",
+        "severity": "critical"
+    },
+    {
+        "message": "Container killed by exceeding memory allocation limits (OOMKilled).",
+        "name": "KubeContainerOOMKilled",
+        "query": "max_over_time((kube_pod_container_status_last_terminated_reason{job=\"kube-state-metrics\",namespace=~\".*\",reason=\"OOMKilled\"} * on(namespace, pod, container) kube_pod_container_status_restarts_total * on(namespace, pod) group_left(node) kube_pod_info)[3d:]) > 0",
+        "severity": "warning"
+    },
+    {
+        "message": "Clock on {{ $labels.instance }} is not synchronising. Ensure NTP is configured on this host.",
+        "name": "NodeClockNotSynchronising",
+        "query": "min_over_time(node_timex_sync_status[5m]) == 0 and node_timex_maxerror_seconds >= 16",
+        "severity": "warning"
+    },
+    {
+        "message": "Clock on {{ $labels.instance }} is out of sync by more than 300s. Ensure NTP is configured correctly on this host.",
+        "name": "NodeClockSkewDetected",
+        "query": "(node_timex_offset_seconds > 0.05 and deriv(node_timex_offset_seconds[5m]) >= 0) or (node_timex_offset_seconds < -0.05 and deriv(node_timex_offset_seconds[5m]) <= 0)",
+        "severity": "warning"
+    },
+    {
+        "message": "Kernel is predicted to exhaust file descriptors limit soon.",
+        "name": "NodeFileDescriptorLimit",
+        "query": "(node_filefd_allocated{job=\"node-exporter\"} * 100 / node_filefd_maximum{job=\"node-exporter\"} > 90)",
+        "severity": "critical"
+    },
+    {
+        "message": "Kernel is predicted to exhaust file descriptors limit soon.",
+        "name": "NodeFileDescriptorLimit",
+        "query": "(node_filefd_allocated{job=\"node-exporter\"} * 100 / node_filefd_maximum{job=\"node-exporter\"} > 70)",
+        "severity": "warning"
+    },
+    {
+        "message": "Filesystem has less than 8% inodes left.",
+        "name": "NodeFilesystemAlmostOutOfFiles",
+        "query": "(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_files{fstype!=\"\",job=\"node-exporter\"} * 100 < 8 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "severity": "critical"
+    },
+    {
+        "message": "Filesystem has less than 15% inodes left.",
+        "name": "NodeFilesystemAlmostOutOfFiles",
+        "query": "(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_files{fstype!=\"\",job=\"node-exporter\"} * 100 < 15 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "severity": "warning"
+    },
+    {
+        "message": "Filesystem has less than 12% space left.",
+        "name": "NodeFilesystemAlmostOutOfSpace",
+        "query": "(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_size_bytes{fstype!=\"\",job=\"node-exporter\"} * 100 < 12 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "severity": "critical"
+    },
+    {
+        "message": "Filesystem has less than 20% space left.",
+        "name": "NodeFilesystemAlmostOutOfSpace",
+        "query": "(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_size_bytes{fstype!=\"\",job=\"node-exporter\"} * 100 < 20 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "severity": "warning"
+    },
+    {
+        "message": "Filesystem is predicted to run out of inodes within the next 4 hours.",
+        "name": "NodeFilesystemFilesFillingUp",
+        "query": "(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_files{fstype!=\"\",job=\"node-exporter\"} * 100 < 20 and predict_linear(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"}[6h], 4 * 60 * 60) < 0 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "severity": "critical"
+    },
+    {
+        "message": "Filesystem is predicted to run out of inodes within the next 24 hours.",
+        "name": "NodeFilesystemFilesFillingUp",
+        "query": "(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_files{fstype!=\"\",job=\"node-exporter\"} * 100 < 40 and predict_linear(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"}[6h], 24 * 60 * 60) < 0 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "severity": "warning"
+    },
+    {
+        "message": "Filesystem is predicted to run out of space within the next 4 hours.",
+        "name": "NodeFilesystemSpaceFillingUp",
+        "query": "(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_size_bytes{fstype!=\"\",job=\"node-exporter\"} * 100 < 20 and predict_linear(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"}[6h], 4 * 60 * 60) < 0 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "severity": "critical"
+    },
+    {
+        "message": "Filesystem is predicted to run out of space within the next 24 hours.",
+        "name": "NodeFilesystemSpaceFillingUp",
+        "query": "(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_size_bytes{fstype!=\"\",job=\"node-exporter\"} * 100 < 40 and predict_linear(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"}[6h], 24 * 60 * 60) < 0 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
+        "severity": "warning"
+    },
+    {
+        "message": "Number of conntrack are getting close to the limit",
+        "name": "NodeHighNumberConntrackEntriesUsed",
+        "query": "(node_nf_conntrack_entries / node_nf_conntrack_entries_limit) > 0.75",
+        "severity": "warning"
+    },
+    {
+        "message": "Network interface is reporting many receive errors.",
+        "name": "NodeNetworkReceiveErrs",
+        "query": "increase(node_network_receive_errs_total[2m]) / rate(node_network_receive_packets_total[2m]) > 0.01",
+        "severity": "warning"
+    },
+    {
+        "message": "Network interface is reporting many transmit errors.",
+        "name": "NodeNetworkTransmitErrs",
+        "query": "increase(node_network_transmit_errs_total[2m]) / rate(node_network_transmit_packets_total[2m]) > 0.01",
+        "severity": "warning"
+    },
+    {
+        "message": "RAID Array is degraded",
+        "name": "NodeRAIDDegraded",
+        "query": "node_md_disks_required - ignoring(state) (node_md_disks{state=\"active\"}) >= 1",
+        "severity": "critical"
+    },
+    {
+        "message": "Failed device in RAID array",
+        "name": "NodeRAIDDiskFailure",
+        "query": "node_md_disks{state=\"failed\"} >= 1",
+        "severity": "warning"
+    },
+    {
+        "message": "Node Exporter text file collector failed to scrape.",
+        "name": "NodeTextFileCollectorScrapeError",
+        "query": "node_textfile_scrape_error{job=\"node-exporter\"} == 1",
+        "severity": "warning"
+    },
+    {
         "message": "Half or more of the Alertmanager instances within the same cluster are crashlooping.",
         "name": "AlertmanagerClusterCrashlooping",
         "query": "(count by (namespace, service) (changes(process_start_time_seconds{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[10m]) > 4) / count by (namespace, service) (up{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})) >= 0.5",
@@ -676,114 +796,6 @@
         "name": "KubeSchedulerDown",
         "query": "absent(up{job=\"kube-scheduler\"} == 1)",
         "severity": "critical"
-    },
-    {
-        "message": "Clock on {{ $labels.instance }} is not synchronising. Ensure NTP is configured on this host.",
-        "name": "NodeClockNotSynchronising",
-        "query": "min_over_time(node_timex_sync_status[5m]) == 0 and node_timex_maxerror_seconds >= 16",
-        "severity": "warning"
-    },
-    {
-        "message": "Clock on {{ $labels.instance }} is out of sync by more than 300s. Ensure NTP is configured correctly on this host.",
-        "name": "NodeClockSkewDetected",
-        "query": "(node_timex_offset_seconds > 0.05 and deriv(node_timex_offset_seconds[5m]) >= 0) or (node_timex_offset_seconds < -0.05 and deriv(node_timex_offset_seconds[5m]) <= 0)",
-        "severity": "warning"
-    },
-    {
-        "message": "Kernel is predicted to exhaust file descriptors limit soon.",
-        "name": "NodeFileDescriptorLimit",
-        "query": "(node_filefd_allocated{job=\"node-exporter\"} * 100 / node_filefd_maximum{job=\"node-exporter\"} > 90)",
-        "severity": "critical"
-    },
-    {
-        "message": "Kernel is predicted to exhaust file descriptors limit soon.",
-        "name": "NodeFileDescriptorLimit",
-        "query": "(node_filefd_allocated{job=\"node-exporter\"} * 100 / node_filefd_maximum{job=\"node-exporter\"} > 70)",
-        "severity": "warning"
-    },
-    {
-        "message": "Filesystem has less than 8% inodes left.",
-        "name": "NodeFilesystemAlmostOutOfFiles",
-        "query": "(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_files{fstype!=\"\",job=\"node-exporter\"} * 100 < 8 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
-        "severity": "critical"
-    },
-    {
-        "message": "Filesystem has less than 15% inodes left.",
-        "name": "NodeFilesystemAlmostOutOfFiles",
-        "query": "(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_files{fstype!=\"\",job=\"node-exporter\"} * 100 < 15 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
-        "severity": "warning"
-    },
-    {
-        "message": "Filesystem has less than 12% space left.",
-        "name": "NodeFilesystemAlmostOutOfSpace",
-        "query": "(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_size_bytes{fstype!=\"\",job=\"node-exporter\"} * 100 < 12 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
-        "severity": "critical"
-    },
-    {
-        "message": "Filesystem has less than 20% space left.",
-        "name": "NodeFilesystemAlmostOutOfSpace",
-        "query": "(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_size_bytes{fstype!=\"\",job=\"node-exporter\"} * 100 < 20 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
-        "severity": "warning"
-    },
-    {
-        "message": "Filesystem is predicted to run out of inodes within the next 4 hours.",
-        "name": "NodeFilesystemFilesFillingUp",
-        "query": "(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_files{fstype!=\"\",job=\"node-exporter\"} * 100 < 20 and predict_linear(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"}[6h], 4 * 60 * 60) < 0 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
-        "severity": "critical"
-    },
-    {
-        "message": "Filesystem is predicted to run out of inodes within the next 24 hours.",
-        "name": "NodeFilesystemFilesFillingUp",
-        "query": "(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_files{fstype!=\"\",job=\"node-exporter\"} * 100 < 40 and predict_linear(node_filesystem_files_free{fstype!=\"\",job=\"node-exporter\"}[6h], 24 * 60 * 60) < 0 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
-        "severity": "warning"
-    },
-    {
-        "message": "Filesystem is predicted to run out of space within the next 4 hours.",
-        "name": "NodeFilesystemSpaceFillingUp",
-        "query": "(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_size_bytes{fstype!=\"\",job=\"node-exporter\"} * 100 < 20 and predict_linear(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"}[6h], 4 * 60 * 60) < 0 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
-        "severity": "critical"
-    },
-    {
-        "message": "Filesystem is predicted to run out of space within the next 24 hours.",
-        "name": "NodeFilesystemSpaceFillingUp",
-        "query": "(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"} / node_filesystem_size_bytes{fstype!=\"\",job=\"node-exporter\"} * 100 < 40 and predict_linear(node_filesystem_avail_bytes{fstype!=\"\",job=\"node-exporter\"}[6h], 24 * 60 * 60) < 0 and node_filesystem_readonly{fstype!=\"\",job=\"node-exporter\"} == 0)",
-        "severity": "warning"
-    },
-    {
-        "message": "Number of conntrack are getting close to the limit",
-        "name": "NodeHighNumberConntrackEntriesUsed",
-        "query": "(node_nf_conntrack_entries / node_nf_conntrack_entries_limit) > 0.75",
-        "severity": "warning"
-    },
-    {
-        "message": "Network interface is reporting many receive errors.",
-        "name": "NodeNetworkReceiveErrs",
-        "query": "increase(node_network_receive_errs_total[2m]) / rate(node_network_receive_packets_total[2m]) > 0.01",
-        "severity": "warning"
-    },
-    {
-        "message": "Network interface is reporting many transmit errors.",
-        "name": "NodeNetworkTransmitErrs",
-        "query": "increase(node_network_transmit_errs_total[2m]) / rate(node_network_transmit_packets_total[2m]) > 0.01",
-        "severity": "warning"
-    },
-    {
-        "message": "RAID Array is degraded",
-        "name": "NodeRAIDDegraded",
-        "query": "node_md_disks_required - ignoring (state) (node_md_disks{state=\"active\"}) >= 1",
-        "severity": "critical"
-    },
-    {
-        "message": "Failed device in RAID array",
-        "name": "NodeRAIDDiskFailure",
-        "query": "node_md_disks{state=\"failed\"} >= 1",
-        "severity": "warning"
-    },
-    {
-        "message": "Node Exporter text file collector failed to scrape.",
-        "name": "NodeTextFileCollectorScrapeError",
-        "query": "node_textfile_scrape_error{job=\"node-exporter\"} == 1",
-        "severity": "warning"
     },
     {
         "message": "Network interface is often changing its status",
