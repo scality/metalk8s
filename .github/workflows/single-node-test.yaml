@@ -199,6 +199,8 @@ jobs:
         uses: ./.github/actions/prepare-bastion
         with:
           UI_DEPS: ${{ inputs.setup-idp }}
+      - name: Extract alerts rules
+        uses: ./.github/actions/get-alert-rules
       - name: Run Solutions CLI tests from Bastion
         if: inputs.test-solution
         uses: ./.github/actions/bastion-tests

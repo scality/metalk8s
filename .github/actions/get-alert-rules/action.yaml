@@ -1,0 +1,32 @@
+name: "Extract alert rules"
+description: "Extract all the alert rules"
+
+runs:
+  using: composite
+  steps:
+    - name: "Install python requests on Bastion"
+      uses: ./.github/actions/run-command-ssh
+      with:
+        NODE: bastion
+        COMMAND: sudo pip3 install requests
+    - name: "Get Control Plane Ingress IP"
+      id: cp_ingress_ip
+      uses: ./.github/actions/run-command-ssh
+      with:
+        COMMAND: >-
+          sudo salt-call metalk8s_network.get_control_plane_ingress_ip --out txt | cut -c 8-
+        CAPTURE_RESULT: "true"
+    - name: "Extract alert rules from Bastion"
+      uses: ./.github/actions/run-command-ssh
+      with:
+        NODE: bastion
+        COMMAND: |
+          mkdir -p alert_rules/
+          ./metalk8s/tools/rule_extractor/rule_extractor.py -i ${{ steps.cp_ingress_ip.outputs.RESULT }} -t rules -o alert_rules/
+    - name: "Retrieve alert rules"
+      uses: ./.github/actions/copy-file-ssh
+      with:
+        NODE_TO: ""
+        NODE_FROM: "bastion"
+        SOURCE_FILE: "alert_rules"
+        DESTINATION_FILE: "artifacts/alert_rules"
