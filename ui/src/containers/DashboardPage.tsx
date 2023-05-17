@@ -57,15 +57,23 @@ export const DashboardScrollableArea = styled.div`
   overflow-x: hidden;
 `;
 
+const SelectorPositioning = styled.div`
+  .sc-dropdown {
+    position: absolute;
+    right: 1rem;
+    top: 3rem;
+  }
+`;
+
 const DashboardPage = () => {
   return (
     <>
       <AppContainer.ContextContainer>
-        <Wrap>
-          <div></div>
-          <TimespanSelector />
-        </Wrap>
+        <div />
       </AppContainer.ContextContainer>
+      <SelectorPositioning>
+        <TimespanSelector />
+      </SelectorPositioning>
       <SyncedCursorCharts>
         <AppContainer.OverallSummary>
           <DashboardGlobalHealth />
