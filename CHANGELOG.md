@@ -1,6 +1,12 @@
 # CHANGELOG
 ## Release 124.1.6 (in development)
 
+### Bug fixes
+
+- Ensure metalk8s-sosreport package get upgraded on each patch version.
+  Changes metalk8s-sosreport package version to add the `patch` digit
+  (PR[#4056](https://github.com/scality/metalk8s/pull/4056))
+
 ## Release 124.1.5
 
 ### Enhancements
