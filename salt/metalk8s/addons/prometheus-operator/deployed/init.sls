@@ -6,7 +6,8 @@ include:
   - .dashboards
   - .service-configuration
   - .chart
-  - .prometheus-rules
+  - .node-alerts-rules
+  - .container-alerts-rules
   - .thanos-chart
 
 {#- Node-exporter DaemonSet now uses recommended labels, which are immutable,

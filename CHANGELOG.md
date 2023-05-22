@@ -144,6 +144,10 @@
 
 ## Release 124.1.6
 
+### Enhancements
+
+- Add Out Of Memory alerts for containers
+  (PR[#4042](https://github.com/scality/metalk8s/pull/4042))
 ### Bug fixes
 
 - Ensure metalk8s-sosreport package get upgraded on each patch version.
