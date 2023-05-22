@@ -23,7 +23,7 @@ module.exports = () => ({
     historyApiFallback: {
       rewrites: [{ from: /^\/.*$/, to: '/shell/index.html' }],
     },
-    contentBase: 'public',
+    static: 'public',
     proxy: [
       {
         context: ['/static/js', '/.well-known'],
