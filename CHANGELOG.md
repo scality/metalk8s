@@ -1,5 +1,5 @@
 # CHANGELOG
-## Release 125.0.2 (in development)
+## Release 125.0.2
 
 ## Release 125.0.1
 
