@@ -1,5 +1,16 @@
 # CHANGELOG
+## Release 125.0.3 (in development)
+
 ## Release 125.0.2
+### Bug fixes
+
+- Fix time selector in the Platform page
+  (PR[4058](https://github.com/scality/metalk8s/pull/4058)
+
+### Additions
+
+- Raise an alert when a pod get OOM killed
+  (PR[4042](https://github.com/scality/metalk8s/pull/4042)
 
 ## Release 125.0.1
 
