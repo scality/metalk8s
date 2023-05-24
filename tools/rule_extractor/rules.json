@@ -31,7 +31,23 @@
                         "type": "alerting"
                     },
                     {
-                        "alerts": [],
+                        "alerts": [
+                            {
+                                "activeAt": "2023-05-12T13:16:55.836832121Z",
+                                "annotations": {
+                                    "children": "NodeAtRisk{severity='critical'}, PlatformServicesAtRisk{severity='critical'}, VolumeAtRisk{severity='critical'}",
+                                    "childrenJsonPath": "$[?((@.labels.alertname === 'NodeAtRisk' && @.labels.severity === 'critical') || (@.labels.alertname === 'PlatformServicesAtRisk' && @.labels.severity === 'critical') || (@.labels.alertname === 'VolumeAtRisk' && @.labels.severity === 'critical'))]",
+                                    "summary": "The cluster is at risk."
+                                },
+                                "labels": {
+                                    "alertname": "ClusterAtRisk",
+                                    "severity": "critical"
+                                },
+                                "partialResponseStrategy": "WARN",
+                                "state": "firing",
+                                "value": "1e+00"
+                            }
+                        ],
                         "annotations": {
                             "children": "NodeAtRisk{severity='critical'}, PlatformServicesAtRisk{severity='critical'}, VolumeAtRisk{severity='critical'}",
                             "childrenJsonPath": "$[?((@.labels.alertname === 'NodeAtRisk' && @.labels.severity === 'critical') || (@.labels.alertname === 'PlatformServicesAtRisk' && @.labels.severity === 'critical') || (@.labels.alertname === 'VolumeAtRisk' && @.labels.severity === 'critical'))]",
@@ -47,7 +63,7 @@
                         "lastEvaluation": "2023-05-24T07:44:51.730611032Z",
                         "name": "ClusterAtRisk",
                         "query": "sum(ALERTS{alertname=\"NodeAtRisk\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"PlatformServicesAtRisk\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"VolumeAtRisk\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
-                        "state": "inactive",
+                        "state": "firing",
                         "type": "alerting"
                     },
                     {
@@ -151,7 +167,23 @@
                         "type": "alerting"
                     },
                     {
-                        "alerts": [],
+                        "alerts": [
+                            {
+                                "activeAt": "2023-05-12T13:15:25.836832121Z",
+                                "annotations": {
+                                    "children": "CoreServicesAtRisk{severity='critical'}, ObservabilityServicesAtRisk{severity='critical'}",
+                                    "childrenJsonPath": "$[?((@.labels.alertname === 'CoreServicesAtRisk' && @.labels.severity === 'critical') || (@.labels.alertname === 'ObservabilityServicesAtRisk' && @.labels.severity === 'critical'))]",
+                                    "summary": "The Platform services are at risk."
+                                },
+                                "labels": {
+                                    "alertname": "PlatformServicesAtRisk",
+                                    "severity": "critical"
+                                },
+                                "partialResponseStrategy": "WARN",
+                                "state": "firing",
+                                "value": "1e+00"
+                            }
+                        ],
                         "annotations": {
                             "children": "CoreServicesAtRisk{severity='critical'}, ObservabilityServicesAtRisk{severity='critical'}",
                             "childrenJsonPath": "$[?((@.labels.alertname === 'CoreServicesAtRisk' && @.labels.severity === 'critical') || (@.labels.alertname === 'ObservabilityServicesAtRisk' && @.labels.severity === 'critical'))]",
@@ -167,7 +199,7 @@
                         "lastEvaluation": "2023-05-24T07:44:51.731438473Z",
                         "name": "PlatformServicesAtRisk",
                         "query": "sum(ALERTS{alertname=\"CoreServicesAtRisk\",alertstate=\"firing\",severity=\"critical\"} or ALERTS{alertname=\"ObservabilityServicesAtRisk\",alertstate=\"firing\",severity=\"critical\"}) >= 1",
-                        "state": "inactive",
+                        "state": "firing",
                         "type": "alerting"
                     },
                     {
@@ -302,7 +334,23 @@
                         "type": "alerting"
                     },
                     {
-                        "alerts": [],
+                        "alerts": [
+                            {
+                                "activeAt": "2023-05-12T13:22:10.57089166Z",
+                                "annotations": {
+                                    "children": "NetworkDegraded{severity='warning'}, NodeDegraded{severity='warning'}, PlatformServicesDegraded{severity='warning'}, VolumeDegraded{severity='warning'}",
+                                    "childrenJsonPath": "$[?((@.labels.alertname === 'NetworkDegraded' && @.labels.severity === 'warning') || (@.labels.alertname === 'NodeDegraded' && @.labels.severity === 'warning') || (@.labels.alertname === 'PlatformServicesDegraded' && @.labels.severity === 'warning') || (@.labels.alertname === 'VolumeDegraded' && @.labels.severity === 'warning'))]",
+                                    "summary": "The cluster is degraded."
+                                },
+                                "labels": {
+                                    "alertname": "ClusterDegraded",
+                                    "severity": "warning"
+                                },
+                                "partialResponseStrategy": "WARN",
+                                "state": "firing",
+                                "value": "1e+00"
+                            }
+                        ],
                         "annotations": {
                             "children": "NetworkDegraded{severity='warning'}, NodeDegraded{severity='warning'}, PlatformServicesDegraded{severity='warning'}, VolumeDegraded{severity='warning'}",
                             "childrenJsonPath": "$[?((@.labels.alertname === 'NetworkDegraded' && @.labels.severity === 'warning') || (@.labels.alertname === 'NodeDegraded' && @.labels.severity === 'warning') || (@.labels.alertname === 'PlatformServicesDegraded' && @.labels.severity === 'warning') || (@.labels.alertname === 'VolumeDegraded' && @.labels.severity === 'warning'))]",
@@ -318,7 +366,7 @@
                         "lastEvaluation": "2023-05-24T07:44:45.528689154Z",
                         "name": "ClusterDegraded",
                         "query": "sum(ALERTS{alertname=\"NetworkDegraded\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"NodeDegraded\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"PlatformServicesDegraded\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"VolumeDegraded\",alertstate=\"firing\",severity=\"warning\"}) >= 1",
-                        "state": "inactive",
+                        "state": "firing",
                         "type": "alerting"
                     },
                     {
@@ -502,7 +550,23 @@
                         "type": "alerting"
                     },
                     {
-                        "alerts": [],
+                        "alerts": [
+                            {
+                                "activeAt": "2023-05-12T13:20:40.57089166Z",
+                                "annotations": {
+                                    "children": "AccessServicesDegraded{severity='warning'}, CoreServicesDegraded{severity='warning'}, ObservabilityServicesDegraded{severity='warning'}",
+                                    "childrenJsonPath": "$[?((@.labels.alertname === 'AccessServicesDegraded' && @.labels.severity === 'warning') || (@.labels.alertname === 'CoreServicesDegraded' && @.labels.severity === 'warning') || (@.labels.alertname === 'ObservabilityServicesDegraded' && @.labels.severity === 'warning'))]",
+                                    "summary": "The Platform services are degraded."
+                                },
+                                "labels": {
+                                    "alertname": "PlatformServicesDegraded",
+                                    "severity": "warning"
+                                },
+                                "partialResponseStrategy": "WARN",
+                                "state": "firing",
+                                "value": "1e+00"
+                            }
+                        ],
                         "annotations": {
                             "children": "AccessServicesDegraded{severity='warning'}, CoreServicesDegraded{severity='warning'}, ObservabilityServicesDegraded{severity='warning'}",
                             "childrenJsonPath": "$[?((@.labels.alertname === 'AccessServicesDegraded' && @.labels.severity === 'warning') || (@.labels.alertname === 'CoreServicesDegraded' && @.labels.severity === 'warning') || (@.labels.alertname === 'ObservabilityServicesDegraded' && @.labels.severity === 'warning'))]",
@@ -518,7 +582,7 @@
                         "lastEvaluation": "2023-05-24T07:44:45.53002707Z",
                         "name": "PlatformServicesDegraded",
                         "query": "sum(ALERTS{alertname=\"AccessServicesDegraded\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"CoreServicesDegraded\",alertstate=\"firing\",severity=\"warning\"} or ALERTS{alertname=\"ObservabilityServicesDegraded\",alertstate=\"firing\",severity=\"warning\"}) >= 1",
-                        "state": "inactive",
+                        "state": "firing",
                         "type": "alerting"
                     },
                     {
@@ -2690,7 +2754,26 @@
                 "partialResponseStrategy": "ABORT",
                 "rules": [
                     {
-                        "alerts": [],
+                        "alerts": [
+                            {
+                                "activeAt": "2023-05-12T13:24:24.690269191Z",
+                                "annotations": {
+                                    "description": "pod/kube-proxy-w9f2l in namespace kube-system on container kube-proxy has been in waiting state for longer than 1 hour.",
+                                    "runbook_url": "https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubecontainerwaiting",
+                                    "summary": "Pod container waiting longer than 1 hour"
+                                },
+                                "labels": {
+                                    "alertname": "KubeContainerWaiting",
+                                    "container": "kube-proxy",
+                                    "namespace": "kube-system",
+                                    "pod": "kube-proxy-w9f2l",
+                                    "severity": "warning"
+                                },
+                                "partialResponseStrategy": "WARN",
+                                "state": "pending",
+                                "value": "1e+00"
+                            }
+                        ],
                         "annotations": {
                             "description": "pod/{{ $labels.pod }} in namespace {{ $labels.namespace }} on container {{ $labels.container}} has been in waiting state for longer than 1 hour.",
                             "runbook_url": "https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubecontainerwaiting",
@@ -2706,7 +2789,7 @@
                         "lastEvaluation": "2023-05-24T07:45:02.207338546Z",
                         "name": "KubeContainerWaiting",
                         "query": "sum by(namespace, pod, container) (kube_pod_container_status_waiting_reason{job=\"kube-state-metrics\",namespace=~\".*\"}) > 0",
-                        "state": "inactive",
+                        "state": "pending",
                         "type": "alerting"
                     },
                     {
@@ -2910,7 +2993,25 @@
                         "type": "alerting"
                     },
                     {
-                        "alerts": [],
+                        "alerts": [
+                            {
+                                "activeAt": "2023-05-12T13:24:24.690269191Z",
+                                "annotations": {
+                                    "description": "Pod kube-system/kube-proxy-w9f2l has been in a non-ready state for longer than 15 minutes.",
+                                    "runbook_url": "https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodnotready",
+                                    "summary": "Pod has been in a non-ready state for more than 15 minutes."
+                                },
+                                "labels": {
+                                    "alertname": "KubePodNotReady",
+                                    "namespace": "kube-system",
+                                    "pod": "kube-proxy-w9f2l",
+                                    "severity": "warning"
+                                },
+                                "partialResponseStrategy": "WARN",
+                                "state": "pending",
+                                "value": "1e+00"
+                            }
+                        ],
                         "annotations": {
                             "description": "Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a non-ready state for longer than 15 minutes.",
                             "runbook_url": "https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodnotready",
@@ -2926,7 +3027,7 @@
                         "lastEvaluation": "2023-05-24T07:45:02.202249738Z",
                         "name": "KubePodNotReady",
                         "query": "sum by(namespace, pod) (max by(namespace, pod) (kube_pod_status_phase{job=\"kube-state-metrics\",namespace=~\".*\",phase=~\"Pending|Unknown\"}) * on(namespace, pod) group_left(owner_kind) topk by(namespace, pod) (1, max by(namespace, pod, owner_kind) (kube_pod_owner{owner_kind!=\"Job\"}))) > 0",
-                        "state": "inactive",
+                        "state": "pending",
                         "type": "alerting"
                     },
                     {
