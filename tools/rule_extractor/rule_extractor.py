@@ -37,11 +37,11 @@ def query_prometheus_api(ip, port, route):
     return response.json()
 
 
-def write_json_to_file(content, rule_name):
+def write_json_to_file(content, rule_name, output_dir):
     filename = "{}.json".format(rule_name)
-    filepath = pathlib.Path(__file__).parent / filename
+    filepath = output_dir / filename
     try:
-        with open("{}".format(filepath), "w", encoding="utf-8") as f:
+        with open(filepath, "w", encoding="utf-8") as f:
             json.dump(content, f, indent=4, sort_keys=True)
     except IOError as exc:
         sys.stderr.write("Failed to write json file: {!s}".format(exc))
@@ -74,6 +74,13 @@ def main():
         help="Specify the type of objects to fetch",
         choices=["rules"],
     )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=pathlib.Path,
+        default=pathlib.Path(__file__).parent,
+        help="Output directory for JSON files",
+    )
 
     args = parser.parse_args()
     if args.ip:
@@ -97,7 +104,7 @@ def main():
 
     if args.object_type == "rules":
         result = query_prometheus_api(ip=ip, port=args.port, route="rules")
-        write_json_to_file(result, "rules")
+        write_json_to_file(result, "rules", args.output)
         rule_group = result.get("data", {}).get("groups", [])
         recording_rules = []
         alerting_rules = []
@@ -123,7 +130,7 @@ def main():
                     fixup_record_rules = {"name": rule["name"], "query": rule["query"]}
                     recording_rules.append(fixup_record_rules)
 
-        write_json_to_file(alerting_rules, "alerting_rules")
+        write_json_to_file(alerting_rules, "alerting_rules", args.output)
     else:
         sys.stderr.write("Input argument {} is unsupported".format(args.object_type))
         sys.exit(1)
