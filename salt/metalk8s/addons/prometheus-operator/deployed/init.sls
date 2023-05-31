@@ -8,5 +8,4 @@ include:
   - .service-configuration
   - .chart
   - .node-alerts-rules
-  - .container-alerts-rules
   - .thanos-chart

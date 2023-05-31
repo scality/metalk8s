@@ -62,8 +62,6 @@ def test_container_alerts():
         == textwrap.dedent(
             """
             test{severity='warning'}
-            ├── KubeContainerOOMKillSurge{container=~'my-container', namespace=~'my-ns', pod=~'my-pod', severity='critical'}
-            └── KubeContainerOOMKilled{container=~'my-container', namespace=~'my-ns', pod=~'my-pod', severity='warning'}
             """
         ).lstrip()
     )
@@ -82,8 +80,6 @@ def test_pod_alerts():
         == textwrap.dedent(
             """
             test{severity='warning'}
-            ├── KubeContainerOOMKillSurge{container=~'.*', namespace=~'my-ns', pod=~'my-pod', severity='critical'}
-            ├── KubeContainerOOMKilled{container=~'.*', namespace=~'my-ns', pod=~'my-pod', severity='warning'}
             ├── KubePodCrashLooping{namespace=~'my-ns', pod=~'my-pod', severity='warning'}
             └── KubePodNotReady{namespace=~'my-ns', pod=~'my-pod', severity='warning'}
             """

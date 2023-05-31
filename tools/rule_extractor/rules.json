@@ -316,8 +316,8 @@
                     {
                         "alerts": [],
                         "annotations": {
-                            "children": "KubePodNotReady{namespace=~'kube-system', pod=~'repositories-.*', severity='warning'}, KubePodCrashLooping{namespace=~'kube-system', pod=~'repositories-.*', severity='warning'}, KubeContainerOOMKilled{container=~'.*', namespace=~'kube-system', pod=~'repositories-.*', severity='warning'}, KubeContainerOOMKillSurge{container=~'.*', namespace=~'kube-system', pod=~'repositories-.*', severity='critical'}, KubePodNotReady{namespace=~'kube-system', pod=~'salt-master-.*', severity='warning'}, KubePodCrashLooping{namespace=~'kube-system', pod=~'salt-master-.*', severity='warning'}, KubeContainerOOMKilled{container=~'.*', namespace=~'kube-system', pod=~'salt-master-.*', severity='warning'}, KubeContainerOOMKillSurge{container=~'.*', namespace=~'kube-system', pod=~'salt-master-.*', severity='critical'}, KubeDeploymentReplicasMismatch{deployment=~'storage-operator', namespace=~'kube-system', severity='warning'}, KubeDeploymentGenerationMismatch{deployment=~'storage-operator', namespace=~'kube-system', severity='warning'}, KubeDeploymentReplicasMismatch{deployment=~'metalk8s-ui', namespace=~'metalk8s-ui', severity='warning'}, KubeDeploymentGenerationMismatch{deployment=~'metalk8s-ui', namespace=~'metalk8s-ui', severity='warning'}",
-                            "childrenJsonPath": "$[?((@.labels.alertname === 'KubePodNotReady' && @.labels.namespace.match(new RegExp('^(?:kube-system)$')) && @.labels.pod.match(new RegExp('^(?:repositories-.*)$')) && @.labels.severity === 'warning') || (@.labels.alertname === 'KubePodCrashLooping' && @.labels.namespace.match(new RegExp('^(?:kube-system)$')) && @.labels.pod.match(new RegExp('^(?:repositories-.*)$')) && @.labels.severity === 'warning') || (@.labels.alertname === 'KubeContainerOOMKilled' && @.labels.container.match(new RegExp('^(?:.*)$')) && @.labels.namespace.match(new RegExp('^(?:kube-system)$')) && @.labels.pod.match(new RegExp('^(?:repositories-.*)$')) && @.labels.severity === 'warning') || (@.labels.alertname === 'KubeContainerOOMKillSurge' && @.labels.container.match(new RegExp('^(?:.*)$')) && @.labels.namespace.match(new RegExp('^(?:kube-system)$')) && @.labels.pod.match(new RegExp('^(?:repositories-.*)$')) && @.labels.severity === 'critical') || (@.labels.alertname === 'KubePodNotReady' && @.labels.namespace.match(new RegExp('^(?:kube-system)$')) && @.labels.pod.match(new RegExp('^(?:salt-master-.*)$')) && @.labels.severity === 'warning') || (@.labels.alertname === 'KubePodCrashLooping' && @.labels.namespace.match(new RegExp('^(?:kube-system)$')) && @.labels.pod.match(new RegExp('^(?:salt-master-.*)$')) && @.labels.severity === 'warning') || (@.labels.alertname === 'KubeContainerOOMKilled' && @.labels.container.match(new RegExp('^(?:.*)$')) && @.labels.namespace.match(new RegExp('^(?:kube-system)$')) && @.labels.pod.match(new RegExp('^(?:salt-master-.*)$')) && @.labels.severity === 'warning') || (@.labels.alertname === 'KubeContainerOOMKillSurge' && @.labels.container.match(new RegExp('^(?:.*)$')) && @.labels.namespace.match(new RegExp('^(?:kube-system)$')) && @.labels.pod.match(new RegExp('^(?:salt-master-.*)$')) && @.labels.severity === 'critical') || (@.labels.alertname === 'KubeDeploymentReplicasMismatch' && @.labels.deployment.match(new RegExp('^(?:storage-operator)$')) && @.labels.namespace.match(new RegExp('^(?:kube-system)$')) && @.labels.severity === 'warning') || (@.labels.alertname === 'KubeDeploymentGenerationMismatch' && @.labels.deployment.match(new RegExp('^(?:storage-operator)$')) && @.labels.namespace.match(new RegExp('^(?:kube-system)$')) && @.labels.severity === 'warning') || (@.labels.alertname === 'KubeDeploymentReplicasMismatch' && @.labels.deployment.match(new RegExp('^(?:metalk8s-ui)$')) && @.labels.namespace.match(new RegExp('^(?:metalk8s-ui)$')) && @.labels.severity === 'warning') || (@.labels.alertname === 'KubeDeploymentGenerationMismatch' && @.labels.deployment.match(new RegExp('^(?:metalk8s-ui)$')) && @.labels.namespace.match(new RegExp('^(?:metalk8s-ui)$')) && @.labels.severity === 'warning'))]",
+                            "children": "KubePodNotReady{namespace=~'kube-system', pod=~'repositories-.*', severity='warning'}, KubePodCrashLooping{namespace=~'kube-system', pod=~'repositories-.*', severity='warning'}, KubePodNotReady{namespace=~'kube-system', pod=~'salt-master-.*', severity='warning'}, KubePodCrashLooping{namespace=~'kube-system', pod=~'salt-master-.*', severity='warning'}, KubeDeploymentReplicasMismatch{deployment=~'storage-operator', namespace=~'kube-system', severity='warning'}, KubeDeploymentGenerationMismatch{deployment=~'storage-operator', namespace=~'kube-system', severity='warning'}, KubeDeploymentReplicasMismatch{deployment=~'metalk8s-ui', namespace=~'metalk8s-ui', severity='warning'}, KubeDeploymentGenerationMismatch{deployment=~'metalk8s-ui', namespace=~'metalk8s-ui', severity='warning'}",
+                            "childrenJsonPath": "$[?((@.labels.alertname === 'KubePodNotReady' && @.labels.namespace.match(new RegExp('^(?:kube-system)$')) && @.labels.pod.match(new RegExp('^(?:repositories-.*)$')) && @.labels.severity === 'warning') || (@.labels.alertname === 'KubePodCrashLooping' && @.labels.namespace.match(new RegExp('^(?:kube-system)$')) && @.labels.pod.match(new RegExp('^(?:repositories-.*)$')) && @.labels.severity === 'warning') || (@.labels.alertname === 'KubePodNotReady' && @.labels.namespace.match(new RegExp('^(?:kube-system)$')) && @.labels.pod.match(new RegExp('^(?:salt-master-.*)$')) && @.labels.severity === 'warning') || (@.labels.alertname === 'KubePodCrashLooping' && @.labels.namespace.match(new RegExp('^(?:kube-system)$')) && @.labels.pod.match(new RegExp('^(?:salt-master-.*)$')) && @.labels.severity === 'warning') || (@.labels.alertname === 'KubeDeploymentReplicasMismatch' && @.labels.deployment.match(new RegExp('^(?:storage-operator)$')) && @.labels.namespace.match(new RegExp('^(?:kube-system)$')) && @.labels.severity === 'warning') || (@.labels.alertname === 'KubeDeploymentGenerationMismatch' && @.labels.deployment.match(new RegExp('^(?:storage-operator)$')) && @.labels.namespace.match(new RegExp('^(?:kube-system)$')) && @.labels.severity === 'warning') || (@.labels.alertname === 'KubeDeploymentReplicasMismatch' && @.labels.deployment.match(new RegExp('^(?:metalk8s-ui)$')) && @.labels.namespace.match(new RegExp('^(?:metalk8s-ui)$')) && @.labels.severity === 'warning') || (@.labels.alertname === 'KubeDeploymentGenerationMismatch' && @.labels.deployment.match(new RegExp('^(?:metalk8s-ui)$')) && @.labels.namespace.match(new RegExp('^(?:metalk8s-ui)$')) && @.labels.severity === 'warning'))]",
                             "summary": "The MetalK8s Bootstrap services are degraded."
                         },
                         "duration": 60,
@@ -329,7 +329,7 @@
                         },
                         "lastEvaluation": "2023-05-24T07:44:45.532571201Z",
                         "name": "BootstrapServicesDegraded",
-                        "query": "sum(ALERTS{alertname=\"KubePodNotReady\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"repositories-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubePodCrashLooping\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"repositories-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubeContainerOOMKilled\",alertstate=\"firing\",container=~\".*\",namespace=~\"kube-system\",pod=~\"repositories-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubeContainerOOMKillSurge\",alertstate=\"firing\",container=~\".*\",namespace=~\"kube-system\",pod=~\"repositories-.*\",severity=\"critical\"} or ALERTS{alertname=\"KubePodNotReady\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"salt-master-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubePodCrashLooping\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"salt-master-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubeContainerOOMKilled\",alertstate=\"firing\",container=~\".*\",namespace=~\"kube-system\",pod=~\"salt-master-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubeContainerOOMKillSurge\",alertstate=\"firing\",container=~\".*\",namespace=~\"kube-system\",pod=~\"salt-master-.*\",severity=\"critical\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"storage-operator\",namespace=~\"kube-system\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"storage-operator\",namespace=~\"kube-system\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"metalk8s-ui\",namespace=~\"metalk8s-ui\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"metalk8s-ui\",namespace=~\"metalk8s-ui\",severity=\"warning\"}) >= 1",
+                        "query": "sum(ALERTS{alertname=\"KubePodNotReady\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"repositories-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubePodCrashLooping\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"repositories-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubePodNotReady\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"salt-master-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubePodCrashLooping\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"salt-master-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"storage-operator\",namespace=~\"kube-system\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"storage-operator\",namespace=~\"kube-system\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"metalk8s-ui\",namespace=~\"metalk8s-ui\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"metalk8s-ui\",namespace=~\"metalk8s-ui\",severity=\"warning\"}) >= 1",
                         "state": "inactive",
                         "type": "alerting"
                     },
@@ -622,55 +622,6 @@
                         "lastEvaluation": "2023-05-24T07:44:45.536451529Z",
                         "name": "VolumeDegraded",
                         "query": "sum by(persistentvolumeclaim, namespace, instance) (ALERTS{alertname=\"KubePersistentVolumeFillingUp\",alertstate=\"firing\",severity=\"warning\"}) >= 1",
-                        "state": "inactive",
-                        "type": "alerting"
-                    }
-                ]
-            },
-            {
-                "evaluationTime": 0.049205349,
-                "file": "/etc/prometheus/rules/prometheus-prometheus-operator-prometheus-rulefiles-0/metalk8s-monitoring-metalk8s-containers.rules-99c02b35-7a90-4ffb-84c1-c107d7efee9f.yaml",
-                "interval": 30,
-                "lastEvaluation": "2023-05-24T07:44:36.053796928Z",
-                "limit": 0,
-                "name": "container-exporter",
-                "partialResponseStrategy": "ABORT",
-                "rules": [
-                    {
-                        "alerts": [],
-                        "annotations": {
-                            "description": "OOMKill Surge: Container {{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }} on Node {{ $labels.node }} exceeds its memory allocation limit (OOMKilled). Pod restarted {{ printf \"%.0f\" $value }} time(s) in last hour.",
-                            "summary": "OOMKill Surge: Container killed by exceeding memory allocation limits (OOMKilled) in last hour."
-                        },
-                        "duration": 0,
-                        "evaluationTime": 0.002218884,
-                        "health": "ok",
-                        "labels": {
-                            "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
-                            "severity": "critical"
-                        },
-                        "lastEvaluation": "2023-05-24T07:44:36.100780569Z",
-                        "name": "KubeContainerOOMKillSurge",
-                        "query": "round(delta((kube_pod_container_status_last_terminated_reason{job=\"kube-state-metrics\",namespace=~\".*\",reason=\"OOMKilled\"} * on(namespace, pod, container) kube_pod_container_status_restarts_total * on(namespace, pod) group_left(node) kube_pod_info)[1h1m:]), 1) > 0",
-                        "state": "inactive",
-                        "type": "alerting"
-                    },
-                    {
-                        "alerts": [],
-                        "annotations": {
-                            "description": "Container {{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }} on Node {{ $labels.node }} exceeds its memory allocation limit (OOMKilled). Pod accumulates a total of {{ printf \"%.0f\" $value }} restart(s).",
-                            "summary": "Container killed by exceeding memory allocation limits (OOMKilled)."
-                        },
-                        "duration": 0,
-                        "evaluationTime": 0.046970732,
-                        "health": "ok",
-                        "labels": {
-                            "prometheus": "metalk8s-monitoring/prometheus-operator-prometheus",
-                            "severity": "warning"
-                        },
-                        "lastEvaluation": "2023-05-24T07:44:36.053807188Z",
-                        "name": "KubeContainerOOMKilled",
-                        "query": "max_over_time((kube_pod_container_status_last_terminated_reason{job=\"kube-state-metrics\",namespace=~\".*\",reason=\"OOMKilled\"} * on(namespace, pod, container) kube_pod_container_status_restarts_total * on(namespace, pod) group_left(node) kube_pod_info)[3d:]) > 0",
                         "state": "inactive",
                         "type": "alerting"
                     }

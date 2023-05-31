@@ -80,7 +80,7 @@
     {
         "message": "The MetalK8s Bootstrap services are degraded.",
         "name": "BootstrapServicesDegraded",
-        "query": "sum(ALERTS{alertname=\"KubePodNotReady\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"repositories-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubePodCrashLooping\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"repositories-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubeContainerOOMKilled\",alertstate=\"firing\",container=~\".*\",namespace=~\"kube-system\",pod=~\"repositories-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubeContainerOOMKillSurge\",alertstate=\"firing\",container=~\".*\",namespace=~\"kube-system\",pod=~\"repositories-.*\",severity=\"critical\"} or ALERTS{alertname=\"KubePodNotReady\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"salt-master-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubePodCrashLooping\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"salt-master-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubeContainerOOMKilled\",alertstate=\"firing\",container=~\".*\",namespace=~\"kube-system\",pod=~\"salt-master-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubeContainerOOMKillSurge\",alertstate=\"firing\",container=~\".*\",namespace=~\"kube-system\",pod=~\"salt-master-.*\",severity=\"critical\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"storage-operator\",namespace=~\"kube-system\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"storage-operator\",namespace=~\"kube-system\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"metalk8s-ui\",namespace=~\"metalk8s-ui\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"metalk8s-ui\",namespace=~\"metalk8s-ui\",severity=\"warning\"}) >= 1",
+        "query": "sum(ALERTS{alertname=\"KubePodNotReady\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"repositories-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubePodCrashLooping\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"repositories-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubePodNotReady\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"salt-master-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubePodCrashLooping\",alertstate=\"firing\",namespace=~\"kube-system\",pod=~\"salt-master-.*\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"storage-operator\",namespace=~\"kube-system\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"storage-operator\",namespace=~\"kube-system\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentReplicasMismatch\",alertstate=\"firing\",deployment=~\"metalk8s-ui\",namespace=~\"metalk8s-ui\",severity=\"warning\"} or ALERTS{alertname=\"KubeDeploymentGenerationMismatch\",alertstate=\"firing\",deployment=~\"metalk8s-ui\",namespace=~\"metalk8s-ui\",severity=\"warning\"}) >= 1",
         "severity": "warning"
     },
     {
@@ -159,18 +159,6 @@
         "message": "The volume {{ $labels.persistentvolumeclaim }} in namespace {{ $labels.namespace }} on node {{ $labels.instance }} is degraded.",
         "name": "VolumeDegraded",
         "query": "sum by(persistentvolumeclaim, namespace, instance) (ALERTS{alertname=\"KubePersistentVolumeFillingUp\",alertstate=\"firing\",severity=\"warning\"}) >= 1",
-        "severity": "warning"
-    },
-    {
-        "message": "OOMKill Surge: Container killed by exceeding memory allocation limits (OOMKilled) in last hour.",
-        "name": "KubeContainerOOMKillSurge",
-        "query": "round(delta((kube_pod_container_status_last_terminated_reason{job=\"kube-state-metrics\",namespace=~\".*\",reason=\"OOMKilled\"} * on(namespace, pod, container) kube_pod_container_status_restarts_total * on(namespace, pod) group_left(node) kube_pod_info)[1h1m:]), 1) > 0",
-        "severity": "critical"
-    },
-    {
-        "message": "Container killed by exceeding memory allocation limits (OOMKilled).",
-        "name": "KubeContainerOOMKilled",
-        "query": "max_over_time((kube_pod_container_status_last_terminated_reason{job=\"kube-state-metrics\",namespace=~\".*\",reason=\"OOMKilled\"} * on(namespace, pod, container) kube_pod_container_status_restarts_total * on(namespace, pod) group_left(node) kube_pod_info)[3d:]) > 0",
         "severity": "warning"
     },
     {
