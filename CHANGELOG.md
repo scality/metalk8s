@@ -1,16 +1,22 @@
 # CHANGELOG
 ## Release 125.0.3 (in development)
 
+## Bug fixes
+
+- Remove OOM killed alerts for the moment as in some specific
+  context they consume too much memory
+  (PR[4067](https://github.com/scality/metalk8s/pull/4067))
+
 ## Release 125.0.2
 ### Bug fixes
 
 - Fix time selector in the Platform page
-  (PR[4058](https://github.com/scality/metalk8s/pull/4058)
+  (PR[4058](https://github.com/scality/metalk8s/pull/4058))
 
 ### Additions
 
 - Raise an alert when a pod get OOM killed
-  (PR[4042](https://github.com/scality/metalk8s/pull/4042)
+  (PR[4042](https://github.com/scality/metalk8s/pull/4042))
 
 ## Release 125.0.1
 
@@ -155,20 +161,11 @@
 
 ## Release 124.1.6
 
-### Enhancements
-
-- Add Out Of Memory alerts for containers
-  (PR[#4042](https://github.com/scality/metalk8s/pull/4042))
 ### Bug fixes
 
 - Ensure metalk8s-sosreport package get upgraded on each patch version.
   Changes metalk8s-sosreport package version to add the `patch` digit
   (PR[#4056](https://github.com/scality/metalk8s/pull/4056))
-
-### Enhancements
-
-- Add Out Of Memory alerts for containers
-  (PR[#4042](https://github.com/scality/metalk8s/pull/4042))
 
 ## Release 124.1.5
 

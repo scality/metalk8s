@@ -3,24 +3,11 @@
 from . import models
 
 
-def container_alerts(name=".*", pod=".*", namespace="default"):
+def container_alerts(
+    name=".*", pod=".*", namespace="default"
+):  # pylint: disable=unused-argument
     """Common alerts for Containers."""
-    return [
-        models.ExistingAlert(
-            "KubeContainerOOMKilled",
-            severity="warning",
-            namespace=namespace,
-            pod=pod,
-            container=name,
-        ),
-        models.ExistingAlert(
-            "KubeContainerOOMKillSurge",
-            severity="critical",
-            namespace=namespace,
-            pod=pod,
-            container=name,
-        ),
-    ]
+    return []
 
 
 def pod_alerts(name, severity="warning", namespace="default"):
