@@ -1,5 +1,5 @@
 # CHANGELOG
-## Release 125.0.3 (in development)
+## Release 125.0.3
 
 ## Bug fixes
 
