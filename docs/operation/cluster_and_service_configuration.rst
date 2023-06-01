@@ -135,6 +135,61 @@ See :ref:`csc-shell-ui-config-customization` to override these defaults.
 Service Configurations Customization
 ------------------------------------
 
+.. _csc-ingress-controller-customization:
+
+Workload plane Ingress Controller Configuration Customization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Default configuration for Workload plane Ingress Controller can be overridden
+by editing its Cluster and Service ConfigMap
+``metalk8s-ingress-controller-config`` in namespace ``metalk8s-ingress``
+under the key ``data.config\.yaml``:
+
+  .. code-block:: shell
+
+     root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                        edit configmap -n metalk8s-ingress \
+                        metalk8s-ingress-controller-config
+
+
+The following documentation is not exhaustive and is just here to give
+some hints on basic usage, for more details or advanced
+configuration, see the official `Nginx Ingress Controller documentation`_.
+
+.. _Nginx Ingress Controller documentation: https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/
+
+Disable HTTP2
+"""""""""""""
+
+HTTP2 can be disabled by setting ``use-http2`` to ``false``:
+
+  .. code-block:: yaml
+
+    apiVersion: v1
+    kind: ConfigMap
+    data:
+      config.yaml: |-
+        apiVersion: addons.metalk8s.scality.com/v1alpha2
+        kind: IngressControllerConfig
+        spec:
+          config:
+            use-http2: false
+
+Applying configuration
+""""""""""""""""""""""
+
+Any changes made to ``metalk8s-ingress-controller-config`` ConfigMap must
+then be applied with Salt.
+
+.. parsed-literal::
+
+   root\@bootstrap $ kubectl exec --kubeconfig /etc/kubernetes/admin.conf \\
+                      -n kube-system -c salt-master salt-master-bootstrap -- \\
+                      salt-run state.sls \\
+                      metalk8s.addons.nginx-ingress.deployed \\
+                      saltenv=metalk8s-|version|
+
+
 .. _csc-alertmanager-customization:
 
 Alertmanager Configuration Customization

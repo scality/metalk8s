@@ -39,23 +39,6 @@ metadata:
   name: ingress-nginx-backend
   namespace: metalk8s-ingress
 ---
-apiVersion: v1
-data:
-  allow-snippet-annotations: 'true'
-kind: ConfigMap
-metadata:
-  labels:
-    app.kubernetes.io/component: controller
-    app.kubernetes.io/instance: ingress-nginx
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.6.4
-    helm.sh/chart: ingress-nginx-4.5.2
-    heritage: metalk8s
-  name: ingress-nginx-controller
-  namespace: metalk8s-ingress
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:

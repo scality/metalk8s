@@ -1,6 +1,11 @@
 # CHANGELOG
 ## Release 125.0.4 (in development)
 
+### Additions
+
+- Add configuration for Workload Plane ingress controller
+  (PR[4069](https://github.com/scality/metalk8s/pull/4069))
+
 ## Release 125.0.3
 
 ## Bug fixes

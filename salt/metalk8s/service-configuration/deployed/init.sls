@@ -12,4 +12,5 @@ include:
 {%- endif %}
   - metalk8s.addons.logging.loki.deployed.service-configuration
   - metalk8s.addons.logging.fluent-bit.deployed.service-configuration
+  - metalk8s.addons.nginx-ingress.deployed.service-configuration
   - metalk8s.addons.ui.deployed.ui-configuration

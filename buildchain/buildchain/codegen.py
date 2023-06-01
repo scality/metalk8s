@@ -139,8 +139,10 @@ def codegen_chart_ingress_nginx() -> types.TaskDict:
     value_file = constants.CHART_ROOT / "ingress-nginx.yaml"
     actions.append(
         doit.action.CmdAction(
-            f"{constants.CHART_RENDER_CMD} ingress-nginx {value_file} "
-            f"{chart_dir} --namespace metalk8s-ingress --output {target_sls}",
+            f"{constants.CHART_RENDER_CMD} ingress-nginx {value_file} {chart_dir} "
+            f"--namespace metalk8s-ingress --remove-manifest ConfigMap "
+            f"ingress-nginx-controller "
+            f"--output {target_sls}",
             cwd=constants.ROOT,
         )
     )
