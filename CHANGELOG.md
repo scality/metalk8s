@@ -1,4 +1,6 @@
 # CHANGELOG
+## Release 125.0.5 (in development)
+
 ## Release 125.0.4
 
 ### Additions
@@ -8,7 +10,7 @@
 
 ## Release 125.0.3
 
-## Bug fixes
+### Bug fixes
 
 - Remove OOM killed alerts for the moment as in some specific
   context they consume too much memory
