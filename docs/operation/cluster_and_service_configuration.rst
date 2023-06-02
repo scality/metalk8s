@@ -173,7 +173,7 @@ HTTP2 can be disabled by setting ``use-http2`` to ``false``:
         kind: IngressControllerConfig
         spec:
           config:
-            use-http2: false
+            use-http2: "false"
 
 Applying configuration
 """"""""""""""""""""""
