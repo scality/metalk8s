@@ -230,9 +230,7 @@ def bootstrap_config_updated(name):
 
     config = copy.deepcopy(old_config)
 
-    # This logic can be removed in `development/126.0`
-    config["networks"]["controlPlane"].pop("ingress", None)
-    config["networks"]["controlPlane"].pop("metalLB", None)
+    # Nothing to do
 
     diff = __utils__["dictdiffer.recursive_diff"](old_config, config, False).diffs
 
