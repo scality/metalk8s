@@ -13,11 +13,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - name: "Nightly for 126.0"
+            branch: "development/126.0"
+            workflow: "nightly.yaml"
           - name: "Nightly for 125.0"
             branch: "development/125.0"
-            workflow: "nightly.yaml"
-          - name: "Nightly for 124.1"
-            branch: "development/124.1"
             workflow: "nightly.yaml"
     steps:
       - name: Checkout
