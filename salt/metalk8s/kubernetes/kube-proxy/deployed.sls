@@ -69,6 +69,7 @@ Deploy kube-proxy (ConfigMap):
             healthzBindAddress: @HOST_IP@:10256
             hostnameOverride: ""
             iptables:
+              localhostNodePorts: null
               masqueradeAll: false
               masqueradeBit: null
               minSyncPeriod: 0s
@@ -94,6 +95,7 @@ Deploy kube-proxy (ConfigMap):
               enableDSR: false
               forwardHealthCheckVip: false
               networkName: ""
+              rootHnsEndpointName: ""
               sourceVip: ""
           kubeconfig.conf: |-
             apiVersion: v1
