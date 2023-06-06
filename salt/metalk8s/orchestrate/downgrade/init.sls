@@ -111,27 +111,6 @@ Deploy Kubernetes service config objects:
   - require_in:
     - salt: Deploy Kubernetes objects
 
-{#- Due to a change of Loki StatefulSet labelSelector in 124.1.0, which is immutable field
-    Manually delete the Loki StatefulSet object if dest_version < 124.1.0
-    NOTE: This logic can be removed in `development/126.0` #}
-{%- if salt.pkg.version_cmp(dest_version, '124.1.0') == -1 %}
-
-Delete Loki StatefulSet:
-  metalk8s_kubernetes.object_absent:
-    - apiVersion: apps/v1
-    - kind: StatefulSet
-    - name: loki
-    - namespace: metalk8s-logging
-    - wait:
-        attempts: 30
-        sleep: 10
-    - require:
-      - salt: Deploy Kubernetes service config objects
-    - require_in:
-      - salt: Deploy Kubernetes objects
-
-{%- endif %}
-
 {#- Due to a change of node-exporter DaemonSet labelSelector in 125.0.0, which is immutable field
     Manually delete the node-exporter DaemonSet object if dest_version < 125.0.0
     NOTE: This logic can be removed in `development/126.0` #}
