@@ -3,7 +3,6 @@
 include:
   - metalk8s.addons.prometheus-operator.post-upgrade
   - metalk8s.addons.ui.post-upgrade
-  - metalk8s.addons.logging.loki.deployed.post-upgrade
 
 Post upgrade on Bootstrap:
   salt.state:
