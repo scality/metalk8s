@@ -1016,6 +1016,7 @@ export const getAlertsHistoryQuery = ({
   currentTimeISO,
   frequency,
 }: TimeSpanProps): typeof useQuery => {
+  console.log('getAlertsHistoryQuery');
   const query = `sum(alertmanager_alerts)`;
   const alertManagerDowntimePromise = queryPrometheusRange(
     startingTimeISO,

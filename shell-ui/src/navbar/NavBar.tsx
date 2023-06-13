@@ -1,34 +1,33 @@
+import React, { useEffect, useCallback, useMemo } from 'react';
+import styled, { createGlobalStyle } from 'styled-components';
+import { useLocation } from 'react-router-dom';
+import { matchPath, RouteProps } from 'react-router';
+
 import { Navbar as CoreUINavbar } from '@scality/core-ui/dist/components/navbar/Navbar.component';
 import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
-import { useEffect, useCallback, useMemo } from 'react';
-import styled, { createGlobalStyle } from 'styled-components';
-import type { Node } from 'react';
-import { Layout2 } from '@scality/core-ui';
+import { Layout } from '@scality/core-ui/dist/components/layout/v2/index';
+
 import { normalizePath } from './auth/permissionUtils';
 import { useTheme } from 'styled-components';
 import { useLanguage } from './lang';
 import { useThemeName } from './theme';
 import { useIntl } from 'react-intl';
 import { useAuth, useLogOut } from '../auth/AuthProvider';
-import type {
+import {
   ViewDefinition,
   BuildtimeWebFinger,
-} from '../initFederation/ConfigurationProviders';
-import '../initFederation/ConfigurationProviders';
-import {
   useConfigRetriever,
-  useDiscoveredViews,
   useLinkOpener,
+  useDiscoveredViews,
 } from '../initFederation/ConfigurationProviders';
-import { useLocation } from 'react-router-dom';
-import { matchPath, RouteProps } from 'react-router';
 import type { Link as TypeLink } from './navbarHooks';
 import { useNavbar } from './navbarHooks';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
+
 const Logo = styled.img`
   height: 2.143rem;
 `;
-export const LoadingNavbar = ({ logo }: { logo: string }): Node => (
+export const LoadingNavbar = ({ logo }: { logo: string }) => (
   <CoreUINavbar
     logo={<Logo src={logo} alt="logo" />}
     role="navigation"
@@ -93,7 +92,7 @@ const Link = ({
   to,
   ...props
 }: {
-  children: Node;
+  children: React.ReactNode;
   to:
     | {
         isExternal: boolean;
@@ -239,8 +238,8 @@ export const Navbar = ({
   canChangeLanguage?: boolean;
   canChangeTheme?: boolean;
   providerLogout?: boolean;
-  children?: Node;
-}): Node => {
+  children?: React.ReactNode;
+}) => {
   const brand = useTheme();
   const { userData } = useAuth();
   const { themeName, unSelectedThemes, setTheme } = useThemeName();
@@ -367,7 +366,7 @@ export const Navbar = ({
   return (
     <>
       <GlobalStyle />
-      <Layout2
+      <Layout
         headerNavigation={
           <CoreUINavbar
             logo={<Logo src={logo} alt="logo" />}
@@ -378,7 +377,7 @@ export const Navbar = ({
         }
       >
         {children}
-      </Layout2>
+      </Layout>
     </>
   );
 };

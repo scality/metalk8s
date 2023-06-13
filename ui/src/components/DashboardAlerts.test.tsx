@@ -1,4 +1,4 @@
-import { AllTheProviders, render } from './__TEST__/util';
+import { render } from './__TEST__/util';
 import DashboardAlerts from './DashboardAlerts';
 import { fireEvent } from '@testing-library/react';
 import { useAlerts, useAlertLibrary } from '../containers/AlertProvider';
@@ -37,12 +37,7 @@ const alerts = [
   ...topLevelAlert,
 ];
 const mockOpenLink = jest.fn();
-jest.mock('../containers/AlertProvider', () => ({
-  __esModule: true,
-  default: ({ children }) => <>{children}</>,
-  useAlerts: jest.fn(),
-  useAlertLibrary: jest.fn(),
-}));
+
 jest.mock('../containers/ConfigProvider', () => ({
   __esModule: true,
   default: ({ children }) => <>{children}</>,
@@ -85,9 +80,7 @@ describe('the dashboard alerts sub-panel', () => {
     (useAlerts as any).mockImplementationOnce(() => ({
       alerts: alerts,
     }));
-    const { getByTestId } = render(<DashboardAlerts />, {
-      wrapper: AllTheProviders,
-    });
+    const { getByTestId } = render(<DashboardAlerts />);
     expect(getByTestId('all-alert-badge')).toHaveTextContent('1');
     expect(getByTestId('warning-alert-badge')).toHaveTextContent('0');
     expect(getByTestId('critical-alert-badge')).toHaveTextContent('1');
@@ -99,9 +92,6 @@ describe('the dashboard alerts sub-panel', () => {
     }));
     const { queryByTestId, getByTestId, getByText } = render(
       <DashboardAlerts />,
-      {
-        wrapper: AllTheProviders,
-      },
     );
     expect(getByText('No active alerts')).toBeInTheDocument();
     expect(getByTestId('all-alert-badge')).toHaveTextContent('0');
@@ -113,9 +103,7 @@ describe('the dashboard alerts sub-panel', () => {
     (useAlerts as any).mockImplementation(() => ({
       alerts: alerts,
     }));
-    const { getByTestId } = render(<DashboardAlerts />, {
-      wrapper: AllTheProviders,
-    });
+    const { getByTestId } = render(<DashboardAlerts />);
     const viewAllLink = getByTestId('view-all-link');
     fireEvent.click(viewAllLink);
     expect(mockOpenLink).toHaveBeenCalledTimes(1);

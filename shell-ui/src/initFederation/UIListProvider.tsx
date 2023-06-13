@@ -1,4 +1,4 @@
-import type { Node } from 'react';
+import React from 'react';
 import { createContext, useContext } from 'react';
 import { useQuery } from 'react-query';
 import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
@@ -60,9 +60,9 @@ export const UIListProvider = ({
   children,
   discoveryURL,
 }: {
-  children: Node;
+  children: React.ReactNode;
   discoveryURL: string;
-}): Node => {
+}) => {
   const { status, data } = useQuery(
     'discoveredUIs',
     () => {

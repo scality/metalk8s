@@ -4,7 +4,7 @@ const path = require('path');
 const deps = require('./package.json').dependencies;
 
 module.exports = {
-  entry: './src/index.ts',
+  entry: './src/index.tsx',
   output: {
     path: path.resolve(__dirname, 'build'),
     publicPath: '/shell/',
@@ -84,6 +84,8 @@ module.exports = {
         './navbar/navbarHooks': './src/navbar/navbarHooks.ts',
         './moduleFederation/ConfigurationProvider':
           './src/initFederation/ConfigurationProviders.tsx',
+        './moduleFederation/ShellConfigurationProvider':
+          './src/initFederation/ShellConfigProvider.tsx',
         './moduleFederation/UIListProvider':
           './src/initFederation/UIListProvider.tsx',
       },
@@ -100,6 +102,10 @@ module.exports = {
           singleton: true,
         },
         '@scality/core-ui': {
+          singleton: true,
+        },
+        'react-intl': {
+          eager: true,
           singleton: true,
         },
         '@scality/module-federation': {
@@ -143,6 +149,14 @@ module.exports = {
           eager: true,
         },
         'oidc-client': {
+          singleton: true,
+          eager: true,
+        },
+        'oidc-react': {
+          singleton: true,
+          eager: true,
+        },
+        'react-error-boundary': {
           singleton: true,
           eager: true,
         },

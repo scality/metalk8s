@@ -7,8 +7,6 @@
   "url_alertmanager": "/api/alertmanager",
   "url_loki": "/api/loki",
   "flags": [],
-  "url_navbar": "/shell/solution-ui-navbar.1.0.0.js",
-  "url_alerts": "/shell/alerts.1.0.0.js",
   "url_navbar_config": "/shell/config.json",
   "ui_base_path":"/",
   "alerts_lib_version": "1.0.0",

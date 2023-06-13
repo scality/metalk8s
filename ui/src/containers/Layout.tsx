@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, Suspense } from 'react';
 import { useDispatch } from 'react-redux';
 import { matchPath, RouteProps, Route, Redirect } from 'react-router';
 import { useHistory, useLocation, Switch } from 'react-router-dom';
@@ -11,12 +11,16 @@ import {
   Sidebar,
 } from '@scality/core-ui';
 import { useIntl } from 'react-intl';
+
 import { toggleSideBarAction } from '../ducks/app/layout';
 import { removeNotificationAction } from '../ducks/app/notifications';
 import { setIntlAction } from '../ducks/config';
 import CreateVolume from './CreateVolume';
 import { useTypedSelector } from '../hooks';
-import { Suspense } from 'react';
+
+const ConfigureAlerting = React.lazy(
+  () => import('../alert-configuration/ConfigureAlerting'),
+);
 const NodeCreateForm = React.lazy(() => import('./NodeCreateForm'));
 const NodePage = React.lazy(() => import('./NodePage'));
 const About = React.lazy(() => import('./About'));
@@ -44,27 +48,45 @@ const Layout = () => {
 
   const history = useHistory();
   const location = useLocation();
+
   const doesRouteMatch = useCallback(
-    (path: RouteProps) => {
+    (paths: RouteProps | RouteProps[]) => {
       const location = history.location;
-      return matchPath(location.pathname, path);
-    }, // the history object is mutable
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      if (Array.isArray(paths)) {
+        const foundMatchingRoute = paths.find((path) => {
+          const demo = matchPath(location.pathname, path);
+          return demo;
+        });
+        return !!foundMatchingRoute;
+      } else {
+        return !!matchPath(location.pathname, paths);
+      }
+    },
     [location],
   );
-  const isAlertsPage = doesRouteMatch({
-    path: '/alerts',
-    exact: true,
-    strict: true,
-  });
-  const isCreateNodePage = doesRouteMatch({
-    path: '/nodes/create',
-    exact: true,
-  });
-  const isCreateVolumePage = doesRouteMatch({
-    path: '/volumes/createVolume',
-    exact: true,
-  });
+
+  const routeWithoutSideBars = [
+    {
+      path: '/alerts',
+      exact: true,
+      strict: true,
+    },
+    {
+      path: '/nodes/create',
+      exact: true,
+    },
+    {
+      path: '/volumes/createVolume',
+      exact: true,
+    },
+    {
+      path: '/configure-alerts',
+      exact: true,
+    },
+  ];
+
+  const hideSideBar = doesRouteMatch(routeWithoutSideBars);
+
   const sidebarConfig = {
     onToggleClick: toggleSidebar,
     hoverable: true,
@@ -122,10 +144,7 @@ const Layout = () => {
     <AppContainer
       hasPadding
       sidebarNavigation={
-        isUserLoaded &&
-        !isAlertsPage &&
-        !isCreateNodePage &&
-        !isCreateVolumePage ? (
+        isUserLoaded && !hideSideBar ? (
           <Sidebar {...sidebarConfig} />
         ) : undefined
       }
@@ -156,6 +175,14 @@ const Layout = () => {
           <PrivateRoute exact path="/about" component={About} />
           <PrivateRoute exact path="/alerts" component={AlertPage} />
           <PrivateRoute exact path="/dashboard" component={DashboardPage} />
+          <PrivateRoute
+            exact
+            path="/configure-alerts"
+            component={ConfigureAlerting}
+            canAccess={(_, userAccessRight) => {
+              return userAccessRight.canConfigureEmailNotification;
+            }}
+          />
           <Route
             component={() => (
               <ErrorPage404 data-cy="sc-error-page404" locale={language} />

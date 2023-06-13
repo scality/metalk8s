@@ -5,8 +5,9 @@ import {
   ConstrainedText,
   TextBadge,
   AppContainer,
+  Stack,
 } from '@scality/core-ui';
-import { Table } from '@scality/core-ui/dist/next';
+import { Button, Table } from '@scality/core-ui/dist/next';
 import { fontSize, spacing } from '@scality/core-ui/dist/style/theme';
 import { useAlerts } from './AlertProvider';
 import StatusIcon from '../components/StatusIcon';
@@ -15,11 +16,16 @@ import { compareHealth, formatDateToMid1 } from '../services/utils';
 import CircleStatus from '../components/CircleStatus';
 import { useIntl } from 'react-intl';
 import isEqual from 'lodash.isequal';
+import { useHistory } from 'react-router';
+import { useUserAccessRight } from '../hooks';
+
 const AlertPageHeaderContainer = styled.div`
   display: flex;
   align-items: center;
+  justify-content: space-between;
   background: ${(props) => props.theme.backgroundLevel2};
 `;
+
 const Title = styled.div`
   display: flex;
   align-items: center;
@@ -97,44 +103,58 @@ function AlertPageHeader({
   critical: number;
   warning: number;
 }) {
+  const history = useHistory();
   const intl = useIntl();
   const alertStatus = getAlertStatus(critical, warning);
+
+  const { canConfigureEmailNotification } = useUserAccessRight();
   return (
     <AlertPageHeaderContainer>
-      <Title>
-        <AlertStatusIcon>
-          <StatusWrapper status={alertStatus}>
-            <StatusIcon status={alertStatus} name="Alert" />
-          </StatusWrapper>
-        </AlertStatusIcon>
-        <>
-          {intl.formatMessage({
-            id: 'alerts',
-          })}
-        </>
-        <SeperationLine />
-      </Title>
+      <Stack>
+        <Title>
+          <AlertStatusIcon>
+            <StatusWrapper status={alertStatus}>
+              <StatusIcon status={alertStatus} name="Alert" />
+            </StatusWrapper>
+          </AlertStatusIcon>
+          <>
+            {intl.formatMessage({
+              id: 'alerts',
+            })}
+          </>
+          <SeperationLine />
+        </Title>
 
-      <SecondaryTitle>
-        <>
-          {intl.formatMessage({
-            id: 'active_alerts',
-          })}
-        </>
-        <TextBadge variant="infoPrimary" text={activeAlerts} />
-        <SeperationLine />
-      </SecondaryTitle>
+        <SecondaryTitle>
+          <>
+            {intl.formatMessage({
+              id: 'active_alerts',
+            })}
+          </>
+          <TextBadge variant="infoPrimary" text={activeAlerts} />
+          <SeperationLine />
+        </SecondaryTitle>
 
-      <TertiaryTitle>
-        <div>
-          Critical
-          <TextBadge variant="statusCritical" text={critical} />
-        </div>
-        <div>
-          Warning
-          <TextBadge variant="statusWarning" text={warning} />
-        </div>
-      </TertiaryTitle>
+        <TertiaryTitle>
+          <div>
+            Critical
+            <TextBadge variant="statusCritical" text={critical} />
+          </div>
+          <div>
+            Warning
+            <TextBadge variant="statusWarning" text={warning} />
+          </div>
+        </TertiaryTitle>
+      </Stack>
+      {canConfigureEmailNotification ? (
+        <Button
+          label="Email notification configuration"
+          variant="secondary"
+          onClick={() => {
+            history.push('/configure-alerts');
+          }}
+        />
+      ) : null}
     </AlertPageHeaderContainer>
   );
 }
@@ -207,6 +227,7 @@ const ActiveAlertTab = React.memo(
 );
 export default function AlertPage() {
   const alerts = useAlerts({});
+  const history = useHistory();
   const leafAlerts = useMemo(
     () => alerts?.alerts.filter((alert) => !alert.labels.children) || [],
     [JSON.stringify(alerts?.alerts)],

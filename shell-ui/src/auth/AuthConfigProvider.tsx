@@ -1,4 +1,4 @@
-import type { Node } from 'react';
+import React from 'react';
 import { createContext, useContext, useState } from 'react';
 import type {
   OIDCConfig,
@@ -17,7 +17,11 @@ export const useAuthConfig = (): {
 
   return contextValue;
 };
-export function AuthConfigProvider({ children }: { children: Node }) {
+export function AuthConfigProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [authConfig, setAuthConfig] = useState(undefined);
   return (
     <AuthConfigContext.Provider

@@ -1,4 +1,4 @@
-import type { Node } from 'react';
+import React from 'react';
 import { useIntl } from 'react-intl';
 import { useTypedSelector } from '../hooks';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -42,12 +42,14 @@ const InternalAlertProvider = ({
   children,
 }: {
   moduleExports: {};
-  children: Node;
-}): Node => {
+  children: React.ReactNode;
+}) => {
   alertGlobal.hooks = moduleExports['./alerts/alertHooks'];
+
   const alertManagerUrl = useTypedSelector(
     (state) => state.config.api.url_alertmanager,
   );
+
   return (
     <FederatedComponent
       module={'./alerts/AlertProvider'}
@@ -61,10 +63,11 @@ const InternalAlertProvider = ({
   );
 };
 
-function ErrorFallback() {
+function ErrorFallback({ error }) {
   const intl = useIntl();
   const language = intl.locale;
   const { api } = useTypedSelector((state) => state.config);
+  console.log('ErrorFallback AlertProvider', error);
   const url_support = api?.url_support;
   return (
     <ErrorPage500
@@ -75,7 +78,7 @@ function ErrorFallback() {
   );
 }
 
-const AlertProvider = ({ children }: { children: Node }): Node => {
+const AlertProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <ComponentWithFederatedImports

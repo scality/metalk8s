@@ -1,7 +1,5 @@
 const common = require('./webpack.common.js');
 const path = require('path');
-const BundleAnalyzerPlugin =
-  require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const webpack = require('webpack');
 const HtmlWebPackPlugin = require('html-webpack-plugin');
@@ -18,7 +16,6 @@ module.exports = {
       template: '!!handlebars-loader!./src/index.html',
       filename: './index.html',
     }),
-    new BundleAnalyzerPlugin(),
     new webpack.HotModuleReplacementPlugin(),
     new ReactRefreshWebpackPlugin({
       overlay: {
@@ -30,7 +27,6 @@ module.exports = {
     static: path.join(__dirname, 'public'),
     host: 'localhost',
     port: 3000,
-    open: true,
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',

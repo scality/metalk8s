@@ -29,18 +29,7 @@ jest.mock('../services/platformlibrary/k8s.ts', () => ({
   getNodesCountQuery: jest.fn(),
   getVolumesCountQuery: jest.fn(),
 }));
-jest.mock('../containers/AlertProvider', () => ({
-  __esModule: true,
-  default: ({ children }) => <>{children}</>,
-  useHighestSeverityAlerts: jest.fn(),
-  useAlertLibrary: () => ({
-    getNodesAlertSelectors: () => {},
-    getVolumesAlertSelectors: () => {},
-  }),
-  highestAlertToStatus: (alerts?: Alert[]): string => {
-    return (alerts?.[0] && (alerts[0].severity as any as string)) || 'healthy';
-  },
-}));
+
 describe('the dashboard inventory panel', () => {
   beforeAll(() => {
     // Have to any type jest.fn function to avoid Flow warning for mockImplementation()

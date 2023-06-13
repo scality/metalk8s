@@ -1,4 +1,20 @@
-# solutions-navbar
+# Dev guideline
+
+When we develop on this project, each time your import component from core-ui.
+Make sure to import the component directly from the component file.
+
+We need to do that because we have this configuration on module federation :
+``` js
+'@scality/core-ui': {
+    singleton: true,
+}
+```
+
+We want to avoid to set the option `eager: true` because will load core-ui 
+completely at the beginning and cause significative performance issues.
+
+
+## Legacy - solutions-navbar
 
 Common navbar that can be integrated in metalk8s solution UI to provide the following features : 
 
@@ -54,4 +70,3 @@ $ npm run build
  - solutions--logged-out, payload : {}
  - solutions--theme-changed, payload: {theme}
  - solutions--language-changed, payload: {language: "en" | "fr"}
-

@@ -1,4 +1,3 @@
-import type { Node } from 'react';
 import React, { useContext, useState, useLayoutEffect } from 'react';
 import { defaultTheme } from '@scality/core-ui/dist/style/theme';
 import { THEME_CHANGED_EVENT } from './events';
@@ -9,13 +8,22 @@ type ThemeContextValues = {
   setTheme: (themeName: ThemeName) => void;
   unSelectedThemes: ThemeName[];
 };
-const ThemeContext = React.createContext<ThemeContextValues | null>(null);
+
+if (!window.shellContexts) {
+  window.shellContexts = {};
+}
+
+if (!window.shellContexts.ShellThemeContext) {
+  window.shellContexts.ShellThemeContext =
+    React.createContext<ThemeContextValues | null>(null);
+}
+
 const themes = ['darkRebrand'];
 export type Theme = {
   brand: typeof defaultTheme.darkRebrand;
 };
 export function useThemeName(): ThemeContextValues {
-  const themeContext = useContext(ThemeContext);
+  const themeContext = useContext(window.shellContexts.ShellThemeContext);
 
   if (themeContext === null) {
     throw new Error("useTheme hook can't be use outside <ThemeProvider/>");
@@ -27,9 +35,9 @@ export function ThemeProvider({
   children,
   onThemeChanged,
 }: {
-  children: (theme: Theme, themeName: ThemeName) => Node;
+  children: (theme: Theme, themeName: ThemeName) => React.ReactNode;
   onThemeChanged?: (evt: CustomEvent) => void;
-}): Node {
+}) {
   const [themeName, setTheme] = useState<ThemeName>(
     (localStorage.getItem('theme') as any) || 'darkRebrand',
   );
@@ -51,7 +59,7 @@ export function ThemeProvider({
     }
   }, [themeName, !!onThemeChanged]);
   return (
-    <ThemeContext.Provider
+    <window.shellContexts.ShellThemeContext.Provider
       value={{
         themeName,
         setTheme,
@@ -60,6 +68,6 @@ export function ThemeProvider({
       }}
     >
       {children(theme, themeName)}
-    </ThemeContext.Provider>
+    </window.shellContexts.ShellThemeContext.Provider>
   );
 }

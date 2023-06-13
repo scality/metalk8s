@@ -16,7 +16,7 @@ import type {
 } from '../initFederation/ConfigurationProviders';
 import { useQuery } from 'react-query';
 import { useErrorBoundary } from 'react-error-boundary';
-export function AuthProvider({ children }: { children: Node }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { authConfig } = useAuthConfig();
 
   if (!authConfig) {
@@ -54,7 +54,7 @@ function defaultDexConnectorMetadataService(connectorId: string) {
   return DexDefaultConnectorMetadataService;
 }
 
-function OAuth2AuthProvider({ children }: { children: Node }) {
+function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
   const { authConfig } = useAuthConfig();
   const userManager = new UserManager({
     authority: authConfig.providerUrl,

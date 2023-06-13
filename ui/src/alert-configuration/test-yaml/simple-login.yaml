@@ -1,0 +1,25 @@
+# Simple LOGIN example
+apiVersion: addons.metalk8s.scality.com
+kind: AlertmanagerConfig
+spec:
+  notification:
+    config:
+      route:
+        routes:
+          - group_by:
+              - ...
+            matchers:
+              - severity !~ \"info|none\"
+            receiver: default
+            continue: true
+      receivers:
+        - name: default
+          email_configs:
+            - smarthost: smtp4dev.default.svc.cluster.local:25
+              require_tls: true
+              from: admin@scality.com
+              to: Renard <renard@scality.com>, Chat <chat@scality.com>, Lapin <lapin@scality.com>
+              send_resolved: true
+              html: TEMPLATE DELETED
+              auth_username: Renard
+              auth_password: Renard Password

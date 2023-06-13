@@ -1,11 +1,9 @@
-import type { Node } from 'react';
 import React, {
   useContext,
   useState,
   useLayoutEffect,
   createContext,
 } from 'react';
-import * as reactIntl from 'react-intl';
 import { IntlProvider } from 'react-intl';
 import translations_en from './translations/en';
 import translations_fr from './translations/fr';
@@ -51,13 +49,13 @@ export function LanguageProvider({
   canChangeLanguage,
   onLanguageChanged,
 }: {
-  children: Node;
+  children: React.ReactNode;
   canChangeLanguage?: boolean;
   onLanguageChanged?: (evt: CustomEvent) => void;
-}): Node {
+}) {
   const [language, setLang] = useState<Language>(
     canChangeLanguage
-      ? ((localStorage.getItem('lang') as any) as Language) ||
+      ? (localStorage.getItem('lang') as any as Language) ||
           (navigator.language.startsWith('fr') ? 'fr' : 'en')
       : 'en',
   );
