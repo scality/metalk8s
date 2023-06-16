@@ -3,7 +3,7 @@ name: dependency review
 
 on:
   pull_request:
-    branches: [development/*, stabilization/*, hotfix/*]
+    branches: [development/*]
 
 jobs:
   dependency-review:
