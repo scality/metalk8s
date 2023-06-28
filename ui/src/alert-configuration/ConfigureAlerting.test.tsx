@@ -5,6 +5,7 @@ import {
   screen,
   waitFor,
   waitForElementToBeRemoved,
+  configure,
 } from '@testing-library/react';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
@@ -219,6 +220,9 @@ describe('<ConfigureAlerting />', () => {
   beforeEach(() => {
     saltLoginRequest.mockClear();
     patchAlertmanagerConfig.mockClear();
+    // Setting defaultHidden will disable visibility check on aria-label
+    // and speed up the test that use `getByRole`.
+    configure({ defaultHidden: true });
   });
   afterEach(() => server.resetHandlers());
   afterAll(() => server.close());
