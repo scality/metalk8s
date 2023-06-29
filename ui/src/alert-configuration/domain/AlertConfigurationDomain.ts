@@ -8,7 +8,7 @@ export const SMTPAuthTypes = [
   'NO_AUTHENTICATION',
 ] as const;
 
-export type AuthType = typeof SMTPAuthTypes[number];
+export type AuthType = (typeof SMTPAuthTypes)[number];
 
 export type CRAMMD5Credentials = {
   type: 'CRAM-MD5';
@@ -218,7 +218,7 @@ export const useTestAlertConfiguration = ({
   });
 
   const hasFailedToSendTestAlert = !!logsData?.find(
-    logLine => logLine.level === 'ERROR',
+    (logLine) => logLine.level === 'ERROR',
   );
 
   const overOneMinute = testDateRef.current < new Date(Date.now() - 60_000);
@@ -235,7 +235,7 @@ export const useTestAlertConfiguration = ({
     logs = {
       status: 'error',
       title: 'Unable to fetch logs',
-      reason: 'TODO',
+      reason: 'Unable to fetch logs',
     };
   }
 

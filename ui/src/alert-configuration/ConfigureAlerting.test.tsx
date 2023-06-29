@@ -10,15 +10,10 @@ import {
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import userEvent from '@testing-library/user-event';
-import { debug } from 'jest-preview';
 import { Route, Switch } from 'react-router';
 
 import ConfigureAlerting from './ConfigureAlerting';
-import {
-  FAKE_CONTROL_PLANE_IP,
-  render,
-  waitForLoadingToFinish,
-} from '../components/__TEST__/util';
+import { render, waitForLoadingToFinish } from '../components/__TEST__/util';
 
 const saltLoginRequest = jest.fn();
 const patchAlertmanagerConfig = jest.fn();
@@ -26,65 +21,6 @@ const patchAlertmanagerConfig = jest.fn();
 jest.setTimeout(30000);
 
 const server = setupServer(
-  rest.get(
-    `http://${FAKE_CONTROL_PLANE_IP}:8443/shell/config.json`,
-    (req, res, ctx) => {
-      const result = {
-        navbar: {
-          main: [
-            {
-              kind: 'artesca-base-ui',
-              view: 'overview',
-            },
-            {
-              kind: 'artesca-base-ui',
-              view: 'identity',
-            },
-            {
-              kind: 'metalk8s-ui',
-              view: 'platform',
-            },
-            {
-              kind: 'xcore-ui',
-              view: 'storageservices',
-            },
-            {
-              kind: 'metalk8s-ui',
-              view: 'alerts',
-            },
-          ],
-          subLogin: [
-            {
-              kind: 'artesca-base-ui',
-              view: 'certificates',
-            },
-            {
-              kind: 'artesca-base-ui',
-              view: 'about',
-            },
-            {
-              kind: 'artesca-base-ui',
-              view: 'license',
-              icon: 'fas fa-file-invoice',
-            },
-          ],
-        },
-        discoveryUrl: '/shell/deployed-ui-apps.json',
-        productName: 'MetalK8s',
-      };
-      // return success status
-      return res(ctx.json(result));
-    },
-  ),
-  rest.get(
-    `http://${FAKE_CONTROL_PLANE_IP}:8443/api/alertmanager/api/v2/alerts`,
-    (req, res, ctx) => {
-      const result = [];
-      // return success status
-      return res(ctx.json(result));
-    },
-  ),
-
   rest.get(
     `http://localhost/api/kubernetes/api/v1/namespaces/metalk8s-monitoring/configmaps/metalk8s-alertmanager-config`,
     (req, res, ctx) => {
@@ -142,11 +78,7 @@ const server = setupServer(
 
     return res(
       ctx.json({
-        return: [
-          {
-            token: 'xxx-yyy-zzzz-token',
-          },
-        ],
+        return: [{ token: 'xxx-yyy-zzzz-token' }],
       }),
     );
   }),
@@ -198,6 +130,35 @@ const server = setupServer(
   ),
 );
 
+const overrideMSWAlertmanagerConfig = (testYAMLPath: string) => {
+  const configYaml = fs.readFileSync(
+    path.join(__dirname, testYAMLPath),
+    'utf8',
+  );
+  server.use(
+    rest.get(
+      `http://localhost/api/kubernetes/api/v1/namespaces/metalk8s-monitoring/configmaps/metalk8s-alertmanager-config`,
+      (req, res, ctx) => {
+        const test = {
+          kind: 'ConfigMap',
+          apiVersion: 'v1',
+          metadata: {
+            name: 'metalk8s-alertmanager-config',
+            namespace: 'metalk8s-monitoring',
+            uid: 'xxx-yyy-zzz',
+            resourceVersion: '0',
+            creationTimestamp: '2023-03-23T16:45:41Z',
+            labels: {},
+            managedFields: [],
+          },
+          data: { 'config.yaml': configYaml },
+        };
+        return res(ctx.json(test));
+      },
+    ),
+  );
+};
+
 const commonSetup = async () => {
   render(
     <Switch>
@@ -242,16 +203,16 @@ describe('<ConfigureAlerting />', () => {
       optionCramMd5: () => screen.getByRole('option', { name: /CRAM-MD5/i }),
       optionPlain: () => screen.getByRole('option', { name: /PLAIN/i }),
     },
-    username: () => screen.getByLabelText(/Username \*/i),
-    password: () => screen.getByLabelText(/Password \*/i),
-    identity: () => screen.getByLabelText(/identity \*/i),
-    secret: () => screen.getByLabelText(/secret \*/i),
+    username: () => screen.getByLabelText(/Username \*/),
+    password: () => screen.getByLabelText(/Password \*/),
+    identity: () => screen.getByLabelText(/Identity \*/),
+    secret: () => screen.getByLabelText(/Secret \*/),
     sender: () => screen.getByLabelText(/Sender Email Address \*/i),
     recipient: () => screen.getByLabelText(/Recipient Email Addresses \*/i),
     receiveResolved: () =>
       screen.getByLabelText(/Enable Receive Resolved Alerts/i),
     sendTestingEmailButton: () =>
-      screen.getByRole('button', { name: /send a test email/i }),
+      screen.getByRole('button', { name: /send a test email|sending.../i }),
     cancelButton: () => screen.getByRole('button', { name: /cancel/i }),
     saveButton: () => screen.getByRole('button', { name: /save|saving.../i }),
   };
@@ -279,9 +240,9 @@ describe('<ConfigureAlerting />', () => {
     expect(selectors.recipient()).toHaveValue('');
     expect(selectors.receiveResolved()).not.toBeChecked();
 
-    expect(selectors.sendTestingEmailButton()).toBeEnabled();
+    expect(selectors.sendTestingEmailButton()).toBeDisabled();
     expect(selectors.cancelButton()).toBeEnabled();
-    expect(selectors.saveButton()).toBeEnabled();
+    expect(selectors.saveButton()).toBeDisabled();
 
     await act(async () => {
       await userEvent.click(selectors.authSelect.optionLogin());
@@ -312,32 +273,7 @@ describe('<ConfigureAlerting />', () => {
   });
 
   it('render form values when the form is defined (NO AUTHENTICATION)', async () => {
-    const configYaml = fs.readFileSync(
-      path.join(__dirname, './test-yaml/simple-noauth.yaml'),
-      'utf8',
-    );
-    server.use(
-      rest.get(
-        `http://localhost/api/kubernetes/api/v1/namespaces/metalk8s-monitoring/configmaps/metalk8s-alertmanager-config`,
-        (req, res, ctx) => {
-          const test = {
-            kind: 'ConfigMap',
-            apiVersion: 'v1',
-            metadata: {
-              name: 'metalk8s-alertmanager-config',
-              namespace: 'metalk8s-monitoring',
-              uid: 'xxx-yyy-zzz',
-              resourceVersion: '0',
-              creationTimestamp: '2023-03-23T16:45:41Z',
-              labels: {},
-              managedFields: [],
-            },
-            data: { 'config.yaml': configYaml },
-          };
-          return res(ctx.json(test));
-        },
-      ),
-    );
+    overrideMSWAlertmanagerConfig('./test-yaml/simple-noauth.yaml');
     await commonSetup();
 
     expect(selectors.enableConfiguration()).toBeChecked();
@@ -346,7 +282,7 @@ describe('<ConfigureAlerting />', () => {
     expect(selectors.enableTls()).toBeChecked();
     expect(selectors.authSelect.label()).toHaveTextContent('NO AUTHENTICATION');
 
-    expect(selectors.sender()).toHaveValue('admin@scality.com');
+    expect(selectors.sender()).toHaveValue('lion@scality.com');
     expect(selectors.recipient()).toHaveValue(
       'Renard <renard@scality.com>, Chat <chat@scality.com>, Lapin <lapin@scality.com>',
     );
@@ -354,32 +290,7 @@ describe('<ConfigureAlerting />', () => {
   });
 
   it('render form values when the form is defined (LOGIN)', async () => {
-    const configYaml = fs.readFileSync(
-      path.join(__dirname, './test-yaml/simple-login.yaml'),
-      'utf8',
-    );
-    server.use(
-      rest.get(
-        `http://localhost/api/kubernetes/api/v1/namespaces/metalk8s-monitoring/configmaps/metalk8s-alertmanager-config`,
-        (req, res, ctx) => {
-          const test = {
-            kind: 'ConfigMap',
-            apiVersion: 'v1',
-            metadata: {
-              name: 'metalk8s-alertmanager-config',
-              namespace: 'metalk8s-monitoring',
-              uid: 'xxx-yyy-zzz',
-              resourceVersion: '0',
-              creationTimestamp: '2023-03-23T16:45:41Z',
-              labels: {},
-              managedFields: [],
-            },
-            data: { 'config.yaml': configYaml },
-          };
-          return res(ctx.json(test));
-        },
-      ),
-    );
+    overrideMSWAlertmanagerConfig('./test-yaml/simple-login.yaml');
     await commonSetup();
 
     expect(selectors.enableConfiguration()).toBeChecked();
@@ -390,7 +301,7 @@ describe('<ConfigureAlerting />', () => {
     expect(selectors.username()).toHaveValue('Renard');
     expect(selectors.password()).toHaveValue('Renard Password');
 
-    expect(selectors.sender()).toHaveValue('admin@scality.com');
+    expect(selectors.sender()).toHaveValue('lion@scality.com');
     expect(selectors.recipient()).toHaveValue(
       'Renard <renard@scality.com>, Chat <chat@scality.com>, Lapin <lapin@scality.com>',
     );
@@ -398,32 +309,7 @@ describe('<ConfigureAlerting />', () => {
   });
 
   it('render form values when the form is defined (CRAM-MD5)', async () => {
-    const configYaml = fs.readFileSync(
-      path.join(__dirname, './test-yaml/simple-cram-md5.yaml'),
-      'utf8',
-    );
-    server.use(
-      rest.get(
-        `http://localhost/api/kubernetes/api/v1/namespaces/metalk8s-monitoring/configmaps/metalk8s-alertmanager-config`,
-        (req, res, ctx) => {
-          const test = {
-            kind: 'ConfigMap',
-            apiVersion: 'v1',
-            metadata: {
-              name: 'metalk8s-alertmanager-config',
-              namespace: 'metalk8s-monitoring',
-              uid: 'xxx-yyy-zzz',
-              resourceVersion: '0',
-              creationTimestamp: '2023-03-23T16:45:41Z',
-              labels: {},
-              managedFields: [],
-            },
-            data: { 'config.yaml': configYaml },
-          };
-          return res(ctx.json(test));
-        },
-      ),
-    );
+    overrideMSWAlertmanagerConfig('./test-yaml/simple-cram-md5.yaml');
     await commonSetup();
 
     expect(selectors.enableConfiguration()).toBeChecked();
@@ -434,7 +320,7 @@ describe('<ConfigureAlerting />', () => {
     expect(selectors.username()).toHaveValue('Renard');
     expect(selectors.secret()).toHaveValue('Renard Secret');
 
-    expect(selectors.sender()).toHaveValue('admin@scality.com');
+    expect(selectors.sender()).toHaveValue('lion@scality.com');
     expect(selectors.recipient()).toHaveValue(
       'Renard <renard@scality.com>, Chat <chat@scality.com>, Lapin <lapin@scality.com>',
     );
@@ -442,32 +328,7 @@ describe('<ConfigureAlerting />', () => {
   });
 
   it('render form values when the form is defined (PLAIN)', async () => {
-    const configYaml = fs.readFileSync(
-      path.join(__dirname, './test-yaml/simple-plain.yaml'),
-      'utf8',
-    );
-    server.use(
-      rest.get(
-        `http://localhost/api/kubernetes/api/v1/namespaces/metalk8s-monitoring/configmaps/metalk8s-alertmanager-config`,
-        (req, res, ctx) => {
-          const test = {
-            kind: 'ConfigMap',
-            apiVersion: 'v1',
-            metadata: {
-              name: 'metalk8s-alertmanager-config',
-              namespace: 'metalk8s-monitoring',
-              uid: 'xxx-yyy-zzz',
-              resourceVersion: '0',
-              creationTimestamp: '2023-03-23T16:45:41Z',
-              labels: {},
-              managedFields: [],
-            },
-            data: { 'config.yaml': configYaml },
-          };
-          return res(ctx.json(test));
-        },
-      ),
-    );
+    overrideMSWAlertmanagerConfig('./test-yaml/simple-plain.yaml');
     await commonSetup();
 
     expect(selectors.enableConfiguration()).toBeChecked();
@@ -479,7 +340,7 @@ describe('<ConfigureAlerting />', () => {
     expect(selectors.username()).toHaveValue('Renard');
     expect(selectors.password()).toHaveValue('Renard Password');
 
-    expect(selectors.sender()).toHaveValue('admin@scality.com');
+    expect(selectors.sender()).toHaveValue('lion@scality.com');
     expect(selectors.recipient()).toHaveValue(
       'Renard <renard@scality.com>, Chat <chat@scality.com>, Lapin <lapin@scality.com>',
     );
@@ -490,6 +351,7 @@ describe('<ConfigureAlerting />', () => {
     await commonSetup();
 
     await act(async () => {
+      await userEvent.click(selectors.enableConfiguration());
       await userEvent.click(selectors.saveButton());
     });
 
@@ -582,32 +444,7 @@ spec:
   });
 
   it('submit the correct values with existing value in the form NO AUTHENTICATION', async () => {
-    const configYaml = fs.readFileSync(
-      path.join(__dirname, './test-yaml/simple-login.yaml'),
-      'utf8',
-    );
-    server.use(
-      rest.get(
-        `http://localhost/api/kubernetes/api/v1/namespaces/metalk8s-monitoring/configmaps/metalk8s-alertmanager-config`,
-        (req, res, ctx) => {
-          const test = {
-            kind: 'ConfigMap',
-            apiVersion: 'v1',
-            metadata: {
-              name: 'metalk8s-alertmanager-config',
-              namespace: 'metalk8s-monitoring',
-              uid: 'xxx-yyy-zzz',
-              resourceVersion: '0',
-              creationTimestamp: '2023-03-23T16:45:41Z',
-              labels: {},
-              managedFields: [],
-            },
-            data: { 'config.yaml': configYaml },
-          };
-          return res(ctx.json(test));
-        },
-      ),
-    );
+    overrideMSWAlertmanagerConfig('./test-yaml/simple-login.yaml');
     await commonSetup();
 
     await act(async () => {
@@ -977,6 +814,8 @@ spec:
       await userEvent.click(selectors.sendTestingEmailButton());
     });
 
+    expect(selectors.sendTestingEmailButton()).toBeDisabled();
+
     await waitForElementToBeRemoved(() => {
       return screen.getByText(/Sending.../);
     });
@@ -1048,6 +887,7 @@ spec:
       await userEvent.click(selectors.sendTestingEmailButton());
     });
 
+    expect(selectors.sendTestingEmailButton()).toBeDisabled();
     await waitForElementToBeRemoved(() => {
       return screen.getByText(/Sending.../);
     });
@@ -1122,6 +962,7 @@ spec:
       await userEvent.click(selectors.sendTestingEmailButton());
     });
 
+    expect(selectors.sendTestingEmailButton()).toBeDisabled();
     await waitForElementToBeRemoved(() => {
       return screen.getByText(/Sending.../);
     });
@@ -1201,7 +1042,7 @@ spec:
       );
       await userEvent.click(selectors.sendTestingEmailButton());
     });
-
+    expect(selectors.sendTestingEmailButton()).toBeDisabled();
     await waitForElementToBeRemoved(() => {
       return screen.getByText(/Sending.../);
     });

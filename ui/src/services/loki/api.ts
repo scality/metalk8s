@@ -40,7 +40,6 @@ export function getAlertsLoki(
   end: string,
 ): Promise<LokiQueryResult> {
   if (!lokiApiClient) {
-    console.log('getAlertsLoki?');
     throw new Error('lokiApiClient should be defined');
   }
 

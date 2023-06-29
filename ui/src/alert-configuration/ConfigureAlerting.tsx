@@ -176,7 +176,9 @@ export default function ConfigureAlerting() {
   const labelWidth = 270;
 
   const disableFormButton =
-    editAlertMutation.isLoading || sendTestAlertMutation.isLoading;
+    editAlertMutation.isLoading ||
+    sendTestAlertMutation.isLoading ||
+    !formState.isDirty;
 
   if (alertConfiguration.status === 'loading') {
     return <div>Loading...</div>;

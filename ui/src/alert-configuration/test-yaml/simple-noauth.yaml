@@ -17,7 +17,7 @@ spec:
           email_configs:
             - smarthost: smtp4dev.default.svc.cluster.local:25
               require_tls: true
-              from: admin@scality.com
+              from: lion@scality.com
               to: Renard <renard@scality.com>, Chat <chat@scality.com>, Lapin <lapin@scality.com>
               send_resolved: true
               html: TEMPLATE DELETED
