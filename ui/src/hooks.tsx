@@ -1,4 +1,3 @@
-import type { Node } from 'react';
 import React, { useRef, useCallback } from 'react';
 import { useEffect, useState, createContext } from 'react';
 import { useSelector } from 'react-redux';
@@ -25,6 +24,7 @@ import type { Serie } from '@scality/core-ui/dist/components/linetemporalchart/L
 import '@scality/core-ui/dist/components/linetemporalchart/LineTemporalChart.component';
 import type { UseQueryResult, UseQueryOptions } from 'react-query';
 import { getNodesInterfacesString } from './services/graphUtils';
+import { useAuth } from './containers/PrivateRoute';
 
 /**
  * It brings automatic strong typing to native useSelector by anotating state with RootState.
@@ -80,7 +80,11 @@ export type MetricsTimeSpanContextValue = {
 };
 export const MetricsTimeSpanContext =
   createContext<MetricsTimeSpanContextValue | null>(null);
-export const MetricsTimeSpanProvider = ({ children }: { children: Node }) => {
+export const MetricsTimeSpanProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const [metricsTimeSpan, setMetricsTimeSpan] = useState(
     SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
   );
@@ -353,5 +357,32 @@ export const useShowQuantileChart = (): {
     isShowQuantileChart:
       (flags && flags.includes('force_quantile_chart')) ||
       nodes?.length > NODES_LIMIT_QUANTILE,
+  };
+};
+
+export type UserRoles = {
+  isUser: boolean;
+  isPlatformAdmin: boolean;
+  isStorageManager: boolean;
+};
+export const useUserRoles = (): UserRoles => {
+  const auth = useAuth();
+  const userRoles = auth.userData?.groups ?? [];
+
+  return {
+    isUser: userRoles.includes('user'),
+    isPlatformAdmin: userRoles.includes('PlatformAdmin'),
+    isStorageManager: userRoles.includes('StorageManager'),
+  };
+};
+
+export type UserAccessRight = {
+  canConfigureEmailNotification: boolean;
+};
+export const useUserAccessRight = (): UserAccessRight => {
+  const { isUser, isPlatformAdmin, isStorageManager } = useUserRoles();
+
+  return {
+    canConfigureEmailNotification: isPlatformAdmin,
   };
 };

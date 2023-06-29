@@ -1,11 +1,10 @@
-import type { Node } from 'react';
-import { createContext, useContext, useEffect } from 'react';
-import { useFederatedNavbarEntries } from './NavBar';
+import { useContext } from 'react';
 import type { ViewDefinition } from '../initFederation/ConfigurationProviders';
 import '../initFederation/ConfigurationProviders';
 import { NavbarContext } from './navbarContext';
+
 export type Link = {
-  render?: (props: { selected?: boolean }) => Node;
+  render?: (props: { selected?: boolean }) => React.ReactNode;
   view: ViewDefinition;
 };
 export type NavbarLinks = {

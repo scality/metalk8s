@@ -1,5 +1,6 @@
+import { notFalsyTypeGuard } from '../typeGuard';
 import ApiClient from './ApiClient';
-let apiClient: ApiClient = null;
+let apiClient: ApiClient | null = null;
 export function initialize(apiUrl: string) {
   apiClient = new ApiClient({
     apiUrl,
@@ -38,14 +39,13 @@ export type Config = {
   url_doc: string;
   url_alertmanager: string;
   url_loki: string;
-  flags?: [];
-  url_navbar: string;
-  url_navbar_config: string;
+  flags?: string[];
   ui_base_path?: string;
-  url_alerts: string;
-  alerts_lib_version: string;
   url_support?: string;
 };
+
 export function fetchConfig(): Promise<Config> {
-  return apiClient.get('/config.json');
+  return notFalsyTypeGuard(apiClient, 'ApiClient is not defined').get(
+    '/config.json',
+  );
 }

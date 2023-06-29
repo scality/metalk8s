@@ -20,7 +20,7 @@ const _getPromRangeMatrixQuery = (
   queryKey: string[],
   prometheusQuery: string,
   { startingTimeISO, currentTimeISO, frequency }: TimeSpanProps,
-): typeof useQuery => {
+) => {
   queryKey.push(startingTimeISO);
   return {
     queryKey,
@@ -41,7 +41,7 @@ const _getInstantValueQuery = (
   queryKey: string[],
   prometheusQuery: string,
   timestamp: string,
-): typeof useQuery => {
+) => {
   return {
     queryKey,
     queryFn: () => {
@@ -809,7 +809,7 @@ export const getVolumeUsageQuery = (
   pvcName: string,
   namespace: string,
   timespanProps: TimeSpanProps,
-): typeof useQuery => {
+) => {
   const prometheusFilters = `{namespace="${namespace}",persistentvolumeclaim="${pvcName}"}`;
   const volumeUsageQuery = `kubelet_volume_stats_used_bytes${prometheusFilters} / kubelet_volume_stats_capacity_bytes${prometheusFilters} * 100`;
   return _getPromRangeMatrixQuery(
@@ -830,7 +830,7 @@ export const getVolumeThroughputReadQuery = (
   instanceIp: string,
   deviceName: string,
   timespanProps: TimeSpanProps,
-): typeof useQuery => {
+) => {
   const prometheusFilters = getNodeDevicePrometheusFilter(
     instanceIp,
     deviceName,
@@ -846,7 +846,7 @@ export const getVolumeThroughputWriteQuery = (
   instanceIp: string,
   deviceName: string,
   timespanProps: TimeSpanProps,
-): typeof useQuery => {
+) => {
   const prometheusFilters = getNodeDevicePrometheusFilter(
     instanceIp,
     deviceName,
@@ -858,9 +858,7 @@ export const getVolumeThroughputWriteQuery = (
     timespanProps,
   );
 };
-export const getNodesThroughputReadQuery = (
-  timespanProps: TimeSpanProps,
-): typeof useQuery => {
+export const getNodesThroughputReadQuery = (timespanProps: TimeSpanProps) => {
   const nodesThroughputReadQuery = `sum(sum(irate(node_disk_read_bytes_total[1m])) by (instance, device))by(instance)`;
   return _getPromRangeMatrixQuery(
     ['NodesThroughputReadQuery'],
@@ -868,9 +866,7 @@ export const getNodesThroughputReadQuery = (
     timespanProps,
   );
 };
-export const getNodesThroughputWriteQuery = (
-  timespanProps: TimeSpanProps,
-): typeof useQuery => {
+export const getNodesThroughputWriteQuery = (timespanProps: TimeSpanProps) => {
   const nodesThroughputWriteQuery = `sum(sum(irate(node_disk_written_bytes_total[1m])) by (instance, device))by(instance)`;
   return _getPromRangeMatrixQuery(
     ['NodesThroughputWriteQuery'],
@@ -881,7 +877,7 @@ export const getNodesThroughputWriteQuery = (
 export const getNodesThroughputWriteQuantileQuery = (
   timespanProps: TimeSpanProps,
   quantile: number,
-): typeof useQuery => {
+) => {
   const nodesThroughputWritePromQL = `quantile(${quantile},sum(sum(irate(node_disk_written_bytes_total[1m])) by (instance, device))by(instance))`;
   return _getPromRangeMatrixQuery(
     ['NodesThroughputWriteQuantile', quantile],
@@ -892,7 +888,7 @@ export const getNodesThroughputWriteQuantileQuery = (
 export const getNodesThroughputReadQuantileQuery = (
   timespanProps: TimeSpanProps,
   quantile: number,
-): typeof useQuery => {
+) => {
   const nodesThroughputReadPromQL = `quantile(${quantile},sum(sum(irate(node_disk_read_bytes_total[1m])) by (instance, device))by(instance))`;
   return _getPromRangeMatrixQuery(
     ['NodesThroughputReadQueryQuantile', quantile],
@@ -944,7 +940,7 @@ export const getVolumeIOPSReadQuery = (
   instanceIp: string,
   deviceName: string,
   timespanProps: TimeSpanProps,
-): typeof useQuery => {
+) => {
   const prometheusFilters = getNodeDevicePrometheusFilter(
     instanceIp,
     deviceName,
@@ -960,7 +956,7 @@ export const getVolumeIOPSWriteQuery = (
   instanceIp: string,
   deviceName: string,
   timespanProps: TimeSpanProps,
-): typeof useQuery => {
+) => {
   const prometheusFilters = getNodeDevicePrometheusFilter(
     instanceIp,
     deviceName,
@@ -976,7 +972,7 @@ export const getVolumeLatencyWriteQuery = (
   instanceIp: string,
   deviceName: string,
   timespanProps: TimeSpanProps,
-): typeof useQuery => {
+) => {
   const prometheusFilters = getNodeDevicePrometheusFilter(
     instanceIp,
     deviceName,
@@ -995,7 +991,7 @@ export const getVolumeLatencyReadQuery = (
   instanceIp: string,
   deviceName: string,
   timespanProps: TimeSpanProps,
-): typeof useQuery => {
+) => {
   const prometheusFilters = getNodeDevicePrometheusFilter(
     instanceIp,
     deviceName,
@@ -1015,7 +1011,7 @@ export const getAlertsHistoryQuery = ({
   startingTimeISO,
   currentTimeISO,
   frequency,
-}: TimeSpanProps): typeof useQuery => {
+}: TimeSpanProps) => {
   const query = `sum(alertmanager_alerts)`;
   const alertManagerDowntimePromise = queryPrometheusRange(
     startingTimeISO,
@@ -1122,9 +1118,7 @@ function convertSegmentToAlert(segment) {
 
 // Call Prometheus endpoint to get the segments {description: string, startsAt: string, endsAt: string, severity: string}
 // for Cluster alert which will be used by Global Health Component
-export const getClusterAlertSegmentQuery = (
-  duration: number,
-): typeof useQuery => {
+export const getClusterAlertSegmentQuery = (duration: number) => {
   // We add watchdog alert to identify unavailble segments
   const query = `sum by(alertname) (ALERTS{alertname=~'ClusterAtRisk|ClusterDegraded|Watchdog', alertstate='firing'})`;
   // set the frequency to 60s only for global health component to get the precise segments

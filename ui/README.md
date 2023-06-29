@@ -41,6 +41,9 @@ $ npm run build
 
 ```sh
 $ npm run test
+
+# This will run all tests and jest-preview at the same time
+$ npm run test:preview
 ```
 
 ## Static typing analysis

@@ -1,7 +1,10 @@
+import React from 'react';
 import { renderHook } from '@testing-library/react-hooks';
 import { setupServer } from 'msw/node';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { MemoryRouter } from 'react-router';
+import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
+
 import { SolutionsNavbar } from '.';
 import { WithInitFederationProviders } from '../FederatedApp';
 import { configurationHandlers } from '../FederatedApp.spec';
@@ -10,6 +13,8 @@ import { useNavbar } from './navbarHooks';
 import { ShellHistoryProvider } from '../initFederation/ShellHistoryProvider';
 import { act } from 'react-test-renderer';
 import { LanguageProvider } from './lang';
+import { ThemeProvider } from './theme';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -40,21 +45,29 @@ function mockOidcReact() {
 
 jest.mock('oidc-react', () => mockOidcReact());
 
-const wrapper = ({ children }) => (
-  <LanguageProvider>
-    <QueryClientProvider client={queryClient}>
-      <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
-        <WithInitFederationProviders>
-          <MemoryRouter>
-            <ShellHistoryProvider>
-              <SolutionsNavbar>{children}</SolutionsNavbar>
-            </ShellHistoryProvider>
-          </MemoryRouter>
-        </WithInitFederationProviders>
-      </ShellConfigProvider>
-    </QueryClientProvider>
-  </LanguageProvider>
-);
+const wrapper = ({ children }) => {
+  return (
+    <ThemeProvider>
+      {(theme) => (
+        <CoreUiThemeProvider theme={theme.brand}>
+          <LanguageProvider>
+            <QueryClientProvider client={queryClient}>
+              <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
+                <WithInitFederationProviders>
+                  <MemoryRouter>
+                    <ShellHistoryProvider>
+                      <SolutionsNavbar>{children}</SolutionsNavbar>
+                    </ShellHistoryProvider>
+                  </MemoryRouter>
+                </WithInitFederationProviders>
+              </ShellConfigProvider>
+            </QueryClientProvider>
+          </LanguageProvider>
+        </CoreUiThemeProvider>
+      )}
+    </ThemeProvider>
+  );
+};
 
 describe('useNavbar', () => {
   beforeAll(() =>

@@ -1,5 +1,4 @@
-import type { Node } from 'react';
-import 'react';
+import React from 'react';
 import { useQuery } from 'react-query';
 import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
 import { getAlerts } from './services/alertManager';
@@ -8,7 +7,7 @@ import { AlertContext } from './alertContext';
  * A wrapper fetching alerts and ensuring their accuracy via a polling refresh strategy.
  *
  * @param string alert manager url
- * @param Node children react node
+ * @param React.ReactNode children react node
  * @returns
  */
 
@@ -17,8 +16,8 @@ export default function AlertProvider({
   children,
 }: {
   alertManagerUrl: string;
-  children: Node;
-}): Node {
+  children: React.ReactNode;
+}) {
   const query = useQuery('activeAlerts', () => getAlerts(alertManagerUrl), {
     // refetch the alerts every 10 seconds
     refetchInterval: 30000,

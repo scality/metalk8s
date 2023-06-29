@@ -1,12 +1,11 @@
-import type { Node } from 'react';
-import 'react';
+import React from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { ComponentWithFederatedImports } from '@scality/module-federation';
 import { ErrorPage500 } from '@scality/core-ui';
 import { useIntl } from 'react-intl';
 import { useTypedSelector } from '../hooks';
 export type ConfigProps = {
-  children: Node;
+  children: React.ReactNode;
 };
 const configGlobal = {};
 export function useLinkOpener() {
@@ -21,8 +20,8 @@ const InternalConfigProvider = ({
   children,
 }: {
   moduleExports: {};
-  children: Node;
-}): Node => {
+  children: React.ReactNode;
+}) => {
   configGlobal.hooks =
     moduleExports['./moduleFederation/ConfigurationProvider'];
   return <>{children}</>;
@@ -42,7 +41,7 @@ function ErrorFallback() {
   );
 }
 
-function ConfigProvider({ children }: ConfigProps): Node {
+function ConfigProvider({ children }: ConfigProps) {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <ComponentWithFederatedImports

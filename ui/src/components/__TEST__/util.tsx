@@ -8,13 +8,16 @@ import AlertProvider from '../../containers/AlertProvider';
 import { Provider } from 'react-redux';
 import { applyMiddleware, compose, createStore } from 'redux';
 import createSagaMiddleware from 'redux-saga';
-import reducer from '../../ducks/reducer';
-import translations_en from '../../translations/en';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
-import AlertHistoryProvider from '../../containers/AlertHistoryProvider';
+import { StyleSheetManager, StylisPlugin } from 'styled-components';
 import { MetricsTimeSpanProvider } from '@scality/core-ui/dist/components/linetemporalchart/MetricTimespanProvider';
+
+import reducer from '../../ducks/reducer';
+import translations_en from '../../translations/en.json';
 import StartTimeProvider from '../../containers/StartTimeProvider';
+import { ConfigContext } from '../../FederableApp';
+
 const composeEnhancers =
   typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
     ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({})
@@ -32,66 +35,136 @@ export const waitForLoadingToFinish = () =>
       timeout: 4000,
     },
   );
-export const AllTheProviders = ({ children }) => {
-  const history = createMemoryHistory();
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        // ✅ turns retries off
-        retry: false,
-      },
-    },
-  });
-  const theme = {
-    brand: {
-      alert: '#FFE508',
-      base: '#7B7B7B',
-      primary: '#1D1D1D',
-      primaryDark1: '#171717',
-      primaryDark2: '#0A0A0A',
-      secondary: '#055DFF',
-      secondaryDark1: '#1C3D59',
-      secondaryDark2: '#1C2E3F',
-      success: '#006F62',
-      healthy: '#30AC26',
-      healthyLight: '#69E44C',
-      warning: '#FFC10A',
-      danger: '#AA1D05',
-      critical: '#BE321F',
-      background: '#121212',
-      backgroundBluer: '#192A41',
-      textPrimary: '#FFFFFF',
-      textSecondary: '#B5B5B5',
-      textTertiary: '#DFDFDF',
-      borderLight: '#A5A5A5',
-      border: '#313131',
-      info: '#434343',
-    },
-  };
-  return (
-    <Router history={history}>
-      <IntlProvider locale="en" messages={translations_en}>
-        <Provider store={store}>
-          <QueryClientProvider client={queryClient}>
-            <MetricsTimeSpanProvider>
-              <StartTimeProvider>
-                <AlertProvider>
-                  <AlertHistoryProvider>
-                    <ThemeProvider theme={theme}>{children}</ThemeProvider>
-                  </AlertHistoryProvider>
-                </AlertProvider>
-              </StartTimeProvider>
-            </MetricsTimeSpanProvider>
-          </QueryClientProvider>
-        </Provider>
-      </IntlProvider>
-    </Router>
-  );
+
+/**
+ * StyleSheetManager + simplifiedStylesPlugin will remove <style> at the top
+ * of the <head> tag, this will significantly reduce the time of your test when
+ * you use `getByRole` of react testing library.
+ */
+const ALLOWED_RULES = ['display', 'visibility', 'pointer-events'];
+const simplifiedStylesPlugin: StylisPlugin = (context, content) => {
+  if (context === 1) {
+    if (
+      !ALLOWED_RULES.some((rule) => content.toString().startsWith(`${rule}:`))
+    ) {
+      return '';
+    }
+  }
+
+  return undefined;
 };
 
-const customRender = (ui, options) =>
+const metalK8sConfig = {
+  url: '/api/kubernetes',
+  url_salt: '/api/salt',
+  url_prometheus: '/api/prometheus',
+  url_grafana: '/grafana',
+  url_doc: '/docs',
+  url_alertmanager: '/api/alertmanager',
+  url_loki: '/api/loki',
+  flags: ['dashboard'],
+  ui_base_path: '/platform',
+  url_support: 'https://github.com/scality/metalk8s/discussions/new',
+};
+export const AllTheProviders = (
+  initialPath: string = '/',
+  metalk8sConfig = metalK8sConfig,
+) => {
+  return ({ children }: { children: React.ReactNode }) => {
+    const history = createMemoryHistory();
+    history.push(initialPath);
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          // ✅ turns retries off
+          retry: false,
+        },
+      },
+    });
+    const theme = {
+      brand: {
+        alert: '#FFE508',
+        base: '#7B7B7B',
+        primary: '#1D1D1D',
+        primaryDark1: '#171717',
+        primaryDark2: '#0A0A0A',
+        secondary: '#055DFF',
+        secondaryDark1: '#1C3D59',
+        secondaryDark2: '#1C2E3F',
+        success: '#006F62',
+        healthy: '#30AC26',
+        healthyLight: '#69E44C',
+        warning: '#FFC10A',
+        danger: '#AA1D05',
+        critical: '#BE321F',
+        background: '#121212',
+        backgroundBluer: '#192A41',
+        textPrimary: '#FFFFFF',
+        textSecondary: '#B5B5B5',
+        textTertiary: '#DFDFDF',
+        borderLight: '#A5A5A5',
+        border: '#313131',
+        info: '#434343',
+      },
+    };
+
+    // When you use jest-preview, you need to set the environment variable JEST_PREVIEW at on.
+    if (process.env.JEST_PREVIEW === 'on') {
+      return (
+        <Router history={history}>
+          <IntlProvider locale="en" messages={translations_en}>
+            <Provider store={store}>
+              <QueryClientProvider client={queryClient}>
+                <MetricsTimeSpanProvider>
+                  <StartTimeProvider>
+                    <AlertProvider>
+                      <ThemeProvider theme={theme}>
+                        <ConfigContext.Provider value={metalk8sConfig}>
+                          {children}
+                        </ConfigContext.Provider>
+                      </ThemeProvider>
+                    </AlertProvider>
+                  </StartTimeProvider>
+                </MetricsTimeSpanProvider>
+              </QueryClientProvider>
+            </Provider>
+          </IntlProvider>
+        </Router>
+      );
+    }
+
+    return (
+      <StyleSheetManager
+        stylisPlugins={[simplifiedStylesPlugin]}
+        disableVendorPrefixes
+      >
+        <Router history={history}>
+          <IntlProvider locale="en" messages={translations_en}>
+            <Provider store={store}>
+              <QueryClientProvider client={queryClient}>
+                <MetricsTimeSpanProvider>
+                  <StartTimeProvider>
+                    <AlertProvider>
+                      <ThemeProvider theme={theme}>
+                        <ConfigContext.Provider value={metalk8sConfig}>
+                          {children}
+                        </ConfigContext.Provider>
+                      </ThemeProvider>
+                    </AlertProvider>
+                  </StartTimeProvider>
+                </MetricsTimeSpanProvider>
+              </QueryClientProvider>
+            </Provider>
+          </IntlProvider>
+        </Router>
+      </StyleSheetManager>
+    );
+  };
+};
+
+const customRender = (ui: React.ReactNode, options = {}) =>
   render(ui, {
-    wrapper: AllTheProviders,
+    wrapper: AllTheProviders(),
     ...options,
   });
 

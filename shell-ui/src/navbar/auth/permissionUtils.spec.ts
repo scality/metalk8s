@@ -5,8 +5,8 @@ import {
   isPathAccessible,
   normalizePath,
 } from './permissionUtils';
-import type { Options } from '../index';
 import '../index';
+import { Options } from '../../initFederation/ShellConfigProvider';
 describe('permission utils - isEntryAccessibleByTheUser', () => {
   it('should return true if the user has explicit access', () => {
     //E

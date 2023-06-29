@@ -20,26 +20,6 @@ const alertsWarning = [
   },
 ];
 const noAlerts = [];
-jest.mock('../containers/AlertProvider', () => ({
-  __esModule: true,
-  default: ({ children }) => <>{children}</>,
-  useHighestSeverityAlerts: jest.fn(),
-  useAlertLibrary: () => ({
-    getK8SMasterAlertSelectors: () => {},
-    getBootstrapAlertSelectors: () => {},
-    getMonitoringAlertSelectors: () => {},
-    getAlertingAlertSelectors: () => {},
-    getLoggingAlertSelectors: () => {},
-    getDashboardingAlertSelectors: () => {},
-    getIngressControllerAlertSelectors: () => {},
-    getAuthenticationAlertSelectors: () => {},
-  }),
-  highestAlertToStatus: (alerts?: Alert[]): string => {
-    return (
-      (alerts?.[0] && ((alerts[0].severity as any) as string)) || 'healthy'
-    );
-  },
-}));
 jest.mock('../containers/ConfigProvider', () => ({
   __esModule: true,
   default: ({ children }) => <>{children}</>,

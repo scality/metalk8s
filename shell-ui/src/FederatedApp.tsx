@@ -1,5 +1,5 @@
 import '@fortawesome/fontawesome-free/css/all.css';
-import type { Node } from 'react';
+import React from 'react';
 import { useEffect, useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
@@ -28,8 +28,10 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { LanguageProvider, useLanguage } from './navbar/lang';
 import './index.css';
 import { ShellHistoryProvider } from './initFederation/ShellHistoryProvider';
+import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
+import { ThemeProvider } from './navbar/theme';
 
-export const queryClient: typeof QueryClient = new QueryClient();
+export const queryClient = new QueryClient();
 
 function FederatedRoute({
   url,
@@ -40,7 +42,7 @@ function FederatedRoute({
 }: FederatedComponentProps & {
   groups?: string[];
   app: SolutionUI;
-}): Node {
+}) {
   const { retrieveConfiguration } = useConfigRetriever();
   const { setAuthConfig } = useAuthConfig();
   const { language } = useLanguage();
@@ -80,7 +82,7 @@ function ProtectedFederatedRoute({
 }: FederatedComponentProps & {
   groups?: string[];
   app: SolutionUI;
-}): Node {
+}) {
   const { userData } = useAuth();
   const { retrieveConfiguration } = useConfigRetriever();
 
@@ -105,7 +107,7 @@ function ProtectedFederatedRoute({
   return <></>;
 }
 
-function InternalRouter(): Node {
+function InternalRouter() {
   const discoveredViews = useDiscoveredViews();
   const { retrieveConfiguration } = useConfigRetriever();
   const routes = discoveredViews
@@ -153,7 +155,7 @@ function InternalRouter(): Node {
   );
 }
 
-function InternalApp(): Node {
+function InternalApp() {
   const history = useMemo(() => {
     const history = createBrowserHistory({});
     return history;
@@ -169,7 +171,11 @@ function InternalApp(): Node {
   );
 }
 
-export function WithInitFederationProviders({ children }: { children: Node }) {
+export function WithInitFederationProviders({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { config: shellConfig } = useShellConfig();
   return (
     <UIListProvider discoveryURL={shellConfig.discoveryUrl}>
@@ -217,20 +223,26 @@ const AppProviderWrapper = () => {
   );
 };
 
-export default function App(): Node {
+export default function App() {
   return (
-    <ScrollbarWrapper>
-      <div
-        style={{
-          height: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <LanguageProvider>
-          <AppProviderWrapper />
-        </LanguageProvider>
-      </div>
-    </ScrollbarWrapper>
+    <ThemeProvider>
+      {(theme) => (
+        <CoreUiThemeProvider theme={theme.brand}>
+          <ScrollbarWrapper>
+            <div
+              style={{
+                height: '100vh',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <LanguageProvider>
+                <AppProviderWrapper />
+              </LanguageProvider>
+            </div>
+          </ScrollbarWrapper>
+        </CoreUiThemeProvider>
+      )}
+    </ThemeProvider>
   );
 }

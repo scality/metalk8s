@@ -1,8 +1,9 @@
-import type { Node } from 'react';
+import React from 'react';
 import { createContext, useContext } from 'react';
 import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
 import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 import { useQuery } from 'react-query';
+import { useThemeName } from '../navbar/theme';
 
 if (!window.shellContexts) {
   window.shellContexts = {};
@@ -50,31 +51,98 @@ export type NavbarEntry = {
   icon?: string;
   isExternal: boolean;
 };
-export type ShellConfig = {
-  themes?: Record<string, Theme>;
+
+export type UserGroupsMapping = Record<string, string[]>;
+
+// Will be removed when zenko-ui -> module federation
+export type Options = {
+  main: {
+    [key: string]: Entry;
+  };
+  subLogin: {
+    [key: string]: Entry;
+  };
+};
+
+export type Entry = {
+  en: string;
+  fr: string;
+  icon?: string;
+  groups?: string[];
+  isExternal?: boolean;
+  order?: number;
+  activeIfMatches?: string;
+};
+
+// config fetched from /shell/config.json
+export type ShellJSONFileConfig = {
+  discoveryUrl: string;
   navbar: {
     main: NavbarEntry[];
     subLogin: NavbarEntry[];
   };
-  discoveryUrl: string;
-  userGroupsMapping: Record<string, string[]>;
   productName: string;
+
+  // optional (in dev mode)
+  // TODO : Themes and Logo seems duplicated, check why
+  themes?: {
+    dark?: { logoPath: string };
+    darkRebrand?: { logoPath: string };
+    light?: { logoPath: string };
+  };
+  logo?: {
+    dark?: string;
+    darkRebrand?: string;
+    light?: string;
+  };
+  favicon?: string;
+
+  // for IDP that does not support user groups (ie: Dex)
+  userGroupsMapping?: UserGroupsMapping;
+  // Legacy, will be removed when zenko-ui -> module federation
+  options?: Options;
+  // Not yet used and working
+  canChangeLanguage?: boolean;
+  canChangeTheme?: boolean;
 };
-export const useShellConfig = (): {
-  config: ShellConfig;
+
+export type ShellConfig = {
+  config: ShellJSONFileConfig;
+  favicon: Pick<ShellJSONFileConfig, 'favicon'>;
+  themes: Pick<ShellJSONFileConfig, 'themes'>;
   status: 'idle' | 'loading' | 'success' | 'error';
-} => {
-  const contextValue = useContext(window.shellContexts.ShellConfigContext);
+};
+
+export const useShellConfig = () => {
+  const contextValue = useContext<ShellConfig>(
+    window.shellContexts.ShellConfigContext,
+  );
 
   if (!contextValue) {
     throw new Error("useShellConfig can't be used outside ShellConfigProvider");
   }
 
-  return contextValue;
+  const { themeName } = useThemeName();
+
+  return {
+    ...contextValue,
+    favicon: contextValue.config.favicon || '/brand/favicon-metalk8s.svg',
+    themes:
+      {
+        ...(contextValue.config.themes || {}),
+        [themeName]: {
+          ...(contextValue.config.themes || {})?.[themeName],
+          logoPath:
+            (contextValue.config.themes || {})?.[themeName]?.logoPath ||
+            `/brand/assets/logo-${themeName}.svg`,
+        },
+      } || {},
+  };
 };
-export const ShellConfigProvider = ({ shellConfigUrl, children }): Node => {
-  const { data: config, status } = useQuery<Config>(
-    'navbarConfig',
+
+export const ShellConfigProvider = ({ shellConfigUrl, children }) => {
+  const { data: config, status } = useQuery<ShellJSONFileConfig>(
+    'getShellJSONConfigFile',
     () => {
       return fetch(shellConfigUrl).then((r) => {
         if (r.ok) {
@@ -88,6 +156,7 @@ export const ShellConfigProvider = ({ shellConfigUrl, children }): Node => {
       refetchOnWindowFocus: false,
     },
   );
+
   return (
     <window.shellContexts.ShellConfigContext.Provider
       value={{

@@ -1,4 +1,4 @@
-import type { Node } from 'react';
+import React from 'react';
 import { createContext, useContext } from 'react';
 import { useQueries } from 'react-query';
 import { useShellConfig } from './ShellConfigProvider';
@@ -271,8 +271,8 @@ export const useLinkOpener = () => {
 export const ConfigurationProvider = ({
   children,
 }: {
-  children: Node;
-}): Node => {
+  children: React.ReactNode;
+}) => {
   const deployedUIs = useDeployedApps();
   const results = useQueries(
     deployedUIs.flatMap((ui) => [

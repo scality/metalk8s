@@ -1,4 +1,4 @@
-import type { Node } from 'react';
+import React from 'react';
 import { IntlProvider } from 'react-intl';
 import { ErrorPage500 } from '@scality/core-ui';
 import { ComponentWithFederatedImports } from '@scality/module-federation';
@@ -14,8 +14,8 @@ const InternalIntlProvider = ({
   children,
 }: {
   moduleExports: {};
-  children: Node;
-}): Node => {
+  children: React.ReactNode;
+}) => {
   const { language } = moduleExports['./lang'].useLanguage();
   return (
     <IntlProvider locale={language} messages={messages[language.toUpperCase()]}>
@@ -24,7 +24,7 @@ const InternalIntlProvider = ({
   );
 };
 
-const FederatedIntlProvider = ({ children }: { children: Node }): Node => {
+const FederatedIntlProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <ComponentWithFederatedImports
       componentWithInjectedImports={InternalIntlProvider}

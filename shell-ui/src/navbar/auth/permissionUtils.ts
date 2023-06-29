@@ -1,5 +1,10 @@
 import type { User } from 'oidc-react';
-import type { Options, PathDescription, UserGroupsMapping } from '../index';
+import type { PathDescription } from '../index';
+import {
+  Options,
+  UserGroupsMapping,
+} from '../../initFederation/ShellConfigProvider';
+
 export const isEntryAccessibleByTheUser = (
   [path, pathDescription]: [string, PathDescription],
   userGroups: string[],

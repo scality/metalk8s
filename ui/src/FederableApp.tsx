@@ -1,5 +1,5 @@
 import 'regenerator-runtime/runtime';
-import React, { useEffect, useMemo } from 'react';
+import React, { createContext, useEffect, useMemo } from 'react';
 import { Provider, useDispatch } from 'react-redux';
 import { createStore, applyMiddleware, compose } from 'redux';
 import { Router } from 'react-router-dom';
@@ -20,6 +20,7 @@ import { setApiConfigAction } from './ducks/config';
 import { initToggleSideBarAction } from './ducks/app/layout';
 import { authErrorAction } from './ducks/app/authError';
 import { AuthError } from './services/errorhandler';
+import { Config } from './services/api';
 const composeEnhancers =
   typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
     ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({})
@@ -72,6 +73,16 @@ const RouterWithBaseName = ({ children }) => {
   );
 };
 
+export const ConfigContext = createContext<Config | null>(null);
+
+export const useConfig = () => {
+  const context = React.useContext(ConfigContext);
+  if (context === null) {
+    throw new Error('useConfig must be used within AppConfigProvider');
+  }
+  return context;
+};
+
 function InternalAppConfigProvider({ children, moduleExports }) {
   const dispatch = useDispatch();
   const { name } = useCurrentApp();
@@ -90,7 +101,13 @@ function InternalAppConfigProvider({ children, moduleExports }) {
   }, [status]);
 
   if (api && status === 'success') {
-    return <>{children}</>;
+    return (
+      <ConfigContext.Provider
+        value={runtimeConfiguration.spec.selfConfiguration}
+      >
+        {children}
+      </ConfigContext.Provider>
+    );
   } else if (status === 'loading' || status === 'idle') {
     return <Loader size="massive" centered={true} aria-label="loading" />; // TODO display the previous module while lazy loading the new one
   } else if (status === 'error') {
