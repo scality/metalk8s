@@ -1,5 +1,14 @@
 # CHANGELOG
-## Release 125.0.5 (in development)
+
+## Release 125.0.6 (In development)
+
+
+## Release 125.0.5
+
+### Additions
+
+- Add an alert configuration UI screen to configure email
+  notifications (PR[4078](https://github.com/scality/metalk8s/pull/4078))
 
 ## Release 125.0.4
 
