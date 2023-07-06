@@ -7,7 +7,16 @@
   [1.26.5](https://github.com/kubernetes/kubernetes/releases/tag/v1.26.5)
   (PR[#4074](https://github.com/scality/metalk8s/pull/4074))
 
-## Release 125.0.5 (in development)
+
+## Release 125.0.6 (In development)
+
+
+## Release 125.0.5
+
+### Additions
+
+- Add an alert configuration UI screen to configure email
+  notifications (PR[4078](https://github.com/scality/metalk8s/pull/4078))
 
 ## Release 125.0.4
 
