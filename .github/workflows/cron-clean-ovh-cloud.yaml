@@ -1,0 +1,25 @@
+name: "delete old VMs in OpenStack"
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run it every 6 hours
+    - cron: '0 */6 * * *'
+
+jobs:
+  cleanup:
+    runs-on:
+      - self-hosted
+      - centos7
+      - large
+    steps:
+      - name: Clean up old VMs in OpenStack
+        uses: scality/actions/actions-cleanup-openstack-vms@1.3.1
+        with:
+          AUTH_URL: ${{ secrets.OVH_AUTH_URL }}
+          AGE_HOURS: 6
+          REGION: ${{ secrets.OVH_REGION }}
+          USERNAME: ${{secrets.OVH_USERNAME }}
+          PASSWORD: ${{ secrets.OVH_PASSWORD }}
+          PROJECT_NAME: ${{ secrets.OVH_PROJECT_NAME }}
+          PROJECT_ID: ${{ secrets.OVH_PROJECT_ID }}
