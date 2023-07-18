@@ -10,6 +10,12 @@
 - Bump Calico version to [3.26.1](https://github.com/projectcalico/calico/releases/tag/v3.26.1)
   (PR[#4090](https://github.com/scality/metalk8s/pull/4090))
 
+- Bump ingress-nginx chart version to
+  [4.7.1](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.7.1)
+  The controller image has been bumped accordingly to
+  [v1.8.1](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.8.1)
+  (PR[#4093](https://github.com/scality/metalk8s/pull/4093))
+
 ## Release 125.0.6 (In development)
 
 
