@@ -2,7 +2,7 @@
 # Added here because `pip-compile` doesn't work cross-platform.
 colorama >= 0.3.9
 plantuml >= 0.2
-PyYAML >= 5.3.1
+PyYAML ~= 6.0
 Sphinx >= 3.0.4
 sphinx_rtd_theme ~= 0.5
 sphinxcontrib_github_alt >= 1.0

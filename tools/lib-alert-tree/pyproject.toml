@@ -6,9 +6,9 @@ authors = ["Scality MetalK8s <squad-metalk8s@scality.com>"]
 
 [tool.poetry.dependencies]
 # Mandatory dependencies
-python = "^3.6"
+python = "^3.6.2"
 treelib = "^1.6"
-PyYAML = "^5.4"
+PyYAML = "^6.0"
 
 # Optional dependencies
 Click = { version = "^8.0", optional = true }
@@ -17,8 +17,8 @@ Click = { version = "^8.0", optional = true }
 cli = ["Click"]
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.2"
-pylint = "^2.11.1"
+pytest = "6.2.5"
+pylint = "2.13.9"
 
 [tool.pylint.design]
 max-args = 9
