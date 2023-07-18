@@ -7,6 +7,8 @@
   [1.26.5](https://github.com/kubernetes/kubernetes/releases/tag/v1.26.5)
   (PR[#4074](https://github.com/scality/metalk8s/pull/4074))
 
+- Bump Calico version to [3.26.1](https://github.com/projectcalico/calico/releases/tag/v3.26.1)
+  (PR[#4090](https://github.com/scality/metalk8s/pull/4090))
 
 ## Release 125.0.6 (In development)
 
