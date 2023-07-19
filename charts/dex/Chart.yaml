@@ -1,12 +1,12 @@
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: "Common labels to all resources created by the chart"
+    - kind: fixed
+      description: "Fixed error stemming from the formatting of the new autoscaling API version"
   artifacthub.io/images: |
     - name: dex
-      image: ghcr.io/dexidp/dex:v2.35.3
+      image: ghcr.io/dexidp/dex:v2.37.0
 apiVersion: v2
-appVersion: 2.35.3
+appVersion: 2.37.0
 description: OpenID Connect (OIDC) identity and OAuth 2.0 provider with pluggable
   connectors.
 home: https://dexidp.io/
@@ -26,4 +26,4 @@ sources:
 - https://github.com/dexidp/dex
 - https://github.com/dexidp/helm-charts/tree/master/charts/dex
 type: application
-version: 0.13.0
+version: 0.15.2

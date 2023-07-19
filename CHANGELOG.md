@@ -64,6 +64,11 @@
   [2.1.7](https://github.com/fluent/fluent-bit/releases/tag/v2.1.7)
   (PR[#4100](https://github.com/scality/metalk8s/pull/4100))
 
+- Bump dex chart version to
+  [0.15.2](https://github.com/dexidp/helm-charts/releases/tag/dex-0.15.2)
+  Dex itself has been bumped accordingly to
+  [v2.37.0](https://github.com/dexidp/dex/releases/tag/v2.37.0)
+  (PR[#4101](https://github.com/scality/metalk8s/pull/4101))
 
 ## Release 125.0.6 (In development)
 

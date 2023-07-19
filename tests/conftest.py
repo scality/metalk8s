@@ -480,7 +480,7 @@ def dex_login(username, password, should_fail, control_plane_ingress_ep):
 
     assert auth_response.text is not None
     if should_fail:
-        assert auth_response.status_code == 200
+        assert auth_response.status_code == 401
         assert "Invalid Email Address and password" in auth_response.text
         assert auth_response.headers.get("location") is None
     else:

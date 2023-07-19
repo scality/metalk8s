@@ -44,7 +44,8 @@ ingress:
   annotations:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
   hosts:
-    - paths:
+    - host: ""
+      paths:
       - path: /oidc
         pathType: Prefix
 
