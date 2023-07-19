@@ -1,8 +1,7 @@
-{{- $isSimpleScalable := eq (include "loki.deployment.isScalable" .) "true" -}}
-{{ if and $isSimpleScalable .Values.enterprise.tokengen.enabled .Values.enterprise.enabled }}
+{{ if and .Values.enterprise.tokengen.enabled .Values.enterprise.enabled }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
   name: {{ template "enterprise-logs.tokengenFullname" . }}
   labels:
@@ -17,9 +16,10 @@ metadata:
     "helm.sh/hook": post-install
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
+  kind: ClusterRole
   name: {{ template "enterprise-logs.tokengenFullname" . }}
 subjects:
   - kind: ServiceAccount
     name: {{ template "enterprise-logs.tokengenFullname" . }}
+    namespace: {{ $.Release.Namespace }}
 {{- end }}

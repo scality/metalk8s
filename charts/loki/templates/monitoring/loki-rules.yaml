@@ -13,7 +13,7 @@ metadata:
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  name: {{ include "loki.fullname" $ }}-rules
+  name: {{ include "loki.fullname" $ }}-loki-rules
   namespace: {{ .namespace | default $.Release.Namespace }}
 spec:
   groups:

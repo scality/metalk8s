@@ -226,6 +226,8 @@ def codegen_chart_loki() -> types.TaskDict:
         "--namespace metalk8s-logging "
         "--service-config loki metalk8s-loki-config "
         "metalk8s/addons/logging/loki/config/loki.yaml metalk8s-logging "
+        "--patch 'StatefulSet,metalk8s-logging,loki,spec:replicas,"
+        '"__var__(loki.spec.deployment.replicas)"\' '
         f"--output {target_sls}"
     )
 

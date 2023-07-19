@@ -52,6 +52,12 @@
   [v1.8.1](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.8.1)
   (PR[#4093](https://github.com/scality/metalk8s/pull/4093))
 
+- Bump Loki chart version to
+  [5.8.9](https://github.com/grafana/loki/releases/tag/helm-loki-5.8.9)
+  The Loki image has been bumped accordingly to
+  [2.8.2](https://github.com/grafana/loki/releases/tag/v2.8.2)
+  (PR[#4099](https://github.com/scality/metalk8s/pull/4099))
+
 ## Release 125.0.6 (In development)
 
 

@@ -7,8 +7,6 @@ loki:
   image:
     registry: ""
     repository: '__image__(loki)'
-    # Explicitly bump the version to 2.7.0 (should be removed when bumping to a new helm chart version)
-    tag: "2.7.0"
 
   existingSecretForConfig: loki
 
@@ -16,13 +14,24 @@ loki:
     # Override default checksum as we want to manage it with salt
     checksum/config: '__slot__:salt:metalk8s_kubernetes.get_object_digest(kind="Secret", apiVersion="v1", namespace="metalk8s-logging", name="loki", path="data:config.yaml")'
 
+backend:
+  replicas: 0
+read:
+  replicas: 0
+write:
+  replicas: 0
+
 singleBinary:
   targetModule: "all,table-manager"
 
-  replicas: '__var__(loki.spec.deployment.replicas)'
+  # The Loki helm chart now does some validation on this field and expect an int
+  # The logic to change this now handle by the rendering commands check
+  # `buildchain/buildchain/codegen.py`
+  #replicas: '__var__(loki.spec.deployment.replicas)'
 
   persistence:
     enabled: true
+    enableStatefulSetAutoDeletePVC: false
     size: 10Gi
     storageClass: metalk8s
     selector:
@@ -51,8 +60,11 @@ monitoring:
     grafanaAgent:
       installOperator: false
 
-    lokiCanary:
-      enabled: false
+  lokiCanary:
+    enabled: false
+
+gateway:
+  enabled: false
 
 test:
   enabled: false
