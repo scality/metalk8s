@@ -11,6 +11,7 @@
   "Kubernetes / Compute Resources / Pod": "6581e46e4e5c7ba40a07646395ef7b23",
   "Kubernetes / Compute Resources / Workload": "a164a7f0339f99e89cea5cb47e9be617",
   "Kubernetes / Compute Resources / Namespace (Workloads)": "a87fb0d919ec0ea5f6543124e16c42a5",
+  "Kubernetes / Compute Resources /  Multi-Cluster": "b59e6c9f2fcbe2e16d77fc492374cc4f",
   "Kubernetes / Kubelet": "3138fa155d5915769fbded898ac09fd9",
   "Kubernetes / Networking / Namespace (Pods)": "8b7a8b326d7a6f1f04244066368c67af",
   "Kubernetes / Networking / Namespace (Workload)": "bbb2a765a623ae38130206c7d94a160f",

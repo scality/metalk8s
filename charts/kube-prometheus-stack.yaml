@@ -1,6 +1,6 @@
 nameOverride: prometheus-operator
 
-kubeTargetVersionOverride: 1.25.0
+kubeTargetVersionOverride: 1.26.0
 
 commonLabels:
   # This needs to remain 'Tiller' for the render script to work properly
@@ -169,12 +169,11 @@ grafana:
 
   image:
     repository: '__image__(grafana)'
-    tag: '9.3.8-ubuntu'
+    tag: '10.0.1-ubuntu'
 
   sidecar:
     image:
       repository: '__image__(k8s-sidecar)'
-      tag: '1.22.3'
 
     dashboards:
       searchNamespace: ALL
@@ -238,7 +237,8 @@ kube-state-metrics:
         metalk8s.scality.com/monitor: ''
 
   image:
-    repository: '__image__(kube-state-metrics)'
+    registry: '__var__(repo.registry_endpoint)'
+    repository: '__image_no_reg__(kube-state-metrics)'
 
   nodeSelector:
     node-role.kubernetes.io/infra: ''

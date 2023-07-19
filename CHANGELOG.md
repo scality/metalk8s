@@ -13,6 +13,35 @@
 - Bump Calico version to [3.26.1](https://github.com/projectcalico/calico/releases/tag/v3.26.1)
   (PR[#4090](https://github.com/scality/metalk8s/pull/4090))
 
+- Bump kube-prometheus-stack chart version to
+  [48.1.1](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-48.1.1)
+  (PR[#4097](https://github.com/scality/metalk8s/pull/4097))
+
+  This change includes:
+
+  - Bump Prometheus container version to
+    [2.45.0](https://github.com/prometheus/prometheus/releases/tag/v2.45.0)
+  - Bump Thanos chart version to 
+    [0.4.9](https://artifacthub.io/packages/helm/banzaicloud-stable/thanos/0.4.9),
+    Thanos container version to
+    [0.31.0](https://github.com/thanos-io/thanos/releases/tag/v0.31.0)
+  - Bump grafana chart version to
+    [6.58.2](https://github.com/grafana/helm-charts/releases/tag/grafana-6.58.2),
+    Grafana container version to
+    [10.0.1](https://github.com/grafana/grafana/releases/tag/v10.0.1),
+    and kiwigrid/k8s-sidecar container version to
+    [1.24.6](https://github.com/kiwigrid/k8s-sidecar/releases/tag/1.24.6)
+  - Bump kube-state-metrics chart version to
+    [4.31.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-state-metrics-4.31.0)
+    and kube-state-metrics container version to
+    [2.9.2](https://github.com/kubernetes/kube-state-metrics/releases/tag/v2.9.2)
+  - Bump prometheus-node-exporter chart version to
+    [4.18.1](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-node-exporter-4.18.1)
+    and node-exporter container version to
+    [1.6.0](https://github.com/prometheus/node_exporter/releases/tag/v1.6.0)
+  - Bump prometheus-operator and prometheus-config-reloader containers version to
+    [0.66.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.66.0)
+
 - Bump ingress-nginx chart version to
   [4.7.1](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.7.1)
   The controller image has been bumped accordingly to

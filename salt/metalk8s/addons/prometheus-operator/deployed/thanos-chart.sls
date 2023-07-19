@@ -16,8 +16,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: thanos
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 0.17.1
-    helm.sh/chart: thanos-0.4.6
+    app.kubernetes.io/version: 0.28.1
+    helm.sh/chart: thanos-0.4.9
     heritage: metalk8s
   name: thanos-query-grpc
   namespace: metalk8s-monitoring
@@ -43,8 +43,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: thanos
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 0.17.1
-    helm.sh/chart: thanos-0.4.6
+    app.kubernetes.io/version: 0.28.1
+    helm.sh/chart: thanos-0.4.9
     heritage: metalk8s
   name: thanos-query-http
   namespace: metalk8s-monitoring
@@ -69,8 +69,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: thanos
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 0.17.1
-    helm.sh/chart: thanos-0.4.6
+    app.kubernetes.io/version: 0.28.1
+    helm.sh/chart: thanos-0.4.9
     heritage: metalk8s
   name: thanos-query
   namespace: metalk8s-monitoring
@@ -100,7 +100,7 @@ spec:
         - --store.sd-dns-resolver=miekgdns
         - --store=dnssrv+_grpc._tcp.prometheus-operator-thanos-discovery
         - --store.sd-interval=5m
-        image: {% endraw -%}{{ build_image_name("thanos", False) }}{%- raw %}:v0.30.2
+        image: {% endraw -%}{{ build_image_name("thanos", False) }}{%- raw %}:v0.31.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

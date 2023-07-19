@@ -272,13 +272,13 @@
     {
         "message": "Half or more of the Alertmanager instances within the same cluster are crashlooping.",
         "name": "AlertmanagerClusterCrashlooping",
-        "query": "(count by (namespace, service) (changes(process_start_time_seconds{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[10m]) > 4) / count by (namespace, service) (up{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})) >= 0.5",
+        "query": "(count by (namespace, service, cluster) (changes(process_start_time_seconds{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[10m]) > 4) / count by (namespace, service, cluster) (up{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})) >= 0.5",
         "severity": "critical"
     },
     {
         "message": "Half or more of the Alertmanager instances within the same cluster are down.",
         "name": "AlertmanagerClusterDown",
-        "query": "(count by (namespace, service) (avg_over_time(up{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) < 0.5) / count by (namespace, service) (up{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})) >= 0.5",
+        "query": "(count by (namespace, service, cluster) (avg_over_time(up{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) < 0.5) / count by (namespace, service, cluster) (up{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})) >= 0.5",
         "severity": "critical"
     },
     {
@@ -296,7 +296,7 @@
     {
         "message": "Alertmanager instances within the same cluster have different configurations.",
         "name": "AlertmanagerConfigInconsistent",
-        "query": "count by (namespace, service) (count_values by (namespace, service) (\"config_hash\", alertmanager_config_hash{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})) != 1",
+        "query": "count by (namespace, service, cluster) (count_values by (namespace, service, cluster) (\"config_hash\", alertmanager_config_hash{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"})) != 1",
         "severity": "critical"
     },
     {
@@ -314,7 +314,7 @@
     {
         "message": "A member of an Alertmanager cluster has not found all other cluster members.",
         "name": "AlertmanagerMembersInconsistent",
-        "query": "max_over_time(alertmanager_cluster_members{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) < on (namespace, service) group_left () count by (namespace, service) (max_over_time(alertmanager_cluster_members{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]))",
+        "query": "max_over_time(alertmanager_cluster_members{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) < on (namespace, service, cluster) group_left () count by (namespace, service, cluster) (max_over_time(alertmanager_cluster_members{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]))",
         "severity": "critical"
     },
     {
@@ -416,7 +416,7 @@
     {
         "message": "One or more targets are unreachable.",
         "name": "TargetDown",
-        "query": "100 * (count by (job, namespace, service) (up == 0) / count by (job, namespace, service) (up)) > 10",
+        "query": "100 * (count by (cluster, job, namespace, service) (up == 0) / count by (cluster, job, namespace, service) (up)) > 10",
         "severity": "warning"
     },
     {
@@ -452,25 +452,25 @@
     {
         "message": "kube-state-metrics is experiencing errors in list operations.",
         "name": "KubeStateMetricsListErrors",
-        "query": "(sum(rate(kube_state_metrics_list_total{job=\"kube-state-metrics\",result=\"error\"}[5m])) / sum(rate(kube_state_metrics_list_total{job=\"kube-state-metrics\"}[5m]))) > 0.01",
+        "query": "(sum by (cluster) (rate(kube_state_metrics_list_total{job=\"kube-state-metrics\",result=\"error\"}[5m])) / sum by (cluster) (rate(kube_state_metrics_list_total{job=\"kube-state-metrics\"}[5m]))) > 0.01",
         "severity": "critical"
     },
     {
         "message": "kube-state-metrics sharding is misconfigured.",
         "name": "KubeStateMetricsShardingMismatch",
-        "query": "stdvar(kube_state_metrics_total_shards{job=\"kube-state-metrics\"}) != 0",
+        "query": "stdvar by (cluster) (kube_state_metrics_total_shards{job=\"kube-state-metrics\"}) != 0",
         "severity": "critical"
     },
     {
         "message": "kube-state-metrics shards are missing.",
         "name": "KubeStateMetricsShardsMissing",
-        "query": "2 ^ max(kube_state_metrics_total_shards{job=\"kube-state-metrics\"}) - 1 - sum(2 ^ max by (shard_ordinal) (kube_state_metrics_shard_ordinal{job=\"kube-state-metrics\"})) != 0",
+        "query": "2 ^ max by (cluster) (kube_state_metrics_total_shards{job=\"kube-state-metrics\"}) - 1 - sum by (cluster) (2 ^ max by (cluster, shard_ordinal) (kube_state_metrics_shard_ordinal{job=\"kube-state-metrics\"})) != 0",
         "severity": "critical"
     },
     {
         "message": "kube-state-metrics is experiencing errors in watch operations.",
         "name": "KubeStateMetricsWatchErrors",
-        "query": "(sum(rate(kube_state_metrics_watch_total{job=\"kube-state-metrics\",result=\"error\"}[5m])) / sum(rate(kube_state_metrics_watch_total{job=\"kube-state-metrics\"}[5m]))) > 0.01",
+        "query": "(sum by (cluster) (rate(kube_state_metrics_watch_total{job=\"kube-state-metrics\",result=\"error\"}[5m])) / sum by (cluster) (rate(kube_state_metrics_watch_total{job=\"kube-state-metrics\"}[5m]))) > 0.01",
         "severity": "critical"
     },
     {
@@ -572,25 +572,25 @@
     {
         "message": "Cluster has overcommitted CPU resource requests.",
         "name": "KubeCPUOvercommit",
-        "query": "sum(namespace_cpu:kube_pod_container_resource_requests:sum) - (sum(kube_node_status_allocatable{resource=\"cpu\"}) - max(kube_node_status_allocatable{resource=\"cpu\"})) > 0 and (sum(kube_node_status_allocatable{resource=\"cpu\"}) - max(kube_node_status_allocatable{resource=\"cpu\"})) > 0",
+        "query": "sum by (cluster) (namespace_cpu:kube_pod_container_resource_requests:sum{job=\"kube-state-metrics\"}) - (sum by (cluster) (kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"}) - max by (cluster) (kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"})) > 0 and (sum by (cluster) (kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"}) - max by (cluster) (kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"})) > 0",
         "severity": "warning"
     },
     {
         "message": "Cluster has overcommitted CPU resource requests.",
         "name": "KubeCPUQuotaOvercommit",
-        "query": "sum(min without (resource) (kube_resourcequota{job=\"kube-state-metrics\",resource=~\"(cpu|requests.cpu)\",type=\"hard\"})) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"}) > 1.5",
+        "query": "sum by (cluster) (min without (resource) (kube_resourcequota{job=\"kube-state-metrics\",resource=~\"(cpu|requests.cpu)\",type=\"hard\"})) / sum by (cluster) (kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"}) > 1.5",
         "severity": "warning"
     },
     {
         "message": "Cluster has overcommitted memory resource requests.",
         "name": "KubeMemoryOvercommit",
-        "query": "sum(namespace_memory:kube_pod_container_resource_requests:sum) - (sum(kube_node_status_allocatable{resource=\"memory\"}) - max(kube_node_status_allocatable{resource=\"memory\"})) > 0 and (sum(kube_node_status_allocatable{resource=\"memory\"}) - max(kube_node_status_allocatable{resource=\"memory\"})) > 0",
+        "query": "sum by (cluster) (namespace_memory:kube_pod_container_resource_requests:sum) - (sum by (cluster) (kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"}) - max by (cluster) (kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"})) > 0 and (sum by (cluster) (kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"}) - max by (cluster) (kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"})) > 0",
         "severity": "warning"
     },
     {
         "message": "Cluster has overcommitted memory resource requests.",
         "name": "KubeMemoryQuotaOvercommit",
-        "query": "sum(min without (resource) (kube_resourcequota{job=\"kube-state-metrics\",resource=~\"(memory|requests.memory)\",type=\"hard\"})) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"}) > 1.5",
+        "query": "sum by (cluster) (min without (resource) (kube_resourcequota{job=\"kube-state-metrics\",resource=~\"(memory|requests.memory)\",type=\"hard\"})) / sum by (cluster) (kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"}) > 1.5",
         "severity": "warning"
     },
     {
@@ -642,18 +642,6 @@
         "severity": "warning"
     },
     {
-        "message": "Kubernetes API server client is experiencing errors.",
-        "name": "KubeClientErrors",
-        "query": "(sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\"}[5m])) / sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total[5m]))) > 0.01",
-        "severity": "warning"
-    },
-    {
-        "message": "Different semantic versions of Kubernetes components running.",
-        "name": "KubeVersionMismatch",
-        "query": "count by (cluster) (count by (git_version, cluster) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
-        "severity": "warning"
-    },
-    {
         "message": "Target disappeared from Prometheus target discovery.",
         "name": "KubeAPIDown",
         "query": "absent(up{job=\"apiserver\"} == 1)",
@@ -690,6 +678,18 @@
         "severity": "warning"
     },
     {
+        "message": "Kubernetes API server client is experiencing errors.",
+        "name": "KubeClientErrors",
+        "query": "(sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\",job=\"apiserver\"}[5m])) / sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{job=\"apiserver\"}[5m]))) > 0.01",
+        "severity": "warning"
+    },
+    {
+        "message": "Different semantic versions of Kubernetes components running.",
+        "name": "KubeVersionMismatch",
+        "query": "count by (cluster) (count by (git_version, cluster) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
+        "severity": "warning"
+    },
+    {
         "message": "Target disappeared from Prometheus target discovery.",
         "name": "KubeControllerManagerDown",
         "query": "absent(up{job=\"kube-controller-manager\"} == 1)",
@@ -710,7 +710,7 @@
     {
         "message": "Node readiness status is flapping.",
         "name": "KubeNodeReadinessFlapping",
-        "query": "sum by (cluster, node) (changes(kube_node_status_condition{condition=\"Ready\",status=\"true\"}[15m])) > 2",
+        "query": "sum by (cluster, node) (changes(kube_node_status_condition{condition=\"Ready\",job=\"kube-state-metrics\",status=\"true\"}[15m])) > 2",
         "severity": "warning"
     },
     {
@@ -920,7 +920,7 @@
     {
         "message": "Errors while performing list operations in controller.",
         "name": "PrometheusOperatorListErrors",
-        "query": "(sum by (controller, namespace, cluster) (rate(prometheus_operator_list_operations_failed_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[10m])) / sum by (controller, namespace, cluster) (rate(prometheus_operator_list_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[10m]))) > 0.4",
+        "query": "(sum by (cluster, controller, namespace) (rate(prometheus_operator_list_operations_failed_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[10m])) / sum by (cluster, controller, namespace) (rate(prometheus_operator_list_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[10m]))) > 0.4",
         "severity": "warning"
     },
     {
@@ -932,13 +932,13 @@
     {
         "message": "Prometheus operator not ready",
         "name": "PrometheusOperatorNotReady",
-        "query": "min by (controller, namespace, cluster) (max_over_time(prometheus_operator_ready{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]) == 0)",
+        "query": "min by (cluster, controller, namespace) (max_over_time(prometheus_operator_ready{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]) == 0)",
         "severity": "warning"
     },
     {
         "message": "Errors while reconciling controller.",
         "name": "PrometheusOperatorReconcileErrors",
-        "query": "(sum by (controller, namespace, cluster) (rate(prometheus_operator_reconcile_errors_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) / (sum by (controller, namespace, cluster) (rate(prometheus_operator_reconcile_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) > 0.1",
+        "query": "(sum by (cluster, controller, namespace) (rate(prometheus_operator_reconcile_errors_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) / (sum by (cluster, controller, namespace) (rate(prometheus_operator_reconcile_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) > 0.1",
         "severity": "warning"
     },
     {
@@ -956,7 +956,7 @@
     {
         "message": "Errors while performing watch operations in controller.",
         "name": "PrometheusOperatorWatchErrors",
-        "query": "(sum by (controller, namespace, cluster) (rate(prometheus_operator_watch_operations_failed_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m])) / sum by (controller, namespace, cluster) (rate(prometheus_operator_watch_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) > 0.4",
+        "query": "(sum by (cluster, controller, namespace) (rate(prometheus_operator_watch_operations_failed_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m])) / sum by (cluster, controller, namespace) (rate(prometheus_operator_watch_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) > 0.4",
         "severity": "warning"
     }
 ]

@@ -1,6 +1,6 @@
 {{- if .Values.queryFrontend.enabled }}
 {{- if .Values.queryFrontend.autoscaling.enabled }}
-apiVersion: autoscaling/v2beta1
+apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "thanos.componentname" (list $ "query-frontend") }}
@@ -23,13 +23,17 @@ spec:
     - type: Resource
       resource:
         name: memory
-        targetAverageUtilization: {{ . }}
+        target:
+          type: Utilization
+          averageUtilization: {{ . }}
 {{- end }}
 {{- with .Values.queryFrontend.autoscaling.targetCPUUtilizationPercentage }}
     - type: Resource
       resource:
         name: cpu
-        targetAverageUtilization: {{ . }}
+        target:
+          type: Utilization
+          averageUtilization: {{ . }}
 {{- end }}
 {{- end }}
 {{- end }}

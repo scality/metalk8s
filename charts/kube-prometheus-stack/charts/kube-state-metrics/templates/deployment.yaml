@@ -106,12 +106,20 @@ spec:
         {{- if .Values.selfMonitor.telemetryPort }}
         - --telemetry-port={{ $telemetryPort }}
         {{- end }}
+        {{- if .Values.customResourceState.enabled }}
+        - --custom-resource-state-config-file=/etc/customresourcestate/config.yaml
         {{- end }}
-        {{- if or (.Values.kubeconfig.enabled) (.Values.volumeMounts) }}
+        {{- end }}
+        {{- if or (.Values.kubeconfig.enabled) (.Values.customResourceState.enabled) (.Values.volumeMounts) }}
         volumeMounts:
         {{- if .Values.kubeconfig.enabled }}
         - name: kubeconfig
           mountPath: /opt/k8s/.kube/
+          readOnly: true
+        {{- end }}
+        {{- if .Values.customResourceState.enabled }}
+        - name: customresourcestate-config
+          mountPath: /etc/customresourcestate
           readOnly: true
         {{- end }}
         {{- if .Values.volumeMounts }}
@@ -119,11 +127,7 @@ spec:
         {{- end }}
         {{- end }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        {{- if .Values.image.sha }}
-        image: "{{ .Values.global.imageRegistry | default .Values.image.repository }}:{{ .Values.image.tag | default (print "v" .Chart.AppVersion) }}@sha256:{{ .Values.image.sha }}"
-        {{- else }}
-        image: "{{ .Values.global.imageRegistry | default .Values.image.repository }}:{{ .Values.image.tag | default (print "v" .Chart.AppVersion) }}"
-        {{- end }}
+        image: {{ include "kube-state-metrics.image" . }}
         {{- if eq .Values.kubeRBACProxy.enabled false }}
         ports:
         - containerPort: {{ .Values.service.port | default 8080}}
@@ -166,12 +170,11 @@ spec:
         volumeMounts:
           - name: kube-rbac-proxy-config
             mountPath: /etc/kube-rbac-proxy-config
+          {{- with .Values.kubeRBACProxy.volumeMounts }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
         imagePullPolicy: {{ .Values.kubeRBACProxy.image.pullPolicy }}
-        {{- if .Values.kubeRBACProxy.image.sha }}
-        image: "{{ .Values.global.imageRegistry | default .Values.kubeRBACProxy.image.repository }}:{{ .Values.kubeRBACProxy.image.tag }}@sha256:{{ .Values.kubeRBACProxy.image.sha }}"
-        {{- else }}
-        image: "{{ .Values.global.imageRegistry | default .Values.kubeRBACProxy.image.repository }}:{{ .Values.kubeRBACProxy.image.tag }}"
-        {{- end }}
+        image: {{ include "kubeRBACProxy.image" . }}
         ports:
           - containerPort: {{ .Values.service.port | default 8080}}
             name: "http"
@@ -205,12 +208,11 @@ spec:
         volumeMounts:
           - name: kube-rbac-proxy-config
             mountPath: /etc/kube-rbac-proxy-config
+          {{- with .Values.kubeRBACProxy.volumeMounts }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
         imagePullPolicy: {{ .Values.kubeRBACProxy.image.pullPolicy }}
-        {{- if .Values.kubeRBACProxy.image.sha }}
-        image: "{{ .Values.global.imageRegistry | default .Values.kubeRBACProxy.image.repository }}:{{ .Values.kubeRBACProxy.image.tag }}@sha256:{{ .Values.kubeRBACProxy.image.sha }}"
-        {{- else }}
-        image: "{{ .Values.global.imageRegistry | default .Values.kubeRBACProxy.image.repository }}:{{ .Values.kubeRBACProxy.image.tag }}"
-        {{- end }}
+        image: {{ include "kubeRBACProxy.image" . }}
         ports:
           - containerPort: {{ .Values.selfMonitor.telemetryPort | default 8081 }}
             name: "metrics"
@@ -253,7 +255,7 @@ spec:
       topologySpreadConstraints:
 {{ toYaml .Values.topologySpreadConstraints | indent 8 }}
       {{- end }}
-      {{- if or (.Values.kubeconfig.enabled) (.Values.volumes) (.Values.kubeRBACProxy.enabled) }}
+      {{- if or (.Values.kubeconfig.enabled) (.Values.customResourceState.enabled) (.Values.volumes) (.Values.kubeRBACProxy.enabled) }}
       volumes:
       {{- if .Values.kubeconfig.enabled}}
         - name: kubeconfig
@@ -264,6 +266,11 @@ spec:
         - name: kube-rbac-proxy-config
           configMap:
             name: {{ template "kube-state-metrics.fullname" . }}-rbac-config
+      {{- end }}
+      {{- if .Values.customResourceState.enabled}}
+        - name: customresourcestate-config
+          configMap:
+            name: {{ template "kube-state-metrics.fullname" . }}-customresourcestate-config
       {{- end }}
       {{- if .Values.volumes }}
 {{ toYaml .Values.volumes | indent 8 }}
