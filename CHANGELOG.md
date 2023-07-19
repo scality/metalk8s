@@ -42,6 +42,10 @@
   - Bump prometheus-operator and prometheus-config-reloader containers version to
     [0.66.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.66.0)
 
+- Bump Prometheus Adapter chart version to
+  [4.2.0](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-adapter-4.2.0)
+  (PR[#4098](https://github.com/scality/metalk8s/pull/4098))
+
 - Bump ingress-nginx chart version to
   [4.7.1](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.7.1)
   The controller image has been bumped accordingly to
