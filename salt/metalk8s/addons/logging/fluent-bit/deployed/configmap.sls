@@ -19,13 +19,15 @@ Create fluent-bit ConfigMap:
         data:
           fluent-bit.conf: |-
             [SERVICE]
+                Daemon         Off
+                Flush          1
+                Log_Level      warn
+                Parsers_File   parsers.conf
+                Parsers_File   conf/custom_parsers.conf
                 HTTP_Server    On
                 HTTP_Listen    0.0.0.0
                 HTTP_PORT      2020
-                Flush          1
-                Daemon         Off
-                Log_Level      warn
-                Parsers_File   custom_parsers.conf
+                Health_Check   On
             [INPUT]
                 Name           tail
                 Tag            kube.*

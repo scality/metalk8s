@@ -1,8 +1,9 @@
-{{- if gt (len .Values.luaScripts) 0 -}}
+{{- if or .Values.luaScripts .Values.hotReload.enabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ include "fluent-bit.fullname" . }}-luascripts
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "fluent-bit.labels" . | nindent 4 }}
 data:
