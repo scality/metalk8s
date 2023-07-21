@@ -160,6 +160,14 @@ module.exports = {
           singleton: true,
           eager: true,
         },
+        '@js-temporal/polyfill': {
+          singleton: true,
+          eager: true,
+        },
+        downshift: {
+          singleton: true,
+          eager: true,
+        },
       },
     }),
     new HtmlWebPackPlugin({

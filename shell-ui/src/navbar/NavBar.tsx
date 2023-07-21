@@ -23,6 +23,8 @@ import {
 import type { Link as TypeLink } from './navbarHooks';
 import { useNavbar } from './navbarHooks';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
+import NotificationCenter from './NotificationCenter';
+import { InternalNotification } from '../NotificationCenterProvider';
 
 const Logo = styled.img`
   height: 2.143rem;
@@ -277,6 +279,7 @@ export const Navbar = ({
     ),
     selected: action.selected,
   }));
+
   const secondaryTabs = navbarSecondaryActions.map((action) => ({
     type: 'custom',
     render: () =>
@@ -288,8 +291,16 @@ export const Navbar = ({
         </Link>
       ),
   }));
+
+  const notificationTab = {
+    type: 'custom',
+    icon: <></>,
+    render: () => <NotificationCenter />,
+  };
+
   const rightTabs = [
     ...secondaryTabs,
+    notificationTab,
     {
       type: 'dropdown',
       text: userData?.username || '',

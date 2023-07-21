@@ -30,6 +30,7 @@ import './index.css';
 import { ShellHistoryProvider } from './initFederation/ShellHistoryProvider';
 import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
 import { ThemeProvider } from './navbar/theme';
+import NotificationCenterProvider from './NotificationCenterProvider';
 
 export const queryClient = new QueryClient();
 
@@ -163,9 +164,11 @@ function InternalApp() {
   return (
     <Router history={history}>
       <ShellHistoryProvider>
-        <SolutionsNavbar>
-          <InternalRouter />
-        </SolutionsNavbar>
+        <NotificationCenterProvider>
+          <SolutionsNavbar>
+            <InternalRouter />
+          </SolutionsNavbar>
+        </NotificationCenterProvider>
       </ShellHistoryProvider>
     </Router>
   );
