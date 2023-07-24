@@ -31,10 +31,10 @@ Store SA public key:
       - x509: Create SA private key
 
 Advertise SA pub key in the mine:
-  module.wait:
+  module.run:
     - mine.send:
       - kubernetes_sa_pub_key_b64
       - mine_function: hashutil.base64_encodefile
       - /etc/kubernetes/pki/sa.pub
-    - watch:
+    - onchanges:
       - file: Store SA public key

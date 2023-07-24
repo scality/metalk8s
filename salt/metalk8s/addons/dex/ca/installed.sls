@@ -37,10 +37,10 @@ Generate dex CA certificate:
       - x509: Create dex CA private key
 
 Advertise dex CA certificate in the mine:
-  module.wait:
+  module.run:
     - mine.send:
       - dex_ca_b64
       - mine_function: hashutil.base64_encodefile
       - /etc/metalk8s/pki/dex/ca.crt
-    - watch:
+    - onchanges:
       - x509: Generate dex CA certificate

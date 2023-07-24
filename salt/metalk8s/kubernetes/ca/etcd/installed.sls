@@ -37,10 +37,10 @@ Generate etcd CA certificate:
       - x509: Create etcd CA private key
 
 Advertise etcd CA certificate in the mine:
-  module.wait:
+  module.run:
     - mine.send:
       - kubernetes_etcd_ca_b64
       - mine_function: hashutil.base64_encodefile
       - /etc/kubernetes/pki/etcd/ca.crt
-    - watch:
+    - onchanges:
       - x509: Generate etcd CA certificate

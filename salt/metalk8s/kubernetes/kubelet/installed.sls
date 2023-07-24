@@ -17,7 +17,7 @@ Install kubelet:
 #
 # Workaround: Reload systemctl
 Reload systemctl:
-  module.wait:
+  module.run:
     - service.systemctl_reload: []
-    - watch:
+    - onchanges:
       - metalk8s_package_manager: Install kubelet

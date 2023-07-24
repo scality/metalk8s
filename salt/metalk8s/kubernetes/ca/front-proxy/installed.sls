@@ -37,10 +37,10 @@ Generate front proxy CA certificate:
       - x509: Create front proxy CA private key
 
 Advertise front proxy CA certificate in the mine:
-  module.wait:
+  module.run:
     - mine.send:
       - kubernetes_front_proxy_ca_b64
       - mine_function: hashutil.base64_encodefile
       - /etc/kubernetes/pki/front-proxy-ca.crt
-    - watch:
+    - onchanges:
       - x509: Generate front proxy CA certificate

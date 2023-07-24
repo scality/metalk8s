@@ -37,10 +37,10 @@ Generate Ingress CA certificate:
       - x509: Create Ingress CA private key
 
 Advertise Ingress CA certificate in the mine:
-  module.wait:
+  module.run:
     - mine.send:
       - ingress_ca_b64
       - mine_function: hashutil.base64_encodefile
       - /etc/metalk8s/pki/nginx-ingress/ca.crt
-    - watch:
+    - onchanges:
       - x509: Generate Ingress CA certificate
