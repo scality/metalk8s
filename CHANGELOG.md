@@ -76,6 +76,10 @@
 - Bump nginx image to [1.25.1-alpine](https://github.com/nginx/nginx/releases/tag/release-1.25.1)
   (PR[#4104](https://github.com/scality/metalk8s/pull/4104))
 
+- Bump the alpine base image used by `metalk8s-alert-logger`
+  and `metalk8s-keepalived` image to `alpine:3.18.2`
+  (PR[#4105](https://github.com/scality/metalk8s/pull/4105))
+
 ## Release 125.0.6 (In development)
 
 

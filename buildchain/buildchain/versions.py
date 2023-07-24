@@ -94,8 +94,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     # Remote images
     Image(
         name="alpine",
-        version="3.17.2",
-        digest="sha256:e2e16842c9b54d985bf1ef9242a313f36b856181f188de21313820e177002501",
+        version="3.18.2",
+        digest="sha256:82d1e9d7ed48a7523bdebc18cf6290bdb97b82302a8a9c27d4fe885949ea94d1",
     ),
     Image(
         name="alertmanager",
