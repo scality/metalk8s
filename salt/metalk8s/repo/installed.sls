@@ -75,19 +75,19 @@ Install repositories manifest:
       - file: Generate container registry configuration
 
 Delay after repositories pod deployment:
-  module.wait:
+  module.run:
     - test.sleep:
       - length: 10
-    - watch:
+    - onchanges:
       - metalk8s: Install repositories manifest
 
 Ensure repositories container is up:
-  module.wait:
+  module.run:
     - cri.wait_container:
       - name: {{ repositories_name }}
       - state: running
       - timeout: 180
-    - watch:
+    - onchanges:
       - file: Generate repositories nginx configuration
       - file: Deploy container registry nginx configuration
       - file: Generate container registry configuration

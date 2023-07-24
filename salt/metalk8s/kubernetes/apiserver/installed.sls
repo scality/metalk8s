@@ -160,10 +160,10 @@ Restart kubelet to make it pick up the manifest changes:
 # This is a bit ugly but currently we have no easy way to find if the
 # pod has been updated already or not, so we need to wait a bit
 Delay after kube-apiserver Pod deployment:
-  module.wait:
+  module.run:
     - test.sleep:
       - length: 10
-    - watch:
+    - onchanges:
       - metalk8s: Create kube-apiserver Pod manifest
 
 Make sure kube-apiserver container is up and ready:
