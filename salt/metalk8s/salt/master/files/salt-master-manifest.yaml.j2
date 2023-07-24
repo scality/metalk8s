@@ -101,6 +101,8 @@ spec:
         - name: config
           mountPath: '/etc/salt'
           readOnly: true
+        - name: cache
+          mountPath: '/var/cache/salt'
         - name: run
           mountPath: '/var/run/salt'
         - name: kubernetes-pki

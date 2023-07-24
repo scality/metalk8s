@@ -322,7 +322,7 @@ def check_pillar_keys(keys, refresh=True, pillar=None, raise_error=True):
         # See https://github.com/saltstack/salt/issues/20590
         pillar = get_pillar(
             __opts__,
-            __grains__,
+            dict(__grains__),
             __grains__["id"],
             saltenv=__opts__.get("saltenv"),
             pillarenv=__opts__.get("pillarenv"),
