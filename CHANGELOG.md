@@ -7,6 +7,9 @@
   [1.26.5](https://github.com/kubernetes/kubernetes/releases/tag/v1.26.5)
   (PR[#4074](https://github.com/scality/metalk8s/pull/4074))
 
+- Bump CoreDNS version to [v1.9.4](https://github.com/coredns/coredns/releases/tag/v1.9.4)
+  (PR[#4103](https://github.com/scality/metalk8s/pull/4103))
+
 - Bump containerd to [1.6.21](https://github.com/containerd/containerd/releases/tag/v1.6.21)
   (PR[#4096](https://github.com/scality/metalk8s/pull/4096))
 
