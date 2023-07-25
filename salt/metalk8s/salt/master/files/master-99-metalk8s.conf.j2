@@ -62,7 +62,7 @@ external_auth:
       - '@wheel'
       - '@runner'
       - '@jobs'
-    'system:serviceaccount:kube-system:storage-operator':
+    'system:serviceaccount:kube-system:storage-operator-controller-manager':
       - '*':
         - 'metalk8s_volumes.device_info'
         - 'metalk8s_volumes.device_name'

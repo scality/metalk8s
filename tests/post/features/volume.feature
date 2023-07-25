@@ -7,7 +7,7 @@ Feature: Volume management
 
     Scenario: The storage operator is up
         Given the Kubernetes API is available
-        Then we have 1 running pod labeled 'name=storage-operator' in namespace 'kube-system'
+        Then we have 1 running pod labeled 'app.kubernetes.io/name=storage-operator' in namespace 'kube-system'
 
     Scenario: Test volume creation (sparseLoopDevice)
         Given the Kubernetes API is available

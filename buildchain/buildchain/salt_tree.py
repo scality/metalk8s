@@ -217,25 +217,9 @@ PILLAR_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
 METALK8S_OPERATOR_MANIFESTS: Path = (
     constants.METALK8S_OPERATOR_ROOT / "deploy" / "manifests.yaml"
 )
-
-STORAGE_OPERATOR_CONFIG_ROOT: Path = constants.STORAGE_OPERATOR_ROOT / "config"
-
-VOLUME_CRD: Path = STORAGE_OPERATOR_CONFIG_ROOT.joinpath(
-    "crd/bases/storage.metalk8s.scality.com_volumes.yaml"
+STORAGE_OPERATOR_MANIFESTS: Path = (
+    constants.STORAGE_OPERATOR_ROOT / "deploy" / "manifests.yaml"
 )
-
-STORAGE_OPERATOR_METALK8S_CONFIG: Path = STORAGE_OPERATOR_CONFIG_ROOT / "metalk8s"
-STORAGE_OPERATOR_RBAC_CONFIG: Path = STORAGE_OPERATOR_METALK8S_CONFIG / "rbac"
-STORAGE_OPERATOR_ACCOUNT: Path = STORAGE_OPERATOR_RBAC_CONFIG / "service_account.yaml"
-STORAGE_OPERATOR_ROLE: Path = STORAGE_OPERATOR_RBAC_CONFIG / "role.yaml"
-STORAGE_OPERATOR_ROLEBINDING: Path = STORAGE_OPERATOR_RBAC_CONFIG / "role_binding.yaml"
-STORAGE_OPERATOR_LE_ROLE: Path = (
-    STORAGE_OPERATOR_RBAC_CONFIG / "leader_election_role.yaml"
-)
-STORAGE_OPERATOR_LE_ROLEBINDING: Path = (
-    STORAGE_OPERATOR_RBAC_CONFIG / "leader_election_role_binding.yaml"
-)
-STORAGE_OPERATOR_DEPLOYMENT: Path = STORAGE_OPERATOR_METALK8S_CONFIG / "operator.yaml"
 
 LOKI_DASHBOARD: Path = constants.ROOT / "charts/loki-dashboard.json"
 LOGS_DASHBOARD: Path = constants.ROOT / "charts/logs-dashboard.json"
@@ -421,41 +405,18 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
     Path("salt/metalk8s/addons/solutions/deployed/init.sls"),
     Path("salt/metalk8s/addons/solutions/deployed/namespace.sls"),
     Path("salt/metalk8s/addons/storageclass/deployed.sls"),
-    Path("salt/metalk8s/addons/volumes/deployed.sls"),
     targets.TemplateFile(
         task_name="storage-operator.sls",
         source=constants.ROOT.joinpath(
-            "salt/metalk8s/addons/volumes/storage-operator.sls.in"
+            "salt/metalk8s/addons/volumes/deployed/manifests.sls.in"
         ),
         destination=constants.ISO_ROOT.joinpath(
-            "salt/metalk8s/addons/volumes/storage-operator.sls"
+            "salt/metalk8s/addons/volumes/deployed/manifests.sls"
         ),
-        context={
-            "ServiceAccount": STORAGE_OPERATOR_ACCOUNT.read_text(encoding="utf-8"),
-            "Role": STORAGE_OPERATOR_ROLE.read_text(encoding="utf-8"),
-            "RoleBinding": STORAGE_OPERATOR_ROLEBINDING.read_text(encoding="utf-8"),
-            "LeaderElectionRole": STORAGE_OPERATOR_LE_ROLE.read_text(encoding="utf-8"),
-            "LeaderElectionRoleBinding": STORAGE_OPERATOR_LE_ROLEBINDING.read_text(
-                encoding="utf-8"
-            ),
-            "Deployment": STORAGE_OPERATOR_DEPLOYMENT.read_text(encoding="utf-8"),
-        },
-        file_dep=[
-            STORAGE_OPERATOR_ACCOUNT,
-            STORAGE_OPERATOR_ROLE,
-            STORAGE_OPERATOR_ROLEBINDING,
-            STORAGE_OPERATOR_DEPLOYMENT,
-        ],
+        context={"Manifests": STORAGE_OPERATOR_MANIFESTS.read_text(encoding="utf-8")},
+        file_dep=[STORAGE_OPERATOR_MANIFESTS],
     ),
-    targets.TemplateFile(
-        task_name="volume-crd.sls",
-        source=constants.ROOT / "salt/metalk8s/addons/volumes/volume-crd.sls.in",
-        destination=constants.ISO_ROOT.joinpath(
-            "salt/metalk8s/addons/volumes/volume-crd.sls"
-        ),
-        context={"CustomResourceDefinition": VOLUME_CRD.read_text(encoding="utf-8")},
-        file_dep=[VOLUME_CRD],
-    ),
+    Path("salt/metalk8s/addons/volumes/deployed/init.sls"),
     Path("salt/metalk8s/addons/nginx-ingress/ca/init.sls"),
     Path("salt/metalk8s/addons/nginx-ingress/ca/installed.sls"),
     Path("salt/metalk8s/addons/nginx-ingress/ca/advertised.sls"),

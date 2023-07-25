@@ -199,3 +199,8 @@ catalog-build: opm ## Build a catalog image.
 .PHONY: catalog-push
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
+
+.PHONY: metalk8s
+metalk8s: manifests kustomize ## Generate MetalK8s resulting manifests
+	$(KUSTOMIZE) build config/metalk8s | \
+	sed 's/BUILD_IMAGE_CLUSTER_OPERATOR:latest/{{ build_image_name("storage-operator") }}/' > deploy/manifests.yaml

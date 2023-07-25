@@ -1076,7 +1076,7 @@ func getAuthCredential(config *rest.Config) *salt.Credential {
 	log.Info("using ServiceAccount bearer token")
 	return salt.NewCredential(
 		// FIXME: this should depend on the actual SA used
-		"system:serviceaccount:kube-system:storage-operator",
+		"system:serviceaccount:kube-system:storage-operator-controller-manager",
 		config.BearerToken,
 		salt.Bearer,
 	)

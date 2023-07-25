@@ -1,0 +1,21 @@
+namespace: kube-system
+
+namePrefix: storage-operator-
+
+images:
+  - name: controller
+    newName: 'BUILD_IMAGE_CLUSTER_OPERATOR'
+    newTag: 'latest'
+
+bases:
+- ../crd
+- ../rbac
+- ../manager
+
+patches:
+- path: deploy_patch.yaml
+  target:
+    kind: Deployment
+
+patchesStrategicMerge:
+  - delete_ns.yaml

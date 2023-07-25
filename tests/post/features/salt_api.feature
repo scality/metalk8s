@@ -17,7 +17,7 @@ Feature: SaltAPI
 
     Scenario: Login to SaltAPI using the storage-operator ServiceAccount
         Given the Kubernetes API is available
-        When we login to SaltAPI with the ServiceAccount 'kube-system/storage-operator'
+        When we login to SaltAPI with the ServiceAccount 'kube-system/storage-operator-controller-manager'
         Then authentication succeeds
         Then we can invoke '["metalk8s_volumes.device_info", "metalk8s_volumes.device_name", {"state.sls": {"kwargs": {"mods": r"metalk8s\.volumes.*"}}}]' on '*'
         And we have '@jobs' perms
@@ -32,6 +32,6 @@ Feature: SaltAPI
 
     Scenario: SaltAPI impersonation using a ServiceAccount
         Given the Kubernetes API is available
-        When we impersonate user 'system:serviceaccount:kube-system:storage-operator' against SaltAPI using the ServiceAccount 'kube-system/default'
+        When we impersonate user 'system:serviceaccount:kube-system:storage-operator-controller-manager' against SaltAPI using the ServiceAccount 'kube-system/default'
         Then authentication fails
 

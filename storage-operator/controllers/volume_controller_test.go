@@ -19,7 +19,7 @@ func TestGetAuthCredential(t *testing.T) {
 		"ServiceAccount": {
 			token: "foo",
 			expected: salt.NewCredential(
-				"system:serviceaccount:kube-system:storage-operator",
+				"system:serviceaccount:kube-system:storage-operator-controller-manager",
 				"foo",
 				salt.Bearer,
 			),

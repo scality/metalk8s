@@ -111,6 +111,91 @@ Deploy Kubernetes service config objects:
   - require_in:
     - salt: Deploy Kubernetes objects
 
+{#- In MetalK8s 126.0 the deployment of the storage-operator changed a bit
+  including some resource renaming, let's remove old objects #}
+{#- This logic can be removed in `development/127.0` #}
+{%- if salt.pkg.version_cmp(dest_version, '126.0.0') == -1 %}
+
+Delete storage-operator ServiceAccount:
+  metalk8s_kubernetes.object_absent:
+    - apiVersion: v1
+    - kind: ServiceAccount
+    - name: storage-operator-controller-manager
+    - namespace: kube-system
+    - require:
+      - salt: Deploy Kubernetes service config objects
+    - require_in:
+      - salt: Deploy Kubernetes objects
+
+Delete storage-operator Role:
+  metalk8s_kubernetes.object_absent:
+    - apiVersion: rbac.authorization.k8s.io/v1
+    - kind: Role
+    - name: storage-operator-leader-election-role
+    - namespace: kube-system
+    - require:
+      - salt: Deploy Kubernetes service config objects
+    - require_in:
+      - salt: Deploy Kubernetes objects
+
+Delete storage-operator ClusterRole:
+  metalk8s_kubernetes.object_absent:
+    - apiVersion: rbac.authorization.k8s.io/v1
+    - kind: ClusterRole
+    - name: storage-operator-manager-role
+    - require:
+      - salt: Deploy Kubernetes service config objects
+    - require_in:
+      - salt: Deploy Kubernetes objects
+
+Delete storage-operator RoleBinding:
+  metalk8s_kubernetes.object_absent:
+    - apiVersion: rbac.authorization.k8s.io/v1
+    - kind: RoleBinding
+    - name: storage-operator-leader-election-rolebinding
+    - namespace: kube-system
+    - require:
+      - salt: Deploy Kubernetes service config objects
+    - require_in:
+      - salt: Deploy Kubernetes objects
+
+Delete storage-operator ClusterRoleBinding:
+  metalk8s_kubernetes.object_absent:
+    - apiVersion: rbac.authorization.k8s.io/v1
+    - kind: ClusterRoleBinding
+    - name: storage-operator-manager-rolebinding
+    - require:
+      - salt: Deploy Kubernetes service config objects
+    - require_in:
+      - salt: Deploy Kubernetes objects
+
+Delete storage-operator ConfigMap:
+  metalk8s_kubernetes.object_absent:
+    - apiVersion: v1
+    - kind: ConfigMap
+    - name: storage-operator-manager-config
+    - namespace: kube-system
+    - require:
+      - salt: Deploy Kubernetes service config objects
+    - require_in:
+      - salt: Deploy Kubernetes objects
+
+Delete storage-operator Deployment:
+  metalk8s_kubernetes.object_absent:
+    - apiVersion: apps/v1
+    - kind: Deployment
+    - name: storage-operator-controller-manager
+    - namespace: kube-system
+    - wait:
+        attempts: 30
+        sleep: 10
+    - require:
+      - salt: Deploy Kubernetes service config objects
+    - require_in:
+      - salt: Deploy Kubernetes objects
+
+{%- endif %}
+
 Deploy Kubernetes objects:
   salt.runner:
     - name: state.orchestrate
