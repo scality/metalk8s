@@ -176,7 +176,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.17.13"
+          go-version: "1.18.10"
       - name: Install deps
         run: |
           export DEBIAN_FRONTEND=noninteractive
@@ -313,7 +313,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.17.13"
+          go-version: "1.18.10"
       - name: Cache Go modules
         uses: actions/cache@v3
         env:
@@ -343,7 +343,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.17.13"
+          go-version: "1.18.10"
       - name: Cache Go modules
         uses: actions/cache@v3
         env:
