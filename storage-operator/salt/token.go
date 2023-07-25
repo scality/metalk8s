@@ -13,11 +13,13 @@ type authToken struct {
 // Create a new Salt API authentication token.
 //
 // Arguments
-//     token:  the token.
-//     expire: the token expiration date, as an UNIX timestamp.
+//
+//	token:  the token.
+//	expire: the token expiration date, as an UNIX timestamp.
 //
 // Returns
-//     An authentication token.
+//
+//	An authentication token.
 func newToken(token string, expire float64) *authToken {
 	return &authToken{
 		value:  token,

@@ -65,13 +65,15 @@ func NewClient(creds *Credential, caCertData []byte) (*Client, error) {
 // Spawn a job, asynchronously, to prepare the volume on the specified node.
 //
 // Arguments
-//     ctx:        the request context (used for cancellation)
-//     nodeName:   name of the node where the volume will be
-//     volumeName: name of the volume to prepare
-//     saltenv:    saltenv to use
+//
+//	ctx:        the request context (used for cancellation)
+//	nodeName:   name of the node where the volume will be
+//	volumeName: name of the volume to prepare
+//	saltenv:    saltenv to use
 //
 // Returns
-//     The Salt job handle.
+//
+//	The Salt job handle.
 func (self *Client) PrepareVolume(
 	ctx context.Context, nodeName string, volumeName string, saltenv string,
 ) (*JobHandle, error) {
@@ -98,13 +100,15 @@ func (self *Client) PrepareVolume(
 // Spawn a job, asynchronously, to unprepare the volume on the specified node.
 //
 // Arguments
-//     ctx:      the request context (used for cancellation)
-//     nodeName: name of the node where the volume will be
-//     volumeName: name of the volume to prepare
-//     saltenv:    saltenv to use
+//
+//	ctx:      the request context (used for cancellation)
+//	nodeName: name of the node where the volume will be
+//	volumeName: name of the volume to prepare
+//	saltenv:    saltenv to use
 //
 // Returns
-//     The Salt job handle.
+//
+//	The Salt job handle.
 func (self *Client) UnprepareVolume(
 	ctx context.Context, nodeName string, volumeName string, saltenv string,
 ) (*JobHandle, error) {
@@ -131,12 +135,14 @@ func (self *Client) UnprepareVolume(
 // Poll the status of an asynchronous Salt job.
 //
 // Arguments
-//     ctx:      the request context (used for cancellation)
-//     job:      Salt job handle
-//     nodeName: node on which the job is executed
+//
+//	ctx:      the request context (used for cancellation)
+//	job:      Salt job handle
+//	nodeName: node on which the job is executed
 //
 // Returns
-//     The result of the job if the execution is over, otherwise nil.
+//
+//	The result of the job if the execution is over, otherwise nil.
 func (self *Client) PollJob(
 	ctx context.Context, job *JobHandle, nodeName string,
 ) (map[string]interface{}, error) {
@@ -184,12 +190,14 @@ func getStateFailureRootCause(output interface{}) string {
 // This request is asynchronous.
 //
 // Arguments
-//     ctx:        the request context (used for cancellation)
-//     nodeName:   name of the node where the volume will be
-//     volumeName: name of the volume to target
+//
+//	ctx:        the request context (used for cancellation)
+//	nodeName:   name of the node where the volume will be
+//	volumeName: name of the volume to target
 //
 // Returns
-//     The Salt job handle.
+//
+//	The Salt job handle.
 func (self *Client) GetDeviceInfo(
 	ctx context.Context, nodeName string, volumeName string,
 ) (*JobHandle, error) {
@@ -215,13 +223,15 @@ func (self *Client) GetDeviceInfo(
 // This request is synchronous.
 //
 // Arguments
-//     ctx:        the request context (used for cancellation)
-//     nodeName:   name of the node where the device is
-//     volumeName: name of the associated volume
-//     devicePath: path of the device for which we want the name
+//
+//	ctx:        the request context (used for cancellation)
+//	nodeName:   name of the node where the device is
+//	volumeName: name of the associated volume
+//	devicePath: path of the device for which we want the name
 //
 // Returns
-//     The Salt job handle.
+//
+//	The Salt job handle.
 func (self *Client) GetDeviceName(
 	ctx context.Context, nodeName string, volumeName string, devicePath string,
 ) (string, error) {
@@ -282,13 +292,15 @@ func (self *Client) submitJob(
 // - token invalidation (re-authenticate)
 //
 // Arguments
-//     ctx:      the request context (used for cancellation)
-//     verb:     HTTP verb used for the request
-//     endpoint: API endpoint.
-//     payload:  request JSON payload (optional)
+//
+//	ctx:      the request context (used for cancellation)
+//	verb:     HTTP verb used for the request
+//	endpoint: API endpoint.
+//	payload:  request JSON payload (optional)
 //
 // Returns
-//     The decoded response body.
+//
+//	The decoded response body.
 func (self *Client) authenticatedRequest(
 	ctx context.Context,
 	verb string,
@@ -362,14 +374,16 @@ func (self *Client) authenticate(ctx context.Context) error {
 // Send a request to Salt API.
 //
 // Arguments
-//     ctx:      the request context (used for cancellation)
-//     verb:     HTTP verb used for the request
-//     endpoint: API endpoint.
-//     payload:  request JSON payload (optional).
-//     is_auth:  Is the request authenticated?
+//
+//	ctx:      the request context (used for cancellation)
+//	verb:     HTTP verb used for the request
+//	endpoint: API endpoint.
+//	payload:  request JSON payload (optional).
+//	is_auth:  Is the request authenticated?
 //
 // Returns
-//     The request response.
+//
+//	The request response.
 func (self *Client) doRequest(
 	ctx context.Context,
 	verb string,
@@ -402,10 +416,11 @@ func (self *Client) doRequest(
 // Log an HTTP request.
 //
 // Arguments
-//     verb:     HTTP verb used for the request
-//     endpoint: API endpoint.
-//     response: HTTP response (if any)
-//     elapsed:  response time (in ms)
+//
+//	verb:     HTTP verb used for the request
+//	endpoint: API endpoint.
+//	response: HTTP response (if any)
+//	elapsed:  response time (in ms)
 func (self *Client) logRequest(
 	verb string, endpoint string, response *http.Response, elapsed int64,
 ) {
@@ -423,13 +438,15 @@ func (self *Client) logRequest(
 // Create an HTTP request for Salt API.
 //
 // Arguments
-//     verb:     HTTP verb used for the request
-//     endpoint: API endpoint.
-//     payload:  request JSON payload (optional).
-//     is_auth:  Is the request authenticated?
+//
+//	verb:     HTTP verb used for the request
+//	endpoint: API endpoint.
+//	payload:  request JSON payload (optional).
+//	is_auth:  Is the request authenticated?
 //
 // Returns
-//     The HTTP request.
+//
+//	The HTTP request.
 func (self *Client) newRequest(
 	verb string, endpoint string, payload map[string]interface{}, is_auth bool,
 ) (*http.Request, error) {
@@ -469,10 +486,12 @@ func (self *Client) newRequest(
 // Decode the HTTP response body.
 //
 // Arguments
-//     response: the HTTP response.
+//
+//	response: the HTTP response.
 //
 // Returns
-//     The decoded API response.
+//
+//	The decoded API response.
 func decodeApiResponse(response *http.Response) (map[string]interface{}, error) {
 	// Check the return code before trying to decode the body.
 	if response.StatusCode != 200 {

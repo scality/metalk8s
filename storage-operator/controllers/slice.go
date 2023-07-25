@@ -9,11 +9,13 @@ package controllers
 // Remove all the occurrences `target` from `slice` (if present).
 //
 // Arguments
-//     slice:  the slice to process
-//     target: the value to remove
+//
+//	slice:  the slice to process
+//	target: the value to remove
 //
 // Returns
-//     A slice without `target`.
+//
+//	A slice without `target`.
 func SliceRemoveValue(slice []string, target string) []string {
 	newSlice := slice[:0]
 	for _, value := range slice {
@@ -27,11 +29,13 @@ func SliceRemoveValue(slice []string, target string) []string {
 // Append `value` to `slice (if not already present).
 //
 // Arguments
-//     slice:  the slice to process
-//     target: the value to add.
+//
+//	slice:  the slice to process
+//	target: the value to add.
 //
 // Returns
-//     A slice with `target` in it.
+//
+//	A slice with `target` in it.
 func SliceAppendUnique(slice []string, newValue string) []string {
 	for _, value := range slice {
 		// value already present: nothing to do.

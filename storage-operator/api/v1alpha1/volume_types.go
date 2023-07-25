@@ -177,10 +177,11 @@ type Volume struct {
 // condition is added.
 //
 // Arguments
-//     kind:      type of condition
-//     status:    status of the condition
-//     reason:    one-word, CamelCase reason for the transition (optional)
-//     message:   details about the transition (optional)
+//
+//	kind:      type of condition
+//	status:    status of the condition
+//	reason:    one-word, CamelCase reason for the transition (optional)
+//	message:   details about the transition (optional)
 func (self *Volume) SetCondition(
 	kind VolumeConditionType,
 	status corev1.ConditionStatus,
@@ -244,9 +245,10 @@ func (self *Volume) ComputePhase() VolumePhase {
 // Update the volume status to Failed phase.
 //
 // Arguments
-//     reason:    the error code that triggered failure.
-//     format:    the string format for the error message
-//     args:      values used in the error message
+//
+//	reason:    the error code that triggered failure.
+//	format:    the string format for the error message
+//	args:      values used in the error message
 func (self *Volume) SetFailedStatus(
 	reason ConditionReason, format string, args ...interface{},
 ) {
@@ -259,7 +261,8 @@ func (self *Volume) SetFailedStatus(
 // Update the volume status to Pending phase.
 //
 // Arguments
-//     job: job in progress
+//
+//	job: job in progress
 func (self *Volume) SetPendingStatus(job string) {
 	self.SetCondition(VolumeReady, corev1.ConditionUnknown, ReasonPending, "")
 	self.Status.Job = job
@@ -274,7 +277,8 @@ func (self *Volume) SetAvailableStatus() {
 // Update the volume status to Terminating phase.
 //
 // Arguments
-//     job: job in progress
+//
+//	job: job in progress
 func (self *Volume) SetTerminatingStatus(job string) {
 	self.SetCondition(VolumeReady, corev1.ConditionUnknown, ReasonTerminating, "")
 	self.Status.Job = job

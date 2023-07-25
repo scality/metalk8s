@@ -878,12 +878,14 @@ func (self *VolumeReconciler) createPersistentVolume(
 // Build a PersistentVolume from a Volume object.
 //
 // Arguments
-//     volume:       a Volume object
-//     storageClass: a StorageClass object
-//     deviceInfo:   the device information
+//
+//	volume:       a Volume object
+//	storageClass: a StorageClass object
+//	deviceInfo:   the device information
 //
 // Returns
-//     The PersistentVolume representing the given Volume.
+//
+//	The PersistentVolume representing the given Volume.
 func newPersistentVolume(
 	volume *storagev1alpha1.Volume,
 	storageClass *storagev1.StorageClass,

@@ -19,9 +19,10 @@ type Credential struct {
 // Create a new Salt API client.
 //
 // Arguments
-//     username: user name
-//     secret:   user token or password (interpretation depends on authType)
-//     authType: authentication method
+//
+//	username: user name
+//	secret:   user token or password (interpretation depends on authType)
+//	authType: authentication method
 func NewCredential(username string, secret string, authType AuthType) *Credential {
 	if authType != Bearer {
 		panic(fmt.Sprintf("invalid authentication method: %s", authType))
