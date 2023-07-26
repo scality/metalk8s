@@ -84,6 +84,12 @@
   images to `rockylinux:8.8.20230518`
   (PR[#4106](https://github.com/scality/metalk8s/pull/4106))
 
+- Bump Operator-SDK used by `metalk8s-operator` and `storage-operator` to
+  [1.30.0](https://github.com/operator-framework/operator-sdk/releases/tag/v1.30.0)
+  The Go version has been bumped accordingly to
+  [1.19](https://golang.org/doc/devel/release.html#go1.19.minor)
+  (PR[#4110](https://github.com/scality/metalk8s/pull/4110))
+
 ## Release 125.0.6 (In development)
 
 
