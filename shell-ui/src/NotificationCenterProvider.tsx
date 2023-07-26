@@ -6,15 +6,15 @@ export type Notification = {
   description: string;
   severity: 'critical' | 'warning' | 'info';
   redirectUrl: string;
+  createdAt: Date;
 };
 
 export type InternalNotification = Notification & {
   readOn?: Date;
-  createdAt: Date;
 };
 
 type NotificationCenterContextType = {
-  notifications: Notification[];
+  notifications: InternalNotification[];
   dispatch: Dispatch<NotificationCenterActions>;
 };
 const NotificationCenterContext =
@@ -84,11 +84,18 @@ const NotificationCenterProvider = ({ children }) => {
           LOCAL_STORAGE_NOTIFICATION_PREFIX + action.notification.id,
         );
         const readOn = storedReadOn ? new Date(storedReadOn) : undefined;
+        // sort the Notifications by the createdAt date
+        const index = state.findIndex(
+          (n) =>
+            n.createdAt.getTime() > action.notification.createdAt.getTime(),
+        );
 
         return [
-          ...state,
-          { ...action.notification, readOn, createdAt: new Date() },
+          ...state.slice(0, index + 1),
+          { ...action.notification, readOn },
+          ...state.slice(index + 1),
         ];
+
       case NotificationActionType.UNPUBLISH:
         localStorage.removeItem(LOCAL_STORAGE_NOTIFICATION_PREFIX + action.id);
         return state.filter((n) => n.id !== action.id);
