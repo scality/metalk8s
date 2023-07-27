@@ -84,6 +84,10 @@ const NotificationCenterProvider = ({ children }) => {
           LOCAL_STORAGE_NOTIFICATION_PREFIX + action.notification.id,
         );
         const readOn = storedReadOn ? new Date(storedReadOn) : undefined;
+        // if the Notification is already stored, direct return the state
+        if (state.find((n) => n.id === action.notification.id)) {
+          return state;
+        }
         // sort the Notifications by the createdAt date
         const index = state.findIndex(
           (n) =>
