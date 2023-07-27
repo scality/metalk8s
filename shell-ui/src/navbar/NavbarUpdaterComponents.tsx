@@ -2,18 +2,18 @@ import { useConfigRetriever } from '../initFederation/ConfigurationProviders';
 import { useDeployedApps } from '../initFederation/UIListProvider';
 import type { FederatedModuleInfo } from '../initFederation/ConfigurationProviders';
 import type { SolutionUI } from '@scality/module-federation';
-import {
-  FederatedComponent,
-  useDynamicScripts,
-} from '@scality/module-federation';
-import { Fragment, Suspense, useCallback, useMemo, useState } from 'react';
+import { FederatedComponent } from '@scality/module-federation';
+import { Fragment, useCallback, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useEffect } from 'react';
 import { useNavbar } from './navbarHooks';
+import { useNotificationCenter } from '../NotificationCenterProvider';
+
 export const NavbarUpdaterComponents = () => {
   const deployedApps = useDeployedApps();
   const { retrieveConfiguration } = useConfigRetriever();
   const navbarManagementProps = useNavbar();
+  const { publish, unPublish } = useNotificationCenter();
   const componentsToFederate: (FederatedModuleInfo & {
     app: SolutionUI;
     remoteEntryPath: string;
@@ -79,6 +79,8 @@ export const NavbarUpdaterComponents = () => {
                   app={component.app}
                   props={{
                     navbarManagementProps,
+                    publishNotification: publish,
+                    unPublishNotification: unPublish,
                   }}
                 />
               </ErrorBoundary>
