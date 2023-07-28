@@ -13,3 +13,19 @@ window.crypto = {
 
 window.fetch = (url, ...rest) =>
   fetch(/^https?:/.test(url) ? url : new URL(url, 'http://localhost'), ...rest);
+
+const DOMRect = jest.fn(() => ({
+  x: 1796.453125,
+  y: 0,
+  width: 79.546875,
+  height: 55.671875,
+  top: 0,
+  right: 1876,
+  bottom: 55.671875,
+  left: 1796.453125,
+}));
+
+Object.defineProperty(window, 'DOMRect', {
+  value: DOMRect,
+  writable: true,
+});

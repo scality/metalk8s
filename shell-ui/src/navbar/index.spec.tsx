@@ -14,6 +14,7 @@ import { ShellHistoryProvider } from '../initFederation/ShellHistoryProvider';
 import { act } from 'react-test-renderer';
 import { LanguageProvider } from './lang';
 import { ThemeProvider } from './theme';
+import NotificationCenterProvider from '../NotificationCenterProvider';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,15 +53,17 @@ const wrapper = ({ children }) => {
         <CoreUiThemeProvider theme={theme.brand}>
           <LanguageProvider>
             <QueryClientProvider client={queryClient}>
-              <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
-                <WithInitFederationProviders>
-                  <MemoryRouter>
-                    <ShellHistoryProvider>
-                      <SolutionsNavbar>{children}</SolutionsNavbar>
-                    </ShellHistoryProvider>
-                  </MemoryRouter>
-                </WithInitFederationProviders>
-              </ShellConfigProvider>
+              <NotificationCenterProvider>
+                <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
+                  <WithInitFederationProviders>
+                    <MemoryRouter>
+                      <ShellHistoryProvider>
+                        <SolutionsNavbar>{children}</SolutionsNavbar>
+                      </ShellHistoryProvider>
+                    </MemoryRouter>
+                  </WithInitFederationProviders>
+                </ShellConfigProvider>
+              </NotificationCenterProvider>
             </QueryClientProvider>
           </LanguageProvider>
         </CoreUiThemeProvider>
@@ -152,7 +155,8 @@ describe('useNavbar', () => {
     const { result, waitForNextUpdate } = renderHook(() => useNavbar(), {
       wrapper,
     });
-    await waitForNextUpdate();
+
+    await act(() => waitForNextUpdate());
     //E
     act(() =>
       result.current.setMainLinks([expectedDefaultNavbarLinks.main[0]]),

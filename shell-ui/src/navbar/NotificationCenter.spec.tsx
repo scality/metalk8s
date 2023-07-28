@@ -12,36 +12,19 @@ import { prepareRenderMultipleHooks } from './__TESTS__/testMultipleHooks';
 import { MemoryRouter, Route, Switch } from 'react-router';
 import { ShellHistoryProvider } from '../initFederation/ShellHistoryProvider';
 
+export const notificationCenterSelectors = {
+  notificationCenterButton: () =>
+    screen.getByRole('button', { name: /notification center/i }),
+  emptyNotificationCenterIcon: () =>
+    screen.getByRole('img', { name: /Notification Center \(Empty\)/i }),
+  noNotifications: () =>
+    screen.getByText(/You have no new notifications at the moment./i),
+  notification: (title: string | RegExp) =>
+    screen.getByRole('option', { name: title }),
+  notificationCenterComboBox: () =>
+    screen.getByRole('combobox', { name: /notification center/i }),
+};
 describe('NotificationCenter', () => {
-  const DOMRect = jest.fn(() => ({
-    x: 1796.453125,
-    y: 0,
-    width: 79.546875,
-    height: 55.671875,
-    top: 0,
-    right: 1876,
-    bottom: 55.671875,
-    left: 1796.453125,
-  }));
-
-  Object.defineProperty(window, 'DOMRect', {
-    value: DOMRect,
-    writable: true,
-  });
-
-  const selectors = {
-    notificationCenterButton: () =>
-      screen.getByRole('button', { name: /notification center/i }),
-    emptyNotificationCenterIcon: () =>
-      screen.getByRole('img', { name: /Notification Center \(Empty\)/i }),
-    noNotifications: () =>
-      screen.getByText(/You have no new notifications at the moment./i),
-    notification: (title: string | RegExp) =>
-      screen.getByRole('option', { name: title }),
-    notificationCenterComboBox: () =>
-      screen.getByRole('combobox', { name: /notification center/i }),
-  };
-
   const wrapper = ({ children }: PropsWithChildren<Record<string, never>>) => {
     return (
       <QueryClientProvider client={new QueryClient()}>
@@ -130,11 +113,13 @@ describe('NotificationCenter', () => {
     });
     //E
     await waitFor(() => {
-      expect(selectors.emptyNotificationCenterIcon()).toBeInTheDocument();
+      expect(
+        notificationCenterSelectors.emptyNotificationCenterIcon(),
+      ).toBeInTheDocument();
     });
-    userEvent.click(selectors.notificationCenterButton());
+    userEvent.click(notificationCenterSelectors.notificationCenterButton());
     //V
-    expect(selectors.noNotifications()).toBeInTheDocument();
+    expect(notificationCenterSelectors.noNotifications()).toBeInTheDocument();
   });
 
   it('should display the notifications, prioritizing by the created time', async () => {
@@ -143,9 +128,11 @@ describe('NotificationCenter', () => {
     const { result, waitFor } = await renderNotificationCenter();
     const { TRIAL_LICENSE_EXPIRED, NEW_ALERTS, NEW_VERSION_AVAILABLE } =
       publishNewNotifications(result);
-    expect(selectors.notificationCenterButton()).toBeInTheDocument();
+    expect(
+      notificationCenterSelectors.notificationCenterButton(),
+    ).toBeInTheDocument();
     // Open the notification center
-    userEvent.click(selectors.notificationCenterButton());
+    userEvent.click(notificationCenterSelectors.notificationCenterButton());
     // Note that the waitFor from the React Hook Testing Library is different from the one from the React Testing Library.
     await waitFor(
       () => !!screen.queryByText(new RegExp(TRIAL_LICENSE_EXPIRED)),
@@ -181,12 +168,12 @@ describe('NotificationCenter', () => {
     ).toBeInTheDocument();
 
     //E close the notification center
-    userEvent.click(selectors.notificationCenterButton());
+    userEvent.click(notificationCenterSelectors.notificationCenterButton());
     //V the notification center is closed
     expect(screen.queryByRole('option')).not.toBeInTheDocument();
 
     //E open again the notification center
-    userEvent.click(selectors.notificationCenterButton());
+    userEvent.click(notificationCenterSelectors.notificationCenterButton());
     //V the notification are marked as read
     expect(
       within(screen.getAllByRole('option')[0]).queryByRole('img', {
@@ -209,18 +196,22 @@ describe('NotificationCenter', () => {
     const { result } = await renderNotificationCenter();
     const { TRIAL_LICENSE_EXPIRED, NEW_ALERTS, NEW_VERSION_AVAILABLE } =
       publishNewNotifications(result);
-    const notificationCenterButton = selectors.notificationCenterButton();
+    const notificationCenterButton =
+      notificationCenterSelectors.notificationCenterButton();
     userEvent.click(notificationCenterButton);
-    const notificationCenterComboBox = selectors.notificationCenterComboBox();
+    const notificationCenterComboBox =
+      notificationCenterSelectors.notificationCenterComboBox();
     userEvent.keyboard('{arrowdown}');
-    const notification = selectors.notification(new RegExp(NEW_ALERTS));
+    const notification = notificationCenterSelectors.notification(
+      new RegExp(NEW_ALERTS),
+    );
     expect(
       notificationCenterComboBox.attributes.getNamedItem(
         'aria-activedescendant',
       )?.value,
     ).toBe(notification.id);
     userEvent.keyboard('{arrowdown}');
-    const nextNotification = selectors.notification(
+    const nextNotification = notificationCenterSelectors.notification(
       new RegExp(NEW_VERSION_AVAILABLE),
     );
     expect(
@@ -229,7 +220,7 @@ describe('NotificationCenter', () => {
       )?.value,
     ).toBe(nextNotification.id);
     userEvent.keyboard('{arrowdown}');
-    const lastNotification = selectors.notification(
+    const lastNotification = notificationCenterSelectors.notification(
       new RegExp(TRIAL_LICENSE_EXPIRED),
     );
     expect(
@@ -251,7 +242,7 @@ describe('NotificationCenter', () => {
     //E
     publishNewNotifications(result);
     publishNewNotifications(result);
-    userEvent.click(selectors.notificationCenterButton());
+    userEvent.click(notificationCenterSelectors.notificationCenterButton());
     //V
     expect(screen.getAllByRole('option').length).toBe(3);
   });
