@@ -226,7 +226,7 @@
                                 >
                                   <!--[if (lte ie 8)]><div style="display: inline-block; width: 258px; -mru-width: 0px"><!
                                   [endif]--><METALK8S_LOGO/>
-                                  /><!--[if (lte ie 8)]></div><![endif]-->
+                                  <!--[if (lte ie 8)]></div><![endif]-->
                                 </td>
                               </tr>
                             </tbody>
@@ -616,43 +616,9 @@
                             <tr>
                               <td>
                                 {{ if eq .Labels.severity "critical" }}
-                                <svg
-                                  aria-hidden="true"
-                                  focusable="false"
-                                  data-prefix="fas"
-                                  data-icon="times-circle"
-                                  class="svg-inline--fa fa-times-circle fa-w-16 fa-1x sc-HUrrW ggnUlF"
-                                  role="img"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="24"
-                                  viewBox="0 0 512 512"
-                                  color="#D6545A"
-                                  aria-label="Times-circle status critical"
-                                >
-                                  <path
-                                    fill="currentColor"
-                                    d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z"
-                                  ></path>
-                                </svg>
+                                <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBjbGFzcz0ic3ZnLWlubGluZS0tZmEgZmEtdGltZXMtY2lyY2xlIGZhLXctMTYgZmEtMXggc2MtSFVyclcgZ2duVWxGIiB3aWR0aD0iMjQiIGNvbG9yPSIjRDY1NDVBIiBhcmlhLWhpZGRlbj0idHJ1ZSIgYXJpYS1sYWJlbD0iVGltZXMtY2lyY2xlIHN0YXR1cyBjcml0aWNhbCIgZGF0YS1pY29uPSJ0aW1lcy1jaXJjbGUiIGRhdGEtcHJlZml4PSJmYXMiIGZvY3VzYWJsZT0iZmFsc2UiIHJvbGU9ImltZyIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0yNTYgOEMxMTkgOCA4IDExOSA4IDI1NnMxMTEgMjQ4IDI0OCAyNDggMjQ4LTExMSAyNDgtMjQ4UzM5MyA4IDI1NiA4em0xMjEuNiAzMTMuMWM0LjcgNC43IDQuNyAxMi4zIDAgMTdMMzM4IDM3Ny42Yy00LjcgNC43LTEyLjMgNC43LTE3IDBMMjU2IDMxMmwtNjUuMSA2NS42Yy00LjcgNC43LTEyLjMgNC43LTE3IDBMMTM0LjQgMzM4Yy00LjctNC43LTQuNy0xMi4zIDAtMTdsNjUuNi02NS02NS42LTY1LjFjLTQuNy00LjctNC43LTEyLjMgMC0xN2wzOS42LTM5LjZjNC43LTQuNyAxMi4zLTQuNyAxNyAwbDY1IDY1LjcgNjUuMS02NS42YzQuNy00LjcgMTIuMy00LjcgMTcgMGwzOS42IDM5LjZjNC43IDQuNyA0LjcgMTIuMyAwIDE3TDMxMiAyNTZsNjUuNiA2NS4xeiIgZmlsbD0iY3VycmVudENvbG9yIi8+PC9zdmc+Cg==" />
                                 {{ else if eq .Labels.severity "warning" }}
-                                <svg
-                                  aria-hidden="true"
-                                  focusable="false"
-                                  data-prefix="fas"
-                                  data-icon="exclamation-circle"
-                                  class="svg-inline--fa fa-exclamation-circle fa-w-16 fa-1x sc-fodVxV YZwqo"
-                                  role="img"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="24"
-                                  viewBox="0 0 512 512"
-                                  color="#F7F25A"
-                                  aria-label="Exclamation-circle status warning"
-                                >
-                                  <path
-                                    fill="currentColor"
-                                    d="M504 256c0 136.997-111.043 248-248 248S8 392.997 8 256C8 119.083 119.043 8 256 8s248 111.083 248 248zm-248 50c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"
-                                  ></path>
-                                </svg>
+                                <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBjbGFzcz0ic3ZnLWlubGluZS0tZmEgZmEtZXhjbGFtYXRpb24tY2lyY2xlIGZhLXctMTYgZmEtMXggc2MtZm9kVnhWIFlad3FvIiB3aWR0aD0iMjQiIGNvbG9yPSIjRjdGMjVBIiBhcmlhLWhpZGRlbj0idHJ1ZSIgYXJpYS1sYWJlbD0iRXhjbGFtYXRpb24tY2lyY2xlIHN0YXR1cyB3YXJuaW5nIiBkYXRhLWljb249ImV4Y2xhbWF0aW9uLWNpcmNsZSIgZGF0YS1wcmVmaXg9ImZhcyIgZm9jdXNhYmxlPSJmYWxzZSIgcm9sZT0iaW1nIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0ibTUwNCAyNTZjMCAxMzctMTExLjA0IDI0OC0yNDggMjQ4cy0yNDgtMTExLTI0OC0yNDhjMC0xMzYuOTIgMTExLjA0LTI0OCAyNDgtMjQ4czI0OCAxMTEuMDggMjQ4IDI0OHptLTI0OCA1MGMtMjUuNDA1IDAtNDYgMjAuNTk1LTQ2IDQ2czIwLjU5NSA0NiA0NiA0NiA0Ni0yMC41OTUgNDYtNDYtMjAuNTk1LTQ2LTQ2LTQ2em0tNDMuNjczLTE2NS4zNSA3LjQxOCAxMzZjMC4zNDcgNi4zNjQgNS42MDkgMTEuMzQ2IDExLjk4MiAxMS4zNDZoNDguNTQ2YzYuMzczIDAgMTEuNjM1LTQuOTgyIDExLjk4Mi0xMS4zNDZsNy40MTgtMTM2YzAuMzc1LTYuODc0LTUuMDk4LTEyLjY1NC0xMS45ODItMTIuNjU0aC02My4zODNjLTYuODg0IDAtMTIuMzU2IDUuNzgtMTEuOTgxIDEyLjY1NHoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPgo8L3N2Zz4K" />
                                 {{ else }} {{ .Labels.severity }} {{ end }}
                               </td>
                               <td>{{ .Labels.alertname }}</td>
@@ -980,43 +946,11 @@
                             <tr>
                               <td>
                                 {{ if eq .Labels.severity "critical" }}
-                                <svg
-                                  aria-hidden="true"
-                                  focusable="false"
-                                  data-prefix="fas"
-                                  data-icon="times-circle"
-                                  class="svg-inline--fa fa-times-circle fa-w-16 fa-1x sc-HUrrW ggnUlF"
-                                  role="img"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="24"
-                                  viewBox="0 0 512 512"
-                                  color="#D6545A"
-                                  aria-label="Times-circle status critical"
-                                >
-                                  <path
-                                    fill="currentColor"
-                                    d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z"
-                                  ></path>
-                                </svg>
+                                <img
+                                  src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBjbGFzcz0ic3ZnLWlubGluZS0tZmEgZmEtdGltZXMtY2lyY2xlIGZhLXctMTYgZmEtMXggc2MtSFVyclcgZ2duVWxGIiB3aWR0aD0iMjQiIGNvbG9yPSIjRDY1NDVBIiBhcmlhLWhpZGRlbj0idHJ1ZSIgYXJpYS1sYWJlbD0iVGltZXMtY2lyY2xlIHN0YXR1cyBjcml0aWNhbCIgZGF0YS1pY29uPSJ0aW1lcy1jaXJjbGUiIGRhdGEtcHJlZml4PSJmYXMiIGZvY3VzYWJsZT0iZmFsc2UiIHJvbGU9ImltZyIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0yNTYgOEMxMTkgOCA4IDExOSA4IDI1NnMxMTEgMjQ4IDI0OCAyNDggMjQ4LTExMSAyNDgtMjQ4UzM5MyA4IDI1NiA4em0xMjEuNiAzMTMuMWM0LjcgNC43IDQuNyAxMi4zIDAgMTdMMzM4IDM3Ny42Yy00LjcgNC43LTEyLjMgNC43LTE3IDBMMjU2IDMxMmwtNjUuMSA2NS42Yy00LjcgNC43LTEyLjMgNC43LTE3IDBMMTM0LjQgMzM4Yy00LjctNC43LTQuNy0xMi4zIDAtMTdsNjUuNi02NS02NS42LTY1LjFjLTQuNy00LjctNC43LTEyLjMgMC0xN2wzOS42LTM5LjZjNC43LTQuNyAxMi4zLTQuNyAxNyAwbDY1IDY1LjcgNjUuMS02NS42YzQuNy00LjcgMTIuMy00LjcgMTcgMGwzOS42IDM5LjZjNC43IDQuNyA0LjcgMTIuMyAwIDE3TDMxMiAyNTZsNjUuNiA2NS4xeiIgZmlsbD0iY3VycmVudENvbG9yIi8+PC9zdmc+Cg=="
+                                />
                                 {{ else if eq .Labels.severity "warning" }}
-                                <svg
-                                  aria-hidden="true"
-                                  focusable="false"
-                                  data-prefix="fas"
-                                  data-icon="exclamation-circle"
-                                  class="svg-inline--fa fa-exclamation-circle fa-w-16 fa-1x sc-fodVxV YZwqo"
-                                  role="img"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="24"
-                                  viewBox="0 0 512 512"
-                                  color="#F7F25A"
-                                  aria-label="Exclamation-circle status warning"
-                                >
-                                  <path
-                                    fill="currentColor"
-                                    d="M504 256c0 136.997-111.043 248-248 248S8 392.997 8 256C8 119.083 119.043 8 256 8s248 111.083 248 248zm-248 50c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"
-                                  ></path>
-                                </svg>
+                                <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBjbGFzcz0ic3ZnLWlubGluZS0tZmEgZmEtZXhjbGFtYXRpb24tY2lyY2xlIGZhLXctMTYgZmEtMXggc2MtZm9kVnhWIFlad3FvIiB3aWR0aD0iMjQiIGNvbG9yPSIjRjdGMjVBIiBhcmlhLWhpZGRlbj0idHJ1ZSIgYXJpYS1sYWJlbD0iRXhjbGFtYXRpb24tY2lyY2xlIHN0YXR1cyB3YXJuaW5nIiBkYXRhLWljb249ImV4Y2xhbWF0aW9uLWNpcmNsZSIgZGF0YS1wcmVmaXg9ImZhcyIgZm9jdXNhYmxlPSJmYWxzZSIgcm9sZT0iaW1nIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0ibTUwNCAyNTZjMCAxMzctMTExLjA0IDI0OC0yNDggMjQ4cy0yNDgtMTExLTI0OC0yNDhjMC0xMzYuOTIgMTExLjA0LTI0OCAyNDgtMjQ4czI0OCAxMTEuMDggMjQ4IDI0OHptLTI0OCA1MGMtMjUuNDA1IDAtNDYgMjAuNTk1LTQ2IDQ2czIwLjU5NSA0NiA0NiA0NiA0Ni0yMC41OTUgNDYtNDYtMjAuNTk1LTQ2LTQ2LTQ2em0tNDMuNjczLTE2NS4zNSA3LjQxOCAxMzZjMC4zNDcgNi4zNjQgNS42MDkgMTEuMzQ2IDExLjk4MiAxMS4zNDZoNDguNTQ2YzYuMzczIDAgMTEuNjM1LTQuOTgyIDExLjk4Mi0xMS4zNDZsNy40MTgtMTM2YzAuMzc1LTYuODc0LTUuMDk4LTEyLjY1NC0xMS45ODItMTIuNjU0aC02My4zODNjLTYuODg0IDAtMTIuMzU2IDUuNzgtMTEuOTgxIDEyLjY1NHoiIGZpbGw9ImN1cnJlbnRDb2xvciIvPgo8L3N2Zz4K" />
                                 {{ else }} {{ .Labels.severity }} {{ end }}
                               </td>
                               <td>{{ .Labels.alertname }}</td>

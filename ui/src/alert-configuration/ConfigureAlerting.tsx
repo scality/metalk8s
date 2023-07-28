@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { useEffect, useRef } from 'react';
+import { Controller, get, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router';
 import Joi from '@hapi/joi';
 import { joiResolver } from '@hookform/resolvers/joi';
@@ -38,18 +38,28 @@ const LogsBanner = ({ logs }: { logs: PromiseResult<AlertStoreLogLine[]> }) => {
   const firstLog =
     logs.status === 'success' && logs.value.length > 0 ? logs.value[0] : null;
 
+  const bannerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (bannerRef.current) {
+      bannerRef.current.focus();
+    }
+  }, [bannerRef.current]);
+
   if (firstLog?.level !== 'ERROR') {
     return <></>;
   }
 
   return (
-    <Banner
-      variant="warning"
-      icon={<Icon name="Exclamation-circle" color="statusWarning" />}
-    >
-      {`Error: ${firstLog.message} `}
-      <FormattedDateTime format="relative" value={firstLog.occuredOn} />
-    </Banner>
+    <div ref={bannerRef} tabIndex={0}>
+      <Banner
+        variant="warning"
+        icon={<Icon name="Exclamation-circle" color="statusWarning" />}
+      >
+        {`Error: ${firstLog.message} `}
+        <FormattedDateTime format="relative" value={firstLog.occuredOn} />
+      </Banner>
+    </div>
   );
 };
 
@@ -173,6 +183,17 @@ export default function ConfigureAlerting() {
       alertConfigurationStore,
     });
 
+  useEffect(() => {
+    if (sendTestAlertMutation.status === 'success') {
+      dispatch(
+        addNotificationSuccessAction({
+          title: 'Email notification configuration',
+          message: 'The email has been sent, please check your email',
+        }),
+      );
+    }
+  }, [sendTestAlertMutation.status]);
+
   const labelWidth = 270;
 
   const disableFormButton =
@@ -204,10 +225,60 @@ export default function ConfigureAlerting() {
                   type="button"
                 />
                 <Button
+                  type="button"
+                  variant="secondary"
+                  tooltip={
+                    Object.entries(formState.dirtyFields).filter(
+                      ([key]) => key !== 'enabled',
+                    ).length > 0
+                      ? {
+                          overlay:
+                            'Triggering a test mail will restart alerting service, alerts will be retriggered few minutes after.',
+                        }
+                      : undefined
+                  }
+                  disabled={
+                    sendTestAlertMutation.isLoading ||
+                    editAlertMutation.isLoading
+                  }
+                  label={
+                    sendTestAlertMutation.isLoading ? (
+                      <Text
+                        style={{
+                          display: 'flex',
+                          gap: '0.5rem',
+                          alignItems: 'center',
+                        }}
+                      >
+                        Sending... <Loader />
+                      </Text>
+                    ) : (
+                      'Send a test email'
+                    )
+                  }
+                  onClick={() => {
+                    sendTestAlertMutation.mutate(getValues());
+                  }}
+                />
+                <Button
                   variant="primary"
+                  tooltip={
+                    formState.isDirty
+                      ? {
+                          overlay:
+                            'Saving the configuration will restart alerting service, alerts will be retriggered few minutes after.',
+                        }
+                      : undefined
+                  }
                   label={
                     editAlertMutation.isLoading ? (
-                      <Text style={{ display: 'flex', gap: '0.5rem' }}>
+                      <Text
+                        style={{
+                          display: 'flex',
+                          gap: '0.5rem',
+                          alignItems: 'center',
+                        }}
+                      >
                         Saving... <Loader />
                       </Text>
                     ) : (
@@ -219,7 +290,14 @@ export default function ConfigureAlerting() {
                 />
               </Stack>
             }
-            banner={<LogsBanner logs={alertLogs} />}
+            banner={
+              <>
+                <LogsBanner logs={alertLogs} />
+                {sendTestAlertMutation.status === 'success' && (
+                  <LogsBanner logs={testAlertlogs} />
+                )}
+              </>
+            }
           >
             <FormSection forceLabelWidth={labelWidth}>
               <FormGroup
@@ -479,36 +557,6 @@ export default function ConfigureAlerting() {
                   <Checkbox id="sendResolved" {...register('sendResolved')} />
                 }
               />
-            </FormSection>
-            <FormSection
-              forceLabelWidth={labelWidth}
-              title={{ name: 'Testing Your Configuration' }}
-            >
-              <Stack direction="vertical">
-                <div>
-                  <Button
-                    type="button"
-                    variant="primary"
-                    label={
-                      sendTestAlertMutation.isLoading ? (
-                        <Text style={{ display: 'flex', gap: '0.5rem' }}>
-                          Sending... <Loader />
-                        </Text>
-                      ) : (
-                        'Send a test email'
-                      )
-                    }
-                    disabled={disableFormButton}
-                    onClick={() => sendTestAlertMutation.mutate(getValues())}
-                  />
-                  {sendTestAlertMutation.status === 'success' ? (
-                    <Text style={{ paddingLeft: '1rem' }}>
-                      The email has been sent, please check your email
-                    </Text>
-                  ) : null}
-                </div>
-                <LogsBanner logs={testAlertlogs} />
-              </Stack>
             </FormSection>
           </Form>
         </Box>
