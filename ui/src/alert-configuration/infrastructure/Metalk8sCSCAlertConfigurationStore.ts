@@ -296,8 +296,11 @@ export class Metalk8sCSCAlertConfigurationStore
     logoDom.querySelector('svg')?.setAttribute('width', '258');
     logoDom.querySelector('svg')?.setAttribute('height', '50');
     const logo = new XMLSerializer().serializeToString(logoDom);
+    const base64Logo = btoa(logo);
+    const logoSrc = `data:image/svg+xml;base64,${base64Logo}`;
+    const logoTag = `<img src="${logoSrc}" alt="Logo" width="258" height="50" />`;
     const html = template
-      .replace('<METALK8S_LOGO/>', logo)
+      .replace('<METALK8S_LOGO/>', logoTag)
       .replace(/\r\n/g, '');
 
     return {

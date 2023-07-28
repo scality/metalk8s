@@ -14,6 +14,7 @@ import { Route, Switch } from 'react-router';
 
 import ConfigureAlerting from './ConfigureAlerting';
 import { render, waitForLoadingToFinish } from '../components/__TEST__/util';
+import { NotificationDisplayer } from '../containers/Layout';
 
 const saltLoginRequest = jest.fn();
 const patchAlertmanagerConfig = jest.fn();
@@ -161,14 +162,17 @@ const overrideMSWAlertmanagerConfig = (testYAMLPath: string) => {
 
 const commonSetup = async () => {
   render(
-    <Switch>
-      <Route exact path="/alerts">
-        <div>Redirected Alert Page</div>
-      </Route>
-      <Route exact path="/">
-        <ConfigureAlerting />
-      </Route>
-    </Switch>,
+    <>
+      <NotificationDisplayer />
+      <Switch>
+        <Route exact path="/alerts">
+          <div>Redirected Alert Page</div>
+        </Route>
+        <Route exact path="/">
+          <ConfigureAlerting />
+        </Route>
+      </Switch>
+    </>,
   );
 
   await waitForLoadingToFinish();
@@ -212,9 +216,10 @@ describe('<ConfigureAlerting />', () => {
     receiveResolved: () =>
       screen.getByLabelText(/Enable Receive Resolved Alerts/i),
     sendTestingEmailButton: () =>
-      screen.getByRole('button', { name: /send a test email|sending.../i }),
+      screen.getByRole('button', { name: /send a test email|sending\.\.\./i }),
     cancelButton: () => screen.getByRole('button', { name: /cancel/i }),
-    saveButton: () => screen.getByRole('button', { name: /save|saving.../i }),
+    saveButton: () =>
+      screen.getByRole('button', { name: /save|saving\.\.\./i }),
   };
 
   it('render default value when the form is not defined', async () => {
@@ -240,7 +245,7 @@ describe('<ConfigureAlerting />', () => {
     expect(selectors.recipient()).toHaveValue('');
     expect(selectors.receiveResolved()).not.toBeChecked();
 
-    expect(selectors.sendTestingEmailButton()).toBeDisabled();
+    expect(selectors.sendTestingEmailButton()).toBeEnabled();
     expect(selectors.cancelButton()).toBeEnabled();
     expect(selectors.saveButton()).toBeDisabled();
 
@@ -403,7 +408,7 @@ describe('<ConfigureAlerting />', () => {
     });
 
     await waitForElementToBeRemoved(() => {
-      return screen.getByText(/Saving.../);
+      return screen.getByText(/Saving\.\.\./);
     });
 
     expect(saltLoginRequest).toHaveBeenCalledWith({
@@ -472,7 +477,7 @@ spec:
     });
 
     await waitForElementToBeRemoved(() => {
-      return screen.getByText(/Saving.../);
+      return screen.getByText(/Saving\.\.\./);
     });
 
     expect(saltLoginRequest).toHaveBeenCalledWith({
@@ -542,7 +547,7 @@ spec:
     });
 
     await waitForElementToBeRemoved(() => {
-      return screen.getByText(/Saving.../);
+      return screen.getByText(/Saving\.\.\./);
     });
 
     expect(saltLoginRequest).toHaveBeenCalledWith({
@@ -614,7 +619,7 @@ spec:
     });
 
     await waitForElementToBeRemoved(() => {
-      return screen.getByText(/Saving.../);
+      return screen.getByText(/Saving\.\.\./);
     });
 
     expect(saltLoginRequest).toHaveBeenCalledWith({
@@ -682,7 +687,7 @@ spec:
     });
 
     await waitForElementToBeRemoved(() => {
-      return screen.getByText(/Saving.../);
+      return screen.getByText(/Saving\.\.\./);
     });
 
     expect(saltLoginRequest).toHaveBeenCalledWith({
@@ -751,7 +756,7 @@ spec:
     });
 
     await waitForElementToBeRemoved(() => {
-      return screen.getByText(/Saving.../);
+      return screen.getByText(/Saving\.\.\./);
     });
 
     expect(saltLoginRequest).toHaveBeenCalledWith({

@@ -24,7 +24,7 @@ const composeEnhancers =
     : compose;
 const sagaMiddleware = createSagaMiddleware();
 const enhancer = composeEnhancers(applyMiddleware(sagaMiddleware));
-export const store = createStore(reducer, enhancer);
+export const buildStore = () => createStore(reducer, enhancer);
 export const waitForLoadingToFinish = () =>
   waitForElementToBeRemoved(
     () => [
@@ -113,7 +113,7 @@ export const AllTheProviders = (
       return (
         <Router history={history}>
           <IntlProvider locale="en" messages={translations_en}>
-            <Provider store={store}>
+            <Provider store={buildStore()}>
               <QueryClientProvider client={queryClient}>
                 <MetricsTimeSpanProvider>
                   <StartTimeProvider>
@@ -140,7 +140,7 @@ export const AllTheProviders = (
       >
         <Router history={history}>
           <IntlProvider locale="en" messages={translations_en}>
-            <Provider store={store}>
+            <Provider store={buildStore()}>
               <QueryClientProvider client={queryClient}>
                 <MetricsTimeSpanProvider>
                   <StartTimeProvider>

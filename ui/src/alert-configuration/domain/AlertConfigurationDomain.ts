@@ -82,7 +82,7 @@ export const useAlertConfiguration = ({
   alertConfiguration: PromiseResult<AlertConfiguration>;
   logs: PromiseResult<AlertStoreLogLine[]>;
 } => {
-  const { data, status, error } = useQuery({
+  const { data, status } = useQuery({
     queryKey: ['alertConfiguration'],
     queryFn: () => {
       return alertConfigurationStore.getAlertConfiguration();
@@ -167,9 +167,13 @@ export const useEditAlertConfiguration = ({
     mutationFn: (alertConfiguration: AlertConfiguration) => {
       return alertConfigurationStore.putAlertConfiguration(alertConfiguration);
     },
-    onSuccess: () => {
+    onSuccess: (_, alertConfiguration) => {
       queryClient.refetchQueries(['alertstorelogs']);
       queryClient.setQueryData<AlertStoreLogLine[]>(['alertstoretestlogs'], []);
+      queryClient.setQueriesData<AlertConfiguration>(
+        ['alertConfiguration'],
+        alertConfiguration,
+      );
     },
   });
 
@@ -198,9 +202,11 @@ export const useTestAlertConfiguration = ({
   const sendTestAlertMutation = useMutation({
     mutationFn: (alertConfiguration: AlertConfiguration) => {
       alertConfiguration.sendResolved = false;
+
       return alertConfigurationStore.testAlertConfiguration(
         alertConfiguration,
-        JSON.stringify(data) !== JSON.stringify(alertConfiguration),
+        JSON.stringify(data) !==
+          JSON.stringify({ ...alertConfiguration, enabled: true }),
       );
     },
     onSuccess: () => {

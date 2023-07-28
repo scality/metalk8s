@@ -29,21 +29,32 @@ const VolumePage = React.lazy(() => import('./VolumePage'));
 const DashboardPage = React.lazy(() => import('./DashboardPage'));
 const AlertPage = React.lazy(() => import('./AlertPage'));
 
+export const NotificationDisplayer = () => {
+  const notifications = useTypedSelector(
+    (state) => state.app.notifications.list,
+  );
+  const dispatch = useDispatch();
+  const removeNotification = (uid: string) =>
+    dispatch(removeNotificationAction(uid));
+  return (
+    <Notifications
+      notifications={notifications}
+      onDismiss={(uid) => removeNotification(uid)}
+    />
+  );
+};
+
 const Layout = () => {
   const sidebar = useTypedSelector((state) => state.app.layout.sidebar);
   const intl = useIntl();
   const language = intl.locale;
-  const notifications = useTypedSelector(
-    (state) => state.app.notifications.list,
-  );
-  useEffect(() => {
-    dispatch(setIntlAction(intl)); // eslint-disable-next-line
-  }, [language]);
+
   const isUserLoaded = useTypedSelector((state) => !!state.oidc?.user);
   const dispatch = useDispatch();
 
-  const removeNotification = (uid) => dispatch(removeNotificationAction(uid));
-
+  useEffect(() => {
+    dispatch(setIntlAction(intl)); // eslint-disable-next-line
+  }, [language]);
   const toggleSidebar = () => dispatch(toggleSideBarAction());
 
   const history = useHistory();
@@ -149,10 +160,7 @@ const Layout = () => {
         ) : undefined
       }
     >
-      <Notifications
-        notifications={notifications}
-        onDismiss={removeNotification}
-      />
+      <NotificationDisplayer />
       <Suspense fallback={<Loader size="massive" centered={true} />}>
         <Switch>
           <PrivateRoute
