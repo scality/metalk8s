@@ -6,7 +6,7 @@ export type Notification = {
   description: string;
   severity: 'critical' | 'warning' | 'info';
   redirectUrl: string;
-  createdAt: Date;
+  createdOn: Date;
 };
 
 export type InternalNotification = Notification & {
@@ -84,14 +84,19 @@ const NotificationCenterProvider = ({ children }) => {
           LOCAL_STORAGE_NOTIFICATION_PREFIX + action.notification.id,
         );
         const readOn = storedReadOn ? new Date(storedReadOn) : undefined;
-        // if the Notification is already stored, direct return the state
+        // if the Notification is already stored, update it with the newly published one.
         if (state.find((n) => n.id === action.notification.id)) {
-          return state;
+          return state.map((n) => {
+            if (n.id === action.notification.id) {
+              return { ...action.notification, readOn };
+            }
+            return n;
+          });
         }
-        // sort the Notifications by the createdAt date
+        // sort the Notifications by the createdOn date
         const index = state.findIndex(
           (n) =>
-            n.createdAt.getTime() > action.notification.createdAt.getTime(),
+            n.createdOn.getTime() > action.notification.createdOn.getTime(),
         );
 
         return [

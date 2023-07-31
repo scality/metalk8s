@@ -72,7 +72,7 @@ describe('NotificationCenter', () => {
         description: TRIAL_LICENSE_EXPIRED,
         severity: 'critical',
         redirectUrl: '/license',
-        createdAt: new Date(new Date().getTime() - 5 * 24 * 60 * 60 * 1000),
+        createdOn: new Date(new Date().getTime() - 5 * 24 * 60 * 60 * 1000),
       });
       result.current.publish({
         id: '3',
@@ -80,7 +80,7 @@ describe('NotificationCenter', () => {
         description: NEW_ALERTS,
         severity: 'warning',
         redirectUrl: '/alerts',
-        createdAt: new Date(),
+        createdOn: new Date(),
       });
       result.current.publish({
         id: '2',
@@ -88,7 +88,7 @@ describe('NotificationCenter', () => {
         description: NEW_VERSION_AVAILABLE,
         severity: 'warning',
         redirectUrl: '/new-version',
-        createdAt: new Date(new Date().getTime() - 10 * 60 * 1000),
+        createdOn: new Date(new Date().getTime() - 10 * 60 * 1000),
       });
     });
     return { TRIAL_LICENSE_EXPIRED, NEW_ALERTS, NEW_VERSION_AVAILABLE };

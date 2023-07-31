@@ -10,6 +10,7 @@ import { FormattedDateTime } from '@scality/core-ui/dist/components/date/Formatt
 import { Button } from '@scality/core-ui/dist/components/buttonv2/Buttonv2.component';
 import { Box } from '@scality/core-ui/dist/components/box/Box';
 import { useShellHistory } from '../initFederation/ShellHistoryProvider';
+import { SleepingNotificationBell } from './SleepingNotificationBell';
 
 const NotificationMenu = styled.ul<{
   buttonBoundingRect: DOMRect;
@@ -181,9 +182,12 @@ const NotificationCenter = () => {
             </NotificationCenterHeader>
             {notifications.length === 0 && (
               <Box m={spacing.r16}>
-                <Text color="textSecondary">
-                  You have no new notifications at the moment.
-                </Text>
+                <Wrap alignItems="center">
+                  <SleepingNotificationBell />
+                  <Text color="textSecondary">
+                    You have no new notifications at the moment.
+                  </Text>
+                </Wrap>
               </Box>
             )}
             {notifications.map((notification, index) => (
@@ -228,7 +232,7 @@ const NotificationCenter = () => {
                       </Text>
                       <Text variant="Smaller" color="textSecondary">
                         <FormattedDateTime
-                          value={notification.createdAt}
+                          value={notification.createdOn}
                           format="relative"
                         />
                       </Text>
