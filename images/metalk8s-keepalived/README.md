@@ -7,7 +7,7 @@ This image is composed of several scripts.
 
 ## Entrypoint script
 
-This script is the entrypoint for the container, it generate the
+This script is the entrypoint for the container, it generates the
 configuration and start keepalived process.
 
 ## Generate config script
@@ -39,7 +39,7 @@ addresses:
 The check script is used by keepalived to check that the local node, where
 the keepalived process is running, is ready to get some load.
 
-It check that the local Ingress Controller is available
+It checks that the local Ingress Controller is available.
 
 ## Dockerfile
 

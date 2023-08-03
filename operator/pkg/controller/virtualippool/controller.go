@@ -468,6 +468,20 @@ func (r *VirtualIPPoolReconciler) mutateDaemonSet(obj *appsv1.DaemonSet) error {
 			},
 		},
 	}
+	if container.LivenessProbe == nil {
+		container.LivenessProbe = &corev1.Probe{}
+	}
+	container.LivenessProbe.ProbeHandler = corev1.ProbeHandler{
+		Exec: &corev1.ExecAction{
+			Command: []string{
+				"/liveness-probe.sh",
+			},
+		},
+	}
+	container.LivenessProbe.InitialDelaySeconds = 10
+	container.LivenessProbe.PeriodSeconds = 30
+	container.LivenessProbe.TimeoutSeconds = 10
+	container.LivenessProbe.FailureThreshold = 1
 
 	return nil
 }

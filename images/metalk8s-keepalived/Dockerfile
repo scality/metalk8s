@@ -39,6 +39,7 @@ COPY --chown=keepalived:keepalived keepalived.conf.j2 /etc/keepalived/
 COPY --chown=keepalived:keepalived check-get.sh /etc/keepalived/
 
 COPY --chown=keepalived:keepalived generate-config.py /
+COPY --chown=keepalived:keepalived liveness-probe.sh /
 COPY --chown=keepalived:keepalived entrypoint.sh /
 
 COPY --chown=keepalived:keepalived --from=build-step /keepalived /usr/sbin/

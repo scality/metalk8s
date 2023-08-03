@@ -90,6 +90,9 @@
   [1.19](https://golang.org/doc/devel/release.html#go1.19.minor)
   (PR[#4110](https://github.com/scality/metalk8s/pull/4110))
 
+- Add liveness probe to `keepalived` pod 
+  (PR[#4118](https://github.com/scality/metalk8s/pull/4118))
+
 ## Release 125.0.6 (In development)
 
 
