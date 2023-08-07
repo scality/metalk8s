@@ -178,6 +178,7 @@ export function useAuth(): {
       email: auth.userData.profile?.email,
       groups: getUserGroups(auth.userData, config.userGroupsMapping),
       id: auth.userData.profile?.sub,
+      original: auth.userData,
     },
   };
 }
