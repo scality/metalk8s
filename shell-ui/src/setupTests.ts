@@ -29,3 +29,25 @@ Object.defineProperty(window, 'DOMRect', {
   value: DOMRect,
   writable: true,
 });
+
+export function mockOidcReact() {
+  const { jest } = require('@jest/globals');
+
+  const original = jest.requireActual('oidc-react');
+  return {
+    ...original,
+    //Pass down all the exported objects
+    useAuth: () => ({
+      userData: {
+        profile: {
+          groups: ['group1'],
+          email: 'test@test.invalid',
+          name: 'user',
+          sub: 'userID',
+        },
+      },
+    }),
+  };
+}
+
+jest.mock('oidc-react', () => mockOidcReact());
