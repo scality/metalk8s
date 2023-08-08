@@ -39,9 +39,12 @@ describe('useFirstTimeLogin hook', () => {
   });
 
   it('should return firstTimeLogin as false if the user is NOT logging in for the first time', async () => {
-    //S
-    localStorage.setItem('alreadyLoggedInUserIds', 'userID');
     //E
+    const { waitForNextUpdate: waitForNextUpdateFirstRender } = renderHook(
+      () => useFirstTimeLogin(),
+      { wrapper },
+    );
+    await waitForNextUpdateFirstRender();
     const { result, waitForNextUpdate } = renderHook(
       () => useFirstTimeLogin(),
       { wrapper },

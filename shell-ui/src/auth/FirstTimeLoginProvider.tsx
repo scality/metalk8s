@@ -25,7 +25,9 @@ export function FirstTimeLoginProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [firstTimeLogin, setFirstTimeLogin] = useState<boolean | null>(null);
+  const [firstTimeLogin, setFirstTimeLogin] = useState<boolean | undefined>(
+    undefined,
+  );
 
   const { userData } = useAuth();
   const userID = userData?.id;
