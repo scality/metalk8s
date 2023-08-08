@@ -172,27 +172,6 @@ export const configurationHandlers = [
 ];
 const server = setupServer(...configurationHandlers);
 
-function mockOidcReact() {
-  const { jest } = require('@jest/globals');
-
-  const original = jest.requireActual('oidc-react');
-  return {
-    ...original,
-    //Pass down all the exported objects
-    useAuth: () => ({
-      userData: {
-        profile: {
-          groups: ['group1'],
-          email: 'test@test.invalid',
-          name: 'user',
-        },
-      },
-    }),
-  };
-}
-
-jest.mock('oidc-react', () => mockOidcReact());
-
 const mockOIDCProvider = () => {
   // This is a hack to workarround the following issue : MSW return lower cased content-type header,
   // oidc-client is internally using XMLHttpRequest to perform queries and retrieve response header Content-Type using 'XMLHttpRequest.prototype.getResponseHeader'.

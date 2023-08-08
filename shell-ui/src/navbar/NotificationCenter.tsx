@@ -101,6 +101,7 @@ const NotificationCenter = () => {
         return;
       }
       history.push(selectedItem.redirectUrl);
+      readAllNotifications();
     },
   });
   const isAtLeastOneNotificationUnread = notifications.some(

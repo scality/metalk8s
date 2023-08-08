@@ -15,6 +15,7 @@ import { act } from 'react-test-renderer';
 import { LanguageProvider } from './lang';
 import { ThemeProvider } from './theme';
 import NotificationCenterProvider from '../NotificationCenterProvider';
+import { FirstTimeLoginProvider } from '../auth/FirstTimeLoginProvider';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,28 +26,7 @@ const queryClient = new QueryClient({
 });
 const server = setupServer(...configurationHandlers);
 
-function mockOidcReact() {
-  const { jest } = require('@jest/globals');
-
-  const original = jest.requireActual('oidc-react');
-  return {
-    ...original,
-    //Pass down all the exported objects
-    useAuth: () => ({
-      userData: {
-        profile: {
-          groups: ['group1'],
-          email: 'test@test.invalid',
-          name: 'user',
-        },
-      },
-    }),
-  };
-}
-
-jest.mock('oidc-react', () => mockOidcReact());
-
-const wrapper = ({ children }) => {
+export const wrapper = ({ children }) => {
   return (
     <ThemeProvider>
       {(theme) => (
@@ -57,9 +37,11 @@ const wrapper = ({ children }) => {
                 <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
                   <WithInitFederationProviders>
                     <MemoryRouter>
-                      <ShellHistoryProvider>
-                        <SolutionsNavbar>{children}</SolutionsNavbar>
-                      </ShellHistoryProvider>
+                      <FirstTimeLoginProvider>
+                        <ShellHistoryProvider>
+                          <SolutionsNavbar>{children}</SolutionsNavbar>
+                        </ShellHistoryProvider>
+                      </FirstTimeLoginProvider>
                     </MemoryRouter>
                   </WithInitFederationProviders>
                 </ShellConfigProvider>

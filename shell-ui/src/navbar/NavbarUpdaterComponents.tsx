@@ -8,6 +8,8 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { useEffect } from 'react';
 import { useNavbar } from './navbarHooks';
 import { useNotificationCenter } from '../NotificationCenterProvider';
+import { useFirstTimeLogin } from '../auth/FirstTimeLoginProvider';
+import { useAuth } from '../auth/AuthProvider';
 
 export const NavbarUpdaterComponents = () => {
   const deployedApps = useDeployedApps();
@@ -62,6 +64,8 @@ export const NavbarUpdaterComponents = () => {
     timerId = setTimeout(timer, 1000);
     return () => clearTimeout(timerId);
   }, [areRemoteEntriesFileParsed, setMicroAppsAreReady]);
+  const { firstTimeLogin } = useFirstTimeLogin();
+  const { userData } = useAuth();
   return (
     <>
       {componentsToFederate.map((component, index) => {
@@ -81,6 +85,8 @@ export const NavbarUpdaterComponents = () => {
                     navbarManagementProps,
                     publishNotification: publish,
                     unPublishNotification: unPublish,
+                    isFirstTimeLogin: firstTimeLogin,
+                    userData,
                   }}
                 />
               </ErrorBoundary>

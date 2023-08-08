@@ -234,6 +234,14 @@ describe('NotificationCenter', () => {
     await waitFor(() => {
       expect(screen.getByText('License page')).toBeInTheDocument();
     });
+
+    // Verify that the notification is marked as read
+    userEvent.click(notificationCenterButton);
+    expect(
+      within(lastNotification).queryByRole('img', {
+        name: /unread notification mark/i,
+      }),
+    ).toBeNull();
   });
 
   it('should not display notifications with the same ID', async () => {
@@ -245,5 +253,34 @@ describe('NotificationCenter', () => {
     userEvent.click(notificationCenterSelectors.notificationCenterButton());
     //V
     expect(screen.getAllByRole('option').length).toBe(3);
+  });
+
+  it('should mark all the notifications as read after checking one specific notification', async () => {
+    //S
+    const { result } = await renderNotificationCenter();
+    publishNewNotifications(result);
+    userEvent.click(notificationCenterSelectors.notificationCenterButton());
+    //E
+    userEvent.click(screen.getAllByRole('option')[0]);
+    //V
+    expect(
+      within(screen.getAllByRole('option')[0]).queryByRole('img', {
+        name: /unread notification mark/i,
+      }),
+    ).toBeNull();
+    expect(
+      within(screen.getAllByRole('option')[1]).queryByRole('img', {
+        name: /unread notification mark/i,
+      }),
+    ).toBeNull();
+    expect(
+      within(screen.getAllByRole('option')[2]).queryByRole('img', {
+        name: /unread notification mark/i,
+      }),
+    ).toBeNull();
+    //E
+    userEvent.click(notificationCenterSelectors.notificationCenterButton());
+    //V
+    expect(screen.queryByRole('option')).not.toBeInTheDocument();
   });
 });
