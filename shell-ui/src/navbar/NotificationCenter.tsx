@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNotificationCenter } from '../NotificationCenterProvider';
+
 import { useSelect } from 'downshift';
 import styled, { useTheme } from 'styled-components';
 import { Icon } from '@scality/core-ui/dist/components/icon/Icon.component';
@@ -11,6 +11,7 @@ import { Button } from '@scality/core-ui/dist/components/buttonv2/Buttonv2.compo
 import { Box } from '@scality/core-ui/dist/components/box/Box';
 import { useShellHistory } from '../initFederation/ShellHistoryProvider';
 import { SleepingNotificationBell } from './SleepingNotificationBell';
+import { useNotificationCenter } from '../useNotificationCenter';
 
 const NotificationMenu = styled.ul<{
   buttonBoundingRect: DOMRect;

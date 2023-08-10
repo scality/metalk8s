@@ -24,7 +24,6 @@ import type { Link as TypeLink } from './navbarHooks';
 import { useNavbar } from './navbarHooks';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
 import NotificationCenter from './NotificationCenter';
-import { InternalNotification } from '../NotificationCenterProvider';
 
 const Logo = styled.img`
   height: 2.143rem;

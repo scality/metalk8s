@@ -7,9 +7,9 @@ import { Fragment, useCallback, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useEffect } from 'react';
 import { useNavbar } from './navbarHooks';
-import { useNotificationCenter } from '../NotificationCenterProvider';
 import { useFirstTimeLogin } from '../auth/FirstTimeLoginProvider';
 import { useAuth } from '../auth/AuthProvider';
+import { useNotificationCenter } from '../useNotificationCenter';
 
 export const NavbarUpdaterComponents = () => {
   const deployedApps = useDeployedApps();

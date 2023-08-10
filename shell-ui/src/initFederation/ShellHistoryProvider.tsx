@@ -2,15 +2,9 @@ import React, { createContext, useContext } from 'react';
 import { useHistory } from 'react-router';
 import * as H from 'history';
 
-declare global {
-  interface Window {
-    shellContexts: {
-      ShellHistoryContext: React.Context<null | H.History>;
-    };
-  }
-}
 const ShellHistoryContext = createContext<null | H.History>(null);
 if (!window.shellContexts) {
+  //@ts-ignore
   window.shellContexts = {
     ShellHistoryContext,
   };

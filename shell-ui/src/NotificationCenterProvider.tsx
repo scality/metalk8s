@@ -1,4 +1,4 @@
-import React, { Dispatch, createContext, useContext, useReducer } from 'react';
+import React, { Dispatch, createContext, useReducer } from 'react';
 
 export type Notification = {
   id: string;
@@ -13,19 +13,29 @@ export type InternalNotification = Notification & {
   readOn?: Date;
 };
 
-type NotificationCenterContextType = {
+export type NotificationCenterContextType = {
   notifications: InternalNotification[];
   dispatch: Dispatch<NotificationCenterActions>;
 };
-const NotificationCenterContext =
-  createContext<NotificationCenterContextType | null>(null);
-enum NotificationActionType {
+
+if (!window.shellContexts) {
+  //@ts-ignore
+  window.shellContexts = {};
+}
+if (!window.shellContexts.NotificationContext) {
+  window.shellContexts.NotificationContext =
+    createContext<NotificationCenterContextType | null>(null);
+}
+export const NotificationCenterContext =
+  window.shellContexts.NotificationContext;
+
+export enum NotificationActionType {
   PUBLISH,
   UNPUBLISH,
   READ_ALL,
 }
 
-type NotificationCenterActions =
+export type NotificationCenterActions =
   | {
       type: NotificationActionType.PUBLISH;
       notification: Notification;
@@ -37,39 +47,6 @@ type NotificationCenterActions =
   | {
       type: NotificationActionType.READ_ALL;
     };
-
-const publish =
-  (dispatch: Dispatch<NotificationCenterActions>) =>
-  (notification: Notification) => {
-    dispatch({
-      type: NotificationActionType.PUBLISH,
-      notification: notification,
-    });
-  };
-const unPublish =
-  (dispatch: Dispatch<NotificationCenterActions>) => (id: string) => {
-    dispatch({ type: NotificationActionType.UNPUBLISH, id: id });
-  };
-
-const readAllNotifications =
-  (dispatch: Dispatch<NotificationCenterActions>) => () =>
-    dispatch({ type: NotificationActionType.READ_ALL });
-
-export const useNotificationCenter = () => {
-  const context = useContext(NotificationCenterContext);
-  if (!context) {
-    throw new Error(
-      'useNotificationCenter must be used within a NotificationCenterProvider',
-    );
-  }
-  const { dispatch } = context;
-  return {
-    notifications: context.notifications,
-    readAllNotifications: readAllNotifications(dispatch),
-    publish: publish(dispatch),
-    unPublish: unPublish(dispatch),
-  };
-};
 
 const LOCAL_STORAGE_NOTIFICATION_PREFIX = 'notification-center__';
 

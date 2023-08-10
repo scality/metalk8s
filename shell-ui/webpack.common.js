@@ -88,6 +88,7 @@ module.exports = {
           './src/initFederation/ShellConfigProvider.tsx',
         './moduleFederation/UIListProvider':
           './src/initFederation/UIListProvider.tsx',
+        './useNotificationCenter': './src/useNotificationCenter.ts',
       },
       shared: {
         ...Object.fromEntries(

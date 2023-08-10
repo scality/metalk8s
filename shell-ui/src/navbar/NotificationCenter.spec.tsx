@@ -3,7 +3,6 @@ import { act, screen, waitFor, within } from '@testing-library/react';
 import NotificationCenterProvider, {
   InternalNotification,
   Notification,
-  useNotificationCenter,
 } from '../NotificationCenterProvider';
 import NotificationCenter from './NotificationCenter';
 import userEvent from '@testing-library/user-event';
@@ -11,6 +10,7 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { prepareRenderMultipleHooks } from './__TESTS__/testMultipleHooks';
 import { MemoryRouter, Route, Switch } from 'react-router';
 import { ShellHistoryProvider } from '../initFederation/ShellHistoryProvider';
+import { useNotificationCenter } from '../useNotificationCenter';
 
 export const notificationCenterSelectors = {
   notificationCenterButton: () =>
