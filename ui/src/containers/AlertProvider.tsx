@@ -9,6 +9,7 @@ import {
   FederatedComponent,
 } from '@scality/module-federation';
 import { STATUS_HEALTH } from '../constants';
+import { useConfig } from '../FederableApp';
 export type Status = 'healthy' | 'warning' | 'critical';
 
 const alertGlobal = {};
@@ -46,29 +47,24 @@ const InternalAlertProvider = ({
 }) => {
   alertGlobal.hooks = moduleExports['./alerts/alertHooks'];
 
-  const alertManagerUrl = useTypedSelector(
-    (state) => state.config.api.url_alertmanager,
-  );
-
+  const { url_alertmanager } = useConfig();
   return (
     <FederatedComponent
       module={'./alerts/AlertProvider'}
       scope={'shell'}
       url={window.shellUIRemoteEntryUrl}
       props={{
-        alertManagerUrl,
+        alertManagerUrl: url_alertmanager,
         children,
       }}
     ></FederatedComponent>
   );
 };
 
-function ErrorFallback({ error }) {
+function ErrorFallback() {
   const intl = useIntl();
   const language = intl.locale;
-  const { api } = useTypedSelector((state) => state.config);
-  console.log('ErrorFallback AlertProvider', error);
-  const url_support = api?.url_support;
+  const { url_support } = useConfig();
   return (
     <ErrorPage500
       data-cy="sc-error-page500"

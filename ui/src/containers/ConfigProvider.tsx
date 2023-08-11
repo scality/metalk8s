@@ -30,15 +30,8 @@ const InternalConfigProvider = ({
 function ErrorFallback() {
   const intl = useIntl();
   const language = intl.locale;
-  const { api } = useTypedSelector((state) => state.config);
-  const url_support = api?.url_support;
-  return (
-    <ErrorPage500
-      data-cy="sc-error-page500"
-      locale={language}
-      supportLink={url_support}
-    />
-  );
+
+  return <ErrorPage500 data-cy="sc-error-page500" locale={language} />;
 }
 
 function ConfigProvider({ children }: ConfigProps) {
