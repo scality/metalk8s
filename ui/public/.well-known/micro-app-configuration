@@ -19,6 +19,7 @@
             },
             "alerts": {
                 "path": "/alerts",
+                "exact": true,
                 "label": {
                     "en": "Alerts",
                     "fr": "Alertes"
@@ -38,6 +39,12 @@
                 "module": "",
                 "scope": ""
             }
-        }
+        },
+        "navbarUpdaterComponents": [
+            {
+              "module": "./AlertsNavbarUpdater",
+              "scope": "metalk8s"
+            }
+        ]
     }
 }
