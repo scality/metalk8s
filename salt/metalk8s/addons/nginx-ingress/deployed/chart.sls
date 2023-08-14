@@ -23,22 +23,6 @@ metadata:
   name: ingress-nginx
   namespace: metalk8s-ingress
 ---
-apiVersion: v1
-automountServiceAccountToken: true
-kind: ServiceAccount
-metadata:
-  labels:
-    app.kubernetes.io/component: default-backend
-    app.kubernetes.io/instance: ingress-nginx
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.8.1
-    helm.sh/chart: ingress-nginx-4.7.1
-    heritage: metalk8s
-  name: ingress-nginx-backend
-  namespace: metalk8s-ingress
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -324,33 +308,6 @@ spec:
     app.kubernetes.io/name: ingress-nginx
   type: ClusterIP
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app.kubernetes.io/component: default-backend
-    app.kubernetes.io/instance: ingress-nginx
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.8.1
-    helm.sh/chart: ingress-nginx-4.7.1
-    heritage: metalk8s
-  name: ingress-nginx-defaultbackend
-  namespace: metalk8s-ingress
-spec:
-  ports:
-  - appProtocol: http
-    name: http
-    port: 80
-    protocol: TCP
-    targetPort: http
-  selector:
-    app.kubernetes.io/component: default-backend
-    app.kubernetes.io/instance: ingress-nginx
-    app.kubernetes.io/name: ingress-nginx
-  type: ClusterIP
----
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -388,13 +345,13 @@ spec:
       containers:
       - args:
         - /nginx-ingress-controller
-        - --default-backend-service=$(POD_NAMESPACE)/ingress-nginx-defaultbackend
         - --publish-service=$(POD_NAMESPACE)/ingress-nginx-controller
         - --election-id=ingress-nginx-leader
         - --controller-class=k8s.io/ingress-nginx
         - --ingress-class=nginx
         - --configmap=$(POD_NAMESPACE)/ingress-nginx-controller
         - --watch-ingress-without-class=true
+        - --default-backend-service=metalk8s-ui/metalk8s-ui
         - --default-ssl-certificate=metalk8s-ingress/ingress-workload-plane-default-certificate
         - --metrics-per-host=false
         env:
@@ -466,86 +423,6 @@ spec:
         kubernetes.io/os: linux
       serviceAccountName: ingress-nginx
       terminationGracePeriodSeconds: 300
-      tolerations:
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/bootstrap
-        operator: Exists
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/infra
-        operator: Exists
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    app.kubernetes.io/component: default-backend
-    app.kubernetes.io/instance: ingress-nginx
-    app.kubernetes.io/managed-by: salt
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.8.1
-    helm.sh/chart: ingress-nginx-4.7.1
-    heritage: metalk8s
-  name: ingress-nginx-defaultbackend
-  namespace: metalk8s-ingress
-spec:
-  minReadySeconds: 0
-  replicas: 1
-  revisionHistoryLimit: 10
-  selector:
-    matchLabels:
-      app.kubernetes.io/component: default-backend
-      app.kubernetes.io/instance: ingress-nginx
-      app.kubernetes.io/name: ingress-nginx
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/component: default-backend
-        app.kubernetes.io/instance: ingress-nginx
-        app.kubernetes.io/name: ingress-nginx
-    spec:
-      containers:
-      - image: '{%- endraw -%}{{ build_image_name("nginx-ingress-defaultbackend-amd64",
-          False) }}{%- raw -%}:1.5'
-        imagePullPolicy: IfNotPresent
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /healthz
-            port: 8080
-            scheme: HTTP
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          successThreshold: 1
-          timeoutSeconds: 5
-        name: ingress-nginx-default-backend
-        ports:
-        - containerPort: 8080
-          name: http
-          protocol: TCP
-        readinessProbe:
-          failureThreshold: 6
-          httpGet:
-            path: /healthz
-            port: 8080
-            scheme: HTTP
-          initialDelaySeconds: 0
-          periodSeconds: 5
-          successThreshold: 1
-          timeoutSeconds: 5
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-          readOnlyRootFilesystem: true
-          runAsNonRoot: true
-          runAsUser: 65534
-      nodeSelector:
-        kubernetes.io/os: linux
-        node-role.kubernetes.io/infra: ''
-      serviceAccountName: ingress-nginx-backend
-      terminationGracePeriodSeconds: 60
       tolerations:
       - effect: NoSchedule
         key: node-role.kubernetes.io/bootstrap

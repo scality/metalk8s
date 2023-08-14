@@ -28,6 +28,7 @@ controller:
     type: ClusterIP
 
   extraArgs:
+    default-backend-service: metalk8s-ui/metalk8s-ui
     default-ssl-certificate: "metalk8s-ingress/ingress-workload-plane-default-certificate"
     metrics-per-host: false
 
@@ -39,18 +40,4 @@ controller:
         metalk8s.scality.com/monitor: ''
 
 defaultBackend:
-  enabled: true
-
-  image:
-    repository: '{%- endraw -%}{{ build_image_name(\"nginx-ingress-defaultbackend-amd64\", False) }}{%- raw -%}'
-
-  tolerations:
-    - key: "node-role.kubernetes.io/bootstrap"
-      operator: "Exists"
-      effect: "NoSchedule"
-    - key: "node-role.kubernetes.io/infra"
-      operator: "Exists"
-      effect: "NoSchedule"
-
-  nodeSelector:
-    node-role.kubernetes.io/infra: ''
+  enabled: false

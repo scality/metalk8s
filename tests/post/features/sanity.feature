@@ -36,7 +36,6 @@ Feature: Cluster Sanity Checks
         | kube-system         | coredns                                |
         | kube-system         | metalk8s-operator-controller-manager   |
         | kube-system         | storage-operator-controller-manager    |
-        | metalk8s-ingress    | ingress-nginx-defaultbackend           |
         | metalk8s-monitoring | prometheus-adapter                     |
         | metalk8s-monitoring | prometheus-operator-grafana            |
         | metalk8s-monitoring | prometheus-operator-kube-state-metrics |

@@ -179,7 +179,6 @@ IMGS_PER_REPOSITORY: Dict[str, List[str]] = {
         "fluent-bit",
     ],
     constants.GOOGLE_REPOSITORY: [
-        "nginx-ingress-defaultbackend-amd64",
         "pause",
     ],
     constants.GRAFANA_REPOSITORY: [
@@ -224,7 +223,6 @@ REMOTE_NAMES: Dict[str, str] = {
     "calico-node": "node",
     "calico-kube-controllers": "kube-controllers",
     "nginx-ingress-controller": "controller",
-    "nginx-ingress-defaultbackend-amd64": "defaultbackend-amd64",
 }
 
 SAVE_AS: Dict[str, List[targets.ImageSaveFormat]] = {

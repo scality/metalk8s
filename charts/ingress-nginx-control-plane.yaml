@@ -3,8 +3,6 @@ controller:
     digest: null
     repository: '{%- endraw -%}{{ build_image_name(\"nginx-ingress-controller\", False) }}{%- raw -%}'
 
-  defaultBackendService: 'metalk8s-ingress/nginx-ingress-default-backend'
-
   electionID: ingress-control-plane-controller-leader
 
   ingressClassResource:
