@@ -31,6 +31,16 @@ include:
     )
 %}
 
+{%- set workloadplane_shell_ui_defaults = salt.slsutil.renderer(
+        'salt://metalk8s/addons/ui/config/workloadplane-shell-ui-config.yaml.j2', saltenv=saltenv
+    )
+%}
+
+{%- set workloadplane_shell_ui_config = salt.metalk8s_service_configuration.get_service_conf(
+        'metalk8s-ui', 'workloadplane-shell-ui-config', workloadplane_shell_ui_defaults
+    )
+%}
+
 {%- set stripped_base_path = metalk8s_ui_config.spec.basePath.strip('/') %}
 {%- set normalized_base_path = '/' ~ stripped_base_path %}
 
@@ -136,6 +146,20 @@ Create shell-ui ConfigMap:
         data:
           config.json: |-
             {{ metalk8s_shell_ui_config.spec | tojson }}
+
+Create workloadplane-shell-ui-config-generated ConfigMap:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: workloadplane-shell-ui-config-generated
+          namespace: metalk8s-ui
+        data:
+          config.json: |-
+            {{ workloadplane_shell_ui_config.spec.config | tojson }}
+          deployed-ui-apps.json: |-
+            {{ workloadplane_shell_ui_config.spec.deployedApps | tojson }}
 
 Create deployed-ui-apps ConfigMap:
   metalk8s_kubernetes.object_present:
