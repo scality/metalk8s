@@ -3,6 +3,9 @@
 
 ### Enhancements
 
+- Add support in CSC to manage a new configuration for Shell UI on the WorkloadPlane
+  (PR[#4124](https://github.com/scality/metalk8s/pull/4124))
+
 - Bump Kubernetes version to
   [1.26.5](https://github.com/kubernetes/kubernetes/releases/tag/v1.26.5)
   (PR[#4074](https://github.com/scality/metalk8s/pull/4074))
