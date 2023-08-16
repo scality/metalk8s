@@ -5,7 +5,8 @@ export const STATUS_CRITICAL = 'critical';
 export const STATUS_SUCCESS = 'success';
 export const STATUS_NONE = 'none';
 export const STATUS_HEALTH = 'healthy';
-export type Health = 'healthy' | 'warning' | 'critical' | 'none';
+export const STATUS_INFO = 'info';
+export type Health = 'healthy' | 'warning' | 'critical' | 'none' | 'info';
 export type FilterLabels = {
   selectors?: string[];
   [labelName: string]: string | string[];
@@ -190,6 +191,8 @@ export const getHealthStatus = (
     return STATUS_CRITICAL;
   else if (severityArr.find((severity) => severity === 'warning'))
     return STATUS_WARNING;
+  else if (severityArr.find((severity) => severity === 'info'))
+    return STATUS_INFO;
   return STATUS_NONE;
 };
 
