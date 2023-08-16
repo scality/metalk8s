@@ -71,7 +71,6 @@ export const AlertNavbarUpdaterComponentInteral = ({
 
   useEffect(() => {
     if (criticalAlerts.length) {
-      unPublishNotification(CRITICAL_NOTIFICATION_ID);
       publishNotification({
         id: CRITICAL_NOTIFICATION_ID,
         title: 'Alerts',
@@ -90,7 +89,6 @@ export const AlertNavbarUpdaterComponentInteral = ({
         createdOn: new Date(criticalAlerts[0].startsAt), // the time latest raised alert
       });
     } else if (warningAlerts.length) {
-      unPublishNotification(WARNING_NOTIFICATION_ID);
       publishNotification({
         id: WARNING_NOTIFICATION_ID,
         title: 'Alerts',

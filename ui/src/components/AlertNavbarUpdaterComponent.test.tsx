@@ -63,8 +63,7 @@ describe('AlertNavbarUpdaterComponent', () => {
     }));
     const { publishNotification, unPublishNotification } = setupTest();
     //V
-    expect(unPublishNotification).toHaveBeenCalledTimes(1);
-    expect(unPublishNotification).toBeCalledWith('CriticalNotification');
+    expect(unPublishNotification).toHaveBeenCalledTimes(0);
     expect(publishNotification).toBeCalledWith({
       id: 'CriticalNotification',
       title: 'Alerts',
@@ -142,8 +141,7 @@ describe('AlertNavbarUpdaterComponent', () => {
     }));
     const { publishNotification, unPublishNotification } = setupTest();
     //V
-    expect(unPublishNotification).toHaveBeenCalledTimes(1);
-    expect(unPublishNotification).toBeCalledWith('WarningNotification');
+    expect(unPublishNotification).toHaveBeenCalledTimes(0);
     expect(publishNotification).toBeCalledWith({
       id: 'WarningNotification',
       title: 'Alerts',
