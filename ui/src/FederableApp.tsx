@@ -1,5 +1,11 @@
 import 'regenerator-runtime/runtime';
-import React, { createContext, useEffect, useMemo } from 'react';
+import React, {
+  PropsWithChildren,
+  ReactNode,
+  createContext,
+  useEffect,
+  useMemo,
+} from 'react';
 import { Provider, useDispatch } from 'react-redux';
 import { createStore, applyMiddleware, compose } from 'redux';
 import { Router } from 'react-router-dom';
@@ -115,10 +121,33 @@ function InternalAppConfigProvider({ children, moduleExports }) {
   }
 }
 
-const AppConfigProvider = ({ children }) => {
+export function AppConfigProviderWithoutRedux({ children, moduleExports }) {
+  const { name } = useCurrentApp();
+
+  const runtimeConfiguration = moduleExports[
+    './moduleFederation/ConfigurationProvider'
+  ].useConfig({
+    configType: 'run',
+    name,
+  });
+
+  return (
+    <ConfigContext.Provider value={runtimeConfiguration.spec.selfConfiguration}>
+      {children}
+    </ConfigContext.Provider>
+  );
+}
+
+export const AppConfigProvider = ({
+  children,
+  componentWithInjectedImports,
+}: PropsWithChildren<{ componentWithInjectedImports?: ReactNode }>) => {
+  if (!componentWithInjectedImports) {
+    componentWithInjectedImports = InternalAppConfigProvider;
+  }
   return (
     <ComponentWithFederatedImports
-      componentWithInjectedImports={InternalAppConfigProvider}
+      componentWithInjectedImports={componentWithInjectedImports}
       renderOnError={<ErrorPage500 />}
       componentProps={{
         children,

@@ -134,7 +134,8 @@
     "html-loader": "^2.1.2",
     "html-webpack-plugin": "^5.3.1",
     "identity-obj-proxy": "^3.0.0",
-    "jest": "^26.6.3",
+    "jest": "^29.0.0",
+    "jest-environment-jsdom": "^29.1.2",
     "jest-junit": "^7.0.0",
     "jest-preview": "^0.3.1",
     "msw": "0.36.8",
@@ -174,7 +175,8 @@
     ],
     "moduleNameMapper": {
       "\\.(css|less)$": "identity-obj-proxy"
-    }
+    },
+    "testEnvironment": "jsdom"
   },
   "jest-junit": {
     "output": "junit/jest-junit.xml",

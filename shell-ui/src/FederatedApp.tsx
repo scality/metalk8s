@@ -114,6 +114,23 @@ function InternalRouter() {
   const { retrieveConfiguration } = useConfigRetriever();
   const routes = discoveredViews
     .filter((discoveredView) => discoveredView.isFederated)
+    //Sort the exact and strict routes first, to make sure to match the exact first.
+    .sort((a, b) => {
+      if (a.view.exact && !b.view.exact) {
+        return -1;
+      }
+      if (!a.view.exact && b.view.exact) {
+        return 1;
+      }
+      if (a.view.strict && !b.view.strict) {
+        return -1;
+      }
+      if (!a.view.strict && b.view.strict) {
+        return 1;
+      }
+      return 0;
+    })
+
     .map(({ app, view, groups }) => ({
       path: app.appHistoryBasePath + view.path,
       exact: view.exact,

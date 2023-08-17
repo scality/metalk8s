@@ -283,10 +283,7 @@ describe('the system partition table', () => {
     });
     mockOffsetSize(200, 100);
   });
-  beforeEach(() => {
-    // use fake timers to let react query retry immediately after promise failure
-    jest.useFakeTimers();
-  });
+
   test('displays the table', async () => {
     useAlerts.mockImplementation(() => {
       const alerts = [

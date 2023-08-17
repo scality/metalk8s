@@ -95,6 +95,8 @@ module.exports = (env) => ({
       exposes: {
         './FederableApp': './src/FederableApp.tsx',
         './platformLibrary': './src/services/platformlibrary/k8s.ts',
+        './AlertsNavbarUpdater':
+          './src/components/AlertNavbarUpdaterComponent.tsx',
       },
       shared: {
         ...Object.fromEntries(
