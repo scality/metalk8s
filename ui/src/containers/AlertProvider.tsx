@@ -13,7 +13,7 @@ import { useConfig } from '../FederableApp';
 export type Status = 'healthy' | 'warning' | 'critical';
 
 const alertGlobal = {};
-export const useAlerts = (filters: FilterLabels) => {
+export const useAlerts = (filters: FilterLabels): { alerts: Alert[] } => {
   return alertGlobal.hooks.useAlerts(filters);
 };
 export const useHighestSeverityAlerts = (filters: FilterLabels) => {
