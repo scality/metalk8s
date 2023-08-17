@@ -28,3 +28,12 @@ Delete old deployment for the default backend:
     - namespace: metalk8s-ingress
     - require:
       - sls: metalk8s.addons.nginx-ingress.deployed.chart
+
+Delete old serviceaccount for the default backend:
+  metalk8s_kubernetes.object_absent:
+    - apiVersion: v1
+    - kind: ServiceAccount
+    - name: ingress-nginx-backend
+    - namespace: metalk8s-ingress
+    - require:
+      - sls: metalk8s.addons.nginx-ingress.deployed.chart
