@@ -67,12 +67,12 @@ function publishCriticalNotification(
             warningAlerts.length
           } warning alert${
             warningAlerts.length > 1 ? 's' : ''
-          } generated on the platform.`
+          } currently firing on the platform.`
         : `There ${alertsNum > 1 ? 'are' : 'is'} ${
             criticalAlerts.length
           } critical alert${
             criticalAlerts.length > 1 ? 's' : ''
-          } generated on the platform.`,
+          } currently firing on the platform.`,
     severity: 'critical',
     redirectUrl: `${ui_base_path === '/' ? '' : ui_base_path}/alerts`,
     createdOn: new Date(criticalAlerts[0].startsAt),
@@ -91,7 +91,7 @@ function publishWarningNotification(
       warningAlerts.length
     } warning alert${
       warningAlerts.length > 1 ? 's' : ''
-    } generated on the platform.`,
+    } currently firing on the platform.`,
     severity: 'warning',
     redirectUrl: `${ui_base_path === '/' ? '' : ui_base_path}/alerts`,
     createdOn: new Date(warningAlerts[0].startsAt),

@@ -1,8 +1,6 @@
 import { render } from './__TEST__/util';
 import { useAlerts } from '../containers/AlertProvider';
-import AlertNavbarUpdaterComponent, {
-  AlertNavbarUpdaterComponentInternal,
-} from './AlertNavbarUpdaterComponent';
+import { AlertNavbarUpdaterComponentInternal } from './AlertNavbarUpdaterComponent';
 
 describe('AlertNavbarUpdaterComponent', () => {
   afterEach(() => {
@@ -93,7 +91,8 @@ describe('AlertNavbarUpdaterComponent', () => {
     expect(publishNotification).toBeCalledWith({
       id: 'CriticalNotification',
       title: 'Alerts',
-      description: 'There is 1 critical alert generated on the platform.',
+      description:
+        'There is 1 critical alert currently firing on the platform.',
       severity: 'critical',
       createdOn: new Date('2023-08-11T06:03:19.730Z'),
       redirectUrl: '/platform/alerts',
@@ -115,7 +114,7 @@ describe('AlertNavbarUpdaterComponent', () => {
     expect(publishNotification).toBeCalledWith({
       id: 'WarningNotification',
       title: 'Alerts',
-      description: 'There is 1 warning alert generated on the platform.',
+      description: 'There is 1 warning alert currently firing on the platform.',
       severity: 'warning',
       createdOn: new Date('2023-08-11T06:03:51.065Z'),
       redirectUrl: '/platform/alerts',
@@ -160,11 +159,11 @@ describe('AlertNavbarUpdaterComponent', () => {
     expect(unPublishNotification).toBeCalledWith('Watchdog');
     expect(publishNotification).toHaveBeenCalledTimes(0);
   });
-  it('should publish a new critical notifcation when there is a new critical alert raised', async () => {
+  it('should publish a new critical notifcation when there is a new critical alert and a new warning alert raised', async () => {
     //S
     // @ts-ignore mock implementation
     useAlerts.mockImplementation(() => ({
-      alerts: [WATCHDOG_ALERT, CRITICAL_ALERT],
+      alerts: [WATCHDOG_ALERT, CRITICAL_ALERT, WARNING_ALERT],
     }));
     // mock localstorage to simulate the previous critical alert
     localStorage.setItem('alertIDs', '70e407275387a28b');
@@ -178,7 +177,8 @@ describe('AlertNavbarUpdaterComponent', () => {
     expect(publishNotification).toBeCalledWith({
       id: 'CriticalNotification',
       title: 'Alerts',
-      description: 'There is 1 critical alert generated on the platform.',
+      description:
+        'There are 1 critical alert and 1 warning alert currently firing on the platform.',
       severity: 'critical',
       createdOn: new Date('2023-08-11T06:03:19.730Z'),
       redirectUrl: '/platform/alerts',
