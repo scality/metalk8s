@@ -578,6 +578,15 @@ def shell_ui_returns(host, context):
     assert response is not None
     assert "window.shellUIRemoteEntryUrl = \"/shell/remoteEntry.js" in response.text
 
+@then(
+    parsers.re(r"the server should not respond with shell-ui index"),
+    converters=dict(status_code=int),
+)
+def shell_ui_not_returns(host, context):
+    response = context.get("response")
+    assert response is not None
+    assert "window.shellUIRemoteEntryUrl = \"/shell/remoteEntry.js" not in response.text
+
 
 @then("the server should not respond")
 def server_does_not_respond(host, context):
