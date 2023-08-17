@@ -53,7 +53,8 @@ Feature: Ingress
         And we trigger a rollout restart of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress'
         And we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
         Then an HTTP request on port 80 on a workload-plane IP should not return
-        And an HTTP request on port 80 on a control-plane IP returns 404 'Not Found'
+        And an HTTP request on port 80 on a control-plane IP returns 200 'OK'
+        And the server should respond with shell-ui index
 
     Scenario: Expose Workload Plane Ingress on some VIPs
         Given the Kubernetes API is available
