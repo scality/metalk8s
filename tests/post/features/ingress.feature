@@ -4,13 +4,15 @@ Feature: Ingress
         Given the Kubernetes API is available
         And pods with label 'app.kubernetes.io/name=ingress-nginx' are 'Ready'
         When we perform an HTTP request on port 80 on a workload-plane IP
-        Then the server returns 404 'Not Found'
+        Then the server returns 200 'OK'
+        And the server should respond with shell-ui index
 
     Scenario: Access HTTPS services
         Given the Kubernetes API is available
         And pods with label 'app.kubernetes.io/name=ingress-nginx' are 'Ready'
         When we perform an HTTPS request on port 443 on a workload-plane IP
-        Then the server returns 404 'Not Found'
+        Then the server returns 200 'OK'
+        And the server should respond with shell-ui index
 
     Scenario: Create new Ingress object (without class)
         Given the Kubernetes API is available
@@ -31,7 +33,8 @@ Feature: Ingress
         And pods with label 'app.kubernetes.io/name=ingress-nginx' are 'Ready'
         When we create a 'metalk8s-test-3' Ingress with class 'invalid-class' on path '/_metalk8s-test-3' on 'repositories' service on 'http' in 'kube-system' namespace
         And we perform an HTTPS request on path '/_metalk8s-test-3' on port 443 on a workload-plane IP
-        Then the server returns 404 'Not Found'
+        Then the server returns 200 'OK'
+        And the server should respond with shell-ui index
 
     Scenario: Access HTTP services on control-plane IP
         Given the Kubernetes API is available
@@ -59,7 +62,7 @@ Feature: Ingress
         And we trigger a rollout restart of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress'
         And we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
         Then the '{wp_ingress_vips}' IPs are spread on nodes
-        And an HTTP request on port 80 on '{wp_ingress_vips}' IPs returns 404 'Not Found'
+        And an HTTP request on port 80 on '{wp_ingress_vips}' IPs returns 200 'OK'
 
     Scenario: Workload Plane Ingress VIPs reconfiguration
         Given the Kubernetes API is available
@@ -72,7 +75,7 @@ Feature: Ingress
         And we trigger a rollout restart of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress'
         And we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
         Then the '{wp_ingress_second_pool}' IPs are spread on nodes
-        And an HTTP request on port 80 on '{wp_ingress_second_pool}' IPs returns 404 'Not Found'
+        And an HTTP request on port 80 on '{wp_ingress_second_pool}' IPs returns 200 'OK'
         And the '{wp_ingress_first_pool}' IPs are no longer available on nodes
         And an HTTP request on port 80 on '{wp_ingress_first_pool}' IPs should not return
 
@@ -87,9 +90,9 @@ Feature: Ingress
         And we trigger a rollout restart of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress'
         And we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
         Then the '{wp_ingress_first_pool}' IPs are spread on nodes
-        And an HTTP request on port 80 on '{wp_ingress_first_pool}' IPs returns 404 'Not Found'
+        And an HTTP request on port 80 on '{wp_ingress_first_pool}' IPs returns 200 'OK'
         And the '{wp_ingress_second_pool}' IPs are spread on nodes
-        And an HTTP request on port 80 on '{wp_ingress_second_pool}' IPs returns 404 'Not Found'
+        And an HTTP request on port 80 on '{wp_ingress_second_pool}' IPs returns 200 'OK'
 
     Scenario: Failover of Workload Plane Ingress VIPs
         Given the Kubernetes API is available
@@ -100,7 +103,7 @@ Feature: Ingress
         When we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
         And we stop the node 'node-1' Workload Plane Ingress
         Then the '{wp_ingress_vips}' IPs should no longer sit on the node 'node-1'
-        And an HTTP request on port 80 on '{wp_ingress_vips}' IPs returns 404 'Not Found'
+        And an HTTP request on port 80 on '{wp_ingress_vips}' IPs returns 200 'OK'
 
     @authentication
     Scenario: Failover of Control Plane Ingress VIP

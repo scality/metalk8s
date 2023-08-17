@@ -569,6 +569,15 @@ def server_returns(host, context, status_code, reason):
     assert response.status_code == int(status_code)
     assert response.reason == reason
 
+@then(
+    parsers.re(r"the server should respond with shell-ui index"),
+    converters=dict(status_code=int),
+)
+def shell_ui_returns(host, context):
+    response = context.get("response")
+    assert response is not None
+    assert "window.shellUIRemoteEntryUrl = \"/shell/remoteEntry.js" in response.text
+
 
 @then("the server should not respond")
 def server_does_not_respond(host, context):
