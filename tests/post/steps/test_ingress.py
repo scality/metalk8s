@@ -571,7 +571,6 @@ def server_returns(host, context, status_code, reason):
 
 @then(
     parsers.re(r"the server should respond with shell-ui index"),
-    converters=dict(status_code=int),
 )
 def shell_ui_returns(host, context):
     response = context.get("response")
@@ -580,7 +579,6 @@ def shell_ui_returns(host, context):
 
 @then(
     parsers.re(r"the server should not respond with shell-ui index"),
-    converters=dict(status_code=int),
 )
 def shell_ui_not_returns(host, context):
     response = context.get("response")
