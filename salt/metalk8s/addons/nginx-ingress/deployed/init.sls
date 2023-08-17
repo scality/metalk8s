@@ -22,7 +22,7 @@ Delete old service for the default backend:
 
 Delete old deployment for the default backend:
   metalk8s_kubernetes.object_absent:
-    - apiVersion: v1
+    - apiVersion: apps/v1
     - kind: Deployment
     - name: ingress-nginx-defaultbackend
     - namespace: metalk8s-ingress
