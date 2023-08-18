@@ -20,6 +20,7 @@ export type Alert = {
   severity: string;
   labels: AlertLabels;
   originalAlert: PrometheusAlert;
+  status: string;
   summary?: string;
   documentationUrl?: string;
 };
@@ -107,6 +108,7 @@ export const formatActiveAlerts = (alerts: Array<PrometheusAlert>): Alert[] => {
       },
       childrenJsonPath: alert.annotations && alert.annotations.childrenJsonPath,
       originalAlert: alert,
+      status: alert.status.state,
     };
   });
 };
@@ -161,7 +163,7 @@ export const filterAlerts = (
   }
 
   return alerts.filter((alert) => {
-    return isAlertSelected(alert.labels, filters);
+    return isAlertSelected(alert.labels, filters) && alert.status === 'active';
   });
 };
 // check if the given time is between the start and end
