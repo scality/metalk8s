@@ -60,6 +60,7 @@ const NotificationItem = styled.li<{
   justify-content: space-between;
   padding: ${spacing.r8} ${spacing.r16};
   gap: ${spacing.r16};
+  height: 4.5rem;
   cursor: pointer;
   &:not(:last-child) {
     border-bottom: 1px solid ${(props) => props.theme.border};
