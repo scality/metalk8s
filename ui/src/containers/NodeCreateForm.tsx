@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import { Formik } from 'formik';
@@ -24,6 +24,7 @@ import {
   fetchClusterVersionAction,
 } from '../ducks/app/nodes';
 import { useIntl } from 'react-intl';
+import { useTypedSelector } from '../hooks';
 const CheckboxGroup = styled.div`
   display: flex;
   flex-direction: column;
@@ -60,6 +61,9 @@ const validationSchema = yup.object().shape({
 const NodeCreateForm = () => {
   const asyncErrors = useSelector((state) => state.app.nodes.errors);
   const clusterVersion = useSelector((state) => state.app.nodes.clusterVersion);
+  const basename = useTypedSelector((state) => state.config.api?.ui_base_path);
+  const isPureMetalK8s = basename === '/';
+
   const dispatch = useDispatch();
 
   const createNode = (body) => dispatch(createNodeAction(body));
@@ -221,16 +225,18 @@ const NodeCreateForm = () => {
                       onChange={handleChange('control_plane')}
                       onBlur={handleOnBlur}
                     />
-                    <Checkbox
-                      name="infra"
-                      label={intl.formatMessage({
-                        id: 'infra',
-                      })}
-                      checked={values.infra}
-                      value={values.infra}
-                      onChange={handleChange('infra')}
-                      onBlur={handleOnBlur}
-                    />
+                    {isPureMetalK8s && (
+                      <Checkbox
+                        name="infra"
+                        label={intl.formatMessage({
+                          id: 'infra',
+                        })}
+                        checked={values.infra}
+                        value={values.infra}
+                        onChange={handleChange('infra')}
+                        onBlur={handleOnBlur}
+                      />
+                    )}
                   </CheckboxGroup>
                 }
               />
