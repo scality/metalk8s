@@ -30,6 +30,13 @@ jobs:
       artifact-name: ${{ steps.upload.outputs.name }}
       artifact-link: ${{ steps.upload.outputs.link }}
     steps:
+      - name: Cleanup some unused ressources
+        # Because of the large number of images we embed in the ISO
+        # the disk space available start to be a problem.
+        # Let's remove some unused ressources to free some space.
+        run: |-
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /usr/share/dotnet
       - name: Checkout
         uses: actions/checkout@v3
         with:
