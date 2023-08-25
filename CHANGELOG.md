@@ -2,6 +2,10 @@
 
 ## Release 125.0.6 (In development)
 
+### Enhancements
+
+- Make `KubeJobNotCompleted` alert time configurable
+  (PR[4128](https://github.com/scality/metalk8s/pull/4128))
 
 ## Release 125.0.5
 
