@@ -69762,18 +69762,6 @@ spec:
       for: 15m
       labels:
         severity: warning
-    - alert: KubeJobNotCompleted
-      annotations:
-        description: Job {{ $labels.namespace }}/{{ $labels.job_name }} is taking
-          more than {{ "43200" | humanizeDuration }} to complete.
-        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubejobnotcompleted
-        summary: Job did not complete in time
-      expr: |-
-        time() - max by(namespace, job_name, cluster) (kube_job_status_start_time{job="kube-state-metrics", namespace=~".*"}
-          and
-        kube_job_status_active{job="kube-state-metrics", namespace=~".*"} > 0) > 43200
-      labels:
-        severity: warning
     - alert: KubeJobFailed
       annotations:
         description: Job {{ $labels.namespace }}/{{ $labels.job_name }} failed to

@@ -387,6 +387,10 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
         "salt/metalk8s/addons/prometheus-operator/deployed/",
         "node-alerts-rules.sls",
     ),
+    Path(
+        "salt/metalk8s/addons/prometheus-operator/deployed/",
+        "kube-alerts-rules.sls",
+    ),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/service-configuration.sls"),
     Path("salt/metalk8s/addons/prometheus-operator/deployed/thanos-chart.sls"),
     Path("salt/metalk8s/addons/ui/deployed/dependencies.sls"),

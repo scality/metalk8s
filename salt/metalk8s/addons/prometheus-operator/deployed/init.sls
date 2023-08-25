@@ -7,6 +7,7 @@ include:
   - .service-configuration
   - .chart
   - .node-alerts-rules
+  - .kube-alerts-rules
   - .thanos-chart
 
 {#- Node-exporter DaemonSet now uses recommended labels, which are immutable,

@@ -15,6 +15,10 @@ spec:
       kubelet:
         scrapeTimeout: 10s
   rules:
+    kube_apps:
+      kube_job_not_completed:
+        warning:
+          hours: 24 # Hours of job active before we trigger alert
     node_exporter:
       node_filesystem_space_filling_up:
         warning:
