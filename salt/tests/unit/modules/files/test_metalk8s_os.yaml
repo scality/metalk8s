@@ -1,0 +1,67 @@
+get_kubereserved:
+  # 00 - 1 core and 2 GB of RAM
+  - num_cpus: 1
+    mem_total: 2048
+    result: 
+      cpu: 60m
+      memory: 512Mi
+  # 01 - 2 cores and 4 GB of RAM
+  - num_cpus: 2
+    mem_total: 4096
+    result: 
+      cpu: 70m
+      memory: 1024Mi
+  # 02 - 4 cores and 8 GB of RAM
+  - num_cpus: 4
+    mem_total: 8192
+    result: 
+      cpu: 80m
+      memory: 1843Mi
+  # 03 - 8 cores and 16 GB of RAM
+  - num_cpus: 8
+    mem_total: 16384
+    result: 
+      cpu: 90m
+      memory: 2662Mi
+  # 04 - 16 cores and 32 GB of RAM
+  - num_cpus: 16
+    mem_total: 32768
+    result: 
+      cpu: 110m
+      memory: 3645Mi
+  # 05 - 32 cores and 64 GB of RAM
+  - num_cpus: 32
+    mem_total: 65536
+    result: 
+      cpu: 150m
+      memory: 5612Mi
+  # 06 - 64 cores and 128 GB of RAM
+  - num_cpus: 64
+    mem_total: 131072
+    result: 
+      cpu: 230m
+      memory: 9544Mi
+  # 07 - 128 cores and 256 GB of RAM
+  - num_cpus: 128
+    mem_total: 262144
+    result: 
+      cpu: 390m
+      memory: 12165Mi
+  # 08 - 256 cores and 512 GB of RAM
+  - num_cpus: 256
+    mem_total: 524288
+    result: 
+      cpu: 710m
+      memory: 17408Mi
+  # 09 - 512 cores and 1024 GB of RAM
+  - num_cpus: 512
+    mem_total: 1048576
+    result: 
+      cpu: 1350m
+      memory: 27894Mi
+  # 10 - 3 cores and 14.2 GB of RAM
+  - num_cpus: 3
+    mem_total: 14540
+    result: 
+      cpu: 75m
+      memory: 2478Mi
