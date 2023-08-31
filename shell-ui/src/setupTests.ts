@@ -37,16 +37,16 @@ export function mockOidcReact() {
   return {
     ...original,
     //Pass down all the exported objects
-    useAuth: () => ({
+    useAuth: jest.fn().mockImplementation(() => ({
       userData: {
         profile: {
-          groups: ['group1'],
+          groups: ['PlatformAdmin'],
           email: 'test@test.invalid',
           name: 'user',
           sub: 'userID',
         },
       },
-    }),
+    })),
   };
 }
 

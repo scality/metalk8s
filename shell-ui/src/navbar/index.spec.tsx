@@ -16,6 +16,11 @@ import { LanguageProvider } from './lang';
 import { ThemeProvider } from './theme';
 import NotificationCenterProvider from '../NotificationCenterProvider';
 import { FirstTimeLoginProvider } from '../auth/FirstTimeLoginProvider';
+import { AuthProvider } from '../auth/AuthProvider';
+import { AuthConfigProvider } from '../auth/AuthConfigProvider';
+import { render, screen } from '@testing-library/react';
+import { waitForLoadingToFinish } from './__TESTS__/utils';
+import { useAuth } from 'oidc-react';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,29 +33,33 @@ const server = setupServer(...configurationHandlers);
 
 export const wrapper = ({ children }) => {
   return (
-    <ThemeProvider>
-      {(theme) => (
-        <CoreUiThemeProvider theme={theme.brand}>
-          <LanguageProvider>
-            <QueryClientProvider client={queryClient}>
-              <NotificationCenterProvider>
-                <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
-                  <WithInitFederationProviders>
-                    <MemoryRouter>
-                      <FirstTimeLoginProvider>
-                        <ShellHistoryProvider>
-                          <SolutionsNavbar>{children}</SolutionsNavbar>
-                        </ShellHistoryProvider>
-                      </FirstTimeLoginProvider>
-                    </MemoryRouter>
-                  </WithInitFederationProviders>
-                </ShellConfigProvider>
-              </NotificationCenterProvider>
-            </QueryClientProvider>
-          </LanguageProvider>
-        </CoreUiThemeProvider>
-      )}
-    </ThemeProvider>
+    <AuthConfigProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          {(theme) => (
+            <CoreUiThemeProvider theme={theme.brand}>
+              <LanguageProvider>
+                <QueryClientProvider client={queryClient}>
+                  <NotificationCenterProvider>
+                    <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
+                      <WithInitFederationProviders>
+                        <MemoryRouter>
+                          <FirstTimeLoginProvider>
+                            <ShellHistoryProvider>
+                              <SolutionsNavbar>{children}</SolutionsNavbar>
+                            </ShellHistoryProvider>
+                          </FirstTimeLoginProvider>
+                        </MemoryRouter>
+                      </WithInitFederationProviders>
+                    </ShellConfigProvider>
+                  </NotificationCenterProvider>
+                </QueryClientProvider>
+              </LanguageProvider>
+            </CoreUiThemeProvider>
+          )}
+        </ThemeProvider>
+      </AuthProvider>
+    </AuthConfigProvider>
   );
 };
 
@@ -194,5 +203,40 @@ describe('useNavbar', () => {
       ...expectedDefaultNavbarLinks,
       logoHref: 'http://localhost:3000',
     });
+  });
+  it('should display the Notification Center for Platform Admin', async () => {
+    //S
+    render(<div></div>, {
+      wrapper,
+    });
+    //E
+    await waitForLoadingToFinish();
+    //Verify the Notification Center is displayed in the Navbar
+    expect(
+      screen.getByRole('button', { name: /Notification Center/i }),
+    ).toBeInTheDocument();
+  });
+  it('should hide the Notification Center for non Platform Admin', async () => {
+    //S
+    // @ts-ignore
+    useAuth.mockImplementation(() => ({
+      userData: {
+        profile: {
+          groups: ['group1'],
+          email: 'test@test.invalid',
+          name: 'user',
+          sub: 'userID',
+        },
+      },
+    }));
+    render(<div></div>, {
+      wrapper,
+    });
+    //E
+    await waitForLoadingToFinish();
+    //V
+    expect(screen.queryByRole('button', { name: /Notification Center/i })).toBe(
+      null,
+    );
   });
 });
