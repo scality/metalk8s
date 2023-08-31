@@ -14,6 +14,8 @@ node-exporter:
   - NodeRAIDDiskFailure
   - NodeTextFileCollectorScrapeError
   - NodeFileDescriptorLimit
+kubernetes-apps:
+  - KubeJobNotCompleted
 # workaround: this fires upon install
 # revert the entire commit after the fix is merged
 etcd:

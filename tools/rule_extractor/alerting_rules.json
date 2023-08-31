@@ -530,7 +530,7 @@
     {
         "message": "Job did not complete in time",
         "name": "KubeJobNotCompleted",
-        "query": "time() - max by (namespace, job_name, cluster) (kube_job_status_start_time{job=\"kube-state-metrics\",namespace=~\".*\"} and kube_job_status_active{job=\"kube-state-metrics\",namespace=~\".*\"} > 0) > 43200",
+        "query": "time() - max by (namespace, job_name, cluster) (kube_job_status_start_time{job=\"kube-state-metrics\",namespace=~\".*\"} and kube_job_status_active{job=\"kube-state-metrics\",namespace=~\".*\"} > 0) > (24 * 60 * 60)",
         "severity": "warning"
     },
     {
