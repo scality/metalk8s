@@ -132,14 +132,16 @@ function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
   return <OIDCAuthProvider {...oidcConfig}>{children}</OIDCAuthProvider>;
 }
 
+export type UserData = {
+  token: string;
+  username: string;
+  groups: string[];
+  email: string;
+  id: string;
+};
+
 export function useAuth(): {
-  userData?: {
-    token: string;
-    username: string;
-    groups: string[];
-    email: string;
-    id: string;
-  };
+  userData?: UserData;
 } {
   const auth = useOauth2Auth(); // todo add support for OAuth2Proxy
 

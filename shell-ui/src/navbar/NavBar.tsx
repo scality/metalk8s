@@ -12,7 +12,7 @@ import { useTheme } from 'styled-components';
 import { useLanguage } from './lang';
 import { useThemeName } from './theme';
 import { useIntl } from 'react-intl';
-import { useAuth, useLogOut } from '../auth/AuthProvider';
+import { UserData, useAuth, useLogOut } from '../auth/AuthProvider';
 import {
   ViewDefinition,
   BuildtimeWebFinger,
@@ -291,6 +291,16 @@ export const Navbar = ({
       ),
   }));
 
+  const PLATFORM_ADMIN_ROLE = 'PlatformAdmin';
+  const isPlatformAdmin = (userData?: UserData): boolean => {
+    if (userData) {
+      if (userData.groups.includes(PLATFORM_ADMIN_ROLE)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   const notificationTab = {
     type: 'custom',
     icon: <></>,
@@ -299,7 +309,6 @@ export const Navbar = ({
 
   const rightTabs = [
     ...secondaryTabs,
-    notificationTab,
     {
       type: 'dropdown',
       text: userData?.username || '',
@@ -347,6 +356,9 @@ export const Navbar = ({
     },
   ];
 
+  if (isPlatformAdmin(userData)) {
+    rightTabs.splice(secondaryTabs.length - 1, 0, notificationTab);
+  }
   if (canChangeLanguage) {
     rightTabs.unshift({
       type: 'dropdown',
