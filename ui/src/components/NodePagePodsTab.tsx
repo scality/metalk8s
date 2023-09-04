@@ -22,18 +22,23 @@ const PodTableContainer = styled.div`
   width: calc(100% - ${padding.large} - ${padding.large});
 `;
 // Color specification:
-// Pod Running + All Containers are running => Green
-// Pod Running + At least one container is running => Orange
-// Pod Pending => Orange
-// Pod Succeeded => Green
-// Pod Failed => Red
-// Pod Unknown => Red
+// Pod Running + All Containers are ready => Green
+//  Pod Running + At least one container is not ready => Orange
+//  Pod Pending => Orange
+//  Pod Succeeded => Green
+//  Pod Failed => Red
+//  Pod Unknown => Red
 const StatusText = styled.div`
   color: ${(props) => {
     const { status, numContainer, numContainerRunning } = props;
 
     if (status === STATUS_RUNNING && numContainer === numContainerRunning) {
       return props.theme.statusHealthy;
+    } else if (
+      status === STATUS_RUNNING &&
+      numContainer !== numContainerRunning
+    ) {
+      return props.theme.statusWarning;
     } else if (status === STATUS_RUNNING || status === STATUS_PENDING) {
       return props.theme.statusWarning;
     } else if (status === STATUS_FAILED || status === STATUS_UNKNOWN) {

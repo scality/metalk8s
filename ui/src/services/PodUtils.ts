@@ -7,9 +7,8 @@ export const getPodsListData = (nodeName, pods) => {
       const age = fromMilliSectoAge(new Date() - pod.startTime);
       const numContainer = pod?.containerStatuses?.length ?? 0;
       const numContainerRunning =
-        pod?.containerStatuses?.filter(
-          (container) => container.state.running !== undefined,
-        )?.length ?? 0;
+        pod?.containerStatuses?.filter((container) => container.ready === true)
+          ?.length ?? 0;
       return {
         name: pod.name,
         age: age,
