@@ -24,10 +24,11 @@ runs:
   steps:
     - name: Install dependencies for Openstack
       if: contains('ovh', inputs.cloud)
-      run: ./terraform-snapshot/requirements.sh
+      run: |
+        sudo yum install -y python36-pip jq
+        pip3 install --user --upgrade pip
+        pip3 install --user python-openstackclient~=5.8.0 openstacksdk~=1.4.0
       shell: bash
-      env:
-        CLOUD: openstack
     - name: Generate '${{ inputs.snapshot-name }}' snapshots
       # NOTE: we're adding ~/.local/bin since that's where pip will install the openstack
       # client executable
