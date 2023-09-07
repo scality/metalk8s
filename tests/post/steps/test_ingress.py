@@ -641,6 +641,7 @@ def server_request_returns_multiple_ips(
         )
         try:
             response = requests.get(endpoint, verify=False)
+            context["response"] = response
         except Exception as exc:
             raise AssertionError(f"Unable to reach ingress on '{endpoint}': {exc}")
 
