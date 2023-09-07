@@ -164,6 +164,7 @@ module.exports = {
       },
     }),
     new HtmlWebPackPlugin({
+      version: new Date().getTime(),
       template: '!!handlebars-loader!./index-template.html',
       filename: './index.html',
       excludeChunks: ['shell'],

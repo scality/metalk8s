@@ -10,7 +10,7 @@ module.exports = (env) => ({
     metalk8s_ui: './src/index.ts',
   },
   output: {
-    filename: 'static/js/[name].js',
+    filename: 'static/js/[name].[contenthash].js',
     path: path.resolve(__dirname, 'build'),
     publicPath: '/',
   },
