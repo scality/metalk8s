@@ -9,10 +9,13 @@ import {
   FederatedComponent,
 } from '@scality/module-federation';
 import { STATUS_HEALTH } from '../constants';
+import { QueryObserverResult } from 'react-query';
 export type Status = 'healthy' | 'warning' | 'critical';
 
 const alertGlobal = {};
-export const useAlerts = (filters: FilterLabels) => {
+export const useAlerts = (
+  filters: FilterLabels,
+): Omit<QueryObserverResult<Alert[]>, 'data'> & { alerts?: Alert[] } => {
   return alertGlobal.hooks.useAlerts(filters);
 };
 export const useHighestSeverityAlerts = (filters: FilterLabels) => {
