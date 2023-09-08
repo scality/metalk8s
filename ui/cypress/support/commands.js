@@ -32,6 +32,13 @@ import {
   genValues,
 } from './mockUtils';
 
+Cypress.config({
+  retries: {
+    runMode: 2,
+    openMode: 0,
+  },
+});
+
 Cypress.Commands.add(
   'setupMocks',
   (
