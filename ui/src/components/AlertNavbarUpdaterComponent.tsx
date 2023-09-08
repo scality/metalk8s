@@ -105,32 +105,35 @@ export const AlertNavbarUpdaterComponentInternal = ({
   publishNotification: (notification: Notification) => void;
   unPublishNotification: (id: string) => void;
 }) => {
-  const { alerts } = useAlerts({});
-  alerts.sort((a: Alert, b: Alert) => {
+  const { alerts, status, isFetching } = useAlerts({});
+  alerts?.sort((a: Alert, b: Alert) => {
     return new Date(b.startsAt) > new Date(a.startsAt) ? 1 : -1;
   });
   const { ui_base_path } = useConfig();
-  const watchdogAlert = alerts.find(
+  const watchdogAlert = alerts?.find(
     (alert: Alert) => alert.labels.alertname === WATCHDOG_ALERT_NAME,
   );
-  const criticalAlerts = alerts.filter(
-    (alert: Alert) => alert.severity === 'critical',
-  );
-  const warningAlerts = alerts.filter(
-    (alert: Alert) => alert.severity === 'warning',
-  );
+  const criticalAlerts =
+    alerts?.filter((alert: Alert) => alert.severity === 'critical') ?? [];
+  const warningAlerts =
+    alerts?.filter((alert: Alert) => alert.severity === 'warning') ?? [];
 
   useEffect(() => {
+    // We have initialData when loading alerts, so we should check if the query is fetching or not.
+    if (status === 'idle' || isFetching) {
+      return;
+    }
     const alertsId = localStorage.getItem(LOCAL_STORAGE_ALL_ALERTS_ID);
     // We store all the alerts id with comma separated in localstorage,
     // we need to check if there is any new alert raised, if yes, we need to publish the notification.
     const alertsIdArray = alertsId ? alertsId.split(',') : [];
     // check if all the criticalAlerts item belongs to part of the alertsIdArray
-    const newlyRaisedAlertNum = alerts.filter((alert) => {
+    const newlyRaisedAlertNum = alerts?.filter((alert) => {
       if (!alertsIdArray.includes(alert.id)) {
         return alert.id;
       }
     }).length;
+
     if (watchdogAlert === undefined) {
       unPublishNotification(CRITICAL_NOTIFICATION_ID);
       unPublishNotification(WARNING_NOTIFICATION_ID);
@@ -175,12 +178,14 @@ export const AlertNavbarUpdaterComponentInternal = ({
     // Update the alerts Id in the localstorage
     localStorage.setItem(
       LOCAL_STORAGE_ALL_ALERTS_ID,
-      `${alerts.map((alert) => alert.id).join(',')}`,
+      `${alerts?.map((alert) => alert.id).join(',')}`,
     );
   }, [
     criticalAlerts.length,
     warningAlerts.length,
     watchdogAlert === undefined,
+    status,
+    isFetching,
   ]);
 
   return <></>;
