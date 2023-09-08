@@ -66,7 +66,7 @@ Feature: Ingress
         And we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
         Then the '{wp_ingress_vips}' IPs are spread on nodes
         And an HTTP request on port 80 on '{wp_ingress_vips}' IPs returns 200 'OK'
-        And the server should not respond with shell-ui index
+        And the server should respond with shell-ui index
 
     Scenario: Workload Plane Ingress VIPs reconfiguration
         Given the Kubernetes API is available
@@ -80,7 +80,7 @@ Feature: Ingress
         And we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
         Then the '{wp_ingress_second_pool}' IPs are spread on nodes
         And an HTTP request on port 80 on '{wp_ingress_second_pool}' IPs returns 200 'OK'
-        And the server should not respond with shell-ui index
+        And the server should respond with shell-ui index
         And the '{wp_ingress_first_pool}' IPs are no longer available on nodes
         And an HTTP request on port 80 on '{wp_ingress_first_pool}' IPs should not return
 
@@ -96,10 +96,10 @@ Feature: Ingress
         And we wait for the rollout of 'daemonset/ingress-nginx-controller' in namespace 'metalk8s-ingress' to complete
         Then the '{wp_ingress_first_pool}' IPs are spread on nodes
         And an HTTP request on port 80 on '{wp_ingress_first_pool}' IPs returns 200 'OK'
-        And the server should not respond with shell-ui index
+        And the server should respond with shell-ui index
         And the '{wp_ingress_second_pool}' IPs are spread on nodes
         And an HTTP request on port 80 on '{wp_ingress_second_pool}' IPs returns 200 'OK'
-        And the server should not respond with shell-ui index
+        And the server should respond with shell-ui index
 
     Scenario: Failover of Workload Plane Ingress VIPs
         Given the Kubernetes API is available
@@ -111,7 +111,7 @@ Feature: Ingress
         And we stop the node 'node-1' Workload Plane Ingress
         Then the '{wp_ingress_vips}' IPs should no longer sit on the node 'node-1'
         And an HTTP request on port 80 on '{wp_ingress_vips}' IPs returns 200 'OK'
-        And the server should not respond with shell-ui index
+        And the server should respond with shell-ui index
 
     @authentication
     Scenario: Failover of Control Plane Ingress VIP
