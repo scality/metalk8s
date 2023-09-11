@@ -180,11 +180,6 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
         digest="sha256:e5c4824e7375fcf2a393e1c03c293b69759af37a9ca6abdb91b13d78a93da8bd",
     ),
     Image(
-        name="nginx-ingress-defaultbackend-amd64",
-        version="1.5",
-        digest="sha256:4dc5e07c8ca4e23bddb3153737d7b8c556e5fb2f29c4558b7cd6e6df99c512c7",
-    ),
-    Image(
         name="node-exporter",
         version="v1.6.0",
         digest="sha256:d2e48098c364e61ee62d9016eed863b66331d87cf67146f2068b70ed9d9b4f98",

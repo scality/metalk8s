@@ -1,0 +1,21 @@
+#!jinja|yaml
+
+# Defaults for configuration of Shell-UI Workload Plane
+apiVersion: addons.metalk8s.scality.com/v1alpha1
+kind: WorkloadPlaneShellUIConfig
+spec:
+  deployedApps: []
+  config: 
+    discoveryUrl: /shell/deployed-ui-apps.json
+    logo:
+      light: /brand/assets/logo-light.svg
+      dark: /brand/assets/logo-dark.svg
+      darkRebrand: /brand/assets/logo-darkRebrand.svg
+    favicon: /brand/favicon-metalk8s.svg
+    canChangeLanguage: false
+    canChangeTheme: false
+    productName: MetalK8s
+    themes:
+      darkRebrand: 
+        logoPath: /brand/assets/logo-darkRebrand.svg
+ 

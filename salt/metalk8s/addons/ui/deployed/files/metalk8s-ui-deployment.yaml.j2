@@ -67,6 +67,9 @@ spec:
           - name: deployed-ui-apps-volume
             mountPath: /etc/metalk8s/ui/deployed-ui-apps
             readOnly: true
+          - name: workloadplane-shell-ui-config-volume
+            mountPath: /usr/share/nginx/html/wp
+            readOnly: true
       volumes:
         - name: metalk8s-ui-volume
           configMap:
@@ -77,3 +80,6 @@ spec:
         - name: deployed-ui-apps-volume
           configMap:
             name: deployed-ui-apps-generated
+        - name: workloadplane-shell-ui-config-volume
+          configMap:
+            name: workloadplane-shell-ui-config-generated

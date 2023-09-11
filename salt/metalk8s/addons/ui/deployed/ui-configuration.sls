@@ -25,6 +25,38 @@ include:
   )
 %}
 
+{%- set workloadplane_shell_ui_config = salt.metalk8s_kubernetes.get_object(
+        kind='ConfigMap',
+        apiVersion='v1',
+        namespace='metalk8s-ui',
+        name='workloadplane-shell-ui-config',
+  )
+%}
+
+{%- if workloadplane_shell_ui_config is none %}
+
+Create workloadplane-shell-ui-config ConfigMap:
+  metalk8s_kubernetes.object_present:
+    - manifest:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: workloadplane-shell-ui-config
+          namespace: metalk8s-ui
+        data:
+          config.yaml: |-
+            apiVersion: addons.metalk8s.scality.com/v1alpha1
+            kind: WorkloadPlaneShellUIConfig
+            spec: {}
+
+
+{%- else %}
+
+workloadplane-shell-ui-config ConfigMap already exist:
+  test.succeed_without_changes: []
+
+{%- endif %}
+
 {%- if deployed_ui_apps is none %}
 
 Create deployed-ui-apps ConfigMap:

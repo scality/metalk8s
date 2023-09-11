@@ -132,6 +132,17 @@ The default Shell UI configuration values are specified below:
 
 See :ref:`csc-shell-ui-config-customization` to override these defaults.
 
+Shell UI Workload Plane Default Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Shell UI has a different configuration for the workload plane.
+
+The default Shell UI workload plane configuration values are specified below:
+
+.. literalinclude:: ../../salt/metalk8s/addons/ui/config/workloadplane-shell-ui-config.yaml.j2
+   :lines: 3-
+
+
 Service Configurations Customization
 ------------------------------------
 
@@ -987,6 +998,72 @@ To change the UI navigation menu entries, follow these steps:
                           --kubeconfig /etc/kubernetes/admin.conf \\
                           salt-master-bootstrap -- salt-run state.sls \\
                           metalk8s.addons.ui.deployed saltenv=metalk8s-|version|
+
+
+MetalK8s Shell UI Workloadplane Configuration Customization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Default configuration for MetalK8s Shell UI workloadplane can be overridden by
+editing its Cluster and Service ConfigMap ``workloadplane-shell-ui-config`` in
+namespace ``metalk8s-ui`` under the key ``data.config\.yaml``.
+
+Changing UI Menu Entries
+""""""""""""""""""""""""
+
+To change the UI navigation menu entries on the workloadplane, follow these
+steps:
+
+#. Edit the ConfigMap:
+
+.. code-block:: shell
+
+    root@bootstrap $ kubectl --kubeconfig /etc/kubernetes/admin.conf \
+                    edit configmap -n metalk8s-ui \
+                    workloadplane-shell-ui-config
+
+#. Edit the ``navbar`` field. As an example, we add an entry to
+   the ``main`` section (there is also a ``subLogin`` section):
+
+.. code-block:: yaml
+
+    apiVersion: v1
+    kind: ConfigMap
+    data:
+      config.yaml: |-
+        apiVersion: addons.metalk8s.scality.com/v1alpha1
+        kind: WorkloadplaneShellUIConfig
+        spec:
+          deployedApps:
+            - kind: ModuleFederatedAppKind,
+              name: appname,
+              version: x.y.z,
+              url: https://app.url,
+              appHistoryBasePath: ""
+          config:
+            # [...]
+            navbar:
+              # [...]
+              main:
+                # [...]
+                kind: ModuleFederatedAppKind
+                view: ViewToFederate
+                # Alternatively for a non federated app
+                isExternal: true
+                label:
+                  en: Documentation
+                  fr: Documentation
+                url: https://13.48.197.10:8443/docs/
+
+#. Apply your changes by running:
+
+.. parsed-literal::
+
+      root\@bootstrap $ kubectl exec -n kube-system -c salt-master \\
+                          --kubeconfig /etc/kubernetes/admin.conf \\
+                          salt-master-bootstrap -- salt-run state.sls \\
+                          metalk8s.addons.ui.deployed saltenv=metalk8s-|version|
+
+
 
 Replicas Count Customization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
