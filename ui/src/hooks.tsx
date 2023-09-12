@@ -3,7 +3,7 @@ import { useEffect, useState, createContext } from 'react';
 import { useSelector } from 'react-redux';
 import { useQueries, useQuery } from 'react-query';
 import type { RootState } from './ducks/reducer';
-import { coreV1 } from './services/k8s/api';
+import { coreV1, useK8sApiConfig } from './services/k8s/api';
 import {
   REFRESH_METRICS_GRAPH,
   SAMPLE_DURATION_LAST_TWENTY_FOUR_HOURS,
@@ -39,6 +39,7 @@ export const useTypedSelector: <TSelected>(
  * It retrieves the nodes data through react-queries
  */
 export const useNodes = (): V1NodeList => {
+  const { coreV1 } = useK8sApiConfig();
   const nodesQuery = useQuery(
     'nodesNames',
     () =>
