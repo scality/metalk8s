@@ -9,7 +9,6 @@ import {
   takeLatest,
   race,
 } from 'redux-saga/effects';
-import * as CoreApi from '../../services/k8s/core';
 import * as ApiSalt from '../../services/salt/api';
 import {
   addNotificationSuccessAction,
@@ -28,6 +27,7 @@ import {
   API_STATUS_NOT_READY,
   API_STATUS_UNKNOWN,
 } from '../../constants';
+import { RootState } from '../reducer';
 // Actions
 const FETCH_NODES = 'FETCH_NODES';
 const REFRESH_NODES = 'REFRESH_NODES';
@@ -290,7 +290,8 @@ const intlSelector = (state) => state.config.intl;
 
 // Sagas
 export function* fetchClusterVersion() {
-  const result = yield call(CoreApi.getKubeSystemNamespace);
+  const coreApi = yield select((state: RootState) => state.config.coreApi);
+  const result = yield call(coreApi.getKubeSystemNamespace);
 
   if (!result.error) {
     yield put(
@@ -314,7 +315,8 @@ export function* fetchNodes() {
   const deployingNodes = allJobs
     .filter((job) => job.type === 'deploy-node' && !job.completed)
     .map((job) => job.node);
-  const result = yield call(CoreApi.getNodes);
+  const coreApi = yield select((state: RootState) => state.config.coreApi);
+  const result = yield call(coreApi.getNodes);
 
   if (!result.error) {
     yield put(
@@ -343,9 +345,9 @@ export function* fetchNodes() {
           }
 
           // the Roles of the Node should be the ones that are stored in the labels `node-role.kubernetes.io/<role-name>`
-          const nodeRolesLabels = Object.keys(
-            node.metadata.labels,
-          ).filter((label) => label.startsWith(ROLE_PREFIX));
+          const nodeRolesLabels = Object.keys(node.metadata.labels).filter(
+            (label) => label.startsWith(ROLE_PREFIX),
+          );
           const nodeRoles = nodeRolesLabels?.map((nRL) => nRL.split('/')[1]);
           return {
             name: node.metadata.name,
@@ -411,7 +413,8 @@ export function* createNode({ payload }) {
     }
   }
 
-  const result = yield call(CoreApi.createNode, body);
+  const coreApi = yield select((state: RootState) => state.config.coreApi);
+  const result = yield call(coreApi.createNode, body);
 
   if (!result.error) {
     yield call(fetchNodes);
@@ -587,7 +590,8 @@ export function* fetchNodesIPsInterface() {
   }
 }
 export function* readNode({ payload }) {
-  const result = yield call(CoreApi.readNode, payload.name);
+  const coreApi = yield select((state: RootState) => state.config.coreApi);
+  const result = yield call(coreApi.readNode, payload.name);
 
   if (!result.error) {
     yield put(

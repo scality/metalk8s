@@ -12,6 +12,7 @@ import { EN_LANG } from '../constants';
 import { authenticateSaltApi } from './login';
 import type { Result } from '../types';
 import { logOut, setUser } from './oidc';
+import { CoreApi } from '../services/k8s/core';
 // Actions
 export const SET_LANG = 'SET_LANG';
 export const SET_THEME = 'SET_THEME';
@@ -21,6 +22,7 @@ export const SET_CONFIG_STATUS = 'SET_CONFIG_STATUS';
 export const UPDATE_API_CONFIG = 'UPDATE_API_CONFIG';
 export const LOGOUT = 'LOGOUT';
 export const SET_USER_LOADED = 'SET_USER_LOADED';
+export const SET_CORE_API_CLIENT = 'SET_CORE_API_CLIENT';
 const SET_INTL = 'SET_INTL';
 // Reducer
 type Status = 'idle' | 'loading' | 'error' | 'success';
@@ -30,6 +32,7 @@ export type ConfigState = {
   api: Config | null | undefined;
   status: Status;
   intl: IntlShape;
+  coreApi: CoreApi | null;
 };
 const defaultState: ConfigState = {
   language: EN_LANG,
@@ -38,6 +41,7 @@ const defaultState: ConfigState = {
   api: null,
   status: 'idle',
   intl: {},
+  coreApi: null,
 };
 export default function reducer(
   state: ConfigState = defaultState,
@@ -61,6 +65,8 @@ export default function reducer(
 
     case SET_INTL:
       return { ...state, intl: action.payload };
+    case SET_CORE_API_CLIENT:
+      return { ...state, coreApi: action.payload };
 
     default:
       return state;
@@ -94,6 +100,12 @@ export function setConfigStatusAction(status: Status) {
   return {
     type: SET_CONFIG_STATUS,
     status,
+  };
+}
+export function setCoreApiClient(client: CoreApi) {
+  return {
+    type: SET_CORE_API_CLIENT,
+    payload: client,
   };
 }
 export function updateAPIConfigAction(payload: { token: string }) {
@@ -152,7 +164,12 @@ export function* updateApiServerConfig({
 
   if (api) {
     yield put(setUser(payload));
-    yield call(ApiK8s.updateApiServerConfig, api.url, payload.token);
+
+    const { appsV1, coreV1 } = ApiK8s.updateApiServerConfig(
+      api.url,
+      payload.token,
+    );
+    yield put(setCoreApiClient(new CoreApi(coreV1, appsV1)));
     yield call(authenticateSaltApi);
   }
 }
