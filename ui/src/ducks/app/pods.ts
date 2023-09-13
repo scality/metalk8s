@@ -57,7 +57,7 @@ export const setPodsAction = (payload: Pod[]) => {
 // Sagas
 export function* fetchPods() {
   const coreApi = yield select((state: RootState) => state.config.coreApi);
-  const result = yield call(coreApi.getPods);
+  const result = yield call(() => coreApi.getPods());
 
   if (!result.error) {
     yield put(

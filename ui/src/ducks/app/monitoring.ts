@@ -321,10 +321,8 @@ export function* handlePrometheusError(clusterHealth, result) {
     clusterHealth.error = `Prometheus - ${result.error.response.statusText}`;
   } else {
     const coreApi = yield select((state: RootState) => state.config.coreApi);
-    const prometheusPod = yield call(
-      coreApi.queryPodInNamespace,
-      'metalk8s-monitoring',
-      'prometheus',
+    const prometheusPod = yield call(() =>
+      coreApi.queryPodInNamespace('metalk8s-monitoring', 'prometheus'),
     );
 
     if (!prometheusPod.error) {

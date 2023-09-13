@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
-import * as CoreApi from '../services/k8s/core';
 import { nodeKey } from '../services/k8s/core.key';
 import {
   API_STATUS_READY,

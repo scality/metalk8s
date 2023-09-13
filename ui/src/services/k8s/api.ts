@@ -6,6 +6,7 @@ import { AppsV1Api } from '@kubernetes/client-node/dist/gen/api/appsV1Api';
 import { RootState } from '../../ducks/reducer';
 import { useAuth } from '../../containers/PrivateRoute';
 import { useSelector } from 'react-redux';
+import { Metalk8sV1alpha1VolumeClient } from './Metalk8sVolumeClient.generated';
 let config: typeof Config;
 export let coreV1: CoreV1Api;
 export let customObjects: CustomObjectsApi;
@@ -14,7 +15,7 @@ export let appsV1: AppsV1Api;
 
 type K8sApiConfig = {
   coreV1: CoreV1Api;
-  customObjects: CustomObjectsApi;
+  customObjectsApi: Metalk8sV1alpha1VolumeClient;
   storage: StorageV1Api;
   appsV1: AppsV1Api;
 };
@@ -28,9 +29,10 @@ export const useK8sApiConfig = (): K8sApiConfig => {
 
   const coreV1 = config.makeApiClient(CoreV1Api);
   const customObjects = config.makeApiClient(CustomObjectsApi);
+  const customObjectsApi = new Metalk8sV1alpha1VolumeClient(customObjects);
   const storage = config.makeApiClient(StorageV1Api);
   const appsV1 = config.makeApiClient(AppsV1Api);
-  return { coreV1, customObjects, storage, appsV1 };
+  return { coreV1, customObjectsApi, storage, appsV1 };
 };
 
 export const updateApiServerConfig = (

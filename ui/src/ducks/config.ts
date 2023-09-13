@@ -13,6 +13,9 @@ import { authenticateSaltApi } from './login';
 import type { Result } from '../types';
 import { logOut, setUser } from './oidc';
 import { CoreApi } from '../services/k8s/core';
+import { Metalk8sV1alpha1VolumeClient } from '../services/k8s/Metalk8sVolumeClient.generated';
+import { StorageApi } from '../services/k8s/volumes';
+
 // Actions
 export const SET_LANG = 'SET_LANG';
 export const SET_THEME = 'SET_THEME';
@@ -23,6 +26,8 @@ export const UPDATE_API_CONFIG = 'UPDATE_API_CONFIG';
 export const LOGOUT = 'LOGOUT';
 export const SET_USER_LOADED = 'SET_USER_LOADED';
 export const SET_CORE_API_CLIENT = 'SET_CORE_API_CLIENT';
+export const SET_CUSTOM_OBJECT_API_CLIENT = 'SET_CUSTOM_OBJECT_API_CLIENT';
+export const SET_STORAGE_API_CLIENT = 'SET_STORAGE_API_CLIENT';
 const SET_INTL = 'SET_INTL';
 // Reducer
 type Status = 'idle' | 'loading' | 'error' | 'success';
@@ -33,6 +38,8 @@ export type ConfigState = {
   status: Status;
   intl: IntlShape;
   coreApi: CoreApi | null;
+  customObjectsApi: Metalk8sV1alpha1VolumeClient | null;
+  storageApi: StorageApi | null;
 };
 const defaultState: ConfigState = {
   language: EN_LANG,
@@ -42,6 +49,8 @@ const defaultState: ConfigState = {
   status: 'idle',
   intl: {},
   coreApi: null,
+  customObjectsApi: null,
+  storageApi: null,
 };
 export default function reducer(
   state: ConfigState = defaultState,
@@ -67,7 +76,10 @@ export default function reducer(
       return { ...state, intl: action.payload };
     case SET_CORE_API_CLIENT:
       return { ...state, coreApi: action.payload };
-
+    case SET_CUSTOM_OBJECT_API_CLIENT:
+      return { ...state, customObjectsApi: action.payload };
+    case SET_STORAGE_API_CLIENT:
+      return { ...state, storageApi: action.payload };
     default:
       return state;
   }
@@ -108,6 +120,20 @@ export function setCoreApiClient(client: CoreApi) {
     payload: client,
   };
 }
+export function setCustomObjectApiClient(client: Metalk8sV1alpha1VolumeClient) {
+  return {
+    type: SET_CUSTOM_OBJECT_API_CLIENT,
+    payload: client,
+  };
+}
+
+export function setStoreApiClient(client: StorageApi) {
+  return {
+    type: SET_STORAGE_API_CLIENT,
+    payload: client,
+  };
+}
+
 export function updateAPIConfigAction(payload: { token: string }) {
   return {
     type: UPDATE_API_CONFIG,
@@ -165,11 +191,14 @@ export function* updateApiServerConfig({
   if (api) {
     yield put(setUser(payload));
 
-    const { appsV1, coreV1 } = ApiK8s.updateApiServerConfig(
-      api.url,
-      payload.token,
+    const { appsV1, coreV1, customObjects, storage } =
+      ApiK8s.updateApiServerConfig(api.url, payload.token);
+    yield put(
+      setCustomObjectApiClient(new Metalk8sV1alpha1VolumeClient(customObjects)),
     );
     yield put(setCoreApiClient(new CoreApi(coreV1, appsV1)));
+    yield put(setStoreApiClient(new StorageApi(coreV1, storage)));
+
     yield call(authenticateSaltApi);
   }
 }
