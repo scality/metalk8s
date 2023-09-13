@@ -66,7 +66,7 @@ export const UIListProvider = ({
   const { status, data } = useQuery(
     'discoveredUIs',
     () => {
-      return fetch(discoveryURL).then((r) => {
+      return fetch(discoveryURL, { cache: 'no-cache' }).then((r) => {
         if (r.ok) {
           return r.json();
         } else {

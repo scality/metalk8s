@@ -280,30 +280,30 @@ export const ConfigurationProvider = ({
         queryKey: `${ui.name}.${ui.kind}.${ui.version}-buildtime-WebFinger`,
         refetchOnWindowFocus: false,
         queryFn: () => {
-          return fetch(`${ui.url}/.well-known/micro-app-configuration`).then(
-            (r) => {
-              if (r.ok) {
-                return r.json();
-              } else {
-                return Promise.reject();
-              }
-            },
-          );
+          return fetch(
+            `${ui.url}/.well-known/micro-app-configuration?version=${ui.version}`,
+          ).then((r) => {
+            if (r.ok) {
+              return r.json();
+            } else {
+              return Promise.reject();
+            }
+          });
         },
       },
       {
         queryKey: `${ui.name}.${ui.kind}.${ui.version}-runtime-WebFinger`,
         refetchOnWindowFocus: false,
         queryFn: () => {
-          return fetch(`${ui.url}/.well-known/runtime-app-configuration`).then(
-            (r) => {
-              if (r.ok) {
-                return r.json();
-              } else {
-                return Promise.reject();
-              }
-            },
-          );
+          return fetch(
+            `${ui.url}/.well-known/runtime-app-configuration?version=${ui.version}`,
+          ).then((r) => {
+            if (r.ok) {
+              return r.json();
+            } else {
+              return Promise.reject();
+            }
+          });
         },
       },
     ]),
