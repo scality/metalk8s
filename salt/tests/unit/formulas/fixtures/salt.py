@@ -26,6 +26,7 @@ DEFAULT_CONFIG = {
     "file_client": "remote",
 }
 
+
 # The "public methods" are dynamically added by the `register` decorator
 # pylint: disable=too-few-public-methods
 class SaltMock:
@@ -186,6 +187,7 @@ def register_basic(func_name: str) -> Callable[[MockFunc], MockFunc]:
 
 # }}}
 # Mock definitions {{{
+
 
 # Data-driven mocks {{{
 @register("config.get")
@@ -547,6 +549,10 @@ def random_get_str(length: int = 20) -> str:
     allowed_chars = string.ascii_letters + string.digits + string.punctuation
     return "".join(random.choices(allowed_chars, k=length))
 
+
+register_basic("metalk8s_os.get_kubereserved")(
+    MagicMock(return_value={"cpu": "100m", "memory": "1000Mi"})
+)
 
 # }}}
 # }}}

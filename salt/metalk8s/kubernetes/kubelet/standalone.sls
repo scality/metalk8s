@@ -103,6 +103,10 @@ Create kubelet config file:
         {%- if pillar.get("kubernetes:kubelet:config:maxPods") %}
         maxPods: {{ pillar.kubernetes.kubelet.config.maxPods }}
         {%- endif %}
+        systemReserved:
+          cpu: 200m
+          memory: 200Mi
+        kubeReserved: {{ salt.metalk8s_os.get_kubereserved() | tojson }}
 {%- for key, value in kubelet.config.items() %}
         {{ key }}: {{ value }}
 {%- endfor %}

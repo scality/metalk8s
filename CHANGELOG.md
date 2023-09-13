@@ -99,6 +99,10 @@
 - Add liveness probe to `keepalived` pod 
   (PR[#4118](https://github.com/scality/metalk8s/pull/4118))
 
+- Add `kubeReserved` and `systemReserved` resources allocation to `KubeletConfiguration`
+  following [Google's recommandations](https://cloud.google.com/kubernetes-engine/docs/concepts/plan-node-sizes#memory_and_cpu_reservations)
+  (PR[#4134](https://github.com/scality/metalk8s/pull/4134))
+
 ## Release 125.0.6 (In development)
 
 ### Enhancements
