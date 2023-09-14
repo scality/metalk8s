@@ -6,6 +6,7 @@ const deps = require('./package.json').dependencies;
 module.exports = {
   entry: './src/index.tsx',
   output: {
+    filename: '[name].[contenthash].js',
     path: path.resolve(__dirname, 'build'),
     publicPath: '/shell/',
   },
@@ -172,6 +173,7 @@ module.exports = {
       },
     }),
     new HtmlWebPackPlugin({
+      version: new Date().getTime(),
       template: '!!handlebars-loader!./index-template.html',
       filename: './index.html',
       excludeChunks: ['shell'],

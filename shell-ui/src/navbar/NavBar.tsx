@@ -190,7 +190,10 @@ export const useNavbarLinksToActions = (
         },
       };
       const remoteEntryUrl = link.view.isFederated
-        ? link.view.app.url + microAppConfiguration.spec.remoteEntryPath
+        ? link.view.app.url +
+          microAppConfiguration.spec.remoteEntryPath +
+          '?version=' +
+          link.view.app.version
         : '';
       prefetch(remoteEntryUrl).catch((e) =>
         console.error(`Failed to preload ${remoteEntryUrl}`, e),

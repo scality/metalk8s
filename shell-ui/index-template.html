@@ -7,7 +7,7 @@
   <link rel="preload" as="script" href="{{this}}" />
   {{/each}}
   <title>Document</title>
-  <script language="javascript">window.shellUIRemoteEntryUrl = "/shell/remoteEntry.js?" + Date.now();</script>
+  <script language="javascript">window.shellUIRemoteEntryUrl = "/shell/remoteEntry.js?version={{htmlWebpackPlugin.options.version}}"</script>
 </head>
 <body>
   <div id="app"></div>

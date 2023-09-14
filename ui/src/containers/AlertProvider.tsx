@@ -1,6 +1,5 @@
 import React from 'react';
 import { useIntl } from 'react-intl';
-import { useTypedSelector } from '../hooks';
 import { ErrorBoundary } from 'react-error-boundary';
 import type { FilterLabels, Alert } from '../services/alertUtils';
 import { ErrorPage500 } from '@scality/core-ui';
@@ -10,10 +9,13 @@ import {
 } from '@scality/module-federation';
 import { STATUS_HEALTH } from '../constants';
 import { useConfig } from '../FederableApp';
+import { QueryObserverResult } from 'react-query';
 export type Status = 'healthy' | 'warning' | 'critical';
 
 const alertGlobal = {};
-export const useAlerts = (filters: FilterLabels): { alerts: Alert[] } => {
+export const useAlerts = (
+  filters: FilterLabels,
+): Omit<QueryObserverResult<Alert[]>, 'data'> & { alerts?: Alert[] } => {
   return alertGlobal.hooks.useAlerts(filters);
 };
 export const useHighestSeverityAlerts = (filters: FilterLabels) => {
