@@ -7,8 +7,6 @@ import {
   select,
 } from 'redux-saga/effects';
 import type { RootState } from '../reducer';
-import * as VolumesApi from '../../services/k8s/volumes';
-import * as Metalk8sVolumesApi from '../../services/k8s/Metalk8sVolumeClient.generated';
 import {
   addNotificationErrorAction,
   addNotificationSuccessAction,
@@ -275,7 +273,13 @@ export function* fetchVolumes(): Generator<
       isLoading: true,
     }),
   );
-  const result = yield call(Metalk8sVolumesApi.getMetalk8sV1alpha1VolumeList);
+  const customObjectsApi = yield select(
+    (state: RootState) => state.config.customObjectsApi,
+  );
+
+  const result = yield call(() =>
+    customObjectsApi.getMetalk8sV1alpha1VolumeList(),
+  );
 
   if (result.body) {
     yield put(setVolumesAction(result.body.items ?? []));
@@ -307,7 +311,10 @@ export function* fetchPersistentVolumes(): Generator<
       body: null;
     }
 > {
-  const result = yield call(VolumesApi.getPersistentVolumes);
+  const storageApi = yield select(
+    (state: RootState) => state.config.storageApi,
+  );
+  const result = yield call(() => storageApi.getPersistentVolumes());
 
   if (!result.error) {
     //the storage capacity in the spec may not contain the reasonable/correct unit size
@@ -334,7 +341,10 @@ export function* fetchStorageClass(): Generator<
     }
 > {
   yield put(updateStorageClassAction(true));
-  const result = yield call(VolumesApi.getStorageClass);
+  const storageApi = yield select(
+    (state: RootState) => state.config.storageApi,
+  );
+  const result = yield call(() => storageApi.getStorageClass());
 
   if (result.body) {
     yield put(setStorageClassAction(result.body.items ?? []));
@@ -461,10 +471,11 @@ export function* createVolumes({
           };
         }
       }
-
-      const result = yield call(
-        Metalk8sVolumesApi.createMetalk8sV1alpha1Volume,
-        body,
+      const customObjectsApi = yield select(
+        (state: RootState) => state.config.customObjectsApi,
+      );
+      const result = yield call(() =>
+        customObjectsApi.createMetalk8sV1alpha1Volume(body),
       );
       const intl = yield select(intlSelector);
 
@@ -554,7 +565,10 @@ export function* fetchPersistentVolumeClaims(): Generator<
       body: null;
     }
 > {
-  const result = yield call(VolumesApi.getPersistentVolumeClaims);
+  const storageApi = yield select(
+    (state: RootState) => state.config.storageApi,
+  );
+  const result = yield call(() => storageApi.getPersistentVolumeClaims());
 
   if (!result.error) {
     yield put(setPersistentVolumeClaimAction(result.body.items));
@@ -575,9 +589,11 @@ export function* fetchCurrentVolumeObject({
       body: null;
     }
 > {
-  const result = yield call(
-    Metalk8sVolumesApi.getMetalk8sV1alpha1Volume,
-    volumeName,
+  const customObjectsApi = yield select(
+    (state: RootState) => state.config.customObjectsApi,
+  );
+  const result = yield call(() =>
+    customObjectsApi.getMetalk8sV1alpha1Volume(volumeName),
   );
 
   if (!result.error) {
@@ -625,11 +641,7 @@ export function* stopRefreshPersistentVolumes(): Generator<
 > {
   yield put(updatePersistentVolumesRefreshingAction(false));
 }
-export function* deleteVolume({
-  payload,
-}: {
-  payload: string;
-}): Generator<
+export function* deleteVolume({ payload }: { payload: string }): Generator<
   Effect,
   void,
   | {
@@ -641,9 +653,11 @@ export function* deleteVolume({
     }
   | boolean
 > {
-  const result = yield call(
-    Metalk8sVolumesApi.deleteMetalk8sV1alpha1Volume,
-    payload,
+  const customObjectsApi = yield select(
+    (state: RootState) => state.config.customObjectsApi,
+  );
+  const result = yield call(() =>
+    customObjectsApi.deleteMetalk8sV1alpha1Volume(payload),
   );
   const intl = yield select(intlSelector);
 

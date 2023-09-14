@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
-import * as CoreApi from '../services/k8s/core';
 import { nodeKey } from '../services/k8s/core.key';
 import {
   API_STATUS_READY,
@@ -15,11 +14,13 @@ import {
   FETCH_NODES_IPS_INTERFACES,
   updateNodesAction,
 } from '../ducks/app/nodes';
+import { useK8sApiConfig } from '../services/k8s/api';
 const FIVE_SECOND_IN_MS = 5000;
-export function getAllNodesQueryOption(deployingNodes) {
+export function useAllNodesQueryOption(deployingNodes) {
+  const { coreV1 } = useK8sApiConfig();
   return {
     queryKey: nodeKey.all,
-    queryFn: CoreApi.getNodes,
+    queryFn: () => coreV1.listNode(),
     select: (data) => {
       return data?.body?.items?.map((node) => {
         const statusType =
@@ -43,9 +44,9 @@ export function getAllNodesQueryOption(deployingNodes) {
         }
 
         // the Roles of the Node should be the ones that are stored in the labels `node-role.kubernetes.io/<role-name>`
-        const nodeRolesLabels = Object.keys(
-          node.metadata.labels,
-        ).filter((label) => label.startsWith(ROLE_PREFIX));
+        const nodeRolesLabels = Object.keys(node.metadata.labels).filter(
+          (label) => label.startsWith(ROLE_PREFIX),
+        );
         const nodeRoles = nodeRolesLabels?.map((nRL) => nRL.split('/')[1]);
         return {
           name: node.metadata.name,
@@ -73,7 +74,7 @@ export function useRefreshNodes() {
     .filter((job) => job.type === 'deploy-node' && !job.completed)
     .map((job) => job.node);
   const result = useQuery({
-    ...getAllNodesQueryOption(deployingNodes),
+    ...useAllNodesQueryOption(deployingNodes),
     refetchInterval: REFRESH_TIMEOUT,
   });
   const { data, isLoading } = result;
