@@ -110,6 +110,9 @@
 - Make `KubeJobNotCompleted` alert time configurable
   (PR[4128](https://github.com/scality/metalk8s/pull/4128))
 
+- Make salt master `worker_threads` and `timeout` configurable
+  (PR[4149](https://github.com/scality/metalk8s/pull/4149))
+
 ## Release 125.0.5
 
 ### Additions

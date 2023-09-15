@@ -90,6 +90,10 @@ Configuration
         kubelet:
           config:
             maxPods: 110
+      salt:
+        master:
+          worker_threads: 12
+          timeout: 20
 
 The ``networks`` field specifies a range of IP addresses written in CIDR
 notation for it's various subfields.
@@ -240,6 +244,12 @@ defaults kubernetes configuration.
 
   From ``kubelet`` section you can override the max number of pods that can
   be scheduled on each nodes.
+
+The ``salt`` field can be omitted if you do not have any specific salt settings
+to configure.
+
+  From ``master`` section you can override the number of worker threads used
+  by salt master and the timeout for salt master to get an answer from minions
 
 .. _Feature Gates: https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/
 .. _specific OpenID for kube-apiserver: https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens
