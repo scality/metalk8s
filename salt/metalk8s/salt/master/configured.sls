@@ -20,6 +20,8 @@ Configure salt master:
         kubeconfig: "{{ certificates.kubeconfig.files['salt-master'].path }}"
         salt_api_ssl_crt: {{ certificates.server.files['salt-api'].path }}
         saltenv: "{{ saltenv }}"
+        worker_threads: {{ salt.pillar.get("salt:master:worker_threads", default=12) }}
+        timeout: {{ salt.pillar.get("salt:master:timeout", default=20) }}
 
 Configure salt master roots paths:
   file.serialize:
