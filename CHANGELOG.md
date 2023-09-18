@@ -1,7 +1,19 @@
 # CHANGELOG
-## Release 126.0.0 (in development)
+## Release 126.0.0-alpha.3
 
 ### Enhancements
+
+- Salt Master worker_threads and timeout are now configurable
+  (PR[#4149](https://github.com/scality/metalk8s/pull/4149))
+
+- Alert re-push mechanism works properly
+  (PR[#4141](https://github.com/scality/metalk8s/pull/4141))
+
+- Versions is properly shown on UI after upgrade
+  (PR[#4140](https://github.com/scality/metalk8s/pull/4140))
+
+- Prevent Python 3.6 conflicts with newer versions of OpenStackSDK
+  (PR[#4139](https://github.com/scality/metalk8s/pull/4139))
 
 - Add support in CSC to manage a new configuration for Shell UI on the WorkloadPlane
   (PR[#4124](https://github.com/scality/metalk8s/pull/4124))
@@ -27,6 +39,18 @@
   (PR[#4097](https://github.com/scality/metalk8s/pull/4097))
 
   This change includes:
+
+  - Bump Docker build-push-action to [5](https://github.com/docker/build-push-action/tree/v5.0.0)
+    (PR[#4148](https://github.com/scality/metalk8s/pull/4148))
+
+  - Bump Docker login-action to [3](https://github.com/docker/login-action/tree/v3.0.0)
+    (PR[#4147](https://github.com/scality/metalk8s/pull/4147))
+
+  - Bump Docker setup-buildx-action to [3](https://github.com/docker/setup-buildx-action/tree/v3.0.0)
+    (PR[#4146](https://github.com/scality/metalk8s/pull/4146))
+
+  - Bump Scality Actions to [1.6.0](https://github.com/scality/actions/tree/1.6.0)
+    (PR[#4150](https://github.com/scality/metalk8s/pull/4150))
 
   - Bump Prometheus container version to
     [2.45.0](https://github.com/prometheus/prometheus/releases/tag/v2.45.0)
