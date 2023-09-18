@@ -1,7 +1,17 @@
 # CHANGELOG
+
 ## Release 126.0.0 (in development)
 
 ### Enhancements
+
+- Salt Master worker_threads and timeout are now configurable
+  (PR[#4149](https://github.com/scality/metalk8s/pull/4149))
+
+- Alert re-push mechanism works properly
+  (PR[#4141](https://github.com/scality/metalk8s/pull/4141))
+
+- Versions is properly shown on UI after upgrade
+  (PR[#4140](https://github.com/scality/metalk8s/pull/4140))
 
 - Add support in CSC to manage a new configuration for Shell UI on the WorkloadPlane
   (PR[#4124](https://github.com/scality/metalk8s/pull/4124))
