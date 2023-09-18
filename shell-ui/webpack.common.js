@@ -90,6 +90,9 @@ module.exports = {
         './moduleFederation/UIListProvider':
           './src/initFederation/UIListProvider.tsx',
         './useNotificationCenter': './src/useNotificationCenter.ts',
+        './toast/ToastProvider': './src/toast/ToastProvider.tsx',
+        './toast/useToast': './src/toast/useToast.ts',
+        './toast/useMutationsHandler': './src/toast/useMutationsHandler.ts',
       },
       shared: {
         ...Object.fromEntries(
