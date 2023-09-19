@@ -54,14 +54,26 @@ function defaultDexConnectorMetadataService(connectorId: string) {
   return DexDefaultConnectorMetadataService;
 }
 
+function getAbsoluteRedirectUrl(redirectUrl?: string) {
+  if (!redirectUrl) {
+    return window.location.href;
+  }
+
+  if (redirectUrl.startsWith('http')) {
+    return redirectUrl;
+  }
+
+  return window.location.origin + redirectUrl;
+}
+
 function OAuth2AuthProvider({ children }: { children: React.ReactNode }) {
   const { authConfig } = useAuthConfig();
   const userManager = new UserManager({
     authority: authConfig.providerUrl,
     client_id: authConfig.clientId,
-    redirect_uri: authConfig.redirectUrl || window.location.href,
-    silent_redirect_uri: authConfig.redirectUrl || window.location.href,
-    post_logout_redirect_uri: authConfig.redirectUrl || window.location.href,
+    redirect_uri: getAbsoluteRedirectUrl(authConfig.redirectUrl),
+    silent_redirect_uri: getAbsoluteRedirectUrl(authConfig.redirectUrl),
+    post_logout_redirect_uri: getAbsoluteRedirectUrl(authConfig.redirectUrl),
     response_type: authConfig.responseType || 'code',
     scope: authConfig.scopes,
     loadUserInfo: true,
