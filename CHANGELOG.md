@@ -10,6 +10,12 @@
 - Make salt master `worker_threads` and `timeout` configurable
   (PR[4149](https://github.com/scality/metalk8s/pull/4149))
 
+### Bug fixes
+
+- Fix a bug that make the upgrade fail if there is some changes
+  on the salt master based on the salt pillar
+  (PR[4156](https://github.com/scality/metalk8s/pull/4156))
+
 ## Release 125.0.5
 
 ### Additions
