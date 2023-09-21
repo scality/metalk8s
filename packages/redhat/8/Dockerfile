@@ -7,10 +7,12 @@ FROM ${BUILD_IMAGE}@sha256:${BUILD_IMAGE_SHA256} as build
 RUN useradd -m build
 
 ARG SALT_VERSION
+ARG K8S_SHORT_VERSION
 ARG GO_VERSION=1.17.13
 
 ADD common/yum_repositories/*.repo /etc/yum.repos.d/
 RUN sed -i s/@SALT_VERSION@/$SALT_VERSION/ /etc/yum.repos.d/saltstack.repo
+RUN sed -i s/@K8S_SHORT_VERSION@/$K8S_SHORT_VERSION/ /etc/yum.repos.d/kubernetes.repo
 
 ENV GOPATH /go
 ENV GOROOT /usr/local/go

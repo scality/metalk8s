@@ -116,7 +116,7 @@ download_repository_gpg_keys() {
         for key_id in "${!gpg_keys[@]}"; do
             gpg_key=RPM-GPG-KEY-metalk8s-$repo_name-${releasever}_$((
                 key_id + 1 ))
-            curl -s "${gpg_keys[$key_id]}" > "$gpg_key"
+            curl -Ls "${gpg_keys[$key_id]}" > "$gpg_key"
             chown "$TARGET_UID:$TARGET_GID" "$gpg_key"
         done
     fi
@@ -205,7 +205,8 @@ download_packages() {
                 ;;
         esac
 
-        yumdownloader --disablerepo="*" \
+        yumdownloader --arch="x86_64,noarch" \
+                      --disablerepo="*" \
                       --enablerepo="$repo" "${dependencies[@]}"
     done
 
