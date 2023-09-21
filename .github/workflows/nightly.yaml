@@ -1,4 +1,5 @@
 name: Nightly
+run-name: "Nightly tests for ${{ github.ref_name }}"
 
 on:
   workflow_dispatch:
