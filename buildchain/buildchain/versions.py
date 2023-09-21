@@ -18,8 +18,14 @@ Image = namedtuple("Image", ("name", "version", "digest"))
 
 # Project-wide versions {{{
 
+K8S_VERSION_MAJOR: str = "1"
+K8S_VERSION_MINOR: str = "24"
+K8S_VERSION_PATCH: str = "13"
+
+K8S_SHORT_VERSION: str = f"{K8S_VERSION_MAJOR}.{K8S_VERSION_MINOR}"
+K8S_VERSION: str = f"{K8S_SHORT_VERSION}.{K8S_VERSION_PATCH}"
+
 CALICO_VERSION: str = "3.24.1"
-K8S_VERSION: str = "1.24.13"
 SALT_VERSION: str = "3002.9"
 CONTAINERD_VERSION: str = "1.6.8"
 

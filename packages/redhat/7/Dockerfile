@@ -5,6 +5,7 @@ ARG BUILD_IMAGE=docker.io/centos
 FROM ${BUILD_IMAGE}@sha256:${BUILD_IMAGE_SHA256} as build
 
 ARG SALT_VERSION
+ARG K8S_SHORT_VERSION
 ARG GO_VERSION=1.16.14
 
 # CentOS 7 is EOL and mirrorlist does no longer exists
@@ -14,6 +15,7 @@ RUN sed -i 's/^mirrorlist=/#mirrorlist=/; s/^#baseurl=/baseurl=/; s/mirror\.cent
 
 ADD common/yum_repositories/*.repo /etc/yum.repos.d/
 RUN sed -i s/@SALT_VERSION@/$SALT_VERSION/ /etc/yum.repos.d/saltstack.repo
+RUN sed -i s/@K8S_SHORT_VERSION@/$K8S_SHORT_VERSION/ /etc/yum.repos.d/kubernetes.repo
 
 ENV GOROOT /usr/local/go
 

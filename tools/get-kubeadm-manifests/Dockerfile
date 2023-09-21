@@ -1,16 +1,15 @@
 FROM centos:7
 
-ARG K8S_VERSION
+ARG K8S_SHORT_VERSION
 
 RUN printf "[kubernetes]\n\
 name=Kubernetes\n\
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64\n\
+baseurl=https://pkgs.k8s.io/core:/stable:/v${K8S_SHORT_VERSION}/rpm/\n\
 enabled=1\n\
 gpgcheck=1\n\
-gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg\n\
-       https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg\n" \
+gpgkey=https://pkgs.k8s.io/core:/stable:/v${K8S_SHORT_VERSION}/rpm/repodata/repomd.xml.key\n" \
     > /etc/yum.repos.d/kubernetes.repo \
-    && yum install -y "kubeadm-${K8S_VERSION}" --disableexcludes=kubernetes \
+    && yum install -y kubeadm --disableexcludes=kubernetes \
     && yum clean all
 
 RUN kubeadm init phase control-plane all \
