@@ -69,6 +69,7 @@ Create kubelet config file:
         clusterDNS:
           - {{ cluster_dns_ip }}
         clusterDomain: {{ coredns.cluster_domain }}
+        containerRuntimeEndpoint: ""
         cpuManagerReconcilePeriod: 0s
         evictionPressureTransitionPeriod: 0s
         fileCheckFrequency: 0s

@@ -90,7 +90,6 @@ Deploy kube-proxy (ConfigMap):
             oomScoreAdj: null
             portRange: ""
             showHiddenMetricsForVersion: ""
-            udpIdleTimeout: 0s
             winkernel:
               enableDSR: false
               forwardHealthCheckVip: false
