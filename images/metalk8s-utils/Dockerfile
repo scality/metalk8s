@@ -5,14 +5,15 @@ ARG BASE_IMAGE=docker.io/rockylinux
 FROM $BASE_IMAGE@sha256:$BASE_IMAGE_SHA256
 
 # Kubernetes version
-ARG KUBERNETES_VERSION
+ARG K8S_SHORT_VERSION
+ARG K8S_VERSION
 # Salt version
 ARG SALT_VERSION
 # Etcd version
 ARG ETCD_VERSION
 
 COPY configure-repos.sh /
-RUN /configure-repos.sh $SALT_VERSION && rm /configure-repos.sh
+RUN /configure-repos.sh "$K8S_SHORT_VERSION" "$SALT_VERSION" && rm /configure-repos.sh
 
 # Timestamp of the build, formatted as RFC3339
 ARG BUILD_DATE
@@ -80,7 +81,7 @@ RUN dnf clean expire-cache && \
         iptables \
         ipvsadm \
         jq \
-        "kubectl-${KUBERNETES_VERSION}" \
+        "kubectl-${K8S_VERSION}" \
         less \
         lsof \
         ltrace \

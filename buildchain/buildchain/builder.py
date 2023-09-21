@@ -55,8 +55,9 @@ RPM_BUILDER: Dict[str, LocalImage] = {
             REDHAT_REPOS_ROOT / "saltstack.repo",
         ],
         build_args={
-            # Used to template the SaltStack repository definition
+            # Used to template the repository definition
             "SALT_VERSION": versions.SALT_VERSION,
+            "K8S_SHORT_VERSION": versions.K8S_SHORT_VERSION,
         },
     ),
     "8": _builder_image(
@@ -68,8 +69,9 @@ RPM_BUILDER: Dict[str, LocalImage] = {
             REDHAT_REPOS_ROOT / "saltstack.repo",
         ],
         build_args={
-            # Used to template the SaltStack repository definition
+            # Used to template the repository definition
             "SALT_VERSION": versions.SALT_VERSION,
+            "K8S_SHORT_VERSION": versions.K8S_SHORT_VERSION,
         },
     ),
 }
