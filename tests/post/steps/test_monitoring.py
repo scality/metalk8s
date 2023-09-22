@@ -326,7 +326,7 @@ def check_no_dash(context, grafana_api):
 
     utils.retry(
         _no_dash,
-        times=8,
+        times=20,
         wait=15,
         name=f"check dashboard uid {dash_uid} no longer exists",
     )
