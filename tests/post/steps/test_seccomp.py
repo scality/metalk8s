@@ -21,8 +21,7 @@ def test_seccomp(host):
 
 @when(
     "we create a utils Pod with labels {'test': 'seccomp1'} "
-    "and annotations "
-    "{'seccomp.security.alpha.kubernetes.io/pod': 'runtime/default'}"
+    "and using 'RuntimeDefault' seccomp profile"
 )
 def create_utils_pod(seccomp_pod):
     pass
@@ -33,12 +32,12 @@ def seccomp_pod(k8s_client, utils_manifest):
     pod_name = "test-seccomp1"
 
     utils_manifest["metadata"]["name"] = pod_name
-    utils_manifest["metadata"]["annotations"] = {
-        "seccomp.security.alpha.kubernetes.io/pod": "runtime/default",
-    }
     utils_manifest["metadata"]["labels"] = {
         "test": "seccomp1",
     }
+    utils_manifest["spec"].setdefault("securityContext", {}).setdefault(
+        "seccompProfile", {}
+    ).update({"type": "RuntimeDefault"})
 
     pod_k8s_client = k8s_client.resources.get(api_version="v1", kind="Pod")
 
