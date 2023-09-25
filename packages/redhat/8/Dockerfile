@@ -8,7 +8,7 @@ RUN useradd -m build
 
 ARG SALT_VERSION
 ARG K8S_SHORT_VERSION
-ARG GO_VERSION=1.17.13
+ARG GO_VERSION=1.19.13
 
 ADD common/yum_repositories/*.repo /etc/yum.repos.d/
 RUN sed -i s/@SALT_VERSION@/$SALT_VERSION/ /etc/yum.repos.d/saltstack.repo
@@ -38,5 +38,5 @@ RUN curl -ORL https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz \
     && mv go /usr/local \
     && ln -s $GOROOT/bin/go /usr/local/bin/go \
     && ln -s $GOROOT/bin/gofmt /usr/local/bin/gofmt \
-    && go get github.com/cpuguy83/go-md2man \
+    && go install github.com/cpuguy83/go-md2man/v2@v2.0.2 \
     && ln -s $GOPATH/bin/go-md2man /usr/local/bin/go-md2man

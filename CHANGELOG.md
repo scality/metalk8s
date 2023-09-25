@@ -14,6 +14,9 @@
 - Bump CoreDNS version to [v1.10.1](https://github.com/coredns/coredns/releases/tag/v1.10.1)
   (PR[#4162](https://github.com/scality/metalk8s/pull/4162))
 
+- Bump containerd to [1.6.24](https://github.com/containerd/containerd/releases/tag/v1.6.24)
+  (PR[#4164](https://github.com/scality/metalk8s/pull/4164))
+
 ## Release 126.0.1 (in development)
 
 ## Release 126.0.0
