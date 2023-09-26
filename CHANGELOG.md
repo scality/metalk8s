@@ -17,6 +17,9 @@
 - Bump containerd to [1.6.24](https://github.com/containerd/containerd/releases/tag/v1.6.24)
   (PR[#4164](https://github.com/scality/metalk8s/pull/4164))
 
+- Bump nginx image to [1.25.2-alpine](https://github.com/nginx/nginx/releases/tag/release-1.25.2)
+  (PR[#4165](https://github.com/scality/metalk8s/pull/4165))
+
 ## Release 126.0.1 (in development)
 
 ## Release 126.0.0
