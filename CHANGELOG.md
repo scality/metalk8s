@@ -17,6 +17,35 @@
 - Bump containerd to [1.6.24](https://github.com/containerd/containerd/releases/tag/v1.6.24)
   (PR[#4164](https://github.com/scality/metalk8s/pull/4164))
 
+- Bump kube-prometheus-stack chart version to
+  [51.2.0](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-51.2.0)
+  (PR[#4167](https://github.com/scality/metalk8s/pull/4167))
+
+  This change includes:
+
+  - Bump Prometheus container version to
+    [2.47.0](https://github.com/prometheus/prometheus/releases/tag/v2.47.0)
+  - Bump AlertManager container version to
+    [0.26.0](https://github.com/prometheus/alertmanager/releases/tag/v0.26.0)
+  - Bump Thanos container version to
+    [0.32.2](https://github.com/thanos-io/thanos/releases/tag/v0.32.2)
+  - Bump grafana chart version to
+    [6.59.5](https://github.com/grafana/helm-charts/releases/tag/grafana-6.59.5),
+    Grafana container version to
+    [10.1.2](https://github.com/grafana/grafana/releases/tag/v10.1.2),
+    and kiwigrid/k8s-sidecar container version to
+    [1.25.1](https://github.com/kiwigrid/k8s-sidecar/releases/tag/1.25.1)
+  - Bump kube-state-metrics chart version to
+    [5.12.1](https://github.com/prometheus-community/helm-charts/releases/tag/kube-state-metrics-5.12.1)
+    and kube-state-metrics container version to
+    [2.10.0](https://github.com/kubernetes/kube-state-metrics/releases/tag/v2.10.0)
+  - Bump prometheus-node-exporter chart version to
+    [4.23.1](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-node-exporter-4.23.1)
+    and node-exporter container version to
+    [1.6.1](https://github.com/prometheus/node_exporter/releases/tag/v1.6.1)
+  - Bump prometheus-operator and prometheus-config-reloader containers version to
+    [0.68.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.68.0)
+
 - Bump nginx image to [1.25.2-alpine](https://github.com/nginx/nginx/releases/tag/release-1.25.2)
   (PR[#4165](https://github.com/scality/metalk8s/pull/4165))
 

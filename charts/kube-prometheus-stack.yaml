@@ -1,6 +1,6 @@
 nameOverride: prometheus-operator
 
-kubeTargetVersionOverride: 1.26.0
+kubeTargetVersionOverride: 1.27.0
 
 commonLabels:
   # This needs to remain 'Tiller' for the render script to work properly
@@ -169,7 +169,7 @@ grafana:
 
   image:
     repository: '__image__(grafana)'
-    tag: '10.0.1-ubuntu'
+    tag: '10.1.2-ubuntu'
 
   sidecar:
     image:
