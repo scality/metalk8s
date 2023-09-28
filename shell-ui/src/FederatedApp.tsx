@@ -31,6 +31,7 @@ import { ShellHistoryProvider } from './initFederation/ShellHistoryProvider';
 import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
 import { ThemeProvider } from './navbar/theme';
 import NotificationCenterProvider from './NotificationCenterProvider';
+import ToastProvider from './toast/ToastProvider';
 import { FirstTimeLoginProvider } from './auth/FirstTimeLoginProvider';
 
 export const queryClient = new QueryClient();
@@ -184,9 +185,11 @@ function InternalApp() {
       <ShellHistoryProvider>
         <FirstTimeLoginProvider>
           <NotificationCenterProvider>
-            <SolutionsNavbar>
-              <InternalRouter />
-            </SolutionsNavbar>
+            <ToastProvider>
+              <SolutionsNavbar>
+                <InternalRouter />
+              </SolutionsNavbar>
+            </ToastProvider>
           </NotificationCenterProvider>
         </FirstTimeLoginProvider>
       </ShellHistoryProvider>
