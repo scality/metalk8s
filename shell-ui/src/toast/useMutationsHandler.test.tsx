@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react-hooks';
-import { useMutationsHandler } from './useMutationsHandlers';
+import { useMutationsHandler } from './useMutationsHandler';
 import { useToast } from './useToast';
 
 jest.mock('./useToast', () => ({
