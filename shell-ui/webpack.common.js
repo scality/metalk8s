@@ -92,7 +92,7 @@ module.exports = {
         './useNotificationCenter': './src/useNotificationCenter.ts',
         './toast/ToastProvider': './src/toast/ToastProvider.tsx',
         './toast/useToast': './src/toast/useToast.ts',
-        './toast/useMutationsHandlers': './src/toast/useMutationsHandlers.ts',
+        './toast/useMutationsHandler': './src/toast/useMutationsHandler.ts',
       },
       shared: {
         ...Object.fromEntries(
