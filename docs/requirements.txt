@@ -36,13 +36,6 @@ idna==3.4
     # via requests
 imagesize==1.4.1
     # via sphinx
-importlib-metadata==4.8.3 ; python_version < "3.8" and python_version >= "3.6"
-    # via
-    #   -r ../tools/lib-alert-tree/requirements.txt
-    #   click
-    #   sphinx
-    #   sphinxcontrib-spelling
-    #   stevedore
 jinja2==3.0.3
     # via
     #   sphinx
@@ -124,13 +117,5 @@ tornado==6.1
     # via livereload
 treelib==1.6.4
     # via -r ../tools/lib-alert-tree/requirements.txt
-typing-extensions==4.1.1 ; python_version < "3.8" and python_version >= "3.6"
-    # via
-    #   -r ../tools/lib-alert-tree/requirements.txt
-    #   importlib-metadata
-urllib3==1.26.16
+urllib3==1.26.17
     # via requests
-zipp==3.6.0 ; python_version < "3.8" and python_version >= "3.6"
-    # via
-    #   -r ../tools/lib-alert-tree/requirements.txt
-    #   importlib-metadata
