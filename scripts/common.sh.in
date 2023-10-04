@@ -153,6 +153,11 @@ stop_salt_minion_service() {
     ${SYSTEMCTL} stop salt-minion.service 2>/dev/null || true
 }
 
+die() {
+    echo 1>&2 "$@"
+    return 1
+}
+
 run_quiet() {
     local name=$1
     shift 1
@@ -213,9 +218,24 @@ run() {
     fi
 }
 
-die() {
-    echo 1>&2 "$@"
-    return 1
+run_with_retry() {
+    local retries=$1
+    local delay=$2
+    shift 2
+
+    local -i i=0
+    while true; do
+        if [[ $(( ++i )) -gt $retries ]]; then
+            die "Failed to run '$*' after ${retries} retries."
+        fi
+
+        echo -n "> ${i}/${retries} "
+        if run "${@}"; then
+            break
+        fi
+
+        sleep "${delay}"
+    done
 }
 
 check_package_manager_yum() {
