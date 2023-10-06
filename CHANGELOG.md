@@ -168,7 +168,9 @@
   following [Google's recommandations](https://cloud.google.com/kubernetes-engine/docs/concepts/plan-node-sizes#memory_and_cpu_reservations)
   (PR[#4134](https://github.com/scality/metalk8s/pull/4134))
 
-## Release 125.0.6 (In development)
+## Release 125.0.7 (in development)
+
+## Release 125.0.6
 
 ### Enhancements
 
@@ -183,6 +185,10 @@
 - Fix a bug that make the upgrade fail if there is some changes
   on the salt master based on the salt pillar
   (PR[4156](https://github.com/scality/metalk8s/pull/4156))
+
+- Fix bug that make upgrade fail due a ETCd backup mishandle.
+  A retry logic was added to mitigate this problem.
+  (PR[4168](https://github.com/scality/metalk8s/pull/4168))
 
 ## Release 125.0.5
 
