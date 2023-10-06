@@ -3,7 +3,7 @@ import { useHistory } from 'react-router';
 import { useLocation, useRouteMatch } from 'react-router-dom';
 import { useIntl } from 'react-intl';
 import styled from 'styled-components';
-import { Icon, LargeText, SecondaryText } from '@scality/core-ui';
+import { Icon, Stack, Text } from '@scality/core-ui';
 import { Box, Button, Table } from '@scality/core-ui/dist/next';
 import { useURLQuery } from '../services/utils';
 import CircleStatus from './CircleStatus';
@@ -44,17 +44,21 @@ const NodeListTable = ({ nodeTableData }) => {
           const { name, controlPlaneIP, workloadPlaneIP } = value;
           return (
             <>
-              <LargeText data-cy="node_table_name_cell">{name}</LargeText>
-              <Box display={'inline-flex'} flexWrap={'wrap'}>
+              <Text data-cy="node_table_name_cell" variant="Basic" isEmphazed>
+                {name}
+              </Text>
+              <Stack>
                 {controlPlaneIP ? (
-                  <SecondaryText>CP: {controlPlaneIP}</SecondaryText>
+                  <Text variant="Smaller" color="textSecondary">
+                    CP: {controlPlaneIP}
+                  </Text>
                 ) : null}
                 {workloadPlaneIP ? (
-                  <Box pl={'0.5rem'}>
-                    <SecondaryText>WP: {workloadPlaneIP}</SecondaryText>
-                  </Box>
+                  <Text variant="Smaller" color="textSecondary">
+                    WP: {workloadPlaneIP}
+                  </Text>
                 ) : null}
-              </Box>
+              </Stack>
             </>
           );
         },
@@ -63,7 +67,7 @@ const NodeListTable = ({ nodeTableData }) => {
         Header: 'Roles',
         accessor: 'roles',
         cellStyle: {
-          flex: 1,
+          flex: 0.5,
         },
       },
       {
