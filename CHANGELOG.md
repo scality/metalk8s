@@ -46,6 +46,12 @@
   - Bump prometheus-operator and prometheus-config-reloader containers version to
     [0.68.0](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.68.0)
 
+- Bump Loki chart version to
+  [5.26.0](https://github.com/grafana/loki/releases/tag/helm-loki-5.26.0)
+  The Loki image has been bumped accordingly to
+  [2.9.1](https://github.com/grafana/loki/releases/tag/v2.9.1)
+  (PR[#4177](https://github.com/scality/metalk8s/pull/4177))
+
 - Bump Prometheus Adapter chart version to
   [4.7.0](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-adapter-4.7.0)
   The prometheus-adapter image has been bumped accordingly to
