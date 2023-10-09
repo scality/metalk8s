@@ -2,6 +2,11 @@
 
 ## Release 125.0.7 (in development)
 
+### Removals
+
+- Remove `nodes-darwin` MacOS related grafana dashboard
+  (PR[4178](https://github.com/scality/metalk8s/pull/4178))
+
 ## Release 125.0.6
 
 ### Enhancements
