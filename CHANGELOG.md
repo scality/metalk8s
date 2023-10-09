@@ -52,6 +52,12 @@
   [v0.11.1](https://github.com/kubernetes-sigs/prometheus-adapter/releases/tag/v0.11.1)
   (PR[#4174](https://github.com/scality/metalk8s/pull/4174))
 
+- Bump fluent-bit chart version to
+  [0.39.0](https://github.com/fluent/helm-charts/releases/tag/fluent-bit-0.39.0)
+  The fluent-bit image has been bumped accordingly to
+  [2.1.10](https://github.com/fluent/fluent-bit/releases/tag/v2.1.10)
+  (PR[#4176](https://github.com/scality/metalk8s/pull/4176))
+
 - Bump ingress-nginx chart version to
   [4.8.1](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.8.1)
   The controller image has been bumped accordingly to
