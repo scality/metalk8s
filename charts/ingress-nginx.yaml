@@ -1,4 +1,6 @@
 controller:
+  allowSnippetAnnotations: true
+
   image:
     digest: null
     repository: '{%- endraw -%}{{ build_image_name(\"nginx-ingress-controller\", False) }}{%- raw -%}'
