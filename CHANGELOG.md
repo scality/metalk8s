@@ -65,7 +65,15 @@
   and `metalk8s-keepalived` image to `alpine:3.18.3`
   (PR[#4166](https://github.com/scality/metalk8s/pull/4166))
 
-## Release 126.0.1 (in development)
+## Release 126.0.2 (in development)
+
+## Release 126.0.1
+
+### Bug fixes
+
+- Fix bug that make upgrade fail due a ETCd backup mishandle.
+  A retry logic was added to mitigate this problem.
+  (PR[4168](https://github.com/scality/metalk8s/pull/4168))
 
 ## Release 126.0.0
 
