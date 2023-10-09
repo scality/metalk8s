@@ -4,7 +4,8 @@ topologySpreadConstraints: []
 
 image:
   repository: registry.k8s.io/prometheus-adapter/prometheus-adapter
-  tag: v0.10.0
+  # if not set appVersion field from Chart.yaml is used
+  tag: ""
   pullPolicy: IfNotPresent
 
 logLevel: 4
@@ -112,6 +113,10 @@ readinessProbe:
   initialDelaySeconds: 30
   timeoutSeconds: 5
 
+# Configure startup probe
+# Use if prometheus-adapter takes a long time to finish startup e.g. polling a lot of API versions in cluster
+startupProbe: {}
+
 rules:
   default: true
 
@@ -183,7 +188,10 @@ service:
   port: 443
   type: ClusterIP
   # clusterIP: 1.2.3.4
-
+  ipDualStack:
+    enabled: false
+    ipFamilies: ["IPv6", "IPv4"]
+    ipFamilyPolicy: "PreferDualStack"
 tls:
   enable: false
   ca: |-
@@ -208,6 +216,9 @@ env: []
 extraArguments: []
   # - --tls-private-key-file=/etc/tls/tls.key
   # - --tls-cert-file=/etc/tls/tls.crt
+
+# Additional containers to add to the pod
+extraContainers: []
 
 # Any extra volumes
 extraVolumes: []
