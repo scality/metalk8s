@@ -15,8 +15,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.1.7
-    helm.sh/chart: fluent-bit-0.36.0
+    app.kubernetes.io/version: 2.1.10
+    helm.sh/chart: fluent-bit-0.39.0
     heritage: metalk8s
   name: fluent-bit
   namespace: metalk8s-logging
@@ -29,8 +29,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.1.7
-    helm.sh/chart: fluent-bit-0.36.0
+    app.kubernetes.io/version: 2.1.10
+    helm.sh/chart: fluent-bit-0.39.0
     heritage: metalk8s
   name: fluent-bit
   namespace: metalk8s-logging
@@ -53,8 +53,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.1.7
-    helm.sh/chart: fluent-bit-0.36.0
+    app.kubernetes.io/version: 2.1.10
+    helm.sh/chart: fluent-bit-0.39.0
     heritage: metalk8s
   name: fluent-bit
   namespace: metalk8s-logging
@@ -75,8 +75,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.1.7
-    helm.sh/chart: fluent-bit-0.36.0
+    app.kubernetes.io/version: 2.1.10
+    helm.sh/chart: fluent-bit-0.39.0
     heritage: metalk8s
   name: fluent-bit
   namespace: metalk8s-logging
@@ -99,8 +99,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.1.7
-    helm.sh/chart: fluent-bit-0.36.0
+    app.kubernetes.io/version: 2.1.10
+    helm.sh/chart: fluent-bit-0.39.0
     heritage: metalk8s
   name: fluent-bit
   namespace: metalk8s-logging
@@ -126,7 +126,7 @@ spec:
         - --config=/fluent-bit/etc/conf/fluent-bit.conf
         command:
         - /fluent-bit/bin/fluent-bit
-        image: {% endraw -%}{{ build_image_name("fluent-bit", False) }}{%- raw %}:2.1.7
+        image: {% endraw -%}{{ build_image_name("fluent-bit", False) }}{%- raw %}:2.1.10
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -191,8 +191,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: fluent-bit
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.1.7
-    helm.sh/chart: fluent-bit-0.36.0
+    app.kubernetes.io/version: 2.1.10
+    helm.sh/chart: fluent-bit-0.39.0
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
   name: fluent-bit
