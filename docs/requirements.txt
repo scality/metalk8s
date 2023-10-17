@@ -5,7 +5,7 @@
 #    tox -e pip-compile
 #
 -e git+https://github.com/scality/sphinx-tools.git@v3.0#egg=sphinx_scality  # via -r docs/requirements.in
-    # via -r requirements.in
+    # via -r docs/requirements.in
 alabaster==0.7.13
     # via sphinx
 babel==2.11.0
@@ -15,13 +15,13 @@ certifi==2023.5.7
 charset-normalizer==2.0.12
     # via requests
 click==8.0.4 ; python_version >= "3.6"
-    # via -r ../tools/lib-alert-tree/requirements.txt
+    # via -r docs/../tools/lib-alert-tree/requirements.txt
 colorama==0.4.5
     # via
-    #   -r requirements.in
+    #   -r docs/requirements.in
     #   sphinx-autobuild
 doc8==0.11.2
-    # via -r requirements.in
+    # via -r docs/requirements.in
 docutils==0.16
     # via
     #   doc8
@@ -36,13 +36,6 @@ idna==3.4
     # via requests
 imagesize==1.4.1
     # via sphinx
-importlib-metadata==4.8.3 ; python_version < "3.8" and python_version >= "3.6"
-    # via
-    #   -r ../tools/lib-alert-tree/requirements.txt
-    #   click
-    #   sphinx
-    #   sphinxcontrib-spelling
-    #   stevedore
 jinja2==3.0.3
     # via
     #   sphinx
@@ -56,7 +49,7 @@ packaging==21.3
 pbr==5.11.1
     # via stevedore
 plantuml==0.3.0
-    # via -r requirements.in
+    # via -r docs/requirements.in
 pyenchant==3.2.2
     # via sphinxcontrib-spelling
 pygments==2.15.0
@@ -71,22 +64,22 @@ pytz==2023.3
     # via babel
 pyyaml==6.0.1 ; python_version >= "3.6"
     # via
-    #   -r ../tools/lib-alert-tree/requirements.txt
-    #   -r requirements.in
+    #   -r docs/../tools/lib-alert-tree/requirements.txt
+    #   -r docs/requirements.in
 requests==2.27.1
     # via sphinx
 restructuredtext-lint==1.4.0
     # via doc8
 six==1.16.0 ; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.3.0"
     # via
-    #   -r ../tools/lib-alert-tree/requirements.txt
+    #   -r docs/../tools/lib-alert-tree/requirements.txt
     #   livereload
     #   treelib
 snowballstemmer==2.2.0
     # via sphinx
 sphinx==4.5.0
     # via
-    #   -r requirements.in
+    #   -r docs/requirements.in
     #   sphinx-autobuild
     #   sphinx-jinja
     #   sphinx-rtd-theme
@@ -95,42 +88,34 @@ sphinx==4.5.0
     #   sphinxcontrib-plantuml
     #   sphinxcontrib-spelling
 sphinx-autobuild==2021.3.14
-    # via -r requirements.in
+    # via -r docs/requirements.in
 sphinx-jinja==1.4.0
-    # via -r requirements.in
+    # via -r docs/requirements.in
 sphinx-rtd-theme==0.5.2
-    # via -r requirements.in
+    # via -r docs/requirements.in
 sphinxcontrib-applehelp==1.0.2
     # via sphinx
 sphinxcontrib-devhelp==1.0.2
     # via sphinx
 sphinxcontrib-github-alt==1.2
-    # via -r requirements.in
+    # via -r docs/requirements.in
 sphinxcontrib-htmlhelp==2.0.0
     # via sphinx
 sphinxcontrib-jsmath==1.0.1
     # via sphinx
 sphinxcontrib-plantuml==0.25
-    # via -r requirements.in
+    # via -r docs/requirements.in
 sphinxcontrib-qthelp==1.0.3
     # via sphinx
 sphinxcontrib-serializinghtml==1.1.5
     # via sphinx
 sphinxcontrib-spelling==7.7.0
-    # via -r requirements.in
+    # via -r docs/requirements.in
 stevedore==3.5.2
     # via doc8
 tornado==6.1
     # via livereload
 treelib==1.6.4
-    # via -r ../tools/lib-alert-tree/requirements.txt
-typing-extensions==4.1.1 ; python_version < "3.8" and python_version >= "3.6"
-    # via
-    #   -r ../tools/lib-alert-tree/requirements.txt
-    #   importlib-metadata
-urllib3==1.26.16
+    # via -r docs/../tools/lib-alert-tree/requirements.txt
+urllib3==1.26.17
     # via requests
-zipp==3.6.0 ; python_version < "3.8" and python_version >= "3.6"
-    # via
-    #   -r ../tools/lib-alert-tree/requirements.txt
-    #   importlib-metadata
