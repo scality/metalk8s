@@ -25,6 +25,7 @@ import {
 } from '../ducks/app/nodes';
 import { useIntl } from 'react-intl';
 import { useTypedSelector } from '../hooks';
+import { useShellConfig } from './PrivateRoute';
 const CheckboxGroup = styled.div`
   display: flex;
   flex-direction: column;
@@ -35,17 +36,7 @@ const CheckboxGroup = styled.div`
     }
   }
 `;
-const initialValues = {
-  name: '',
-  ssh_user: '',
-  hostName_ip: '',
-  ssh_port: '22',
-  ssh_key_path: '/etc/metalk8s/pki/salt-bootstrap',
-  sudo_required: false,
-  workload_plane: true,
-  control_plane: false,
-  infra: false,
-};
+
 const validationSchema = yup.object().shape({
   name: yup.string().required(),
   ssh_user: yup.string().required(),
@@ -61,12 +52,25 @@ const validationSchema = yup.object().shape({
 const NodeCreateForm = () => {
   const asyncErrors = useSelector((state) => state.app.nodes.errors);
   const clusterVersion = useSelector((state) => state.app.nodes.clusterVersion);
-  const basename = useTypedSelector((state) => state.config.api?.ui_base_path);
-  const isPureMetalK8s = basename === '/';
-
   const dispatch = useDispatch();
 
   const createNode = (body) => dispatch(createNodeAction(body));
+
+  const shellConfig = useShellConfig();
+  const productName = shellConfig?.config?.productName;
+  const isMetalK8s = productName === 'MetalK8s';
+
+  const initialValues = {
+    name: '',
+    ssh_user: isMetalK8s ? '' : 'artesca-os',
+    hostName_ip: '',
+    ssh_port: '22',
+    ssh_key_path: '/etc/metalk8s/pki/salt-bootstrap',
+    sudo_required: isMetalK8s ? false : true,
+    workload_plane: true,
+    control_plane: false,
+    infra: false,
+  };
 
   const history = useHistory();
   const intl = useIntl();
@@ -186,46 +190,47 @@ const NodeCreateForm = () => {
                 content={<Text variant="Basic">{clusterVersion}</Text>}
               />
 
-              <FormGroup
-                label={intl.formatMessage({
-                  id: 'roles',
-                })}
-                id="roles"
-                helpErrorPosition="bottom"
-                error={
-                  !(
-                    values.workload_plane ||
-                    values.control_plane ||
-                    values.infra
-                  )
-                    ? intl.formatMessage({
-                        id: 'role_values_error',
-                      })
-                    : undefined
-                }
-                content={
-                  <CheckboxGroup>
-                    <Checkbox
-                      name="workload_plane"
-                      label={intl.formatMessage({
-                        id: 'workload_plane',
-                      })}
-                      checked={values.workload_plane}
-                      value={values.workload_plane}
-                      onChange={handleChange('workload_plane')}
-                      onBlur={handleOnBlur}
-                    />
-                    <Checkbox
-                      name="control_plane"
-                      label={intl.formatMessage({
-                        id: 'control_plane',
-                      })}
-                      checked={values.control_plane}
-                      value={values.control_plane}
-                      onChange={handleChange('control_plane')}
-                      onBlur={handleOnBlur}
-                    />
-                    {isPureMetalK8s && (
+              {isMetalK8s ? (
+                <FormGroup
+                  label={intl.formatMessage({
+                    id: 'roles',
+                  })}
+                  id="roles"
+                  helpErrorPosition="bottom"
+                  error={
+                    !(
+                      values.workload_plane ||
+                      values.control_plane ||
+                      values.infra
+                    )
+                      ? intl.formatMessage({
+                          id: 'role_values_error',
+                        })
+                      : undefined
+                  }
+                  content={
+                    <CheckboxGroup>
+                      <Checkbox
+                        name="workload_plane"
+                        label={intl.formatMessage({
+                          id: 'workload_plane',
+                        })}
+                        checked={values.workload_plane}
+                        value={values.workload_plane}
+                        onChange={handleChange('workload_plane')}
+                        onBlur={handleOnBlur}
+                      />
+                      <Checkbox
+                        name="control_plane"
+                        label={intl.formatMessage({
+                          id: 'control_plane',
+                        })}
+                        checked={values.control_plane}
+                        value={values.control_plane}
+                        onChange={handleChange('control_plane')}
+                        onBlur={handleOnBlur}
+                      />
+
                       <Checkbox
                         name="infra"
                         label={intl.formatMessage({
@@ -236,10 +241,12 @@ const NodeCreateForm = () => {
                         onChange={handleChange('infra')}
                         onBlur={handleOnBlur}
                       />
-                    )}
-                  </CheckboxGroup>
-                }
-              />
+                    </CheckboxGroup>
+                  }
+                />
+              ) : (
+                <></>
+              )}
             </FormSection>
 
             <FormSection
@@ -266,6 +273,7 @@ const NodeCreateForm = () => {
                     onBlur={handleOnBlur}
                   />
                 }
+                disabled={!isMetalK8s}
               />
 
               <FormGroup
@@ -337,8 +345,10 @@ const NodeCreateForm = () => {
                     value={values.sudo_required}
                     onChange={handleChange('sudo_required')}
                     onBlur={handleOnBlur}
+                    disabled={!isMetalK8s}
                   />
                 }
+                disabled={!isMetalK8s}
               />
             </FormSection>
           </Form>
