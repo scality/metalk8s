@@ -27,6 +27,8 @@ alertmanager:
         operator: 'Exists'
         effect: 'NoSchedule'
 
+    externalUrl: '__slot__:salt:metalk8s_network.get_control_plane_ingress_endpoint()'
+
     podMetadata:
       annotations:
         # Override default checksum as we want to manage it with salt
