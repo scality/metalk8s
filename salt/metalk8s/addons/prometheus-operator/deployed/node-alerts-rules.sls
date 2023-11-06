@@ -229,6 +229,14 @@ spec:
       expr: node_textfile_scrape_error{job="node-exporter"} == 1
       labels:
         severity: warning
+    - alert: NodeBondDegraded
+      annotations:
+        description: Bond is degraded on {{ $labels.instance }}
+        summary: Bond {{ $labels.master }} is degraded on {{ $labels.instance }}
+      expr: (node_bonding_active - node_bonding_slave) != 0
+      for: 5m
+      labels:
+        severity: warning
     - alert: NodeRAIDDegraded
       annotations:
         description: RAID array '{{ $labels.device }}' on {{ $labels.instance }} is
