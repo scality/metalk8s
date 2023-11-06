@@ -2,6 +2,11 @@
 
 ## Release 126.0.2 (in development)
 
+### Enhancements
+
+- Add a new alert to detect when a Bonding interface is deteriorated.
+  (PR[#4195](https://github.com/scality/metalk8s/pull/4195))
+
 ## Release 126.0.1
 
 ### Bug fixes
