@@ -218,24 +218,29 @@ run() {
     fi
 }
 
-run_with_retry() {
-    local retries=$1
-    local delay=$2
+with_retry() {
+    local retries=$1 delay=$2
     shift 2
 
-    local -i i=0
-    while true; do
-        if [[ $(( ++i )) -gt $retries ]]; then
-            die "Failed to run '$*' after ${retries} retries."
+    for ((i = 1; i <= retries; i++)); do
+        echo "> Attempt ${i}/${retries}"
+
+        local rctemp rc
+        rctemp=$(mktemp)
+        echo "$(set +e; "${@}"; echo -n $? > "$rctemp")"
+        rc=$(cat "$rctemp")
+        rm -f "$rctemp"
+
+        if [ "$rc" -eq 0 ]; then
+            echo "Succeed"
+            return 0
         fi
 
-        echo -n "> ${i}/${retries} "
-        if run "${@}"; then
-            break
-        fi
-
+        echo "Failed"
         sleep "${delay}"
     done
+
+    die "Failed to run '$*' after ${retries} retries."
 }
 
 check_package_manager_yum() {
