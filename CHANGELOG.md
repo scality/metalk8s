@@ -136,6 +136,11 @@
 - Remove `nodes-darwin` MacOS related grafana dashboard
   (PR[4178](https://github.com/scality/metalk8s/pull/4178))
 
+### Bug fixes
+
+- Fix a bug in retry logic for ETCd backup
+  (PR[4197](https://github.com/scality/metalk8s/pull/4197))
+
 ## Release 125.0.6
 
 ### Enhancements

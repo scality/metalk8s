@@ -181,7 +181,7 @@ replicate_archives() {
 
 run "Backing up MetalK8s configurations" backup_metalk8s_conf
 run "Backing up CAs certificates and keys" backup_cas
-run_with_retry 12 5 "Backing up etcd data" backup_etcd
+run "Backing up etcd data" with_retry 20 15 backup_etcd # try for 5 minutes (every 15 seconds, 20 times)
 run "Creating backup archive '$BACKUP_ARCHIVE'" create_archive
 
 if (( REPLICATION )); then
