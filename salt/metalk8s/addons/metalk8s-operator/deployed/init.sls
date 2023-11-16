@@ -9,7 +9,7 @@ Wait for the MetalK8s Operator to be Ready:
         name=metalk8s-operator-controller-manager, namespace=kube-system)
     - comment: Wait for the MetalK8s Operator to be Ready
     - retry:
-        attempts: 10
+        attempts: 30
     - require:
       - sls: metalk8s.addons.metalk8s-operator.deployed.manifests
 
@@ -21,6 +21,6 @@ Wait for the ClusterConfig to be Ready:
         name=main)
     - comment: Wait for the ClusterConfig to be Ready
     - retry:
-        attempts: 10
+        attempts: 30
     - require:
       - test: Wait for the MetalK8s Operator to be Ready

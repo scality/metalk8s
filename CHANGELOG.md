@@ -8,6 +8,10 @@
   that prevents re-run of the bootstrap script if it fails at a specific point
   (PR[4196](https://github.com/scality/metalk8s/pull/4196))
 
+- Bump the attempts to wait for the Operator and ClusterConfig
+  to be Ready
+  (PR[#4199](https://github.com/scality/metalk8s/pull/4199))
+
 ## Release 126.0.1
 
 ### Bug fixes
