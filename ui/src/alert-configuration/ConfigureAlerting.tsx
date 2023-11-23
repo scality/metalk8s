@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Controller, get, useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router';
 import Joi from '@hapi/joi';
 import { joiResolver } from '@hookform/resolvers/joi';
