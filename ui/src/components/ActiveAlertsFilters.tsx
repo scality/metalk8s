@@ -23,6 +23,7 @@ const ActiveAlertsFilter = () => {
       }}
       value={selectedFilter}
       options={options}
+      aria-label="Filter by severity"
       data-cy="alert_filter"
     />
   );
