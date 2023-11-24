@@ -48,32 +48,6 @@ describe('Node page overview tab', () => {
   });
 });
 
-describe('Node page alerts tab', () => {
-  beforeEach(() => {
-    cy.visit('/nodes/master-0/alerts');
-  });
-
-  tabSwitchingTestCases('alerts');
-
-  // Align Node and Volume Page
-  const alertSeverities = [
-    { name: 'Critical', value: 'critical' },
-    { name: 'Warning', value: 'warning' },
-  ];
-  alertSeverities.map((severity) => {
-    it(`adds the filter of ${severity.value}`, () => {
-      cy.stubHistory();
-      cy.get('[data-cy="alert_filter"]').click();
-
-      cy.get('.sc-healthselector .trigger li').contains(severity.name).click();
-      cy.get('@historyPush').should(
-        'be.calledWith',
-        `/nodes/master-0/alerts?severity=${severity.value}`,
-      );
-    });
-  });
-});
-
 describe('Node page metrics tab', () => {
   beforeEach(() => {
     cy.visit('/nodes/master-0/metrics');

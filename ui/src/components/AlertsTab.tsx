@@ -83,8 +83,10 @@ const AlertsTab = ({
   ];
   return (
     <Box display="flex" flexDirection="column" height="100%" margin="1rem">
-      <Box display="flex" justifyContent={'flex-end'}>
-        {alerts?.length !== 0 && <ActiveAlertsFilter />}
+      <Box display="flex" justifyContent="flex-end">
+        <Box display="flex" width="150px">
+          <ActiveAlertsFilter />
+        </Box>
       </Box>
       <Box pt="1rem" flex={1}>
         <Table columns={columns} data={activeAlertListData}>

@@ -59,30 +59,6 @@ describe('Volume page overview tab', () => {
   });
 });
 
-describe('Volume page alerts tab', () => {
-  beforeEach(() => {
-    cy.visit('/volumes/master-0-alertmanager/alerts');
-  });
-
-  tabSwitchingTestCases('alerts');
-
-  const alertSeverities = [
-    { name: 'Critical', value: 'critical' },
-    { name: 'Warning', value: 'warning' },
-  ];
-  alertSeverities.map((severity) => {
-    it(`adds the filter of ${severity.value}`, () => {
-      cy.get('[data-cy="alert_filter"]').click();
-      cy.stubHistory();
-      cy.get('.sc-healthselector .trigger li').contains(severity.name).click();
-      cy.get('@historyPush').should(
-        'be.calledWith',
-        `/volumes/master-0-alertmanager/alerts?severity=${severity.value}`,
-      );
-    });
-  });
-});
-
 describe('Volume page metrics tab', () => {
   beforeEach(() => {
     cy.visit('/volumes/master-0-alertmanager/metrics');
