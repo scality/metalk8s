@@ -12,6 +12,7 @@ import { Box } from '@scality/core-ui/dist/components/box/Box';
 import { useShellHistory } from '../initFederation/ShellHistoryProvider';
 import { SleepingNotificationBell } from './SleepingNotificationBell';
 import { useNotificationCenter } from '../useNotificationCenter';
+import { ConstrainedText } from '@scality/core-ui/dist/components/constrainedtext/Constrainedtext.component';
 
 const NotificationMenu = styled.ul<{
   buttonBoundingRect: DOMRect;
@@ -219,35 +220,45 @@ const NotificationCenter = () => {
                       : 'Dot-circle'
                   }
                 />
-                <Box display="flex" justifyContent="flex-start" flex={1}>
-                  <Stack direction="vertical" flex={1} gap="0.1rem">
-                    <Wrap
-                      style={{
-                        alignItems: 'center',
-                        justifyConent: 'space-between',
-                      }}
-                    >
+
+                <Stack
+                  direction="vertical"
+                  flex={1}
+                  gap="0.1rem"
+                  style={{
+                    width: `calc(25vw - 5.75rem)`,
+                  }}
+                >
+                  <Wrap
+                    style={{
+                      alignItems: 'center',
+                      justifyConent: 'space-between',
+                    }}
+                  >
+                    <Text color="textPrimary" isEmphazed={!notification.readOn}>
+                      {notification.title}
+                    </Text>
+                    <Text variant="Smaller" color="textSecondary">
+                      <FormattedDateTime
+                        value={notification.createdOn}
+                        format="relative"
+                      />
+                    </Text>
+                  </Wrap>
+
+                  <ConstrainedText
+                    lineClamp={2}
+                    text={
                       <Text
-                        color="textPrimary"
+                        color="textSecondary"
                         isEmphazed={!notification.readOn}
                       >
-                        {notification.title}
+                        {notification.description}
                       </Text>
-                      <Text variant="Smaller" color="textSecondary">
-                        <FormattedDateTime
-                          value={notification.createdOn}
-                          format="relative"
-                        />
-                      </Text>
-                    </Wrap>
-                    <Text
-                      color="textSecondary"
-                      isEmphazed={!notification.readOn}
-                    >
-                      {notification.description}
-                    </Text>
-                  </Stack>
-                </Box>
+                    }
+                  />
+                </Stack>
+
                 <Box style={{ opacity: !notification.readOn ? 1 : 0 }}>
                   <Icon
                     name="Circle-health"
