@@ -101,7 +101,7 @@ Create kubelet config file:
         address: {{ grains['metalk8s']['control_plane_ip'] }}
         rotateCertificates: false
         port: 10250
-        {%- if pillar.get("kubernetes:kubelet:config:maxPods") %}
+        {%- if salt.pillar.get("kubernetes:kubelet:config:maxPods") %}
         maxPods: {{ pillar.kubernetes.kubelet.config.maxPods }}
         {%- endif %}
         systemReserved:
