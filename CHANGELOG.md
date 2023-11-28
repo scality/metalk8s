@@ -145,6 +145,9 @@
 - Fix a bug in retry logic for ETCd backup
   (PR[4197](https://github.com/scality/metalk8s/pull/4197))
 
+- Fix the `get` method for the `maxPods` value
+  (PR[4200](https://github.com/scality/metalk8s/pull/4200))
+
 ## Release 125.0.6
 
 ### Enhancements
