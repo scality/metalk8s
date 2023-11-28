@@ -77,7 +77,9 @@
   and `metalk8s-keepalived` image to `alpine:3.18.3`
   (PR[#4166](https://github.com/scality/metalk8s/pull/4166))
 
-## Release 126.0.2 (in development)
+## Release 126.0.3 (in development)
+
+## Release 126.0.2
 
 ### Bug fixes
 
