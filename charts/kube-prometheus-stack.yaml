@@ -104,6 +104,7 @@ prometheus:
   prometheusSpec:
     thanos:
       image: '__full_image__(thanos)'
+      objectStorageConfig: {}
 
     image:
       registry: '__var__(repo.registry_endpoint)'
@@ -168,12 +169,13 @@ grafana:
   adminPassword: admin
 
   image:
-    repository: '__image__(grafana)'
-    tag: '10.1.2-ubuntu'
+    registry: '__var__(repo.registry_endpoint)'
+    repository: '__image_no_reg__(grafana)'
 
   sidecar:
     image:
-      repository: '__image__(k8s-sidecar)'
+      registry: '__var__(repo.registry_endpoint)'
+      repository: '__image_no_reg__(k8s-sidecar)'
 
     dashboards:
       searchNamespace: ALL
