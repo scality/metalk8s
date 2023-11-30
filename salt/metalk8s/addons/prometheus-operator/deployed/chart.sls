@@ -16,6 +16,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.11.1
+    operator.prometheus.io/version: 0.69.1
   creationTimestamp: null
   name: alertmanagerconfigs.monitoring.coreos.com
   namespace: metalk8s-monitoring
@@ -35,8 +36,8 @@ spec:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: AlertmanagerConfig defines a namespaced AlertmanagerConfig to
-          be aggregated across multiple namespaces configuring one Alertmanager cluster.
+        description: AlertmanagerConfig configures the Prometheus Alertmanager, specifying
+          how alerts should be grouped, inhibited and notified to external systems.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -840,6 +841,392 @@ spec:
                           to:
                             description: The email address to send notifications to.
                             type: string
+                        type: object
+                      type: array
+                    msteamsConfigs:
+                      description: List of MSTeams configurations. It requires Alertmanager
+                        >= 0.26.0.
+                      items:
+                        description: MSTeamsConfig configures notifications via Microsoft
+                          Teams. It requires Alertmanager >= 0.26.0.
+                        properties:
+                          httpConfig:
+                            description: HTTP client configuration.
+                            properties:
+                              authorization:
+                                description: Authorization header configuration for
+                                  the client. This is mutually exclusive with BasicAuth
+                                  and is only available starting from Alertmanager
+                                  v0.22+.
+                                properties:
+                                  credentials:
+                                    description: Selects a key of a Secret in the
+                                      namespace that contains the credentials for
+                                      authentication.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                    x-kubernetes-map-type: atomic
+                                  type:
+                                    description: "Defines the authentication type.\
+                                      \ The value is case-insensitive. \n \"Basic\"\
+                                      \ is not a supported value. \n Default: \"Bearer\""
+                                    type: string
+                                type: object
+                              basicAuth:
+                                description: BasicAuth for the client. This is mutually
+                                  exclusive with Authorization. If both are defined,
+                                  BasicAuth takes precedence.
+                                properties:
+                                  password:
+                                    description: The secret in the service monitor
+                                      namespace that contains the password for authentication.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                    x-kubernetes-map-type: atomic
+                                  username:
+                                    description: The secret in the service monitor
+                                      namespace that contains the username for authentication.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                    x-kubernetes-map-type: atomic
+                                type: object
+                              bearerTokenSecret:
+                                description: The secret's key that contains the bearer
+                                  token to be used by the client for authentication.
+                                  The secret needs to be in the same namespace as
+                                  the AlertmanagerConfig object and accessible by
+                                  the Prometheus Operator.
+                                properties:
+                                  key:
+                                    description: The key of the secret to select from.  Must
+                                      be a valid secret key.
+                                    type: string
+                                  name:
+                                    description: 'Name of the referent. More info:
+                                      https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                      TODO: Add other useful fields. apiVersion, kind,
+                                      uid?'
+                                    type: string
+                                  optional:
+                                    description: Specify whether the Secret or its
+                                      key must be defined
+                                    type: boolean
+                                required:
+                                - key
+                                type: object
+                              followRedirects:
+                                description: FollowRedirects specifies whether the
+                                  client should follow HTTP 3xx redirects.
+                                type: boolean
+                              oauth2:
+                                description: OAuth2 client credentials used to fetch
+                                  a token for the targets.
+                                properties:
+                                  clientId:
+                                    description: The secret or configmap containing
+                                      the OAuth2 client id
+                                    properties:
+                                      configMap:
+                                        description: ConfigMap containing data to
+                                          use for the targets.
+                                        properties:
+                                          key:
+                                            description: The key to select.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the ConfigMap
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                        x-kubernetes-map-type: atomic
+                                      secret:
+                                        description: Secret containing data to use
+                                          for the targets.
+                                        properties:
+                                          key:
+                                            description: The key of the secret to
+                                              select from.  Must be a valid secret
+                                              key.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                        x-kubernetes-map-type: atomic
+                                    type: object
+                                  clientSecret:
+                                    description: The secret containing the OAuth2
+                                      client secret
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                    x-kubernetes-map-type: atomic
+                                  endpointParams:
+                                    additionalProperties:
+                                      type: string
+                                    description: Parameters to append to the token
+                                      URL
+                                    type: object
+                                  scopes:
+                                    description: OAuth2 scopes used for the token
+                                      request
+                                    items:
+                                      type: string
+                                    type: array
+                                  tokenUrl:
+                                    description: The URL to fetch the token from
+                                    minLength: 1
+                                    type: string
+                                required:
+                                - clientId
+                                - clientSecret
+                                - tokenUrl
+                                type: object
+                              proxyURL:
+                                description: Optional proxy URL.
+                                type: string
+                              tlsConfig:
+                                description: TLS configuration for the client.
+                                properties:
+                                  ca:
+                                    description: Certificate authority used when verifying
+                                      server certificates.
+                                    properties:
+                                      configMap:
+                                        description: ConfigMap containing data to
+                                          use for the targets.
+                                        properties:
+                                          key:
+                                            description: The key to select.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the ConfigMap
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                        x-kubernetes-map-type: atomic
+                                      secret:
+                                        description: Secret containing data to use
+                                          for the targets.
+                                        properties:
+                                          key:
+                                            description: The key of the secret to
+                                              select from.  Must be a valid secret
+                                              key.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                        x-kubernetes-map-type: atomic
+                                    type: object
+                                  cert:
+                                    description: Client certificate to present when
+                                      doing client-authentication.
+                                    properties:
+                                      configMap:
+                                        description: ConfigMap containing data to
+                                          use for the targets.
+                                        properties:
+                                          key:
+                                            description: The key to select.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the ConfigMap
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                        x-kubernetes-map-type: atomic
+                                      secret:
+                                        description: Secret containing data to use
+                                          for the targets.
+                                        properties:
+                                          key:
+                                            description: The key of the secret to
+                                              select from.  Must be a valid secret
+                                              key.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                        x-kubernetes-map-type: atomic
+                                    type: object
+                                  insecureSkipVerify:
+                                    description: Disable target certificate validation.
+                                    type: boolean
+                                  keySecret:
+                                    description: Secret containing the client key
+                                      file for the targets.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                    x-kubernetes-map-type: atomic
+                                  serverName:
+                                    description: Used to verify the hostname for the
+                                      targets.
+                                    type: string
+                                type: object
+                            type: object
+                          sendResolved:
+                            description: Whether to notify about resolved alerts.
+                            type: boolean
+                          text:
+                            description: Message body template.
+                            type: string
+                          title:
+                            description: Message title template.
+                            type: string
+                          webhookUrl:
+                            description: MSTeams webhook URL.
+                            properties:
+                              key:
+                                description: The key of the secret to select from.  Must
+                                  be a valid secret key.
+                                type: string
+                              name:
+                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                  TODO: Add other useful fields. apiVersion, kind,
+                                  uid?'
+                                type: string
+                              optional:
+                                description: Specify whether the Secret or its key
+                                  must be defined
+                                type: boolean
+                            required:
+                            - key
+                            type: object
+                        required:
+                        - webhookUrl
                         type: object
                       type: array
                     name:
@@ -2188,7 +2575,7 @@ spec:
                               application's API token, see https://pushover.net/apps.
                               The secret needs to be in the same namespace as the
                               AlertmanagerConfig object and accessible by the Prometheus
-                              Operator.
+                              Operator. Either `token` or `tokenFile` is required.
                             properties:
                               key:
                                 description: The key of the secret to select from.  Must
@@ -2206,6 +2593,12 @@ spec:
                             required:
                             - key
                             type: object
+                          tokenFile:
+                            description: The token file that contains the registered
+                              application's API token, see https://pushover.net/apps.
+                              Either `token` or `tokenFile` is required. It requires
+                              Alertmanager >= v0.26.0.
+                            type: string
                           url:
                             description: A supplementary URL shown alongside the message.
                             type: string
@@ -2217,7 +2610,8 @@ spec:
                             description: The secret's key that contains the recipient
                               user's user key. The secret needs to be in the same
                               namespace as the AlertmanagerConfig object and accessible
-                              by the Prometheus Operator.
+                              by the Prometheus Operator. Either `userKey` or `userKeyFile`
+                              is required.
                             properties:
                               key:
                                 description: The key of the secret to select from.  Must
@@ -2235,6 +2629,11 @@ spec:
                             required:
                             - key
                             type: object
+                          userKeyFile:
+                            description: The user key file that contains the recipient
+                              user's user key. Either `userKey` or `userKeyFile` is
+                              required. It requires Alertmanager >= v0.26.0.
+                            type: string
                         type: object
                       type: array
                     slackConfigs:
@@ -5286,6 +5685,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.11.1
+    operator.prometheus.io/version: 0.69.1
   creationTimestamp: null
   name: alertmanagers.monitoring.coreos.com
   namespace: metalk8s-monitoring
@@ -9583,8 +9983,15 @@ spec:
                   objects are not goint to be performed, except for delete actions.
                 type: boolean
               podMetadata:
-                description: PodMetadata configures Labels and Annotations which are
-                  propagated to the alertmanager pods.
+                description: "PodMetadata configures labels and annotations which\
+                  \ are propagated to the Alertmanager pods. \n The following items\
+                  \ are reserved and cannot be overridden: * \"alertmanager\" label,\
+                  \ set to the name of the Alertmanager instance. * \"app.kubernetes.io/instance\"\
+                  \ label, set to the name of the Alertmanager instance. * \"app.kubernetes.io/managed-by\"\
+                  \ label, set to \"prometheus-operator\". * \"app.kubernetes.io/name\"\
+                  \ label, set to \"alertmanager\". * \"app.kubernetes.io/version\"\
+                  \ label, set to the Alertmanager version. * \"kubectl.kubernetes.io/default-container\"\
+                  \ annotation, set to \"alertmanager\"."
                 properties:
                   annotations:
                     additionalProperties:
@@ -12701,6 +13108,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.11.1
+    operator.prometheus.io/version: 0.69.1
   creationTimestamp: null
   name: podmonitors.monitoring.coreos.com
   namespace: metalk8s-monitoring
@@ -13392,6 +13800,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.11.1
+    operator.prometheus.io/version: 0.69.1
   creationTimestamp: null
   name: probes.monitoring.coreos.com
   namespace: metalk8s-monitoring
@@ -14127,6 +14536,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.11.1
+    operator.prometheus.io/version: 0.69.1
   creationTimestamp: null
   name: prometheusagents.monitoring.coreos.com
   namespace: metalk8s-monitoring
@@ -16808,7 +17218,7 @@ spec:
                 description: When true, `spec.namespaceSelector` from all PodMonitor,
                   ServiceMonitor and Probe objects will be ignored. They will only
                   discover targets within the namespace of the PodMonitor, ServiceMonitor
-                  and Probe objec.
+                  and Probe object.
                 type: boolean
               image:
                 description: "Container image name for Prometheus. If specified, it\
@@ -18212,8 +18622,18 @@ spec:
                   for deletion will be performed on the underlying objects.
                 type: boolean
               podMetadata:
-                description: PodMetadata configures labels and annotations which are
-                  propagated to the Prometheus pods.
+                description: "PodMetadata configures labels and annotations which\
+                  \ are propagated to the Prometheus pods. \n The following items\
+                  \ are reserved and cannot be overridden: * \"prometheus\" label,\
+                  \ set to the name of the Prometheus object. * \"app.kubernetes.io/instance\"\
+                  \ label, set to the name of the Prometheus object. * \"app.kubernetes.io/managed-by\"\
+                  \ label, set to \"prometheus-operator\". * \"app.kubernetes.io/name\"\
+                  \ label, set to \"prometheus\". * \"app.kubernetes.io/version\"\
+                  \ label, set to the Prometheus version. * \"operator.prometheus.io/name\"\
+                  \ label, set to the name of the Prometheus object. * \"operator.prometheus.io/shard\"\
+                  \ label, set to the shard number of the Prometheus object. * \"\
+                  kubectl.kubernetes.io/default-container\" annotation, set to \"\
+                  prometheus\"."
                 properties:
                   annotations:
                     additionalProperties:
@@ -18472,7 +18892,7 @@ spec:
                     authorization:
                       description: "Authorization section for the URL. \n It requires\
                         \ Prometheus >= v2.26.0. \n Cannot be set at the same time\
-                        \ as `sigv4`, `basicAuth`, or `oauth2`."
+                        \ as `sigv4`, `basicAuth`, `oauth2`, or `azureAd`."
                       properties:
                         credentials:
                           description: Selects a key of a Secret in the namespace
@@ -18504,10 +18924,36 @@ spec:
                             \ value. \n Default: \"Bearer\""
                           type: string
                       type: object
+                    azureAd:
+                      description: "AzureAD for the URL. \n It requires Prometheus\
+                        \ >= v2.45.0. \n Cannot be set at the same time as `authorization`,\
+                        \ `basicAuth`, `oauth2`, or `sigv4`."
+                      properties:
+                        cloud:
+                          description: The Azure Cloud. Options are 'AzurePublic',
+                            'AzureChina', or 'AzureGovernment'.
+                          enum:
+                          - AzureChina
+                          - AzureGovernment
+                          - AzurePublic
+                          type: string
+                        managedIdentity:
+                          description: ManagedIdentity defines the Azure User-assigned
+                            Managed identity.
+                          properties:
+                            clientId:
+                              description: The client id
+                              type: string
+                          required:
+                          - clientId
+                          type: object
+                      required:
+                      - managedIdentity
+                      type: object
                     basicAuth:
                       description: "BasicAuth configuration for the URL. \n Cannot\
-                        \ be set at the same time as `sigv4`, `authorization`, or\
-                        \ `oauth2`."
+                        \ be set at the same time as `sigv4`, `authorization`, `oauth2`,\
+                        \ or `azureAd`."
                       properties:
                         password:
                           description: The secret in the service monitor namespace
@@ -18591,7 +19037,7 @@ spec:
                     oauth2:
                       description: "OAuth2 configuration for the URL. \n It requires\
                         \ Prometheus >= v2.27.0. \n Cannot be set at the same time\
-                        \ as `sigv4`, `authorization`, or `basicAuth`."
+                        \ as `sigv4`, `authorization`, `basicAuth`, or `azureAd`."
                       properties:
                         clientId:
                           description: The secret or configmap containing the OAuth2
@@ -18739,7 +19185,7 @@ spec:
                       description: "Sigv4 allows to configures AWS's Signature Verification\
                         \ 4 for the URL. \n It requires Prometheus >= v2.26.0. \n\
                         \ Cannot be set at the same time as `authorization`, `basicAuth`,\
-                        \ or `oauth2`."
+                        \ `oauth2`, or `azureAd`."
                       properties:
                         accessKey:
                           description: AccessKey is the AWS API key. If not specified,
@@ -22540,6 +22986,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.11.1
+    operator.prometheus.io/version: 0.69.1
   creationTimestamp: null
   name: prometheuses.monitoring.coreos.com
   namespace: metalk8s-monitoring
@@ -23556,7 +24003,8 @@ spec:
                           type: string
                         authorization:
                           description: "Authorization section for Alertmanager. \n\
-                            \ Cannot be set at the same time as `basicAuth`, or `bearerTokenFile`."
+                            \ Cannot be set at the same time as `basicAuth`, `bearerTokenFile`\
+                            \ or `sigv4`."
                           properties:
                             credentials:
                               description: Selects a key of a Secret in the namespace
@@ -23588,7 +24036,7 @@ spec:
                         basicAuth:
                           description: "BasicAuth configuration for Alertmanager.\
                             \ \n Cannot be set at the same time as `bearerTokenFile`,\
-                            \ or `authorization`."
+                            \ `authorization` or `sigv4`."
                           properties:
                             password:
                               description: The secret in the service monitor namespace
@@ -23635,9 +24083,9 @@ spec:
                           type: object
                         bearerTokenFile:
                           description: "File to read bearer token for Alertmanager.\
-                            \ \n Cannot be set at the same time as `basicAuth`, or\
-                            \ `authorization`. \n *Deprecated: this will be removed\
-                            \ in a future release. Prefer using `authorization`.*"
+                            \ \n Cannot be set at the same time as `basicAuth`, `authorization`,\
+                            \ or `sigv4`. \n *Deprecated: this will be removed in\
+                            \ a future release. Prefer using `authorization`.*"
                           type: string
                         enableHttp2:
                           description: Whether to enable HTTP2.
@@ -23661,6 +24109,68 @@ spec:
                         scheme:
                           description: Scheme to use when firing alerts.
                           type: string
+                        sigv4:
+                          description: "Sigv4 allows to configures AWS's Signature\
+                            \ Verification 4 for the URL. \n It requires Prometheus\
+                            \ >= v2.48.0. \n Cannot be set at the same time as `basicAuth`,\
+                            \ `bearerTokenFile` or `authorization`."
+                          properties:
+                            accessKey:
+                              description: AccessKey is the AWS API key. If not specified,
+                                the environment variable `AWS_ACCESS_KEY_ID` is used.
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must
+                                    be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key
+                                    must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                              x-kubernetes-map-type: atomic
+                            profile:
+                              description: Profile is the named AWS profile used to
+                                authenticate.
+                              type: string
+                            region:
+                              description: Region is the AWS region. If blank, the
+                                region from the default credentials chain used.
+                              type: string
+                            roleArn:
+                              description: RoleArn is the named AWS profile used to
+                                authenticate.
+                              type: string
+                            secretKey:
+                              description: SecretKey is the AWS API secret. If not
+                                specified, the environment variable `AWS_SECRET_ACCESS_KEY`
+                                is used.
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must
+                                    be a valid secret key.
+                                  type: string
+                                name:
+                                  description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                    TODO: Add other useful fields. apiVersion, kind,
+                                    uid?'
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key
+                                    must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                              x-kubernetes-map-type: atomic
+                          type: object
                         timeout:
                           description: Timeout is a per-target Alertmanager timeout
                             when pushing alerts.
@@ -25589,7 +26099,7 @@ spec:
                 description: When true, `spec.namespaceSelector` from all PodMonitor,
                   ServiceMonitor and Probe objects will be ignored. They will only
                   discover targets within the namespace of the PodMonitor, ServiceMonitor
-                  and Probe objec.
+                  and Probe object.
                 type: boolean
               image:
                 description: "Container image name for Prometheus. If specified, it\
@@ -26993,8 +27503,18 @@ spec:
                   for deletion will be performed on the underlying objects.
                 type: boolean
               podMetadata:
-                description: PodMetadata configures labels and annotations which are
-                  propagated to the Prometheus pods.
+                description: "PodMetadata configures labels and annotations which\
+                  \ are propagated to the Prometheus pods. \n The following items\
+                  \ are reserved and cannot be overridden: * \"prometheus\" label,\
+                  \ set to the name of the Prometheus object. * \"app.kubernetes.io/instance\"\
+                  \ label, set to the name of the Prometheus object. * \"app.kubernetes.io/managed-by\"\
+                  \ label, set to \"prometheus-operator\". * \"app.kubernetes.io/name\"\
+                  \ label, set to \"prometheus\". * \"app.kubernetes.io/version\"\
+                  \ label, set to the Prometheus version. * \"operator.prometheus.io/name\"\
+                  \ label, set to the name of the Prometheus object. * \"operator.prometheus.io/shard\"\
+                  \ label, set to the shard number of the Prometheus object. * \"\
+                  kubectl.kubernetes.io/default-container\" annotation, set to \"\
+                  prometheus\"."
                 properties:
                   annotations:
                     additionalProperties:
@@ -27673,7 +28193,7 @@ spec:
                     authorization:
                       description: "Authorization section for the URL. \n It requires\
                         \ Prometheus >= v2.26.0. \n Cannot be set at the same time\
-                        \ as `sigv4`, `basicAuth`, or `oauth2`."
+                        \ as `sigv4`, `basicAuth`, `oauth2`, or `azureAd`."
                       properties:
                         credentials:
                           description: Selects a key of a Secret in the namespace
@@ -27705,10 +28225,36 @@ spec:
                             \ value. \n Default: \"Bearer\""
                           type: string
                       type: object
+                    azureAd:
+                      description: "AzureAD for the URL. \n It requires Prometheus\
+                        \ >= v2.45.0. \n Cannot be set at the same time as `authorization`,\
+                        \ `basicAuth`, `oauth2`, or `sigv4`."
+                      properties:
+                        cloud:
+                          description: The Azure Cloud. Options are 'AzurePublic',
+                            'AzureChina', or 'AzureGovernment'.
+                          enum:
+                          - AzureChina
+                          - AzureGovernment
+                          - AzurePublic
+                          type: string
+                        managedIdentity:
+                          description: ManagedIdentity defines the Azure User-assigned
+                            Managed identity.
+                          properties:
+                            clientId:
+                              description: The client id
+                              type: string
+                          required:
+                          - clientId
+                          type: object
+                      required:
+                      - managedIdentity
+                      type: object
                     basicAuth:
                       description: "BasicAuth configuration for the URL. \n Cannot\
-                        \ be set at the same time as `sigv4`, `authorization`, or\
-                        \ `oauth2`."
+                        \ be set at the same time as `sigv4`, `authorization`, `oauth2`,\
+                        \ or `azureAd`."
                       properties:
                         password:
                           description: The secret in the service monitor namespace
@@ -27792,7 +28338,7 @@ spec:
                     oauth2:
                       description: "OAuth2 configuration for the URL. \n It requires\
                         \ Prometheus >= v2.27.0. \n Cannot be set at the same time\
-                        \ as `sigv4`, `authorization`, or `basicAuth`."
+                        \ as `sigv4`, `authorization`, `basicAuth`, or `azureAd`."
                       properties:
                         clientId:
                           description: The secret or configmap containing the OAuth2
@@ -27940,7 +28486,7 @@ spec:
                       description: "Sigv4 allows to configures AWS's Signature Verification\
                         \ 4 for the URL. \n It requires Prometheus >= v2.26.0. \n\
                         \ Cannot be set at the same time as `authorization`, `basicAuth`,\
-                        \ or `oauth2`."
+                        \ `oauth2`, or `azureAd`."
                       properties:
                         accessKey:
                           description: AccessKey is the AWS API key. If not specified,
@@ -32290,6 +32836,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.11.1
+    operator.prometheus.io/version: 0.69.1
   creationTimestamp: null
   name: prometheusrules.monitoring.coreos.com
   namespace: metalk8s-monitoring
@@ -32421,6 +32968,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.11.1
+    operator.prometheus.io/version: 0.69.1
   creationTimestamp: null
   name: scrapeconfigs.monitoring.coreos.com
   namespace: metalk8s-monitoring
@@ -32981,6 +33529,90 @@ spec:
                   - names
                   type: object
                 type: array
+              ec2SDConfigs:
+                description: EC2SDConfigs defines a list of EC2 service discovery
+                  configurations.
+                items:
+                  description: EC2SDConfig allow retrieving scrape targets from AWS
+                    EC2 instances. The private IP address is used by default, but
+                    may be changed to the public IP address with relabeling. The IAM
+                    credentials used must have the ec2:DescribeInstances permission
+                    to discover scrape targets See https://prometheus.io/docs/prometheus/latest/configuration/configuration/#ec2_sd_config
+                  properties:
+                    accessKey:
+                      description: AccessKey is the AWS API key.
+                      properties:
+                        key:
+                          description: The key of the secret to select from.  Must
+                            be a valid secret key.
+                          type: string
+                        name:
+                          description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                            TODO: Add other useful fields. apiVersion, kind, uid?'
+                          type: string
+                        optional:
+                          description: Specify whether the Secret or its key must
+                            be defined
+                          type: boolean
+                      required:
+                      - key
+                      type: object
+                    filters:
+                      description: 'Filters can be used optionally to filter the instance
+                        list by other criteria. Available filter criteria can be found
+                        here: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html
+                        Filter API documentation: https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_Filter.html'
+                      items:
+                        description: EC2Filter is the configuration for filtering
+                          EC2 instances.
+                        properties:
+                          name:
+                            type: string
+                          values:
+                            items:
+                              type: string
+                            type: array
+                        required:
+                        - name
+                        - values
+                        type: object
+                      type: array
+                    port:
+                      description: The port to scrape metrics from. If using the public
+                        IP address, this must instead be specified in the relabeling
+                        rule.
+                      type: integer
+                    refreshInterval:
+                      description: RefreshInterval configures the refresh interval
+                        at which Prometheus will re-read the instance list.
+                      pattern: ^(0|(([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?)$
+                      type: string
+                    region:
+                      description: The AWS region
+                      type: string
+                    roleARN:
+                      description: AWS Role ARN, an alternative to using AWS API keys.
+                      type: string
+                    secretKey:
+                      description: SecretKey is the AWS API secret.
+                      properties:
+                        key:
+                          description: The key of the secret to select from.  Must
+                            be a valid secret key.
+                          type: string
+                        name:
+                          description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                            TODO: Add other useful fields. apiVersion, kind, uid?'
+                          type: string
+                        optional:
+                          description: Specify whether the Secret or its key must
+                            be defined
+                          type: boolean
+                      required:
+                      - key
+                      type: object
+                  type: object
+                type: array
               fileSDConfigs:
                 description: FileSDConfigs defines a list of file service discovery
                   configurations.
@@ -33248,10 +33880,34 @@ spec:
                   properties:
                     role:
                       description: Role of the Kubernetes entities that should be
-                        discovered. Currently the only supported role is "Node".
+                        discovered.
                       enum:
                       - Node
+                      - node
                       type: string
+                    selectors:
+                      description: Selector to select objects.
+                      items:
+                        description: K8SSelectorConfig is Kubernetes Selector Config
+                        properties:
+                          field:
+                            type: string
+                          label:
+                            type: string
+                          role:
+                            description: K8SRole is role of the service in Kubernetes.
+                              Currently the only supported role is "Node".
+                            enum:
+                            - Node
+                            - node
+                            type: string
+                        required:
+                        - role
+                        type: object
+                      type: array
+                      x-kubernetes-list-map-keys:
+                      - role
+                      x-kubernetes-list-type: map
                   required:
                   - role
                   type: object
@@ -33606,6 +34262,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.11.1
+    operator.prometheus.io/version: 0.69.1
   creationTimestamp: null
   name: servicemonitors.monitoring.coreos.com
   namespace: metalk8s-monitoring
@@ -34328,6 +34985,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.11.1
+    operator.prometheus.io/version: 0.69.1
   creationTimestamp: null
   name: thanosrulers.monitoring.coreos.com
   namespace: metalk8s-monitoring
@@ -38195,8 +38853,14 @@ spec:
                   for deletion will be performed on the underlying objects.
                 type: boolean
               podMetadata:
-                description: PodMetadata contains Labels and Annotations gets propagated
-                  to the thanos ruler pods.
+                description: "PodMetadata configures labels and annotations which\
+                  \ are propagated to the ThanosRuler pods. \n The following items\
+                  \ are reserved and cannot be overridden: * \"app.kubernetes.io/name\"\
+                  \ label, set to \"thanos-ruler\". * \"app.kubernetes.io/managed-by\"\
+                  \ label, set to \"prometheus-operator\". * \"app.kubernetes.io/instance\"\
+                  \ label, set to the name of the ThanosRuler instance. * \"thanos-ruler\"\
+                  \ label, set to the name of the ThanosRuler instance. * \"kubectl.kubernetes.io/default-container\"\
+                  \ annotation, set to \"thanos-ruler\"."
                 properties:
                   annotations:
                     additionalProperties:
@@ -41244,8 +41908,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.1.2-ubuntu
-    helm.sh/chart: grafana-6.59.5
+    app.kubernetes.io/version: 10.1.5
+    helm.sh/chart: grafana-7.0.8
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -41260,8 +41924,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.10.0
-    helm.sh/chart: kube-state-metrics-5.12.1
+    app.kubernetes.io/version: 2.10.1
+    helm.sh/chart: kube-state-metrics-5.15.2
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -41276,8 +41940,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.6.1
-    helm.sh/chart: prometheus-node-exporter-4.23.1
+    app.kubernetes.io/version: 1.7.0
+    helm.sh/chart: prometheus-node-exporter-4.24.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -41295,8 +41959,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -41313,8 +41977,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -41331,8 +41995,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -41351,12 +42015,31 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.1.2-ubuntu
-    helm.sh/chart: grafana-6.59.5
+    app.kubernetes.io/version: 10.1.5
+    helm.sh/chart: grafana-7.0.8
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
 type: Opaque
+---
+apiVersion: v1
+data: null
+kind: Secret
+metadata:
+  labels:
+    app: prometheus-operator-prometheus
+    app.kubernetes.io/component: prometheus
+    app.kubernetes.io/instance: prometheus-operator
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: prometheus-operator-prometheus
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+    release: prometheus-operator
+  name: prometheus-operator-prometheus
+  namespace: metalk8s-monitoring
 ---
 apiVersion: v1
 data:
@@ -41379,8 +42062,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.1.2-ubuntu
-    helm.sh/chart: grafana-6.59.5
+    app.kubernetes.io/version: 10.1.5
+    helm.sh/chart: grafana-7.0.8
     heritage: metalk8s
   name: prometheus-operator-grafana-config-dashboards
   namespace: metalk8s-monitoring
@@ -41406,8 +42089,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_datasource: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -41456,8 +42139,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -41500,7 +42183,7 @@ data:
     cluster=\"$cluster\"})","format":"time_series","intervalFactor":2,"legendFormat":"{{
     resource }}","refId":"A"}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Read
     SLI - Errors","tooltip":{"shared":false,"sort":0,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"percentunit","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"percentunit","label":null,"logBase":1,"max":null,"min":0,"show":true}]},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","description":"How
-    many seconds is the 99th percentile for reading (LIST|GET) a given resource?","fill":1,"fillGradient":0,"gridPos":{},"id":8,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"sideWidth":null,"total":false,"values":false},"lines":true,"linewidth":1,"links":[],"nullPointMode":"null","percentage":false,"pointradius":5,"points":false,"renderer":"flot","repeat":null,"seriesOverrides":[],"spaceLength":10,"span":3,"stack":false,"steppedLine":false,"targets":[{"expr":"cluster_quantile:apiserver_request_slo_duration_seconds:histogram_quantile{verb=\"read\",
+    many seconds is the 99th percentile for reading (LIST|GET) a given resource?","fill":1,"fillGradient":0,"gridPos":{},"id":8,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"sideWidth":null,"total":false,"values":false},"lines":true,"linewidth":1,"links":[],"nullPointMode":"null","percentage":false,"pointradius":5,"points":false,"renderer":"flot","repeat":null,"seriesOverrides":[],"spaceLength":10,"span":3,"stack":false,"steppedLine":false,"targets":[{"expr":"cluster_quantile:apiserver_request_sli_duration_seconds:histogram_quantile{verb=\"read\",
     cluster=\"$cluster\"}","format":"time_series","intervalFactor":2,"legendFormat":"{{
     resource }}","refId":"A"}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Read
     SLI - Duration","tooltip":{"shared":false,"sort":0,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"s","label":null,"logBase":1,"max":null,"min":null,"show":true},{"format":"s","label":null,"logBase":1,"max":null,"min":null,"show":true}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":false,"title":"Dashboard
@@ -41525,7 +42208,7 @@ data:
     resource }}","refId":"A"}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Write
     SLI - Errors","tooltip":{"shared":false,"sort":0,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"percentunit","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"percentunit","label":null,"logBase":1,"max":null,"min":0,"show":true}]},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","description":"How
     many seconds is the 99th percentile for writing (POST|PUT|PATCH|DELETE) a given
-    resource?","fill":1,"fillGradient":0,"gridPos":{},"id":12,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"sideWidth":null,"total":false,"values":false},"lines":true,"linewidth":1,"links":[],"nullPointMode":"null","percentage":false,"pointradius":5,"points":false,"renderer":"flot","repeat":null,"seriesOverrides":[],"spaceLength":10,"span":3,"stack":false,"steppedLine":false,"targets":[{"expr":"cluster_quantile:apiserver_request_slo_duration_seconds:histogram_quantile{verb=\"write\",
+    resource?","fill":1,"fillGradient":0,"gridPos":{},"id":12,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"sideWidth":null,"total":false,"values":false},"lines":true,"linewidth":1,"links":[],"nullPointMode":"null","percentage":false,"pointradius":5,"points":false,"renderer":"flot","repeat":null,"seriesOverrides":[],"spaceLength":10,"span":3,"stack":false,"steppedLine":false,"targets":[{"expr":"cluster_quantile:apiserver_request_sli_duration_seconds:histogram_quantile{verb=\"write\",
     cluster=\"$cluster\"}","format":"time_series","intervalFactor":2,"legendFormat":"{{
     resource }}","refId":"A"}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Write
     SLI - Duration","tooltip":{"shared":false,"sort":0,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"s","label":null,"logBase":1,"max":null,"min":null,"show":true},{"format":"s","label":null,"logBase":1,"max":null,"min":null,"show":true}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":false,"title":"Dashboard
@@ -41547,7 +42230,7 @@ data:
     cluster=\"$cluster\"}[$__rate_interval])","format":"time_series","intervalFactor":2,"legendFormat":"{{instance}}","refId":"A"}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"CPU
     usage","tooltip":{"shared":false,"sort":0,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"short","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"short","label":null,"logBase":1,"max":null,"min":0,"show":true}]},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","fill":1,"fillGradient":0,"gridPos":{},"id":18,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"sideWidth":null,"total":false,"values":false},"lines":true,"linewidth":1,"links":[],"nullPointMode":"null","percentage":false,"pointradius":5,"points":false,"renderer":"flot","repeat":null,"seriesOverrides":[],"spaceLength":10,"span":4,"stack":false,"steppedLine":false,"targets":[{"expr":"go_goroutines{job=\"apiserver\",instance=~\"$instance\",
     cluster=\"$cluster\"}","format":"time_series","intervalFactor":2,"legendFormat":"{{instance}}","refId":"A"}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Goroutines","tooltip":{"shared":false,"sort":0,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"short","label":null,"logBase":1,"max":null,"min":null,"show":true},{"format":"short","label":null,"logBase":1,"max":null,"min":null,"show":true}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":false,"title":"Dashboard
-    Row","titleSize":"h6","type":"row"}],"schemaVersion":14,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"text":"default","value":"default"},"hide":0,"label":"Data
+    Row","titleSize":"h6","type":"row"}],"schemaVersion":14,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
     Source","name":"datasource","options":[],"query":"prometheus","refresh":1,"regex":"","type":"datasource"},{"allValue":null,"current":{},"datasource":"$datasource","hide":2,"includeAll":false,"label":"cluster","multi":false,"name":"cluster","options":[],"query":"label_values(up{job=\"apiserver\"},
     cluster)","refresh":2,"regex":"","sort":1,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false},{"allValue":null,"current":{},"datasource":"$datasource","hide":0,"includeAll":true,"label":null,"multi":false,"name":"instance","options":[],"query":"label_values(up{job=\"apiserver\",
     cluster=\"$cluster\"}, instance)","refresh":2,"regex":"","sort":1,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false}]},"time":{"from":"now-1h","to":"now"},"timepicker":{"refresh_intervals":["5s","10s","30s","1m","5m","15m","30m","1h","2h","1d"],"time_options":["5m","15m","1h","6h","12h","24h","2d","7d","30d"]},"timezone":
@@ -41561,8 +42244,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -41639,7 +42322,7 @@ data:
     monitor SYN retransmits?","url":"https://github.com/prometheus/node_exporter/issues/1023#issuecomment-408128365"}],"minSpan":24,"nullPointMode":"connected","paceLength":10,"percentage":false,"pointradius":5,"points":false,"renderer":"flot","repeat":null,"seriesOverrides":[],"spaceLength":10,"span":24,"stack":true,"steppedLine":false,"targets":[{"expr":"sort_desc(sum(rate(node_netstat_TcpExt_TCPSynRetrans{cluster=\"$cluster\"}[$interval:$resolution])
     / rate(node_netstat_Tcp_RetransSegs{cluster=\"$cluster\"}[$interval:$resolution]))
     by (instance))","format":"time_series","intervalFactor":1,"legendFormat":"{{instance}}","refId":"A","step":10}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Rate
-    of TCP SYN Retransmits out of all retransmits","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"percentunit","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"percentunit","label":null,"logBase":1,"max":null,"min":0,"show":true}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":true,"title":"Errors","titleSize":"h6","type":"row"}],"refresh":"10s","rows":[],"schemaVersion":18,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"allValue":null,"auto":false,"auto_count":30,"auto_min":"10s","current":{"text":"5m","value":"5m"},"datasource":"$datasource","hide":0,"includeAll":false,"label":null,"multi":false,"name":"resolution","options":[{"selected":false,"text":"30s","value":"30s"},{"selected":true,"text":"5m","value":"5m"},{"selected":false,"text":"1h","value":"1h"}],"query":"30s,5m,1h","refresh":2,"regex":"","skipUrlSync":false,"sort":1,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"interval","useTags":false},{"allValue":null,"auto":false,"auto_count":30,"auto_min":"10s","current":{"text":"5m","value":"5m"},"datasource":"$datasource","hide":2,"includeAll":false,"label":null,"multi":false,"name":"interval","options":[{"selected":true,"text":"4h","value":"4h"}],"query":"4h","refresh":2,"regex":"","skipUrlSync":false,"sort":1,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"interval","useTags":false},{"current":{"text":"default","value":"default"},"hide":0,"label":"Data
+    of TCP SYN Retransmits out of all retransmits","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"percentunit","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"percentunit","label":null,"logBase":1,"max":null,"min":0,"show":true}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":true,"title":"Errors","titleSize":"h6","type":"row"}],"refresh":"10s","rows":[],"schemaVersion":18,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"allValue":null,"auto":false,"auto_count":30,"auto_min":"10s","current":{"text":"5m","value":"5m"},"datasource":"$datasource","hide":0,"includeAll":false,"label":null,"multi":false,"name":"resolution","options":[{"selected":false,"text":"30s","value":"30s"},{"selected":true,"text":"5m","value":"5m"},{"selected":false,"text":"1h","value":"1h"}],"query":"30s,5m,1h","refresh":2,"regex":"","skipUrlSync":false,"sort":1,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"interval","useTags":false},{"allValue":null,"auto":false,"auto_count":30,"auto_min":"10s","current":{"text":"5m","value":"5m"},"datasource":"$datasource","hide":2,"includeAll":false,"label":null,"multi":false,"name":"interval","options":[{"selected":true,"text":"4h","value":"4h"}],"query":"4h","refresh":2,"regex":"","skipUrlSync":false,"sort":1,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"interval","useTags":false},{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
     Source","name":"datasource","options":[],"query":"prometheus","refresh":1,"regex":"","type":"datasource"},{"allValue":null,"current":{},"datasource":"$datasource","hide":2,"includeAll":false,"label":null,"multi":false,"name":"cluster","options":[],"query":"label_values(up{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\"}, cluster)","refresh":2,"regex":"","sort":0,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false}]},"time":{"from":"now-1h","to":"now"},"timepicker":{"refresh_intervals":["5s","10s","30s","1m","5m","15m","30m","1h","2h","1d"],"time_options":["5m","15m","1h","6h","12h","24h","2d","7d","30d"]},"timezone":
     "utc","title":"Kubernetes / Networking / Cluster","uid":"ff635a025bcfea7bc3dd4f508990a3e9","version":0}'
@@ -41652,8 +42335,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -41702,7 +42385,7 @@ data:
     job=\"kube-controller-manager\",instance=~\"$instance\"}[$__rate_interval])","format":"time_series","intervalFactor":2,"legendFormat":"{{instance}}","refId":"A"}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"CPU
     usage","tooltip":{"shared":false,"sort":0,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"short","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"short","label":null,"logBase":1,"max":null,"min":0,"show":true}]},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","fill":1,"fillGradient":0,"gridPos":{},"id":11,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"sideWidth":null,"total":false,"values":false},"lines":true,"linewidth":1,"links":[],"nullPointMode":"null","percentage":false,"pointradius":5,"points":false,"renderer":"flot","repeat":null,"seriesOverrides":[],"spaceLength":10,"span":4,"stack":false,"steppedLine":false,"targets":[{"expr":"go_goroutines{cluster=\"$cluster\",
     job=\"kube-controller-manager\",instance=~\"$instance\"}","format":"time_series","intervalFactor":2,"legendFormat":"{{instance}}","refId":"A"}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Goroutines","tooltip":{"shared":false,"sort":0,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"short","label":null,"logBase":1,"max":null,"min":null,"show":true},{"format":"short","label":null,"logBase":1,"max":null,"min":null,"show":true}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":false,"title":"Dashboard
-    Row","titleSize":"h6","type":"row"}],"schemaVersion":14,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"text":"default","value":"default"},"hide":0,"label":"Data
+    Row","titleSize":"h6","type":"row"}],"schemaVersion":14,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
     Source","name":"datasource","options":[],"query":"prometheus","refresh":1,"regex":"","type":"datasource"},{"allValue":null,"current":{},"datasource":"$datasource","hide":2,"includeAll":false,"label":"cluster","multi":false,"name":"cluster","options":[],"query":"label_values(up{job=\"kube-controller-manager\"},
     cluster)","refresh":2,"regex":"","sort":1,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false},{"allValue":null,"current":{},"datasource":"$datasource","hide":0,"includeAll":true,"label":null,"multi":false,"name":"instance","options":[],"query":"label_values(up{cluster=\"$cluster\",
     job=\"kube-controller-manager\"}, instance)","refresh":2,"regex":"","sort":1,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false}]},"time":{"from":"now-1h","to":"now"},"timepicker":{"refresh_intervals":["5s","10s","30s","1m","5m","15m","30m","1h","2h","1d"],"time_options":["5m","15m","1h","6h","12h","24h","2d","7d","30d"]},"timezone":
@@ -41716,8 +42399,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -41729,1171 +42412,535 @@ apiVersion: v1
 data:
   etcd.json: |-
     {
-        "annotations": {
-            "list": []
-        },
         "description": "etcd sample Grafana dashboard with Prometheus",
-        "editable": true,
-        "gnetId": null,
-        "hideControls": false,
-        "links": [],
-        "refresh": "10s",
-        "rows": [
+        "panels": [
             {
-                "collapse": false,
-                "editable": true,
-                "height": "250px",
-                "panels": [
-                    {
-                        "cacheTimeout": null,
-                        "colorBackground": false,
-                        "colorValue": false,
-                        "colors": [
-                            "rgba(245, 54, 54, 0.9)",
-                            "rgba(237, 129, 40, 0.89)",
-                            "rgba(50, 172, 45, 0.97)"
-                        ],
-                        "datasource": "$datasource",
-                        "editable": true,
-                        "error": false,
-                        "format": "none",
-                        "gauge": {
-                            "maxValue": 100,
-                            "minValue": 0,
-                            "show": false,
-                            "thresholdLabels": false,
-                            "thresholdMarkers": true
-                        },
-                        "id": 28,
-                        "interval": null,
-                        "isNew": true,
-                        "links": [],
-                        "mappingType": 1,
-                        "mappingTypes": [
-                            {
-                                "name": "value to text",
-                                "value": 1
-                            },
-                            {
-                                "name": "range to text",
-                                "value": 2
-                            }
-                        ],
-                        "maxDataPoints": 100,
-                        "nullPointMode": "connected",
-                        "nullText": null,
-                        "postfix": "",
-                        "postfixFontSize": "50%",
-                        "prefix": "",
-                        "prefixFontSize": "50%",
-                        "rangeMaps": [
-                            {
-                                "from": "null",
-                                "text": "N/A",
-                                "to": "null"
-                            }
-                        ],
-                        "span": 3,
-                        "sparkline": {
-                            "fillColor": "rgba(31, 118, 189, 0.18)",
-                            "full": false,
-                            "lineColor": "rgb(31, 120, 193)",
-                            "show": false
-                        },
-                        "targets": [
-                            {
-                                "expr": "sum(etcd_server_has_leader{job=\"$cluster\"})",
-                                "intervalFactor": 2,
-                                "legendFormat": "",
-                                "metric": "etcd_server_has_leader",
-                                "refId": "A",
-                                "step": 20
-                            }
-                        ],
-                        "thresholds": "",
-                        "title": "Up",
-                        "type": "singlestat",
-                        "valueFontSize": "200%",
-                        "valueMaps": [
-                            {
-                                "op": "=",
-                                "text": "N/A",
-                                "value": "null"
-                            }
-                        ],
-                        "valueName": "avg"
-                    },
-                    {
-                        "aliasColors": {},
-                        "bars": false,
-                        "datasource": "$datasource",
-                        "editable": true,
-                        "error": false,
-                        "fill": 0,
-                        "id": 23,
-                        "isNew": true,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": false,
-                            "total": false,
-                            "values": false
-                        },
-                        "lines": true,
-                        "linewidth": 2,
-                        "links": [],
-                        "nullPointMode": "connected",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "span": 5,
-                        "stack": false,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "sum(rate(grpc_server_started_total{job=\"$cluster\",grpc_type=\"unary\"}[$__rate_interval]))",
-                                "format": "time_series",
-                                "intervalFactor": 2,
-                                "legendFormat": "RPC Rate",
-                                "metric": "grpc_server_started_total",
-                                "refId": "A",
-                                "step": 2
-                            },
-                            {
-                                "expr": "sum(rate(grpc_server_handled_total{job=\"$cluster\",grpc_type=\"unary\",grpc_code=~\"Unknown|FailedPrecondition|ResourceExhausted|Internal|Unavailable|DataLoss|DeadlineExceeded\"}[$__rate_interval]))",
-                                "format": "time_series",
-                                "intervalFactor": 2,
-                                "legendFormat": "RPC Failed Rate",
-                                "metric": "grpc_server_handled_total",
-                                "refId": "B",
-                                "step": 2
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "RPC Rate",
-                        "tooltip": {
-                            "msResolution": false,
-                            "shared": true,
-                            "sort": 0,
-                            "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "ops",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            }
-                        ]
-                    },
-                    {
-                        "aliasColors": {},
-                        "bars": false,
-                        "datasource": "$datasource",
-                        "editable": true,
-                        "error": false,
-                        "fill": 0,
-                        "id": 41,
-                        "isNew": true,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": false,
-                            "total": false,
-                            "values": false
-                        },
-                        "lines": true,
-                        "linewidth": 2,
-                        "links": [],
-                        "nullPointMode": "connected",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "span": 4,
-                        "stack": true,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "sum(grpc_server_started_total{job=\"$cluster\",grpc_service=\"etcdserverpb.Watch\",grpc_type=\"bidi_stream\"}) - sum(grpc_server_handled_total{job=\"$cluster\",grpc_service=\"etcdserverpb.Watch\",grpc_type=\"bidi_stream\"})",
-                                "intervalFactor": 2,
-                                "legendFormat": "Watch Streams",
-                                "metric": "grpc_server_handled_total",
-                                "refId": "A",
-                                "step": 4
-                            },
-                            {
-                                "expr": "sum(grpc_server_started_total{job=\"$cluster\",grpc_service=\"etcdserverpb.Lease\",grpc_type=\"bidi_stream\"}) - sum(grpc_server_handled_total{job=\"$cluster\",grpc_service=\"etcdserverpb.Lease\",grpc_type=\"bidi_stream\"})",
-                                "intervalFactor": 2,
-                                "legendFormat": "Lease Streams",
-                                "metric": "grpc_server_handled_total",
-                                "refId": "B",
-                                "step": 4
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "Active Streams",
-                        "tooltip": {
-                            "msResolution": false,
-                            "shared": true,
-                            "sort": 0,
-                            "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "short",
-                                "label": "",
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            }
+                "datasource": {
+                    "type": "datasource",
+                    "uid": "-- Mixed --"
+                },
+                "gridPos": {
+                    "h": 7,
+                    "w": 6,
+                    "x": 0,
+                    "y": 0
+                },
+                "id": 1,
+                "interval": "1m",
+                "options": {
+                    "colorMode": "none",
+                    "graphMode": "none",
+                    "reduceOptions": {
+                        "calcs": [
+                            "lastNotNull"
                         ]
                     }
-                ],
-                "showTitle": false,
-                "title": "Row"
-            },
-            {
-                "collapse": false,
-                "editable": true,
-                "height": "250px",
-                "panels": [
+                },
+                "pluginVersion": "v10.0.0",
+                "targets": [
                     {
-                        "aliasColors": {},
-                        "bars": false,
-                        "datasource": "$datasource",
-                        "decimals": null,
-                        "editable": true,
-                        "error": false,
-                        "fill": 0,
-                        "grid": {},
-                        "id": 1,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": false,
-                            "total": false,
-                            "values": false
+                        "datasource": {
+                            "type": "prometheus",
+                            "uid": "$datasource"
                         },
-                        "lines": true,
-                        "linewidth": 2,
-                        "links": [],
-                        "nullPointMode": "connected",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "span": 4,
-                        "stack": false,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "etcd_mvcc_db_total_size_in_bytes{job=\"$cluster\"}",
-                                "hide": false,
-                                "interval": "",
-                                "intervalFactor": 2,
-                                "legendFormat": "{{instance}} DB Size",
-                                "metric": "",
-                                "refId": "A",
-                                "step": 4
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "DB Size",
-                        "tooltip": {
-                            "msResolution": false,
-                            "shared": true,
-                            "sort": 0,
-                            "value_type": "cumulative"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "bytes",
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": false
-                            }
-                        ]
-                    },
-                    {
-                        "aliasColors": {},
-                        "bars": false,
-                        "datasource": "$datasource",
-                        "editable": true,
-                        "error": false,
-                        "fill": 0,
-                        "grid": {},
-                        "id": 3,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": false,
-                            "total": false,
-                            "values": false
-                        },
-                        "lines": true,
-                        "linewidth": 2,
-                        "links": [],
-                        "nullPointMode": "connected",
-                        "percentage": false,
-                        "pointradius": 1,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "span": 4,
-                        "stack": false,
-                        "steppedLine": true,
-                        "targets": [
-                            {
-                                "expr": "histogram_quantile(0.99, sum(rate(etcd_disk_wal_fsync_duration_seconds_bucket{job=\"$cluster\"}[$__rate_interval])) by (instance, le))",
-                                "hide": false,
-                                "intervalFactor": 2,
-                                "legendFormat": "{{instance}} WAL fsync",
-                                "metric": "etcd_disk_wal_fsync_duration_seconds_bucket",
-                                "refId": "A",
-                                "step": 4
-                            },
-                            {
-                                "expr": "histogram_quantile(0.99, sum(rate(etcd_disk_backend_commit_duration_seconds_bucket{job=\"$cluster\"}[$__rate_interval])) by (instance, le))",
-                                "intervalFactor": 2,
-                                "legendFormat": "{{instance}} DB fsync",
-                                "metric": "etcd_disk_backend_commit_duration_seconds_bucket",
-                                "refId": "B",
-                                "step": 4
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "Disk Sync Duration",
-                        "tooltip": {
-                            "msResolution": false,
-                            "shared": true,
-                            "sort": 0,
-                            "value_type": "cumulative"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "s",
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": false
-                            }
-                        ]
-                    },
-                    {
-                        "aliasColors": {},
-                        "bars": false,
-                        "datasource": "$datasource",
-                        "editable": true,
-                        "error": false,
-                        "fill": 0,
-                        "id": 29,
-                        "isNew": true,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": false,
-                            "total": false,
-                            "values": false
-                        },
-                        "lines": true,
-                        "linewidth": 2,
-                        "links": [],
-                        "nullPointMode": "connected",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "span": 4,
-                        "stack": false,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "process_resident_memory_bytes{job=\"$cluster\"}",
-                                "intervalFactor": 2,
-                                "legendFormat": "{{instance}} Resident Memory",
-                                "metric": "process_resident_memory_bytes",
-                                "refId": "A",
-                                "step": 4
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "Memory",
-                        "tooltip": {
-                            "msResolution": false,
-                            "shared": true,
-                            "sort": 0,
-                            "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "bytes",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            }
-                        ]
+                        "expr": "sum(etcd_server_has_leader{job=~\".*etcd.*\", job=\"$cluster\"})",
+                        "legendFormat": "{{cluster}} - {{namespace}}\n"
                     }
                 ],
-                "title": "New row"
+                "title": "Up",
+                "type": "stat"
             },
             {
-                "collapse": false,
-                "editable": true,
-                "height": "250px",
-                "panels": [
+                "datasource": {
+                    "type": "datasource",
+                    "uid": "-- Mixed --"
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {
+                            "fillOpacity": 0,
+                            "lineWidth": 2,
+                            "showPoints": "never"
+                        },
+                        "unit": "ops"
+                    }
+                },
+                "gridPos": {
+                    "h": 7,
+                    "w": 10,
+                    "x": 6,
+                    "y": 0
+                },
+                "id": 2,
+                "interval": "1m",
+                "pluginVersion": "v10.0.0",
+                "targets": [
                     {
-                        "aliasColors": {},
-                        "bars": false,
-                        "datasource": "$datasource",
-                        "editable": true,
-                        "error": false,
-                        "fill": 5,
-                        "id": 22,
-                        "isNew": true,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": false,
-                            "total": false,
-                            "values": false
+                        "datasource": {
+                            "type": "prometheus",
+                            "uid": "$datasource"
                         },
-                        "lines": true,
-                        "linewidth": 2,
-                        "links": [],
-                        "nullPointMode": "connected",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "span": 3,
-                        "stack": true,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "rate(etcd_network_client_grpc_received_bytes_total{job=\"$cluster\"}[$__rate_interval])",
-                                "intervalFactor": 2,
-                                "legendFormat": "{{instance}} Client Traffic In",
-                                "metric": "etcd_network_client_grpc_received_bytes_total",
-                                "refId": "A",
-                                "step": 4
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "Client Traffic In",
-                        "tooltip": {
-                            "msResolution": false,
-                            "shared": true,
-                            "sort": 0,
-                            "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "Bps",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            }
-                        ]
+                        "expr": "sum(rate(grpc_server_started_total{job=~\".*etcd.*\", job=\"$cluster\",grpc_type=\"unary\"}[$__rate_interval]))",
+                        "legendFormat": "RPC rate"
                     },
                     {
-                        "aliasColors": {},
-                        "bars": false,
-                        "datasource": "$datasource",
-                        "editable": true,
-                        "error": false,
-                        "fill": 5,
-                        "id": 21,
-                        "isNew": true,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": false,
-                            "total": false,
-                            "values": false
+                        "datasource": {
+                            "type": "prometheus",
+                            "uid": "$datasource"
                         },
-                        "lines": true,
-                        "linewidth": 2,
-                        "links": [],
-                        "nullPointMode": "connected",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "span": 3,
-                        "stack": true,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "rate(etcd_network_client_grpc_sent_bytes_total{job=\"$cluster\"}[$__rate_interval])",
-                                "intervalFactor": 2,
-                                "legendFormat": "{{instance}} Client Traffic Out",
-                                "metric": "etcd_network_client_grpc_sent_bytes_total",
-                                "refId": "A",
-                                "step": 4
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "Client Traffic Out",
-                        "tooltip": {
-                            "msResolution": false,
-                            "shared": true,
-                            "sort": 0,
-                            "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "Bps",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            }
-                        ]
-                    },
-                    {
-                        "aliasColors": {},
-                        "bars": false,
-                        "datasource": "$datasource",
-                        "editable": true,
-                        "error": false,
-                        "fill": 0,
-                        "id": 20,
-                        "isNew": true,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": false,
-                            "total": false,
-                            "values": false
-                        },
-                        "lines": true,
-                        "linewidth": 2,
-                        "links": [],
-                        "nullPointMode": "connected",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "span": 3,
-                        "stack": false,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "sum(rate(etcd_network_peer_received_bytes_total{job=\"$cluster\"}[$__rate_interval])) by (instance)",
-                                "intervalFactor": 2,
-                                "legendFormat": "{{instance}} Peer Traffic In",
-                                "metric": "etcd_network_peer_received_bytes_total",
-                                "refId": "A",
-                                "step": 4
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "Peer Traffic In",
-                        "tooltip": {
-                            "msResolution": false,
-                            "shared": true,
-                            "sort": 0,
-                            "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "Bps",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            }
-                        ]
-                    },
-                    {
-                        "aliasColors": {},
-                        "bars": false,
-                        "datasource": "$datasource",
-                        "decimals": null,
-                        "editable": true,
-                        "error": false,
-                        "fill": 0,
-                        "grid": {},
-                        "id": 16,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": false,
-                            "total": false,
-                            "values": false
-                        },
-                        "lines": true,
-                        "linewidth": 2,
-                        "links": [],
-                        "nullPointMode": "connected",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "span": 3,
-                        "stack": false,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "sum(rate(etcd_network_peer_sent_bytes_total{job=\"$cluster\"}[$__rate_interval])) by (instance)",
-                                "hide": false,
-                                "interval": "",
-                                "intervalFactor": 2,
-                                "legendFormat": "{{instance}} Peer Traffic Out",
-                                "metric": "etcd_network_peer_sent_bytes_total",
-                                "refId": "A",
-                                "step": 4
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "Peer Traffic Out",
-                        "tooltip": {
-                            "msResolution": false,
-                            "shared": true,
-                            "sort": 0,
-                            "value_type": "cumulative"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "Bps",
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            }
-                        ]
+                        "expr": "sum(rate(grpc_server_handled_total{job=~\".*etcd.*\", job=\"$cluster\",grpc_type=\"unary\",grpc_code=~\"Unknown|FailedPrecondition|ResourceExhausted|Internal|Unavailable|DataLoss|DeadlineExceeded\"}[$__rate_interval]))",
+                        "legendFormat": "RPC failed rate"
                     }
                 ],
-                "title": "New row"
+                "title": "RPC rate",
+                "type": "timeseries"
             },
             {
-                "collapse": false,
-                "editable": true,
-                "height": "250px",
-                "panels": [
-                    {
-                        "aliasColors": {},
-                        "bars": false,
-                        "datasource": "$datasource",
-                        "editable": true,
-                        "error": false,
-                        "fill": 0,
-                        "id": 40,
-                        "isNew": true,
-                        "legend": {
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "show": false,
-                            "total": false,
-                            "values": false
-                        },
-                        "lines": true,
-                        "linewidth": 2,
-                        "links": [],
-                        "nullPointMode": "connected",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "span": 6,
-                        "stack": false,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "sum(rate(etcd_server_proposals_failed_total{job=\"$cluster\"}[$__rate_interval]))",
-                                "intervalFactor": 2,
-                                "legendFormat": "Proposal Failure Rate",
-                                "metric": "etcd_server_proposals_failed_total",
-                                "refId": "A",
-                                "step": 2
-                            },
-                            {
-                                "expr": "sum(etcd_server_proposals_pending{job=\"$cluster\"})",
-                                "intervalFactor": 2,
-                                "legendFormat": "Proposal Pending Total",
-                                "metric": "etcd_server_proposals_pending",
-                                "refId": "B",
-                                "step": 2
-                            },
-                            {
-                                "expr": "sum(rate(etcd_server_proposals_committed_total{job=\"$cluster\"}[$__rate_interval]))",
-                                "intervalFactor": 2,
-                                "legendFormat": "Proposal Commit Rate",
-                                "metric": "etcd_server_proposals_committed_total",
-                                "refId": "C",
-                                "step": 2
-                            },
-                            {
-                                "expr": "sum(rate(etcd_server_proposals_applied_total{job=\"$cluster\"}[$__rate_interval]))",
-                                "intervalFactor": 2,
-                                "legendFormat": "Proposal Apply Rate",
-                                "refId": "D",
-                                "step": 2
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "Raft Proposals",
-                        "tooltip": {
-                            "msResolution": false,
-                            "shared": true,
-                            "sort": 0,
-                            "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "short",
-                                "label": "",
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            }
-                        ]
-                    },
-                    {
-                        "aliasColors": {},
-                        "bars": false,
-                        "datasource": "$datasource",
-                        "decimals": 0,
-                        "editable": true,
-                        "error": false,
-                        "fill": 0,
-                        "id": 19,
-                        "isNew": true,
-                        "legend": {
-                            "alignAsTable": false,
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "rightSide": false,
-                            "show": false,
-                            "total": false,
-                            "values": false
-                        },
-                        "lines": true,
-                        "linewidth": 2,
-                        "links": [],
-                        "nullPointMode": "connected",
-                        "percentage": false,
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "span": 6,
-                        "stack": false,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "changes(etcd_server_leader_changes_seen_total{job=\"$cluster\"}[1d])",
-                                "intervalFactor": 2,
-                                "legendFormat": "{{instance}} Total Leader Elections Per Day",
-                                "metric": "etcd_server_leader_changes_seen_total",
-                                "refId": "A",
-                                "step": 2
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeShift": null,
-                        "title": "Total Leader Elections Per Day",
-                        "tooltip": {
-                            "msResolution": false,
-                            "shared": true,
-                            "sort": 0,
-                            "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            },
-                            {
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            }
-                        ]
-                    },
-                    {
-                        "aliasColors": {},
-                        "bars": false,
-                        "dashLength": 10,
-                        "dashes": false,
-                        "datasource": "$datasource",
-                        "decimals": 0,
-                        "editable": true,
-                        "error": false,
-                        "fieldConfig": {
-                            "defaults": {
-                                "custom": {}
-                            },
-                            "overrides": []
-                        },
-                        "fill": 0,
-                        "fillGradient": 0,
-                        "gridPos": {
-                            "h": 7,
-                            "w": 12,
-                            "x": 0,
-                            "y": 28
-                        },
-                        "hiddenSeries": false,
-                        "id": 42,
-                        "isNew": true,
-                        "legend": {
-                            "alignAsTable": false,
-                            "avg": false,
-                            "current": false,
-                            "max": false,
-                            "min": false,
-                            "rightSide": false,
-                            "show": false,
-                            "total": false,
-                            "values": false
-                        },
-                        "lines": true,
-                        "linewidth": 2,
-                        "links": [],
-                        "nullPointMode": "connected",
-                        "options": {
-                            "alertThreshold": true
-                        },
-                        "percentage": false,
-                        "pluginVersion": "7.4.3",
-                        "pointradius": 5,
-                        "points": false,
-                        "renderer": "flot",
-                        "seriesOverrides": [],
-                        "spaceLength": 10,
-                        "stack": false,
-                        "steppedLine": false,
-                        "targets": [
-                            {
-                                "expr": "histogram_quantile(0.99, sum by (instance, le) (rate(etcd_network_peer_round_trip_time_seconds_bucket{job=\"$cluster\"}[$__rate_interval])))",
-                                "interval": "",
-                                "intervalFactor": 2,
-                                "legendFormat": "{{instance}} Peer round trip time",
-                                "metric": "etcd_network_peer_round_trip_time_seconds_bucket",
-                                "refId": "A",
-                                "step": 2
-                            }
-                        ],
-                        "thresholds": [],
-                        "timeFrom": null,
-                        "timeRegions": [],
-                        "timeShift": null,
-                        "title": "Peer round trip time",
-                        "tooltip": {
-                            "msResolution": false,
-                            "shared": true,
-                            "sort": 0,
-                            "value_type": "individual"
-                        },
-                        "type": "graph",
-                        "xaxis": {
-                            "buckets": null,
-                            "mode": "time",
-                            "name": null,
-                            "show": true,
-                            "values": []
-                        },
-                        "yaxes": [
-                            {
-                                "$$hashKey": "object:925",
-                                "decimals": null,
-                                "format": "s",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            },
-                            {
-                                "$$hashKey": "object:926",
-                                "format": "short",
-                                "label": null,
-                                "logBase": 1,
-                                "max": null,
-                                "min": null,
-                                "show": true
-                            }
-                        ],
-                        "yaxis": {
-                            "align": false,
-                            "alignLevel": null
+                "datasource": {
+                    "type": "datasource",
+                    "uid": "-- Mixed --"
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {
+                            "fillOpacity": 0,
+                            "lineWidth": 2,
+                            "showPoints": "never"
                         }
                     }
+                },
+                "gridPos": {
+                    "h": 7,
+                    "w": 8,
+                    "x": 16,
+                    "y": 0
+                },
+                "id": 3,
+                "interval": "1m",
+                "pluginVersion": "v10.0.0",
+                "targets": [
+                    {
+                        "datasource": {
+                            "type": "prometheus",
+                            "uid": "$datasource"
+                        },
+                        "expr": "sum(grpc_server_started_total{job=~\".*etcd.*\",job=\"$cluster\",grpc_service=\"etcdserverpb.Watch\",grpc_type=\"bidi_stream\"}) - sum(grpc_server_handled_total{job=\"$cluster\",grpc_service=\"etcdserverpb.Watch\",grpc_type=\"bidi_stream\"})",
+                        "legendFormat": "Watch streams"
+                    },
+                    {
+                        "datasource": {
+                            "type": "prometheus",
+                            "uid": "$datasource"
+                        },
+                        "expr": "sum(grpc_server_started_total{job=~\".*etcd.*\",job=\"$cluster\",grpc_service=\"etcdserverpb.Lease\",grpc_type=\"bidi_stream\"}) - sum(grpc_server_handled_total{job=\"$cluster\",grpc_service=\"etcdserverpb.Lease\",grpc_type=\"bidi_stream\"})",
+                        "legendFormat": "Lease streams"
+                    }
                 ],
-                "title": "New row"
+                "title": "Active streams",
+                "type": "timeseries"
+            },
+            {
+                "datasource": {
+                    "type": "datasource",
+                    "uid": "-- Mixed --"
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {
+                            "fillOpacity": 0,
+                            "lineWidth": 2,
+                            "showPoints": "never"
+                        },
+                        "unit": "bytes"
+                    }
+                },
+                "gridPos": {
+                    "h": 7,
+                    "w": 8,
+                    "x": 0,
+                    "y": 25
+                },
+                "id": 4,
+                "interval": "1m",
+                "pluginVersion": "v10.0.0",
+                "targets": [
+                    {
+                        "datasource": {
+                            "type": "prometheus",
+                            "uid": "$datasource"
+                        },
+                        "expr": "etcd_mvcc_db_total_size_in_bytes{job=~\".*etcd.*\", job=\"$cluster\"}",
+                        "legendFormat": "{{instance}} DB size"
+                    }
+                ],
+                "title": "DB size",
+                "type": "timeseries"
+            },
+            {
+                "datasource": {
+                    "type": "datasource",
+                    "uid": "-- Mixed --"
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {
+                            "fillOpacity": 0,
+                            "lineWidth": 2,
+                            "showPoints": "never"
+                        },
+                        "unit": "s"
+                    }
+                },
+                "gridPos": {
+                    "h": 7,
+                    "w": 8,
+                    "x": 8,
+                    "y": 25
+                },
+                "id": 5,
+                "interval": "1m",
+                "pluginVersion": "v10.0.0",
+                "targets": [
+                    {
+                        "datasource": {
+                            "type": "prometheus",
+                            "uid": "$datasource"
+                        },
+                        "expr": "histogram_quantile(0.99, sum(rate(etcd_disk_wal_fsync_duration_seconds_bucket{job=~\".*etcd.*\", job=\"$cluster\"}[$__rate_interval])) by (instance, le))",
+                        "legendFormat": "{{instance}} WAL fsync"
+                    },
+                    {
+                        "datasource": {
+                            "type": "prometheus",
+                            "uid": "$datasource"
+                        },
+                        "expr": "histogram_quantile(0.99, sum(rate(etcd_disk_backend_commit_duration_seconds_bucket{job=~\".*etcd.*\", job=\"$cluster\"}[$__rate_interval])) by (instance, le))",
+                        "legendFormat": "{{instance}} DB fsync"
+                    }
+                ],
+                "title": "Disk sync duration",
+                "type": "timeseries"
+            },
+            {
+                "datasource": {
+                    "type": "datasource",
+                    "uid": "-- Mixed --"
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {
+                            "fillOpacity": 0,
+                            "lineWidth": 2,
+                            "showPoints": "never"
+                        },
+                        "unit": "bytes"
+                    }
+                },
+                "gridPos": {
+                    "h": 7,
+                    "w": 8,
+                    "x": 16,
+                    "y": 25
+                },
+                "id": 6,
+                "interval": "1m",
+                "pluginVersion": "v10.0.0",
+                "targets": [
+                    {
+                        "datasource": {
+                            "type": "prometheus",
+                            "uid": "$datasource"
+                        },
+                        "expr": "process_resident_memory_bytes{job=~\".*etcd.*\", job=\"$cluster\"}",
+                        "legendFormat": "{{instance}} resident memory"
+                    }
+                ],
+                "title": "Memory",
+                "type": "timeseries"
+            },
+            {
+                "datasource": {
+                    "type": "datasource",
+                    "uid": "-- Mixed --"
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {
+                            "fillOpacity": 0,
+                            "lineWidth": 2,
+                            "showPoints": "never"
+                        },
+                        "unit": "Bps"
+                    }
+                },
+                "gridPos": {
+                    "h": 7,
+                    "w": 6,
+                    "x": 0,
+                    "y": 50
+                },
+                "id": 7,
+                "interval": "1m",
+                "pluginVersion": "v10.0.0",
+                "targets": [
+                    {
+                        "datasource": {
+                            "type": "prometheus",
+                            "uid": "$datasource"
+                        },
+                        "expr": "rate(etcd_network_client_grpc_received_bytes_total{job=~\".*etcd.*\", job=\"$cluster\"}[$__rate_interval])",
+                        "legendFormat": "{{instance}} client traffic in"
+                    }
+                ],
+                "title": "Client traffic in",
+                "type": "timeseries"
+            },
+            {
+                "datasource": {
+                    "type": "datasource",
+                    "uid": "-- Mixed --"
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {
+                            "fillOpacity": 0,
+                            "lineWidth": 2,
+                            "showPoints": "never"
+                        },
+                        "unit": "Bps"
+                    }
+                },
+                "gridPos": {
+                    "h": 7,
+                    "w": 6,
+                    "x": 6,
+                    "y": 50
+                },
+                "id": 8,
+                "interval": "1m",
+                "pluginVersion": "v10.0.0",
+                "targets": [
+                    {
+                        "datasource": {
+                            "type": "prometheus",
+                            "uid": "$datasource"
+                        },
+                        "expr": "rate(etcd_network_client_grpc_sent_bytes_total{job=~\".*etcd.*\", job=\"$cluster\"}[$__rate_interval])",
+                        "legendFormat": "{{instance}} client traffic out"
+                    }
+                ],
+                "title": "Client traffic out",
+                "type": "timeseries"
+            },
+            {
+                "datasource": {
+                    "type": "datasource",
+                    "uid": "-- Mixed --"
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {
+                            "fillOpacity": 0,
+                            "lineWidth": 2,
+                            "showPoints": "never"
+                        },
+                        "unit": "Bps"
+                    }
+                },
+                "gridPos": {
+                    "h": 7,
+                    "w": 6,
+                    "x": 12,
+                    "y": 50
+                },
+                "id": 9,
+                "interval": "1m",
+                "pluginVersion": "v10.0.0",
+                "targets": [
+                    {
+                        "datasource": {
+                            "type": "prometheus",
+                            "uid": "$datasource"
+                        },
+                        "expr": "sum(rate(etcd_network_peer_received_bytes_total{job=~\".*etcd.*\", job=\"$cluster\"}[$__rate_interval])) by (instance)",
+                        "legendFormat": "{{instance}} peer traffic in"
+                    }
+                ],
+                "title": "Peer traffic in",
+                "type": "timeseries"
+            },
+            {
+                "datasource": {
+                    "type": "datasource",
+                    "uid": "-- Mixed --"
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {
+                            "fillOpacity": 0,
+                            "lineWidth": 2,
+                            "showPoints": "never"
+                        },
+                        "unit": "Bps"
+                    }
+                },
+                "gridPos": {
+                    "h": 7,
+                    "w": 6,
+                    "x": 18,
+                    "y": 50
+                },
+                "id": 10,
+                "interval": "1m",
+                "pluginVersion": "v10.0.0",
+                "targets": [
+                    {
+                        "datasource": {
+                            "type": "prometheus",
+                            "uid": "$datasource"
+                        },
+                        "expr": "sum(rate(etcd_network_peer_sent_bytes_total{job=~\".*etcd.*\", job=\"$cluster\"}[$__rate_interval])) by (instance)",
+                        "legendFormat": "{{instance}} peer traffic out"
+                    }
+                ],
+                "title": "Peer traffic out",
+                "type": "timeseries"
+            },
+            {
+                "datasource": {
+                    "type": "datasource",
+                    "uid": "-- Mixed --"
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {
+                            "fillOpacity": 0,
+                            "lineWidth": 2,
+                            "showPoints": "never"
+                        }
+                    }
+                },
+                "gridPos": {
+                    "h": 7,
+                    "w": 8,
+                    "x": 0,
+                    "y": 75
+                },
+                "id": 11,
+                "interval": "1m",
+                "pluginVersion": "v10.0.0",
+                "targets": [
+                    {
+                        "datasource": {
+                            "type": "prometheus",
+                            "uid": "$datasource"
+                        },
+                        "expr": "changes(etcd_server_leader_changes_seen_total{job=~\".*etcd.*\", job=\"$cluster\"}[1d])",
+                        "legendFormat": "{{instance}} total leader elections per day"
+                    }
+                ],
+                "title": "Raft proposals",
+                "type": "timeseries"
+            },
+            {
+                "datasource": {
+                    "type": "datasource",
+                    "uid": "-- Mixed --"
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {
+                            "fillOpacity": 0,
+                            "lineWidth": 2,
+                            "showPoints": "never"
+                        }
+                    }
+                },
+                "gridPos": {
+                    "h": 7,
+                    "w": 8,
+                    "x": 8,
+                    "y": 75
+                },
+                "id": 12,
+                "interval": "1m",
+                "pluginVersion": "v10.0.0",
+                "targets": [
+                    {
+                        "datasource": {
+                            "type": "prometheus",
+                            "uid": "$datasource"
+                        },
+                        "expr": "changes(etcd_server_leader_changes_seen_total{job=~\".*etcd.*\", job=\"$cluster\"}[1d])",
+                        "legendFormat": "{{instance}} total leader elections per day"
+                    }
+                ],
+                "title": "Total leader elections per day",
+                "type": "timeseries"
+            },
+            {
+                "datasource": {
+                    "type": "datasource",
+                    "uid": "-- Mixed --"
+                },
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {
+                            "fillOpacity": 0,
+                            "lineWidth": 2,
+                            "showPoints": "never"
+                        },
+                        "unit": "s"
+                    }
+                },
+                "gridPos": {
+                    "h": 7,
+                    "w": 8,
+                    "x": 16,
+                    "y": 75
+                },
+                "id": 13,
+                "interval": "1m",
+                "pluginVersion": "v10.0.0",
+                "targets": [
+                    {
+                        "datasource": {
+                            "type": "prometheus",
+                            "uid": "$datasource"
+                        },
+                        "expr": "histogram_quantile(0.99, sum by (instance, le) (rate(etcd_network_peer_round_trip_time_seconds_bucket{job=~\".*etcd.*\", job=\"$cluster\"}[$__rate_interval])))",
+                        "legendFormat": "{{instance}} peer round trip time"
+                    }
+                ],
+                "title": "Peer round trip time",
+                "type": "timeseries"
             }
         ],
-        "schemaVersion": 13,
-        "sharedCrosshair": false,
-        "style": "dark",
+        "refresh": "10s",
+        "schemaVersion": 36,
         "tags": [
             "etcd"
         ],
         "templating": {
             "list": [
                 {
-                    "current": {
-                        "text": "Prometheus",
-                        "value": "Prometheus"
-                    },
-                    "hide": 0,
                     "label": "Data Source",
                     "name": "datasource",
-                    "options": [],
                     "query": "prometheus",
-                    "refresh": 1,
-                    "regex": "",
                     "type": "datasource"
                 },
                 {
-                    "allValue": null,
-                    "current": {
-                        "text": "kube-etcd",
-                        "value": "kube-etcd"
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "${datasource}"
                     },
-                    "datasource": "$datasource",
                     "hide": 2,
-                    "includeAll": false,
                     "label": "cluster",
-                    "multi": false,
                     "name": "cluster",
-                    "options": [],
-                    "query": "label_values(etcd_server_has_leader, job)",
+                    "query": "label_values(etcd_server_has_leader{job=~\".*etcd.*\"}, job)",
                     "refresh": 2,
                     "regex": "/^(?!loki).*$/",
-                    "sort": 2,
-                    "tagValuesQuery": "",
-                    "tags": [],
-                    "tagsQuery": "",
-                    "type": "query",
-                    "useTags": false
+                    "type": "query"
                 }
             ]
         },
@@ -42901,36 +42948,9 @@ data:
             "from": "now-15m",
             "to": "now"
         },
-        "timepicker": {
-            "now": true,
-            "refresh_intervals": [
-                "5s",
-                "10s",
-                "30s",
-                "1m",
-                "5m",
-                "15m",
-                "30m",
-                "1h",
-                "2h",
-                "1d"
-            ],
-            "time_options": [
-                "5m",
-                "15m",
-                "1h",
-                "6h",
-                "12h",
-                "24h",
-                "2d",
-                "7d",
-                "30d"
-            ]
-        },
         "timezone": "utc",
         "title": "etcd",
-        "uid": "c2f4e12cdf69feb95caa41a5a1b423d9",
-        "version": 215
+        "uid": "c2f4e12cdf69feb95caa41a5a1b423d9"
     }
 kind: ConfigMap
 metadata:
@@ -42941,8 +42961,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -42984,8 +43004,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -43000,70 +43020,72 @@ data:
     & Alerts","type":"dashboard"}]},"description":"A dashboard for the CoreDNS DNS
     server with updated metrics for version 1.7.0+.  Based on the CoreDNS dashboard
     by buhay.","editable":true,"gnetId":12539,"graphTooltip":0,"iteration":1603798405693,"links":[{"icon":"external
-    link","tags":[],"targetBlank":true,"title":"CoreDNS.io","type":"link","url":"https://coredns.io"}],"panels":[{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[],"mappings":[],"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":80}]}},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":8,"x":0,"y":0},"hiddenSeries":false,"id":2,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"total","yaxis":2}],"spaceLength":10,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(rate(coredns_dns_request_count_total{job=\"coredns\",instance=~\"$instance\"}[5m]))
-    by (proto) or\nsum(rate(coredns_dns_requests_total{job=\"coredns\",instance=~\"$instance\"}[5m]))
+    link","tags":[],"targetBlank":true,"title":"CoreDNS.io","type":"link","url":"https://coredns.io"}],"panels":[{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[],"mappings":[],"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":80}]}},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":8,"x":0,"y":0},"hiddenSeries":false,"id":2,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"total","yaxis":2}],"spaceLength":10,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(rate(coredns_dns_request_count_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
+    by (proto) or\nsum(rate(coredns_dns_requests_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
     by (proto)","format":"time_series","interval":"","intervalFactor":2,"legendFormat":"{{
     proto }}","refId":"A","step":60}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Requests
-    (total)","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","logBase":1,"max":null,"min":0,"show":true},{"format":"pps","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":8,"x":8,"y":0},"hiddenSeries":false,"id":4,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"total","yaxis":2},{"alias":"other","yaxis":2}],"spaceLength":10,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(rate(coredns_dns_request_type_count_total{job=\"coredns\",instance=~\"$instance\"}[5m]))
-    by (type) or \nsum(rate(coredns_dns_requests_total{job=\"coredns\",instance=~\"$instance\"}[5m]))
+    (total)","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","logBase":1,"max":null,"min":0,"show":true},{"format":"pps","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":8,"x":8,"y":0},"hiddenSeries":false,"id":4,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"total","yaxis":2},{"alias":"other","yaxis":2}],"spaceLength":10,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(rate(coredns_dns_request_type_count_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
+    by (type) or \nsum(rate(coredns_dns_requests_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
     by (type)","interval":"","intervalFactor":2,"legendFormat":"{{ type }}","refId":"A","step":60}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Requests
-    (by qtype)","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","logBase":1,"max":null,"min":0,"show":true},{"format":"pps","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":8,"x":16,"y":0},"hiddenSeries":false,"id":6,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"total","yaxis":2}],"spaceLength":10,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(rate(coredns_dns_request_count_total{job=\"coredns\",instance=~\"$instance\"}[5m]))
-    by (zone) or\nsum(rate(coredns_dns_requests_total{job=\"coredns\",instance=~\"$instance\"}[5m]))
+    (by qtype)","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","logBase":1,"max":null,"min":0,"show":true},{"format":"pps","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":8,"x":16,"y":0},"hiddenSeries":false,"id":6,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"total","yaxis":2}],"spaceLength":10,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(rate(coredns_dns_request_count_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
+    by (zone) or\nsum(rate(coredns_dns_requests_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
     by (zone)","interval":"","intervalFactor":2,"legendFormat":"{{ zone }}","refId":"A","step":60}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Requests
-    (by zone)","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","logBase":1,"max":null,"min":0,"show":true},{"format":"pps","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":12,"x":0,"y":7},"hiddenSeries":false,"id":8,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"total","yaxis":2}],"spaceLength":10,"stack":false,"steppedLine":false,"targets":[{"expr":"sum(rate(coredns_dns_request_do_count_total{job=\"coredns\",instance=~\"$instance\"}[5m]))
-    or\nsum(rate(coredns_dns_do_requests_total{job=\"coredns\",instance=~\"$instance\"}[5m]))","interval":"","intervalFactor":2,"legendFormat":"DO","refId":"A","step":40},{"expr":"sum(rate(coredns_dns_request_count_total{job=\"coredns\",instance=~\"$instance\"}[5m]))
-    or\nsum(rate(coredns_dns_requests_total{job=\"coredns\",instance=~\"$instance\"}[5m]))","interval":"","intervalFactor":2,"legendFormat":"total","refId":"B","step":40}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Requests
+    (by zone)","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","logBase":1,"max":null,"min":0,"show":true},{"format":"pps","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":12,"x":0,"y":7},"hiddenSeries":false,"id":8,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"total","yaxis":2}],"spaceLength":10,"stack":false,"steppedLine":false,"targets":[{"expr":"sum(rate(coredns_dns_request_do_count_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
+    or\nsum(rate(coredns_dns_do_requests_total{job=~\"$job\",instance=~\"$instance\"}[5m]))","interval":"","intervalFactor":2,"legendFormat":"DO","refId":"A","step":40},{"expr":"sum(rate(coredns_dns_request_count_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
+    or\nsum(rate(coredns_dns_requests_total{job=~\"$job\",instance=~\"$instance\"}[5m]))","interval":"","intervalFactor":2,"legendFormat":"total","refId":"B","step":40}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Requests
     (DO bit)","tooltip":{"shared":true,"sort":2,"value_type":"cumulative"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","logBase":1,"max":null,"min":0,"show":true},{"format":"pps","logBase":1,"max":null,"min":null,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":6,"x":12,"y":7},"hiddenSeries":false,"id":10,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"tcp:90","yaxis":2},{"alias":"tcp:99
     ","yaxis":2},{"alias":"tcp:50","yaxis":2}],"spaceLength":10,"stack":false,"steppedLine":false,"targets":[{"expr":"histogram_quantile(0.99,
-    sum(rate(coredns_dns_request_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"udp\"}[5m]))
+    sum(rate(coredns_dns_request_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"udp\"}[5m]))
     by (le,proto))","interval":"","intervalFactor":2,"legendFormat":"{{ proto }}:99
-    ","refId":"A","step":60},{"expr":"histogram_quantile(0.90, sum(rate(coredns_dns_request_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"udp\"}[5m]))
+    ","refId":"A","step":60},{"expr":"histogram_quantile(0.90, sum(rate(coredns_dns_request_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"udp\"}[5m]))
     by (le,proto))","intervalFactor":2,"legendFormat":"{{ proto }}:90","refId":"B","step":60},{"expr":"histogram_quantile(0.50,
-    sum(rate(coredns_dns_request_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"udp\"}[5m]))
+    sum(rate(coredns_dns_request_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"udp\"}[5m]))
     by (le,proto))","intervalFactor":2,"legendFormat":"{{ proto }}:50","refId":"C","step":60}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Requests
     (size, udp)","tooltip":{"shared":true,"sort":0,"value_type":"cumulative"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"bytes","logBase":1,"max":null,"min":0,"show":true},{"format":"short","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":6,"x":18,"y":7},"hiddenSeries":false,"id":12,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"tcp:90","yaxis":1},{"alias":"tcp:99
     ","yaxis":1},{"alias":"tcp:50","yaxis":1}],"spaceLength":10,"stack":false,"steppedLine":false,"targets":[{"expr":"histogram_quantile(0.99,
-    sum(rate(coredns_dns_request_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
+    sum(rate(coredns_dns_request_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
     by (le,proto))","format":"time_series","interval":"","intervalFactor":2,"legendFormat":"{{
-    proto }}:99 ","refId":"A","step":60},{"expr":"histogram_quantile(0.90, sum(rate(coredns_dns_request_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
+    proto }}:99 ","refId":"A","step":60},{"expr":"histogram_quantile(0.90, sum(rate(coredns_dns_request_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
     by (le,proto))","format":"time_series","interval":"","intervalFactor":2,"legendFormat":"{{
-    proto }}:90","refId":"B","step":60},{"expr":"histogram_quantile(0.50, sum(rate(coredns_dns_request_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
+    proto }}:90","refId":"B","step":60},{"expr":"histogram_quantile(0.50, sum(rate(coredns_dns_request_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
     by (le,proto))","format":"time_series","interval":"","intervalFactor":2,"legendFormat":"{{
     proto }}:50","refId":"C","step":60}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Requests
-    (size,tcp)","tooltip":{"shared":true,"sort":0,"value_type":"cumulative"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"bytes","logBase":1,"max":null,"min":0,"show":true},{"format":"short","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":12,"x":0,"y":14},"hiddenSeries":false,"id":14,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[],"spaceLength":10,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(rate(coredns_dns_response_rcode_count_total{job=\"coredns\",instance=~\"$instance\"}[5m]))
-    by (rcode) or\nsum(rate(coredns_dns_responses_total{job=\"coredns\",instance=~\"$instance\"}[5m]))
+    (size,tcp)","tooltip":{"shared":true,"sort":0,"value_type":"cumulative"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"bytes","logBase":1,"max":null,"min":0,"show":true},{"format":"short","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":12,"x":0,"y":14},"hiddenSeries":false,"id":14,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[],"spaceLength":10,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(rate(coredns_dns_response_rcode_count_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
+    by (rcode) or\nsum(rate(coredns_dns_responses_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
     by (rcode)","interval":"","intervalFactor":2,"legendFormat":"{{ rcode }}","refId":"A","step":40}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Responses
     (by rcode)","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","logBase":1,"max":null,"min":0,"show":true},{"format":"short","logBase":1,"max":null,"min":null,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":12,"x":12,"y":14},"hiddenSeries":false,"id":32,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[],"spaceLength":10,"stack":false,"steppedLine":false,"targets":[{"expr":"histogram_quantile(0.99,
-    sum(rate(coredns_dns_request_duration_seconds_bucket{job=\"coredns\",instance=~\"$instance\"}[5m]))
+    sum(rate(coredns_dns_request_duration_seconds_bucket{job=~\"$job\",instance=~\"$instance\"}[5m]))
     by (le, job))","format":"time_series","intervalFactor":2,"legendFormat":"99%","refId":"A","step":40},{"expr":"histogram_quantile(0.90,
-    sum(rate(coredns_dns_request_duration_seconds_bucket{job=\"coredns\",instance=~\"$instance\"}[5m]))
+    sum(rate(coredns_dns_request_duration_seconds_bucket{job=~\"$job\",instance=~\"$instance\"}[5m]))
     by (le))","format":"time_series","intervalFactor":2,"legendFormat":"90%","refId":"B","step":40},{"expr":"histogram_quantile(0.50,
-    sum(rate(coredns_dns_request_duration_seconds_bucket{job=\"coredns\",instance=~\"$instance\"}[5m]))
+    sum(rate(coredns_dns_request_duration_seconds_bucket{job=~\"$job\",instance=~\"$instance\"}[5m]))
     by (le))","format":"time_series","intervalFactor":2,"legendFormat":"50%","refId":"C","step":40}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Responses
     (duration)","tooltip":{"shared":true,"sort":0,"value_type":"cumulative"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"s","logBase":1,"max":null,"min":0,"show":true},{"format":"short","logBase":1,"max":null,"min":null,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":12,"x":0,"y":21},"hiddenSeries":false,"id":18,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"udp:50%","yaxis":1},{"alias":"tcp:50%","yaxis":2},{"alias":"tcp:90%","yaxis":2},{"alias":"tcp:99%","yaxis":2}],"spaceLength":10,"stack":false,"steppedLine":false,"targets":[{"expr":"histogram_quantile(0.99,
-    sum(rate(coredns_dns_response_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"udp\"}[5m]))
+    sum(rate(coredns_dns_response_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"udp\"}[5m]))
     by (le,proto)) ","interval":"","intervalFactor":2,"legendFormat":"{{ proto }}:99%","refId":"A","step":40},{"expr":"histogram_quantile(0.90,
-    sum(rate(coredns_dns_response_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"udp\"}[5m]))
+    sum(rate(coredns_dns_response_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"udp\"}[5m]))
     by (le,proto)) ","interval":"","intervalFactor":2,"legendFormat":"{{ proto }}:90%","refId":"B","step":40},{"expr":"histogram_quantile(0.50,
-    sum(rate(coredns_dns_response_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"udp\"}[5m]))
+    sum(rate(coredns_dns_response_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"udp\"}[5m]))
     by (le,proto)) ","hide":false,"intervalFactor":2,"legendFormat":"{{ proto }}:50%","metric":"","refId":"C","step":40}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Responses
     (size, udp)","tooltip":{"shared":true,"sort":0,"value_type":"cumulative"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"bytes","logBase":1,"max":null,"min":0,"show":true},{"format":"short","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":12,"x":12,"y":21},"hiddenSeries":false,"id":20,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"udp:50%","yaxis":1},{"alias":"tcp:50%","yaxis":1},{"alias":"tcp:90%","yaxis":1},{"alias":"tcp:99%","yaxis":1}],"spaceLength":10,"stack":false,"steppedLine":false,"targets":[{"expr":"histogram_quantile(0.99,
-    sum(rate(coredns_dns_response_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
+    sum(rate(coredns_dns_response_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
     by (le,proto)) ","format":"time_series","intervalFactor":2,"legendFormat":"{{
-    proto }}:99%","refId":"A","step":40},{"expr":"histogram_quantile(0.90, sum(rate(coredns_dns_response_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
+    proto }}:99%","refId":"A","step":40},{"expr":"histogram_quantile(0.90, sum(rate(coredns_dns_response_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
     by (le,proto)) ","format":"time_series","intervalFactor":2,"legendFormat":"{{
-    proto }}:90%","refId":"B","step":40},{"expr":"histogram_quantile(0.50, sum(rate(coredns_dns_response_size_bytes_bucket{job=\"coredns\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
+    proto }}:90%","refId":"B","step":40},{"expr":"histogram_quantile(0.50, sum(rate(coredns_dns_response_size_bytes_bucket{job=~\"$job\",instance=~\"$instance\",proto=\"tcp\"}[5m]))
     by (le, proto)) ","format":"time_series","intervalFactor":2,"legendFormat":"{{
     proto }}:50%","metric":"","refId":"C","step":40}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Responses
-    (size, tcp)","tooltip":{"shared":true,"sort":0,"value_type":"cumulative"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"bytes","logBase":1,"max":null,"min":0,"show":true},{"format":"short","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":12,"x":0,"y":28},"hiddenSeries":false,"id":22,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[],"spaceLength":10,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(coredns_cache_size{job=\"coredns\",instance=~\"$instance\"})
-    by (type) or\nsum(coredns_cache_entries{job=\"coredns\",instance=~\"$instance\"})
+    (size, tcp)","tooltip":{"shared":true,"sort":0,"value_type":"cumulative"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"bytes","logBase":1,"max":null,"min":0,"show":true},{"format":"short","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":12,"x":0,"y":28},"hiddenSeries":false,"id":22,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[],"spaceLength":10,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(coredns_cache_size{job=~\"$job\",instance=~\"$instance\"})
+    by (type) or\nsum(coredns_cache_entries{job=~\"$job\",instance=~\"$instance\"})
     by (type)","interval":"","intervalFactor":2,"legendFormat":"{{ type }}","refId":"A","step":40}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Cache
-    (size)","tooltip":{"shared":true,"sort":2,"value_type":"cumulative"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"decbytes","logBase":1,"max":null,"min":0,"show":true},{"format":"short","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":12,"x":12,"y":28},"hiddenSeries":false,"id":24,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"misses","yaxis":2}],"spaceLength":10,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(rate(coredns_cache_hits_total{job=\"coredns\",instance=~\"$instance\"}[5m]))
-    by (type)","hide":false,"intervalFactor":2,"legendFormat":"hits:{{ type }}","refId":"A","step":40},{"expr":"sum(rate(coredns_cache_misses_total{job=\"coredns\",instance=~\"$instance\"}[5m]))
+    (size)","tooltip":{"shared":true,"sort":2,"value_type":"cumulative"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"decbytes","logBase":1,"max":null,"min":0,"show":true},{"format":"short","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","editable":true,"error":false,"fieldConfig":{"defaults":{"custom":{},"links":[]},"overrides":[]},"fill":1,"fillGradient":0,"grid":{},"gridPos":{"h":7,"w":12,"x":12,"y":28},"hiddenSeries":false,"id":24,"legend":{"avg":false,"current":false,"max":false,"min":false,"show":true,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"nullPointMode":"connected","options":{"alertThreshold":true},"percentage":false,"pluginVersion":"7.2.0","pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[{"alias":"misses","yaxis":2}],"spaceLength":10,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(rate(coredns_cache_hits_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
+    by (type)","hide":false,"intervalFactor":2,"legendFormat":"hits:{{ type }}","refId":"A","step":40},{"expr":"sum(rate(coredns_cache_misses_total{job=~\"$job\",instance=~\"$instance\"}[5m]))
     by (type)","hide":false,"intervalFactor":2,"legendFormat":"misses","refId":"B","step":40}],"thresholds":[],"timeFrom":null,"timeRegions":[],"timeShift":null,"title":"Cache
-    (hitrate)","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","logBase":1,"max":null,"min":0,"show":true},{"format":"pps","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}}],"refresh":"10s","schemaVersion":26,"style":"dark","tags":["dns","coredns"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"includeAll":false,"label":null,"multi":false,"name":"datasource","options":[],"query":"prometheus","queryValue":"","refresh":1,"regex":"","skipUrlSync":false,"type":"datasource"},{"allValue":".*","current":{"selected":true,"text":"All","value":"$__all"},"datasource":"$datasource","definition":"label_values(up{job=\"coredns\"},
-    instance)","hide":0,"includeAll":true,"label":"Instance","multi":false,"name":"instance","options":[],"query":"label_values(up{job=\"coredns\"},
-    instance)","refresh":1,"regex":"","skipUrlSync":false,"sort":3,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false}]},"time":{"from":"now-3h","to":"now"},"timepicker":{"refresh_intervals":["10s","30s","1m","5m","15m","30m","1h","2h","1d"]},"timezone":"utc","title":"CoreDNS","uid":"vkQ0UHxik","version":2}'
+    (hitrate)","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","logBase":1,"max":null,"min":0,"show":true},{"format":"pps","logBase":1,"max":null,"min":0,"show":true}],"yaxis":{"align":false,"alignLevel":null}}],"refresh":"10s","schemaVersion":26,"style":"dark","tags":["dns","coredns"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"includeAll":false,"label":null,"multi":false,"name":"datasource","options":[],"query":"prometheus","queryValue":"","refresh":1,"regex":"","skipUrlSync":false,"type":"datasource"},{"allValue":".*","current":{"selected":false,"text":"coredns","value":"coredns"},"datasource":{"type":"prometheus","uid":"${datasource}"},"definition":"label_values(coredns_dns_requests_total,
+    job)","hide":0,"includeAll":true,"label":"Job","multi":false,"name":"job","options":[],"query":{"query":"label_values(coredns_dns_requests_total,
+    job)","refId":"StandardVariableQuery"},"refresh":1,"regex":"","skipUrlSync":false,"sort":1,"type":"query"},{"allValue":".*","current":{"selected":true,"text":"All","value":"$__all"},"datasource":"$datasource","definition":"label_values(coredns_dns_requests_total{job=~\"$job\"},
+    instance)","hide":0,"includeAll":true,"label":"Instance","multi":false,"name":"instance","options":[],"query":"label_values(coredns_dns_requests_total{job=~\"$job\"},
+    instance)","refresh":1,"regex":"","skipUrlSync":false,"sort":3,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false}]},"time":{"from":"now-3h","to":"now"},"timepicker":{"refresh_intervals":["10s","30s","1m","5m","15m","30m","1h","2h","1d"]},"timezone":"utc","title":"CoreDNS","uid":"vkQ0UHxik","version":3}'
 kind: ConfigMap
 metadata:
   annotations: {}
@@ -43073,8 +43095,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -43244,7 +43266,7 @@ data:
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=~\".+\"}[$__rate_interval]))
     by (namespace)","format":"time_series","intervalFactor":2,"legendFormat":"{{namespace}}","legendLink":null}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Rate
     of Transmitted Packets Dropped","tooltip":{"shared":false,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"short","label":null,"logBase":1,"max":null,"min":null,"show":false}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":true,"title":"Rate
-    of Packets Dropped","titleSize":"h6"},{"collapse":false,"height":"250px","panels":[{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","decimals":-1,"fill":10,"id":20,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"total":false,"values":false},"lines":true,"linewidth":0,"links":[],"nullPointMode":"null
+    of Packets Dropped","titleSize":"h6"},{"collapse":false,"height":"250px","panels":[{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","decimals":null,"fill":10,"id":20,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"total":false,"values":false},"lines":true,"linewidth":0,"links":[],"nullPointMode":"null
     as zero","percentage":false,"pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[],"spaceLength":10,"span":6,"stack":true,"steppedLine":false,"targets":[{"expr":"ceil(sum
     by(namespace) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     container!=\"\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
@@ -43258,12 +43280,12 @@ data:
     IO","titleSize":"h6"},{"collapse":false,"height":"250px","panels":[{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","fill":1,"id":22,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"total":false,"values":false},"lines":true,"linewidth":1,"links":[],"nullPointMode":"null
     as zero","percentage":false,"pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[],"sort":{"col":4,"desc":true},"spaceLength":10,"span":12,"stack":false,"steppedLine":false,"styles":[{"alias":"Time","dateFormat":"YYYY-MM-DD
     HH:mm:ss","pattern":"Time","type":"hidden"},{"alias":"IOPS(Reads)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
-    HH:mm:ss","decimals":-1,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
-    down","linkUrl":"","pattern":"Value #A","thresholds":[],"type":"number","unit":"short"},{"alias":"IOPS(Writes)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
-    HH:mm:ss","decimals":-1,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
-    down","linkUrl":"","pattern":"Value #B","thresholds":[],"type":"number","unit":"short"},{"alias":"IOPS(Reads
-    + Writes)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":-1,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
-    down","linkUrl":"","pattern":"Value #C","thresholds":[],"type":"number","unit":"short"},{"alias":"Throughput(Read)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    HH:mm:ss","decimals":3,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
+    down","linkUrl":"","pattern":"Value #A","thresholds":[],"type":"number","unit":"iops"},{"alias":"IOPS(Writes)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    HH:mm:ss","decimals":3,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
+    down","linkUrl":"","pattern":"Value #B","thresholds":[],"type":"number","unit":"iops"},{"alias":"IOPS(Reads
+    + Writes)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":3,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
+    down","linkUrl":"","pattern":"Value #C","thresholds":[],"type":"number","unit":"iops"},{"alias":"Throughput(Read)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #D","thresholds":[],"type":"number","unit":"Bps"},{"alias":"Throughput(Write)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
@@ -43309,8 +43331,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -43407,8 +43429,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -43574,7 +43596,7 @@ data:
     as zero","percentage":false,"pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[],"spaceLength":10,"span":6,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",
     namespace=\"$namespace\"}[$__rate_interval])) by (pod)","format":"time_series","intervalFactor":2,"legendFormat":"{{pod}}","legendLink":null}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Rate
     of Transmitted Packets Dropped","tooltip":{"shared":false,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"short","label":null,"logBase":1,"max":null,"min":null,"show":false}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":true,"title":"Rate
-    of Packets Dropped","titleSize":"h6"},{"collapse":false,"height":"250px","panels":[{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","decimals":-1,"fill":10,"id":16,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"total":false,"values":false},"lines":true,"linewidth":0,"links":[],"nullPointMode":"null
+    of Packets Dropped","titleSize":"h6"},{"collapse":false,"height":"250px","panels":[{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","decimals":null,"fill":10,"id":16,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"total":false,"values":false},"lines":true,"linewidth":0,"links":[],"nullPointMode":"null
     as zero","percentage":false,"pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[],"spaceLength":10,"span":6,"stack":true,"steppedLine":false,"targets":[{"expr":"ceil(sum
     by(pod) (rate(container_fs_reads_total{container!=\"\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
     cluster=\"$cluster\", namespace=\"$namespace\"}[$__rate_interval]) + rate(container_fs_writes_total{container!=\"\",
@@ -43588,12 +43610,12 @@ data:
     IO","titleSize":"h6"},{"collapse":false,"height":"250px","panels":[{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","fill":1,"id":18,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"total":false,"values":false},"lines":true,"linewidth":1,"links":[],"nullPointMode":"null
     as zero","percentage":false,"pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[],"sort":{"col":4,"desc":true},"spaceLength":10,"span":12,"stack":false,"steppedLine":false,"styles":[{"alias":"Time","dateFormat":"YYYY-MM-DD
     HH:mm:ss","pattern":"Time","type":"hidden"},{"alias":"IOPS(Reads)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
-    HH:mm:ss","decimals":-1,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
-    down","linkUrl":"","pattern":"Value #A","thresholds":[],"type":"number","unit":"short"},{"alias":"IOPS(Writes)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
-    HH:mm:ss","decimals":-1,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
-    down","linkUrl":"","pattern":"Value #B","thresholds":[],"type":"number","unit":"short"},{"alias":"IOPS(Reads
-    + Writes)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":-1,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
-    down","linkUrl":"","pattern":"Value #C","thresholds":[],"type":"number","unit":"short"},{"alias":"Throughput(Read)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    HH:mm:ss","decimals":3,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
+    down","linkUrl":"","pattern":"Value #A","thresholds":[],"type":"number","unit":"iops"},{"alias":"IOPS(Writes)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    HH:mm:ss","decimals":3,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
+    down","linkUrl":"","pattern":"Value #B","thresholds":[],"type":"number","unit":"iops"},{"alias":"IOPS(Reads
+    + Writes)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":3,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
+    down","linkUrl":"","pattern":"Value #C","thresholds":[],"type":"number","unit":"iops"},{"alias":"Throughput(Read)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #D","thresholds":[],"type":"number","unit":"Bps"},{"alias":"Throughput(Write)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
@@ -43642,8 +43664,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -43738,8 +43760,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -43858,7 +43880,7 @@ data:
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\",
     pod=~\"$pod\"}[$__rate_interval])) by (pod)","format":"time_series","intervalFactor":2,"legendFormat":"{{pod}}","legendLink":null}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Rate
     of Transmitted Packets Dropped","tooltip":{"shared":false,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"short","label":null,"logBase":1,"max":null,"min":null,"show":false}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":true,"title":"Rate
-    of Packets Dropped","titleSize":"h6"},{"collapse":false,"height":"250px","panels":[{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","decimals":-1,"fill":10,"id":12,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"total":false,"values":false},"lines":true,"linewidth":0,"links":[],"nullPointMode":"null
+    of Packets Dropped","titleSize":"h6"},{"collapse":false,"height":"250px","panels":[{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","decimals":null,"fill":10,"id":12,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"total":false,"values":false},"lines":true,"linewidth":0,"links":[],"nullPointMode":"null
     as zero","percentage":false,"pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[],"spaceLength":10,"span":6,"stack":true,"steppedLine":false,"targets":[{"expr":"ceil(sum
     by(pod) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
@@ -43873,7 +43895,7 @@ data:
     by(pod) (rate(container_fs_writes_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\",
     container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval]))","format":"time_series","intervalFactor":2,"legendFormat":"Writes","legendLink":null}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"ThroughPut","tooltip":{"shared":false,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"Bps","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"short","label":null,"logBase":1,"max":null,"min":null,"show":false}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":true,"title":"Storage
-    IO - Distribution(Pod - Read & Writes)","titleSize":"h6"},{"collapse":false,"height":"250px","panels":[{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","decimals":-1,"fill":10,"id":14,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"total":false,"values":false},"lines":true,"linewidth":0,"links":[],"nullPointMode":"null
+    IO - Distribution(Pod - Read & Writes)","titleSize":"h6"},{"collapse":false,"height":"250px","panels":[{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","decimals":null,"fill":10,"id":14,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"total":false,"values":false},"lines":true,"linewidth":0,"links":[],"nullPointMode":"null
     as zero","percentage":false,"pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[],"spaceLength":10,"span":6,"stack":true,"steppedLine":false,"targets":[{"expr":"ceil(sum
     by(container) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",
     container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval])
@@ -43887,12 +43909,12 @@ data:
     IO - Distribution(Containers)","titleSize":"h6"},{"collapse":false,"height":"250px","panels":[{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","fill":1,"id":16,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"total":false,"values":false},"lines":true,"linewidth":1,"links":[],"nullPointMode":"null
     as zero","percentage":false,"pointradius":5,"points":false,"renderer":"flot","seriesOverrides":[],"sort":{"col":4,"desc":true},"spaceLength":10,"span":12,"stack":false,"steppedLine":false,"styles":[{"alias":"Time","dateFormat":"YYYY-MM-DD
     HH:mm:ss","pattern":"Time","type":"hidden"},{"alias":"IOPS(Reads)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
-    HH:mm:ss","decimals":-1,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
-    down","linkUrl":"","pattern":"Value #A","thresholds":[],"type":"number","unit":"short"},{"alias":"IOPS(Writes)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
-    HH:mm:ss","decimals":-1,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
-    down","linkUrl":"","pattern":"Value #B","thresholds":[],"type":"number","unit":"short"},{"alias":"IOPS(Reads
-    + Writes)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":-1,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
-    down","linkUrl":"","pattern":"Value #C","thresholds":[],"type":"number","unit":"short"},{"alias":"Throughput(Read)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    HH:mm:ss","decimals":3,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
+    down","linkUrl":"","pattern":"Value #A","thresholds":[],"type":"number","unit":"iops"},{"alias":"IOPS(Writes)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
+    HH:mm:ss","decimals":3,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
+    down","linkUrl":"","pattern":"Value #B","thresholds":[],"type":"number","unit":"iops"},{"alias":"IOPS(Reads
+    + Writes)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD HH:mm:ss","decimals":3,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
+    down","linkUrl":"","pattern":"Value #C","thresholds":[],"type":"number","unit":"iops"},{"alias":"Throughput(Read)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
     down","linkUrl":"","pattern":"Value #D","thresholds":[],"type":"number","unit":"Bps"},{"alias":"Throughput(Write)","colorMode":null,"colors":[],"dateFormat":"YYYY-MM-DD
     HH:mm:ss","decimals":2,"link":false,"linkTargetBlank":false,"linkTooltip":"Drill
@@ -43941,8 +43963,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44165,8 +44187,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44393,8 +44415,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44490,7 +44512,7 @@ data:
     metrics_path=\"/metrics\",instance=~\"$instance\"}","format":"time_series","intervalFactor":2,"legendFormat":"{{instance}}","refId":"A"}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Memory","tooltip":{"shared":true,"sort":0,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"bytes","label":null,"logBase":1,"max":null,"min":null,"show":true},{"format":"bytes","label":null,"logBase":1,"max":null,"min":null,"show":true}]},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","fill":1,"fillGradient":0,"gridPos":{"h":7,"w":8,"x":8,"y":77},"id":24,"legend":{"alignAsTable":false,"avg":false,"current":false,"max":false,"min":false,"rightSide":false,"show":true,"sideWidth":null,"total":false,"values":false},"lines":true,"linewidth":1,"links":[],"nullPointMode":"null","percentage":false,"pointradius":5,"points":false,"renderer":"flot","repeat":null,"seriesOverrides":[],"spaceLength":10,"stack":false,"steppedLine":false,"targets":[{"expr":"rate(process_cpu_seconds_total{cluster=\"$cluster\",job=\"kubelet\",
     metrics_path=\"/metrics\",instance=~\"$instance\"}[$__rate_interval])","format":"time_series","intervalFactor":2,"legendFormat":"{{instance}}","refId":"A"}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"CPU
     usage","tooltip":{"shared":true,"sort":0,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"short","label":null,"logBase":1,"max":null,"min":null,"show":true},{"format":"short","label":null,"logBase":1,"max":null,"min":null,"show":true}]},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","fill":1,"fillGradient":0,"gridPos":{"h":7,"w":8,"x":16,"y":77},"id":25,"legend":{"alignAsTable":false,"avg":false,"current":false,"max":false,"min":false,"rightSide":false,"show":true,"sideWidth":null,"total":false,"values":false},"lines":true,"linewidth":1,"links":[],"nullPointMode":"null","percentage":false,"pointradius":5,"points":false,"renderer":"flot","repeat":null,"seriesOverrides":[],"spaceLength":10,"stack":false,"steppedLine":false,"targets":[{"expr":"go_goroutines{cluster=\"$cluster\",job=\"kubelet\",
-    metrics_path=\"/metrics\",instance=~\"$instance\"}","format":"time_series","intervalFactor":2,"legendFormat":"{{instance}}","refId":"A"}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Goroutines","tooltip":{"shared":true,"sort":0,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"short","label":null,"logBase":1,"max":null,"min":null,"show":true},{"format":"short","label":null,"logBase":1,"max":null,"min":null,"show":true}]}],"refresh":"10s","rows":[],"schemaVersion":14,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"text":"default","value":"default"},"hide":0,"label":"Data
+    metrics_path=\"/metrics\",instance=~\"$instance\"}","format":"time_series","intervalFactor":2,"legendFormat":"{{instance}}","refId":"A"}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Goroutines","tooltip":{"shared":true,"sort":0,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"short","label":null,"logBase":1,"max":null,"min":null,"show":true},{"format":"short","label":null,"logBase":1,"max":null,"min":null,"show":true}]}],"refresh":"10s","rows":[],"schemaVersion":14,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
     Source","name":"datasource","options":[],"query":"prometheus","refresh":1,"regex":"","type":"datasource"},{"allValue":null,"current":{},"datasource":"$datasource","hide":2,"includeAll":false,"label":"cluster","multi":false,"name":"cluster","options":[],"query":"label_values(up{job=\"kubelet\",
     metrics_path=\"/metrics\"}, cluster)","refresh":2,"regex":"","sort":1,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false},{"allValue":null,"current":{},"datasource":"$datasource","hide":0,"includeAll":true,"label":"instance","multi":false,"name":"instance","options":[],"query":"label_values(up{job=\"kubelet\",
     metrics_path=\"/metrics\",cluster=\"$cluster\"}, instance)","refresh":2,"regex":"","sort":1,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false}]},"time":{"from":"now-1h","to":"now"},"timepicker":{"refresh_intervals":["5s","10s","30s","1m","5m","15m","30m","1h","2h","1d"],"time_options":["5m","15m","1h","6h","12h","24h","2d","7d","30d"]},"timezone":
@@ -44504,8 +44526,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44565,7 +44587,7 @@ data:
     by (pod)","format":"time_series","intervalFactor":1,"legendFormat":"{{pod}}","refId":"A","step":10}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Rate
     of Received Packets Dropped","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true}]},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","fill":2,"fillGradient":0,"gridPos":{"h":10,"w":12,"x":12,"y":40},"id":14,"legend":{"alignAsTable":false,"avg":false,"current":false,"hideEmpty":true,"hideZero":true,"max":false,"min":false,"rightSide":false,"show":true,"sideWidth":null,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"minSpan":12,"nullPointMode":"connected","paceLength":10,"percentage":false,"pointradius":5,"points":false,"renderer":"flot","repeat":null,"seriesOverrides":[],"spaceLength":10,"span":12,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution]))
     by (pod)","format":"time_series","intervalFactor":1,"legendFormat":"{{pod}}","refId":"A","step":10}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Rate
-    of Transmitted Packets Dropped","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":true,"title":"Errors","titleSize":"h6","type":"row"}],"refresh":"10s","rows":[],"schemaVersion":18,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"text":"default","value":"default"},"hide":0,"label":"Data
+    of Transmitted Packets Dropped","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":true,"title":"Errors","titleSize":"h6","type":"row"}],"refresh":"10s","rows":[],"schemaVersion":18,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
     Source","name":"datasource","options":[],"query":"prometheus","refresh":1,"regex":"","type":"datasource"},{"allValue":null,"current":{},"datasource":"$datasource","hide":2,"includeAll":false,"label":null,"multi":false,"name":"cluster","options":[],"query":"label_values(up{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\"}, cluster)","refresh":2,"regex":"","sort":0,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false},{"allValue":".+","auto":false,"auto_count":30,"auto_min":"10s","current":{"text":"kube-system","value":"kube-system"},"datasource":"$datasource","definition":"label_values(container_network_receive_packets_total{cluster=\"$cluster\"},
     namespace)","hide":0,"includeAll":true,"label":null,"multi":false,"name":"namespace","options":[],"query":"label_values(container_network_receive_packets_total{cluster=\"$cluster\"},
@@ -44580,8 +44602,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -44672,7 +44694,7 @@ data:
     of Received Packets Dropped","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true}]},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","fill":2,"fillGradient":0,"gridPos":{"h":9,"w":12,"x":12,"y":41},"id":17,"legend":{"alignAsTable":false,"avg":false,"current":false,"hideEmpty":true,"hideZero":true,"max":false,"min":false,"rightSide":false,"show":true,"sideWidth":null,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"minSpan":12,"nullPointMode":"connected","paceLength":10,"percentage":false,"pointradius":5,"points":false,"renderer":"flot","repeat":null,"seriesOverrides":[],"spaceLength":10,"span":12,"stack":true,"steppedLine":false,"targets":[{"expr":"sort_desc(sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=\"$namespace\"}[$interval:$resolution])\n*
     on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=\"$namespace\",
     workload=~\".+\", workload_type=~\"$type\"}) by (workload))\n","format":"time_series","intervalFactor":1,"legendFormat":"{{workload}}","refId":"A","step":10}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Rate
-    of Transmitted Packets Dropped","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":true,"title":"Errors","titleSize":"h6","type":"row"}],"refresh":"10s","rows":[],"schemaVersion":18,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"text":"default","value":"default"},"hide":0,"label":"Data
+    of Transmitted Packets Dropped","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":true,"title":"Errors","titleSize":"h6","type":"row"}],"refresh":"10s","rows":[],"schemaVersion":18,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
     Source","name":"datasource","options":[],"query":"prometheus","refresh":1,"regex":"","type":"datasource"},{"allValue":null,"current":{},"datasource":"$datasource","hide":2,"includeAll":false,"label":null,"multi":false,"name":"cluster","options":[],"query":"label_values(up{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\"}, cluster)","refresh":2,"regex":"","sort":0,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false},{"allValue":null,"auto":false,"auto_count":30,"auto_min":"10s","current":{"text":"kube-system","value":"kube-system"},"datasource":"$datasource","definition":"label_values(container_network_receive_packets_total{cluster=\"$cluster\"},
     namespace)","hide":0,"includeAll":false,"label":null,"multi":false,"name":"namespace","options":[],"query":"label_values(container_network_receive_packets_total{cluster=\"$cluster\"},
@@ -44689,8 +44711,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -45633,8 +45655,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -46597,8 +46619,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -47560,8 +47582,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -47607,7 +47629,7 @@ data:
     kubelet_volume_stats_inodes{cluster=\"$cluster\", job=\"kubelet\", metrics_path=\"/metrics\",
     namespace=\"$namespace\", persistentvolumeclaim=\"$volume\"})\n* 100)\n","format":"time_series","intervalFactor":2,"legendFormat":"","refId":"A"}],"thresholds":"80,
     90","title":"Volume inodes Usage","tooltip":{"shared":false},"type":"singlestat","valueFontSize":"80%","valueMaps":[{"op":"=","text":"N/A","value":"null"}],"valueName":"current"}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":false,"title":"Dashboard
-    Row","titleSize":"h6","type":"row"}],"schemaVersion":14,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"text":"default","value":"default"},"hide":0,"label":"Data
+    Row","titleSize":"h6","type":"row"}],"schemaVersion":14,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
     Source","name":"datasource","options":[],"query":"prometheus","refresh":1,"regex":"","type":"datasource"},{"allValue":null,"current":{},"datasource":"$datasource","hide":2,"includeAll":false,"label":"cluster","multi":false,"name":"cluster","options":[],"query":"label_values(kubelet_volume_stats_capacity_bytes{job=\"kubelet\",
     metrics_path=\"/metrics\"}, cluster)","refresh":2,"regex":"","sort":1,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false},{"allValue":null,"current":{},"datasource":"$datasource","hide":0,"includeAll":false,"label":"Namespace","multi":false,"name":"namespace","options":[],"query":"label_values(kubelet_volume_stats_capacity_bytes{cluster=\"$cluster\",
     job=\"kubelet\", metrics_path=\"/metrics\"}, namespace)","refresh":2,"regex":"","sort":1,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false},{"allValue":null,"current":{},"datasource":"$datasource","hide":0,"includeAll":false,"label":"PersistentVolumeClaim","multi":false,"name":"volume","options":[],"query":"label_values(kubelet_volume_stats_capacity_bytes{cluster=\"$cluster\",
@@ -47622,8 +47644,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -47660,7 +47682,7 @@ data:
     pod=~\"$pod\"}[$interval:$resolution])) by (pod)","format":"time_series","intervalFactor":1,"legendFormat":"{{pod}}","refId":"A","step":10}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Rate
     of Received Packets Dropped","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true}]},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","fill":2,"fillGradient":0,"gridPos":{"h":10,"w":12,"x":12,"y":32},"id":13,"legend":{"alignAsTable":false,"avg":false,"current":false,"hideEmpty":true,"hideZero":true,"max":false,"min":false,"rightSide":false,"show":true,"sideWidth":null,"total":false,"values":false},"lines":true,"linewidth":2,"links":[],"minSpan":12,"nullPointMode":"connected","paceLength":10,"percentage":false,"pointradius":5,"points":false,"renderer":"flot","repeat":null,"seriesOverrides":[],"spaceLength":10,"span":12,"stack":true,"steppedLine":false,"targets":[{"expr":"sum(irate(container_network_transmit_packets_dropped_total{cluster=\"$cluster\",namespace=~\"$namespace\",
     pod=~\"$pod\"}[$interval:$resolution])) by (pod)","format":"time_series","intervalFactor":1,"legendFormat":"{{pod}}","refId":"A","step":10}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Rate
-    of Transmitted Packets Dropped","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":true,"title":"Errors","titleSize":"h6","type":"row"}],"refresh":"10s","rows":[],"schemaVersion":18,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"text":"default","value":"default"},"hide":0,"label":"Data
+    of Transmitted Packets Dropped","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":true,"title":"Errors","titleSize":"h6","type":"row"}],"refresh":"10s","rows":[],"schemaVersion":18,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
     Source","name":"datasource","options":[],"query":"prometheus","refresh":1,"regex":"","type":"datasource"},{"allValue":null,"current":{},"datasource":"$datasource","hide":2,"includeAll":false,"label":null,"multi":false,"name":"cluster","options":[],"query":"label_values(up{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\"}, cluster)","refresh":2,"regex":"","sort":0,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false},{"allValue":".+","auto":false,"auto_count":30,"auto_min":"10s","current":{"text":"kube-system","value":"kube-system"},"datasource":"$datasource","definition":"label_values(container_network_receive_packets_total{cluster=\"$cluster\"},
     namespace)","hide":0,"includeAll":true,"label":null,"multi":false,"name":"namespace","options":[],"query":"label_values(container_network_receive_packets_total{cluster=\"$cluster\"},
@@ -47677,8 +47699,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -48757,8 +48779,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -48804,7 +48826,7 @@ data:
     job=\"kube-proxy\",instance=~\"$instance\"}[$__rate_interval])","format":"time_series","intervalFactor":2,"legendFormat":"{{instance}}","refId":"A"}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"CPU
     usage","tooltip":{"shared":false,"sort":0,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"short","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"short","label":null,"logBase":1,"max":null,"min":0,"show":true}]},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","fill":1,"fillGradient":0,"gridPos":{},"id":12,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"sideWidth":null,"total":false,"values":false},"lines":true,"linewidth":1,"links":[],"nullPointMode":"null","percentage":false,"pointradius":5,"points":false,"renderer":"flot","repeat":null,"seriesOverrides":[],"spaceLength":10,"span":4,"stack":false,"steppedLine":false,"targets":[{"expr":"go_goroutines{cluster=\"$cluster\",
     job=\"kube-proxy\",instance=~\"$instance\"}","format":"time_series","intervalFactor":2,"legendFormat":"{{instance}}","refId":"A"}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Goroutines","tooltip":{"shared":false,"sort":0,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"short","label":null,"logBase":1,"max":null,"min":null,"show":true},{"format":"short","label":null,"logBase":1,"max":null,"min":null,"show":true}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":false,"title":"Dashboard
-    Row","titleSize":"h6","type":"row"}],"schemaVersion":14,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"text":"default","value":"default"},"hide":0,"label":"Data
+    Row","titleSize":"h6","type":"row"}],"schemaVersion":14,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
     Source","name":"datasource","options":[],"query":"prometheus","refresh":1,"regex":"","type":"datasource"},{"allValue":null,"current":{},"datasource":"$datasource","hide":2,"includeAll":false,"label":"cluster","multi":false,"name":"cluster","options":[],"query":"label_values(up{job=\"kube-proxy\"},
     cluster)","refresh":2,"regex":"","sort":1,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false},{"allValue":null,"current":{},"datasource":"$datasource","hide":0,"includeAll":true,"label":null,"multi":false,"name":"instance","options":[],"query":"label_values(up{job=\"kube-proxy\",
     cluster=\"$cluster\", job=\"kube-proxy\"}, instance)","refresh":2,"regex":"","sort":1,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false}]},"time":{"from":"now-1h","to":"now"},"timepicker":{"refresh_intervals":["5s","10s","30s","1m","5m","15m","30m","1h","2h","1d"],"time_options":["5m","15m","1h","6h","12h","24h","2d","7d","30d"]},"timezone":
@@ -48818,8 +48840,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -48882,7 +48904,7 @@ data:
     job=\"kube-scheduler\", instance=~\"$instance\"}[$__rate_interval])","format":"time_series","intervalFactor":2,"legendFormat":"{{instance}}","refId":"A"}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"CPU
     usage","tooltip":{"shared":false,"sort":0,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"bytes","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"bytes","label":null,"logBase":1,"max":null,"min":0,"show":true}]},{"aliasColors":{},"bars":false,"dashLength":10,"dashes":false,"datasource":"$datasource","fill":1,"fillGradient":0,"gridPos":{},"id":10,"interval":"1m","legend":{"alignAsTable":true,"avg":false,"current":false,"max":false,"min":false,"rightSide":true,"show":true,"sideWidth":null,"total":false,"values":false},"lines":true,"linewidth":1,"links":[],"nullPointMode":"null","percentage":false,"pointradius":5,"points":false,"renderer":"flot","repeat":null,"seriesOverrides":[],"spaceLength":10,"span":4,"stack":false,"steppedLine":false,"targets":[{"expr":"go_goroutines{cluster=\"$cluster\",
     job=\"kube-scheduler\",instance=~\"$instance\"}","format":"time_series","intervalFactor":2,"legendFormat":"{{instance}}","refId":"A"}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Goroutines","tooltip":{"shared":false,"sort":0,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"short","label":null,"logBase":1,"max":null,"min":null,"show":true},{"format":"short","label":null,"logBase":1,"max":null,"min":null,"show":true}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":false,"title":"Dashboard
-    Row","titleSize":"h6","type":"row"}],"schemaVersion":14,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"text":"default","value":"default"},"hide":0,"label":"Data
+    Row","titleSize":"h6","type":"row"}],"schemaVersion":14,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
     Source","name":"datasource","options":[],"query":"prometheus","refresh":1,"regex":"","type":"datasource"},{"allValue":null,"current":{},"datasource":"$datasource","hide":2,"includeAll":false,"label":"cluster","multi":false,"name":"cluster","options":[],"query":"label_values(up{job=\"kube-scheduler\"},
     cluster)","refresh":2,"regex":"","sort":1,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false},{"allValue":null,"current":{},"datasource":"$datasource","hide":0,"includeAll":true,"label":null,"multi":false,"name":"instance","options":[],"query":"label_values(up{job=\"kube-scheduler\",
     cluster=\"$cluster\"}, instance)","refresh":2,"regex":"","sort":1,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false}]},"time":{"from":"now-1h","to":"now"},"timepicker":{"refresh_intervals":["5s","10s","30s","1m","5m","15m","30m","1h","2h","1d"],"time_options":["5m","15m","1h","6h","12h","24h","2d","7d","30d"]},"timezone":
@@ -48896,8 +48918,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -48956,7 +48978,7 @@ data:
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\",namespace=~\"$namespace\"}[$interval:$resolution])\n*
     on (namespace,pod)\ngroup_left(workload,workload_type) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\",namespace=~\"$namespace\",
     workload=~\"$workload\", workload_type=~\"$type\"}) by (pod))\n","format":"time_series","intervalFactor":1,"legendFormat":"{{pod}}","refId":"A","step":10}],"thresholds":[],"timeFrom":null,"timeShift":null,"title":"Rate
-    of Transmitted Packets Dropped","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":true,"title":"Errors","titleSize":"h6","type":"row"}],"refresh":"10s","rows":[],"schemaVersion":18,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"text":"default","value":"default"},"hide":0,"label":"Data
+    of Transmitted Packets Dropped","tooltip":{"shared":true,"sort":2,"value_type":"individual"},"type":"graph","xaxis":{"buckets":null,"mode":"time","name":null,"show":true,"values":[]},"yaxes":[{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true},{"format":"pps","label":null,"logBase":1,"max":null,"min":0,"show":true}]}],"repeat":null,"repeatIteration":null,"repeatRowId":null,"showTitle":true,"title":"Errors","titleSize":"h6","type":"row"}],"refresh":"10s","rows":[],"schemaVersion":18,"style":"dark","tags":["kubernetes-mixin"],"templating":{"list":[{"current":{"selected":true,"text":"default","value":"default"},"hide":0,"label":"Data
     Source","name":"datasource","options":[],"query":"prometheus","refresh":1,"regex":"","type":"datasource"},{"allValue":null,"current":{},"datasource":"$datasource","hide":2,"includeAll":false,"label":null,"multi":false,"name":"cluster","options":[],"query":"label_values(kube_pod_info{job=\"kube-state-metrics\"},
     cluster)","refresh":2,"regex":"","sort":0,"tagValuesQuery":"","tags":[],"tagsQuery":"","type":"query","useTags":false},{"allValue":".+","auto":false,"auto_count":30,"auto_min":"10s","current":{"text":"kube-system","value":"kube-system"},"datasource":"$datasource","definition":"label_values(container_network_receive_packets_total{job=\"kubelet\",
     metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\"}, namespace)","hide":0,"includeAll":true,"label":null,"multi":false,"name":"namespace","options":[],"query":"label_values(container_network_receive_packets_total{job=\"kubelet\",
@@ -48975,8 +48997,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     grafana_dashboard: '1'
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
@@ -48992,8 +49014,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.1.2-ubuntu
-    helm.sh/chart: grafana-6.59.5
+    app.kubernetes.io/version: 10.1.5
+    helm.sh/chart: grafana-7.0.8
     heritage: metalk8s
   name: prometheus-operator-grafana-clusterrole
   namespace: metalk8s-monitoring
@@ -49017,8 +49039,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.10.0
-    helm.sh/chart: kube-state-metrics-5.12.1
+    app.kubernetes.io/version: 2.10.1
+    helm.sh/chart: kube-state-metrics-5.15.2
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -49234,8 +49256,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -49319,6 +49341,12 @@ rules:
   - get
   - list
   - watch
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - storageclasses
+  verbs:
+  - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -49329,8 +49357,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -49371,8 +49399,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.1.2-ubuntu
-    helm.sh/chart: grafana-6.59.5
+    app.kubernetes.io/version: 10.1.5
+    helm.sh/chart: grafana-7.0.8
     heritage: metalk8s
   name: prometheus-operator-grafana-clusterrolebinding
   namespace: metalk8s-monitoring
@@ -49394,8 +49422,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.10.0
-    helm.sh/chart: kube-state-metrics-5.12.1
+    app.kubernetes.io/version: 2.10.1
+    helm.sh/chart: kube-state-metrics-5.15.2
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -49418,8 +49446,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -49443,8 +49471,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -49467,8 +49495,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.1.2-ubuntu
-    helm.sh/chart: grafana-6.59.5
+    app.kubernetes.io/version: 10.1.5
+    helm.sh/chart: grafana-7.0.8
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -49482,8 +49510,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.1.2-ubuntu
-    helm.sh/chart: grafana-6.59.5
+    app.kubernetes.io/version: 10.1.5
+    helm.sh/chart: grafana-7.0.8
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -49504,8 +49532,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.1.2-ubuntu
-    helm.sh/chart: grafana-6.59.5
+    app.kubernetes.io/version: 10.1.5
+    helm.sh/chart: grafana-7.0.8
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -49531,8 +49559,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.10.0
-    helm.sh/chart: kube-state-metrics-5.12.1
+    app.kubernetes.io/version: 2.10.1
+    helm.sh/chart: kube-state-metrics-5.15.2
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -49559,8 +49587,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.6.1
-    helm.sh/chart: prometheus-node-exporter-4.23.1
+    app.kubernetes.io/version: 1.7.0
+    helm.sh/chart: prometheus-node-exporter-4.24.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -49586,8 +49614,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -49618,8 +49646,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     jobLabel: coredns
     metalk8s.scality.com/monitor: ''
@@ -49645,8 +49673,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     jobLabel: kube-controller-manager
     metalk8s.scality.com/monitor: ''
@@ -49673,8 +49701,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     jobLabel: kube-etcd
     metalk8s.scality.com/monitor: ''
@@ -49701,8 +49729,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     jobLabel: kube-proxy
     metalk8s.scality.com/monitor: ''
@@ -49729,8 +49757,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     jobLabel: kube-scheduler
     metalk8s.scality.com/monitor: ''
@@ -49757,8 +49785,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -49783,8 +49811,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -49815,8 +49843,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-thanos-discovery
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -49845,8 +49873,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.6.1
-    helm.sh/chart: prometheus-node-exporter-4.23.1
+    app.kubernetes.io/version: 1.7.0
+    helm.sh/chart: prometheus-node-exporter-4.24.0
     heritage: metalk8s
     jobLabel: node-exporter
     release: prometheus-operator
@@ -49868,8 +49896,8 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-node-exporter
         app.kubernetes.io/part-of: metalk8s
-        app.kubernetes.io/version: 1.6.1
-        helm.sh/chart: prometheus-node-exporter-4.23.1
+        app.kubernetes.io/version: 1.7.0
+        helm.sh/chart: prometheus-node-exporter-4.24.0
         heritage: metalk8s
         jobLabel: node-exporter
         release: prometheus-operator
@@ -49891,7 +49919,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: status.hostIP
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("node-exporter", False, False) }}{%- raw %}:v1.6.1
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("node-exporter", False, False) }}{%- raw %}:v1.7.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -49969,8 +49997,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.1.2-ubuntu
-    helm.sh/chart: grafana-6.59.5
+    app.kubernetes.io/version: 10.1.5
+    helm.sh/chart: grafana-7.0.8
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -49990,8 +50018,8 @@ spec:
           apiVersion="v1", namespace="metalk8s-monitoring", name="prometheus-operator-grafana",
           path="data:grafana.ini")
         checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
-        checksum/sc-dashboard-provider-config: 0840798a3475962b20d63ac8dd995b743dbdd4f61601913cb8ab89eb2ed4c511
-        checksum/secret: fdcb95a322826dabe953b57dd44bb3479c4e28b16c34b22ae4ec614cc3ef154c
+        checksum/sc-dashboard-provider-config: c521c3c8e4f3ed6fdab59497c99a28abfcd5e13c49885583813f201f32ffffc7
+        checksum/secret: e7ffccc7825ea2c3afa5e329ce9d09bfa96317dfa18a1bec88b71d378634136e
         kubectl.kubernetes.io/default-container: grafana
       labels:
         app.kubernetes.io/instance: prometheus-operator
@@ -50028,7 +50056,7 @@ spec:
           value: http://localhost:3000/api/admin/provisioning/dashboards/reload
         - name: REQ_METHOD
           value: POST
-        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.25.1
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("k8s-sidecar", False, False) }}{%- raw %}:1.25.2
         imagePullPolicy: IfNotPresent
         name: grafana-sc-dashboard
         securityContext:
@@ -50066,7 +50094,7 @@ spec:
           value: http://localhost:3000/api/admin/provisioning/datasources/reload
         - name: REQ_METHOD
           value: POST
-        image: {% endraw -%}{{ build_image_name("k8s-sidecar", False) }}{%- raw %}:1.25.1
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("k8s-sidecar", False, False) }}{%- raw %}:1.25.2
         imagePullPolicy: IfNotPresent
         name: grafana-sc-datasources
         securityContext:
@@ -50102,7 +50130,7 @@ spec:
           value: /var/lib/grafana/plugins
         - name: GF_PATHS_PROVISIONING
           value: /etc/grafana/provisioning
-        image: {% endraw -%}{{ build_image_name("grafana", False) }}{%- raw %}:10.1.2-ubuntu
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("grafana", False, False) }}{%- raw %}:10.1.5
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 10
@@ -50185,8 +50213,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.10.0
-    helm.sh/chart: kube-state-metrics-5.12.1
+    app.kubernetes.io/version: 2.10.1
+    helm.sh/chart: kube-state-metrics-5.15.2
     heritage: metalk8s
     release: prometheus-operator
   name: prometheus-operator-kube-state-metrics
@@ -50198,6 +50226,8 @@ spec:
     matchLabels:
       app.kubernetes.io/instance: prometheus-operator
       app.kubernetes.io/name: kube-state-metrics
+  strategy:
+    type: RollingUpdate
   template:
     metadata:
       labels:
@@ -50206,8 +50236,8 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: kube-state-metrics
         app.kubernetes.io/part-of: metalk8s
-        app.kubernetes.io/version: 2.10.0
-        helm.sh/chart: kube-state-metrics-5.12.1
+        app.kubernetes.io/version: 2.10.1
+        helm.sh/chart: kube-state-metrics-5.15.2
         heritage: metalk8s
         release: prometheus-operator
     spec:
@@ -50215,7 +50245,7 @@ spec:
       - args:
         - --port=8080
         - --resources=certificatesigningrequests,configmaps,cronjobs,daemonsets,deployments,endpoints,horizontalpodautoscalers,ingresses,jobs,leases,limitranges,mutatingwebhookconfigurations,namespaces,networkpolicies,nodes,persistentvolumeclaims,persistentvolumes,poddisruptionbudgets,pods,replicasets,replicationcontrollers,resourcequotas,secrets,services,statefulsets,storageclasses,validatingwebhookconfigurations,volumeattachments
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("kube-state-metrics", False, False) }}{%- raw %}:v2.10.0
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("kube-state-metrics", False, False) }}{%- raw %}:v2.10.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -50266,8 +50296,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -50288,8 +50318,8 @@ spec:
         app.kubernetes.io/managed-by: salt
         app.kubernetes.io/name: prometheus-operator-operator
         app.kubernetes.io/part-of: metalk8s
-        app.kubernetes.io/version: 51.2.0
-        chart: kube-prometheus-stack-51.2.0
+        app.kubernetes.io/version: 54.2.2
+        chart: kube-prometheus-stack-54.2.2
         heritage: metalk8s
         metalk8s.scality.com/monitor: ''
         release: prometheus-operator
@@ -50298,14 +50328,14 @@ spec:
       - args:
         - --kubelet-service=kube-system/prometheus-operator-kubelet
         - --localhost=127.0.0.1
-        - --prometheus-config-reloader={% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus-config-reloader", False, False) }}{%- raw %}:v0.68.0
+        - --prometheus-config-reloader={% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus-config-reloader", False, False) }}{%- raw %}:v0.69.1
         - --config-reloader-cpu-request=0
         - --config-reloader-cpu-limit=0
         - --config-reloader-memory-request=0
         - --config-reloader-memory-limit=0
-        - --thanos-default-base-image={% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("thanos", False, False) }}{%- raw %}:v0.32.2
+        - --thanos-default-base-image={% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("thanos", False, False) }}{%- raw %}:v0.32.5
         - --secret-field-selector=type!=kubernetes.io/dockercfg,type!=kubernetes.io/service-account-token,type!=helm.sh/release.v1
-        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus-operator", False, False) }}{%- raw %}:v0.68.0
+        image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus-operator", False, False) }}{%- raw %}:v0.69.1
         imagePullPolicy: IfNotPresent
         name: prometheus-operator
         ports:
@@ -50346,8 +50376,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.1.2-ubuntu
-    helm.sh/chart: grafana-6.59.5
+    app.kubernetes.io/version: 10.1.5
+    helm.sh/chart: grafana-7.0.8
     heritage: metalk8s
   name: prometheus-operator-grafana
   namespace: metalk8s-monitoring
@@ -50374,8 +50404,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -50457,8 +50487,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -50491,7 +50521,7 @@ spec:
   enableAdminAPI: {% endraw -%}{{ prometheus.spec.config.enable_admin_api }}{%- raw %}
   externalUrl: http://prometheus-operator-prometheus.metalk8s-monitoring:9090
   hostNetwork: false
-  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus", False, False) }}{%- raw %}:v2.47.0
+  image: {% endraw -%}{{ repo.registry_endpoint }}{%- raw %}/{% endraw -%}{{ build_image_name("prometheus", False, False) }}{%- raw %}:v2.48.0
   listenLocal: false
   logFormat: logfmt
   logLevel: info
@@ -50555,7 +50585,7 @@ spec:
     operator: Exists
   tsdb:
     outOfOrderTimeWindow: 0s
-  version: v2.47.0
+  version: v2.48.0
   walCompression: true
 ---
 apiVersion: monitoring.coreos.com/v1
@@ -50567,8 +50597,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -50618,7 +50648,7 @@ spec:
         (
           rate(alertmanager_notifications_failed_total{job="prometheus-operator-alertmanager",namespace="metalk8s-monitoring"}[5m])
         /
-          rate(alertmanager_notifications_total{job="prometheus-operator-alertmanager",namespace="metalk8s-monitoring"}[5m])
+          ignoring (reason) group_left rate(alertmanager_notifications_total{job="prometheus-operator-alertmanager",namespace="metalk8s-monitoring"}[5m])
         )
         > 0.01
       for: 5m
@@ -50636,7 +50666,7 @@ spec:
         min by (namespace,service, integration) (
           rate(alertmanager_notifications_failed_total{job="prometheus-operator-alertmanager",namespace="metalk8s-monitoring", integration=~`.*`}[5m])
         /
-          rate(alertmanager_notifications_total{job="prometheus-operator-alertmanager",namespace="metalk8s-monitoring", integration=~`.*`}[5m])
+          ignoring (reason) group_left rate(alertmanager_notifications_total{job="prometheus-operator-alertmanager",namespace="metalk8s-monitoring", integration=~`.*`}[5m])
         )
         > 0.01
       for: 5m
@@ -50654,7 +50684,7 @@ spec:
         min by (namespace,service, integration) (
           rate(alertmanager_notifications_failed_total{job="prometheus-operator-alertmanager",namespace="metalk8s-monitoring", integration!~`.*`}[5m])
         /
-          rate(alertmanager_notifications_total{job="prometheus-operator-alertmanager",namespace="metalk8s-monitoring", integration!~`.*`}[5m])
+          ignoring (reason) group_left rate(alertmanager_notifications_total{job="prometheus-operator-alertmanager",namespace="metalk8s-monitoring", integration!~`.*`}[5m])
         )
         > 0.01
       for: 5m
@@ -50728,8 +50758,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -50761,8 +50791,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -50921,7 +50951,8 @@ spec:
           defined quota on etcd instance {{ $labels.instance }}, please defrag or
           increase the quota as the writes to etcd will be disabled when it is full.'
         summary: etcd cluster database is running full.
-      expr: (last_over_time(etcd_mvcc_db_total_size_in_bytes[5m]) / last_over_time(etcd_server_quota_backend_bytes[5m]))*100
+      expr: (last_over_time(etcd_mvcc_db_total_size_in_bytes{job=~".*etcd.*"}[5m])
+        / last_over_time(etcd_server_quota_backend_bytes{job=~".*etcd.*"}[5m]))*100
         > 95
       for: 10m
       labels:
@@ -50933,7 +50964,8 @@ spec:
           past four hours on etcd instance {{ $labels.instance }}, please check as
           it might be disruptive.'
         summary: etcd cluster database growing very fast.
-      expr: predict_linear(etcd_mvcc_db_total_size_in_bytes[4h], 4*60*60) > etcd_server_quota_backend_bytes
+      expr: predict_linear(etcd_mvcc_db_total_size_in_bytes{job=~".*etcd.*"}[4h],
+        4*60*60) > etcd_server_quota_backend_bytes{job=~".*etcd.*"}
       for: 10m
       labels:
         severity: warning
@@ -50947,8 +50979,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -50994,8 +51026,9 @@ spec:
           This alert should be routed to a null receiver and configured to inhibit alerts with severity="info".
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/general/infoinhibitor
         summary: Info-level alert inhibition.
-      expr: ALERTS{severity = "info"} == 1 unless on(namespace) ALERTS{alertname !=
-        "InfoInhibitor", severity =~ "warning|critical", alertstate="firing"} == 1
+      expr: ALERTS{severity = "info"} == 1 unless on (namespace) ALERTS{alertname
+        != "InfoInhibitor", severity =~ "warning|critical", alertstate="firing"} ==
+        1
       labels:
         severity: none
 ---
@@ -51008,48 +51041,126 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
-  name: prometheus-operator-k8s.rules
+  name: prometheus-operator-k8s.rules.container-cpu-usage-seconds-total
   namespace: metalk8s-monitoring
 spec:
   groups:
-  - name: k8s.rules
+  - name: k8s.rules.container_cpu_usage_seconds_total
     rules:
     - expr: |-
         sum by (cluster, namespace, pod, container) (
           irate(container_cpu_usage_seconds_total{job="kubelet", metrics_path="/metrics/cadvisor", image!=""}[5m])
         ) * on (cluster, namespace, pod) group_left(node) topk by (cluster, namespace, pod) (
-          1, max by(cluster, namespace, pod, node) (kube_pod_info{node!=""})
+          1, max by (cluster, namespace, pod, node) (kube_pod_info{node!=""})
         )
       record: node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate
-    - expr: |-
-        container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", image!=""}
-        * on (cluster, namespace, pod) group_left(node) topk by(cluster, namespace, pod) (1,
-          max by(cluster, namespace, pod, node) (kube_pod_info{node!=""})
-        )
-      record: node_namespace_pod_container:container_memory_working_set_bytes
-    - expr: |-
-        container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", image!=""}
-        * on (cluster, namespace, pod) group_left(node) topk by(cluster, namespace, pod) (1,
-          max by(cluster, namespace, pod, node) (kube_pod_info{node!=""})
-        )
-      record: node_namespace_pod_container:container_memory_rss
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: prometheus-operator
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+    release: prometheus-operator
+  name: prometheus-operator-k8s.rules.container-memory-cache
+  namespace: metalk8s-monitoring
+spec:
+  groups:
+  - name: k8s.rules.container_memory_cache
+    rules:
     - expr: |-
         container_memory_cache{job="kubelet", metrics_path="/metrics/cadvisor", image!=""}
-        * on (cluster, namespace, pod) group_left(node) topk by(cluster, namespace, pod) (1,
-          max by(cluster, namespace, pod, node) (kube_pod_info{node!=""})
+        * on (cluster, namespace, pod) group_left(node) topk by (cluster, namespace, pod) (1,
+          max by (cluster, namespace, pod, node) (kube_pod_info{node!=""})
         )
       record: node_namespace_pod_container:container_memory_cache
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: prometheus-operator
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+    release: prometheus-operator
+  name: prometheus-operator-k8s.rules.container-memory-rss
+  namespace: metalk8s-monitoring
+spec:
+  groups:
+  - name: k8s.rules.container_memory_rss
+    rules:
+    - expr: |-
+        container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", image!=""}
+        * on (cluster, namespace, pod) group_left(node) topk by (cluster, namespace, pod) (1,
+          max by (cluster, namespace, pod, node) (kube_pod_info{node!=""})
+        )
+      record: node_namespace_pod_container:container_memory_rss
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: prometheus-operator
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+    release: prometheus-operator
+  name: prometheus-operator-k8s.rules.container-memory-swap
+  namespace: metalk8s-monitoring
+spec:
+  groups:
+  - name: k8s.rules.container_memory_swap
+    rules:
     - expr: |-
         container_memory_swap{job="kubelet", metrics_path="/metrics/cadvisor", image!=""}
-        * on (cluster, namespace, pod) group_left(node) topk by(cluster, namespace, pod) (1,
-          max by(cluster, namespace, pod, node) (kube_pod_info{node!=""})
+        * on (cluster, namespace, pod) group_left(node) topk by (cluster, namespace, pod) (1,
+          max by (cluster, namespace, pod, node) (kube_pod_info{node!=""})
         )
       record: node_namespace_pod_container:container_memory_swap
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: prometheus-operator
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+    release: prometheus-operator
+  name: prometheus-operator-k8s.rules.container-resource
+  namespace: metalk8s-monitoring
+spec:
+  groups:
+  - name: k8s.rules.container_resource
+    rules:
     - expr: |-
         kube_pod_container_resource_requests{resource="memory",job="kube-state-metrics"}  * on (namespace, pod, cluster)
         group_left() max by (namespace, pod, cluster) (
@@ -51061,7 +51172,7 @@ spec:
             sum by (namespace, pod, cluster) (
                 max by (namespace, pod, container, cluster) (
                   kube_pod_container_resource_requests{resource="memory",job="kube-state-metrics"}
-                ) * on(namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (
+                ) * on (namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (
                   kube_pod_status_phase{phase=~"Pending|Running"} == 1
                 )
             )
@@ -51078,7 +51189,7 @@ spec:
             sum by (namespace, pod, cluster) (
                 max by (namespace, pod, container, cluster) (
                   kube_pod_container_resource_requests{resource="cpu",job="kube-state-metrics"}
-                ) * on(namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (
+                ) * on (namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (
                   kube_pod_status_phase{phase=~"Pending|Running"} == 1
                 )
             )
@@ -51095,7 +51206,7 @@ spec:
             sum by (namespace, pod, cluster) (
                 max by (namespace, pod, container, cluster) (
                   kube_pod_container_resource_limits{resource="memory",job="kube-state-metrics"}
-                ) * on(namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (
+                ) * on (namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (
                   kube_pod_status_phase{phase=~"Pending|Running"} == 1
                 )
             )
@@ -51112,19 +51223,40 @@ spec:
             sum by (namespace, pod, cluster) (
                 max by (namespace, pod, container, cluster) (
                   kube_pod_container_resource_limits{resource="cpu",job="kube-state-metrics"}
-                ) * on(namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (
+                ) * on (namespace, pod, cluster) group_left() max by (namespace, pod, cluster) (
                   kube_pod_status_phase{phase=~"Pending|Running"} == 1
                 )
             )
         )
       record: namespace_cpu:kube_pod_container_resource_limits:sum
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app: prometheus-operator
+    app.kubernetes.io/instance: prometheus-operator
+    app.kubernetes.io/managed-by: salt
+    app.kubernetes.io/name: prometheus-operator
+    app.kubernetes.io/part-of: metalk8s
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
+    heritage: metalk8s
+    metalk8s.scality.com/monitor: ''
+    release: prometheus-operator
+  name: prometheus-operator-k8s.rules.pod-owner
+  namespace: metalk8s-monitoring
+spec:
+  groups:
+  - name: k8s.rules.pod_owner
+    rules:
     - expr: |-
         max by (cluster, namespace, workload, pod) (
           label_replace(
             label_replace(
               kube_pod_owner{job="kube-state-metrics", owner_kind="ReplicaSet"},
               "replicaset", "$1", "owner_name", "(.*)"
-            ) * on(replicaset, namespace) group_left(owner_name) topk by(replicaset, namespace) (
+            ) * on (replicaset, namespace) group_left(owner_name) topk by (replicaset, namespace) (
               1, max by (replicaset, namespace, owner_name) (
                 kube_replicaset_owner{job="kube-state-metrics"}
               )
@@ -51175,8 +51307,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51198,38 +51330,38 @@ spec:
       labels:
         verb: write
       record: code:apiserver_request_total:increase30d
-    - expr: sum by (cluster, verb, scope) (increase(apiserver_request_slo_duration_seconds_count{job="apiserver"}[1h]))
-      record: cluster_verb_scope:apiserver_request_slo_duration_seconds_count:increase1h
-    - expr: sum by (cluster, verb, scope) (avg_over_time(cluster_verb_scope:apiserver_request_slo_duration_seconds_count:increase1h[30d])
+    - expr: sum by (cluster, verb, scope) (increase(apiserver_request_sli_duration_seconds_count{job="apiserver"}[1h]))
+      record: cluster_verb_scope:apiserver_request_sli_duration_seconds_count:increase1h
+    - expr: sum by (cluster, verb, scope) (avg_over_time(cluster_verb_scope:apiserver_request_sli_duration_seconds_count:increase1h[30d])
         * 24 * 30)
-      record: cluster_verb_scope:apiserver_request_slo_duration_seconds_count:increase30d
-    - expr: sum by (cluster, verb, scope, le) (increase(apiserver_request_slo_duration_seconds_bucket[1h]))
-      record: cluster_verb_scope_le:apiserver_request_slo_duration_seconds_bucket:increase1h
-    - expr: sum by (cluster, verb, scope, le) (avg_over_time(cluster_verb_scope_le:apiserver_request_slo_duration_seconds_bucket:increase1h[30d])
+      record: cluster_verb_scope:apiserver_request_sli_duration_seconds_count:increase30d
+    - expr: sum by (cluster, verb, scope, le) (increase(apiserver_request_sli_duration_seconds_bucket[1h]))
+      record: cluster_verb_scope_le:apiserver_request_sli_duration_seconds_bucket:increase1h
+    - expr: sum by (cluster, verb, scope, le) (avg_over_time(cluster_verb_scope_le:apiserver_request_sli_duration_seconds_bucket:increase1h[30d])
         * 24 * 30)
-      record: cluster_verb_scope_le:apiserver_request_slo_duration_seconds_bucket:increase30d
+      record: cluster_verb_scope_le:apiserver_request_sli_duration_seconds_bucket:increase30d
     - expr: |-
         1 - (
           (
             # write too slow
-            sum by (cluster) (cluster_verb_scope:apiserver_request_slo_duration_seconds_count:increase30d{verb=~"POST|PUT|PATCH|DELETE"})
+            sum by (cluster) (cluster_verb_scope:apiserver_request_sli_duration_seconds_count:increase30d{verb=~"POST|PUT|PATCH|DELETE"})
             -
-            sum by (cluster) (cluster_verb_scope_le:apiserver_request_slo_duration_seconds_bucket:increase30d{verb=~"POST|PUT|PATCH|DELETE",le="1"})
+            sum by (cluster) (cluster_verb_scope_le:apiserver_request_sli_duration_seconds_bucket:increase30d{verb=~"POST|PUT|PATCH|DELETE",le="1"})
           ) +
           (
             # read too slow
-            sum by (cluster) (cluster_verb_scope:apiserver_request_slo_duration_seconds_count:increase30d{verb=~"LIST|GET"})
+            sum by (cluster) (cluster_verb_scope:apiserver_request_sli_duration_seconds_count:increase30d{verb=~"LIST|GET"})
             -
             (
               (
-                sum by (cluster) (cluster_verb_scope_le:apiserver_request_slo_duration_seconds_bucket:increase30d{verb=~"LIST|GET",scope=~"resource|",le="1"})
+                sum by (cluster) (cluster_verb_scope_le:apiserver_request_sli_duration_seconds_bucket:increase30d{verb=~"LIST|GET",scope=~"resource|",le="1"})
                 or
                 vector(0)
               )
               +
-              sum by (cluster) (cluster_verb_scope_le:apiserver_request_slo_duration_seconds_bucket:increase30d{verb=~"LIST|GET",scope="namespace",le="5"})
+              sum by (cluster) (cluster_verb_scope_le:apiserver_request_sli_duration_seconds_bucket:increase30d{verb=~"LIST|GET",scope="namespace",le="5"})
               +
-              sum by (cluster) (cluster_verb_scope_le:apiserver_request_slo_duration_seconds_bucket:increase30d{verb=~"LIST|GET",scope="cluster",le="30"})
+              sum by (cluster) (cluster_verb_scope_le:apiserver_request_sli_duration_seconds_bucket:increase30d{verb=~"LIST|GET",scope="cluster",le="30"})
             )
           ) +
           # errors
@@ -51242,19 +51374,19 @@ spec:
       record: apiserver_request:availability30d
     - expr: |-
         1 - (
-          sum by (cluster) (cluster_verb_scope:apiserver_request_slo_duration_seconds_count:increase30d{verb=~"LIST|GET"})
+          sum by (cluster) (cluster_verb_scope:apiserver_request_sli_duration_seconds_count:increase30d{verb=~"LIST|GET"})
           -
           (
             # too slow
             (
-              sum by (cluster) (cluster_verb_scope_le:apiserver_request_slo_duration_seconds_bucket:increase30d{verb=~"LIST|GET",scope=~"resource|",le="1"})
+              sum by (cluster) (cluster_verb_scope_le:apiserver_request_sli_duration_seconds_bucket:increase30d{verb=~"LIST|GET",scope=~"resource|",le="1"})
               or
               vector(0)
             )
             +
-            sum by (cluster) (cluster_verb_scope_le:apiserver_request_slo_duration_seconds_bucket:increase30d{verb=~"LIST|GET",scope="namespace",le="5"})
+            sum by (cluster) (cluster_verb_scope_le:apiserver_request_sli_duration_seconds_bucket:increase30d{verb=~"LIST|GET",scope="namespace",le="5"})
             +
-            sum by (cluster) (cluster_verb_scope_le:apiserver_request_slo_duration_seconds_bucket:increase30d{verb=~"LIST|GET",scope="cluster",le="30"})
+            sum by (cluster) (cluster_verb_scope_le:apiserver_request_sli_duration_seconds_bucket:increase30d{verb=~"LIST|GET",scope="cluster",le="30"})
           )
           +
           # errors
@@ -51269,9 +51401,9 @@ spec:
         1 - (
           (
             # too slow
-            sum by (cluster) (cluster_verb_scope:apiserver_request_slo_duration_seconds_count:increase30d{verb=~"POST|PUT|PATCH|DELETE"})
+            sum by (cluster) (cluster_verb_scope:apiserver_request_sli_duration_seconds_count:increase30d{verb=~"POST|PUT|PATCH|DELETE"})
             -
-            sum by (cluster) (cluster_verb_scope_le:apiserver_request_slo_duration_seconds_bucket:increase30d{verb=~"POST|PUT|PATCH|DELETE",le="1"})
+            sum by (cluster) (cluster_verb_scope_le:apiserver_request_sli_duration_seconds_bucket:increase30d{verb=~"POST|PUT|PATCH|DELETE",le="1"})
           )
           +
           # errors
@@ -51308,8 +51440,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51323,18 +51455,18 @@ spec:
         (
           (
             # too slow
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[1d]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[1d]))
             -
             (
               (
-                sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope=~"resource|",le="1"}[1d]))
+                sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope=~"resource|",le="1"}[1d]))
                 or
                 vector(0)
               )
               +
-              sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="namespace",le="5"}[1d]))
+              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="namespace",le="5"}[1d]))
               +
-              sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="cluster",le="30"}[1d]))
+              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="cluster",le="30"}[1d]))
             )
           )
           +
@@ -51350,18 +51482,18 @@ spec:
         (
           (
             # too slow
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[1h]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[1h]))
             -
             (
               (
-                sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope=~"resource|",le="1"}[1h]))
+                sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope=~"resource|",le="1"}[1h]))
                 or
                 vector(0)
               )
               +
-              sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="namespace",le="5"}[1h]))
+              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="namespace",le="5"}[1h]))
               +
-              sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="cluster",le="30"}[1h]))
+              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="cluster",le="30"}[1h]))
             )
           )
           +
@@ -51377,18 +51509,18 @@ spec:
         (
           (
             # too slow
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[2h]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[2h]))
             -
             (
               (
-                sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope=~"resource|",le="1"}[2h]))
+                sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope=~"resource|",le="1"}[2h]))
                 or
                 vector(0)
               )
               +
-              sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="namespace",le="5"}[2h]))
+              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="namespace",le="5"}[2h]))
               +
-              sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="cluster",le="30"}[2h]))
+              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="cluster",le="30"}[2h]))
             )
           )
           +
@@ -51404,18 +51536,18 @@ spec:
         (
           (
             # too slow
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[30m]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[30m]))
             -
             (
               (
-                sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope=~"resource|",le="1"}[30m]))
+                sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope=~"resource|",le="1"}[30m]))
                 or
                 vector(0)
               )
               +
-              sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="namespace",le="5"}[30m]))
+              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="namespace",le="5"}[30m]))
               +
-              sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="cluster",le="30"}[30m]))
+              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="cluster",le="30"}[30m]))
             )
           )
           +
@@ -51431,18 +51563,18 @@ spec:
         (
           (
             # too slow
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[3d]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[3d]))
             -
             (
               (
-                sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope=~"resource|",le="1"}[3d]))
+                sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope=~"resource|",le="1"}[3d]))
                 or
                 vector(0)
               )
               +
-              sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="namespace",le="5"}[3d]))
+              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="namespace",le="5"}[3d]))
               +
-              sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="cluster",le="30"}[3d]))
+              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="cluster",le="30"}[3d]))
             )
           )
           +
@@ -51458,18 +51590,18 @@ spec:
         (
           (
             # too slow
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[5m]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[5m]))
             -
             (
               (
-                sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope=~"resource|",le="1"}[5m]))
+                sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope=~"resource|",le="1"}[5m]))
                 or
                 vector(0)
               )
               +
-              sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="namespace",le="5"}[5m]))
+              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="namespace",le="5"}[5m]))
               +
-              sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="cluster",le="30"}[5m]))
+              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="cluster",le="30"}[5m]))
             )
           )
           +
@@ -51485,18 +51617,18 @@ spec:
         (
           (
             # too slow
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[6h]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[6h]))
             -
             (
               (
-                sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope=~"resource|",le="1"}[6h]))
+                sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope=~"resource|",le="1"}[6h]))
                 or
                 vector(0)
               )
               +
-              sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="namespace",le="5"}[6h]))
+              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="namespace",le="5"}[6h]))
               +
-              sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="cluster",le="30"}[6h]))
+              sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward",scope="cluster",le="30"}[6h]))
             )
           )
           +
@@ -51512,9 +51644,9 @@ spec:
         (
           (
             # too slow
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[1d]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[1d]))
             -
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le="1"}[1d]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le="1"}[1d]))
           )
           +
           sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[1d]))
@@ -51528,9 +51660,9 @@ spec:
         (
           (
             # too slow
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[1h]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[1h]))
             -
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le="1"}[1h]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le="1"}[1h]))
           )
           +
           sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[1h]))
@@ -51544,9 +51676,9 @@ spec:
         (
           (
             # too slow
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[2h]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[2h]))
             -
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le="1"}[2h]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le="1"}[2h]))
           )
           +
           sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[2h]))
@@ -51560,9 +51692,9 @@ spec:
         (
           (
             # too slow
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[30m]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[30m]))
             -
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le="1"}[30m]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le="1"}[30m]))
           )
           +
           sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[30m]))
@@ -51576,9 +51708,9 @@ spec:
         (
           (
             # too slow
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[3d]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[3d]))
             -
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le="1"}[3d]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le="1"}[3d]))
           )
           +
           sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[3d]))
@@ -51592,9 +51724,9 @@ spec:
         (
           (
             # too slow
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[5m]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[5m]))
             -
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le="1"}[5m]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le="1"}[5m]))
           )
           +
           sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[5m]))
@@ -51608,9 +51740,9 @@ spec:
         (
           (
             # too slow
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[6h]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_count{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[6h]))
             -
-            sum by (cluster) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le="1"}[6h]))
+            sum by (cluster) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward",le="1"}[6h]))
           )
           +
           sum by (cluster) (rate(apiserver_request_total{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",code=~"5.."}[6h]))
@@ -51630,8 +51762,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51641,18 +51773,18 @@ spec:
   groups:
   - name: kube-apiserver-histogram.rules
     rules:
-    - expr: histogram_quantile(0.99, sum by (cluster, le, resource) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[5m])))
+    - expr: histogram_quantile(0.99, sum by (cluster, le, resource) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"LIST|GET",subresource!~"proxy|attach|log|exec|portforward"}[5m])))
         > 0
       labels:
         quantile: '0.99'
         verb: read
-      record: cluster_quantile:apiserver_request_slo_duration_seconds:histogram_quantile
-    - expr: histogram_quantile(0.99, sum by (cluster, le, resource) (rate(apiserver_request_slo_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[5m])))
+      record: cluster_quantile:apiserver_request_sli_duration_seconds:histogram_quantile
+    - expr: histogram_quantile(0.99, sum by (cluster, le, resource) (rate(apiserver_request_sli_duration_seconds_bucket{job="apiserver",verb=~"POST|PUT|PATCH|DELETE",subresource!~"proxy|attach|log|exec|portforward"}[5m])))
         > 0
       labels:
         quantile: '0.99'
         verb: write
-      record: cluster_quantile:apiserver_request_slo_duration_seconds:histogram_quantile
+      record: cluster_quantile:apiserver_request_sli_duration_seconds:histogram_quantile
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -51663,8 +51795,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51740,8 +51872,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51765,8 +51897,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51802,8 +51934,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51868,8 +52000,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51945,8 +52077,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -51957,19 +52089,19 @@ spec:
   - name: kubelet.rules
     rules:
     - expr: histogram_quantile(0.99, sum(rate(kubelet_pleg_relist_duration_seconds_bucket{job="kubelet",
-        metrics_path="/metrics"}[5m])) by (cluster, instance, le) * on(cluster, instance)
+        metrics_path="/metrics"}[5m])) by (cluster, instance, le) * on (cluster, instance)
         group_left(node) kubelet_node_name{job="kubelet", metrics_path="/metrics"})
       labels:
         quantile: '0.99'
       record: node_quantile:kubelet_pleg_relist_duration_seconds:histogram_quantile
     - expr: histogram_quantile(0.9, sum(rate(kubelet_pleg_relist_duration_seconds_bucket{job="kubelet",
-        metrics_path="/metrics"}[5m])) by (cluster, instance, le) * on(cluster, instance)
+        metrics_path="/metrics"}[5m])) by (cluster, instance, le) * on (cluster, instance)
         group_left(node) kubelet_node_name{job="kubelet", metrics_path="/metrics"})
       labels:
         quantile: '0.9'
       record: node_quantile:kubelet_pleg_relist_duration_seconds:histogram_quantile
     - expr: histogram_quantile(0.5, sum(rate(kubelet_pleg_relist_duration_seconds_bucket{job="kubelet",
-        metrics_path="/metrics"}[5m])) by (cluster, instance, le) * on(cluster, instance)
+        metrics_path="/metrics"}[5m])) by (cluster, instance, le) * on (cluster, instance)
         group_left(node) kubelet_node_name{job="kubelet", metrics_path="/metrics"})
       labels:
         quantile: '0.5'
@@ -51984,8 +52116,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52014,10 +52146,10 @@ spec:
         summary: Pod has been in a non-ready state for more than 15 minutes.
       expr: |-
         sum by (namespace, pod, cluster) (
-          max by(namespace, pod, cluster) (
+          max by (namespace, pod, cluster) (
             kube_pod_status_phase{job="kube-state-metrics", namespace=~".*", phase=~"Pending|Unknown|Failed"}
-          ) * on(namespace, pod, cluster) group_left(owner_kind) topk by(namespace, pod, cluster) (
-            1, max by(namespace, pod, owner_kind, cluster) (kube_pod_owner{owner_kind!="Job"})
+          ) * on (namespace, pod, cluster) group_left(owner_kind) topk by (namespace, pod, cluster) (
+            1, max by (namespace, pod, owner_kind, cluster) (kube_pod_owner{owner_kind!="Job"})
           )
         ) > 0
       for: 15m
@@ -52253,8 +52385,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52369,9 +52501,9 @@ spec:
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/cputhrottlinghigh
         summary: Processes experience elevated CPU throttling.
       expr: |-
-        sum(increase(container_cpu_cfs_throttled_periods_total{container!="", }[5m])) by (container, pod, namespace)
+        sum(increase(container_cpu_cfs_throttled_periods_total{container!="", }[5m])) by (cluster, container, pod, namespace)
           /
-        sum(increase(container_cpu_cfs_periods_total{}[5m])) by (container, pod, namespace)
+        sum(increase(container_cpu_cfs_periods_total{}[5m])) by (cluster, container, pod, namespace)
           > ( 25 / 100 )
       for: 15m
       labels:
@@ -52386,8 +52518,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52412,9 +52544,9 @@ spec:
         ) < 0.03
         and
         kubelet_volume_stats_used_bytes{job="kubelet", namespace=~".*", metrics_path="/metrics"} > 0
-        unless on(namespace, persistentvolumeclaim)
+        unless on (namespace, persistentvolumeclaim)
         kube_persistentvolumeclaim_access_mode{ access_mode="ReadOnlyMany"} == 1
-        unless on(namespace, persistentvolumeclaim)
+        unless on (namespace, persistentvolumeclaim)
         kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
       for: 1m
       labels:
@@ -52437,9 +52569,9 @@ spec:
         kubelet_volume_stats_used_bytes{job="kubelet", namespace=~".*", metrics_path="/metrics"} > 0
         and
         predict_linear(kubelet_volume_stats_available_bytes{job="kubelet", namespace=~".*", metrics_path="/metrics"}[6h], 4 * 24 * 3600) < 0
-        unless on(namespace, persistentvolumeclaim)
+        unless on (namespace, persistentvolumeclaim)
         kube_persistentvolumeclaim_access_mode{ access_mode="ReadOnlyMany"} == 1
-        unless on(namespace, persistentvolumeclaim)
+        unless on (namespace, persistentvolumeclaim)
         kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
       for: 1h
       labels:
@@ -52459,9 +52591,9 @@ spec:
         ) < 0.03
         and
         kubelet_volume_stats_inodes_used{job="kubelet", namespace=~".*", metrics_path="/metrics"} > 0
-        unless on(namespace, persistentvolumeclaim)
+        unless on (namespace, persistentvolumeclaim)
         kube_persistentvolumeclaim_access_mode{ access_mode="ReadOnlyMany"} == 1
-        unless on(namespace, persistentvolumeclaim)
+        unless on (namespace, persistentvolumeclaim)
         kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
       for: 1m
       labels:
@@ -52484,9 +52616,9 @@ spec:
         kubelet_volume_stats_inodes_used{job="kubelet", namespace=~".*", metrics_path="/metrics"} > 0
         and
         predict_linear(kubelet_volume_stats_inodes_free{job="kubelet", namespace=~".*", metrics_path="/metrics"}[6h], 4 * 24 * 3600) < 0
-        unless on(namespace, persistentvolumeclaim)
+        unless on (namespace, persistentvolumeclaim)
         kube_persistentvolumeclaim_access_mode{ access_mode="ReadOnlyMany"} == 1
-        unless on(namespace, persistentvolumeclaim)
+        unless on (namespace, persistentvolumeclaim)
         kube_persistentvolumeclaim_labels{label_excluded_from_alerts="true"} == 1
       for: 1h
       labels:
@@ -52512,8 +52644,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52530,7 +52662,7 @@ spec:
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeclientcertificateexpiration
         summary: Client certificate is about to expire.
       expr: apiserver_client_certificate_expiration_seconds_count{job="apiserver"}
-        > 0 and on(job) histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m])))
+        > 0 and on (job) histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m])))
         < 604800
       for: 5m
       labels:
@@ -52542,7 +52674,7 @@ spec:
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeclientcertificateexpiration
         summary: Client certificate is about to expire.
       expr: apiserver_client_certificate_expiration_seconds_count{job="apiserver"}
-        > 0 and on(job) histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m])))
+        > 0 and on (job) histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m])))
         < 86400
       for: 5m
       labels:
@@ -52554,7 +52686,7 @@ spec:
           }} times averaged over the past 10m.
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeaggregatedapierrors
         summary: Kubernetes aggregated API has reported errors.
-      expr: sum by(name, namespace, cluster)(increase(aggregator_unavailable_apiservice_total{job="apiserver"}[10m]))
+      expr: sum by (name, namespace, cluster)(increase(aggregator_unavailable_apiservice_total{job="apiserver"}[10m]))
         > 4
       labels:
         severity: warning
@@ -52564,7 +52696,7 @@ spec:
           }} has been only {{ $value | humanize }}% available over the last 10m.
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeaggregatedapidown
         summary: Kubernetes aggregated API is down.
-      expr: (1 - max by(name, namespace, cluster)(avg_over_time(aggregator_unavailable_apiservice{job="apiserver"}[10m])))
+      expr: (1 - max by (name, namespace, cluster)(avg_over_time(aggregator_unavailable_apiservice{job="apiserver"}[10m])))
         * 100 < 85
       for: 5m
       labels:
@@ -52601,8 +52733,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52632,8 +52764,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52662,8 +52794,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52702,11 +52834,11 @@ spec:
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubelettoomanypods
         summary: Kubelet is running at capacity.
       expr: |-
-        count by(cluster, node) (
-          (kube_pod_status_phase{job="kube-state-metrics",phase="Running"} == 1) * on(instance,pod,namespace,cluster) group_left(node) topk by(instance,pod,namespace,cluster) (1, kube_pod_info{job="kube-state-metrics"})
+        count by (cluster, node) (
+          (kube_pod_status_phase{job="kube-state-metrics",phase="Running"} == 1) * on (instance,pod,namespace,cluster) group_left(node) topk by (instance,pod,namespace,cluster) (1, kube_pod_info{job="kube-state-metrics"})
         )
         /
-        max by(cluster, node) (
+        max by (cluster, node) (
           kube_node_status_capacity{job="kube-state-metrics",resource="pods"} != 1
         ) > 0.95
       for: 15m
@@ -52741,8 +52873,8 @@ spec:
         runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeletpodstartuplatencyhigh
         summary: Kubelet Pod startup latency is too high.
       expr: histogram_quantile(0.99, sum(rate(kubelet_pod_worker_duration_seconds_bucket{job="kubelet",
-        metrics_path="/metrics"}[5m])) by (cluster, instance, le)) * on(cluster, instance)
-        group_left(node) kubelet_node_name{job="kubelet", metrics_path="/metrics"}
+        metrics_path="/metrics"}[5m])) by (cluster, instance, le)) * on (cluster,
+        instance) group_left(node) kubelet_node_name{job="kubelet", metrics_path="/metrics"}
         > 60
       for: 15m
       labels:
@@ -52823,8 +52955,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52853,8 +52985,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52899,8 +53031,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -52982,8 +53114,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53061,6 +53193,16 @@ spec:
       for: 5m
       labels:
         severity: warning
+    - alert: NodeBondingDegraded
+      annotations:
+        description: Bonding interface {{ $labels.master }} on {{ $labels.instance
+          }} is in degraded state due to one or more slave failures.
+        runbook_url: https://runbooks.prometheus-operator.dev/runbooks/node/nodebondingdegraded
+        summary: Bonding interface is degraded
+      expr: (node_bonding_slaves - node_bonding_active) != 0
+      for: 5m
+      labels:
+        severity: warning
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -53071,8 +53213,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53102,8 +53244,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53114,7 +53256,7 @@ spec:
   - name: node.rules
     rules:
     - expr: |-
-        topk by(cluster, namespace, pod) (1,
+        topk by (cluster, namespace, pod) (1,
           max by (cluster, node, namespace, pod) (
             label_replace(kube_pod_info{job="kube-state-metrics",node!=""}, "pod", "$1", "pod", "(.*)")
         ))
@@ -53123,7 +53265,7 @@ spec:
         count by (cluster, node) (
           node_cpu_seconds_total{mode="idle",job="node-exporter"}
           * on (namespace, pod) group_left(node)
-          topk by(namespace, pod) (1, node_namespace_pod:kube_pod_info:)
+          topk by (namespace, pod) (1, node_namespace_pod:kube_pod_info:)
         )
       record: node:node_num_cpu:sum
     - expr: |-
@@ -53159,8 +53301,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53262,8 +53404,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53594,8 +53736,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: grafana
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 10.1.2-ubuntu
-    helm.sh/chart: grafana-6.59.5
+    app.kubernetes.io/version: 10.1.5
+    helm.sh/chart: grafana-7.0.8
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
   name: prometheus-operator-grafana
@@ -53625,8 +53767,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: kube-state-metrics
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 2.10.0
-    helm.sh/chart: kube-state-metrics-5.12.1
+    app.kubernetes.io/version: 2.10.1
+    helm.sh/chart: kube-state-metrics-5.15.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53651,8 +53793,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-node-exporter
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 1.6.1
-    helm.sh/chart: prometheus-node-exporter-4.23.1
+    app.kubernetes.io/version: 1.7.0
+    helm.sh/chart: prometheus-node-exporter-4.24.0
     heritage: metalk8s
     jobLabel: node-exporter
     metalk8s.scality.com/monitor: ''
@@ -53680,8 +53822,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-alertmanager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53694,6 +53836,7 @@ spec:
     port: http-web
   - path: /metrics
     port: reloader-web
+    scheme: http
   namespaceSelector:
     matchNames:
     - metalk8s-monitoring
@@ -53712,8 +53855,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-coredns
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53741,8 +53884,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-apiserver
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53781,8 +53924,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-controller-manager
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53814,8 +53957,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-etcd
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53843,8 +53986,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-proxy
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53872,8 +54015,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kube-scheduler
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53905,8 +54048,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-kubelet
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -53918,6 +54061,7 @@ spec:
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
     honorLabels: true
+    honorTimestamps: true
     port: https-metrics
     relabelings:
     - action: replace
@@ -53931,6 +54075,7 @@ spec:
       insecureSkipVerify: true
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
     honorLabels: true
+    honorTimestamps: true
     metricRelabelings:
     - action: drop
       regex: container_cpu_(cfs_throttled_seconds_total|load_average_10s|system_seconds_total|user_seconds_total)
@@ -53966,6 +54111,7 @@ spec:
       insecureSkipVerify: true
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
     honorLabels: true
+    honorTimestamps: true
     path: /metrics/probes
     port: https-metrics
     relabelings:
@@ -53996,8 +54142,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-operator
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54024,8 +54170,8 @@ metadata:
     app.kubernetes.io/managed-by: salt
     app.kubernetes.io/name: prometheus-operator-prometheus
     app.kubernetes.io/part-of: metalk8s
-    app.kubernetes.io/version: 51.2.0
-    chart: kube-prometheus-stack-51.2.0
+    app.kubernetes.io/version: 54.2.2
+    chart: kube-prometheus-stack-54.2.2
     heritage: metalk8s
     metalk8s.scality.com/monitor: ''
     release: prometheus-operator
@@ -54037,6 +54183,7 @@ spec:
     port: http-web
   - path: /metrics
     port: reloader-web
+    scheme: http
   namespaceSelector:
     matchNames:
     - metalk8s-monitoring
