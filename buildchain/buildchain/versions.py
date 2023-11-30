@@ -140,13 +140,13 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="grafana",
-        version="10.1.2-ubuntu",
-        digest="sha256:480ca6650f1ee46d8b8d204f2c629482eac39deaaae53d2b2b74ad84163c77f1",
+        version="10.1.5",
+        digest="sha256:0679e877ba204cede473782d5aba962831a3449092da120aba7d24082efe3fde",
     ),
     Image(
         name="k8s-sidecar",
-        version="1.25.1",
-        digest="sha256:415d07ee1027c3ff7af9e26e05e03ffd0ec0ccf9f619ac00ab24366efe4343bd",
+        version="1.25.2",
+        digest="sha256:cb4c638ffb1fa1eb49678e0f0423564b39254533f63f4ca6a6c24260472e0c4f",
     ),
     Image(
         name="kube-apiserver",
@@ -170,8 +170,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="kube-state-metrics",
-        version="v2.10.0",
-        digest="sha256:ec5d6f6be2280212da0e55572b67d76f29c0342b3b6d24cc47b32d80ee3374a4",
+        version="v2.10.1",
+        digest="sha256:af8220f534938de121a694cb7314313a6195c9d494fc30bfa6885b08a276bb82",
     ),
     Image(
         name="nginx",
@@ -187,8 +187,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="node-exporter",
-        version="v1.6.1",
-        digest="sha256:81f94e50ea37a88dfee849d0f4acad25b96b397061f59e5095905f6bc5829637",
+        version="v1.7.0",
+        digest="sha256:4cb2b9019f1757be8482419002cb7afe028fdba35d47958829e4cfeaf6246d80",
     ),
     Image(
         name="pause",
@@ -197,8 +197,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="prometheus",
-        version="v2.47.0",
-        digest="sha256:c5dd3503828713c4949ae1bccd1d8d69f382c33d441954674a6b78ebe69c3331",
+        version="v2.48.0",
+        digest="sha256:b440bc0e8aa5bab44a782952c09516b6a50f9d7b2325c1ffafac7bc833298e2e",
     ),
     Image(
         name="prometheus-adapter",
@@ -207,13 +207,13 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="prometheus-config-reloader",
-        version="v0.68.0",
-        digest="sha256:2eada80dc7264dd53fcfa67ca86f8a398a07112cce7017eb44d6574483801356",
+        version="v0.69.1",
+        digest="sha256:7bbe804260f37cddce47eb90809e799434e6aaed03116ce8e041b73733a022b1",
     ),
     Image(
         name="prometheus-operator",
-        version="v0.68.0",
-        digest="sha256:70f02a0fd9181a4e1afd5135e2dbb5d4264f7828df1d567b4d83a3eab63deb01",
+        version="v0.69.1",
+        digest="sha256:ecc59d98c331f8831358425fd29e2343a95e24fdb264ed83cccaca552d9c97d9",
     ),
     Image(
         name="thanos",
