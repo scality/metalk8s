@@ -290,13 +290,13 @@
     {
         "message": "All Alertmanager instances in a cluster failed to send notifications to a critical integration.",
         "name": "AlertmanagerClusterFailedToSendAlerts",
-        "query": "min by (namespace, service, integration) (rate(alertmanager_notifications_failed_total{integration=~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) / rate(alertmanager_notifications_total{integration=~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m])) > 0.01",
+        "query": "min by (namespace, service, integration) (rate(alertmanager_notifications_failed_total{integration=~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) / ignoring (reason) group_left () rate(alertmanager_notifications_total{integration=~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m])) > 0.01",
         "severity": "critical"
     },
     {
         "message": "All Alertmanager instances in a cluster failed to send notifications to a non-critical integration.",
         "name": "AlertmanagerClusterFailedToSendAlerts",
-        "query": "min by (namespace, service, integration) (rate(alertmanager_notifications_failed_total{integration!~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) / rate(alertmanager_notifications_total{integration!~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m])) > 0.01",
+        "query": "min by (namespace, service, integration) (rate(alertmanager_notifications_failed_total{integration!~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) / ignoring (reason) group_left () rate(alertmanager_notifications_total{integration!~\".*\",job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m])) > 0.01",
         "severity": "warning"
     },
     {
@@ -314,7 +314,7 @@
     {
         "message": "An Alertmanager instance failed to send notifications.",
         "name": "AlertmanagerFailedToSendAlerts",
-        "query": "(rate(alertmanager_notifications_failed_total{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) / rate(alertmanager_notifications_total{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m])) > 0.01",
+        "query": "(rate(alertmanager_notifications_failed_total{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m]) / ignoring (reason) group_left () rate(alertmanager_notifications_total{job=\"prometheus-operator-alertmanager\",namespace=\"metalk8s-monitoring\"}[5m])) > 0.01",
         "severity": "warning"
     },
     {
@@ -332,13 +332,13 @@
     {
         "message": "etcd cluster database is running full.",
         "name": "etcdDatabaseQuotaLowSpace",
-        "query": "(last_over_time(etcd_mvcc_db_total_size_in_bytes[5m]) / last_over_time(etcd_server_quota_backend_bytes[5m])) * 100 > 95",
+        "query": "(last_over_time(etcd_mvcc_db_total_size_in_bytes{job=~\".*etcd.*\"}[5m]) / last_over_time(etcd_server_quota_backend_bytes{job=~\".*etcd.*\"}[5m])) * 100 > 95",
         "severity": "critical"
     },
     {
         "message": "etcd cluster database growing very fast.",
         "name": "etcdExcessiveDatabaseGrowth",
-        "query": "predict_linear(etcd_mvcc_db_total_size_in_bytes[4h], 4 * 60 * 60) > etcd_server_quota_backend_bytes",
+        "query": "predict_linear(etcd_mvcc_db_total_size_in_bytes{job=~\".*etcd.*\"}[4h], 4 * 60 * 60) > etcd_server_quota_backend_bytes{job=~\".*etcd.*\"}",
         "severity": "warning"
     },
     {
@@ -572,7 +572,7 @@
     {
         "message": "Processes experience elevated CPU throttling.",
         "name": "CPUThrottlingHigh",
-        "query": "sum by (container, pod, namespace) (increase(container_cpu_cfs_throttled_periods_total{container!=\"\"}[5m])) / sum by (container, pod, namespace) (increase(container_cpu_cfs_periods_total[5m])) > (25 / 100)",
+        "query": "sum by (cluster, container, pod, namespace) (increase(container_cpu_cfs_throttled_periods_total{container!=\"\"}[5m])) / sum by (cluster, container, pod, namespace) (increase(container_cpu_cfs_periods_total[5m])) > (25 / 100)",
         "severity": "info"
     },
     {
@@ -648,6 +648,18 @@
         "severity": "warning"
     },
     {
+        "message": "Kubernetes API server client is experiencing errors.",
+        "name": "KubeClientErrors",
+        "query": "(sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\",job=\"apiserver\"}[5m])) / sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{job=\"apiserver\"}[5m]))) > 0.01",
+        "severity": "warning"
+    },
+    {
+        "message": "Different semantic versions of Kubernetes components running.",
+        "name": "KubeVersionMismatch",
+        "query": "count by (cluster) (count by (git_version, cluster) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
+        "severity": "warning"
+    },
+    {
         "message": "Target disappeared from Prometheus target discovery.",
         "name": "KubeAPIDown",
         "query": "absent(up{job=\"apiserver\"} == 1)",
@@ -688,18 +700,6 @@
         "name": "KubeControllerManagerDown",
         "query": "absent(up{job=\"kube-controller-manager\"} == 1)",
         "severity": "critical"
-    },
-    {
-        "message": "Kubernetes API server client is experiencing errors.",
-        "name": "KubeClientErrors",
-        "query": "(sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\",job=\"apiserver\"}[5m])) / sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{job=\"apiserver\"}[5m]))) > 0.01",
-        "severity": "warning"
-    },
-    {
-        "message": "Different semantic versions of Kubernetes components running.",
-        "name": "KubeVersionMismatch",
-        "query": "count by (cluster) (count by (git_version, cluster) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
-        "severity": "warning"
     },
     {
         "message": "Target disappeared from Prometheus target discovery.",
@@ -790,6 +790,12 @@
         "name": "KubeSchedulerDown",
         "query": "absent(up{job=\"kube-scheduler\"} == 1)",
         "severity": "critical"
+    },
+    {
+        "message": "Bonding interface is degraded",
+        "name": "NodeBondingDegraded",
+        "query": "(node_bonding_slaves - node_bonding_active) != 0",
+        "severity": "warning"
     },
     {
         "message": "High CPU usage.",
