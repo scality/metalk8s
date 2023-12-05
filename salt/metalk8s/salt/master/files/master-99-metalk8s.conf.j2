@@ -2,9 +2,9 @@ interface: {{ salt_ip }}
 
 log_level: {{ 'debug' if debug else 'info' }}
 
-timeout: 20
+timeout: {{ timeout }}
 sock_pool_size: 15
-worker_threads: 10
+worker_threads: {{ worker_threads}}
 
 peer:
   .*:

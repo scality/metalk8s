@@ -1,7 +1,39 @@
 # CHANGELOG
-## Release 126.0.0 (in development)
+
+## Release 126.0.3 (in development)
+
+## Release 126.0.2
+
+### Bug fixes
+
+- [2137](https://github.com/scality/metalk8s/issues/2137) - Fix a bug
+  that prevents re-run of the bootstrap script if it fails at a specific point
+  (PR[4196](https://github.com/scality/metalk8s/pull/4196))
+
+- Bump the attempts to wait for the Operator and ClusterConfig
+  to be Ready
+  (PR[#4199](https://github.com/scality/metalk8s/pull/4199))
+
+## Release 126.0.1
+
+### Bug fixes
+
+- Fix bug that make upgrade fail due a ETCd backup mishandle.
+  A retry logic was added to mitigate this problem.
+  (PR[4168](https://github.com/scality/metalk8s/pull/4168))
+
+## Release 126.0.0
 
 ### Enhancements
+
+- Salt Master worker_threads and timeout are now configurable
+  (PR[#4149](https://github.com/scality/metalk8s/pull/4149))
+
+- Alert re-push mechanism works properly
+  (PR[#4141](https://github.com/scality/metalk8s/pull/4141))
+
+- Versions is properly shown on UI after upgrade
+  (PR[#4140](https://github.com/scality/metalk8s/pull/4140))
 
 - Add support in CSC to manage a new configuration for Shell UI on the WorkloadPlane
   (PR[#4124](https://github.com/scality/metalk8s/pull/4124))
@@ -103,12 +135,40 @@
   following [Google's recommandations](https://cloud.google.com/kubernetes-engine/docs/concepts/plan-node-sizes#memory_and_cpu_reservations)
   (PR[#4134](https://github.com/scality/metalk8s/pull/4134))
 
-## Release 125.0.6 (In development)
+## Release 125.0.7 (in development)
+
+### Removals
+
+- Remove `nodes-darwin` MacOS related grafana dashboard
+  (PR[4178](https://github.com/scality/metalk8s/pull/4178))
+
+### Bug fixes
+
+- Fix a bug in retry logic for ETCd backup
+  (PR[4197](https://github.com/scality/metalk8s/pull/4197))
+
+- Fix the `get` method for the `maxPods` value
+  (PR[4200](https://github.com/scality/metalk8s/pull/4200))
+
+## Release 125.0.6
 
 ### Enhancements
 
 - Make `KubeJobNotCompleted` alert time configurable
   (PR[4128](https://github.com/scality/metalk8s/pull/4128))
+
+- Make salt master `worker_threads` and `timeout` configurable
+  (PR[4149](https://github.com/scality/metalk8s/pull/4149))
+
+### Bug fixes
+
+- Fix a bug that make the upgrade fail if there is some changes
+  on the salt master based on the salt pillar
+  (PR[4156](https://github.com/scality/metalk8s/pull/4156))
+
+- Fix bug that make upgrade fail due a ETCd backup mishandle.
+  A retry logic was added to mitigate this problem.
+  (PR[4168](https://github.com/scality/metalk8s/pull/4168))
 
 ## Release 125.0.5
 

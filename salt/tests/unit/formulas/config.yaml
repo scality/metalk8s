@@ -931,6 +931,8 @@ metalk8s:
                 kubeconfig: /etc/salt/master-kubeconfig.conf
                 salt_api_ssl_crt: /etc/salt/pki/api/salt-api.crt
                 saltenv: metalk8s-2.7.1
+                worker_threads: 58
+                timeout: 42
 
         salt-master-manifest.yaml.j2:
           _cases:

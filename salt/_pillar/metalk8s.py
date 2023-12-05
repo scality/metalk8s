@@ -177,6 +177,13 @@ def _load_addons(config_data):
     return addons_data
 
 
+def _load_salt(config_data):
+    """Load Salt information from BootstrapConfiguration"""
+    salt_data = config_data.get("salt", {})
+
+    return salt_data
+
+
 def ext_pillar(minion_id, pillar, bootstrap_config):  # pylint: disable=unused-argument
     config = _load_config(bootstrap_config)
     if config.get("_errors"):
@@ -203,6 +210,7 @@ def ext_pillar(minion_id, pillar, bootstrap_config):  # pylint: disable=unused-a
             "proxies": config.get("proxies", {}),
             "kubernetes": _load_kubernetes(config),
             "addons": _load_addons(config),
+            "salt": _load_salt(config),
         }
 
         if not isinstance(metal_data["archives"], list):

@@ -20,12 +20,13 @@ def __virtual__():
         return __virtualname__
 
 
-def node_info(node, ca_minion):
+def node_info(node, ca_minion, pillar):
     result = {
         "roles": [],
         "version": None,
     }
 
+    node_name = node["metadata"]["name"]
     roles = set()
 
     if VERSION_LABEL in node["metadata"]["labels"]:
@@ -37,7 +38,33 @@ def node_info(node, ca_minion):
             if role:
                 roles.add(role)
 
-    if node["metadata"]["name"] == ca_minion:
+    # Introduced as a workaround in cases which bootstrap setup fails after the
+    # kubernetes API server is up and running but node role labels are still
+    # not set.
+    #
+    # The issue is that when the API server is running the ext_pillar will
+    # overwrite the hardcoded roles with the ones from the API. It will cause
+    #  bootstrap setup failure as described here:
+    # https://github.com/scality/metalk8s/issues/2137
+    #
+    # The `is_bootstrap` flag is set in pillar only when run the
+    # `metalk8s.orchestrate.bootstrap` state.
+    def get_roles_from_pillar(pillar, node_name):
+        try:
+            return pillar["metalk8s"]["nodes"][node_name]["roles"]
+        except Exception:  # pylint: disable=broad-except
+            return []
+
+    if not roles and pillar.get("is_bootstrap", False):
+        roles = set(get_roles_from_pillar(pillar, node_name))
+        log.info(
+            "Workaround: Adding roles '%s' to pillar in node '%s'",
+            roles,
+            node_name,
+        )
+    # End of workaround
+
+    if node_name == ca_minion:
         roles.add("ca")
 
     result["roles"] = list(roles)
@@ -152,7 +179,7 @@ def ext_pillar(minion_id, pillar, kubeconfig):
         else:
             log.debug("Successfully retrieved nodes for ext_pillar")
             pillar_nodes = dict(
-                (node["metadata"]["name"], node_info(node, ca_minion))
+                (node["metadata"]["name"], node_info(node, ca_minion, pillar))
                 for node in node_list
             )
 
