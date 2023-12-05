@@ -13,7 +13,6 @@ import {
   queryPrometheusRange,
   RangeMatrixResult,
 } from '../../services/prometheus/api';
-import * as CoreApi from '../../services/k8s/core';
 import {
   REFRESH_TIMEOUT,
   REFRESH_METRICS_GRAPH,
@@ -27,6 +26,7 @@ import {
   SAMPLE_FREQUENCY_LAST_TWENTY_FOUR_HOURS,
   SAMPLE_FREQUENCY_LAST_ONE_HOUR,
 } from '../../constants';
+import { RootState } from '../reducer';
 const REFRESH_CLUSTER_STATUS = 'REFRESH_CLUSTER_STATUS';
 const STOP_REFRESH_CLUSTER_STATUS = 'STOP_REFRESH_CLUSTER_STATUS';
 export const UPDATE_CLUSTER_STATUS = 'UPDATE_CLUSTER_STATUS';
@@ -320,10 +320,9 @@ export function* handlePrometheusError(clusterHealth, result) {
     yield put(setPrometheusApiAvailable(true));
     clusterHealth.error = `Prometheus - ${result.error.response.statusText}`;
   } else {
-    const prometheusPod = yield call(
-      CoreApi.queryPodInNamespace,
-      'metalk8s-monitoring',
-      'prometheus',
+    const coreApi = yield select((state: RootState) => state.config.coreApi);
+    const prometheusPod = yield call(() =>
+      coreApi.queryPodInNamespace('metalk8s-monitoring', 'prometheus'),
     );
 
     if (!prometheusPod.error) {
