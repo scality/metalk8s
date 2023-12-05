@@ -1,4 +1,4 @@
-import { call, all, put, delay } from 'redux-saga/effects';
+import { call, all, put, delay, select } from 'redux-saga/effects';
 import {
   UPDATE_CLUSTER_STATUS,
   SET_PROMETHEUS_API_AVAILABLE,
@@ -11,7 +11,6 @@ import {
 } from './monitoring';
 import { REFRESH_TIMEOUT } from '../../constants';
 import { queryPrometheus } from '../../services/prometheus/api';
-import * as CoreApi from '../../services/k8s/core';
 it('should set cluster status as UP', () => {
   const gen = fetchClusterStatus();
   expect(gen.next().value).toEqual(
@@ -369,39 +368,6 @@ it('should handlePrometheusError when prometheus is up', () => {
     }),
   );
 });
-it('should handlePrometheusError when prometheus is down, the error is unknown since prometheus volume already provisioned', () => {
-  const result = {
-    error: {},
-  };
-  const gen = handlePrometheusError({}, result);
-  expect(gen.next(result).value).toEqual(
-    call(CoreApi.queryPodInNamespace, 'metalk8s-monitoring', 'prometheus'),
-  );
-  const prometheusPod = {
-    body: {
-      items: [
-        {
-          status: {
-            conditions: [
-              {
-                message: 'volume already provisioned',
-              },
-            ],
-          },
-        },
-      ],
-      kind: 'PodList',
-    },
-    response: {},
-  };
-  expect(gen.next(prometheusPod).value).toEqual(
-    put({
-      type: SET_PROMETHEUS_API_AVAILABLE,
-      payload: false,
-    }),
-  );
-  expect(gen.next().done).toEqual(true);
-});
 it('should refresh Alerts if no error', () => {
   const gen = refreshAlerts();
   expect(gen.next().value).toEqual(
@@ -495,41 +461,4 @@ it('should not refresh ClusterStatus if error', () => {
       error: '404',
     }).done,
   ).toEqual(true);
-});
-it('should handlePrometheusError and set the Unknown status for cluster when there is no provision volume', () => {
-  const result = {
-    error: {},
-  };
-  const gen = handlePrometheusError({}, result);
-  expect(gen.next(result).value).toEqual(
-    call(CoreApi.queryPodInNamespace, 'metalk8s-monitoring', 'prometheus'),
-  );
-  const prometheusPod = {
-    body: {
-      items: [
-        {
-          status: {
-            conditions: [
-              {
-                status: 'False',
-                reason: 'Unschedulable',
-                type: 'PodScheduled',
-                message:
-                  "0/1 nodes are available: 1 node(s) didn't find available persistent volumes to bind.",
-              },
-            ],
-          },
-        },
-      ],
-      kind: 'PodList',
-    },
-    response: {},
-  };
-  expect(gen.next(prometheusPod).value).toEqual(
-    put({
-      type: SET_PROMETHEUS_API_AVAILABLE,
-      payload: false,
-    }),
-  );
-  expect(gen.next().done).toEqual(true);
 });

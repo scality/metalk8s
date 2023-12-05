@@ -1,8 +1,7 @@
 import { useQuery } from 'react-query';
 import { REFRESH_METRICS_GRAPH } from '../../constants';
-import * as Metalk8sVolumesApi from '../k8s/Metalk8sVolumeClient.generated';
-import * as VolumesApi from '../k8s/volumes';
 import { allSizeUnitsToBytes, bytesToSize } from '../utils';
+import { useK8sApiConfig } from '../k8s/api';
 const FIVE_SECOND_IN_MS = 5000;
 export const volumesKey = {
   all: ['volumes', 'list'],
@@ -57,25 +56,30 @@ export const getVolumesCountQuery = (
     enabled: token ? true : false,
   };
 };
-export function getVolumeQueryOption() {
+export function useGetVolumeQueryOption() {
+  const { customObjectsApi } = useK8sApiConfig();
   return {
     queryKey: volumesKey.all,
-    queryFn: Metalk8sVolumesApi.getMetalk8sV1alpha1VolumeList,
+    queryFn: () => customObjectsApi.getMetalk8sV1alpha1VolumeList(),
     select: (data) => data.body?.items,
     staleTime: FIVE_SECOND_IN_MS,
+    enable: !!customObjectsApi,
   };
 }
-export function getCurrentVolumeObjectQueryOption(volumeName: string) {
+export function useGetCurrentVolumeObjectQueryOption(volumeName: string) {
+  const { customObjectsApi } = useK8sApiConfig();
   return {
     queryKey: volumesKey.volumeObject(volumeName),
     select: (data) => data.body,
-    queryFn: () => Metalk8sVolumesApi.getMetalk8sV1alpha1Volume(volumeName),
+    queryFn: () => customObjectsApi.getMetalk8sV1alpha1Volume(volumeName),
+    enable: !!customObjectsApi,
   };
 }
-export function getPersistentVolumeQueryOption() {
+export function useGetPersistentVolumeQueryOption() {
+  const { coreV1 } = useK8sApiConfig();
   return {
     queryKey: volumesKey.persitant,
-    queryFn: VolumesApi.getPersistentVolumes,
+    queryFn: () => coreV1.listPersistentVolume(),
     select: (data) => {
       return data.body?.items?.map((item) => {
         return {
@@ -92,5 +96,6 @@ export function getPersistentVolumeQueryOption() {
       });
     },
     staleTime: FIVE_SECOND_IN_MS,
+    enable: !!coreV1,
   };
 }

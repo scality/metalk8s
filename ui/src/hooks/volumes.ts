@@ -2,9 +2,9 @@ import { useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { useDispatch } from 'react-redux';
 import {
-  getCurrentVolumeObjectQueryOption,
-  getVolumeQueryOption,
-  getPersistentVolumeQueryOption,
+  useGetCurrentVolumeObjectQueryOption,
+  useGetVolumeQueryOption,
+  useGetPersistentVolumeQueryOption,
 } from '../services/platformlibrary/k8s';
 import {
   setVolumesAction,
@@ -15,7 +15,7 @@ import { REFRESH_TIMEOUT } from '../constants';
 export function useRefreshVolume() {
   const dispatch = useDispatch();
   const result = useQuery({
-    ...getVolumeQueryOption(),
+    ...useGetVolumeQueryOption(),
     refetchInterval: REFRESH_TIMEOUT,
   });
   const { data } = result;
@@ -28,7 +28,9 @@ export function useRefreshVolume() {
 }
 export function useFetchCurrentVolumeObject(volumeName: string) {
   const dispatch = useDispatch();
-  const result = useQuery({ ...getCurrentVolumeObjectQueryOption(volumeName) });
+  const result = useQuery({
+    ...useGetCurrentVolumeObjectQueryOption(volumeName),
+  });
   const { data } = result;
   useEffect(() => {
     if (data) {
@@ -48,7 +50,7 @@ export function useFetchCurrentVolumeObject(volumeName: string) {
 export function useGetPersistentVolumes() {
   const dispatch = useDispatch();
   const result = useQuery({
-    ...getPersistentVolumeQueryOption(),
+    ...useGetPersistentVolumeQueryOption(),
     refetchInterval: REFRESH_TIMEOUT,
   });
   const { data } = result;

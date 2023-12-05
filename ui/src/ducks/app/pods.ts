@@ -3,9 +3,10 @@ import {
   V1Pod,
   V1PodList,
 } from '@kubernetes/client-node/dist/gen/model/models';
-import { Effect, call, put, takeLatest } from 'redux-saga/effects';
-import * as CoreApi from '../../services/k8s/core';
+import { Effect, call, put, select, takeLatest } from 'redux-saga/effects';
+
 import type { APIResult } from '../../types';
+import { RootState } from '../reducer';
 // Actions
 const FETCH_PODS = 'FETCH_PODS';
 export const SET_PODS = 'SET_PODS';
@@ -54,8 +55,9 @@ export const setPodsAction = (payload: Pod[]) => {
   };
 };
 // Sagas
-export function* fetchPods(): Generator<Effect, void, APIResult<V1PodList>> {
-  const result = yield call(CoreApi.getPods);
+export function* fetchPods() {
+  const coreApi = yield select((state: RootState) => state.config.coreApi);
+  const result = yield call(() => coreApi.getPods());
 
   if (!result.error) {
     yield put(
