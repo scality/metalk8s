@@ -181,7 +181,7 @@ jobs:
         with:
           python-version: "3.6"
       - name: Install Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: "1.19.11"
       - name: Install deps
@@ -318,7 +318,7 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
       - name: Install Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: "1.19.11"
       - name: Cache Go modules
@@ -348,7 +348,7 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
       - name: Install Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: "1.19.11"
       - name: Cache Go modules
