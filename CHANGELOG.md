@@ -74,8 +74,8 @@
   (PR[#4165](https://github.com/scality/metalk8s/pull/4165))
 
 - Bump the alpine base image used by `metalk8s-alert-logger`
-  and `metalk8s-keepalived` image to `alpine:3.18.3`
-  (PR[#4166](https://github.com/scality/metalk8s/pull/4166))
+  and `metalk8s-keepalived` image to `alpine:3.18.5`
+  (PR[#4208](https://github.com/scality/metalk8s/pull/4208))
 
 ## Release 126.0.3 (in development)
 
