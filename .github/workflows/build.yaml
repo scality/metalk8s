@@ -208,7 +208,7 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
       - name: Install node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "16"
       - name: Cache node modules
@@ -251,7 +251,7 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
       - name: Install node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "16"
       - name: Cache node modules
@@ -287,7 +287,7 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
       - name: Install node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "16"
       - name: Cache node modules
@@ -416,7 +416,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Install node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "16"
       - name: Cache node modules
@@ -494,7 +494,7 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
       - name: Install node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "16"
       - name: Cache node modules
