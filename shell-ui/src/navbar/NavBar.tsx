@@ -10,7 +10,7 @@ import { Layout } from '@scality/core-ui/dist/components/layout/v2/index';
 import { normalizePath } from './auth/permissionUtils';
 import { useTheme } from 'styled-components';
 import { useLanguage } from './lang';
-import { useThemeName } from './theme';
+import { useThemeName } from '../initFederation/ShellThemeSelectorProvider';
 import { useIntl } from 'react-intl';
 import { UserData, useAuth, useLogOut } from '../auth/AuthProvider';
 import {

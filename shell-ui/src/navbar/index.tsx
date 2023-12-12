@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navbar } from './NavBar';
-import { useThemeName } from './theme';
+import { useThemeName } from '../initFederation/ShellThemeSelectorProvider';
 import { useFavicon } from './favicon';
 import './library';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';

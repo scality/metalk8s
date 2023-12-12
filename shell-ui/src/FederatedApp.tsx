@@ -29,7 +29,7 @@ import { LanguageProvider, useLanguage } from './navbar/lang';
 import './index.css';
 import { ShellHistoryProvider } from './initFederation/ShellHistoryProvider';
 import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
-import { ThemeProvider } from './navbar/theme';
+import { ShellThemeSelectorProvider } from './initFederation/ShellThemeSelectorProvider';
 import NotificationCenterProvider from './NotificationCenterProvider';
 import { FirstTimeLoginProvider } from './auth/FirstTimeLoginProvider';
 
@@ -248,7 +248,7 @@ const AppProviderWrapper = () => {
 
 export default function App() {
   return (
-    <ThemeProvider>
+    <ShellThemeSelectorProvider>
       {(theme) => (
         <CoreUiThemeProvider theme={theme.brand}>
           <ScrollbarWrapper>
@@ -266,6 +266,6 @@ export default function App() {
           </ScrollbarWrapper>
         </CoreUiThemeProvider>
       )}
-    </ThemeProvider>
+    </ShellThemeSelectorProvider>
   );
 }
