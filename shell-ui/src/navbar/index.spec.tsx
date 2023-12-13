@@ -37,7 +37,7 @@ export const wrapper = ({ children }) => {
       <AuthProvider>
         <ShellThemeSelectorProvider>
           {(theme) => (
-            <CoreUiThemeProvider theme={theme.brand}>
+            <CoreUiThemeProvider theme={theme}>
               <LanguageProvider>
                 <QueryClientProvider client={queryClient}>
                   <NotificationCenterProvider>

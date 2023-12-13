@@ -3,7 +3,7 @@ import { createContext, useContext } from 'react';
 import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
 import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 import { useQuery } from 'react-query';
-import { useThemeName } from './ShellThemeSelectorProvider';
+import { CoreUIThemeName } from '@scality/core-ui/dist/style/theme';
 
 if (!window.shellContexts) {
   window.shellContexts = {};
@@ -90,24 +90,24 @@ const example = {
   },
   discoveryUrl: '/shell/deployed-ui-apps.json',
   productName: 'MetalK8s',
-  theme: {
+  themes: {
     dark: {
       type: 'core-ui',
       name: 'ring9dark',
-      logo: '/shell/assets/logo-metalk8s.svg',
+      logoPath: '/shell/assets/logo-dark-metalk8s.svg',
     },
     light: {
       type: 'core-ui',
-      name: 'ring9light',
-      logo: '/shell/assets/logo-metalk8s.svg',
+      name: 'darkRebrand',
+      logoPath: '/shell/assets/logo-light-metalk8s.svg',
     },
 
-    dark2: {
-      type: 'custom',
-      name: 'ring9dark',
-      logo: '/shell/assets/logo-metalk8s.svg',
-      colors: {},
-    },
+    // dark2: {
+    //   type: 'custom',
+    //   name: 'ring9dark',
+    //   logoPath: '/shell/assets/logo-custom-metalk8s.svg',
+    //   colors: {},
+    // },
   },
 };
 
@@ -125,6 +125,9 @@ const example = {
 //   },
 // },
 
+type ThemeType = 'core-ui' | 'custom';
+
+// TODO JEAN MARC A FIXER
 // config fetched from /shell/config.json
 export type ShellJSONFileConfig = {
   discoveryUrl: string;
@@ -136,10 +139,22 @@ export type ShellJSONFileConfig = {
 
   // optional (in dev mode)
   // TODO : Themes and Logo seems duplicated, check why
-  themes?: {
-    dark?: { logoPath: string };
-    darkRebrand?: { logoPath: string };
-    light?: { logoPath: string };
+  // themes?: {
+  //   dark?: { logoPath: string };
+  //   darkRebrand?: { logoPath: string };
+  //   light?: { logoPath: string };
+  // };
+  themes: {
+    dark: {
+      type: ThemeType;
+      name: CoreUIThemeName | string;
+      logoPath: string;
+    };
+    light: {
+      type: ThemeType;
+      name: CoreUIThemeName | string;
+      logoPath: string;
+    };
   };
   logo?: {
     dark?: string;
@@ -173,22 +188,31 @@ export const useShellConfig = () => {
     throw new Error("useShellConfig can't be used outside ShellConfigProvider");
   }
 
-  const { themeName } = useThemeName();
+  if (contextValue.config) {
+    contextValue.config.themes = {
+      ...contextValue.config.themes,
+      ...example.themes,
+    };
+  }
 
-  return {
-    ...contextValue,
-    favicon: contextValue.config.favicon || '/brand/favicon-metalk8s.svg',
-    themes:
-      {
-        ...(contextValue.config.themes || {}),
-        [themeName]: {
-          ...(contextValue.config.themes || {})?.[themeName],
-          logoPath:
-            (contextValue.config.themes || {})?.[themeName]?.logoPath ||
-            `/brand/assets/logo-${themeName}.svg`,
-        },
-      } || {},
-  };
+  return contextValue;
+
+  // const { themeName } = useThemeName();
+
+  // return {
+  //   ...contextValue,
+  //   favicon: contextValue.config.favicon || '/brand/favicon-metalk8s.svg',
+  //   themes:
+  //     {
+  //       ...(contextValue.config.themes || {}),
+  //       [themeName]: {
+  //         ...(contextValue.config.themes || {})?.[themeName],
+  //         logoPath:
+  //           (contextValue.config.themes || {})?.[themeName]?.logoPath ||
+  //           `/brand/assets/logo-${themeName}.svg`,
+  //       },
+  //     } || {},
+  // };
 };
 
 export const ShellConfigProvider = ({ shellConfigUrl, children }) => {
@@ -208,6 +232,9 @@ export const ShellConfigProvider = ({ shellConfigUrl, children }) => {
     },
   );
 
+  // TEST JM
+  console.log('config', config);
+  // if (config) config.themes = { ...config.themes, ...example.themes };
   return (
     <window.shellContexts.ShellConfigContext.Provider
       value={{
