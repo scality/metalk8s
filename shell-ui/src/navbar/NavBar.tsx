@@ -246,7 +246,7 @@ export const Navbar = ({
 }) => {
   const brand = useTheme();
   const { userData } = useAuth();
-  const { themeName, unSelectedThemes, setTheme } = useThemeName();
+  const { themeMode, setThemeMode } = useThemeName();
   const { language, setLanguage, unSelectedLanguages } = useLanguage();
   const intl = useIntl();
   const { openLink } = useLinkOpener();
@@ -283,7 +283,7 @@ export const Navbar = ({
   }));
 
   const secondaryTabs = navbarSecondaryActions.map((action) => ({
-    type: 'custom',
+    type: 'custom' as const,
     render: () =>
       action.link.render ? (
         <action.link.render selected={action.selected} />
@@ -310,7 +310,23 @@ export const Navbar = ({
     render: () => <NotificationCenter />,
   };
 
-  const rightTabs = [
+  type RightTabItem =
+    | {
+        type: 'dropdown';
+        text: string;
+        icon?: React.ReactNode;
+        items: {
+          label: React.ReactNode;
+          selected?: boolean;
+          onClick: () => void;
+        }[];
+      }
+    | {
+        type: 'custom';
+        render: () => React.ReactNode;
+      };
+
+  const rightTabs: RightTabItem[] = [
     ...secondaryTabs,
     {
       type: 'dropdown',
@@ -374,15 +390,16 @@ export const Navbar = ({
       })),
     });
   }
-
+  //TEST JM
+  canChangeTheme = true;
   if (canChangeTheme) {
     rightTabs.unshift({
       type: 'dropdown',
-      text: themeName,
-      items: unSelectedThemes.map((theme) => ({
+      text: themeMode,
+      items: (['light', 'dark'] as const).map((theme) => ({
         label: theme,
         onClick: () => {
-          setTheme(theme);
+          setThemeMode(theme);
         },
       })),
     });

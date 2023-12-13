@@ -1,12 +1,16 @@
 import React, { useContext, useState, useLayoutEffect } from 'react';
-import { coreUIAvailableThemes } from '@scality/core-ui/dist/style/theme';
+import {
+  CoreUITheme,
+  coreUIAvailableThemes,
+} from '@scality/core-ui/dist/style/theme';
 import { THEME_CHANGED_EVENT } from '../navbar/events';
-type ThemeName = 'darkRebrand';
+import { useShellConfig } from './ShellConfigProvider';
+type ThemeMode = 'dark' | 'light';
 type ThemeContextValues = {
-  themeName: ThemeName;
-  theme: Theme;
-  setTheme: (themeName: ThemeName) => void;
-  unSelectedThemes: ThemeName[];
+  themeMode: ThemeMode; // dark ou light
+  theme: CoreUITheme; // colors json
+  setThemeMode: (themeMode: ThemeMode) => void;
+  assets: { logoPath: string };
 };
 
 if (!window.shellContexts) {
@@ -17,11 +21,6 @@ if (!window.shellContexts.ShellThemeContext) {
   window.shellContexts.ShellThemeContext =
     React.createContext<ThemeContextValues | null>(null);
 }
-
-const themes = ['darkRebrand'];
-export type Theme = {
-  brand: typeof coreUIAvailableThemes.darkRebrand;
-};
 
 export function useThemeName(): ThemeContextValues {
   const themeContext = useContext(window.shellContexts.ShellThemeContext);
@@ -41,48 +40,87 @@ export function useShellThemeAssets() {
       "useShellThemeAssets hook can't be use outside <ShellThemeSelectorProvider />",
     );
   }
+  console.log('themeContext', themeContext);
+  // return le logo a partir de useShellConfig
+  //recupere le theme actuel et récupere le bon logo
+
+  const { config } = useShellConfig();
+  const assets = {
+    logoPath: config.themes[themeContext.themeName].logoPath,
+  };
+  // based on current themeName, return the logoPath
+  const exampleOfReturn = {
+    logoPath: '/brand/assets/logo-dark.svg',
+  };
+
+  return assets;
+}
+
+export function useShellThemeSelector() {
+  const themeContext = useContext(window.shellContexts.ShellThemeContext);
+
+  if (themeContext === null) {
+    throw new Error(
+      "useThemeSelector hook can't be use outside <ThemeProvider/>",
+    );
+  }
 
   return { ...themeContext };
 }
 
+// type ThemeContextValues = {
+//   themeMode: ThemeMode; // dark ou light
+//   theme: CoreUITheme; // colors json
+//   setThemeMode: (themeMode: ThemeMode) => void;
+//   assets: { logoPath: string };
+// };
 export function ShellThemeSelectorProvider({
   children,
   onThemeChanged,
 }: {
-  children: (theme: Theme, themeName: ThemeName) => React.ReactNode;
+  children: (theme: CoreUITheme, themeName: ThemeMode) => React.ReactNode;
   onThemeChanged?: (evt: CustomEvent) => void;
 }) {
-  const [themeName, setTheme] = useState<ThemeName>(
-    (localStorage.getItem('theme') as any) || 'darkRebrand',
+  const [themeMode, setThemeMode] = useState<ThemeMode>(
+    (localStorage.getItem('theme') as any) || 'dark',
   );
-  const theme: Theme = {
-    brand:
-      coreUIAvailableThemes[themeName] || coreUIAvailableThemes.darkRebrand,
+  const { config } = useShellConfig();
+  console.log('config', config);
+  const { themes } = config;
+  console.log('themeName', themeMode);
+  console.log('themes', themes);
+  const theme: CoreUITheme = coreUIAvailableThemes[themes[themeMode].name];
+  const assets = {
+    logoPath: themes[themeMode].logoPath,
   };
-  const unSelectedThemes = themes.filter(
-    (themeNameInThemes) => themeName !== themeNameInThemes,
-  );
-  useLayoutEffect(() => {
-    localStorage.setItem('theme', themeName);
 
-    if (onThemeChanged) {
-      onThemeChanged(
-        new CustomEvent(THEME_CHANGED_EVENT, {
-          detail: theme,
-        }),
-      );
-    }
-  }, [themeName, !!onThemeChanged]);
+  const res = {
+    themeMode: 'dark',
+    theme: { bacgrkound: 'toto' }, // colors json
+    setThemeMode: () => {},
+    assets: { logoPath: '/logo.svg' },
+  };
+  // useLayoutEffect(() => {
+  //   localStorage.setItem('theme', themeMode);
+
+  //   if (onThemeChanged) {
+  //     onThemeChanged(
+  //       new CustomEvent(THEME_CHANGED_EVENT, {
+  //         detail: theme,
+  //       }),
+  //     );
+  //   }
+  // }, [themeMode, !!onThemeChanged]);
   return (
     <window.shellContexts.ShellThemeContext.Provider
       value={{
-        themeName,
-        setTheme,
+        themeMode,
+        setThemeMode,
         theme,
-        unSelectedThemes,
+        assets,
       }}
     >
-      {children(theme, themeName)}
+      {children(theme, themeMode)}
     </window.shellContexts.ShellThemeContext.Provider>
   );
 }
