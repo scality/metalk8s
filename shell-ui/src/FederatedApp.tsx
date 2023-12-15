@@ -116,57 +116,61 @@ function ProtectedFederatedRoute({
 function InternalRouter() {
   const discoveredViews = useDiscoveredViews();
   const { retrieveConfiguration } = useConfigRetriever();
-  const routes = discoveredViews
-    .filter((discoveredView) => discoveredView.isFederated)
-    //Sort the exact and strict routes first, to make sure to match the exact first.
-    .sort((a, b) => {
-      if (a.view.exact && !b.view.exact) {
-        return -1;
-      }
-      if (!a.view.exact && b.view.exact) {
-        return 1;
-      }
-      if (a.view.strict && !b.view.strict) {
-        return -1;
-      }
-      if (!a.view.strict && b.view.strict) {
-        return 1;
-      }
-      return 0;
-    })
+  const routes = useMemo(
+    () =>
+      discoveredViews
+        .filter((discoveredView) => discoveredView.isFederated)
+        //Sort the exact and strict routes first, to make sure to match the exact first.
+        .sort((a, b) => {
+          if (a.view.exact && !b.view.exact) {
+            return -1;
+          }
+          if (!a.view.exact && b.view.exact) {
+            return 1;
+          }
+          if (a.view.strict && !b.view.strict) {
+            return -1;
+          }
+          if (!a.view.strict && b.view.strict) {
+            return 1;
+          }
+          return 0;
+        })
 
-    .map(({ app, view, groups }) => ({
-      path: app.appHistoryBasePath + view.path,
-      exact: view.exact,
-      strict: view.strict,
-      sensitive: view.sensitive,
-      component: () => {
-        const federatedAppHistory = useMemo(
-          () =>
-            createBrowserHistory({
-              basename: app.appHistoryBasePath,
-            }),
-          [],
-        );
-        return (
-          <Router history={federatedAppHistory}>
-            <FederatedRoute
-              url={
-                app.url +
-                retrieveConfiguration({
-                  configType: 'build',
-                  name: app.name,
-                }).spec.remoteEntryPath
-              }
-              module={view.module}
-              scope={view.scope}
-              app={app}
-              groups={groups}
-            />
-          </Router>
-        );
-      },
-    }));
+        .map(({ app, view, groups }) => ({
+          path: app.appHistoryBasePath + view.path,
+          exact: view.exact,
+          strict: view.strict,
+          sensitive: view.sensitive,
+          component: () => {
+            const federatedAppHistory = useMemo(
+              () =>
+                createBrowserHistory({
+                  basename: app.appHistoryBasePath,
+                }),
+              [],
+            );
+            return (
+              <Router history={federatedAppHistory}>
+                <FederatedRoute
+                  url={
+                    app.url +
+                    retrieveConfiguration({
+                      configType: 'build',
+                      name: app.name,
+                    }).spec.remoteEntryPath
+                  }
+                  module={view.module}
+                  scope={view.scope}
+                  app={app}
+                  groups={groups}
+                />
+              </Router>
+            );
+          },
+        })),
+    [JSON.stringify(discoveredViews)],
+  );
   return (
     <>
       <Switch>
