@@ -30,7 +30,7 @@ import {
   useTestAlertConfiguration,
 } from './domain/AlertConfigurationDomain';
 import { Metalk8sCSCAlertConfigurationStore } from './infrastructure/Metalk8sCSCAlertConfigurationStore';
-import { useAuth, useShellConfig } from '../containers/PrivateRoute';
+import { useAuth } from '../containers/PrivateRoute';
 import { useConfig } from '../FederableApp';
 import { addNotificationSuccessAction } from '../ducks/app/notifications';
 
@@ -136,9 +136,6 @@ export default function ConfigureAlerting() {
     url_alertmanager: alertManagerUrl,
   } = useConfig();
 
-  const shellConfig = useShellConfig();
-  const logoPath = shellConfig?.themes?.darkRebrand?.logoPath || '';
-
   const { userData } = useAuth();
   const token = userData?.token || '';
   const email = userData?.email || '';
@@ -149,7 +146,6 @@ export default function ConfigureAlerting() {
     alertManagerUrl,
     token,
     email,
-    logoPath,
   );
 
   const { alertConfiguration, logs: alertLogs } = useAlertConfiguration({
