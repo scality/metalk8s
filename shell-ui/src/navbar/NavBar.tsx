@@ -10,7 +10,7 @@ import { Layout } from '@scality/core-ui/dist/components/layout/v2/index';
 import { normalizePath } from './auth/permissionUtils';
 import { useTheme } from 'styled-components';
 import { useLanguage } from './lang';
-import { useThemeName } from '../initFederation/ShellThemeSelectorProvider';
+import { useShellThemeSelector } from '../initFederation/ShellThemeSelectorProvider';
 import { useIntl } from 'react-intl';
 import { UserData, useAuth, useLogOut } from '../auth/AuthProvider';
 import {
@@ -70,7 +70,6 @@ const Item = ({
   label: string;
   isExternal?: boolean;
 }) => {
-  const brand = useTheme();
   return (
     <NavbarDropDownItem>
       {icon && (
@@ -246,7 +245,7 @@ export const Navbar = ({
 }) => {
   const brand = useTheme();
   const { userData } = useAuth();
-  const { themeMode, setThemeMode } = useThemeName();
+  const { themeMode, setThemeMode } = useShellThemeSelector();
   const { language, setLanguage, unSelectedLanguages } = useLanguage();
   const intl = useIntl();
   const { openLink } = useLinkOpener();
@@ -390,8 +389,7 @@ export const Navbar = ({
       })),
     });
   }
-  //TEST JM
-  canChangeTheme = true;
+
   if (canChangeTheme) {
     rightTabs.unshift({
       type: 'dropdown',
