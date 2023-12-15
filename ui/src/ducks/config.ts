@@ -1,6 +1,6 @@
 import { IntlShape } from 'react-intl';
 import type { RootState } from './reducer';
-import type { Config, Theme } from '../services/api';
+import type { Config } from '../services/api';
 import { Effect, call, put, takeEvery, select } from 'redux-saga/effects';
 import * as Api from '../services/api';
 import * as ApiK8s from '../services/k8s/api';
@@ -18,7 +18,6 @@ import { StorageApi } from '../services/k8s/volumes';
 
 // Actions
 export const SET_LANG = 'SET_LANG';
-export const SET_THEME = 'SET_THEME';
 const FETCH_CONFIG = 'FETCH_CONFIG';
 export const SET_API_CONFIG = 'SET_API_CONFIG';
 export const SET_CONFIG_STATUS = 'SET_CONFIG_STATUS';
@@ -33,7 +32,6 @@ const SET_INTL = 'SET_INTL';
 type Status = 'idle' | 'loading' | 'error' | 'success';
 export type ConfigState = {
   language: string;
-  theme: Theme;
   api: Config | null | undefined;
   status: Status;
   intl: IntlShape;
@@ -43,7 +41,6 @@ export type ConfigState = {
 };
 const defaultState: ConfigState = {
   language: EN_LANG,
-  theme: {},
   // current theme
   api: null,
   status: 'idle',
@@ -91,12 +88,7 @@ export function setLanguageAction(newLang: string) {
     payload: newLang,
   };
 }
-export function setThemeAction(theme: Theme) {
-  return {
-    type: SET_THEME,
-    payload: theme,
-  };
-}
+
 export function fetchConfigAction() {
   return {
     type: FETCH_CONFIG,

@@ -106,7 +106,7 @@ jest.mock('./containers/PrivateRoute', () => ({
       },
       favicon: '/navbar/artesca-favicon.svg',
       themes: {
-        darkRebrand: { logoPath: '/logo.svg' },
+        dark: { logoPath: '/logo.svg' },
       },
       status: 'success',
     };

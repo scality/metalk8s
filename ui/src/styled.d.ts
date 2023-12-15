@@ -1,5 +1,5 @@
 import 'styled-components';
-import type {Theme} from './services/api';
+import { CoreUITheme } from '@scality/core-ui/dist/style/theme';
 declare module 'styled-components' {
-  export interface DefaultTheme extends Theme {}
+  export interface DefaultTheme extends CoreUITheme {}
 }
