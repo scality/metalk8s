@@ -1,0 +1,11 @@
+[MESSAGES CONTROL]
+
+disable=duplicate-code,
+  too-few-public-methods,
+  bad-continuation,
+  consider-using-f-string,
+  unspecified-encoding
+
+[3RD-PARTY-IMPORTS]
+
+allowed-3rd-party-modules=sos

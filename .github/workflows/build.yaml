@@ -188,7 +188,7 @@ jobs:
         run: |
           export DEBIAN_FRONTEND=noninteractive
           sudo apt-get update
-          sudo apt-get install --no-install-recommends -y shellcheck
+          sudo apt-get install --no-install-recommends -y shellcheck python2.7-minimal
           python3.10 -m pip install tox~=4.0.11
       - name: Install Helm
         env:
