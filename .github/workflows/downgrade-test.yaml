@@ -138,9 +138,17 @@ jobs:
       # }}}
 
       ## Collect logs {{
+      # NOTE: The sosreport plugin changed in 127.0.0, so we can't use it for
+      # downgrade when target version is older than 127.0.0.
+      # This logic can be removed in `development/128.0` branch.
       - name: Generate and Collect sosreport
-        if: always()
+        if: "!startsWith(env.target_version, '126.') && always()"
         uses: ./.github/actions/sosreport-logs
+        with:
+          NODES_COUNT: "${{ env.NODES_COUNT }}"
+      - name: Generate and Collect logs previous version
+        if: "startsWith(env.target_version, '126.') && always()"
+        uses: ./.github/actions/sosreport-logs-previous
         with:
           NODES_COUNT: "${{ env.NODES_COUNT }}"
       ## }}

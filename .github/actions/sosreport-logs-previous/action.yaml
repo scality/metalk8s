@@ -1,5 +1,5 @@
-name: "Sosreport logs"
-description: "Generate and retrieve sosreport logs"
+name: "Sosreport logs previous"
+description: "Generate and retrieve sosreport logs for previous release"
 
 inputs:
   NODES_COUNT:
@@ -24,8 +24,8 @@ runs:
       run: |
         for host in ${HOSTS_LIST}; do
           ssh -F ssh_config ${host} \
-          "sudo sosreport --all-logs -o metalk8s -kmetalk8s.k8s-resources -kmetalk8s.pod-logs -k metalk8s.describe \
-          -o metalk8s_containerd -kmetalk8s_containerd.all -kmetalk8s_containerd.logs \
+          "sudo sosreport --all-logs -o metalk8s -kmetalk8s.podlogs=True\
+          -o metalk8s_containerd -kmetalk8s_containerd.all=True -kmetalk8s_containerd.logs=True\
           --batch --tmp-dir /var/tmp && \
           sudo chown -R 1000:1000 /var/tmp/sosreport*"
         done

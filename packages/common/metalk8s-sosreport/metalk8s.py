@@ -1,6 +1,16 @@
-#! /bin/env python3
+"""This plugin collects MetalK8s specific data.
 
-from os import path
+There is some flags to enable/disable some specific data collection like
+Kubernetes resources and Pod logs.
+
+NOTE: This plugin is used on different OS including CentOs 7 and Rocky 8
+which mean it need to work with both sos 3.x and sos 4.x and also with
+Python 2.7 and Python 3.6.
+"""
+
+import contextlib
+import json
+import os
 
 import requests
 
@@ -22,27 +32,47 @@ except ImportError:
     from sos.plugins import Plugin, RedHatPlugin
 
 
-class metalk8s(Plugin, RedHatPlugin):
+class MetalK8s(Plugin, RedHatPlugin):
 
     """Metalk8s plugin"""
 
     plugin_name = "metalk8s"
-    packages = ("kubernetes", "kubernetes-master")
+    short_desc = "MetalK8s platform"
+
+    packages = ("kubectl",)
     profiles = ("container",)
+
     files = ("/etc/kubernetes/admin.conf",)
+
+    kube_cmd = "kubectl --kubeconfig=/etc/kubernetes/admin.conf"
 
     _plugin_options = [
         {
-            "name": "all",
+            "name": "k8s-resources",
             "default": False,
-            "desc": "also collect all namespaces output separately",
+            "desc": "also collect all Kubernetes resources",
+        },
+        {
+            "name": "resources-filter-out",
+            "default": "",
+            "desc": "filter out resources from the list of resources to collect (comma separated) "
+            "(need k8s-resources to be enabled)",
         },
         {
             "name": "describe",
             "default": False,
-            "desc": "capture descriptions of all kube resources",
+            "desc": "capture descriptions of all kube resources (need k8s-resources to be enabled)",
         },
-        {"name": "podlogs", "default": False, "desc": "capture logs for pods"},
+        {
+            "name": "pod-logs",
+            "default": False,
+            "desc": "capture logs from pods (need k8s-resources to be enabled)",
+        },
+        {
+            "name": "last",
+            "default": "24h",
+            "desc": "capture logs from the last defined time (need pod-logs to be enabled)",
+        },
         {
             "name": "prometheus-snapshot",
             "default": False,
@@ -57,10 +87,168 @@ class metalk8s(Plugin, RedHatPlugin):
             for opt in _plugin_options
         ]
 
-    def check_is_master(self):
-        return any([path.exists("/etc/kubernetes/admin.conf")])
+    @staticmethod
+    def _check_is_master():
+        return any([os.path.exists("/etc/kubernetes/admin.conf")])
 
-    def prometheus_snapshot(self):
+    @contextlib.contextmanager
+    def _custom_collection_file(self, fname, subdir=None):
+        """Helper that simulate sos collection_file method
+
+        This is needed since this function does not exists in sos prior to 4.5
+        """
+        root_dir = self.get_cmd_output_path(make=False)
+        dir_name = os.path.join(root_dir, subdir)
+
+        if not os.path.exists(dir_name):
+            # NOTE: We cannot use `exist_ok=True` since it's not available in Python 2.7
+            os.makedirs(dir_name)
+
+        # We truncate the filename to 255 characters since it's the max
+        full_path = os.path.join(dir_name, fname[:255])
+
+        with open(full_path, "a") as _file:
+            yield _file
+
+    def _setup_common(self):
+        # Add Kubernetes specific files
+        self.add_copy_spec("/etc/kubernetes/manifests")
+
+        # Add MetalK8s specific files
+        self.add_copy_spec("/etc/metalk8s")
+        self.add_forbidden_path(["/etc/metalk8s/pki", "/etc/metalk8s/crypt"])
+        self.add_copy_spec("/etc/salt")
+        self.add_forbidden_path("/etc/salt/pki")
+        self.add_copy_spec("/var/log/metalk8s")
+
+        services = [
+            "kubelet",
+            "salt-minion",
+        ]
+
+        for service in services:
+            self.add_journal(units=service)
+
+    def _setup_k8s_resources(self):  # pylint: disable=too-many-statements
+        flat_dir = "flat"
+
+        def _handle_describe(prefix, obj):
+            cmd = "{} describe {} {}".format(
+                self.kube_cmd,
+                obj["kind"],
+                obj["metadata"]["name"],
+            )
+            if obj["metadata"].get("namespace"):
+                cmd += " --namespace=" + obj["metadata"]["namespace"]
+
+            self.add_cmd_output(
+                cmd,
+                subdir=flat_dir,
+                suggest_filename="{}_describe.txt".format(prefix),
+            )
+
+        def _handle_pod_logs(prefix, obj):
+            cmd = "{} logs --all-containers --timestamps --since={} --namespace={} {}".format(
+                self.kube_cmd,
+                self.get_option("last"),
+                obj["metadata"]["namespace"],
+                obj["metadata"]["name"],
+            )
+            self.add_cmd_output(
+                cmd, subdir=flat_dir, suggest_filename="{}_logs.txt".format(prefix)
+            )
+
+            # If the Pod has some restarts, we also capture the previous logs
+            for container in obj.get("status", {}).get("containerStatuses", []):
+                if container.get("restartCount", 0):
+                    self.add_cmd_output(
+                        cmd + " --previous",
+                        subdir=flat_dir,
+                        suggest_filename="{}_logs_previous.txt".format(prefix),
+                    )
+                    break
+
+        def _handle_obj(obj):
+            obj_kind = obj["kind"].lower()
+            obj_name = obj["metadata"]["name"]
+            obj_namespace = obj["metadata"].get("namespace")
+            suffix = "get"
+
+            if obj_kind == "event":
+                obj_kind = obj["involvedObject"]["kind"].lower()
+                obj_name = obj["involvedObject"]["name"]
+                obj_namespace = obj["involvedObject"].get("namespace")
+                suffix = "event"
+
+            prefix = "{}_{}{}".format(
+                obj_kind,
+                "ns_{}_".format(obj_namespace) if obj_namespace else "",
+                obj_name,
+            )
+
+            with self._custom_collection_file(
+                "{}_{}.json".format(prefix, suffix), subdir=flat_dir
+            ) as obj_file:
+                obj_file.write(json.dumps(obj, indent=4))
+
+            if obj["kind"] not in ["Event"] and self.get_option("describe"):
+                _handle_describe(prefix, obj)
+
+            if obj["kind"] == "Pod" and self.get_option("pod-logs"):
+                _handle_pod_logs(prefix, obj)
+
+        # Retrieve Kubernetes resources types
+        ns_resources = set(
+            self.exec_cmd(
+                "{} api-resources --verbs=list --namespaced=true -o name".format(
+                    self.kube_cmd
+                )
+            )["output"].splitlines()
+        )
+        no_ns_resources = set(
+            self.exec_cmd(
+                "{} api-resources --verbs=list --namespaced=false -o name".format(
+                    self.kube_cmd
+                )
+            )["output"].splitlines()
+        )
+
+        # Remove sensitive resources
+        ns_resources = ns_resources.difference(
+            ["events.events.k8s.io", "secrets"]
+            + (self.get_option("resources-filter-out") or "").split(",")
+        )
+        no_ns_resources = no_ns_resources.difference(
+            (self.get_option("resources-filter-out") or "").split(",")
+        )
+
+        # Retrieve all objects at once
+        # NOTE: We retrieve all object at once since retrieving resource
+        # one by one is not efficient (too many calls to the APIServer)
+        all_ns_obj = json.loads(
+            self.exec_cmd(
+                "{} get --all-namespaces {} --output=json".format(
+                    self.kube_cmd, ",".join(ns_resources)
+                ),
+                stderr=False,
+            )["output"]
+        )["items"]
+        all_no_ns_obj = json.loads(
+            self.exec_cmd(
+                "{} get {} --output=json".format(
+                    self.kube_cmd, ",".join(no_ns_resources)
+                ),
+                stderr=False,
+            )["output"]
+        )["items"]
+
+        for obj in all_ns_obj:
+            _handle_obj(obj)
+
+        for obj in all_no_ns_obj:
+            _handle_obj(obj)
+
+    def _prometheus_snapshot(self):
         kube_cmd = (
             "kubectl "
             "--kubeconfig=/etc/kubernetes/admin.conf "
@@ -99,7 +287,7 @@ class metalk8s(Plugin, RedHatPlugin):
             res_json = res.json()
         except ValueError as exc:
             self._log_error(
-                "Invalid JSON returned by Prometheus API: {0}".format(res.text)
+                "Invalid JSON returned by Prometheus API: {} {}".format(exc, res.text)
             )
             return
 
@@ -133,125 +321,13 @@ class metalk8s(Plugin, RedHatPlugin):
         self.exec_cmd(delete_snapshot_cmd)
 
     def setup(self):
-        self.add_copy_spec("/etc/kubernetes/manifests")
-        self.add_copy_spec("/etc/metalk8s/bootstrap.yaml")
-        self.add_copy_spec("/etc/metalk8s/solutions.yaml")
-        self.add_copy_spec("/etc/salt")
-        self.add_forbidden_path("/etc/salt/pki")
-        self.add_copy_spec("/var/log/pods")
-        self.add_copy_spec("/var/log/metalk8s")
-
-        services = [
-            "kubelet",
-            "salt-minion",
-        ]
-
-        for service in services:
-            self.add_journal(units=service)
+        """Prepare the data collection."""
+        self._setup_common()
 
         # We can only grab kubectl output from the master
-        if self.check_is_master():
-            kube_cmd = "kubectl "
-            if path.exists("/etc/kubernetes/admin.conf"):
-                kube_cmd += "--kubeconfig=/etc/kubernetes/admin.conf"
-
-            kube_get_cmd = "get -o json "
-            for subcmd in ["version", "config view", "top nodes"]:
-                self.add_cmd_output("{0} {1}".format(kube_cmd, subcmd))
-
-            # get all namespaces in use
-            namespaces_result = self.exec_cmd(
-                "{0} get namespaces --no-headers "
-                "--output custom-columns=':metadata.name'".format(kube_cmd)
-            )
-            kube_namespaces = namespaces_result["output"].splitlines()
-
-            resources = [
-                "pods",
-                "deploy",
-                "rc",
-                "services",
-                "ds",
-                "cm",
-            ]
-
-            # nodes and pvs are not namespaced, must pull separately.
-            # Also collect master metrics
-            self.add_cmd_output(
-                [
-                    "{} get -o json nodes".format(kube_cmd),
-                    "{} get -o json pv".format(kube_cmd),
-                    "{} get --raw /metrics".format(kube_cmd),
-                ]
-            )
-
-            for n in kube_namespaces:
-                kube_namespace = "--namespace={}".format(n)
-                if self.get_option("all"):
-                    kube_namespaced_cmd = "{0} {1} {2}".format(
-                        kube_cmd, kube_get_cmd, kube_namespace
-                    )
-
-                    for subcmd in ["events", "top pods"] + resources:
-                        self.add_cmd_output(
-                            "{0} {1}".format(kube_namespaced_cmd, subcmd)
-                        )
-
-                if self.get_option("describe"):
-                    # need to drop json formatting for this
-                    kube_namespaced_cmd = "{0} get {1}".format(kube_cmd, kube_namespace)
-                    for res in resources:
-                        self.add_cmd_output("{0} {1}".format(kube_namespaced_cmd, res))
-
-                        r = self.exec_cmd(
-                            "{0} {1} --no-headers "
-                            "--output custom-colums=':metadata.name'".format(
-                                kube_namespaced_cmd, res
-                            )
-                        )
-                        if r["status"] == 0:
-                            for k in r["output"].splitlines():
-                                kube_namespaced_cmd = "{0} {1}".format(
-                                    kube_cmd, kube_namespace
-                                )
-                                self.add_cmd_output(
-                                    "{0} describe {1} {2}".format(
-                                        kube_namespaced_cmd, res, k
-                                    )
-                                )
-
-                if self.get_option("podlogs"):
-                    kube_namespaced_cmd = "{0} {1}".format(kube_cmd, kube_namespace)
-                    r = self.exec_cmd(
-                        "{} get pods --no-headers --output "
-                        "custom-columns=':metadata.name'".format(kube_namespaced_cmd)
-                    )
-                    if r["status"] == 0:
-                        for pod in r["output"].splitlines():
-                            self.add_cmd_output(
-                                "{0} logs {1} --all-containers".format(
-                                    kube_namespaced_cmd, pod
-                                )
-                            )
-
-            if not self.get_option("all"):
-                kube_namespaced_cmd = "{} get --all-namespaces=true".format(kube_cmd)
-                for res in resources:
-                    self.add_cmd_output("{0} {1}".format(kube_namespaced_cmd, res))
+        if self._check_is_master():
+            if self.get_option("k8s-resources"):
+                self._setup_k8s_resources()
 
             if self.get_option("prometheus-snapshot"):
-                self.prometheus_snapshot()
-
-    def postproc(self):
-        # First, clear sensitive data from the json output collected.
-        # This will mask values when the 'name' looks susceptible of
-        # values worth obfuscating, i.e. if the name contains strings
-        # like 'pass', 'pwd', 'key' or 'token'
-        env_regexp = (
-            r'(?P<var>{\s*"name":\s*[^,]*'
-            r'(pass|pwd|key|token|cred|PASS|PWD|KEY)[^,]*,\s*"value":)[^}]*'
-        )
-        self.do_cmd_output_sub("kubectl", env_regexp, r'\g<var> "********"')
-        # Next, we need to handle the private keys and certs in some
-        # output that is not hit by the previous iteration.
-        self.do_cmd_private_sub("kubectl")
+                self._prometheus_snapshot()
