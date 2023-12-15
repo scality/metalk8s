@@ -58,7 +58,6 @@ export class Metalk8sCSCAlertConfigurationStore
     private alertManagerApiBaseUrl: string,
     private token: string,
     private email: string,
-    private logoPath: string,
   ) {}
 
   getTestConfiguration() {
@@ -286,22 +285,7 @@ export class Metalk8sCSCAlertConfigurationStore
     alertConfiguration: AlertConfiguration,
     currentEmailreceiver: Receiver,
   ): Promise<Receiver> {
-    const template = await fetch(`/brand/email.html`).then((res) => res.text());
-    const originalLogo = await fetch(this.logoPath).then((res) => res.text());
-
-    const logoDom = new DOMParser().parseFromString(
-      originalLogo,
-      'application/xml',
-    );
-    logoDom.querySelector('svg')?.setAttribute('width', '258');
-    logoDom.querySelector('svg')?.setAttribute('height', '50');
-    const logo = new XMLSerializer().serializeToString(logoDom);
-    const base64Logo = btoa(logo);
-    const logoSrc = `data:image/svg+xml;base64,${base64Logo}`;
-    const logoTag = `<img src="${logoSrc}" alt="Logo" width="258" height="50" />`;
-    const html = template
-      .replace('<METALK8S_LOGO/>', logoTag)
-      .replace(/\r\n/g, '');
+    const html = await fetch(`/brand/email.html`).then((res) => res.text());
 
     return {
       ...currentEmailreceiver,
