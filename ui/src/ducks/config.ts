@@ -41,7 +41,6 @@ export type ConfigState = {
 };
 const defaultState: ConfigState = {
   language: EN_LANG,
-  // current theme
   api: null,
   status: 'idle',
   intl: {},
@@ -56,9 +55,6 @@ export default function reducer(
   switch (action.type) {
     case SET_LANG:
       return { ...state, language: action.payload };
-
-    case SET_THEME:
-      return { ...state, theme: action.payload };
 
     case SET_API_CONFIG:
       return { ...state, api: action.payload };
