@@ -13,5 +13,18 @@
     "subLogin": []
   },
   "discoveryUrl": "/shell/deployed-ui-apps.json",
-  "productName": "MetalK8s"
+  "productName": "MetalK8s",
+  "canChangeTheme": true,
+  "themes": {
+    "dark": {
+      "type": "core-ui",
+      "name": "darkRebrand",
+      "logoPath": "/brand/assets/logo-dark.svg"
+    },
+    "light": {
+      "type": "core-ui",
+      "name": "artescaLight",
+      "logoPath": "/brand/assets/logo-light.svg"
+    }
+  }
 }
