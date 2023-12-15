@@ -1,9 +1,6 @@
 import type { User } from 'oidc-react';
 import type { PathDescription } from '../index';
-import {
-  Options,
-  UserGroupsMapping,
-} from '../../initFederation/ShellConfigProvider';
+import { UserGroupsMapping } from '../../initFederation/ShellConfigProvider';
 
 export const isEntryAccessibleByTheUser = (
   [path, pathDescription]: [string, PathDescription],
@@ -13,16 +10,7 @@ export const isEntryAccessibleByTheUser = (
     pathDescription.groups?.some((group) => userGroups.includes(group)) ?? true
   );
 };
-export const getAccessiblePathsFromOptions = (
-  options: Options,
-  userGroups: string[],
-): string[] => {
-  return [...Object.entries(options.main), ...Object.entries(options.subLogin)]
-    .filter((entry: [string, PathDescription]) =>
-      isEntryAccessibleByTheUser(entry, userGroups),
-    )
-    .map(([path]) => path);
-};
+
 export const normalizePath = (path: string): string => {
   const url = new URL(path);
   return url.origin + url.pathname;
