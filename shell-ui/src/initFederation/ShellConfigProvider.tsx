@@ -30,26 +30,6 @@ export type NavbarEntry = {
 
 export type UserGroupsMapping = Record<string, string[]>;
 
-// Will be removed when zenko-ui -> module federation
-export type Options = {
-  main: {
-    [key: string]: Entry;
-  };
-  subLogin: {
-    [key: string]: Entry;
-  };
-};
-
-export type Entry = {
-  en: string;
-  fr: string;
-  icon?: string;
-  groups?: string[];
-  isExternal?: boolean;
-  order?: number;
-  activeIfMatches?: string;
-};
-
 const example: Themes = {
   dark: {
     type: 'core-ui',
@@ -94,11 +74,10 @@ export type ShellJSONFileConfig = {
 
   // for IDP that does not support user groups (ie: Dex)
   userGroupsMapping?: UserGroupsMapping;
-  // Legacy, will be removed when zenko-ui -> module federation
-  options?: Options;
+
+  canChangeTheme?: boolean;
   // Not yet used and working
   canChangeLanguage?: boolean;
-  canChangeTheme?: boolean;
 };
 
 export type ShellConfig = {
