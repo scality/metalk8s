@@ -49,7 +49,7 @@ jobs:
           mkdir -p artifacts
           echo -n "FAILED" > artifacts/.final_status
       - name: Upload artifacts
-        uses: scality/action-artifacts@v3
+        uses: scality/action-artifacts@v4
         with:
           method: upload
           url: https://artifacts.scality.net
@@ -68,7 +68,7 @@ jobs:
           mkdir -p artifacts
           echo -n "SUCCESSFUL" > artifacts/.final_status
       - name: Upload artifacts
-        uses: scality/action-artifacts@v3
+        uses: scality/action-artifacts@v4
         with:
           method: upload
           url: https://artifacts.scality.net

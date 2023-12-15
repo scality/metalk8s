@@ -360,7 +360,7 @@ jobs:
 
       - name: Upload artifacts
         if: always()
-        uses: scality/action-artifacts@v3
+        uses: scality/action-artifacts@v4
         with:
           method: upload
           url: https://artifacts.scality.net
@@ -382,7 +382,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Get artifacts URL
-        uses: scality/action-artifacts@v3
+        uses: scality/action-artifacts@v4
         id: artifacts
         with:
           method: setup

@@ -53,7 +53,7 @@ jobs:
       # Retrieve Shell UI image from the build, load it and compute version
       - name: Retrieve artifacts url
         if: inputs.artifacts-url == ''
-        uses: scality/action-artifacts@v3
+        uses: scality/action-artifacts@v4
         id: artifacts
         with:
           method: get

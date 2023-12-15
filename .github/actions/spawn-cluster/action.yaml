@@ -84,7 +84,7 @@ runs:
         cp ~/.ssh/terraform* "artifacts/terraform-context/${{ inputs.NAME }}/"
     - name: Upload SSH keypair
       if: inputs.skip-prepare == 'false'
-      uses: scality/action-artifacts@v3
+      uses: scality/action-artifacts@v4
       with:
         method: upload
         url: https://artifacts.scality.net
