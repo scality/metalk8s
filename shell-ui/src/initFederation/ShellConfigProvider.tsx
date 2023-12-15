@@ -30,19 +30,6 @@ export type NavbarEntry = {
 
 export type UserGroupsMapping = Record<string, string[]>;
 
-const example: Themes = {
-  dark: {
-    type: 'core-ui',
-    name: 'darkRebrand',
-    logoPath: '/brand/assets/logo-dark.svg',
-  },
-  light: {
-    type: 'core-ui',
-    name: 'artescaLight',
-    logoPath: '/brand/assets/logo-light.svg',
-  },
-};
-
 type CoreUIShellThemeDescription = {
   type: 'core-ui';
   name: CoreUIThemeName;
@@ -99,7 +86,6 @@ export const useShellConfig = () => {
   if (contextValue.config) {
     contextValue.config.themes = {
       ...contextValue.config.themes,
-      ...example,
     };
   }
 
