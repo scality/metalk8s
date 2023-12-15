@@ -1,9 +1,6 @@
 import React from 'react';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
-import {
-  useShellThemeAssets,
-  useShellThemeSelector,
-} from '../initFederation/ShellThemeSelectorProvider';
+import { useShellThemeSelector } from '../initFederation/ShellThemeSelectorProvider';
 import { Navbar } from './NavBar';
 import { NavbarConfigProvider } from './NavbarConfigProvider';
 import { NavbarUpdaterComponents } from './NavbarUpdaterComponents';
@@ -20,7 +17,9 @@ export const SolutionsNavbar = ({ children }: SolutionsNavbarProps) => {
   return (
     <NavbarConfigProvider>
       <>
-        <Navbar logo={assets.logoPath}>{children}</Navbar>
+        <Navbar logo={assets.logoPath} canChangeTheme={config.canChangeTheme}>
+          {children}
+        </Navbar>
         <NavbarUpdaterComponents />
       </>
     </NavbarConfigProvider>
