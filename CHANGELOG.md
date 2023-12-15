@@ -65,10 +65,10 @@
   (PR[#4176](https://github.com/scality/metalk8s/pull/4176))
 
 - Bump ingress-nginx chart version to
-  [4.8.1](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.8.1)
+  [4.8.4](https://github.com/kubernetes/ingress-nginx/releases/tag/helm-chart-4.8.4)
   The controller image has been bumped accordingly to
-  [v1.9.1](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.9.1)
-  (PR[#4175](https://github.com/scality/metalk8s/pull/4175))
+  [v1.9.4](https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.9.4)
+  (PR[#4211](https://github.com/scality/metalk8s/pull/4211))
 
 - Bump nginx image to [1.25.2-alpine](https://github.com/nginx/nginx/releases/tag/release-1.25.2)
   (PR[#4165](https://github.com/scality/metalk8s/pull/4165))
