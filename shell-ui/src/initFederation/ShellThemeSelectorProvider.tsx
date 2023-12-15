@@ -1,14 +1,14 @@
-import React, { useContext, useState, useLayoutEffect } from 'react';
 import {
   CoreUITheme,
   coreUIAvailableThemes,
+  coreUIAvailableThemesNames,
 } from '@scality/core-ui/dist/style/theme';
-import { THEME_CHANGED_EVENT } from '../navbar/events';
+import React, { useContext, useState } from 'react';
 import { useShellConfig } from './ShellConfigProvider';
 type ThemeMode = 'dark' | 'light';
 type ThemeContextValues = {
-  themeMode: ThemeMode; // dark ou light
-  theme: CoreUITheme; // colors json
+  themeMode: ThemeMode;
+  theme: CoreUITheme;
   setThemeMode: (themeMode: ThemeMode) => void;
   assets: { logoPath: string };
 };
@@ -22,105 +22,82 @@ if (!window.shellContexts.ShellThemeContext) {
     React.createContext<ThemeContextValues | null>(null);
 }
 
-export function useThemeName(): ThemeContextValues {
-  const themeContext = useContext(window.shellContexts.ShellThemeContext);
-
-  if (themeContext === null) {
-    throw new Error("useTheme hook can't be use outside <ThemeProvider/>");
-  }
-
-  return { ...themeContext };
-}
-
-export function useShellThemeAssets() {
-  const themeContext = useContext(window.shellContexts.ShellThemeContext);
+export function useShellThemeSelector(): ThemeContextValues {
+  const themeContext: ThemeContextValues = useContext(
+    window.shellContexts.ShellThemeContext,
+  );
 
   if (themeContext === null) {
     throw new Error(
-      "useShellThemeAssets hook can't be use outside <ShellThemeSelectorProvider />",
-    );
-  }
-  console.log('themeContext', themeContext);
-  // return le logo a partir de useShellConfig
-  //recupere le theme actuel et récupere le bon logo
-
-  const { config } = useShellConfig();
-  const assets = {
-    logoPath: config.themes[themeContext.themeName].logoPath,
-  };
-  // based on current themeName, return the logoPath
-  const exampleOfReturn = {
-    logoPath: '/brand/assets/logo-dark.svg',
-  };
-
-  return assets;
-}
-
-export function useShellThemeSelector() {
-  const themeContext = useContext(window.shellContexts.ShellThemeContext);
-
-  if (themeContext === null) {
-    throw new Error(
-      "useThemeSelector hook can't be use outside <ThemeProvider/>",
+      "useShellThemeSelector hook can't be use outside <ShellThemeSelectorProvider />",
     );
   }
 
   return { ...themeContext };
 }
 
-// type ThemeContextValues = {
-//   themeMode: ThemeMode; // dark ou light
-//   theme: CoreUITheme; // colors json
-//   setThemeMode: (themeMode: ThemeMode) => void;
-//   assets: { logoPath: string };
-// };
 export function ShellThemeSelectorProvider({
   children,
-  onThemeChanged,
 }: {
   children: (theme: CoreUITheme, themeName: ThemeMode) => React.ReactNode;
   onThemeChanged?: (evt: CustomEvent) => void;
 }) {
   const [themeMode, setThemeMode] = useState<ThemeMode>(
-    (localStorage.getItem('theme') as any) || 'dark',
+    (localStorage.getItem('theme') as ThemeMode) || 'dark',
   );
-  const { config } = useShellConfig();
-  console.log('config', config);
-  const { themes } = config;
-  console.log('themeName', themeMode);
-  console.log('themes', themes);
-  const theme: CoreUITheme = coreUIAvailableThemes[themes[themeMode].name];
+  const {
+    config: { themes },
+  } = useShellConfig();
+
+  const themeDescription = themes[themeMode];
+  if (!themeDescription) {
+    throw new Error(
+      `${themeMode} is incorrect, only dark and light are allowed`,
+    );
+  }
+
+  if (!['custom', 'core-ui'].includes(themeDescription.type)) {
+    throw new Error(
+      `${themeDescription.type} is not a valid theme type, use either custom or core-ui`,
+    );
+  }
+
+  if (
+    themeDescription.type === 'core-ui' &&
+    !coreUIAvailableThemesNames.includes(themeDescription.name)
+  ) {
+    throw new Error(
+      `${
+        themeDescription.name
+      } does not exist in core-ui themes. Available themes : ${coreUIAvailableThemesNames.join(
+        ', ',
+      )}`,
+    );
+  }
+  const selectedTheme =
+    themeDescription.type === 'custom'
+      ? themeDescription.colors
+      : coreUIAvailableThemes[themeDescription.name];
+
   const assets = {
-    logoPath: themes[themeMode].logoPath,
+    logoPath: themeDescription.logoPath,
   };
 
-  const res = {
-    themeMode: 'dark',
-    theme: { bacgrkound: 'toto' }, // colors json
-    setThemeMode: () => {},
-    assets: { logoPath: '/logo.svg' },
+  const changeThemeMode = (themeMode: ThemeMode) => {
+    setThemeMode(themeMode);
+    localStorage.setItem('theme', themeMode);
   };
-  // useLayoutEffect(() => {
-  //   localStorage.setItem('theme', themeMode);
 
-  //   if (onThemeChanged) {
-  //     onThemeChanged(
-  //       new CustomEvent(THEME_CHANGED_EVENT, {
-  //         detail: theme,
-  //       }),
-  //     );
-  //   }
-  // }, [themeMode, !!onThemeChanged]);
   return (
     <window.shellContexts.ShellThemeContext.Provider
       value={{
         themeMode,
-        setThemeMode,
-        theme,
+        setThemeMode: changeThemeMode,
+        theme: selectedTheme,
         assets,
       }}
     >
-      {children(theme, themeMode)}
+      {children(selectedTheme, themeMode)}
     </window.shellContexts.ShellThemeContext.Provider>
   );
 }

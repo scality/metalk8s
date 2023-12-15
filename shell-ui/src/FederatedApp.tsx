@@ -31,7 +31,6 @@ import { ShellHistoryProvider } from './initFederation/ShellHistoryProvider';
 import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
 import {
   ShellThemeSelectorProvider,
-  useShellThemeAssets,
   useShellThemeSelector,
 } from './initFederation/ShellThemeSelectorProvider';
 import NotificationCenterProvider from './NotificationCenterProvider';

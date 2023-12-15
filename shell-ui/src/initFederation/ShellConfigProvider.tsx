@@ -1,9 +1,11 @@
-import React from 'react';
-import { createContext, useContext } from 'react';
-import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
 import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
+import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
+import {
+  CoreUITheme,
+  CoreUIThemeName,
+} from '@scality/core-ui/dist/style/theme';
+import React, { createContext, useContext } from 'react';
 import { useQuery } from 'react-query';
-import { CoreUIThemeName } from '@scality/core-ui/dist/style/theme';
 
 if (!window.shellContexts) {
   window.shellContexts = {};
@@ -13,32 +15,6 @@ if (!window.shellContexts.ShellConfigContext) {
   window.shellContexts.ShellConfigContext = createContext(null);
 }
 
-export type Theme = {
-  logoPath: string;
-  faviconPath: string;
-  colors: {
-    statusHealthy: string;
-    statusWarning: string;
-    statusCritical: string;
-    selectedActive: string;
-    highlight: string;
-    border: string;
-    buttonPrimary: string;
-    buttonSecondary: string;
-    buttonDelete: string;
-    infoPrimary: string;
-    infoSecondary: string;
-    backgroundLevel1: string;
-    backgroundLevel2: string;
-    backgroundLevel3: string;
-    backgroundLevel4: string;
-    textPrimary: string;
-    textSecondary: string;
-    textTertiary: string;
-    textReverse: string;
-    textLink: string;
-  };
-};
 export type NavbarEntry = {
   groups?: string[];
   label?: {
@@ -74,61 +50,38 @@ export type Entry = {
   activeIfMatches?: string;
 };
 
-const example = {
-  navbar: {
-    main: [
-      {
-        kind: 'metalk8s-ui',
-        view: 'platform',
-      },
-      {
-        kind: 'metalk8s-ui',
-        view: 'alerts',
-      },
-    ],
-    subLogin: [],
+const example: Themes = {
+  dark: {
+    type: 'core-ui',
+    name: 'darkRebrand',
+    logoPath: '/brand/assets/logo-dark.svg',
   },
-  discoveryUrl: '/shell/deployed-ui-apps.json',
-  productName: 'MetalK8s',
-  themes: {
-    dark: {
-      type: 'core-ui',
-      name: 'ring9dark',
-      logoPath: '/shell/assets/logo-dark-metalk8s.svg',
-    },
-    light: {
-      type: 'core-ui',
-      name: 'darkRebrand',
-      logoPath: '/shell/assets/logo-light-metalk8s.svg',
-    },
-
-    // dark2: {
-    //   type: 'custom',
-    //   name: 'ring9dark',
-    //   logoPath: '/shell/assets/logo-custom-metalk8s.svg',
-    //   colors: {},
-    // },
+  light: {
+    type: 'core-ui',
+    name: 'artescaLight',
+    logoPath: '/brand/assets/logo-light.svg',
   },
 };
 
-// custom: {
-//   name: 'ring9custom',
-//   logo: '/shell/assets/logo-metalk8s.svg',
-//   colors: {
-//     primary: '#00b39f',
-//     secondary: '#00b39f',
-//     accent: '#00b39f',
-//     error: '#f44336',
-//     info: '#2196f3',
-//     success: '#4caf50',
-//     warning: '#ff9800',
-//   },
-// },
+type CoreUIShellThemeDescription = {
+  type: 'core-ui';
+  name: CoreUIThemeName;
+  logoPath: string;
+};
+type CustomShellThemeDescription = {
+  type: 'custom';
+  logoPath: string;
+  colors: CoreUITheme;
+};
 
-type ThemeType = 'core-ui' | 'custom';
+type ThemeDescription =
+  | CoreUIShellThemeDescription
+  | CustomShellThemeDescription;
 
-// TODO JEAN MARC A FIXER
-// config fetched from /shell/config.json
+type Themes = {
+  dark: ThemeDescription;
+  light: ThemeDescription;
+};
 export type ShellJSONFileConfig = {
   discoveryUrl: string;
   navbar: {
@@ -136,31 +89,7 @@ export type ShellJSONFileConfig = {
     subLogin: NavbarEntry[];
   };
   productName: string;
-
-  // optional (in dev mode)
-  // TODO : Themes and Logo seems duplicated, check why
-  // themes?: {
-  //   dark?: { logoPath: string };
-  //   darkRebrand?: { logoPath: string };
-  //   light?: { logoPath: string };
-  // };
-  themes: {
-    dark: {
-      type: ThemeType;
-      name: CoreUIThemeName | string;
-      logoPath: string;
-    };
-    light: {
-      type: ThemeType;
-      name: CoreUIThemeName | string;
-      logoPath: string;
-    };
-  };
-  logo?: {
-    dark?: string;
-    darkRebrand?: string;
-    light?: string;
-  };
+  themes: Themes;
   favicon?: string;
 
   // for IDP that does not support user groups (ie: Dex)
@@ -175,7 +104,7 @@ export type ShellJSONFileConfig = {
 export type ShellConfig = {
   config: ShellJSONFileConfig;
   favicon: Pick<ShellJSONFileConfig, 'favicon'>;
-  themes: Pick<ShellJSONFileConfig, 'themes'>;
+  themes: Themes;
   status: 'idle' | 'loading' | 'success' | 'error';
 };
 
@@ -191,28 +120,11 @@ export const useShellConfig = () => {
   if (contextValue.config) {
     contextValue.config.themes = {
       ...contextValue.config.themes,
-      ...example.themes,
+      ...example,
     };
   }
 
   return contextValue;
-
-  // const { themeName } = useThemeName();
-
-  // return {
-  //   ...contextValue,
-  //   favicon: contextValue.config.favicon || '/brand/favicon-metalk8s.svg',
-  //   themes:
-  //     {
-  //       ...(contextValue.config.themes || {}),
-  //       [themeName]: {
-  //         ...(contextValue.config.themes || {})?.[themeName],
-  //         logoPath:
-  //           (contextValue.config.themes || {})?.[themeName]?.logoPath ||
-  //           `/brand/assets/logo-${themeName}.svg`,
-  //       },
-  //     } || {},
-  // };
 };
 
 export const ShellConfigProvider = ({ shellConfigUrl, children }) => {
@@ -232,9 +144,6 @@ export const ShellConfigProvider = ({ shellConfigUrl, children }) => {
     },
   );
 
-  // TEST JM
-  console.log('config', config);
-  // if (config) config.themes = { ...config.themes, ...example.themes };
   return (
     <window.shellContexts.ShellConfigContext.Provider
       value={{
