@@ -1,3 +1,4 @@
 addFilter("metalk8s-sosreport.x86_64: W: no-url-tag")
 addFilter("metalk8s-sosreport.x86_64: E: no-binary")
 addFilter("metalk8s-sosreport.x86_64: W: no-documentation")
+addFilter("metalk8s-sosreport.x86_64: E: script-without-shebang")
