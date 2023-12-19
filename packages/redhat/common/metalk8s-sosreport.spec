@@ -10,9 +10,11 @@ BuildRequires: /usr/bin/pathfix.py
 %if 0%{rhel} >= 8
 Requires: sos >= 4.0
 Requires: python3 >= 3.6
+Requires: python3-requests
 %else
 Requires: sos >= 3.1, sos < 4.0
 Requires: python >= 2.6, python < 2.8
+Requires: python-requests
 # NameError on FileNotFoundError in sos 3.5 python2.7
 Conflicts: sos = 3.5
 %endif
