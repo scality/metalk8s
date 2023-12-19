@@ -3,7 +3,8 @@ default_language_version:
 
 repos:
   - repo: https://github.com/psf/black
-    rev: 22.3.0
+    # NOTE: Newer version does no longer support python3.6
+    rev: 22.8.0
     hooks:
       - id: black
         name: Formatting Python
