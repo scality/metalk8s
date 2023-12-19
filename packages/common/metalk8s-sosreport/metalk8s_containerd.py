@@ -1,4 +1,12 @@
-#! /bin/env python3
+"""This plugin collects MetalK8s ContainerD specific data.
+
+There is some flags to enable/disable some specific data collection like
+Pod logs.
+
+NOTE: This plugin is used on different OS including CentOs 7 and Rocky 8
+which mean it need to work with both sos 3.x and sos 4.x and also with
+Python 2.7 and Python 3.6.
+"""
 
 HAS_PLUGIN_OPT = False
 
@@ -47,6 +55,7 @@ class MetalK8sContainerd(Plugin, RedHatPlugin):
         ]
 
     def setup(self):
+        """Prepare the data collection."""
         self.add_copy_spec(["/etc/containerd", "/etc/crictl.yaml"])
         self.add_copy_spec("/var/log/containers")
 
