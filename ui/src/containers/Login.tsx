@@ -1,14 +1,12 @@
-import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { Formik, Form } from 'formik';
-import * as yup from 'yup';
-import { Input } from '@scality/core-ui';
+import { Input, spacing } from '@scality/core-ui';
 import { Button } from '@scality/core-ui/dist/next';
-import { brand, padding } from '@scality/core-ui/dist/style/theme';
-import styled from 'styled-components';
-import { authenticateAction } from '../ducks/login';
-import { injectIntl } from 'react-intl';
+import { Form, Formik } from 'formik';
 import isEmpty from 'lodash.isempty';
+import { injectIntl } from 'react-intl';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+import * as yup from 'yup';
+import { authenticateAction } from '../ducks/login';
 const LoginFormContainer = styled.div`
   height: 100vh;
   background: url(${process.env.PUBLIC_URL + '/brand/assets/login.jpg'});
@@ -30,8 +28,8 @@ const LoginFormContainer = styled.div`
         padding: 0;
         font-weight: bold;
         display: block;
-        margin-bottom: ${padding.smaller};
-        margin-top: ${padding.larger};
+        margin-bottom: ${spacing.r4};
+        margin-top: ${spacing.r24};
         color: white;
       }
     }
@@ -39,7 +37,7 @@ const LoginFormContainer = styled.div`
 `;
 const Error = styled.span`
   display: block;
-  color: ${brand.danger};
+  color: ${(props) => props.theme.statusCritical};
 `;
 const LogoContainer = styled.div`
   position: absolute;

@@ -15,9 +15,9 @@ import { compareHealth } from './utils';
 import type { IPInterfaces } from './salt/api';
 import type { RootState } from '../ducks/reducer';
 import type { NodesState } from '../ducks/app/nodes';
-import type { Brand } from '../services/api';
 import type { Alert } from '../services/alertUtils';
 import { getHealthStatus, filterAlerts } from '../services/alertUtils';
+import { CoreUITheme } from '@scality/core-ui/dist/style/theme';
 const METALK8S_CONTROL_PLANE_IP = 'metalk8s:control_plane_ip';
 const METALK8S_WORKLOAD_PLANE_IP = 'metalk8s:workload_plane_ip';
 const IP_INTERFACES = 'ip_interfaces';
@@ -59,7 +59,7 @@ const IPsInfoSelector = (state) => state.app.nodes.IPsInfo;
 const nodesSelector = (state) => state.app.nodes.list;
 
 // Return the data used by the Node list table
-export const getNodeListData = (alerts: Array<Alert>, brand: Brand) =>
+export const getNodeListData = (alerts: Array<Alert>, theme: CoreUITheme) =>
   createTypedSelector<NodetableList>(
     (nodes: NodesState['list'], nodeIPsInfo: NodesState) => {
       const mapped =
@@ -91,22 +91,22 @@ export const getNodeListData = (alerts: Array<Alert>, brand: Brand) =>
     <red>    when status.conditions['Ready'] == False
     <grey>   when there is no status.conditions */
           if (node.status === API_STATUS_READY && conditions.length === 0) {
-            statusTextColor = brand.statusHealthy;
+            statusTextColor = theme.statusHealthy;
             computedStatus.push(API_STATUS_READY);
           } else if (
             node.status === API_STATUS_READY &&
             conditions.length !== 0
           ) {
-            statusTextColor = brand.statusWarning;
+            statusTextColor = theme.statusWarning;
             conditions.map((cond) => {
               return computedStatus.push(cond);
             });
           } else if (node.deploying && node.status === API_STATUS_UNKNOWN) {
-            statusTextColor = brand.textSecondary;
+            statusTextColor = theme.textSecondary;
             computedStatus.push(API_STATUS_DEPLOYING);
             health = STATUS_NONE;
           } else if (node.status !== API_STATUS_READY) {
-            statusTextColor = brand.statusCritical;
+            statusTextColor = theme.statusCritical;
             computedStatus.push(API_STATUS_NOT_READY);
 
             //If no alert is raised on the node but kubernetes
@@ -116,7 +116,7 @@ export const getNodeListData = (alerts: Array<Alert>, brand: Brand) =>
               health = STATUS_NONE;
             }
           } else {
-            statusTextColor = brand.textSecondary;
+            statusTextColor = theme.textSecondary;
             computedStatus.push(API_STATUS_UNKNOWN);
             health = STATUS_NONE;
           }

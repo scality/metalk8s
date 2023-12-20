@@ -243,7 +243,7 @@ export const Navbar = ({
   providerLogout?: boolean;
   children?: React.ReactNode;
 }) => {
-  const brand = useTheme();
+  const theme = useTheme();
   const { userData } = useAuth();
   const { themeMode, setThemeMode } = useShellThemeSelector();
   const { language, setLanguage, unSelectedLanguages } = useLanguage();
@@ -333,7 +333,7 @@ export const Navbar = ({
       icon: (
         <span
           style={{
-            color: brand.textTertiary,
+            color: theme.textTertiary,
           }}
         >
           <Icon name="User" />
