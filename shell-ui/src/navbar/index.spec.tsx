@@ -1,26 +1,24 @@
-import React from 'react';
+import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
 import { renderHook } from '@testing-library/react-hooks';
 import { setupServer } from 'msw/node';
+import React from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { MemoryRouter } from 'react-router';
-import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
 
+import { render, screen } from '@testing-library/react';
+import { useAuth } from 'oidc-react';
+import { act } from 'react-test-renderer';
 import { SolutionsNavbar } from '.';
 import { WithInitFederationProviders } from '../FederatedApp';
 import { configurationHandlers } from '../FederatedApp.spec';
-import { ShellConfigProvider } from '../initFederation/ShellConfigProvider';
-import { useNavbar } from './navbarHooks';
-import { ShellHistoryProvider } from '../initFederation/ShellHistoryProvider';
-import { act } from 'react-test-renderer';
-import { LanguageProvider } from './lang';
-import { ShellThemeSelectorProvider } from '../initFederation/ShellThemeSelectorProvider';
 import NotificationCenterProvider from '../NotificationCenterProvider';
 import { FirstTimeLoginProvider } from '../auth/FirstTimeLoginProvider';
-import { AuthProvider } from '../auth/AuthProvider';
-import { AuthConfigProvider } from '../auth/AuthConfigProvider';
-import { render, screen } from '@testing-library/react';
+import { ShellConfigProvider } from '../initFederation/ShellConfigProvider';
+import { ShellHistoryProvider } from '../initFederation/ShellHistoryProvider';
+import { ShellThemeSelectorProvider } from '../initFederation/ShellThemeSelectorProvider';
 import { waitForLoadingToFinish } from './__TESTS__/utils';
-import { useAuth } from 'oidc-react';
+import { LanguageProvider } from './lang';
+import { useNavbar } from './navbarHooks';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,33 +31,29 @@ const server = setupServer(...configurationHandlers);
 
 export const wrapper = ({ children }) => {
   return (
-    <AuthConfigProvider>
-      <AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
         <ShellThemeSelectorProvider>
           {(theme) => (
             <CoreUiThemeProvider theme={theme}>
               <LanguageProvider>
-                <QueryClientProvider client={queryClient}>
-                  <NotificationCenterProvider>
-                    <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
-                      <WithInitFederationProviders>
-                        <MemoryRouter>
-                          <FirstTimeLoginProvider>
-                            <ShellHistoryProvider>
-                              <SolutionsNavbar>{children}</SolutionsNavbar>
-                            </ShellHistoryProvider>
-                          </FirstTimeLoginProvider>
-                        </MemoryRouter>
-                      </WithInitFederationProviders>
-                    </ShellConfigProvider>
-                  </NotificationCenterProvider>
-                </QueryClientProvider>
+                <NotificationCenterProvider>
+                  <WithInitFederationProviders>
+                    <MemoryRouter>
+                      <FirstTimeLoginProvider>
+                        <ShellHistoryProvider>
+                          <SolutionsNavbar>{children}</SolutionsNavbar>
+                        </ShellHistoryProvider>
+                      </FirstTimeLoginProvider>
+                    </MemoryRouter>
+                  </WithInitFederationProviders>
+                </NotificationCenterProvider>
               </LanguageProvider>
             </CoreUiThemeProvider>
           )}
         </ShellThemeSelectorProvider>
-      </AuthProvider>
-    </AuthConfigProvider>
+      </ShellConfigProvider>
+    </QueryClientProvider>
   );
 };
 

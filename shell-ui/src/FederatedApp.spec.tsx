@@ -125,6 +125,14 @@ export const configurationHandlers = [
           subLogin: [],
         },
         discoveryUrl: '/shell/deployed-ui-apps.json',
+        canChangeTheme: true,
+        themes: {
+          dark: {
+            type: 'core-ui',
+            name: 'darkRebrand',
+            logoPath: '/brand/assets/logo-dark.svg',
+          },
+        },
       }),
     );
   }),
