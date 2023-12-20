@@ -1,34 +1,49 @@
 {
-    "docUrl": "/docs",
-    "oidc": {
-      "providerUrl": "/oidc",
-      "redirectUrl": "/",
-      "clientId": "metalk8s-ui",
-      "responseType": "id_token",
-      "scopes": "openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
+  "docUrl": "/docs",
+  "oidc": {
+    "providerUrl": "/oidc",
+    "redirectUrl": "/",
+    "clientId": "metalk8s-ui",
+    "responseType": "id_token",
+    "scopes": "openid profile email groups offline_access audience:server:client_id:oidc-auth-client"
+  },
+  "options": {
+    "main": {
+      "https://mocked.ingress/": { "en": "Platform", "fr": "Plateforme" },
+      "https://mocked.ingress/alerts": { "en": "Alerts", "fr": "Alertes" }
     },
-    "options": {
-      "main": {
-          "https://mocked.ingress/":{ "en": "Platform", "fr": "Plateforme" },
-          "https://mocked.ingress/alerts":{ "en": "Alerts", "fr": "Alertes" }
-      },
-      "subLogin": {
-          "https://mocked.ingress/docs":{ "en": "Documentation", "fr": "Documentation" }
+    "subLogin": {
+      "https://mocked.ingress/docs": {
+        "en": "Documentation",
+        "fr": "Documentation"
       }
+    }
+  },
+  "navbar": {
+    "main": [
+      {
+        "kind": "metalk8s-ui",
+        "view": "platform"
+      },
+      {
+        "kind": "metalk8s-ui",
+        "view": "alerts"
+      }
+    ],
+    "subLogin": []
+  },
+  "discoveryUrl": "/shell/deployed-ui-apps.json",
+  "canChangeTheme": true,
+  "themes": {
+    "dark": {
+      "type": "core-ui",
+      "name": "darkRebrand",
+      "logoPath": "/brand/assets/logo-dark.svg"
     },
-    "navbar": {
-      "main": [
-        {
-          "kind": "metalk8s-ui",
-          "view": "platform"
-        },
-        {
-          "kind": "metalk8s-ui",
-          "view": "alerts"
-        }
-      ],
-      "subLogin": []
-    },
-    "discoveryUrl": "/shell/deployed-ui-apps.json"
+    "light": {
+      "type": "core-ui",
+      "name": "artescaLight",
+      "logoPath": "/brand/assets/logo-light.svg"
+    }
   }
-  
+}
