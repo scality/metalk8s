@@ -220,8 +220,6 @@ export function WithInitFederationProviders({
 
 const AppProviderWrapper = () => {
   const { language } = useLanguage();
-  const { assets } = useShellThemeSelector();
-  console.log('assets', assets);
   return (
     <ErrorBoundary
       FallbackComponent={({ error }) => {
