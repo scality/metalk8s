@@ -13,7 +13,7 @@ import { useNavbar } from './navbarHooks';
 import { ShellHistoryProvider } from '../initFederation/ShellHistoryProvider';
 import { act } from 'react-test-renderer';
 import { LanguageProvider } from './lang';
-import { ThemeProvider } from './theme';
+import { ShellThemeSelectorProvider } from '../initFederation/ShellThemeSelectorProvider';
 import NotificationCenterProvider from '../NotificationCenterProvider';
 import { FirstTimeLoginProvider } from '../auth/FirstTimeLoginProvider';
 import { AuthProvider } from '../auth/AuthProvider';
@@ -35,7 +35,7 @@ export const wrapper = ({ children }) => {
   return (
     <AuthConfigProvider>
       <AuthProvider>
-        <ThemeProvider>
+        <ShellThemeSelectorProvider>
           {(theme) => (
             <CoreUiThemeProvider theme={theme.brand}>
               <LanguageProvider>
@@ -57,7 +57,7 @@ export const wrapper = ({ children }) => {
               </LanguageProvider>
             </CoreUiThemeProvider>
           )}
-        </ThemeProvider>
+        </ShellThemeSelectorProvider>
       </AuthProvider>
     </AuthConfigProvider>
   );

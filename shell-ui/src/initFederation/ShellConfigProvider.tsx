@@ -3,7 +3,7 @@ import { createContext, useContext } from 'react';
 import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
 import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
 import { useQuery } from 'react-query';
-import { useThemeName } from '../navbar/theme';
+import { useThemeName } from './ShellThemeSelectorProvider';
 
 if (!window.shellContexts) {
   window.shellContexts = {};
@@ -73,6 +73,57 @@ export type Entry = {
   order?: number;
   activeIfMatches?: string;
 };
+
+const example = {
+  navbar: {
+    main: [
+      {
+        kind: 'metalk8s-ui',
+        view: 'platform',
+      },
+      {
+        kind: 'metalk8s-ui',
+        view: 'alerts',
+      },
+    ],
+    subLogin: [],
+  },
+  discoveryUrl: '/shell/deployed-ui-apps.json',
+  productName: 'MetalK8s',
+  theme: {
+    dark: {
+      type: 'core-ui',
+      name: 'ring9dark',
+      logo: '/shell/assets/logo-metalk8s.svg',
+    },
+    light: {
+      type: 'core-ui',
+      name: 'ring9light',
+      logo: '/shell/assets/logo-metalk8s.svg',
+    },
+
+    dark2: {
+      type: 'custom',
+      name: 'ring9dark',
+      logo: '/shell/assets/logo-metalk8s.svg',
+      colors: {},
+    },
+  },
+};
+
+// custom: {
+//   name: 'ring9custom',
+//   logo: '/shell/assets/logo-metalk8s.svg',
+//   colors: {
+//     primary: '#00b39f',
+//     secondary: '#00b39f',
+//     accent: '#00b39f',
+//     error: '#f44336',
+//     info: '#2196f3',
+//     success: '#4caf50',
+//     warning: '#ff9800',
+//   },
+// },
 
 // config fetched from /shell/config.json
 export type ShellJSONFileConfig = {

@@ -1,6 +1,6 @@
 import React, { useContext, useState, useLayoutEffect } from 'react';
-import { defaultTheme } from '@scality/core-ui/dist/style/theme';
-import { THEME_CHANGED_EVENT } from './events';
+import { coreUIAvailableThemes } from '@scality/core-ui/dist/style/theme';
+import { THEME_CHANGED_EVENT } from '../navbar/events';
 type ThemeName = 'darkRebrand';
 type ThemeContextValues = {
   themeName: ThemeName;
@@ -20,8 +20,9 @@ if (!window.shellContexts.ShellThemeContext) {
 
 const themes = ['darkRebrand'];
 export type Theme = {
-  brand: typeof defaultTheme.darkRebrand;
+  brand: typeof coreUIAvailableThemes.darkRebrand;
 };
+
 export function useThemeName(): ThemeContextValues {
   const themeContext = useContext(window.shellContexts.ShellThemeContext);
 
@@ -31,7 +32,20 @@ export function useThemeName(): ThemeContextValues {
 
   return { ...themeContext };
 }
-export function ThemeProvider({
+
+export function useShellThemeAssets() {
+  const themeContext = useContext(window.shellContexts.ShellThemeContext);
+
+  if (themeContext === null) {
+    throw new Error(
+      "useShellThemeAssets hook can't be use outside <ShellThemeSelectorProvider />",
+    );
+  }
+
+  return { ...themeContext };
+}
+
+export function ShellThemeSelectorProvider({
   children,
   onThemeChanged,
 }: {
@@ -42,7 +56,8 @@ export function ThemeProvider({
     (localStorage.getItem('theme') as any) || 'darkRebrand',
   );
   const theme: Theme = {
-    brand: defaultTheme[themeName],
+    brand:
+      coreUIAvailableThemes[themeName] || coreUIAvailableThemes.darkRebrand,
   };
   const unSelectedThemes = themes.filter(
     (themeNameInThemes) => themeName !== themeNameInThemes,
