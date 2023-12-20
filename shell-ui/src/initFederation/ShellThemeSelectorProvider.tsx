@@ -42,23 +42,28 @@ export function ShellThemeSelectorProvider({
   children: (theme: CoreUITheme, themeName: ThemeMode) => React.ReactNode;
   onThemeChanged?: (evt: CustomEvent) => void;
 }) {
-  const [themeMode, setThemeMode] = useState<ThemeMode>(
-    (localStorage.getItem('theme') as ThemeMode) || 'dark',
-  );
+  const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
+    const localTheme = localStorage.getItem('theme');
+    if (localTheme === 'dark' || localTheme === 'light') {
+      return localTheme;
+    } else {
+      const defaultTheme = 'dark';
+      return defaultTheme;
+    }
+  });
+
   const {
     config: { themes },
   } = useShellConfig();
 
   const themeDescription = themes[themeMode];
   if (!themeDescription) {
-    throw new Error(
-      `${themeMode} is incorrect, only dark and light are allowed`,
-    );
+    throw new Error(`"${themeMode}" is not defined in the config.json file`);
   }
 
   if (!['custom', 'core-ui'].includes(themeDescription.type)) {
     throw new Error(
-      `${themeDescription.type} is not a valid theme type, use either custom or core-ui`,
+      `"${themeDescription.type}" is not a valid theme type, use either custom or core-ui`,
     );
   }
 
