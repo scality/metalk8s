@@ -130,7 +130,44 @@ class MetalK8s(Plugin, RedHatPlugin):
             self.add_journal(units=service)
 
     def _setup_k8s_resources(self):  # pylint: disable=too-many-statements
+        root_dir = self.get_cmd_output_path(make=False)
         flat_dir = "flat"
+
+        def _add_symlink(relative_dest, src_path, dest_name):
+            dest_dir = os.path.join(root_dir, relative_dest)
+            dest = os.path.join(dest_dir, dest_name)
+
+            if not os.path.exists(dest_dir):
+                # NOTE: We cannot use `exist_ok=True` since it's not available in Python 2.7
+                os.makedirs(dest_dir)
+
+            if os.path.lexists(dest):
+                # NOTE: If symlink already exists it means we have 2 objects with
+                # the same name. It's the case for events for example
+                return
+
+            src = os.path.join("../" * len(relative_dest.split(os.sep)), src_path)
+            os.symlink(src, dest)
+
+        def _handle_symlinks(src_name, dest_name, kind, namespace=None):
+            """Handle symlinks for a specific file
+
+            For every files we create, we also create a symlinks
+            to group resources per kind and namespace.
+            """
+            src_path = os.path.join(flat_dir, src_name)
+
+            # Handle by namespace
+            relative_dest = os.path.join(
+                "by-namespaces", namespace or "_no_namespace", kind
+            )
+            _add_symlink(relative_dest, src_path, dest_name)
+
+            # Handle by kind
+            relative_dest = os.path.join("by-resources", kind)
+            if namespace:
+                relative_dest = os.path.join(relative_dest, namespace)
+            _add_symlink(relative_dest, src_path, dest_name)
 
         def _handle_describe(prefix, obj):
             cmd = "{} describe {} {}".format(
@@ -146,6 +183,12 @@ class MetalK8s(Plugin, RedHatPlugin):
                 subdir=flat_dir,
                 suggest_filename="{}_describe.txt".format(prefix),
             )
+            _handle_symlinks(
+                src_name="{}_describe.txt".format(prefix),
+                dest_name="{}_describe.txt".format(obj["metadata"]["name"]),
+                kind=obj["kind"].lower(),
+                namespace=obj["metadata"].get("namespace"),
+            )
 
         def _handle_pod_logs(prefix, obj):
             cmd = "{} logs --all-containers --timestamps --since={} --namespace={} {}".format(
@@ -157,6 +200,12 @@ class MetalK8s(Plugin, RedHatPlugin):
             self.add_cmd_output(
                 cmd, subdir=flat_dir, suggest_filename="{}_logs.txt".format(prefix)
             )
+            _handle_symlinks(
+                src_name="{}_logs.txt".format(prefix),
+                dest_name="{}_logs.txt".format(obj["metadata"]["name"]),
+                kind=obj["kind"].lower(),
+                namespace=obj["metadata"]["namespace"],
+            )
 
             # If the Pod has some restarts, we also capture the previous logs
             for container in obj.get("status", {}).get("containerStatuses", []):
@@ -165,6 +214,14 @@ class MetalK8s(Plugin, RedHatPlugin):
                         cmd + " --previous",
                         subdir=flat_dir,
                         suggest_filename="{}_logs_previous.txt".format(prefix),
+                    )
+                    _handle_symlinks(
+                        src_name="{}_logs_previous.txt".format(prefix),
+                        dest_name="{}_logs_previous.txt".format(
+                            obj["metadata"]["name"]
+                        ),
+                        kind=obj["kind"].lower(),
+                        namespace=obj["metadata"]["namespace"],
                     )
                     break
 
@@ -190,6 +247,13 @@ class MetalK8s(Plugin, RedHatPlugin):
                 "{}_{}.json".format(prefix, suffix), subdir=flat_dir
             ) as obj_file:
                 obj_file.write(json.dumps(obj, indent=4))
+
+            _handle_symlinks(
+                src_name="{}_{}.json".format(prefix, suffix),
+                dest_name="{}_{}.json".format(obj_name, suffix),
+                kind=obj_kind,
+                namespace=obj_namespace,
+            )
 
             if obj["kind"] not in ["Event"] and self.get_option("describe"):
                 _handle_describe(prefix, obj)
