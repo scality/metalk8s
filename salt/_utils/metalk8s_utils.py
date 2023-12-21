@@ -15,7 +15,7 @@ __virtualname__ = "metalk8s"
 
 def __virtual__():
     if MISSING_DEPS:
-        error_msg = "Missing dependencies: {}".format(", ".join(MISSING_DEPS))
+        error_msg = f"Missing dependencies: {', '.join(MISSING_DEPS)}"
         return False, error_msg
 
     return __virtualname__

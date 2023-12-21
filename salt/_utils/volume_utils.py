@@ -50,8 +50,10 @@ class BlkidError(Exception):
     """Error from the blkid library."""
 
     def __init__(self, funcname, arguments, result):
-        message = "function call {}({}) failed: returned {}".format(
-            funcname, ", ".join(repr(arg) for arg in arguments), result
+        message = (
+            f"function call {funcname}"
+            f"({', '.join(repr(arg) for arg in arguments)}) "
+            f"failed: returned {result}"
         )
         super(BlkidError, self).__init__(message)
 
@@ -282,9 +284,7 @@ def _get_flags(klass, kind, default, *args):
     for arg in args:
         flag = getattr(klass, arg)
         if flag is None:
-            raise ValueError(
-                "{} is not a valid flag for the {} prober".format(arg, kind)
-            )
+            raise ValueError(f"{arg} is not a valid flag for the {kind} prober")
         flags.append(flag)
     return functools.reduce(lambda x, y: x | y, flags, 0)
 
