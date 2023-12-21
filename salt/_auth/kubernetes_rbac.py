@@ -24,7 +24,7 @@ __virtualname__ = "kubernetes_rbac"
 
 def __virtual__():
     if MISSING_DEPS:
-        return False, "Missing Python dependencies: {}".format(", ".join(MISSING_DEPS))
+        return False, f"Missing Python dependencies: {', '.join(MISSING_DEPS)}"
     else:
         return __virtualname__
 
@@ -55,9 +55,7 @@ def _check_auth_args(f):
 
         if error is not None:
             log.error("Invalid authentication request: %s", error)
-            raise CommandExecutionError(
-                "Invalid authentication request: {}".format(error)
-            )
+            raise CommandExecutionError(f"Invalid authentication request: {error}")
 
         return f(username, token=token, **kwargs)
 
