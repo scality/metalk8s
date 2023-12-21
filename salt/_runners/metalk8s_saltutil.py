@@ -75,7 +75,7 @@ def wait_minions(tgt="*", retry=10):
 
     if not condition_reached(minions):
         error_message = (
-            "Minion{plural} failed to respond after {retry} retries: {minions}"
+            "Minion{plural} failed to respond after {retry} retries: {minions}"  # pylint: disable=consider-using-f-string
         ).format(
             plural="s" if len(minions or {}) > 1 else "",
             retry=retry,
@@ -99,10 +99,10 @@ def wait_minions(tgt="*", retry=10):
             attempts,
             retry,
             " - ".join(
-                'State on minion "{minion}": {states}'.format(
+                'State on minion "{minion}": {states}'.format(  # pylint: disable=consider-using-f-string
                     minion=minion,
                     states=", ".join(
-                        "PID={state[pid]} JID={state[jid]}".format(state=state)
+                        f"PID={state['pid']} JID={state['jid']}"
                         for state in running_states
                     ),
                 )
@@ -116,7 +116,7 @@ def wait_minions(tgt="*", retry=10):
 
     if any(state_running.values()):
         error_message = (
-            "Minion{plural} still have running state after {retry} retries: "
+            "Minion{plural} still have running state after {retry} retries: "  # pylint: disable=consider-using-f-string
             "{minions}"
         ).format(
             plural="s" if len(state_running) > 1 else "",
@@ -131,6 +131,6 @@ def wait_minions(tgt="*", retry=10):
         raise CommandExecutionError(error_message)
 
     return (
-        'All minions matching "{}" responded and finished startup '
-        "state: {}".format(tgt, ", ".join(minions))
+        f'All minions matching "{tgt}" responded and finished startup '
+        f"state: {', '.join(minions)}"
     )

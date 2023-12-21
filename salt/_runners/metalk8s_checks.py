@@ -63,7 +63,9 @@ def nodes(node_list=None, raises=True):
 
     for reason, nodes_names in not_ready_nodes.items():
         errors.append(
-            "Nodes '{}' are not ready - {}".format("', '".join(nodes_names), reason)
+            "Nodes '{}' are not ready - {}".format(  # pylint: disable=consider-using-f-string
+                "', '".join(nodes_names), reason
+            )
         )
 
     return _handle_errors(errors, raises)
@@ -101,7 +103,9 @@ def minions(minion_list=None, raises=True):
     for reason, minions_names in not_ready_minions.items():
         if minions_names:
             errors.append(
-                "Salt minions '{}' {}".format("', '".join(minions_names), reason)
+                "Salt minions '{}' {}".format(  # pylint: disable=consider-using-f-string
+                    "', '".join(minions_names), reason
+                )
             )
 
     return _handle_errors(errors, raises)
