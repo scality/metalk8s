@@ -37,7 +37,7 @@ def sha256sum(input_files: Sequence[Path], output_file: Path) -> None:
         digests.append(hasher.hexdigest())
     with output_file.open("w", encoding="utf-8") as fp_out:
         for filepath, digest in zip(input_files, digests):
-            fp_out.write("{}  {}\n".format(digest, filepath.name))
+            fp_out.write(f"{digest}  {filepath.name}\n")
 
 
 def gzip(input_file: Path, keep_input: bool = False, level: int = 6) -> None:

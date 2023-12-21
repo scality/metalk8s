@@ -43,9 +43,7 @@ class Sha256Sum(base.AtomicTarget):
     def _show(task: types.Task) -> str:
         """Return a description of the task."""
         files = [str(utils.build_relpath(Path(path))) for path in task.file_dep]
-        return "{cmd: <{width}} {files}".format(
-            cmd="SHA256SUM", width=constants.CMD_WIDTH, files=" ".join(files)
-        )
+        return f"{'SHA256SUM': <{constants.CMD_WIDTH}} {' '.join(files)}"
 
     @staticmethod
     def _run(dependencies: Set[str], targets: Sequence[str]) -> None:

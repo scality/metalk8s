@@ -54,7 +54,7 @@ class TemplateFile(base.AtomicTarget):
         task.update(
             {
                 "title": utils.title_with_target1("RENDER"),
-                "doc": "Render template {}.".format(self._src.name),
+                "doc": f"Render template {self._src.name}.",
                 "actions": [self._run],
             }
         )

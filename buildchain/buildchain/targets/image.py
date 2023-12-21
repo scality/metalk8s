@@ -49,13 +49,11 @@ class ContainerImage(base.AtomicTarget):
     @property
     def tag(self) -> str:
         """Image tag."""
-        return "{img.name}:{img.version}".format(img=self)
+        return f"{self.name}:{self.version}"
 
     def show(self, command: str) -> str:
         """Return a description of the task."""
-        return "{cmd: <{width}} {tag}".format(
-            cmd=command, width=constants.CMD_WIDTH, tag=self.tag
-        )
+        return f"{command: <{constants.CMD_WIDTH}} {self.tag}"
 
     def mkdirs(self) -> None:
         """Create the image directory."""

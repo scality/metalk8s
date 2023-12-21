@@ -27,7 +27,7 @@ def render_json(obj: Any, filepath: Path) -> None:
 def render_envfile(variables: Mapping[str, str], filepath: Path) -> None:
     """Serialize a dict as an env file to the given file path."""
     with filepath.open("w", encoding="utf-8") as fp:
-        data = "\n".join("{}={}".format(key, value) for key, value in variables.items())
+        data = "\n".join(f"{key}={value}" for key, value in variables.items())
         fp.write(data)
         fp.write("\n")
 
@@ -74,7 +74,7 @@ class SerializedData(base.AtomicTarget):
         data: Any,
         destination: Path,
         renderer: Renderer = Renderer.JSON,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         """Configure a file rendering task.
 
@@ -93,9 +93,8 @@ class SerializedData(base.AtomicTarget):
 
         if not isinstance(renderer, Renderer):
             raise ValueError(
-                "Invalid `renderer`: {!r}. Must be one of: {}".format(
-                    renderer, ", ".join(map(repr, Renderer))
-                )
+                f"Invalid `renderer`: {renderer.repr()}. "
+                f"Must be one of: {', '.join(map(repr, Renderer))}"
             )
 
         self._renderer = renderer
@@ -105,11 +104,10 @@ class SerializedData(base.AtomicTarget):
         task = self.basic_task
         task.update(
             {
-                "title": utils.title_with_target1(
-                    "RENDER {}".format(self._renderer.value)
-                ),
-                "doc": 'Render file "{}" with "{}"'.format(
-                    self._dest.relative_to(constants.ROOT), self._renderer
+                "title": utils.title_with_target1(f"RENDER {self._renderer.value}"),
+                "doc": (
+                    f'Render file "{self._dest.relative_to(constants.ROOT)}" '
+                    f'with "{self._renderer}"'
                 ),
                 "actions": [self._run],
             }

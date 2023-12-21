@@ -35,7 +35,7 @@ class RemoteImage(image.ContainerImage):
         destination: Path,
         save_as: Optional[Sequence["ImageSaveFormat"]] = None,
         remote_name: Optional[str] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         """Initialize a remote container image.
 
@@ -66,17 +66,17 @@ class RemoteImage(image.ContainerImage):
     @property
     def remote_fullname(self) -> str:
         """Complete image name retrieved from the remote repository."""
-        return ("{img.repository}/{img.remote_name}:{img.version}").format(img=self)
+        return f"{self.repository}/{self.remote_name}:{self.version}"
 
     @property
     def remote_fullname_digest(self) -> str:
         """Complete image name retrieved from the remote repository using digest."""
-        return ("{img.repository}/{img.remote_name}@{img.digest}").format(img=self)
+        return f"{self.repository}/{self.remote_name}@{self.digest}"
 
     @property
     def fullname(self) -> str:
         """Complete image name to use as a tag before saving with Docker."""
-        return "{img.repository}/{img.tag}".format(img=self)
+        return f"{self.repository}/{self.tag}"
 
     @property
     def filepaths(self) -> List[Path]:
@@ -89,7 +89,7 @@ class RemoteImage(image.ContainerImage):
         task.update(
             {
                 "title": lambda _: self.show("PULL IMG"),
-                "doc": "Download {} container image.".format(self.name),
+                "doc": f"Download {self.name} container image.",
                 "uptodate": [True],
                 "actions": list(
                     itertools.chain(*[fmt.save(self) for fmt in self._save_as])
@@ -126,8 +126,8 @@ class SaveAsLayers(ImageSaveFormat):
         # Use Skopeo to directly copy the remote image into a directory
         # of image layers
         skopeo_copy = list(constants.SKOPEO_COPY_DEFAULT_ARGS)
-        skopeo_copy.append("docker://{}".format(img.remote_fullname))
-        skopeo_copy.append("dir:{}".format(img.dirname))
+        skopeo_copy.append(f"docker://{img.remote_fullname}")
+        skopeo_copy.append(f"dir:{img.dirname}")
         return [img.mkdirs, skopeo_copy]
 
     def clean(self, img: RemoteImage) -> types.Action:
@@ -139,11 +139,11 @@ class SaveAsTar(ImageSaveFormat):
     """Save an image as a tarball."""
 
     def filepath(self, img: RemoteImage) -> Path:
-        filename = "{img.name}-{img.version}.tar".format(img=img)
+        filename = f"{img.name}-{img.version}.tar"
         return img.dest_dir / filename
 
     def save(self, img: RemoteImage) -> List[types.Action]:
-        qualname = "{img.repository}/{img.name}".format(img=img)
+        qualname = f"{img.repository}/{img.name}"
         # Use Docker to pull, tag, then save the image
         return [
             (

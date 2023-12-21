@@ -85,10 +85,9 @@ def task__image_dedup_layers() -> types.TaskDict:
     """De-duplicate the images' layers with hard links."""
 
     def show() -> str:
-        return "{cmd: <{width}} {path}".format(
-            cmd="HARDLINK",
-            width=constants.CMD_WIDTH,
-            path=utils.build_relpath(constants.ISO_IMAGE_ROOT),
+        return (
+            f"{'HARDLINK': <{constants.CMD_WIDTH}} "
+            f"{utils.build_relpath(constants.ISO_IMAGE_ROOT)}"
         )
 
     task = targets.Target(
@@ -107,9 +106,7 @@ def _get_image_info(name: str) -> versions.Image:
     try:
         return versions.CONTAINER_IMAGES_MAP[name]
     except KeyError as exc:
-        raise ValueError(
-            'Missing version for container image "{}"'.format(name)
-        ) from exc
+        raise ValueError(f'Missing version for container image "{name}"') from exc
 
 
 def _remote_image(name: str, repository: str, **overrides: Any) -> targets.RemoteImage:

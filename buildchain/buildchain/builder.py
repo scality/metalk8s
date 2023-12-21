@@ -30,7 +30,7 @@ def _builder_image(name: str, dockerfile: Path, **kwargs: Any) -> LocalImage:
     Keyword Arguments:
         They are passed to `LocalImage` init method.
     """
-    img_name = "{}-{}-builder".format(config.PROJECT_NAME.lower(), name)
+    img_name = f"{config.PROJECT_NAME.lower()}-{name}-builder"
     kwargs.setdefault("task_dep", []).append("_build_root")
 
     return LocalImage(
@@ -39,7 +39,7 @@ def _builder_image(name: str, dockerfile: Path, **kwargs: Any) -> LocalImage:
         dockerfile=dockerfile,
         destination=config.BUILD_ROOT,
         save_on_disk=False,
-        **kwargs
+        **kwargs,
     )
 
 

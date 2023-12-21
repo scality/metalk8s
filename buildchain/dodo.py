@@ -50,7 +50,7 @@ class CustomReporter(doit.reporter.JsonReporter):  # type: ignore
         """Called when a task is executed."""
         super().execute_task(task)
         if task.actions:  # Ignore tasks that do not define actions.
-            self._write("{}{}\n".format(self.tag["started"], task.title()))
+            self._write(f"{self.tag['started']}{task.title()}\n")
 
     def add_failure(
         self, task: doit.task.Task, exception: doit.exceptions.CatchedException
@@ -61,11 +61,7 @@ class CustomReporter(doit.reporter.JsonReporter):  # type: ignore
         self.failures.append(result)
         if task.actions:
             time_elapsed = self.t_results[task.name].to_dict()["elapsed"] or 0
-            self._write(
-                "{}{} [{:.0f}s]\n".format(
-                    self.tag["failed"], task.title(), time_elapsed
-                )
-            )
+            self._write(f"{self.tag['failed']}{task.title()} [{time_elapsed:.0f}s]\n")
             self._write_failure(result, task.verbosity > 1, task.verbosity > 0)
 
     def add_success(self, task: doit.task.Task) -> None:
@@ -73,22 +69,18 @@ class CustomReporter(doit.reporter.JsonReporter):  # type: ignore
         super().add_success(task)
         if task.actions:
             time_elapsed = self.t_results[task.name].to_dict()["elapsed"]
-            self._write(
-                "{}{} [{:.0f}s]\n".format(
-                    self.tag["success"], task.title(), time_elapsed
-                )
-            )
+            self._write(f"{self.tag['success']}{task.title()} [{time_elapsed:.0f}s]\n")
             self._write_task_output(task, task.verbosity > 1, task.verbosity > 0)
 
     def skip_uptodate(self, task: doit.task.Task) -> None:
         """Called when a task is skipped (up-to-date)."""
         super().skip_uptodate(task)
-        self._write("{}{}\n".format(self.tag["skipped"], task.title()))
+        self._write(f"{self.tag['skipped']}{task.title()}\n")
 
     def skip_ignore(self, task: doit.task.Task) -> None:
         """Called when a task is skipped (ignored)."""
         super().skip_ignore(task)
-        self._write("{}{}\n".format(self.tag["ignored"], task.title()))
+        self._write(f"{self.tag['ignored']}{task.title()}\n")
 
     def cleanup_error(self, exception: doit.exceptions.CatchedException) -> None:
         """Error during cleanup."""
@@ -135,11 +127,11 @@ class CustomReporter(doit.reporter.JsonReporter):  # type: ignore
         if show_out:
             out = "".join([action.out for action in task.actions if action.out])
             if out:
-                self._write("{0} <stdout>:\n{1}\n".format(task.name, out))
+                self._write(f"{task.name} <stdout>:\n{out}\n")
         if show_err:
             err = "".join([action.err for action in task.actions if action.err])
             if err:
-                self._write("{0} <stderr>:\n{1}\n".format(task.name, err))
+                self._write(f"{task.name} <stderr>:\n{err}\n")
 
     def _write_failure(
         self, result: Dict[str, Any], show_out: bool, show_err: bool
@@ -147,11 +139,8 @@ class CustomReporter(doit.reporter.JsonReporter):  # type: ignore
         task = result["task"]
         if show_err:
             self._write(
-                "{0} - taskid:{1}\n{2}\n".format(
-                    result["exception"].get_name(),
-                    task.name,
-                    result["exception"].get_msg(),
-                )
+                f"{result['exception'].get_name()} - "
+                f"taskid:{task.name}\n{result['exception'].get_msg()}\n"
             )
         self._write_task_output(task, show_out, show_err)
 

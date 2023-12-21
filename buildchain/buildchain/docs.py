@@ -120,16 +120,14 @@ def task_doc() -> Iterator[types.TaskDict]:
         )
         yield {
             "name": target.name,
-            "title": utils.title_with_target1("DOC {}".format(doc_format)),
-            "doc": "Generate {} {} documentation".format(
-                config.PROJECT_NAME, doc_format
-            ),
+            "title": utils.title_with_target1(f"DOC {doc_format}"),
+            "doc": f"Generate {config.PROJECT_NAME} {doc_format} documentation",
             "actions": [build_doc],
             "targets": [target.target],
             "file_dep": list(utils.git_ls("docs")),
             "task_dep": [
                 "_doc_mkdir_build_root",
-                "_build_builder:{}".format(builder.DOC_BUILDER.name),
+                f"_build_builder:{builder.DOC_BUILDER.name}",
             ],
             "clean": [clean(target)],
         }

@@ -64,21 +64,21 @@ def build_error_handler(build_error: BuildError) -> str:
             line = item["stream"]
         elif "status" in item:
             try:
-                line = "{0}: ".format(item["id"])
+                line = f"{item['id']}: "
             except KeyError:
                 line = ""
             line += item["status"]
             try:
-                line += ": {0}/{1}\x1b[1K\r".format(
-                    item["progressDetail"]["current"],
-                    item["progressDetail"]["total"],
+                line += (
+                    f": {item['progressDetail']['current']}/"
+                    f"{item['progressDetail']['total']}\x1b[1K\r"
                 )
             except KeyError:
                 line += "\n"
         elif "error" in item:
             line = item["error"]
         else:
-            line = "buildchain: Unknown build log entry {}".format(str(item))
+            line = f"buildchain: Unknown build log entry {str(item)}"
         output_lines.append(line)
 
     return "".join(output_lines)
@@ -90,8 +90,9 @@ def container_error_handler(container_error: ContainerError) -> str:
         err = ast.literal_eval(str(container_error.stderr)).decode()
     except (ValueError, SyntaxError):
         err = str(container_error.stderr)
-    msg = "Command '{0}' in image '{1}' returned non-zero exit status {2}:\n{3}".format(
-        container_error.command, container_error.image, container_error.exit_status, err
+    msg = (
+        f"Command '{container_error.command}' in image '{container_error.image}'"
+        f"returned non-zero exit status {container_error.exit_status}:\n{err}"
     )
     return msg
 
@@ -291,20 +292,14 @@ def docker_pull(
     """
     pulled = DOCKER_CLIENT.images.pull(
         # For some reason, the repository must include the image name…
-        "{}/{}".format(repository, name),
+        f"{repository}/{name}",
         tag=version,
     )
     if digest and pulled.id != digest:
         raise ValueError(
-            "Image {name}:{version} pulled from {repository} "
+            f"Image {name}:{version} pulled from {repository} "
             "doesn't match expected digest: "
-            "expected {digest}, got {observed_digest}".format(
-                name=name,
-                version=version,
-                repository=repository,
-                digest=digest,
-                observed_digest=pulled.id,
-            )
+            f"expected {digest}, got {pulled.id}"
         )
 
 

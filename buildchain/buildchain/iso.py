@@ -48,7 +48,7 @@ from buildchain import utils
 from buildchain import versions
 
 
-ISO_FILE: Path = config.BUILD_ROOT / "{}.iso".format(config.PROJECT_NAME.lower())
+ISO_FILE: Path = config.BUILD_ROOT / f"{config.PROJECT_NAME.lower()}.iso"
 FILE_TREES: Tuple[helper.FileTree, ...] = (
     helper.FileTree(
         basename="_iso_add_tree",
@@ -173,9 +173,7 @@ def task_populate_iso() -> types.TaskDict:
     return {
         "basename": "populate_iso",
         "actions": None,
-        "doc": "Populate {} with required files.".format(
-            utils.build_relpath(constants.ISO_ROOT)
-        ),
+        "doc": f"Populate {utils.build_relpath(constants.ISO_ROOT)} with required files.",
         # Aggregate here the tasks that put files into ISO_ROOT.
         "task_dep": [
             "_iso_mkdir_root",
@@ -211,7 +209,7 @@ def task__iso_build() -> types.TaskDict:
         "-joliet-long",
         "-full-iso9660-filenames",
         "-volid",
-        "{} {}".format(config.PROJECT_NAME, versions.VERSION),
+        f"{config.PROJECT_NAME} {versions.VERSION}",
         "--iso-level",
         "3",
         "-gid",
@@ -224,9 +222,7 @@ def task__iso_build() -> types.TaskDict:
         "utf-8",
         constants.ISO_ROOT,
     ]
-    doc = "Create the ISO from the files in {}.".format(
-        utils.build_relpath(constants.ISO_ROOT)
-    )
+    doc = f"Create the ISO from the files in {utils.build_relpath(constants.ISO_ROOT)}."
     # Every file used for the ISO is a dependency.
     depends = list(coreutils.ls_files_rec(constants.ISO_ROOT))
     depends.append(versions.VERSION_FILE)
@@ -251,14 +247,10 @@ def task__iso_implantisomd5() -> types.TaskDict:
         config.ExtCommand.IMPLANTISOMD5.value,
         ISO_FILE,
     ]
-    title = lambda _: "{cmd: <{width}} {path}".format(
-        cmd="IMPLANTISOMD5",
-        width=constants.CMD_WIDTH,
-        path=utils.build_relpath(Path(ISO_FILE)),
+    title = (
+        lambda _: f"{'IMPLANTISOMD5': <{constants.CMD_WIDTH}} {utils.build_relpath(Path(ISO_FILE))}"
     )
-    doc = "Implant MD5 in ISO {}.".format(
-        utils.build_relpath(ISO_FILE),
-    )
+    doc = f"Implant MD5 in ISO {utils.build_relpath(ISO_FILE)}."
     return {
         "title": title,
         "doc": doc,

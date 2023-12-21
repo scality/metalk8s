@@ -56,7 +56,7 @@ def task__ui_build() -> types.TaskDict:
         "actions": [run_ui_builder("build")],
         "title": utils.title_with_target1("NPM BUILD"),
         "task_dep": [
-            "_build_builder:{}".format(builders.UI_BUILDER.name),
+            f"_build_builder:{builders.UI_BUILDER.name}",
             "_ui_mkdir_build_root",
         ],
         "file_dep": list(utils.git_ls("ui")),

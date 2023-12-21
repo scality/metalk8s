@@ -142,7 +142,7 @@ class LocalImage(image.ContainerImage):
         task.update(
             {
                 "title": lambda _: self.show("IMG BUILD"),
-                "doc": "Build {} container image.".format(self.name),
+                "doc": f"Build {self.name} container image.",
                 "actions": self._build_actions(),
                 "uptodate": [(docker_command.docker_image_exists, [self.tag], {})],
             }
@@ -164,9 +164,7 @@ class LocalImage(image.ContainerImage):
             file_dep=[self.dockerfile],
             task_dep=self.task_dep,
         ).basic_task
-        task["title"] = lambda _: "{cmd: <{width}} {name}".format(
-            cmd="CALC DEPS", width=constants.CMD_WIDTH, name=self.name
-        )
+        task["title"] = lambda _: f"{'CALC DEPS': <{constants.CMD_WIDTH}} {self.name}"
         task["actions"] = [self.load_deps_from_dockerfile]
         return task
 
@@ -188,9 +186,9 @@ class LocalImage(image.ContainerImage):
         cmd.append("--dest-compress")
         docker_host = os.getenv("DOCKER_HOST")
         if docker_host is not None:
-            cmd.extend(["--src-daemon-host", "http://{}".format(docker_host)])
-        cmd.append("docker-daemon:{}".format(self.tag))
-        cmd.append("dir:{}".format(str(self.dirname)))
+            cmd.extend(["--src-daemon-host", f"http://{docker_host}"])
+        cmd.append(f"docker-daemon:{self.tag}")
+        cmd.append(f"dir:{str(self.dirname)}")
         return [self.mkdirs, cmd]
 
     @staticmethod

@@ -61,10 +61,8 @@ def title_with_target1(command: str) -> Callable[[types.Task], str]:
     """
 
     def title(task: types.Task) -> str:
-        return "{cmd: <{width}} {path}".format(
-            cmd=command,
-            width=constants.CMD_WIDTH,
-            path=build_relpath(Path(task.targets[0])),
+        return (
+            f"{command: <{constants.CMD_WIDTH}} {build_relpath(Path(task.targets[0]))}"
         )
 
     return title
@@ -83,9 +81,7 @@ def title_with_subtask_name(command: str) -> Callable[[types.Task], str]:
 
     def title(task: types.Task) -> str:
         # Extract the sub-task name (the part after `:`) from the task name.
-        return "{cmd: <{width}} {name}".format(
-            cmd=command, width=constants.CMD_WIDTH, name=task.name.split(":")[1]
-        )
+        return f"{command: <{constants.CMD_WIDTH}} {task.name.split(':')[1]}"
 
     return title
 

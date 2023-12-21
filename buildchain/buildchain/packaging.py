@@ -297,14 +297,14 @@ def _rpm_package(name: str, releasever: str, sources: List[Path]) -> targets.RPM
         pkg_info = versions.REDHAT_PACKAGES_MAP[releasever][name]
     except KeyError as exc:
         raise ValueError(
-            'Missing version for package "{}" for release "{}"'.format(name, releasever)
+            f'Missing version for package "{name}" for release "{releasever}"'
         ) from exc
 
     # In case the `release` is of form "{build_id}.{os}", which is standard
     build_id_str, _, _ = pkg_info.release.partition(".")
 
     return targets.RPMPackage(
-        basename="_build_redhat_{0}_packages".format(releasever),
+        basename=f"_build_redhat_{releasever}_packages",
         name=name,
         version=pkg_info.version,
         build_id=int(build_id_str),
@@ -312,8 +312,8 @@ def _rpm_package(name: str, releasever: str, sources: List[Path]) -> targets.RPM
         builder=builder.RPM_BUILDER[releasever],
         releasever=releasever,
         task_dep=[
-            "_package_mkdir_redhat_{0}_root".format(releasever),
-            "_build_builder:{}".format(builder.RPM_BUILDER[releasever].name),
+            f"_package_mkdir_redhat_{releasever}_root",
+            f"_build_builder:{builder.RPM_BUILDER[releasever].name}",
         ],
     )
 
@@ -327,10 +327,10 @@ def _rpm_repository(
         name:     repository name
         packages: list of locally built packages
     """
-    mkdir_task = "_package_mkdir_redhat_{0}_iso_root".format(releasever)
-    download_task = "_download_redhat_{0}_packages".format(releasever)
+    mkdir_task = f"_package_mkdir_redhat_{releasever}_iso_root"
+    download_task = f"_download_redhat_{releasever}_packages"
     return targets.RPMRepository(
-        basename="_build_redhat_{0}_repositories".format(releasever),
+        basename=f"_build_redhat_{releasever}_repositories",
         name=name,
         releasever=releasever,
         builder=builder.RPM_BUILDER[releasever],
@@ -353,7 +353,7 @@ def _rpm_package_containerd(releasever: str) -> targets.RPMPackage:
             Path("0001-Revert-commit-for-Windows-metrics.patch"),
             Path("containerd.service"),
             Path("containerd.toml"),
-            Path("v{}.tar.gz".format(versions.CONTAINERD_VERSION)),
+            Path(f"v{versions.CONTAINERD_VERSION}.tar.gz"),
         ]
         + extra_sources,
     )

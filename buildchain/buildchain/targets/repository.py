@@ -63,7 +63,7 @@ class Repository(base.CompositeTarget):
         repo_root: Path,
         releasever: str,
         packages: Optional[Sequence[package.Package]] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         """Initialize the repository.
 
@@ -118,8 +118,8 @@ class Repository(base.CompositeTarget):
         The task name is prefixed by the repository name.
         Use the given basename if any.
         """
-        prefix = "{}:".format(self.basename) if with_basename else ""
-        return "{base}{name}/{task}".format(base=prefix, name=self.name, task=taskname)
+        prefix = f"{self.basename}:" if with_basename else ""
+        return f"{prefix}{self.name}/{taskname}"
 
     def _mkdir_repo_root(self) -> types.TaskDict:
         """Create the root directory for the repository."""
@@ -128,7 +128,7 @@ class Repository(base.CompositeTarget):
         task.update(
             {
                 "name": self._get_task_name(MKDIR_ROOT_TASK_NAME),
-                "doc": "Create root directory for the {} repository.".format(self.name),
+                "doc": f"Create root directory for the {self.name} repository.",
                 "title": mkdir["title"],
                 "actions": mkdir["actions"],
                 "uptodate": [True],
@@ -150,7 +150,7 @@ class RPMRepository(Repository):
         releasever: str,
         builder: image.ContainerImage,
         packages: Optional[Sequence[package.RPMPackage]] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         super().__init__(
             basename,
@@ -159,17 +159,13 @@ class RPMRepository(Repository):
             constants.REPO_REDHAT_ROOT,
             releasever,
             packages,
-            **kwargs
+            **kwargs,
         )
 
     @property
     def fullname(self) -> str:
         """Repository full name."""
-        return "{project}-{repo}-el{releasever}".format(
-            project=config.PROJECT_NAME.lower(),
-            repo=self.name,
-            releasever=self._releasever,
-        )
+        return f"{config.PROJECT_NAME.lower()}-{self.name}-el{self._releasever}"
 
     @property
     def repodata(self) -> Path:
@@ -194,7 +190,7 @@ class RPMRepository(Repository):
             {
                 "name": self._get_task_name("build_repodata"),
                 "actions": actions,
-                "doc": "Build the {} repository metadata.".format(self.name),
+                "doc": f"Build the {self.name} repository metadata.",
                 "title": utils.title_with_target1("BUILD RPM REPO"),
                 "targets": targets,
                 "uptodate": [True],
@@ -216,7 +212,7 @@ class RPMRepository(Repository):
         for pkg in self.packages:
             rpm = self.get_rpm_path(pkg)
             env = {
-                "RPMS": "{arch}/{rpm}".format(arch=self.ARCH, rpm=rpm.name),
+                "RPMS": f"{self.ARCH}/{rpm.name}",
                 "SRPM": pkg.srpm.name,
             }
 
@@ -234,11 +230,9 @@ class RPMRepository(Repository):
             task = self.basic_task
             task.update(
                 {
-                    "name": self._get_task_name("build_rpm/{}".format(pkg.name)),
+                    "name": self._get_task_name(f"build_rpm/{pkg.name}"),
                     "actions": [buildrpm_callable],
-                    "doc": "Build {pkg} RPM for the {repo} repository.".format(
-                        pkg=pkg.name, repo=self.name
-                    ),
+                    "doc": f"Build {pkg.name} RPM for the {self.name} repository.",
                     "title": utils.title_with_target1("BUILD RPM"),
                     "targets": [self.get_rpm_path(pkg)],
                     # Prevent Docker from polluting our output.
@@ -249,7 +243,7 @@ class RPMRepository(Repository):
             task["task_dep"].append(
                 self._get_task_name(MKDIR_ARCH_TASK_NAME, with_basename=True)
             )
-            task["task_dep"].append("_build_builder:{}".format(self.builder.name))
+            task["task_dep"].append(f"_build_builder:{self.builder.name}")
             tasks.append(task)
         return tasks
 
@@ -260,7 +254,7 @@ class RPMRepository(Repository):
         task.update(
             {
                 "name": self._get_task_name(MKDIR_ARCH_TASK_NAME),
-                "doc": "Create arch directory for the {} repository.".format(self.name),
+                "doc": f"Create arch directory for the {self.name} repository.",
                 "title": mkdir["title"],
                 "actions": mkdir["actions"],
                 "uptodate": [True],
@@ -274,7 +268,7 @@ class RPMRepository(Repository):
 
     def get_rpm_path(self, pkg: package.RPMPackage) -> Path:
         """Return the path of the RPM of a given package."""
-        filename = pkg.srpm.name.replace(".src.rpm", ".{}.rpm".format(self.ARCH))
+        filename = pkg.srpm.name.replace(".src.rpm", f".{self.ARCH}.rpm")
         return self.rootdir / self.ARCH / filename
 
     @staticmethod

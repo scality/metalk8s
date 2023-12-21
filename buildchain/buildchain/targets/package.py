@@ -57,7 +57,7 @@ class Package(base.CompositeTarget):
         builder: image.ContainerImage,
         pkg_root: Path,
         releasever: str,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         self._name = name
         self._version = version
@@ -78,8 +78,8 @@ class Package(base.CompositeTarget):
         The task name is prefixed by the package name.
         Use the given basename if any.
         """
-        prefix = "{}:".format(self.basename) if with_basename else ""
-        return "{base}{name}/{task}".format(base=prefix, name=self.name, task=taskname)
+        prefix = f"{self.basename}:" if with_basename else ""
+        return f"{prefix}{self.name}/{taskname}"
 
 
 class RPMPackage(Package):
@@ -96,7 +96,7 @@ class RPMPackage(Package):
         sources: Sequence[Path],
         builder: image.ContainerImage,
         releasever: str,
-        **kwargs: Any
+        **kwargs: Any,
     ):
         """Initialize the package.
 
@@ -119,7 +119,7 @@ class RPMPackage(Package):
             builder,
             constants.PKG_REDHAT_ROOT,
             releasever,
-            **kwargs
+            **kwargs,
         )
         self._sources = [self.rootdir / "SOURCES" / filename for filename in sources]
 
@@ -138,18 +138,12 @@ class RPMPackage(Package):
     @property
     def spec(self) -> Path:
         """.spec file path."""
-        return (
-            constants.ROOT
-            / "packages"
-            / "redhat"
-            / "common"
-            / "{}.spec".format(self.name)
-        )
+        return constants.ROOT / "packages" / "redhat" / "common" / f"{self.name}.spec"
 
     @property
     def meta(self) -> Path:
         """.meta file path."""
-        return self.rootdir / "{}.meta".format(self.name)
+        return self.rootdir / f"{self.name}.meta"
 
     @property
     def requires_file(self) -> Path:
@@ -164,8 +158,11 @@ class RPMPackage(Package):
     @property
     def srpm(self) -> Path:
         """SRPM path."""
-        fmt = "{pkg.name}-{pkg.version}-{pkg.build_id}.el{pkg._releasever}.src.rpm"
-        return constants.PKG_REDHAT_ROOT / self._releasever / fmt.format(pkg=self)
+        return (
+            constants.PKG_REDHAT_ROOT
+            / self._releasever
+            / f"{self.name}-{self.version}-{self.build_id}.el{self._releasever}.src.rpm"
+        )
 
     @property
     def execution_plan(self) -> List[types.TaskDict]:
@@ -183,7 +180,7 @@ class RPMPackage(Package):
         task.update(
             {
                 "name": self._get_task_name(self.MKDIR_TASK_NAME),
-                "doc": "Create directory for {}.".format(self.name),
+                "doc": f"Create directory for {self.name}.",
                 "title": mkdir["title"],
                 "actions": mkdir["actions"],
                 "uptodate": mkdir["uptodate"],
@@ -214,7 +211,7 @@ class RPMPackage(Package):
             {
                 "name": self._get_task_name("rpmspec"),
                 "actions": [buildmeta_callable],
-                "doc": "Generate {}.meta".format(self.name),
+                "doc": f"Generate {self.name}.meta",
                 "title": utils.title_with_target1("RPMSPEC"),
                 "targets": [self.meta, self.requires_file],
             }
@@ -236,7 +233,7 @@ class RPMPackage(Package):
             {
                 "name": self._get_task_name("get_source"),
                 "actions": actions,
-                "doc": "Download source files for {}.".format(self.name),
+                "doc": f"Download source files for {self.name}.",
                 "title": utils.title_with_target1("GET_SRC"),
                 "targets": targets,
             }
@@ -270,7 +267,7 @@ class RPMPackage(Package):
             {
                 "name": self._get_task_name("srpm"),
                 "actions": [buildsrpm_callable],
-                "doc": "Build {}".format(self.srpm.name),
+                "doc": f"Build {self.srpm.name}",
                 "title": utils.title_with_target1("BUILD SRPM"),
                 "targets": [self.srpm],
                 # Prevent Docker from polluting our output.
@@ -312,9 +309,7 @@ class RPMPackage(Package):
                     sourcefiles.remove(filename)
                     urls[self.srcdir / filename] = url
         if sourcefiles:
-            raise Exception(
-                "URL not found for source files: {}".format(", ".join(sourcefiles))
-            )
+            raise Exception(f"URL not found for source files: {', '.join(sourcefiles)}")
         return urls
 
     def _get_buildsrpm_mounts(self, srpm_dir: Path) -> List[types.Mount]:

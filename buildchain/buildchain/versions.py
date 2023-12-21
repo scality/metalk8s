@@ -91,7 +91,7 @@ SALT_MASTER_BUILD_ID = 1
 
 
 def _version_prefix(version: str, prefix: str = "v") -> str:
-    return "{}{}".format(prefix, version)
+    return f"{prefix}{version}"
 
 
 # Digests are quite a mouthful, so:
@@ -253,9 +253,7 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="salt-master",
-        version="{version}-{build_id}".format(
-            version=SALT_VERSION, build_id=SALT_MASTER_BUILD_ID
-        ),
+        version=f"{SALT_VERSION}-{SALT_MASTER_BUILD_ID}",
         digest=None,
     ),
     Image(
@@ -321,14 +319,14 @@ class PackageVersion:
         if self.version:
             full_version = self.version
             if self.release:
-                full_version = "{}-{}".format(self.version, self.release)
+                full_version = f"{self.version}-{self.release}"
         return full_version
 
     @property
     def rpm_full_name(self) -> str:
         """The package's full name in RPM conventions."""
         if self.full_version:
-            return "{}-{}".format(self.name, self.full_version)
+            return f"{self.name}-{self.full_version}"
         return cast(str, self.name)
 
 
@@ -386,13 +384,13 @@ PACKAGES: Dict[str, Any] = {
             PackageVersion(
                 name="containerd",
                 version=CONTAINERD_VERSION,
-                release="{0}.el7".format(CONTAINERD_RELEASE),
+                release=f"{CONTAINERD_RELEASE}.el7",
             ),
             PackageVersion(name="container-selinux"),  # TODO #1710
             PackageVersion(
                 name="metalk8s-sosreport",
                 version=NONSUFFIXED_VERSION,
-                release="{0}.el7".format(SOSREPORT_RELEASE),
+                release=f"{SOSREPORT_RELEASE}.el7",
             ),
             PackageVersion(name="yum-plugin-versionlock"),
         ),
@@ -400,14 +398,14 @@ PACKAGES: Dict[str, Any] = {
             PackageVersion(
                 name="containerd",
                 version=CONTAINERD_VERSION,
-                release="{0}.el8".format(CONTAINERD_RELEASE),
+                release=f"{CONTAINERD_RELEASE}.el8",
             ),
             PackageVersion(name="container-selinux"),
             PackageVersion(name="iptables-ebtables", override="ebtables"),
             PackageVersion(
                 name="metalk8s-sosreport",
                 version=NONSUFFIXED_VERSION,
-                release="{0}.el8".format(SOSREPORT_RELEASE),
+                release=f"{SOSREPORT_RELEASE}.el8",
             ),
             PackageVersion(name="python3-m2crypto", override="m2crypto"),
             PackageVersion(name="python3-dnf-plugin-versionlock"),
@@ -429,7 +427,7 @@ def _list_pkgs_for_os_family(os_family: str) -> Dict[str, Tuple[PackageVersion, 
     os_pkgs = {}
 
     if os_family_pkgs is None:
-        raise Exception("No packages for OS family: {}".format(os_family))
+        raise Exception(f"No packages for OS family: {os_family}")
 
     for version, pkgs in os_family_pkgs.items():
         os_override_names = [pkg.override for pkg in pkgs if pkg.override is not None]

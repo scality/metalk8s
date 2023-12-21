@@ -703,20 +703,20 @@ SALT_FILES: Tuple[Union[Path, targets.AtomicTarget], ...] = (
         destination=Path(
             constants.ISO_ROOT,
             "salt/metalk8s/repo/files",
-            "{}-registry-common.inc".format(config.PROJECT_NAME.lower()),
+            f"{config.PROJECT_NAME.lower()}-registry-common.inc",
         )
     ),
     StaticContainerRegistry(
         root=constants.ISO_IMAGE_ROOT,
-        server_root="${}_{}_images".format(
-            config.PROJECT_NAME.lower(),
-            versions.VERSION.replace(".", "_").replace("-", "_"),
+        server_root=(
+            f"${config.PROJECT_NAME.lower()}_"
+            f"{versions.VERSION.replace('.', '_').replace('-', '_')}_images"
         ),
-        name_prefix="{}-{}/".format(config.PROJECT_NAME.lower(), versions.VERSION),
+        name_prefix=f"{config.PROJECT_NAME.lower()}-{versions.VERSION}/",
         destination=Path(
             constants.ISO_ROOT,
             "salt/metalk8s/repo/files",
-            "{}-registry.inc".format(config.PROJECT_NAME.lower()),
+            f"{config.PROJECT_NAME.lower()}-registry.inc",
         ),
         task_dep=["images"],
     ),
