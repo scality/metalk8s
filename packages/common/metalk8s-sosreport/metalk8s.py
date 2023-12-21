@@ -133,9 +133,14 @@ class MetalK8s(Plugin, RedHatPlugin):
         for service in services:
             self.add_journal(units=service)
 
-    def _setup_k8s_resources(self):  # pylint: disable=too-many-statements
+    def _setup_k8s_resources(
+        self,
+    ):  # pylint: disable=too-many-statements,too-many-locals
         root_dir = self.get_cmd_output_path(make=False)
         flat_dir = "flat"
+
+        ns_kind = {}
+        no_ns_kind = set()
 
         def _add_symlink(relative_dest, src_path, dest_name):
             dest_dir = os.path.join(root_dir, relative_dest)
@@ -172,6 +177,35 @@ class MetalK8s(Plugin, RedHatPlugin):
             if namespace:
                 relative_dest = os.path.join(relative_dest, namespace)
             _add_symlink(relative_dest, src_path, dest_name)
+
+        def _handle_list():
+            for kind, namespaces in ns_kind.items():
+                for namespace in namespaces:
+                    filename = "{}_ns_{}_list.txt".format(kind, namespace)
+                    self.add_cmd_output(
+                        "{} get --namespace={} {}".format(
+                            self.kube_cmd, namespace, kind
+                        ),
+                        subdir=flat_dir,
+                        suggest_filename=filename,
+                    )
+
+                    _handle_symlinks(
+                        src_name=filename,
+                        dest_name="list.txt",
+                        kind=kind,
+                        namespace=namespace,
+                    )
+
+            for kind in no_ns_kind:
+                filename = "{}_list.txt".format(kind)
+                self.add_cmd_output(
+                    "{} get {}".format(self.kube_cmd, kind),
+                    subdir=flat_dir,
+                    suggest_filename=filename,
+                )
+
+                _handle_symlinks(src_name=filename, dest_name="list.txt", kind=kind)
 
         def _handle_describe(prefix, obj):
             cmd = "{} describe {} {}".format(
@@ -234,6 +268,13 @@ class MetalK8s(Plugin, RedHatPlugin):
             obj_name = obj["metadata"]["name"]
             obj_namespace = obj["metadata"].get("namespace")
             suffix = "get"
+
+            # Store every type and namespace we encounter
+            # to retrieve list at the end
+            if obj_namespace:
+                ns_kind.setdefault(obj_kind, set()).add(obj_namespace)
+            else:
+                no_ns_kind.add(obj_kind)
 
             if obj_kind == "event":
                 obj_kind = obj["involvedObject"]["kind"].lower()
@@ -315,6 +356,8 @@ class MetalK8s(Plugin, RedHatPlugin):
 
         for obj in all_no_ns_obj:
             _handle_obj(obj)
+
+        _handle_list()
 
     def _prometheus_snapshot(self):
         kube_cmd = (
