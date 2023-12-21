@@ -69,8 +69,6 @@ class ExtCommand(enum.Enum):
     @property
     def command_name(self) -> str:
         """Return the name of the command."""
-        # See https://github.com/PyCQA/pylint/issues/2062
-        # pylint: disable=no-member
         return self.name.lower()
 
 
