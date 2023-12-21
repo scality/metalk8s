@@ -79,9 +79,9 @@ def image_managed(name, archive_path=None):
             ret["comment"] = "Imported archive"
             ret["result"] = True
         else:
-            ret["comment"] = "Failed to import archive: {}".format(
-                result["stderr"] or result["stdout"]
-            )
+            ret[
+                "comment"
+            ] = f"Failed to import archive: {result['stderr'] or result['stdout']}"
         return ret
     else:
         if __opts__["test"]:

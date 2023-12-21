@@ -40,9 +40,7 @@ def installed(name, version=None, fromrepo=None, pkgs_info=None, **kwargs):
                 "name": name,
                 "result": False,
                 "changes": {},
-                "comment": (
-                    'Failed to update package "{}" and its dependents'.format(name)
-                ),
+                "comment": (f'Failed to update package "{name}" and its dependents'),
             }
 
         pkgs = [{k: v} for k, v in dep_list.items()]

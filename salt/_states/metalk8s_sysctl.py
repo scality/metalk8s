@@ -32,7 +32,7 @@ def present(name, value, config=None, check_priority=True, strict=False):
                 "name": name,
                 "result": False,
                 "changes": {},
-                "comment": "Unable to set sysctl value: {0}".format(exc),
+                "comment": f"Unable to set sysctl value: {exc}",
             }
 
     return __states__["sysctl.present"](name, value, config)

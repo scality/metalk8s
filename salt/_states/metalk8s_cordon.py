@@ -15,24 +15,22 @@ def _node_set_unschedulable(name, value, **kwargs):
 
     if unschedulable == value:
         ret["result"] = True
-        ret["comment"] = "The node {0} is already {1}ed".format(name, action)
+        ret["comment"] = f"The node {name} is already {action}ed"
         return ret
 
     if __opts__["test"]:
-        ret["comment"] = "The node {0} is going to be {1}ed".format(name, action)
+        ret["comment"] = f"The node {name} is going to be {action}ed"
         ret["result"] = None
         return ret
 
-    res = __salt__["metalk8s_kubernetes.{0}_node".format(action)](
-        node_name=name, **kwargs
-    )
+    res = __salt__[f"metalk8s_kubernetes.{action}_node"](node_name=name, **kwargs)
 
     ret["result"] = True
     ret["changes"] = {
         "old": {"unschedulable": unschedulable},
         "new": {"unschedulable": res["spec"].get("unschedulable")},
     }
-    ret["comment"] = "Node {0} {1}ed".format(name, action)
+    ret["comment"] = f"Node {name} {action}ed"
 
     return ret
 

@@ -34,7 +34,7 @@ def run(name, **kwargs):
         result = __salt__[name](**kwargs)
     except KeyError:
         ret["result"] = False
-        ret["comment"] = "Module '{}' does not exist.".format(name)
+        ret["comment"] = f"Module '{name}' does not exist."
     except CheckError as exc:
         ret["result"] = False
         ret["comment"] = str(exc)

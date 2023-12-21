@@ -25,7 +25,7 @@ def member_present(name, peer_urls):
     # Check that peer urls does not exist
     if __salt__["metalk8s_etcd.urls_exist_in_cluster"](peer_urls):
         ret["result"] = True
-        ret["comment"] = "Peer URLs: {} already exists".format(" ,".join(peer_urls))
+        ret["comment"] = f"Peer URLs: {', '.join(peer_urls)} already exists"
         return ret
 
     # Add node
@@ -38,7 +38,7 @@ def member_present(name, peer_urls):
     try:
         member = __salt__["metalk8s_etcd.add_etcd_node"](peer_urls)
     except Exception as exc:  # pylint: disable=broad-except
-        ret["comment"] = "Failed to add {} in the cluster: {}".format(name, exc)
+        ret["comment"] = f"Failed to add {name} in the cluster: {exc}"
     else:
         ret["result"] = True
         ret["changes"] = {

@@ -80,16 +80,12 @@ def object_absent(name, manifest=None, wait=None, **kwargs):
         if attempts > wait["attempts"]:
             ret[
                 "comment"
-            ] = "The object is still present after {} check attempts".format(
-                wait["attempts"]
-            )
+            ] = f"The object is still present after {wait['attempts']} check attempts"
             ret["result"] = False
             return ret
         ret[
             "comment"
-        ] = "The object was deleted and not present after {} check attempts".format(
-            attempts
-        )
+        ] = f"The object was deleted and not present after {attempts} check attempts"
     else:
         ret["comment"] = "The object was deleted"
 
@@ -140,9 +136,9 @@ def object_present(name, manifest=None, **kwargs):
 
     if __opts__["test"]:
         ret["result"] = None
-        ret["comment"] = "The object is going to be {}".format(
-            "created" if obj is None else "replaced"
-        )
+        ret[
+            "comment"
+        ] = f"The object is going to be {'created' if obj is None else 'replaced'}"
         return ret
 
     if obj is None:

@@ -78,9 +78,7 @@ def static_pod_managed(
         except CommandExecutionError as exc:
             return _error(
                 ret,
-                "Unable to compute digest of config file {}: {}".format(
-                    config_file, exc
-                ),
+                f"Unable to compute digest of config file {config_file}: {exc}",
             )
         config_file_digests.append(digest)
 
@@ -95,9 +93,7 @@ def static_pod_managed(
 
     if __opts__["test"]:
         log.warning("Test functionality is not yet implemented.")
-        ret["comment"] = (
-            "The manifest {} is in the correct state (supposedly)."
-        ).format(name)
+        ret["comment"] = f"The manifest {name} is in the correct state (supposedly)."
         return ret
 
     # Gather the source file from the server
@@ -118,7 +114,7 @@ def static_pod_managed(
         )
     except Exception as exc:  # pylint: disable=broad-except
         log.debug(traceback.format_exc())
-        return _error(ret, "Unable to get managed file: {}".format(exc))
+        return _error(ret, f"Unable to get managed file: {exc}")
 
     if comment_:
         return _error(ret, comment_)
@@ -133,7 +129,7 @@ def static_pod_managed(
             )
         except Exception as exc:  # pylint: disable=broad-except
             log.debug(traceback.format_exc())
-            return _error(ret, "Unable to manage file: {}".format(exc))
+            return _error(ret, f"Unable to manage file: {exc}")
 
 
 def module_run(name, attempts=1, sleep_time=10, **kwargs):
@@ -203,9 +199,9 @@ def saltutil_cmd(name, **kwargs):
     else:
         if fail:
             ret["result"] = False
-            ret["comment"] = "Running function {} failed on minions: {}".format(
-                name, ", ".join(fail)
-            )
+            ret[
+                "comment"
+            ] = f"Running function {name} failed on minions: {', '.join(fail)}"
         else:
             ret["comment"] = "Function ran successfully"
 

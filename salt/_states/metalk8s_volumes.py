@@ -26,24 +26,24 @@ def present(name):
     # Idempotence.
     if __salt__["metalk8s_volumes.exists"](name):
         ret["result"] = True
-        ret["comment"] = "Storage for volume {} already exists.".format(name)
+        ret["comment"] = f"Storage for volume {name} already exists."
         return ret
     # Dry-run.
     if __opts__["test"]:
         ret["changes"][name] = "Present"
         ret["result"] = None
-        ret["comment"] = "Storage for volume {} is going to be created.".format(name)
+        ret["comment"] = f"Storage for volume {name} is going to be created."
         return ret
     # Let's go for real.
     try:
         __salt__["metalk8s_volumes.create"](name)
     except Exception as exn:  # pylint: disable=broad-except
         ret["result"] = False
-        ret["comment"] = "Cannot create storage for volume {}: {}.".format(name, exn)
+        ret["comment"] = f"Cannot create storage for volume {name}: {exn}."
     else:
         ret["changes"][name] = "Present"
         ret["result"] = True
-        ret["comment"] = "Storage for volume {} created.".format(name)
+        ret["comment"] = f"Storage for volume {name} created."
     return ret
 
 
@@ -60,24 +60,24 @@ def prepared(name):
     # Idempotence.
     if __salt__["metalk8s_volumes.is_prepared"](name):
         ret["result"] = True
-        ret["comment"] = "Volume {} already prepared.".format(name)
+        ret["comment"] = f"Volume {name} already prepared."
         return ret
     # Dry-run.
     if __opts__["test"]:
         ret["changes"][name] = "Prepared"
         ret["result"] = None
-        ret["comment"] = "Volume {} is going to be prepared.".format(name)
+        ret["comment"] = f"Volume {name} is going to be prepared."
         return ret
     # Let's go for real.
     try:
         __salt__["metalk8s_volumes.prepare"](name)
     except Exception as exn:  # pylint: disable=broad-except
         ret["result"] = False
-        ret["comment"] = "Failed to prepare volume {}: {}.".format(name, exn)
+        ret["comment"] = f"Failed to prepare volume {name}: {exn}."
     else:
         ret["changes"][name] = "Prepared"
         ret["result"] = True
-        ret["comment"] = "Volume {} prepared.".format(name)
+        ret["comment"] = f"Volume {name} prepared."
     return ret
 
 
@@ -94,22 +94,22 @@ def removed(name):
     # Idempotence.
     if __salt__["metalk8s_volumes.is_cleaned_up"](name):
         ret["result"] = True
-        ret["comment"] = "Volume {} already cleaned up.".format(name)
+        ret["comment"] = f"Volume {name} already cleaned up."
         return ret
     # Dry-run.
     if __opts__["test"]:
         ret["changes"][name] = "Cleaned up"
         ret["result"] = None
-        ret["comment"] = "Volume {} is going to be cleaned up.".format(name)
+        ret["comment"] = f"Volume {name} is going to be cleaned up."
         return ret
     # Let's go for real.
     try:
         __salt__["metalk8s_volumes.clean_up"](name)
     except Exception as exn:  # pylint: disable=broad-except
         ret["result"] = False
-        ret["comment"] = "Failed to clean up volume {}: {}.".format(name, exn)
+        ret["comment"] = f"Failed to clean up volume {name}: {exn}."
     else:
         ret["changes"][name] = "Cleaned up"
         ret["result"] = True
-        ret["comment"] = "Volume {} cleaned up.".format(name)
+        ret["comment"] = f"Volume {name} cleaned up."
     return ret

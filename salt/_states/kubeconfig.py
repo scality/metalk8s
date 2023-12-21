@@ -35,7 +35,7 @@ def managed(
     except KeyError:
         ret.update(
             {
-                "comment": "{0} CA server is not advertized in mine".format(ca_server),
+                "comment": f"{ca_server} CA server is not advertized in mine",
                 "result": False,
             }
         )
@@ -60,7 +60,7 @@ def managed(
         ca_server=ca_server,
         signing_policy=signing_policy,
         days_valid=days_valid,
-        **client_cert_info
+        **client_cert_info,
     )
 
     dataset = {
@@ -80,10 +80,10 @@ def managed(
                     "cluster": cluster,
                     "user": user,
                 },
-                "name": "{0}@{1}".format(user, cluster),
+                "name": f"{user}@{cluster}",
             }
         ],
-        "current-context": "{0}@{1}".format(user, cluster),
+        "current-context": f"{user}@{cluster}",
         "kind": "Config",
         "preferences": {},
         "users": [
