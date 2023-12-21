@@ -39,6 +39,10 @@ class MetalK8s(Plugin, RedHatPlugin):
     plugin_name = "metalk8s"
     short_desc = "MetalK8s platform"
 
+    # Increase timeout since wee need to retrieve a lot of data
+    # especially when all option enabled
+    plugin_timeout = 3600
+
     packages = ("kubectl",)
     profiles = ("container",)
 
