@@ -388,6 +388,9 @@ class KubernetesOverrides(DictOption):
                         items = api_group[patch["kind"]]
                         item = next(
                             filter(
+                                # This is a false positive
+                                # See https://github.com/pylint-dev/pylint/issues/7100
+                                # pylint: disable=cell-var-from-loop
                                 lambda obj: all(
                                     obj["metadata"].get(key)
                                     == patch["metadata"].get(key)
