@@ -34,7 +34,7 @@ from tests.unit.formulas import paths
 
 CONFIG_FILE = paths.BASE_DIR / "config.yaml"
 
-with CONFIG_FILE.open("r") as config_file:
+with CONFIG_FILE.open("r", encoding="utf-8") as config_file:
     TESTS_CONFIG = yaml.safe_load(config_file)
 
 
