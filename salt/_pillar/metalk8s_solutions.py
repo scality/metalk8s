@@ -24,7 +24,7 @@ def _load_solutions(bootstrap_id):
         result["config"] = __salt__["metalk8s_solutions.read_config"]()
     except (IOError, CommandExecutionError) as exc:
         result["config"] = __utils__["pillar_utils.errors_to_dict"](
-            ["Error when reading Solutions config file: {}".format(exc)]
+            [f"Error when reading Solutions config file: {exc}"]
         )
 
     errors = []
@@ -34,18 +34,16 @@ def _load_solutions(bootstrap_id):
             fun="metalk8s_solutions.list_available",
         )[bootstrap_id]
         if available_ret["retcode"] != 0:
-            raise Exception(
-                "[{}] {}".format(available_ret["retcode"], available_ret["ret"])
-            )
+            raise Exception(f"[{available_ret['retcode']}] {available_ret['ret']}")
 
         result["available"] = available_ret["ret"]
     except Exception as exc:  # pylint: disable=broad-except
-        errors.append("Error when listing available Solutions: {}".format(exc))
+        errors.append(f"Error when listing available Solutions: {exc}")
 
     try:
         active = __salt__["metalk8s_solutions.list_active"]()
     except Exception as exc:  # pylint: disable=broad-except
-        errors.append("Error when listing active Solution versions: {}".format(exc))
+        errors.append(f"Error when listing active Solution versions: {exc}")
 
     if errors:
         result["available"].update(__utils__["pillar_utils.errors_to_dict"](errors))
@@ -60,7 +58,7 @@ def _load_solutions(bootstrap_id):
         result["environments"] = __salt__["metalk8s_solutions.list_environments"]()
     except Exception as exc:  # pylint: disable=broad-except
         result["environments"] = __utils__["pillar_utils.errors_to_dict"](
-            ["Error when listing Solution Environments: {}".format(exc)]
+            [f"Error when listing Solution Environments: {exc}"]
         )
 
     for key in ["available", "config", "environments"]:
@@ -87,9 +85,7 @@ def ext_pillar(minion_id, pillar):  # pylint: disable=unused-argument
             (bootstrap_id,) = bootstrap_nodes
         except ValueError:
             errors.append(
-                "Must have one and only one bootstrap Node (found {})".format(
-                    len(bootstrap_nodes)
-                )
+                f"Must have one and only one bootstrap Node (found {len(bootstrap_nodes)})"
             )
 
     if errors:

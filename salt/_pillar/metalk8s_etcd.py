@@ -17,7 +17,7 @@ def _load_members(pillar):
         )
     except Exception as exc:  # pylint: disable=broad-except
         members = []
-        errors.append("Error while retrieving etcd cluster members: {}".format(exc))
+        errors.append(f"Error while retrieving etcd cluster members: {exc}")
     result = {"members": members}
 
     if errors:

@@ -28,7 +28,7 @@ def _load_config(path):
             config = salt.utils.yaml.safe_load(fd) or {}
     except Exception as exc:  # pylint: disable=broad-except
         return __utils__["pillar_utils.errors_to_dict"](
-            ["Failed to load {}: {}".format(path, exc)]
+            [f"Failed to load {path}: {exc}"]
         )
     if not config:
         error_tplt = "Invalid BootstrapConfiguration at {}"
@@ -42,9 +42,8 @@ def _load_config(path):
 
     if config["apiVersion"] not in EXPECTED_APIVERSIONS:
         errors.append(
-            "Expected one of '{}' for apiVersion, got '{}'".format(
-                "', '".join(EXPECTED_APIVERSIONS), config["apiVersion"]
-            )
+            f"Expected one of '{', '.join(EXPECTED_APIVERSIONS)}' for apiVersion, "
+            f"got '{config['apiVersion']}'"
         )
 
     if errors:
@@ -62,9 +61,7 @@ def _load_networks(config_data):
     if not isinstance(networks_data, Mapping):
         return __utils__["pillar_utils.errors_to_dict"](
             [
-                "Invalid network format in config file, mapping expected got {}".format(
-                    networks_data
-                )
+                f"Invalid network format in config file, mapping expected got {networks_data}"
             ]
         )
     errors = __utils__["pillar_utils.assert_keys"](
@@ -80,13 +77,13 @@ def _load_networks(config_data):
         elif config_data["apiVersion"] == "metalk8s.scality.com/v1alpha3":
             if not isinstance(networks_data[net], Mapping):
                 errors.append(
-                    "Invalid '{}' network format in config file, "
-                    "mapping expected got {}".format(net, networks_data[net])
+                    f"Invalid '{net}' network format in config file, "
+                    f"mapping expected got {networks_data[net]}"
                 )
                 continue
 
             if "cidr" not in networks_data[net]:
-                errors.append("Invalid '{}' network 'cidr' is mandatory".format(net))
+                errors.append(f"Invalid '{net}' network 'cidr' is mandatory")
 
             if not isinstance(networks_data[net]["cidr"], list):
                 networks_data[net]["cidr"] = [networks_data[net]["cidr"]]
@@ -115,11 +112,7 @@ def _load_ca(config_data):
     ca_data = config_data["ca"]
     if not isinstance(ca_data, Mapping):
         return __utils__["pillar_utils.errors_to_dict"](
-            [
-                "Invalid ca format in config file, mapping expected got {}".format(
-                    ca_data
-                )
-            ]
+            [f"Invalid ca format in config file, mapping expected got {ca_data}"]
         )
 
     errors = __utils__["pillar_utils.assert_keys"](ca_data, ["minion"])
@@ -142,7 +135,7 @@ def _load_iso_path(config_data):
         return __utils__["pillar_utils.errors_to_dict"](
             [
                 "Invalid archives format in config file, list or string expected "
-                "got {1}.".format(res)
+                f"got {res}."
             ]
         )
 

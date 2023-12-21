@@ -79,7 +79,7 @@ def get_cluster_version(kubeconfig=None):
         )
     except CommandExecutionError as exc:
         return __utils__["pillar_utils.errors_to_dict"](
-            "Unable to read namespace information {}".format(exc)
+            f"Unable to read namespace information {exc}"
         )
     annotations = namespace["metadata"].get("annotations", {})
     annotation_key = "metalk8s.scality.com/cluster-version"
@@ -121,7 +121,7 @@ def list_volumes(minion_id, kubeconfig=None):
         storage_classes = get_storage_classes(kubeconfig=kubeconfig)
     except CommandExecutionError as exc:
         return __utils__["pillar_utils.errors_to_dict"](
-            ["Unable to retrieve list of storage class: {}".format(exc)]
+            [f"Unable to retrieve list of storage class: {exc}"]
         )
 
     try:
@@ -132,7 +132,7 @@ def list_volumes(minion_id, kubeconfig=None):
         )
     except CommandExecutionError as exc:
         return __utils__["pillar_utils.errors_to_dict"](
-            ["Unable to retrieve list of Volumes: {}".format(exc)]
+            [f"Unable to retrieve list of Volumes: {exc}"]
         )
 
     results = {}
@@ -174,7 +174,7 @@ def ext_pillar(minion_id, pillar, kubeconfig):
         except CommandExecutionError as exc:
             log.exception("Failed to retrieve nodes for ext_pillar", exc_info=exc)
             pillar_nodes = __utils__["pillar_utils.errors_to_dict"](
-                ["Failed to retrieve NodeList: {!s}".format(exc)]
+                [f"Failed to retrieve NodeList: {exc}"]
             )
         else:
             log.debug("Successfully retrieved nodes for ext_pillar")
