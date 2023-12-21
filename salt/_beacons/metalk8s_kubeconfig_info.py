@@ -7,7 +7,7 @@ from salt.ext import six
 __virtualname__ = "metalk8s_kubeconfig_info"
 
 DEFAULT_NOTIFY_DAYS = 45
-BASE_ERROR_MSG = "Configuration for {0} beacon is invalid".format(__virtualname__)
+BASE_ERROR_MSG = f"Configuration for {__virtualname__} beacon is invalid"
 
 log = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ def __virtual__():
 
 
 def _config_error(msg):
-    return False, "{0}: {1}".format(BASE_ERROR_MSG, msg)
+    return False, f"{BASE_ERROR_MSG}: {msg}"
 
 
 def _flatten_config(config):
