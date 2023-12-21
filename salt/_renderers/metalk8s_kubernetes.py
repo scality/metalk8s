@@ -42,24 +42,20 @@ def _step_name(manifest, absent=False):
 
     namespace = manifest["metadata"].get("namespace", None)
     if namespace is not None:
-        full_name = "{}/{}".format(namespace, name)
+        full_name = f"{namespace}/{name}"
     else:
         full_name = name
 
-    return "{verb} {api_version}/{kind} '{name}'".format(
-        verb="Remove" if absent else "Apply",
-        api_version=manifest["apiVersion"],
-        kind=manifest["kind"],
-        name=full_name,
+    return (
+        f"{'Remove' if absent else 'Apply'} "
+        f"{manifest['apiVersion']}/{manifest['kind']} '{full_name}'"
     )
 
 
 def _step(manifest, kubeconfig=None, context=None, absent=False):
     """Render a single Kubernetes object into a state 'step'."""
     step_name = _step_name(manifest, absent)
-    state_func = "metalk8s_kubernetes.object_{}".format(
-        "absent" if absent else "present"
-    )
+    state_func = f"metalk8s_kubernetes.object_{'absent' if absent else 'present'}"
     state_args = [
         {"name": step_name},
         {"kubeconfig": kubeconfig},
