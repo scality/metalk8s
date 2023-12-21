@@ -51,7 +51,7 @@ class DrainException(Exception):
         self.message = message
 
     def __str__(self):
-        return "<{0}> {1}".format(str(self.__class__), self.message)
+        return f"<{str(self.__class__)}> {self.message}"
 
 
 class DrainTimeoutException(DrainException):
@@ -113,9 +113,7 @@ def _message_from_pods_dict(errors_dict):
                      names of pods of that kind
     Returns: a string message
     """
-    msg_list = [
-        "{0}: {1}".format(key, ", ".join(msg)) for key, msg in errors_dict.items()
-    ]
+    msg_list = [f"{key}: {', '.join(msg)}" for key, msg in errors_dict.items()]
     return "; ".join(msg_list)
 
 
@@ -163,7 +161,7 @@ class Drain(object):
         timeout=0,
         delete_local_data=False,
         best_effort=False,
-        **kwargs
+        **kwargs,
     ):
         self._node_name = node_name
         self._force = force
@@ -241,7 +239,7 @@ class Drain(object):
                 kind=controller_ref["kind"],
                 apiVersion=controller_ref["apiVersion"],
                 namespace=namespace,
-                **self._kwargs
+                **self._kwargs,
             )
         except CommandExecutionError as exc:
             # If we get "Unknown object type" just consider we do not know the
@@ -268,9 +266,7 @@ class Drain(object):
         if not response:
             meta = pod["metadata"]
             raise DrainException(
-                "Missing controller for pod '{}/{}'".format(
-                    meta["namespace"], meta["name"]
-                )
+                f"Missing controller for pod '{meta['namespace']}/{meta['name']}'"
             )
         return controller_ref
 
@@ -313,9 +309,8 @@ class Drain(object):
                 return (True, "Default to deletable on pod with no controller found")
 
             raise DrainException(
-                "Missing controller for pod '{}/{}'".format(
-                    pod["metadata"]["namespace"], pod["metadata"]["name"]
-                )
+                "Missing controller for pod "
+                f"'{pod['metadata']['namespace']}/{pod['metadata']['name']}'"
             )
 
         if not self.ignore_daemonset:
@@ -333,8 +328,8 @@ class Drain(object):
             kind="Pod",
             apiVersion="v1",
             all_namespaces=True,
-            field_selector="spec.nodeName={0}".format(self.node_name),
-            **self._kwargs
+            field_selector=f"spec.nodeName={self.node_name}",
+            **self._kwargs,
         )
 
         for pod in all_pods:
@@ -383,10 +378,10 @@ class Drain(object):
         except DrainException as exc:
             raise CommandExecutionError(
                 (
-                    "The following are not deletable: {0}. "
+                    f"The following are not deletable: {exc.message}. "
                     "You can ignore DaemonSet pods with the "
                     "ignore_daemonset flag."
-                ).format(exc.message)
+                )
             ) from exc
 
         if pods:
@@ -398,7 +393,7 @@ class Drain(object):
             # Would be nice to create the Eviction in dry-run mode and see if
             # we hit some 429 Too Many Requests (because a disruption budget
             # would prevent the eviction)
-            return "Prepared for eviction of pods: {}".format(pods_to_evict)
+            return f"Prepared for eviction of pods: {pods_to_evict}"
 
         log.debug("Starting eviction of pods: %s", pods_to_evict)
         try:
@@ -406,13 +401,13 @@ class Drain(object):
         except DrainTimeoutException as exc:
             remaining_pods = self.get_pods_for_eviction()
             raise CommandExecutionError(  # pylint: disable=raise-missing-from
-                "{0} List of remaining pods to follow".format(exc.message),
+                f"{exc.message} List of remaining pods to follow",
                 [pod["metadata"]["name"] for pod in remaining_pods],
             )
         except CommandExecutionError as exc:
             remaining_pods = self.get_pods_for_eviction()
             raise CommandExecutionError(  # pylint: disable=raise-missing-from
-                "{0} List of remaining pods to follow".format(exc.message),
+                f"{exc.message} List of remaining pods to follow",
                 [pod["metadata"]["name"] for pod in remaining_pods],
             )
         return "Eviction complete."
@@ -434,7 +429,7 @@ class Drain(object):
                     name=pod["metadata"]["name"],
                     namespace=pod["metadata"]["namespace"],
                     grace_period=self.grace_period,
-                    **self._kwargs
+                    **self._kwargs,
                 )
                 if evicted:
                     evicted_pods.append(pod)
@@ -465,7 +460,7 @@ class Drain(object):
                     apiVersion="v1",
                     name=pod["metadata"]["name"],
                     namespace=pod["metadata"]["namespace"],
-                    **self._kwargs
+                    **self._kwargs,
                 )
                 if (
                     not response
@@ -491,7 +486,7 @@ class Drain(object):
     def check_timer(self):
         if time.time() - self._start > self.timeout:
             raise DrainTimeoutException(
-                "Drain did not complete within {0} seconds".format(self.timeout)
+                f"Drain did not complete within {self.timeout} seconds"
             )
         return True
 
@@ -561,7 +556,7 @@ def evict_pod(name, namespace="default", grace_period=1, **kwargs):
                 return False
 
         raise CommandExecutionError(
-            'Failed to evict pod "{}" in namespace "{}"'.format(name, namespace)
+            f'Failed to evict pod "{name}" in namespace "{namespace}"'
         ) from exc
 
     return True
@@ -577,7 +572,7 @@ def node_drain(
     delete_local_data=False,
     best_effort=False,
     dry_run=False,
-    **kwargs
+    **kwargs,
 ):
     """Trigger the drain process for a node.
 
@@ -607,7 +602,7 @@ def node_drain(
         timeout=timeout,
         delete_local_data=delete_local_data,
         best_effort=best_effort,
-        **kwargs
+        **kwargs,
     )
     __salt__["metalk8s_kubernetes.cordon_node"](node_name, **kwargs)
 

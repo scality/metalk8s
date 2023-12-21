@@ -77,17 +77,14 @@ def has_precedence(name, value, config, strict=False):
             sysctl_name = pathlib.PurePath(sysctl_file).name
             if sysctl_name == config_name:
                 raise CommandExecutionError(  # pylint: disable=raise-missing-from
-                    "'{0}' has a higher precedence and overrides '{1}'".format(
-                        sysctl_file, config
-                    )
+                    f"'{sysctl_file}' has a higher precedence and overrides '{config}'"
                 )
 
         # The target file is not in a directory checked by the system
         raise CommandExecutionError(  # pylint: disable=raise-missing-from
-            "{0} is not a correct path for a sysctl configuration "
-            "file, please use one of the following:\n- {1}".format(
-                config, "\n- ".join(SYSCTL_CFG_DIRECTORIES)
-            )
+            f"{config} is not a correct path for a sysctl configuration "
+            "file, please use one of the following:\n- "
+            + "\n- ".join(SYSCTL_CFG_DIRECTORIES)
         )
 
     parser = configparser.ConfigParser(interpolation=None)
@@ -102,7 +99,5 @@ def has_precedence(name, value, config, strict=False):
             strict or " ".join(sysctl[name].split()) != epured_value
         ):
             raise CommandExecutionError(
-                "'{0}' redefines '{1}' with value '{2}'".format(
-                    sysctl_file, name, sysctl[name]
-                )
+                f"'{sysctl_file}' redefines '{name}' with value '{sysctl[name]}'"
             )

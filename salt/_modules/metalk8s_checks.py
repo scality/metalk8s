@@ -61,16 +61,16 @@ def node(raises=True, **kwargs):
         if service_route_ret is not True:
             errors.append(
                 (
-                    "Invalid networks:service CIDR - {}. Please make sure to "
-                    "have either a default route or a dummy interface and route "
-                    "for this range (for details, see "
+                    f"Invalid networks:service CIDR - {service_route_ret}. Please "
+                    "make sure to have either a default route or a dummy interface "
+                    "and route for this range (for details, see "
                     "https://github.com/kubernetes/kubernetes/issues/57534#issuecomment-527653412)."
-                ).format(service_route_ret)
+                )
             )
 
     # Compute return of the function
     if errors:
-        error_msg = "Node {}: {}".format(__grains__["id"], "\n".join(errors))
+        error_msg = f"Node {__grains__['id']}: " + "\n".join(errors)
         if raises:
             raise CheckError(error_msg)
         return error_msg
@@ -126,8 +126,8 @@ def packages(conflicting_packages=None, raises=True, **kwargs):
             if conflicting_versions:
                 for ver in sorted(conflicting_versions):
                     errors.append(
-                        "Package {}-{} conflicts with MetalK8s installation, "
-                        "please remove it.".format(package, ver)
+                        f"Package {package}-{ver} conflicts with MetalK8s installation, "
+                        "please remove it."
                     )
 
     error_msg = "\n".join(errors)
@@ -172,8 +172,8 @@ def services(conflicting_services=None, raises=True, **kwargs):
             service_name
         ):
             errors.append(
-                "Service {} conflicts with MetalK8s installation, "
-                "please stop and disable it.".format(service_name)
+                f"Service {service_name} conflicts with MetalK8s installation, "
+                "please stop and disable it."
             )
 
     error_msg = "\n".join(errors)
@@ -251,9 +251,8 @@ def ports(
 
     if not isinstance(listening_process, dict):
         raise ValueError(
-            "Invalid listening process, expected dict but got {}.".format(
-                type(listening_process).__name__
-            )
+            "Invalid listening process, expected dict "
+            f"but got {type(listening_process).__name__}."
         )
 
     errors = []
@@ -269,7 +268,7 @@ def ports(
             ip = __grains__["metalk8s"][ip]
 
             # We also update the `address` for error message
-            address = "{}:{}".format(ip, port)
+            address = f"{ip}:{port}"
 
         processes = matching.get("expected")
         if not isinstance(processes, list):
@@ -348,7 +347,7 @@ def ports(
                 break
 
         if not success:
-            fail_msg = "{} should be listening on {} but {}.".format(
+            fail_msg = "{} should be listening on {} but {}.".format(  # pylint: disable=consider-using-f-string
                 matching.get(
                     "description",
                     " or ".join(process or "nothing" for process in processes),
@@ -357,9 +356,7 @@ def ports(
                 "nothing listening"
                 if not error_process
                 else " and ".join(
-                    "'{proc[name]}' (PID: {proc[pid]}) listens on {addr}".format(
-                        proc=proc, addr=addr
-                    )
+                    f"'{proc['name']}' (PID: {proc['pid']}) listens on {addr}"
                     for addr, proc in error_process.items()
                 ),
             )
@@ -390,8 +387,8 @@ def sysctl(params, raises=True):
         current_value = __salt__["sysctl.get"](key)
         if current_value != str(value):
             errors.append(
-                "Incorrect value for sysctl '{0}', expecting '{1}' but "
-                "found '{2}'.".format(key, value, current_value)
+                f"Incorrect value for sysctl '{key}', expecting '{value}' but "
+                f"found '{current_value}'."
             )
 
     error_msg = "\n".join(errors)
@@ -420,9 +417,7 @@ def route_exists(destination, raises=True):
 
     for route in all_routes:
         # Check if our destination network is fully included in this route.
-        route_net = ipaddress.IPv4Network(
-            "{r[destination]}/{r[netmask]}".format(r=route)
-        )
+        route_net = ipaddress.IPv4Network(f"{route['destination']}/{route['netmask']}")
         if _is_subnet_of(dest_net, route_net):
             break
         else:
@@ -430,11 +425,11 @@ def route_exists(destination, raises=True):
     else:
         if route_exists:
             error = (
-                "A route was found for {n.network_address}, but it does not "
-                "match the full destination network {n.compressed}"
-            ).format(n=dest_net)
+                f"A route was found for {dest_net.network_address}, but it does not "
+                f"match the full destination network {dest_net.compressed}"
+            )
         else:
-            error = "No route exists for {}".format(dest_net.compressed)
+            error = f"No route exists for {dest_net.compressed}"
 
     if error and raises:
         raise CheckError(error)

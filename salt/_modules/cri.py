@@ -78,7 +78,7 @@ def pull_image(image):
         Tag or digest of the image to pull
     """
     log.info('Pulling CRI image "%s"', image)
-    out = __salt__["cmd.run_all"]('crictl pull "{0}"'.format(image))
+    out = __salt__["cmd.run_all"](f'crictl pull "{image}"')
 
     if out["retcode"] != 0:
         log.error('Failed to pull image "%s"', image)
@@ -117,7 +117,7 @@ def execute(name, command, *args):
     """
     log.info('Retrieving ID of container "%s"', name)
     out = __salt__["cmd.run_all"](
-        'crictl ps -q --label io.kubernetes.container.name="{0}"'.format(name)
+        f'crictl ps -q --label io.kubernetes.container.name="{name}"'
     )
 
     if out["retcode"] != 0:
@@ -129,10 +129,10 @@ def execute(name, command, *args):
         log.error('Container "%s" does not exists', name)
         return None
 
-    cmd_opts = "{0} {1}".format(command, " ".join(args))
+    cmd_opts = f"{command} {' '.join(args)}"
 
     log.info('Executing command "%s"', cmd_opts)
-    out = __salt__["cmd.run_all"]("crictl exec {0} {1}".format(container_id, cmd_opts))
+    out = __salt__["cmd.run_all"](f"crictl exec {container_id} {cmd_opts}")
 
     if out["retcode"] != 0:
         log.error('Failed run command "%s"', cmd_opts)
@@ -161,13 +161,13 @@ def wait_container(name, state, timeout=60, delay=5):
     """
     log.info('Waiting for container "%s" to be in state "%s"', name, state)
 
-    opts = '--label io.kubernetes.container.name="{0}"'.format(name)
+    opts = f'--label io.kubernetes.container.name="{name}"'
     if state is not None:
-        opts += " --state {0}".format(state)
+        opts += f" --state {state}"
 
     last_error = None
     for _ in range(0, timeout, delay):
-        out = __salt__["cmd.run_all"]("crictl ps -q {0}".format(opts))
+        out = __salt__["cmd.run_all"](f"crictl ps -q {opts}")
 
         if out["retcode"] == 0:
             if out["stdout"]:
@@ -178,10 +178,10 @@ def wait_container(name, state, timeout=60, delay=5):
 
         time.sleep(delay)
 
-    error_msg = 'Failed to find container "{}"'.format(name)
+    error_msg = f'Failed to find container "{name}"'
     if state is not None:
-        error_msg += ' in state "{}"'.format(state)
-    error_msg += ": {}".format(last_error)
+        error_msg += f' in state "{state}"'
+    error_msg += f": {last_error}"
 
     raise CommandExecutionError(error_msg)
 
@@ -196,7 +196,7 @@ def component_is_running(name):
     """
     log.info("Checking if compopent %s is running", name)
     out = __salt__["cmd.run_all"](
-        "crictl pods --label component={} --state=ready -o json".format(name)
+        f"crictl pods --label component={name} --state=ready -o json"
     )
     if out["retcode"] != 0:
         log.error("Failed to list pods")

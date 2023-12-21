@@ -23,7 +23,7 @@ def _check_deps():
     mod = "metalk8s_kubernetes.update_object"
 
     if mod not in __salt__:
-        raise CommandExecutionError("'{}' is not available".format(mod))
+        raise CommandExecutionError(f"'{mod}' is not available")
 
 
 def cordon_node(node_name, **kwargs):
@@ -43,7 +43,7 @@ def cordon_node(node_name, **kwargs):
         kind="Node",
         apiVersion="v1",
         patch={"spec": {"unschedulable": True}},
-        **kwargs
+        **kwargs,
     )
 
 

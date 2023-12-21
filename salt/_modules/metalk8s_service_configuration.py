@@ -40,13 +40,11 @@ def get_service_conf(
 
     if not configmap_name:
         raise CommandExecutionError(
-            "Expected a ConfigMap name but got {}".format(configmap_name)
+            f"Expected a ConfigMap name but got {configmap_name}"
         )
     if not isinstance(default_csc, dict):
         raise CommandExecutionError(
-            "Expected default CSC for ConfigMap {} but got {}".format(
-                configmap_name, default_csc
-            )
+            f"Expected default CSC for ConfigMap {configmap_name} but got {default_csc}"
         )
 
     try:
@@ -55,7 +53,7 @@ def get_service_conf(
         )
     except ValueError as exc:
         raise CommandExecutionError(
-            "Failed to read ConfigMap object {}".format(configmap_name)
+            f"Failed to read ConfigMap object {configmap_name}"
         ) from exc
 
     if manifest is None:
@@ -66,27 +64,23 @@ def get_service_conf(
         config = yaml.safe_load(conf_section) or {}
     except yaml.YAMLError as exc:
         raise CommandExecutionError(
-            "Invalid YAML format in ConfigMap {}".format(configmap_name)
+            f"Invalid YAML format in ConfigMap {configmap_name}"
         ) from exc
     except Exception as exc:
         raise CommandExecutionError(
-            "Failed loading `config.yaml` from ConfigMap {}".format(configmap_name)
+            f"Failed loading `config.yaml` from ConfigMap {configmap_name}"
         ) from exc
     if not config:
         raise CommandExecutionError(
-            "Expected `config.yaml` as yaml in the ConfigMap {} but got {}".format(
-                configmap_name, config
-            )
+            f"Expected `config.yaml` as yaml in the ConfigMap {configmap_name} but got {config}"
         )
     if apiVersion and config["apiVersion"] != apiVersion:
         raise CommandExecutionError(
-            "Expected value {} for key apiVersion, got {}".format(
-                apiVersion, config["apiVersion"]
-            )
+            f"Expected value {apiVersion} for key apiVersion, got {config['apiVersion']}"
         )
     if kind and config["kind"] != kind:
         raise CommandExecutionError(
-            "Expected value {} for key kind, got {}".format(kind, config["kind"])
+            f"Expected value {kind} for key kind, got {config['kind']}"
         )
     merged_config = salt.utils.dictupdate.merge(
         default_csc, config, strategy="recurse", merge_lists=True

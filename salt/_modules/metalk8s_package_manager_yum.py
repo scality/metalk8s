@@ -37,7 +37,7 @@ def _list_dependents(name, version, fromrepo=None, allowed_versions=None):
         "--qf",
         "%{NAME} %{VERSION}-%{RELEASE}",
         "--whatrequires",
-        "{}-{}".format(name, version),
+        f"{name}-{version}",
     ]
 
     if fromrepo:
@@ -166,9 +166,7 @@ def check_pkg_availability(pkgs_info, exclude=None):
     for name, info in pkgs_info.items():
         if info.get("version"):
             pkg_version = str(info["version"])
-            pkg_name = "{}{}{}".format(
-                name, "-" if pkg_version[0].isdigit() else " ", pkg_version
-            )
+            pkg_name = f"{name}{'-' if pkg_version[0].isdigit() else ' '}{pkg_version}"
         else:
             pkg_name = name
 
@@ -184,15 +182,12 @@ def check_pkg_availability(pkgs_info, exclude=None):
         if exclude:
             if isinstance(exclude, list):
                 exclude = ",".join(exclude)
-            cmd.extend(["--setopt", "exclude={}".format(exclude)])
+            cmd.extend(["--setopt", f"exclude={exclude}"])
 
         ret = __salt__["cmd.run_all"](cmd)
 
         if ret["retcode"] != 0:
             raise CommandExecutionError(
-                "Check availability of package {} failed:\n{}\n{}".format(
-                    pkg_name,
-                    ret["stdout"],
-                    ret["stderr"],
-                )
+                f"Check availability of package {pkg_name} failed:\n"
+                f"{ret['stdout']}\n{ret['stderr']}"
             )

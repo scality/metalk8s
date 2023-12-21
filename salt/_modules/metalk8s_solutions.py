@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 CONFIG_FILE = "/etc/metalk8s/solutions.yaml"
 CONFIG_KIND = "SolutionsConfiguration"
 SUPPORTED_CONFIG_VERSIONS = [
-    "solutions.metalk8s.scality.com/{}".format(version) for version in ["v1alpha1"]
+    f"solutions.metalk8s.scality.com/{version}" for version in ["v1alpha1"]
 ]
 # https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#dns-label-names
 # - contain at most 63 characters
@@ -41,7 +41,7 @@ def _load_config_file(create=False):
     except IOError as exc:
         if create and exc.errno == errno.ENOENT:
             return _create_config_file()
-        msg = 'Failed to load "{}"'.format(CONFIG_FILE)
+        msg = f'Failed to load "{CONFIG_FILE}"'
         raise CommandExecutionError(message=msg) from exc
 
 
@@ -50,7 +50,7 @@ def _write_config_file(data):
         with salt.utils.files.fopen(CONFIG_FILE, "w") as fd:
             yaml.safe_dump(data, fd)
     except Exception as exc:
-        msg = 'Failed to write Solutions config file at "{}"'.format(CONFIG_FILE)
+        msg = f'Failed to write Solutions config file at "{CONFIG_FILE}"'
         raise CommandExecutionError(message=msg) from exc
 
 
@@ -89,16 +89,14 @@ def read_config(create=False):
 
     if config.get("kind") != "SolutionsConfiguration":
         raise CommandExecutionError(
-            "Invalid `kind` in configuration ({}), "
-            'must be "SolutionsConfiguration"'.format(config.get("kind"))
+            f"Invalid `kind` in configuration ({config.get('kind')}), "
+            'must be "SolutionsConfiguration"'
         )
 
     if config.get("apiVersion") not in SUPPORTED_CONFIG_VERSIONS:
         raise CommandExecutionError(
-            "Invalid `apiVersion` in configuration ({}), "
-            "must be one of: {}".format(
-                config.get("apiVersion"), ", ".join(SUPPORTED_CONFIG_VERSIONS)
-            )
+            f"Invalid `apiVersion` in configuration ({config.get('apiVersion')}), "
+            f"must be one of: {', '.join(SUPPORTED_CONFIG_VERSIONS)}"
         )
 
     config.setdefault("archives", [])
@@ -129,7 +127,7 @@ def activate_solution(solution, version="latest"):
     available = list_available()
     if solution not in available:
         raise CommandExecutionError(
-            'Cannot activate Solution "{}": not available'.format(solution)
+            f'Cannot activate Solution "{solution}": not available'
         )
 
     # NOTE: this doesn't create a config file, since you can't activate a non-
@@ -139,8 +137,8 @@ def activate_solution(solution, version="latest"):
     if version != "latest":
         if version not in (info["version"] for info in available[solution]):
             raise CommandExecutionError(
-                'Cannot activate version "{}" for Solution "{}": '
-                "not available".format(version, solution)
+                f'Cannot activate version "{version}" for Solution "{solution}": '
+                "not available"
             )
 
     config["active"][solution] = version
@@ -169,7 +167,7 @@ def list_solution_images(mountpoint):
 
     if not os.path.isdir(images_dir):
         raise CommandExecutionError(
-            "{} does not exist or is not a directory".format(images_dir)
+            f"{images_dir} does not exist or is not a directory"
         )
 
     for image in os.listdir(images_dir):
@@ -177,7 +175,7 @@ def list_solution_images(mountpoint):
         if os.path.isdir(image_dir):
             solution_images.extend(
                 [
-                    "{}:{}".format(image, version)
+                    f"{image}:{version}"
                     for version in os.listdir(image_dir)
                     if os.path.isdir(os.path.join(image_dir, version))
                 ]
@@ -191,13 +189,13 @@ def _default_solution_manifest(mountpoint, name, version):
         "spec": {
             "operator": {
                 "image": {
-                    "name": "{}-operator".format(name),
+                    "name": f"{name}-operator",
                     "tag": version,
                 },
             },
             "ui": {
                 "image": {
-                    "name": "{}-ui".format(name),
+                    "name": f"{name}-ui",
                     "tag": version,
                 },
             },
@@ -213,7 +211,7 @@ def read_solution_manifest(mountpoint):
 
     if not os.path.isfile(manifest_path):
         raise CommandExecutionError(
-            'Solution mounted at "{}" has no "{}"'.format(mountpoint, SOLUTION_MANIFEST)
+            f'Solution mounted at "{mountpoint}" has no "{SOLUTION_MANIFEST}"'
         )
 
     with salt.utils.files.fopen(manifest_path, "r") as stream:
@@ -223,9 +221,7 @@ def read_solution_manifest(mountpoint):
         manifest.get("kind") != SOLUTION_MANIFEST_KIND
         or manifest.get("apiVersion") not in SOLUTION_MANIFEST_APIVERSIONS
     ):
-        raise CommandExecutionError(
-            "Wrong apiVersion/kind for {}".format(manifest_path)
-        )
+        raise CommandExecutionError(f"Wrong apiVersion/kind for {manifest_path}")
 
     info = _archive_info_from_manifest(manifest)
     default_manifest = _default_solution_manifest(
@@ -245,14 +241,14 @@ def _archive_info_from_manifest(manifest):
 
     if any(key is None for key in [name, version]):
         raise CommandExecutionError(
-            'Missing mandatory key(s) in Solution "{}": must provide '
-            '"metadata.name" and "spec.version"'.format(SOLUTION_MANIFEST)
+            f'Missing mandatory key(s) in Solution "{SOLUTION_MANIFEST}": must provide '
+            '"metadata.name" and "spec.version"'
         )
 
     if not re.match(DNS_LABEL_NAME_RFC1123_RE, name):
         raise CommandExecutionError(
-            '"metadata.name" key in Solution {} does not follow naming '
-            "convention established by DNS label name RFC1123".format(SOLUTION_MANIFEST)
+            f'"metadata.name" key in Solution {SOLUTION_MANIFEST} does not follow naming '
+            "convention established by DNS label name RFC1123"
         )
 
     display_name = manifest.get("annotations", {}).get(
@@ -279,9 +275,11 @@ def manifest_from_iso(path):
         [
             "isoinfo",
             "-x",
-            r"/{}\;1".format(SOLUTION_MANIFEST.upper()),
+            r"/{}\;1".format(  # pylint: disable=consider-using-f-string
+                SOLUTION_MANIFEST.upper()
+            ),
             "-i",
-            '"{}"'.format(path),
+            f'"{path}"',
         ]
     )
     result = __salt__["cmd.run_all"](cmd=cmd)
@@ -289,21 +287,19 @@ def manifest_from_iso(path):
 
     if result["retcode"] != 0:
         raise CommandExecutionError(
-            "Failed to run isoinfo: {}".format(result.get("stderr", result["stdout"]))
+            f"Failed to run isoinfo: {result.get('stderr', result['stdout'])}"
         )
 
     if not result["stdout"]:
         raise CommandExecutionError(
-            "Solution ISO at '{}' must contain a '{}' file".format(
-                path, SOLUTION_MANIFEST
-            )
+            f"Solution ISO at '{path}' must contain a '{SOLUTION_MANIFEST}' file"
         )
 
     try:
         manifest = yaml.safe_load(result["stdout"])
     except yaml.YAMLError as exc:
         raise CommandExecutionError(
-            "Failed to load YAML from Solution manifest {}".format(path)
+            f"Failed to load YAML from Solution manifest {path}"
         ) from exc
 
     return _archive_info_from_manifest(manifest)
@@ -390,9 +386,7 @@ def operator_roles_from_manifest(mountpoint, namespace="default"):
             kind = manifest.get("kind")
             if kind not in ["Role", "ClusterRole"]:
                 raise CommandExecutionError(
-                    "Forbidden object kind '{}' provided in '{}'".format(
-                        kind, manifest_path
-                    )
+                    f"Forbidden object kind '{kind}' provided in '{manifest_path}'"
                 )
             if kind == "Role":
                 manifest["metadata"]["namespace"] = namespace

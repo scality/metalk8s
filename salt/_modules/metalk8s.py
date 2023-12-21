@@ -75,14 +75,14 @@ def format_san(names):
                 log.debug("Trying to unparse %r as %s", packed, af_name)
                 unpacked = socket.inet_ntop(af, packed)
 
-                result = "IP:{}".format(unpacked)
+                result = f"IP:{unpacked}"
                 log.debug('SAN field for %r is "%s"', name, result)
                 return result
             except socket.error as exc:
                 log.debug("Failed to parse %r as %s: %s", name, af_name, exc)
 
         # Fallback to assume it's a DNS name
-        result = "DNS:{}".format(name)
+        result = f"DNS:{name}"
         log.debug('SAN field for %r is "%s"', name, result)
         return result
 
@@ -109,7 +109,7 @@ def minions_by_role(role, nodes=None):
     if pillar_errors:
         raise CommandExecutionError(
             "Can't retrieve minions by role because of errors in pillar "
-            "'metalk8s:nodes': {}".format(", ".join(pillar_errors))
+            f"'metalk8s:nodes': {', '.join(pillar_errors)}"
         )
 
     return [
@@ -170,24 +170,22 @@ def archive_info_from_product_txt(archive):
         info.update(
             {
                 "iso": archive,
-                "path": "/srv/scality/metalk8s-{0}".format(info["version"]),
+                "path": f"/srv/scality/metalk8s-{info['version']}",
             }
         )
     else:
         raise CommandExecutionError(
-            "Invalid archive path {0}, should be an iso or a directory.".format(archive)
+            f"Invalid archive path {archive}, should be an iso or a directory."
         )
 
     if info["name"] != "MetalK8s":
         raise CommandExecutionError(
-            "Invalid archive '{}', 'NAME' should be 'MetalK8s', found '{}'.".format(
-                archive, info["name"]
-            )
+            f"Invalid archive '{archive}', 'NAME' should be 'MetalK8s', found '{info['name']}'."
         )
 
     if not info["version"]:
         raise CommandExecutionError(
-            "Invalid archive '{}', 'VERSION' must be provided.".format(archive)
+            f"Invalid archive '{archive}', 'VERSION' must be provided."
         )
 
     return info
@@ -204,7 +202,7 @@ def archive_info_from_tree(path):
     product_txt = os.path.join(path, "product.txt")
 
     if not os.path.isfile(product_txt):
-        raise CommandExecutionError('Path {} has no "product.txt"'.format(path))
+        raise CommandExecutionError(f'Path {path} has no "product.txt"')
 
     with salt.utils.files.fopen(product_txt) as fd:
         return _get_archive_info(fd.read())
@@ -224,7 +222,7 @@ def archive_info_from_iso(path):
             "-x",
             r"/PRODUCT.TXT\;1",
             "-i",
-            '"{}"'.format(path),
+            f'"{path}"',
         ]
     )
     result = __salt__["cmd.run_all"](cmd=cmd)
@@ -232,7 +230,7 @@ def archive_info_from_iso(path):
 
     if result["retcode"] != 0:
         raise CommandExecutionError(
-            "Failed to run isoinfo: {}".format(result.get("stderr", result["stdout"]))
+            f"Failed to run isoinfo: {result.get('stderr', result['stdout'])}"
         )
 
     return _get_archive_info(result["stdout"])
@@ -259,7 +257,7 @@ def get_mounted_archives():
             )
             continue
 
-        env_name = "metalk8s-{0}".format(archive_info["version"])
+        env_name = f"metalk8s-{archive_info['version']}"
         archives[env_name] = archive_info
     return archives
 
@@ -278,13 +276,13 @@ def get_archives(archives=None):
         archives = [str(archives)]
     elif not isinstance(archives, list):
         raise CommandExecutionError(
-            "Invalid archives: list or string expected, got {0}".format(archives)
+            f"Invalid archives: list or string expected, got {archives}"
         )
 
     res = {}
     for archive in archives:
         info = archive_info_from_product_txt(archive)
-        env_name = "metalk8s-{0}".format(info["version"])
+        env_name = f"metalk8s-{info['version']}"
 
         # Raise if we have 2 archives with the same version
         if env_name in res:
@@ -296,11 +294,10 @@ def get_archives(archives=None):
                 else:
                     path = dup_version["path"]
                     kind = "directory"
-                error_msg.append("{0} ({1})".format(path, kind))
+                error_msg.append(f"{path} ({kind})")
             raise CommandExecutionError(
-                'Two archives have the same version "{0}":\n- {1}'.format(
-                    info["version"], "\n- ".join(error_msg)
-                )
+                f'Two archives have the same version "{info["version"]}":\n- '
+                + "\n- ".join(error_msg)
             )
 
         res.update({env_name: info})
@@ -346,12 +343,10 @@ def check_pillar_keys(keys, refresh=True, pillar=None, raise_error=True):
             value = value.get(key)
             if not value:
                 if not error:
-                    error = ["Empty value for {}".format(key)]
+                    error = [f"Empty value for {key}"]
 
                 errors.append(
-                    "Unable to get {}:\n\t{}".format(
-                        ".".join(key_list), "\n\t".join(error)
-                    )
+                    f"Unable to get {'.'.join(key_list)}:\n\t" + "\n\t".join(error)
                 )
                 break
 
@@ -403,9 +398,7 @@ def format_slots(data):
         try:
             return slots_callers[fmt[1]][fun](*args, **kwargs)
         except Exception as exc:
-            raise CommandExecutionError(
-                "Unable to compute slot '{}'".format(data)
-            ) from exc
+            raise CommandExecutionError(f"Unable to compute slot '{data}'") from exc
 
     return data
 
@@ -533,7 +526,7 @@ def manage_static_pod_manifest(
     if not source:
         return _error(ret, "Must provide a source")
     if not os.path.isdir(target_dir):
-        return _error(ret, "Target directory {} does not exist".format(target_dir))
+        return _error(ret, f"Target directory {target_dir} does not exist")
 
     if source_filename:
         # File should be already cached, verify its checksum
@@ -550,7 +543,7 @@ def manage_static_pod_manifest(
         # File is not present or outdated, cache it
         source_filename = __salt__["cp.cache_file"](source, saltenv)
         if not source_filename:
-            return _error(ret, "Source file '{}' not found".format(source))
+            return _error(ret, f"Source file '{source}' not found")
 
         # Recalculate source sum now that file has been cached
         source_sum = {
@@ -608,7 +601,7 @@ def manage_static_pod_manifest(
             )
         except OSError as io_error:
             _clean_tmp(source_filename)
-            return _error(ret, "Failed to commit change: {}".format(io_error))
+            return _error(ret, f"Failed to commit change: {io_error}")
 
     # Always enforce perms, even if no changes to contents (this module is
     # idempotent)
@@ -622,12 +615,12 @@ def manage_static_pod_manifest(
 
     if ret["changes"]:
         if __opts__["test"]:
-            ret["comment"] = "File {} would be updated".format(name)
+            ret["comment"] = f"File {name} would be updated"
         else:
-            ret["comment"] = "File {} updated".format(name)
+            ret["comment"] = f"File {name} updated"
 
     elif not ret["changes"] and ret["result"]:
-        ret["comment"] = "File {} is in the correct state".format(name)
+        ret["comment"] = f"File {name} is in the correct state"
 
     if source_filename:
         _clean_tmp(source_filename)
@@ -672,13 +665,13 @@ def get_from_map(value, saltenv=None):
             )
             saltenv = "base"
         else:
-            saltenv = "metalk8s-{}".format(current_version)
+            saltenv = f"metalk8s-{current_version}"
 
     tmplstr = textwrap.dedent(
         """\
         {{% from "{path}" import {value} with context %}}
         {{{{ {value} | tojson }}}}
-        """.format(
+        """.format(  # pylint: disable=consider-using-f-string
             path=path, value=value
         )
     )
@@ -699,7 +692,7 @@ def get_bootstrap_config():
         with salt.utils.files.fopen(BOOTSTRAP_CONFIG, "r") as fd:
             config = salt.utils.yaml.safe_load(fd)
     except IOError as exc:
-        msg = 'Failed to load bootstrap config file at "{}"'.format(BOOTSTRAP_CONFIG)
+        msg = f'Failed to load bootstrap config file at "{BOOTSTRAP_CONFIG}"'
         raise CommandExecutionError(message=msg) from exc
 
     return config
@@ -711,7 +704,7 @@ def write_bootstrap_config(config):
         with salt.utils.files.fopen(BOOTSTRAP_CONFIG, "w") as fd:
             salt.utils.yaml.safe_dump(config, fd, default_flow_style=False)
     except Exception as exc:
-        msg = 'Failed to write bootstrap config file at "{}"'.format(BOOTSTRAP_CONFIG)
+        msg = f'Failed to write bootstrap config file at "{BOOTSTRAP_CONFIG}"'
         raise CommandExecutionError(message=msg) from exc
 
 
@@ -738,7 +731,7 @@ def configure_archive(archive, remove=False):
 
     write_bootstrap_config(config)
 
-    msg = "Archive '{0}' {1}".format(archive, msg)
+    msg = f"Archive '{archive}' {msg}"
     log.info(msg)
     return msg
 

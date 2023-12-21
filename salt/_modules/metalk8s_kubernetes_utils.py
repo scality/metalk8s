@@ -27,7 +27,7 @@ __virtualname__ = "metalk8s_kubernetes"
 
 def __virtual__():
     if MISSING_DEPS:
-        return False, "Missing dependencies: {}".format(", ".join(MISSING_DEPS))
+        return False, f"Missing dependencies: {', '.join(MISSING_DEPS)}"
 
     return __virtualname__
 
@@ -112,7 +112,7 @@ def read_and_render_yaml_file(source, template, context=None, saltenv="base"):
     """
     sfn = __salt__["cp.cache_file"](source, saltenv)
     if not sfn:
-        raise CommandExecutionError("Source file '{0}' not found".format(source))
+        raise CommandExecutionError(f"Source file '{source}' not found")
 
     if not context:
         context = {}
@@ -137,15 +137,12 @@ def read_and_render_yaml_file(source, template, context=None, saltenv="base"):
                 if not data["result"]:
                     # Failed to render the template
                     raise CommandExecutionError(
-                        "Failed to render file path with error: "
-                        "{0}".format(data["data"])
+                        f"Failed to render file path with error: {data['data']}"
                     )
 
                 contents = data["data"].encode("utf-8")
             else:
-                raise CommandExecutionError(
-                    "Unknown template specified: {0}".format(template)
-                )
+                raise CommandExecutionError(f"Unknown template specified: {template}")
 
         return salt.utils.yaml.safe_load(contents)
 

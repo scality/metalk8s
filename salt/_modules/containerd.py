@@ -26,7 +26,7 @@ def load_cri_image(path, fullname=None):
         Path of the Docker image archive to load
     """
     log.info('Importing image from "%s" into CRI cache', path)
-    cmd = 'ctr --debug -n k8s.io image import "{}"'.format(path)
+    cmd = f'ctr --debug -n k8s.io image import "{path}"'
     if fullname:
-        cmd += ' --index-name "{}"'.format(fullname)
+        cmd += f' --index-name "{fullname}"'
     return __salt__["cmd.run_all"](cmd)

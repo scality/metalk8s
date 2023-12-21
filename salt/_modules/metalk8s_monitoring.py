@@ -17,7 +17,7 @@ __virtualname__ = "metalk8s_monitoring"
 
 def __virtual__():
     if MISSING_DEPS:
-        error_msg = "Missing dependencies: {}".format(", ".join(MISSING_DEPS))
+        error_msg = f"Missing dependencies: {', '.join(MISSING_DEPS)}"
         return False, error_msg
 
     return __virtualname__
@@ -33,7 +33,7 @@ def add_silence(
     time_format="%Y-%m-%dT%H:%M:%S",
     author="",
     comment="",
-    **kwargs
+    **kwargs,
 ):
     """Add a new silence in Alertmanager.
 
@@ -106,9 +106,7 @@ def delete_silence(silence_id, **kwargs):
         salt-call metalk8s_monitoring.delete_silence \
             64d84a9e-cc6e-41ce-83ff-e84771ff6872
     """
-    _requests_alertmanager_api(
-        "api/v1/silence/{}".format(silence_id), "DELETE", **kwargs
-    )
+    _requests_alertmanager_api(f"api/v1/silence/{silence_id}", "DELETE", **kwargs)
 
 
 def get_silences(state=None, **kwargs):
@@ -170,36 +168,29 @@ def _requests_alertmanager_api(route, method="GET", **kwargs):
         kwargs.pop("kubeconfig", None),
     )
 
-    url = "http://{}:{}/{}".format(
-        endpoint["ip"],
-        endpoint["ports"]["web"],
-        route,
-    )
+    url = f"http://{endpoint['ip']}:{endpoint['ports']['web']}/{route}"
 
     try:
         session = __utils__["metalk8s.requests_retry_session"]()
         response = session.request(method, url, **kwargs)
     except Exception as exc:
         raise CommandExecutionError(
-            "Unable to query Alertmanager API on {}".format(url)
+            f"Unable to query Alertmanager API on {url}"
         ) from exc
 
     try:
         json = response.json()
     except ValueError as exc:
         if response.status_code != requests.codes.ok:
-            error = "Received HTTP code {} when querying Alertmanager API on {}".format(
-                response.status_code, url
+            error = (
+                f"Received HTTP code {response.status_code} when "
+                f"querying Alertmanager API on {url}"
             )
         else:
-            error = (
-                "Malformed response returned from Alertmanager API: {!s}: {}".format(
-                    exc, response.text
-                )
-            )
+            error = f"Malformed response returned from Alertmanager API: {exc}: {response.text}"
         raise CommandExecutionError(error) from exc
 
     if json["status"] == "error":
-        raise CommandExecutionError("{}: {}".format(json["errorType"], json["error"]))
+        raise CommandExecutionError(f"{json['errorType']}: {json['error']}")
 
     return json.get("data")

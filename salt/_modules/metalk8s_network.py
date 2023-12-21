@@ -40,7 +40,7 @@ def _pick_nth_service_ip(n):
     ip = next(itertools.islice(network.hosts(), n, None), None)
     if ip is None:
         raise CommandExecutionError(
-            "Could not obtain an IP in the network range {}".format(cidr)
+            f"Could not obtain an IP in the network range {cidr}"
         )
     return str(ip)
 
@@ -98,9 +98,7 @@ def get_ip_from_cidrs(cidrs, current_ip=None):
 
     if not first_ip:
         raise CommandExecutionError(
-            "Unable to find an IP on this host in one of this cidr: {}".format(
-                ", ".join(cidrs)
-            )
+            f"Unable to find an IP on this host in one of this cidr: {', '.join(cidrs)}"
         )
 
     return first_ip
@@ -113,7 +111,7 @@ def get_mtu_from_ip(ip):
     ifaces = __salt__["network.ifacestartswith"](ip)
 
     if not ifaces:
-        raise CommandExecutionError('Unable to get interface for "{}"'.format(ip))
+        raise CommandExecutionError(f'Unable to get interface for "{ip}"')
 
     iface = ifaces[0]
 
@@ -125,7 +123,7 @@ def get_mtu_from_ip(ip):
             ", ".join(ifaces),
         )
 
-    return int(__salt__["file.read"]("/sys/class/net/{}/mtu".format(iface)))
+    return int(__salt__["file.read"](f"/sys/class/net/{iface}/mtu"))
 
 
 def get_listening_processes():

@@ -150,7 +150,7 @@ def device_name(path):
             realpath = os.path.realpath(path)
             return {"success": True, "result": os.path.basename(realpath)}
         time.sleep(0.1)
-    return {"success": False, "result": "device `{}` not found".format(path)}
+    return {"success": False, "result": f"device `{path}` not found"}
 
 
 def device_info(name):
@@ -248,7 +248,7 @@ class Volume:
     @property
     def persistent_path(self):
         """Return a persistent path to the backing device."""
-        return "/dev/disk/by-uuid/{}".format(self.uuid)
+        return f"/dev/disk/by-uuid/{self.uuid}"
 
     @property
     def is_prepared(self):
@@ -264,15 +264,13 @@ class Volume:
         # Bail out if it is: we don't want data loss because of a typo…
         device_info = _get_from_blkid(self.path)
         if device_info.fstype:
-            raise Exception("backing device `{}` already formatted".format(self.path))
+            raise Exception(f"backing device `{self.path}` already formatted")
         if device_info.has_partition:
-            raise Exception(
-                "backing device `{}` contains a partition table".format(self.path)
-            )
+            raise Exception(f"backing device `{self.path}` contains a partition table")
         storage_class = self.get("spec.storageClass")
         # If we got a string that means the name wasn't replaced by the object.
         if isinstance(storage_class, six.string_types):
-            raise Exception("StorageClass {} not found".format(storage_class))
+            raise Exception(f"StorageClass {storage_class} not found")
         params = storage_class["parameters"]
         # mkfs options, if any, are stored as JSON-encoded list.
         options = json.loads(params.get("mkfsOptions", "[]"))
@@ -292,7 +290,7 @@ class Volume:
 class SparseLoopDevice(Volume):
     @property
     def path(self):
-        return "/var/lib/metalk8s/storage/sparse/{}".format(self.uuid)
+        return f"/var/lib/metalk8s/storage/sparse/{self.uuid}"
 
     @property
     def size(self):
@@ -313,9 +311,7 @@ class SparseLoopDevice(Volume):
                     os.unlink(self.path)
                     raise
         except OSError as exn:
-            raise Exception(
-                "cannot create sparse file at {}".format(self.path)
-            ) from exn
+            raise Exception(f"cannot create sparse file at {self.path}") from exn
 
     def prepare(self, force=False):
         # We format a "normal" file, not a block device: we need force=True.
@@ -337,7 +333,7 @@ class SparseLoopDevice(Volume):
 class SparseLoopDeviceBlock(SparseLoopDevice):
     @property
     def persistent_path(self):
-        return "/dev/disk/by-partuuid/{}".format(self.uuid)
+        return f"/dev/disk/by-partuuid/{self.uuid}"
 
     @property
     def is_prepared(self):
@@ -366,7 +362,7 @@ class RawBlockDevice(Volume):
 
     def create(self):
         # Nothing to do, if it's missing we bail out.
-        raise Exception("block device {} does not exists".format(self.path))
+        raise Exception(f"block device {self.path} does not exists")
 
     @property
     def path(self):
@@ -401,7 +397,7 @@ class RawBlockDeviceBlock(RawBlockDevice):
     def persistent_path(self):
         if self._kind == DeviceType.LVM:
             return _get_lvm_path(self.path)
-        return "/dev/disk/by-partuuid/{}".format(self.uuid)
+        return f"/dev/disk/by-partuuid/{self.uuid}"
 
     @property
     def device_path(self):
@@ -436,9 +432,9 @@ class RawBlockDeviceBlock(RawBlockDevice):
                     [
                         "sgdisk",
                         "--partition-guid",
-                        "{}:{}".format(self._partition, self.uuid),
+                        f"{self._partition}:{self.uuid}",
                         "--change-name",
-                        "{}:{}".format(self._partition, name),
+                        f"{self._partition}:{name}",
                         self.device_path,
                     ]
                 )
@@ -475,7 +471,7 @@ class LVMLogicalVolume(RawBlockDevice):
 
     @property
     def path(self):
-        return "/dev/{}/{}".format(self.vg_name, self.lv_name)
+        return f"/dev/{self.vg_name}/{self.lv_name}"
 
     @property
     def exists(self):
@@ -493,14 +489,12 @@ class LVMLogicalVolume(RawBlockDevice):
             ret = __salt__["lvm.lvcreate"](
                 lvname=self.lv_name,
                 vgname=self.vg_name,
-                size="{}b".format(self.size),
+                size=f"{self.size}b",
                 force=force_annotation is not None,
             )
         except Exception as exc:
             raise CommandExecutionError(
-                "cannot create LVM LogicalVolume {} in VG {}".format(
-                    self.lv_name, self.vg_name
-                )
+                f"cannot create LVM LogicalVolume {self.lv_name} in VG {self.vg_name}"
             ) from exc
 
         # NOTE: `lvm.lvcreate` does not properly raise if command fail
@@ -510,9 +504,8 @@ class LVMLogicalVolume(RawBlockDevice):
         # }
         if self.path not in ret:
             raise CommandExecutionError(
-                "cannot create LVM LogicalVolume {} in VG {}: {}".format(
-                    self.lv_name, self.vg_name, ret["Output from lvcreate"]
-                )
+                f"cannot create LVM LogicalVolume {self.lv_name} in VG {self.vg_name}: "
+                f"{ret['Output from lvcreate']}"
             )
 
     def clean_up(self):
@@ -547,7 +540,7 @@ def _get_volume(name):
     """Get a Volume object from the pillar."""
     volume = __pillar__["metalk8s"]["volumes"].get(name)
     if volume is None:
-        raise ValueError("volume {} not found in pillar".format(name))
+        raise ValueError(f"volume {name} not found in pillar")
     mode = volume["spec"].get("mode", "Filesystem")
     if "rawBlockDevice" in volume["spec"]:
         if mode == "Filesystem":
@@ -565,7 +558,7 @@ def _get_volume(name):
         else:
             return LVMLogicalVolumeBlock(volume)
     else:
-        raise ValueError("unsupported Volume type for Volume {}".format(name))
+        raise ValueError(f"unsupported Volume type for Volume {name}")
 
 
 def _device_name(path):
@@ -590,7 +583,7 @@ def _run_cmd(cmd):
     ret = __salt__["cmd.run_all"](cmd)
     if ret.get("retcode", 0) != 0:
         raise CommandExecutionError(
-            "error while trying to run `{0}`: {1}".format(cmd, ret["stderr"])
+            f"error while trying to run `{cmd}`: {ret['stderr']}"
         )
     return ret
 
@@ -691,12 +684,12 @@ def _mkfs(path, fs_type, uuid, force=False, options=None):
     Returns:
         list: the command line to use
     """
-    funcname = "_mkfs_{}".format(fs_type)
+    funcname = f"_mkfs_{fs_type}"
     try:
         return globals()[funcname](path, uuid, force, options)
     except KeyError:
         # pylint: disable=raise-missing-from
-        raise ValueError("unsupported filesystem: {}".format(fs_type))
+        raise ValueError(f"unsupported filesystem: {fs_type}")
 
 
 def _mkfs_ext4(path, uuid, force=False, options=None):
@@ -713,7 +706,7 @@ def _mkfs_xfs(path, uuid, force=False, options=None):
     command = ["mkfs.xfs"]
     if force:
         command.append("-f")
-    command.extend(["-m", "uuid={}".format(uuid)])
+    command.extend(["-m", f"uuid={uuid}"])
     command.extend(options or [])
     command.append(path)
     return command
@@ -732,9 +725,9 @@ def prepare_block(path, name, uuid):
                 "--largest-new",
                 "1",
                 "--partition-guid",
-                "1:{}".format(uuid),
+                f"1:{uuid}",
                 "--change-name",
-                "1:{}".format(name),
+                f"1:{name}",
                 path,
             ]
         )

@@ -39,7 +39,7 @@ __virtualname__ = "metalk8s_kubernetes"
 
 def __virtual__():
     if MISSING_DEPS:
-        error_msg = "Missing dependencies: {}".format(", ".join(MISSING_DEPS))
+        error_msg = f"Missing dependencies: {', '.join(MISSING_DEPS)}"
         return False, error_msg
 
     return __virtualname__
@@ -51,7 +51,7 @@ def _handle_error(exception, action):
     Note that 'get' and 'delete' will not re-raise if the error is just
     a "404 NOT FOUND", and instead return `None`.
     """
-    base_msg = "Failed to {} object".format(action)
+    base_msg = f"Failed to {action} object"
 
     if (
         action in ["delete", "get"]
@@ -71,7 +71,7 @@ def _object_manipulation_function(action):
         "replace",
         "delete",
         "patch",
-    ), 'Method "{}" is not supported'.format(action)
+    ), f'Method "{action}" is not supported'
 
     def method(
         manifest=None,
@@ -108,11 +108,11 @@ def _object_manipulation_function(action):
                     ](source=name, template=template, context=defaults, saltenv=saltenv)
                 except IOError as exc:
                     raise CommandExecutionError(
-                        'Failed to read file "{}"'.format(name)
+                        f'Failed to read file "{name}"'
                     ) from exc
                 except yaml.YAMLError as exc:
                     raise CommandExecutionError(
-                        'Invalid YAML in file "{}"'.format(name)
+                        f'Invalid YAML in file "{name}"'
                     ) from exc
         elif name is not None:
             raise CommandExecutionError('Cannot use both "manifest" and "name".')
@@ -127,9 +127,7 @@ def _object_manipulation_function(action):
                     )
                 )
             raise CommandExecutionError(
-                "Must provide one of {} to {} object.".format(
-                    " or ".join(needed_params), action
-                )
+                f"Must provide one of {' or '.join(needed_params)} to {action} object."
             )
 
         # Format slots on the manifest
@@ -156,9 +154,7 @@ def _object_manipulation_function(action):
             )
         except ResourceNotFoundError as exc:
             raise CommandExecutionError(
-                "Kind '{}' from apiVersion '{}' is unknown".format(
-                    manifest["kind"], manifest["apiVersion"]
-                )
+                f"Kind '{manifest['kind']}' from apiVersion '{manifest['apiVersion']}' is unknown"
             ) from exc
 
         method_func = getattr(api, action)
@@ -221,90 +217,75 @@ def _object_manipulation_function(action):
         # NOTE: result is always either a standard `kubernetes.client` model,
         return result.to_dict()
 
-    base_doc = """
-    {verb} an object from its manifest.
+    base_doc = f"""
+    {action.capitalize()} an object from its manifest.
 
     A manifest should be passed in standard Kubernetes format as a dictionary,
-    or through a filepath.""".format(
-        verb=action.capitalize()
-    )
+    or through a filepath."""
 
     if action in ["create", "replace"]:
-        method.__doc__ = """{base_doc}
+        example_manifest = {
+            "kind": "Pod",
+            "apiVersion": "v1",
+            "metadata": {"name": "busybox", "namespace": "default"},
+            "spec": {
+                "containers": {
+                    "image": "busybox",
+                    "command": ["sleep", "3600"],
+                    "name": "busybox",
+                },
+                "restartPolicy": "Always",
+            },
+        }
+        method.__doc__ = f"""{base_doc}
 
     CLI Examples:
 
     .. code-block:: bash
 
-        salt-call metalk8s_kubernetes.{cmd}_object name=/root/object.yaml
-        salt-call metalk8s_kubernetes.{cmd}_object manifest="{manifest}"
-        """.format(
-            manifest=str(
-                {
-                    "kind": "Pod",
-                    "apiVersion": "v1",
-                    "metadata": {"name": "busybox", "namespace": "default"},
-                    "spec": {
-                        "containers": {
-                            "image": "busybox",
-                            "command": ["sleep", "3600"],
-                            "name": "busybox",
-                        },
-                        "restartPolicy": "Always",
-                    },
-                }
-            ),
-            base_doc=base_doc,
-            cmd=action,
-        )
+        salt-call metalk8s_kubernetes.{action}_object name=/root/object.yaml
+        salt-call metalk8s_kubernetes.{action}_object manifest="{example_manifest}"
+        """
     elif action in ["get", "delete"]:
-        method.__doc__ = """{base_doc}
-    Ability to {verb} an object using object description 'name', 'kind'
+        example_manifest = {
+            "kind": "Node",
+            "apiVersion": "v1",
+            "metadata": {"name": "bootstrap"},
+        }
+        method.__doc__ = f"""{base_doc}
+    Ability to {action} an object using object description 'name', 'kind'
     and 'apiVersion'.
 
     CLI Examples:
 
     .. code-block:: bash
 
-        salt-call metalk8s_kubernetes.{cmd}_object name=/root/object.yaml
-        salt-call metalk8s_kubernetes.{cmd}_object manifest="{manifest}"
-        salt-call metalk8s_kubernetes.{cmd}_object name="bootstrap" kind="Node" apiVersion="v1"
-        salt-call metalk8s_kubernetes.{cmd}_object name="coredns-123" kind="Pod" apiVersion="v1" namespace="kube-system"
-        """.format(
-            manifest=str(
-                {"kind": "Node", "apiVersion": "v1", "metadata": {"name": "bootstrap"}}
-            ),
-            base_doc=base_doc,
-            verb=action,
-            cmd=action,
-        )
+        salt-call metalk8s_kubernetes.{action}_object name=/root/object.yaml
+        salt-call metalk8s_kubernetes.{action}_object manifest="{example_manifest}"
+        salt-call metalk8s_kubernetes.{action}_object name="bootstrap" kind="Node" apiVersion="v1"
+        salt-call metalk8s_kubernetes.{action}_object name="coredns-123" kind="Pod" apiVersion="v1" namespace="kube-system"
+        """
     elif action == "patch":
-        method.__doc__ = """{base_doc}
-    Ability to {verb} an object using object description and a patch 'name',
+        example_manifest = {
+            "kind": "Node",
+            "apiVersion": "v1",
+            "metadata": {"name": "bootstrap", "labels": {"test.12": "foo"}},
+        }
+        patch1 = {"metadata": {"labels": {"test.12": "bar"}}}
+        patch2 = [{"op": "remove", "path": "/metadata/labels/test.12"}]
+        method.__doc__ = f"""{base_doc}
+    Ability to {action} an object using object description and a patch 'name',
     'kind', 'apiVersion' and 'patch'.
 
     CLI Examples:
 
     .. code-block:: bash
 
-        salt-call metalk8s_kubernetes.{cmd}_object name=/root/patch.yaml
-        salt-call metalk8s_kubernetes.{cmd}_object manifest="{manifest}"
-        salt-call metalk8s_kubernetes.{cmd}_object name="bootstrap" kind="Node" apiVersion="v1" patch="{patch1}"
-        salt-call metalk8s_kubernetes.{cmd}_object name="bootstrap" kind="Node" apiVersion="v1" patch="{patch2}"
-        """.format(
-            manifest=str(
-                {
-                    "kind": "Node",
-                    "apiVersion": "v1",
-                    "metadata": {"name": "bootstrap", "labels": {"test.12": "foo"}},
-                }
-            ),
-            patch1=str({"metadata": {"labels": {"test.12": "bar"}}}),
-            patch2=str([{"op": "remove", "path": "/metadata/labels/test.12"}]),
-            base_doc=base_doc,
-            verb=action,
-            cmd="update",
-        )
+        salt-call metalk8s_kubernetes.update_object name=/root/patch.yaml
+        salt-call metalk8s_kubernetes.update_object manifest="{example_manifest}"
+        salt-call metalk8s_kubernetes.update_object name="bootstrap" kind="Node" apiVersion="v1" patch="{patch1}"
+        salt-call metalk8s_kubernetes.update_object name="bootstrap" kind="Node" apiVersion="v1" patch="{patch2}"
+        """
 
     return method
 
@@ -384,7 +365,7 @@ def list_objects(
         api = client.resources.get(api_version=apiVersion, kind=kind)
     except ResourceNotFoundError as exc:
         raise CommandExecutionError(
-            "Kind '{}' from apiVersion '{}' is unknown".format(kind, apiVersion)
+            f"Kind '{kind}' from apiVersion '{apiVersion}' is unknown"
         ) from exc
     api = client.resources.get(api_version=apiVersion, kind=kind)
 
@@ -401,9 +382,9 @@ def list_objects(
     try:
         result = api.get(**call_kwargs)
     except (ApiException, HTTPError) as exc:
-        base_msg = 'Failed to list resources "{}/{}"'.format(apiVersion, kind)
+        base_msg = f'Failed to list resources "{apiVersion}/{kind}"'
         if "namespace" in call_kwargs:
-            base_msg += ' in namespace "{}"'.format(namespace)
+            base_msg += f' in namespace "{namespace}"'
         raise CommandExecutionError(base_msg) from exc
 
     return result.to_dict()["items"]
@@ -431,9 +412,7 @@ def get_object_digest(path=None, checksum="sha256", *args, **kwargs):
         obj = salt.utils.data.traverse_dict_and_list(obj, path, delimiter=":")
 
         if not obj:
-            raise CommandExecutionError(
-                'Unable to find key "{}" in the object'.format(path)
-            )
+            raise CommandExecutionError(f'Unable to find key "{path}" in the object')
 
     if isinstance(obj, dict):
         obj = json.dumps(obj, sort_keys=True)
