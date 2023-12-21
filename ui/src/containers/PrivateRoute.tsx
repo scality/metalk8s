@@ -193,7 +193,7 @@ const PrivateRoute = (props: PrivateRouteProps) => {
     <ComponentWithFederatedImports
       componentWithInjectedImports={InternalPrivateRoute}
       componentProps={newProps}
-      renderOnError={<ErrorPage500 />}
+      renderOnError={<ErrorPage500 data-cy="sc-error-page500" />}
       federatedImports={[
         {
           remoteEntryUrl: window.shellUIRemoteEntryUrl,

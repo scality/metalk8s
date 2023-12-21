@@ -148,7 +148,7 @@ export const AppConfigProvider = ({
   return (
     <ComponentWithFederatedImports
       componentWithInjectedImports={componentWithInjectedImports}
-      renderOnError={<ErrorPage500 />}
+      renderOnError={<ErrorPage500 data-cy="sc-error-page500" />}
       componentProps={{
         children,
       }}

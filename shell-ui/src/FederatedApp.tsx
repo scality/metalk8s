@@ -226,6 +226,7 @@ const AppProviderWrapper = () => {
         if ('en' in error && 'fr' in error) {
           return (
             <ErrorPage500
+              data-cy="sc-error-page500"
               locale={language}
               errorMessage={{ en: error.en, fr: error.fr }}
             />
@@ -234,6 +235,7 @@ const AppProviderWrapper = () => {
         if (error instanceof Error) {
           return (
             <ErrorPage500
+              data-cy="sc-error-page500"
               locale={language}
               errorMessage={{ en: error.message, fr: error.message }}
             />
