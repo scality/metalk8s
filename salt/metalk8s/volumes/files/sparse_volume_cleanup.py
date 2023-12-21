@@ -37,9 +37,7 @@ def check_sparse_file(volume_id):
     sparse_file_path = os.path.join(SPARSE_FILES_DIR, volume_id)
     if not os.path.isfile(sparse_file_path):
         raise Error(
-            "Sparse file {} does not exist for volume '{}'".format(
-                sparse_file_path, volume_id
-            ),
+            f"Sparse file {sparse_file_path} does not exist for volume '{volume_id}'",
             exit_code=errno.ENOENT,
         )
 
@@ -58,15 +56,13 @@ def find_device(volume_id):
             break
     else:
         raise Error(
-            "Device for volume '{}' was not found".format(volume_id),
+            f"Device for volume '{volume_id}' was not found",
             exit_code=errno.ENOENT,
         )
 
     if not is_loop_device(device_path):
         raise Error(
-            "{} (found for volume '{}') is not a loop device".format(
-                device_path, volume_id
-            ),
+            f"{device_path} (found for volume '{volume_id}') is not a loop device",
             exit_code=errno.EINVAL,
         )
 
@@ -85,7 +81,7 @@ def cleanup(volume_id):
     """
     device_path = find_device(volume_id)
 
-    print("Detaching loop device '{}' for volume '{}'".format(device_path, volume_id))
+    print(f"Detaching loop device '{device_path}' for volume '{volume_id}'")
 
     device_handle = os.open(device_path, os.O_RDONLY)
     try:
@@ -93,16 +89,14 @@ def cleanup(volume_id):
     except IOError as exn:
         if exn.errno != errno.ENXIO:
             raise Error(
-                "Unexpected error when trying to free device {}: {}".format(
-                    device_path, str(exn)
-                ),
+                f"Unexpected error when trying to free device {device_path}: {exn}",
                 exit_code=exn.errno,
             ) from exn
         print("Device already freed")
     finally:
         os.close(device_handle)
 
-    print("Loop device for volume '{}' was successfully detached".format(volume_id))
+    print(f"Loop device for volume '{volume_id}' was successfully detached")
 
 
 def main():
@@ -180,4 +174,4 @@ if __name__ == "__main__":
     except Error as exc:
         die(exc.message, exit_code=exc.exit_code)
     except Exception as exc:  # pylint: disable=broad-except
-        die("Unhandled exception when cleaning up volume: {!s}".format(exc))
+        die(f"Unhandled exception when cleaning up volume: {exc}")
