@@ -50,10 +50,10 @@ VERSION_FILE = REPO_ROOT / "VERSION"
 
 # Metalk8s version.
 # (Those declarations are not mandatory, but they help pylint and mypy).
-VERSION_MAJOR: str
-VERSION_MINOR: str
-VERSION_PATCH: str
-VERSION_SUFFIX: str
+VERSION_MAJOR: str = ""
+VERSION_MINOR: str = ""
+VERSION_PATCH: str = ""
+VERSION_SUFFIX: str = ""
 
 load_version_information()
 
