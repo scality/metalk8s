@@ -47,6 +47,9 @@ def task_check_for() -> Iterator[types.TaskDict]:
 
         yield {
             "name": cmd_name,
+            # This is a false positive
+            # See https://github.com/pylint-dev/pylint/issues/7100
+            # pylint: disable=cell-var-from-loop
             "title": lambda _, name=cmd_name: show(name),
             "doc": f"Check the presence of the {cmd_name} command.",
             "actions": [(get_command_location, [cmd_name, cmd_path], {})],
