@@ -24,7 +24,8 @@ runs:
       run: |
         for host in ${HOSTS_LIST}; do
           ssh -F ssh_config ${host} \
-          "sudo sosreport --all-logs -o metalk8s -kmetalk8s.k8s-resources -kmetalk8s.pod-logs -k metalk8s.describe \
+          "sudo sosreport --all-logs \
+          -o metalk8s -kmetalk8s.k8s-resources -kmetalk8s.pod-logs -k metalk8s.describe -k metalk8s.metrics \
           -o metalk8s_containerd -kmetalk8s_containerd.all -kmetalk8s_containerd.logs \
           --batch --tmp-dir /var/tmp && \
           sudo chown -R 1000:1000 /var/tmp/sosreport*"

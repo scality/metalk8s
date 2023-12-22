@@ -20,7 +20,7 @@ To include logs and configuration for containerd and MetalK8s components, run:
 .. code-block:: console
 
    root@your-machine # sosreport --batch --all-logs \
-       -o metalk8s -kmetalk8s.k8s-resources -kmetalk8s.pod-logs -kmetalk8s.describe \
+       -o metalk8s -kmetalk8s.k8s-resources -kmetalk8s.pod-logs -kmetalk8s.describe -kmetalk8s.metrics \
        -o metalk8s_containerd -kmetalk8s_containerd.all -kmetalk8s_containerd.logs
 
 .. note::

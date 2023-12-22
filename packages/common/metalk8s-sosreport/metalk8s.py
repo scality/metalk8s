@@ -73,9 +73,20 @@ class MetalK8s(Plugin, RedHatPlugin):
             "desc": "capture logs from pods (need k8s-resources to be enabled)",
         },
         {
+            "name": "metrics",
+            "default": False,
+            "desc": "capture metrics from Prometheus",
+        },
+        {
             "name": "last",
             "default": "24h",
-            "desc": "capture logs from the last defined time (need pod-logs to be enabled)",
+            "desc": "capture logs or/and metrics from the last defined time "
+            "(need pod-logs or/and metrics to be enabled)",
+        },
+        {
+            "name": "resolution",
+            "default": "1h",
+            "desc": "resolution of the metrics to capture (need metrics to be enabled)",
         },
         {
             "name": "prometheus-snapshot",
@@ -359,6 +370,95 @@ class MetalK8s(Plugin, RedHatPlugin):
 
         _handle_list()
 
+    def _setup_metrics(self):
+        prom_svc = json.loads(
+            self.exec_cmd(
+                "{} get svc -n metalk8s-monitoring thanos-query-http -o json".format(
+                    self.kube_cmd
+                )
+            )["output"]
+        )
+
+        prom_endpoint = "http://{}:{}".format(
+            prom_svc["spec"]["clusterIP"],
+            prom_svc["spec"]["ports"][0]["port"],
+        )
+
+        # Retrieve 1 point every <resolution> time for the last <last> time
+        query_range = "{}:{}".format(
+            self.get_option("last"), self.get_option("resolution")
+        )
+
+        # Retrieve all metrics
+        # NOTE: Retrieving all metrics at once is not efficient since it
+        # cause Thanos/Prometheus pods to consume a lot of CPU and memory
+        # and can cause the API to be unavailable.
+        # We retrieve metrics one by one to avoid this issue.
+        try:
+            metrics_res = requests.get(
+                "{}/api/v1/label/__name__/values".format(prom_endpoint)
+            )
+        except requests.exceptions.ConnectionError as exc:
+            self._log_error("Unable to connect to Prometheus API: {}".format(exc))
+            return
+
+        try:
+            metrics_res.raise_for_status()
+        except requests.exceptions.HTTPError as exc:
+            self._log_error(
+                "An error occurred while querying Prometheus API: {}".format(exc)
+            )
+            return
+
+        try:
+            metrics = metrics_res.json()["data"]
+        except ValueError as exc:
+            self._log_error(
+                "Invalid JSON returned by Prometheus API: {} {}".format(
+                    exc, metrics_res.text
+                )
+            )
+            return
+
+        for metric in metrics:
+            try:
+                res = requests.get(
+                    "{}/api/v1/query".format(prom_endpoint),
+                    params={"query": "{}[{}]".format(metric, query_range)},
+                )
+            except requests.exceptions.ConnectionError as exc:
+                self._log_error(
+                    "Unable to connect to Prometheus API for metric {}: {}".format(
+                        metric, exc
+                    )
+                )
+                continue
+
+            try:
+                res.raise_for_status()
+            except requests.exceptions.HTTPError as exc:
+                self._log_error(
+                    "An error occurred while retrieving the metric {}: {}".format(
+                        metric, exc
+                    )
+                )
+                continue
+
+            try:
+                res_json = res.json()
+            except ValueError as exc:
+                self._log_error(
+                    "Invalid JSON returned for metric {}: {} {}".format(
+                        metric, exc, res.text
+                    )
+                )
+                continue
+
+            with self._custom_collection_file(
+                "{}.json".format(metric), subdir="metrics"
+            ) as metric_file:
+                metric_file.write(json.dumps(res_json, indent=4))
+
     def _prometheus_snapshot(self):
         kube_cmd = (
             "kubectl "
@@ -439,6 +539,9 @@ class MetalK8s(Plugin, RedHatPlugin):
         if self._check_is_master():
             if self.get_option("k8s-resources"):
                 self._setup_k8s_resources()
+
+            if self.get_option("metrics"):
+                self._setup_metrics()
 
             if self.get_option("prometheus-snapshot"):
                 self._prometheus_snapshot()
