@@ -1,3 +1,71 @@
+bootstrap_file:
+  # 1. Success: Nominal
+  - &bstrapf_nominal
+    cp_cidrs: [10.1.0.0/16]
+    wp_cidrs: [10.2.0.0/16]
+    pods_cidr: 10.233.0.0/16
+    svc_cidr: 10.96.0.0/12
+
+  # 2. Fail: pods intersect fully
+  - <<: *bstrapf_nominal
+    pods_cidr: 10.1.0.0/16
+    expected_raise: |-
+      The following CIDRs must not overlap in bootstrap configuration:
+       - Pods \(10.1.0.0/16\) and Control Plane \(10.1.0.0/16\)
+
+  # 3. Fail: pods intersect partially
+  - <<: *bstrapf_nominal
+    cp_cidrs: [10.0.0.0/16, 10.1.0.0/24]
+    wp_cidrs: [10.2.0.0/16]
+    pods_cidr: 10.1.0.0/16
+    expected_raise: |-
+      The following CIDRs must not overlap in bootstrap configuration:
+       - Pods \(10.1.0.0/16\) and Control Plane \(10.0.0.0/16, 10.1.0.0/24\)
+
+  # 4. Fail: svc intersect fully
+  - <<: *bstrapf_nominal
+    svc_cidr: 10.2.0.0/16
+    expected_raise: |-
+      The following CIDRs must not overlap in bootstrap configuration:
+       - Services \(10.2.0.0/16\) and Workload Plane \(10.2.0.0/16\)
+
+  # 5. Fail: services intersect partially
+  - <<: *bstrapf_nominal
+    cp_cidrs: [10.1.0.0/16]
+    wp_cidrs: [10.0.0.0/16, 10.2.0.0/24]
+    svc_cidr: 10.2.0.0/16
+    expected_raise: |-
+      The following CIDRs must not overlap in bootstrap configuration:
+       - Services \(10.2.0.0/16\) and Workload Plane \(10.0.0.0/16, 10.2.0.0/24\)
+
+  # 6. Fail: pods and services intersect
+  - <<: *bstrapf_nominal
+    svc_cidr: 10.233.0.0/16
+    expected_raise: |-
+      The following CIDRs must not overlap in bootstrap configuration:
+       - Pods \(10.233.0.0/16\) and Services \(10.233.0.0/16\)
+
+  # 7. Fail: all intersect
+  - <<: *bstrapf_nominal
+    cp_cidrs: [10.0.0.0/16]
+    wp_cidrs: [10.0.0.0/16]
+    pods_cidr: 10.0.0.0/16
+    svc_cidr: 10.0.0.0/16
+    expected_raise: >-
+      The following CIDRs must not overlap in bootstrap configuration:
+       - Pods \(10.0.0.0/16\) and Services \(10.0.0.0/16\)
+       - Pods \(10.0.0.0/16\) and Workload Plane \(10.0.0.0/16\)
+       - Pods \(10.0.0.0/16\) and Control Plane \(10.0.0.0/16\)
+       - Services \(10.0.0.0/16\) and Workload Plane \(10.0.0.0/16\)
+       - Services \(10.0.0.0/16\) and Control Plane \(10.0.0.0/16\)
+
+# 4. Fail: svc intersect partially - non obvious
+  - <<: *bstrapf_nominal
+    cp_cidrs: [10.100.0.0/16]
+    expected_raise: |-
+      The following CIDRs must not overlap in bootstrap configuration:
+       - Services \(10.96.0.0/12\) and Control Plane \(10.100.0.0/16\)
+
 node:
   # 1. Success: Nominal
   - &node_nominal
