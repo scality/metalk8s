@@ -155,6 +155,10 @@ bootstrap_file_is_present() {
     fi
 }
 
+bootstrap_file_is_sane() {
+    "$SALT_CALL" --local --retcode-passthrough metalk8s_checks.bootstrap_file
+}
+
 check_ca_minion() {
     # NOTE: Today using bootstrap script, bootstrap node is also the CA
     # minion, so check for minion id equal to CA minion
@@ -184,6 +188,7 @@ main() {
     run "Checking Salt minion ID" check_minion_id
     run "Configuring Salt minion to run in local mode" configure_salt_minion_local_mode
     run "Ensure archive is available" ensure_archives_mounted
+    run "Checking that BootstrapConfiguration is sane" bootstrap_file_is_sane
     run "Calculating Salt grains in local mode" set_local_grains
     run "Checking CA minion" check_ca_minion
     run "Checking local node" check_local_node
