@@ -77,6 +77,10 @@
   and `metalk8s-keepalived` image to `alpine:3.18.5`
   (PR[#4208](https://github.com/scality/metalk8s/pull/4208))
 
+- Enrich the custom sos report plugins to allow retrieving of
+  all Kubernetes resources and Prometheus metrics
+  (PR[#4220](https://github.com/scality/metalk8s/pull/4220))
+
 ## Release 126.0.3 (in development)
 
 ## Release 126.0.2
