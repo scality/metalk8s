@@ -46,6 +46,11 @@ var _ = Describe("ObjectHandler", func() {
 		c, err = client.New(cfg, client.Options{})
 		Expect(err).ToNot(HaveOccurred())
 
+		ctx = context.Background()
+
+		// Ensure the "default" namespace exists
+		c.Create(ctx, &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "default"}})
+
 		log = logf.Log.WithName("utils-test-logger")
 		recorder = record.NewFakeRecorder(10)
 		componentName = "testcomponentname"
@@ -56,7 +61,6 @@ var _ = Describe("ObjectHandler", func() {
 			c, scheme.Scheme, recorder, log,
 			componentName, appName,
 		)
-		ctx = context.Background()
 	})
 
 	AfterEach(func() {
