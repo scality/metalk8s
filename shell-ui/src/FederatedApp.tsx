@@ -29,7 +29,10 @@ import { LanguageProvider, useLanguage } from './navbar/lang';
 import './index.css';
 import { ShellHistoryProvider } from './initFederation/ShellHistoryProvider';
 import { CoreUiThemeProvider } from '@scality/core-ui/dist/components/coreuithemeprovider/CoreUiThemeProvider';
-import { ThemeProvider } from './navbar/theme';
+import {
+  ShellThemeSelectorProvider,
+  useShellThemeSelector,
+} from './initFederation/ShellThemeSelectorProvider';
 import NotificationCenterProvider from './NotificationCenterProvider';
 import { FirstTimeLoginProvider } from './auth/FirstTimeLoginProvider';
 
@@ -112,57 +115,61 @@ function ProtectedFederatedRoute({
 function InternalRouter() {
   const discoveredViews = useDiscoveredViews();
   const { retrieveConfiguration } = useConfigRetriever();
-  const routes = discoveredViews
-    .filter((discoveredView) => discoveredView.isFederated)
-    //Sort the exact and strict routes first, to make sure to match the exact first.
-    .sort((a, b) => {
-      if (a.view.exact && !b.view.exact) {
-        return -1;
-      }
-      if (!a.view.exact && b.view.exact) {
-        return 1;
-      }
-      if (a.view.strict && !b.view.strict) {
-        return -1;
-      }
-      if (!a.view.strict && b.view.strict) {
-        return 1;
-      }
-      return 0;
-    })
+  const routes = useMemo(
+    () =>
+      discoveredViews
+        .filter((discoveredView) => discoveredView.isFederated)
+        //Sort the exact and strict routes first, to make sure to match the exact first.
+        .sort((a, b) => {
+          if (a.view.exact && !b.view.exact) {
+            return -1;
+          }
+          if (!a.view.exact && b.view.exact) {
+            return 1;
+          }
+          if (a.view.strict && !b.view.strict) {
+            return -1;
+          }
+          if (!a.view.strict && b.view.strict) {
+            return 1;
+          }
+          return 0;
+        })
 
-    .map(({ app, view, groups }) => ({
-      path: app.appHistoryBasePath + view.path,
-      exact: view.exact,
-      strict: view.strict,
-      sensitive: view.sensitive,
-      component: () => {
-        const federatedAppHistory = useMemo(
-          () =>
-            createBrowserHistory({
-              basename: app.appHistoryBasePath,
-            }),
-          [],
-        );
-        return (
-          <Router history={federatedAppHistory}>
-            <FederatedRoute
-              url={
-                app.url +
-                retrieveConfiguration({
-                  configType: 'build',
-                  name: app.name,
-                }).spec.remoteEntryPath
-              }
-              module={view.module}
-              scope={view.scope}
-              app={app}
-              groups={groups}
-            />
-          </Router>
-        );
-      },
-    }));
+        .map(({ app, view, groups }) => ({
+          path: app.appHistoryBasePath + view.path,
+          exact: view.exact,
+          strict: view.strict,
+          sensitive: view.sensitive,
+          component: () => {
+            const federatedAppHistory = useMemo(
+              () =>
+                createBrowserHistory({
+                  basename: app.appHistoryBasePath,
+                }),
+              [],
+            );
+            return (
+              <Router history={federatedAppHistory}>
+                <FederatedRoute
+                  url={
+                    app.url +
+                    retrieveConfiguration({
+                      configType: 'build',
+                      name: app.name,
+                    }).spec.remoteEntryPath
+                  }
+                  module={view.module}
+                  scope={view.scope}
+                  app={app}
+                  groups={groups}
+                />
+              </Router>
+            );
+          },
+        })),
+    [JSON.stringify(discoveredViews)],
+  );
   return (
     <>
       <Switch>
@@ -214,58 +221,60 @@ export function WithInitFederationProviders({
 const AppProviderWrapper = () => {
   const { language } = useLanguage();
   return (
-    <QueryClientProvider client={queryClient} contextSharing={true}>
-      <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
-        <ErrorBoundary
-          FallbackComponent={({ error }) => {
-            if ('en' in error && 'fr' in error) {
-              return (
-                <ErrorPage500
-                  locale={language}
-                  errorMessage={{ en: error.en, fr: error.fr }}
-                />
-              );
-            }
-            if (error instanceof Error) {
-              return (
-                <ErrorPage500
-                  locale={language}
-                  errorMessage={{ en: error.message, fr: error.message }}
-                />
-              );
-            }
-            return <ErrorPage500 locale={language} />;
-          }}
-        >
-          <WithInitFederationProviders>
-            <InternalApp />
-          </WithInitFederationProviders>
-        </ErrorBoundary>
-      </ShellConfigProvider>
-    </QueryClientProvider>
+    <ErrorBoundary
+      FallbackComponent={({ error }) => {
+        if ('en' in error && 'fr' in error) {
+          return (
+            <ErrorPage500
+              data-cy="sc-error-page500"
+              locale={language}
+              errorMessage={{ en: error.en, fr: error.fr }}
+            />
+          );
+        }
+        if (error instanceof Error) {
+          return (
+            <ErrorPage500
+              data-cy="sc-error-page500"
+              locale={language}
+              errorMessage={{ en: error.message, fr: error.message }}
+            />
+          );
+        }
+        return <ErrorPage500 locale={language} />;
+      }}
+    >
+      <WithInitFederationProviders>
+        <InternalApp />
+      </WithInitFederationProviders>
+    </ErrorBoundary>
   );
 };
 
 export default function App() {
   return (
-    <ThemeProvider>
-      {(theme) => (
-        <CoreUiThemeProvider theme={theme.brand}>
-          <ScrollbarWrapper>
-            <div
-              style={{
-                height: '100vh',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <LanguageProvider>
-                <AppProviderWrapper />
-              </LanguageProvider>
-            </div>
-          </ScrollbarWrapper>
-        </CoreUiThemeProvider>
-      )}
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient} contextSharing={true}>
+      <ShellConfigProvider shellConfigUrl={'/shell/config.json'}>
+        <ShellThemeSelectorProvider>
+          {(theme) => (
+            <CoreUiThemeProvider theme={theme}>
+              <ScrollbarWrapper>
+                <div
+                  style={{
+                    height: '100vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <LanguageProvider>
+                    <AppProviderWrapper />
+                  </LanguageProvider>
+                </div>
+              </ScrollbarWrapper>
+            </CoreUiThemeProvider>
+          )}
+        </ShellThemeSelectorProvider>
+      </ShellConfigProvider>
+    </QueryClientProvider>
   );
 }

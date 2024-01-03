@@ -81,7 +81,7 @@ const AlertProvider = ({ children }: { children: React.ReactNode }) => {
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <ComponentWithFederatedImports
         componentWithInjectedImports={InternalAlertProvider}
-        renderOnError={<ErrorPage500 />}
+        renderOnError={<ErrorPage500 data-cy="sc-error-page500" />}
         componentProps={{
           children,
         }}

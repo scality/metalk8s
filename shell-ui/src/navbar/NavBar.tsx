@@ -10,7 +10,7 @@ import { Layout } from '@scality/core-ui/dist/components/layout/v2/index';
 import { normalizePath } from './auth/permissionUtils';
 import { useTheme } from 'styled-components';
 import { useLanguage } from './lang';
-import { useThemeName } from './theme';
+import { useShellThemeSelector } from '../initFederation/ShellThemeSelectorProvider';
 import { useIntl } from 'react-intl';
 import { UserData, useAuth, useLogOut } from '../auth/AuthProvider';
 import {
@@ -70,7 +70,6 @@ const Item = ({
   label: string;
   isExternal?: boolean;
 }) => {
-  const brand = useTheme();
   return (
     <NavbarDropDownItem>
       {icon && (
@@ -244,9 +243,9 @@ export const Navbar = ({
   providerLogout?: boolean;
   children?: React.ReactNode;
 }) => {
-  const brand = useTheme();
+  const theme = useTheme();
   const { userData } = useAuth();
-  const { themeName, unSelectedThemes, setTheme } = useThemeName();
+  const { themeMode, setThemeMode } = useShellThemeSelector();
   const { language, setLanguage, unSelectedLanguages } = useLanguage();
   const intl = useIntl();
   const { openLink } = useLinkOpener();
@@ -283,7 +282,7 @@ export const Navbar = ({
   }));
 
   const secondaryTabs = navbarSecondaryActions.map((action) => ({
-    type: 'custom',
+    type: 'custom' as const,
     render: () =>
       action.link.render ? (
         <action.link.render selected={action.selected} />
@@ -310,7 +309,23 @@ export const Navbar = ({
     render: () => <NotificationCenter />,
   };
 
-  const rightTabs = [
+  type RightTabItem =
+    | {
+        type: 'dropdown';
+        text: string;
+        icon?: React.ReactNode;
+        items: {
+          label: React.ReactNode;
+          selected?: boolean;
+          onClick: () => void;
+        }[];
+      }
+    | {
+        type: 'custom';
+        render: () => React.ReactNode;
+      };
+
+  const rightTabs: RightTabItem[] = [
     ...secondaryTabs,
     {
       type: 'dropdown',
@@ -318,7 +333,7 @@ export const Navbar = ({
       icon: (
         <span
           style={{
-            color: brand.textTertiary,
+            color: theme.textTertiary,
           }}
         >
           <Icon name="User" />
@@ -378,11 +393,11 @@ export const Navbar = ({
   if (canChangeTheme) {
     rightTabs.unshift({
       type: 'dropdown',
-      text: themeName,
-      items: unSelectedThemes.map((theme) => ({
+      text: themeMode,
+      items: (['light', 'dark'] as const).map((theme) => ({
         label: theme,
         onClick: () => {
-          setTheme(theme);
+          setThemeMode(theme);
         },
       })),
     });

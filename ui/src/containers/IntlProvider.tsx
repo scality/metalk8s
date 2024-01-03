@@ -28,7 +28,7 @@ const FederatedIntlProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <ComponentWithFederatedImports
       componentWithInjectedImports={InternalIntlProvider}
-      renderOnError={<ErrorPage500 />}
+      renderOnError={<ErrorPage500 data-cy="sc-error-page500" />}
       componentProps={{
         children,
       }}

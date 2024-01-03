@@ -30,15 +30,15 @@ describe('Error Pages Auth failure', () => {
 
 describe('Error Pages Navbar failure', () => {
   beforeEach(() => {
-    cy.setupMocks('config.json', null);
+    cy.fixture('shell-config.json').then((config) => {
+      config.navbar = null;
+      cy.setupMocks('config.json', config);  
+    });
     cy.login();
   });
 
   it('redirects to 500 error page in case of navbar fail to load', () => {
-    cy.fixture('shell-config.json').then((config) => {
-      config.navbar = null;
-      cy.intercept('GET', '/shell/config.json', config);
-    });
+    
 
     // internal navbar will throw an error if the shell-ui navbar has failed
     // we must catch it on cypress

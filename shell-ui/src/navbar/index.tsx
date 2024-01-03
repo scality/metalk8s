@@ -1,28 +1,23 @@
 import React from 'react';
-import { Navbar } from './NavBar';
-import { useThemeName } from './theme';
-import { useFavicon } from './favicon';
-import './library';
 import { useShellConfig } from '../initFederation/ShellConfigProvider';
+import { useShellThemeSelector } from '../initFederation/ShellThemeSelectorProvider';
+import { Navbar } from './NavBar';
 import { NavbarConfigProvider } from './NavbarConfigProvider';
 import { NavbarUpdaterComponents } from './NavbarUpdaterComponents';
+import { useFavicon } from './favicon';
+import './library';
 export type SolutionsNavbarProps = {
   children?: React.ReactNode;
 };
 
 export const SolutionsNavbar = ({ children }: SolutionsNavbarProps) => {
-  const { themeName } = useThemeName();
+  const { assets } = useShellThemeSelector();
   const { config } = useShellConfig();
   useFavicon(config?.favicon || '/brand/favicon-metalk8s.svg');
   return (
     <NavbarConfigProvider>
       <>
-        <Navbar
-          logo={
-            config?.themes?.[themeName].logoPath ||
-            `/brand/assets/logo-${themeName}.svg`
-          }
-        >
+        <Navbar logo={assets.logoPath} canChangeTheme={config.canChangeTheme}>
           {children}
         </Navbar>
         <NavbarUpdaterComponents />

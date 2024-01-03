@@ -1,4 +1,4 @@
-import { brand } from '@scality/core-ui/dist/style/theme';
+import { coreUIAvailableThemes } from '@scality/core-ui/dist/style/theme';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { IntlProvider } from 'react-intl';
@@ -48,7 +48,9 @@ const CustomWrapper = ({ children }: { children?: React.ReactNode }) => {
       }
     >
       <IntlProvider locale="en" messages={translations_en}>
-        <ThemeProvider theme={brand}>{children}</ThemeProvider>
+        <ThemeProvider theme={coreUIAvailableThemes.darkRebrand}>
+          {children}
+        </ThemeProvider>
       </IntlProvider>
     </QueryClientProvider>
   );

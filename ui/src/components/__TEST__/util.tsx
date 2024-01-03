@@ -17,6 +17,7 @@ import reducer from '../../ducks/reducer';
 import translations_en from '../../translations/en.json';
 import StartTimeProvider from '../../containers/StartTimeProvider';
 import { ConfigContext } from '../../FederableApp';
+import { coreUIAvailableThemes } from '@scality/core-ui/dist/style/theme';
 
 const composeEnhancers =
   typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
@@ -81,32 +82,7 @@ export const AllTheProviders = (
         },
       },
     });
-    const theme = {
-      brand: {
-        alert: '#FFE508',
-        base: '#7B7B7B',
-        primary: '#1D1D1D',
-        primaryDark1: '#171717',
-        primaryDark2: '#0A0A0A',
-        secondary: '#055DFF',
-        secondaryDark1: '#1C3D59',
-        secondaryDark2: '#1C2E3F',
-        success: '#006F62',
-        healthy: '#30AC26',
-        healthyLight: '#69E44C',
-        warning: '#FFC10A',
-        danger: '#AA1D05',
-        critical: '#BE321F',
-        background: '#121212',
-        backgroundBluer: '#192A41',
-        textPrimary: '#FFFFFF',
-        textSecondary: '#B5B5B5',
-        textTertiary: '#DFDFDF',
-        borderLight: '#A5A5A5',
-        border: '#313131',
-        info: '#434343',
-      },
-    };
+    const theme = coreUIAvailableThemes.darkRebrand;
 
     // When you use jest-preview, you need to set the environment variable JEST_PREVIEW at on.
     if (process.env.JEST_PREVIEW === 'on') {

@@ -39,7 +39,7 @@ function ConfigProvider({ children }: ConfigProps) {
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <ComponentWithFederatedImports
         componentWithInjectedImports={InternalConfigProvider}
-        renderOnError={<ErrorPage500 />}
+        renderOnError={<ErrorPage500 data-cy="sc-error-page500" />}
         componentProps={{
           children,
         }}

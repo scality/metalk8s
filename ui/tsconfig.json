@@ -70,6 +70,6 @@
     "skipLibCheck": true /* Skip type checking of declaration files. */,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */,
-    "typeRoots": ["./node_modules/@types"]
+    "types": ["@scality/core-ui/types/styled.d.ts", "@types"],
   }
 }

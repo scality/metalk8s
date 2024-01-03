@@ -1,9 +1,11 @@
-import React from 'react';
-import { createContext, useContext } from 'react';
-import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
 import { ErrorPage500 } from '@scality/core-ui/dist/components/error-pages/ErrorPage500.component';
+import { Loader } from '@scality/core-ui/dist/components/loader/Loader.component';
+import {
+  CoreUITheme,
+  CoreUIThemeName,
+} from '@scality/core-ui/dist/style/theme';
+import React, { createContext, useContext } from 'react';
 import { useQuery } from 'react-query';
-import { useThemeName } from '../navbar/theme';
 
 if (!window.shellContexts) {
   window.shellContexts = {};
@@ -13,32 +15,6 @@ if (!window.shellContexts.ShellConfigContext) {
   window.shellContexts.ShellConfigContext = createContext(null);
 }
 
-export type Theme = {
-  logoPath: string;
-  faviconPath: string;
-  colors: {
-    statusHealthy: string;
-    statusWarning: string;
-    statusCritical: string;
-    selectedActive: string;
-    highlight: string;
-    border: string;
-    buttonPrimary: string;
-    buttonSecondary: string;
-    buttonDelete: string;
-    infoPrimary: string;
-    infoSecondary: string;
-    backgroundLevel1: string;
-    backgroundLevel2: string;
-    backgroundLevel3: string;
-    backgroundLevel4: string;
-    textPrimary: string;
-    textSecondary: string;
-    textTertiary: string;
-    textReverse: string;
-    textLink: string;
-  };
-};
 export type NavbarEntry = {
   groups?: string[];
   label?: {
@@ -54,27 +30,25 @@ export type NavbarEntry = {
 
 export type UserGroupsMapping = Record<string, string[]>;
 
-// Will be removed when zenko-ui -> module federation
-export type Options = {
-  main: {
-    [key: string]: Entry;
-  };
-  subLogin: {
-    [key: string]: Entry;
-  };
+type CoreUIShellThemeDescription = {
+  type: 'core-ui';
+  name: CoreUIThemeName;
+  logoPath: string;
+};
+type CustomShellThemeDescription = {
+  type: 'custom';
+  logoPath: string;
+  colors: CoreUITheme;
 };
 
-export type Entry = {
-  en: string;
-  fr: string;
-  icon?: string;
-  groups?: string[];
-  isExternal?: boolean;
-  order?: number;
-  activeIfMatches?: string;
-};
+type ThemeDescription =
+  | CoreUIShellThemeDescription
+  | CustomShellThemeDescription;
 
-// config fetched from /shell/config.json
+type Themes = {
+  dark: ThemeDescription;
+  light: ThemeDescription;
+};
 export type ShellJSONFileConfig = {
   discoveryUrl: string;
   navbar: {
@@ -82,34 +56,21 @@ export type ShellJSONFileConfig = {
     subLogin: NavbarEntry[];
   };
   productName: string;
-
-  // optional (in dev mode)
-  // TODO : Themes and Logo seems duplicated, check why
-  themes?: {
-    dark?: { logoPath: string };
-    darkRebrand?: { logoPath: string };
-    light?: { logoPath: string };
-  };
-  logo?: {
-    dark?: string;
-    darkRebrand?: string;
-    light?: string;
-  };
+  themes: Themes;
   favicon?: string;
 
   // for IDP that does not support user groups (ie: Dex)
   userGroupsMapping?: UserGroupsMapping;
-  // Legacy, will be removed when zenko-ui -> module federation
-  options?: Options;
+
+  canChangeTheme?: boolean;
   // Not yet used and working
   canChangeLanguage?: boolean;
-  canChangeTheme?: boolean;
 };
 
 export type ShellConfig = {
   config: ShellJSONFileConfig;
   favicon: Pick<ShellJSONFileConfig, 'favicon'>;
-  themes: Pick<ShellJSONFileConfig, 'themes'>;
+  themes: Themes;
   status: 'idle' | 'loading' | 'success' | 'error';
 };
 
@@ -122,22 +83,13 @@ export const useShellConfig = () => {
     throw new Error("useShellConfig can't be used outside ShellConfigProvider");
   }
 
-  const { themeName } = useThemeName();
+  if (contextValue.config) {
+    contextValue.config.themes = {
+      ...contextValue.config.themes,
+    };
+  }
 
-  return {
-    ...contextValue,
-    favicon: contextValue.config.favicon || '/brand/favicon-metalk8s.svg',
-    themes:
-      {
-        ...(contextValue.config.themes || {}),
-        [themeName]: {
-          ...(contextValue.config.themes || {})?.[themeName],
-          logoPath:
-            (contextValue.config.themes || {})?.[themeName]?.logoPath ||
-            `/brand/assets/logo-${themeName}.svg`,
-        },
-      } || {},
-  };
+  return contextValue;
 };
 
 export const ShellConfigProvider = ({ shellConfigUrl, children }) => {

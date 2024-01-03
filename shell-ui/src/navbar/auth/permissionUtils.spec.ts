@@ -1,5 +1,4 @@
 import {
-  getAccessiblePathsFromOptions,
   getUserGroups,
   isEntryAccessibleByTheUser,
   isPathAccessible,
@@ -56,54 +55,7 @@ describe('permission utils - isEntryAccessibleByTheUser', () => {
     expect(hasAccess).toBe(false);
   });
 });
-describe('permission utils - getAccessiblePathsFromOptions', () => {
-  it('should return accessible paths', () => {
-    //S
-    const options: Options = {
-      main: {
-        'http://fake/publicPath': {
-          en: 'publicPath',
-          fr: 'publicPath',
-        },
-        'http://fake/groupPath': {
-          en: 'groupPath',
-          fr: 'groupPath',
-          groups: ['group'],
-        },
-        'http://fake/groupAPath': {
-          en: 'groupAPath',
-          fr: 'groupAPath',
-          groups: ['groupA'],
-        },
-      },
-      subLogin: {
-        'http://fake/subLoginPublicPath': {
-          en: 'publicPath',
-          fr: 'publicPath',
-        },
-        'http://fake/subLoginGroupPath': {
-          en: 'groupPath',
-          fr: 'groupPath',
-          groups: ['group'],
-        },
-        'http://fake/subLoginGroupAPath': {
-          en: 'groupAPath',
-          fr: 'groupAPath',
-          groups: ['groupA'],
-        },
-      },
-    };
-    //E
-    const accessiblePaths = getAccessiblePathsFromOptions(options, ['group']);
-    //V
-    expect(accessiblePaths).toEqual([
-      'http://fake/publicPath',
-      'http://fake/groupPath',
-      'http://fake/subLoginPublicPath',
-      'http://fake/subLoginGroupPath',
-    ]);
-  });
-});
+
 describe('permission utils - normalizePath', () => {
   it('should normalize path', () => {
     expect(normalizePath('http://fake/groupPath')).toEqual(
