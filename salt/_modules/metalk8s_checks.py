@@ -16,6 +16,56 @@ def __virtual__():
     return __virtualname__
 
 
+def bootstrap_file():
+    """Check sanity of the bootstrap config file."""
+
+    networks = __pillar__.get("networks", {})
+    errors = []
+
+    # check if pod and svc CIDRs don't intersect
+    # WP and CP CIDRs
+
+    # each entry should be a list of 1 or more CIDR
+    # if not, the error is detected upon pillar generation
+    wp = networks.get("workload_plane").get("cidr")
+    cp = networks.get("control_plane").get("cidr")
+    node_networks = [
+        (
+            f"Workload Plane ({', '.join(wp)})",
+            [ipaddress.ip_network(cidr) for cidr in wp],
+        ),
+        (
+            f"Control Plane ({', '.join(cp)})",
+            [ipaddress.ip_network(cidr) for cidr in cp],
+        ),
+    ]
+
+    # These should always be defined in the pillar
+    # They are each a CIDR address
+    pod = networks.get("pod")
+    service = networks.get("service")
+    object_networks = [
+        (f"Pods ({pod})", ipaddress.ip_network(pod)),
+        (f"Services ({service})", ipaddress.ip_network(service)),
+    ]
+
+    if object_networks[0][1].overlaps(object_networks[1][1]):
+        errors.append(f" - {object_networks[0][0]} and {object_networks[1][0]}")
+
+    for o in object_networks:
+        for n in node_networks:
+            if any(o[1].overlaps(net) for net in n[1]):
+                errors.append(f" - {o[0]} and {n[0]}")
+
+    if errors:
+        msg = (
+            "The following CIDRs must not overlap in bootstrap configuration:\n{}"
+        ).format("\n".join(errors))
+        raise CheckError(msg)
+
+    return True
+
+
 def node(raises=True, **kwargs):
     """Check if the current Salt-minion match some requirements so that it can
     be used as a MetalK8s node.
