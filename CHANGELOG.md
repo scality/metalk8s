@@ -2,6 +2,12 @@
 
 ## Release 126.0.3 (in development)
 
+### Enhancements
+
+- Add a Check to ensure pods/services CIDRs don't overlap
+  Workload Plane/Control Plane CIDRs.
+  (PR[#4217](https://github.com/scality/metalk8s/pull/4217))
+
 ## Release 126.0.2
 
 ### Bug fixes

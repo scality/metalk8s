@@ -32,6 +32,27 @@ class Metalk8sChecksTestCase(TestCase, mixins.LoaderModuleMockMixin):
         """
         self.assertEqual(metalk8s_checks.__virtual__(), "metalk8s_checks")
 
+    @utils.parameterized_from_cases(YAML_TESTS_CASES["bootstrap_file"])
+    def test_bootstrap_file(
+        self, cp_cidrs, wp_cidrs, pods_cidr, svc_cidr, expected_raise=None
+    ):
+        """
+        Tests the return of the `bootstrap_file` function
+        """
+        networks = {
+            "workload_plane": {"cidr": wp_cidrs},
+            "control_plane": {"cidr": cp_cidrs},
+            "pod": pods_cidr,
+            "service": svc_cidr,
+        }
+        with patch.dict(metalk8s_checks.__pillar__, {"networks": networks}):
+            if expected_raise is not None:
+                self.assertRaisesRegex(
+                    CheckError, expected_raise, metalk8s_checks.bootstrap_file
+                )
+            else:
+                self.assertEqual(metalk8s_checks.bootstrap_file(), True)
+
     @utils.parameterized_from_cases(YAML_TESTS_CASES["node"])
     def test_node(
         self,
