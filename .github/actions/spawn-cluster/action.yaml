@@ -17,11 +17,11 @@ inputs:
   TERRAFORM_VERSION:
     description: "Terraform version to use"
     required: false
-    default: "1.3.6"
+    default: "1.5.2"
   TERRAFORM_SNAPSHOT_TAG:
     description: "Tag to checkout for the scality/terraform-snapshot repository"
     required: false
-    default: "0.9.0"
+    default: "0.12.0"
 
   # Cloud configuration
   CLOUD:
@@ -55,6 +55,10 @@ inputs:
     description: "The RHSM password to use (only needed on RedHat)"
     required: false
     default: ""
+  AUTHORIZED_CIDRS:
+    description: "List of CIDRs to allow SSH and ICMP ingress from"
+    required: false
+    default: '["0.0.0.0/0"]'
 
   args:
     description: Specific arguments to add to the apply command
@@ -98,7 +102,7 @@ runs:
     - name: Install tools
       if: inputs.skip-prepare == 'false'
       shell: bash
-      run: sudo yum install -y unzip tar
+      run: sudo apt-get update && sudo apt-get install -y unzip
     - name: Install node
       if: inputs.skip-prepare == 'false'
       uses: actions/setup-node@v3
@@ -129,6 +133,7 @@ runs:
         TF_VAR_restore_env: "${{ inputs.RESTORE_ENV }}"
         TF_VAR_rhsm_username: "${{ inputs.rhsm-username }}"
         TF_VAR_rhsm_password: "${{ inputs.rhsm-password }}"
+        TF_VAR_ingress_remote_ip_prefix: "${{ inputs.AUTHORIZED_CIDRS }}"
         MAX_RETRIES: "3"
         TFVARS_DIR: "${{ github.workspace }}/.github/spawn/tfvars"
       run: |

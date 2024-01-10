@@ -79,7 +79,9 @@ env:
 
 jobs:
   multi-node:
-    runs-on: [self-hosted, centos7, large]
+    # We need to use a large runner so that we have known runner IPs
+    # It allows us to filter authorized IPs on the machines we spawn
+    runs-on: ubuntu-22.04-4core
     env:
       SSH_PRIVATE_KEY: "~/.ssh/terraform"
       NODES_COUNT: ${{ inputs.nodes-count }}
@@ -87,7 +89,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install deps
-        run: sudo yum install -y isomd5sum jq
+        run: sudo apt-get update && sudo apt-get install -y isomd5sum jq
       - name: Retrieve product.txt from artifacts
         run: >
           curl --fail -LO -u ${{ secrets.ARTIFACTS_USER }}:${{ secrets.ARTIFACTS_PASSWORD }}
@@ -118,6 +120,7 @@ jobs:
           GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
           ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
           ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+          AUTHORIZED_CIDRS: ${{ vars.AUTHORIZED_CIDRS }}
       - name: Save Terraform context
         if: always()
         uses: ./.github/actions/save-terraform-context
@@ -371,7 +374,9 @@ jobs:
   destroy-multi-node-cluster:
     needs:
       - multi-node
-    runs-on: [self-hosted, centos7, large]
+    # We need to use a large runner so that we have known runner IPs
+    # It allows us to filter authorized IPs on the machines we spawn
+    runs-on: ubuntu-22.04-4core
     if: always()
     steps:
       - name: Checkout
