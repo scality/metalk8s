@@ -3,6 +3,7 @@ set -e
 set -u
 set -o pipefail
 
+KUBECONFIG=${KUBECONFIG:-/etc/kubernetes/admin.conf}
 VERBOSE=${VERBOSE:-0}
 LOGFILE="/var/log/metalk8s/iso-manager.log"
 SALT_CALL=${SALT_CALL:-salt-call}
@@ -117,7 +118,7 @@ _configure_archives() {
                     'endpoints': \
                         $(salt-call --out txt pillar.get metalk8s:endpoints | cut -c 8-), \
                     'api_server': { \
-                        'kubeconfig': '/etc/kubernetes/admin.conf' \
+                        'kubeconfig': $KUBECONFIG \
                     } \
                 } \
             }" \
