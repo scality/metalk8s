@@ -4,6 +4,9 @@
 
 ### Enhancements
 
+- Use a variable for kubeconfig in the iso-manager script
+  (PR[#4225](https://github.com/scality/metalk8s/pull/4225))
+
 - Add a Check to ensure pods/services CIDRs don't overlap
   Workload Plane/Control Plane CIDRs.
   (PR[#4217](https://github.com/scality/metalk8s/pull/4217))
