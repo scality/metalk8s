@@ -22,7 +22,9 @@ env:
 
 jobs:
   snapshot-upgrade:
-    runs-on: [self-hosted, centos7, large]
+    # We need to use a large runner so that we have known runner IPs
+    # It allows us to filter authorized IPs on the machines we spawn
+    runs-on: ubuntu-22.04-4core
     strategy:
       fail-fast: false
       matrix:
@@ -37,7 +39,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install deps
-        run: sudo yum install -y isomd5sum
+        run: sudo apt-get update && sudo apt-get install -y isomd5sum
 
      ## Spawn {{{
       - name: Export environment variables for accessing the cloud

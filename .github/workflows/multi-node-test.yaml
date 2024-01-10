@@ -79,7 +79,9 @@ env:
 
 jobs:
   multi-node:
-    runs-on: [self-hosted, centos7, large]
+    # We need to use a large runner so that we have known runner IPs
+    # It allows us to filter authorized IPs on the machines we spawn
+    runs-on: ubuntu-22.04-4core
     env:
       SSH_PRIVATE_KEY: "~/.ssh/terraform"
       NODES_COUNT: ${{ inputs.nodes-count }}
@@ -87,7 +89,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install deps
-        run: sudo yum install -y isomd5sum jq
+        run: sudo apt-get update && sudo apt-get install -y isomd5sum jq
 
      ## Spawn {{{
       - name: Export environment variables for accessing the cloud
@@ -370,7 +372,9 @@ jobs:
   destroy-multi-node-cluster:
     needs:
       - multi-node
-    runs-on: [self-hosted, centos7, large]
+    # We need to use a large runner so that we have known runner IPs
+    # It allows us to filter authorized IPs on the machines we spawn
+    runs-on: ubuntu-22.04-4core
     if: always()
     steps:
       - name: Checkout

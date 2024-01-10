@@ -56,7 +56,7 @@ runs:
     - name: Install tools
       if: inputs.ARTIFACTS_URL
       shell: bash
-      run: sudo yum install -y unzip
+      run: sudo apt-get update && sudo apt-get install -y unzip
     - name: Install node
       if: inputs.ARTIFACTS_URL
       uses: actions/setup-node@v3
