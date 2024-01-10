@@ -98,7 +98,7 @@ runs:
     - name: Install tools
       if: inputs.skip-prepare == 'false'
       shell: bash
-      run: sudo yum install -y unzip tar
+      run: sudo apt-get update && sudo apt-get install -y unzip
     - name: Install node
       if: inputs.skip-prepare == 'false'
       uses: actions/setup-node@v3

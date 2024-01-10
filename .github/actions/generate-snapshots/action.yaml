@@ -25,7 +25,7 @@ runs:
     - name: Install dependencies for Openstack
       if: contains('ovh', inputs.cloud)
       run: |
-        sudo yum install -y python36-pip jq
+        sudo apt-get update && sudo apt-get install -y python3-pip jq
         pip3 install --user --upgrade pip
         pip3 install --user python-openstackclient~=5.8.0 openstacksdk~=1.4.0
       shell: bash
