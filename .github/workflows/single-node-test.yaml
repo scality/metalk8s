@@ -117,6 +117,7 @@ jobs:
           ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
           rhsm-username: ${{ secrets.RHSM_USERNAME }}
           rhsm-password: ${{ secrets.RHSM_PASSWORD }}
+          AUTHORIZED_CIDRS: ${{ vars.AUTHORIZED_CIDRS }}
       - name: Save Terraform context
         if: always()
         uses: ./.github/actions/save-terraform-context

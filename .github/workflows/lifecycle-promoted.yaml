@@ -62,6 +62,7 @@ jobs:
           GIT_ACCESS_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
           ARTIFACTS_USER: ${{ secrets.ARTIFACTS_USER }}
           ARTIFACTS_PASSWORD: ${{ secrets.ARTIFACTS_PASSWORD }}
+          AUTHORIZED_CIDRS: ${{ vars.AUTHORIZED_CIDRS }}
       - name: Save Terraform context
         if: always()
         uses: ./.github/actions/save-terraform-context
