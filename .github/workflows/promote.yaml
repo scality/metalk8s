@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Promote artifacts
         id: promote
-        uses: scality/action-artifacts@v3
+        uses: scality/action-artifacts@v4
         with:
           method: promote
           url: https://artifacts.scality.net

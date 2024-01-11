@@ -19,7 +19,7 @@ runs:
   using: "composite"
   steps:
     - name: Get artifacts URL
-      uses: scality/action-artifacts@v3
+      uses: scality/action-artifacts@v4
       id: artifacts
       with:
         method: setup

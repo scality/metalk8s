@@ -86,7 +86,7 @@ jobs:
           done
       - name: Upload artifacts
         id: upload
-        uses: scality/action-artifacts@v3
+        uses: scality/action-artifacts@v4
         with:
           method: upload
           url: https://artifacts.scality.net
@@ -119,7 +119,7 @@ jobs:
       - name: Prepare artifacts
         run: mkdir -p "artifacts/images" && mv shell-ui.tar.gz artifacts/images/
       - name: Upload artifacts
-        uses: scality/action-artifacts@v3
+        uses: scality/action-artifacts@v4
         with:
           method: upload
           url: https://artifacts.scality.net
@@ -156,7 +156,7 @@ jobs:
       - name: Copy generated docs with Scality theme
         run: cp -r docs/_build/* artifacts/docs/ && cp CHANGELOG.md artifacts/docs/
       - name: Upload artifacts
-        uses: scality/action-artifacts@v3
+        uses: scality/action-artifacts@v4
         with:
           method: upload
           url: https://artifacts.scality.net
@@ -235,7 +235,7 @@ jobs:
       - name: Prepare artifacts
         run: mkdir -p "artifacts/ui" && mv ui/junit artifacts/ui/
       - name: Upload artifacts
-        uses: scality/action-artifacts@v3
+        uses: scality/action-artifacts@v4
         with:
           method: upload
           url: https://artifacts.scality.net
@@ -548,7 +548,7 @@ jobs:
           mv junit upload/ui || true
       - name: Upload artifacts
         if: always()
-        uses: scality/action-artifacts@v3
+        uses: scality/action-artifacts@v4
         with:
           method: upload
           url: https://artifacts.scality.net
@@ -582,7 +582,7 @@ jobs:
           mkdir -p artifacts
           echo -n "FAILED" > artifacts/.final_status
       - name: Upload artifacts
-        uses: scality/action-artifacts@v3
+        uses: scality/action-artifacts@v4
         with:
           method: upload
           url: https://artifacts.scality.net
@@ -616,7 +616,7 @@ jobs:
           mkdir -p artifacts
           echo -n "SUCCESSFUL" > artifacts/.final_status
       - name: Upload artifacts
-        uses: scality/action-artifacts@v3
+        uses: scality/action-artifacts@v4
         with:
           method: upload
           url: https://artifacts.scality.net
