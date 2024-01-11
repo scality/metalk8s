@@ -87,7 +87,7 @@ jobs:
       NODES_COUNT: ${{ inputs.nodes-count }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install deps
         run: sudo apt-get update && sudo apt-get install -y isomd5sum jq
       - name: Retrieve product.txt from artifacts
@@ -380,7 +380,7 @@ jobs:
     if: always()
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Get artifacts URL
         uses: scality/action-artifacts@v3
         id: artifacts
