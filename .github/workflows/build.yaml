@@ -51,7 +51,7 @@ jobs:
         with:
           python-version: "3.10"
       - name: setup cache for pip
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: pip-packages
         with:
@@ -213,7 +213,7 @@ jobs:
           node-version: "16"
       - name: Cache node modules
         id: cache-npm
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-node-modules
         with:
@@ -256,7 +256,7 @@ jobs:
           node-version: "16"
       - name: Cache node modules
         id: cache-npm
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-node-modules
         with:
@@ -291,7 +291,7 @@ jobs:
         with:
           node-version: "16"
       - name: Cache node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-node-modules
         with:
@@ -322,7 +322,7 @@ jobs:
         with:
           go-version: "1.19.11"
       - name: Cache Go modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-go-modules
         with:
@@ -352,7 +352,7 @@ jobs:
         with:
           go-version: "1.19.11"
       - name: Cache Go modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-go-modules
         with:
@@ -421,7 +421,7 @@ jobs:
           node-version: "16"
       - name: Cache node modules
         id: cache-npm
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-node-modules
         with:
@@ -499,7 +499,7 @@ jobs:
           node-version: "16"
       - name: Cache node modules
         id: cache-npm
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-node-modules
         with:
