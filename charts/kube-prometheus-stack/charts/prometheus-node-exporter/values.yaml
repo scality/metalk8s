@@ -56,6 +56,13 @@ kubeRBACProxy:
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
   containerSecurityContext: {}
 
+  # Specify the port used for the Node exporter container (upstream port)
+  port: 8100
+  # Specify the name of the container port
+  portName: http
+  # Configure a hostPort. If true, hostPort will be enabled in the container and set to service.port.
+  enableHostPort: false
+
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
@@ -388,18 +395,21 @@ secrets: []
 ##
 namespaceOverride: ""
 
-## Additional containers for export metrics to text file
+## Additional containers for export metrics to text file; fields image,imagePullPolicy,securityContext take default value from main container
 ##
 sidecars: []
-##  - name: nvidia-dcgm-exporter
-##    image: nvidia/dcgm-exporter:1.4.3
+#  - name: nvidia-dcgm-exporter
+#    image: nvidia/dcgm-exporter:1.4.3
+#    volumeMounts:
+#     - name: tmp
+#       mountPath: /tmp
 
 ## Volume for sidecar containers
 ##
 sidecarVolumeMount: []
-##  - name: collector-textfiles
-##    mountPath: /run/prometheus
-##    readOnly: false
+#  - name: collector-textfiles
+#    mountPath: /run/prometheus
+#    readOnly: false
 
 ## Additional mounts from the host to sidecar containers
 ##
@@ -478,3 +488,6 @@ extraManifests: []
   #     name: prometheus-extra
   #   data:
   #     extra-data: "value"
+
+# Override version of app, required if image.tag is defined and does not follow semver
+version: ""

@@ -140,8 +140,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="grafana",
-        version="10.1.5",
-        digest="sha256:0679e877ba204cede473782d5aba962831a3449092da120aba7d24082efe3fde",
+        version="10.3.1",
+        digest="sha256:fcd2abef02b621f01061187590d74082c008413954dcc81aee46e44a652640af",
     ),
     Image(
         name="k8s-sidecar",
@@ -197,8 +197,8 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="prometheus",
-        version="v2.48.0",
-        digest="sha256:b440bc0e8aa5bab44a782952c09516b6a50f9d7b2325c1ffafac7bc833298e2e",
+        version="v2.49.1",
+        digest="sha256:beb5e30ffba08d9ae8a7961b9a2145fc8af6296ff2a4f463df7cd722fcbfc789",
     ),
     Image(
         name="prometheus-adapter",
@@ -207,18 +207,18 @@ CONTAINER_IMAGES: Tuple[Image, ...] = (
     ),
     Image(
         name="prometheus-config-reloader",
-        version="v0.69.1",
-        digest="sha256:7bbe804260f37cddce47eb90809e799434e6aaed03116ce8e041b73733a022b1",
+        version="v0.71.2",
+        digest="sha256:9f0c16b8c95c908f761d45f95bc04da9dd6482adc8dc0d88dcbc24ceeb5879a1",
     ),
     Image(
         name="prometheus-operator",
-        version="v0.69.1",
-        digest="sha256:ecc59d98c331f8831358425fd29e2343a95e24fdb264ed83cccaca552d9c97d9",
+        version="v0.71.2",
+        digest="sha256:bbf3c671e65b0c115d2196bbe7fed0bcdc59f44b7c93868cd40d1c90cbd3806e",
     ),
     Image(
         name="thanos",
-        version="v0.32.2",
-        digest="sha256:4f5997e4ccf3e68dd958d7619478ee69b2b2c27d6f0d5f9b42ad2667b747abb5",
+        version="v0.34.0",
+        digest="sha256:2356a5f131fd80965d7a0617b70b14e4facae1aee5ec43f117f8bfbe20d987fc",
     ),
     # Local images
     Image(

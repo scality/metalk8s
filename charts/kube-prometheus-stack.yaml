@@ -223,7 +223,7 @@ grafana:
       nginx.ingress.kubernetes.io/rewrite-target: /$2
     path: /grafana(/|$)(.*)
     hosts:
-      - 'null'
+      - ''
 
   # NOTE: This config is managed directly in a salt state
   createConfigmap: false

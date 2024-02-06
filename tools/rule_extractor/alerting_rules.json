@@ -626,37 +626,25 @@
     {
         "message": "PersistentVolume is filling up.",
         "name": "KubePersistentVolumeFillingUp",
-        "query": "(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.03 and kubelet_volume_stats_used_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 unless on (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
+        "query": "(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.03 and kubelet_volume_stats_used_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 unless on (cluster, namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on (cluster, namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
         "severity": "critical"
     },
     {
         "message": "PersistentVolume is filling up.",
         "name": "KubePersistentVolumeFillingUp",
-        "query": "(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.15 and kubelet_volume_stats_used_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 and predict_linear(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}[6h], 4 * 24 * 3600) < 0 unless on (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
+        "query": "(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_capacity_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.15 and kubelet_volume_stats_used_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 and predict_linear(kubelet_volume_stats_available_bytes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}[6h], 4 * 24 * 3600) < 0 unless on (cluster, namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on (cluster, namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
         "severity": "warning"
     },
     {
         "message": "PersistentVolumeInodes are filling up.",
         "name": "KubePersistentVolumeInodesFillingUp",
-        "query": "(kubelet_volume_stats_inodes_free{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_inodes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.03 and kubelet_volume_stats_inodes_used{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 unless on (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
+        "query": "(kubelet_volume_stats_inodes_free{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_inodes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.03 and kubelet_volume_stats_inodes_used{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 unless on (cluster, namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on (cluster, namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
         "severity": "critical"
     },
     {
         "message": "PersistentVolumeInodes are filling up.",
         "name": "KubePersistentVolumeInodesFillingUp",
-        "query": "(kubelet_volume_stats_inodes_free{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_inodes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.15 and kubelet_volume_stats_inodes_used{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 and predict_linear(kubelet_volume_stats_inodes_free{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}[6h], 4 * 24 * 3600) < 0 unless on (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on (namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
-        "severity": "warning"
-    },
-    {
-        "message": "Kubernetes API server client is experiencing errors.",
-        "name": "KubeClientErrors",
-        "query": "(sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\",job=\"apiserver\"}[5m])) / sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{job=\"apiserver\"}[5m]))) > 0.01",
-        "severity": "warning"
-    },
-    {
-        "message": "Different semantic versions of Kubernetes components running.",
-        "name": "KubeVersionMismatch",
-        "query": "count by (cluster) (count by (git_version, cluster) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
+        "query": "(kubelet_volume_stats_inodes_free{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} / kubelet_volume_stats_inodes{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}) < 0.15 and kubelet_volume_stats_inodes_used{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"} > 0 and predict_linear(kubelet_volume_stats_inodes_free{job=\"kubelet\",metrics_path=\"/metrics\",namespace=~\".*\"}[6h], 4 * 24 * 3600) < 0 unless on (cluster, namespace, persistentvolumeclaim) kube_persistentvolumeclaim_access_mode{access_mode=\"ReadOnlyMany\"} == 1 unless on (cluster, namespace, persistentvolumeclaim) kube_persistentvolumeclaim_labels{label_excluded_from_alerts=\"true\"} == 1",
         "severity": "warning"
     },
     {
@@ -700,6 +688,18 @@
         "name": "KubeControllerManagerDown",
         "query": "absent(up{job=\"kube-controller-manager\"} == 1)",
         "severity": "critical"
+    },
+    {
+        "message": "Kubernetes API server client is experiencing errors.",
+        "name": "KubeClientErrors",
+        "query": "(sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{code=~\"5..\",job=\"apiserver\"}[5m])) / sum by (cluster, instance, job, namespace) (rate(rest_client_requests_total{job=\"apiserver\"}[5m]))) > 0.01",
+        "severity": "warning"
+    },
+    {
+        "message": "Different semantic versions of Kubernetes components running.",
+        "name": "KubeVersionMismatch",
+        "query": "count by (cluster) (count by (git_version, cluster) (label_replace(kubernetes_build_info{job!~\"kube-dns|coredns\"}, \"git_version\", \"$1\", \"git_version\", \"(v[0-9]*.[0-9]*).*\"))) > 1",
+        "severity": "warning"
     },
     {
         "message": "Target disappeared from Prometheus target discovery.",
@@ -990,7 +990,7 @@
         "severity": "warning"
     },
     {
-        "message": "Errors while reconciling controller.",
+        "message": "Errors while reconciling objects.",
         "name": "PrometheusOperatorReconcileErrors",
         "query": "(sum by (cluster, controller, namespace) (rate(prometheus_operator_reconcile_errors_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) / (sum by (cluster, controller, namespace) (rate(prometheus_operator_reconcile_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) > 0.1",
         "severity": "warning"
@@ -999,6 +999,12 @@
         "message": "Resources rejected by Prometheus operator",
         "name": "PrometheusOperatorRejectedResources",
         "query": "min_over_time(prometheus_operator_managed_resources{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\",state=\"rejected\"}[5m]) > 0",
+        "severity": "warning"
+    },
+    {
+        "message": "Errors while updating objects status.",
+        "name": "PrometheusOperatorStatusUpdateErrors",
+        "query": "(sum by (cluster, controller, namespace) (rate(prometheus_operator_status_update_errors_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) / (sum by (cluster, controller, namespace) (rate(prometheus_operator_status_update_operations_total{job=\"prometheus-operator-operator\",namespace=\"metalk8s-monitoring\"}[5m]))) > 0.1",
         "severity": "warning"
     },
     {

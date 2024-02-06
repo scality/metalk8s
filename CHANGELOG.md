@@ -18,33 +18,33 @@
   (PR[#4164](https://github.com/scality/metalk8s/pull/4164))
 
 - Bump kube-prometheus-stack chart version to
-  [54.2.2](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-54.2.2)
-  (PR[#4204](https://github.com/scality/metalk8s/pull/4204))
+  [56.6.2](https://github.com/prometheus-community/helm-charts/releases/tag/kube-prometheus-stack-56.6.2)
+  (PR[#4234](https://github.com/scality/metalk8s/pull/4234))
 
   This change includes:
 
   - Bump Prometheus container version to
-    [2.48.0](https://github.com/prometheus/prometheus/releases/tag/v2.48.0)
+    [2.49.1](https://github.com/prometheus/prometheus/releases/tag/v2.49.1)
   - Bump AlertManager container version to
     [0.26.0](https://github.com/prometheus/alertmanager/releases/tag/v0.26.0)
   - Bump Thanos container version to
-    [0.32.2](https://github.com/thanos-io/thanos/releases/tag/v0.32.2)
+    [0.34.0](https://github.com/thanos-io/thanos/releases/tag/v0.34.0)
   - Bump grafana chart version to
-    [7.0.8](https://github.com/grafana/helm-charts/releases/tag/grafana-7.0.8),
+    [7.3.0](https://github.com/grafana/helm-charts/releases/tag/grafana-7.3.0),
     Grafana container version to
-    [10.1.5](https://github.com/grafana/grafana/releases/tag/v10.1.5),
+    [10.3.1](https://github.com/grafana/grafana/releases/tag/v10.3.1),
     and kiwigrid/k8s-sidecar container version to
     [1.25.2](https://github.com/kiwigrid/k8s-sidecar/releases/tag/1.25.2)
   - Bump kube-state-metrics chart version to
     [5.15.1](https://github.com/prometheus-community/helm-charts/releases/tag/kube-state-metrics-5.15.1)
     and kube-state-metrics container version to
-    [2.10.1](https://github.com/kubernetes/kube-state-metrics/releases/tag/v2.10.0)
+    [2.10.1](https://github.com/kubernetes/kube-state-metrics/releases/tag/v2.10.1)
   - Bump prometheus-node-exporter chart version to
     [4.24.0](https://github.com/prometheus-community/helm-charts/releases/tag/prometheus-node-exporter-4.24.0)
     and node-exporter container version to
     [1.7.0](https://github.com/prometheus/node_exporter/releases/tag/v1.7.0)
   - Bump prometheus-operator and prometheus-config-reloader containers version to
-    [0.69.1](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.69.1)
+    [0.71.2](https://github.com/prometheus-operator/prometheus-operator/releases/tag/v0.71.2)
 
 - Bump Loki chart version to
   [5.26.0](https://github.com/grafana/loki/releases/tag/helm-loki-5.26.0)
